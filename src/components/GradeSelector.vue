@@ -17,7 +17,7 @@ export default {
   },
   methods: {
     handleGradeDispatch() {
-      this.$store.dispatch('setBookFilter', this.Grade.id).then(() => {
+      this.$store.dispatch('setGradeFilter', this.Grade.id).then(() => {
         this.$router.push('/books');
       });
     },
@@ -33,6 +33,14 @@ export default {
   border-color: black;
   border-width: 1px;
   border-radius: 5rem;
+}
+.bubble:hover {
+  text-underline: black;
+  cursor: pointer;
+  transform: scale(1.05);
+  z-index: 1;
+  transition: tarnsform 0.4s ease-in-out;
+  border-color: white;
 }
 .customBorder {
   text-shadow:

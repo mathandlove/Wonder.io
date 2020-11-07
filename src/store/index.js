@@ -2,16 +2,16 @@ import { createStore } from 'vuex';
 
 export default createStore({
   state: {
-    BookFilter: '',
+    GradeFilter: '',
   },
   mutations: {
-    SET_BOOK_FILTER(state, event) {
-      state.BookFilter = event;
+    SET_GRADE_FILTER(state, event) {
+      state.GradeFilter = event;
     },
   },
   actions: {
-    setBookFilter({ commit }, filterValue) {
-      commit('SET_BOOK_FILTER', filterValue);
+    setGradeFilter({ commit }, filterValue) {
+      commit('SET_GRADE_FILTER', filterValue);
     },
   },
   modules: {
