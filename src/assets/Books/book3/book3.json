@@ -1,0 +1,289 @@
+{"title": "The Case of the\nWrong Bus",
+"author": "Nelson Yu",
+"illustrator": "Silvia Amelio",
+"bookNumber": "3",
+"available": 1,
+"series": "1",
+"nextInSeries":0,
+"pageData": [
+{"type": "cover"},
+{"type": "chapterTitle",
+"text": "A Strange Bus",
+"chapterNumber":1
+},
+{"type": "read",
+"text": "What's the worst thing that could happen on a Monday morning on the first day of school? \n\n<p>Taking the wrong bus."
+},
+{"type": "read",
+"text": "Mom was so busy on her phone that she pushed me onto the first bus.<p><im>1<height>6<p>I knew it was wrong when I stepped in."
+},
+{"type": "read",
+"text": "\"Good morning,\" said the bus driver.\n\n<p>She had three horns, a tail, and thick, scaly skin. Her name tag said \"Miss Shelby.\"<p><im>2<height>6"
+},
+{"type": "questiontitle",
+"question": "Will the bus driver dinosaur eat me?",
+"questionNumber":-99
+},
+{"type": "read",
+"text": "I was pretty sure Miss Shelby was a dinosaur and that she was going to snack on me.\n\n<p> I had to figure out what type of dinosaur she was."
+},
+{"type": "question",
+"question": "What type of dinosaur is Miss Shelby?",
+"answers":[ 
+"Triceratops",
+"T. rex",
+"Brontosaurus",
+"Human"
+]
+},
+{"type": "read",
+"text": "Miss Shelby had three horns, so I knew she was a triceratops, but I didn't know if she was a herbivore (someone who eats vegetables) or a carnivore (someone who eats meat, like me)."
+},
+{"type": "read",
+"text": "In my backpack, I had a Dinopedia, a book on dinosaurs that my dad gave me. I flipped through the pages on triceratops.<p><im>3<height>6"
+},
+{"type": "read",
+"text": "Triceratops are like modern-day rhinos. They spend a great deal of their time eating low-lying vegetation like grass and bushes.\n\n<p> While their three horns are scary, they only use them in self-defense, like a rhino does. Don't get a triceratops angry!"
+},
+{"type": "question",
+"question": "Will Miss Shelby the triceratops eat me?",
+"answers":[ 
+"No, her horns for self-defense.",
+"Yes, she eats people like rhinos.",
+"Yes, she is a dinosaur.",
+"Yes, but only if she is hungry."
+]
+},
+{"type": "read",
+"text": "<ch><l>freddie<t>You're a triceratops!?<p><ch><r>shelby<t>Yes, I am. Go on, take a seat. You don't want everyone to be late, do you?<p>I saw the bus was full of dinosaur kids. But there was only one seat free, behind the bus driver!"
+},
+{"type": "questiontitle",
+"question": "Where is this bus going?",
+"questionNumber":-99
+},
+{"type": "read",
+"text": "Who do I ask first?\n\n<p>I sat down and smiled at the dinosaur kid next to me.\n\n<p>\"Hello, I'm Billy,\" he said, licking his lips. Gulp."
+},
+{"type": "read",
+"text": "I flipped to the carnivore pages and kept reading. In order to hunt and kill their prey, carnivores have sharp teeth like kitchen knives.\n\n<p> Herbivores, on the other hand, have flat teeth, which make it easier to crush plants."
+},
+{"type": "question",
+"question": "How can I tell if Billy is a carnivore?",
+"answers":[ 
+"Ask him to smile for a picture.",
+"Try to eat him first.",
+"Ask him if he likes rhinos.",
+"Hit him hard."
+]
+},
+{"type": "read",
+"text": "I took a picture of the dino kid. I didn't like what I saw -- rows and rows of sharp teeth.<p><im>4<height>6"
+},
+{"type": "read",
+"text": "<ch><l>freddie<t>You're a T. rex! You're a carnivore!<p><ch><r>billy<t>Of course I am. But I don't eat other dinosaurs because my teeth and fangs aren't sharp enough yet. Mom says I need to grow more. Wow... you have soft skin. Can I taste you?"
+},
+{"type": "read",
+"text": "<ch><r>shelby<t>There's no eating on the bus, Billy!<p><ch><r>billy<t>Awwwww, but I'm hungry all the time!<p>A girl dinosaur across from me shouted. She had three horns, like Miss Shelby, and wore a polka-dot dress."
+},
+{"type": "read",
+"text": "<ch><r>trixie<t>That doesn't give you the right to eat your classmates!<p><im>5<height>6"
+},
+{"type": "read",
+"text": "<ch><r>trixie<t>What's your name?<p><ch><l>freddie<t>Freddie.<p><ch><r>trixie<t>Nice to meet you, Freddie! I'm Trixie!"
+},
+{"type": "read",
+"text": "<ch><r>billy<t>Be careful of her. She can stab you with her horns, you know. She almost poked Emma's eye out, and Emma is her best friend!<p>Trixie grabbed me before Billy could say anything more.\n\n<p><ch><r>trixie<t>Here, let me trade seats so Billy doesn't eat you!"
+},
+{"type": "read",
+"text": "<ch><r>trixie<t>You are going to love this field trip!<p><ch><l>freddie<t>Field trip!?<p><ch><r>trixie<t>Yeah, every Saturday we go on a field trip to someplace fun like the garbage dump!"
+},
+{"type": "question",
+"question": "What's wrong with what Trixie said?",
+"answers":[ 
+"It's not Saturday; it's a school day.",
+"Field trips are always on Sundays.",
+"Today is Friday.",
+"School is on weekends only."
+]
+},
+{"type": "read",
+"text": "<ch><l>freddie<t>Wait . . . it's not Saturday today; it's Monday!<p><ch><r>trixie<t>Huh? You're right! I have no idea where we are going, then . . .<p>I felt a nudge from the person or thing next to me. I turned and saw a long-necked dinosaur with a small head and glasses."
+},
+{"type": "read",
+"text": "<im>6<height>6<p><ch><r>emma<t>I can see you are staring at me. I know. I have a long neck and wear glasses. I'm Emma. I'm a brontosaurus."
+},
+{"type": "read",
+"text": "<ch><l>freddie<t>You're a herbivore?<p><ch><r>emma<t>Yeah, I won't eat you. Don't mind Trixie . . . she's absentminded. That means you can't really trust what she says."
+},
+{"type": "read",
+"text": "<ch><l>freddie<t>So where do you think we are going?<p><ch><r>emma<t>To our first day of third grade, silly."
+},
+{"type": "chapterTitle",
+"text": "The First Day of School",
+"chapterNumber":2
+},
+{"type": "questiontitle",
+"question": "How can I survive my first day at dino school?",
+"questionNumber":-99
+},
+{"type": "read",
+"text": "The bus screeched to a halt in front of a school. A big sign sat in front:\n\n \"William Buckland Elementary School - Home of the Dinos!\"\n\n<p>It was named after the person who discovered dinosaur bones!"
+},
+{"type": "read",
+"text": "I had to make a decision. I was on a bus full of dinosaurs. \n\n<p>Some of them were carnivores who'd eat me if I was left alone, which I was certain would happen if I went inside that school."
+},
+{"type": "choice",
+"question": "How should Freddie avoid going to school?",
+"answers":[ 
+"Fake being sick",
+"Stay on the bus until school is over",
+"Face his fears"
+],
+"topages": [
+1,
+4,
+3
+]
+}
+,{"type": "read",
+"text": "<ch><l>freddie<t>*coughs*<p><ch><r>shelby<t>That cold sounds awful.<p><ch><l>freddie<t>Yeah, I'm really sick."
+},
+{"type": "read",
+"text": "<ch><r>shelby<t>You sound like you have a bad case of the fakies. Here's some fake cough syrup to make you feel better.<p><ch><l>freddie<t>But . . .<p><ch><r>shelby<t>Go on! It's a fun school!"
+,
+"nextPage": 4
+},
+{"type": "read",
+"text": "<ch><l>freddie<t>Thanks for the ride to school, Miss Shelby.<p><ch><r>shelby<t>You are most welcome! Go on! It's a fun school!"
+,
+"nextPage": 3
+},
+{"type": "read",
+"text": "<ch><l>freddie<t>Can I stay on the bus?<p><ch><r>shelby<t>There is only one thing I hate as much as eating on the bus, and that is sleeping on the bus. No, you cannot be on the bus again until school is over."
+},
+{"type": "read",
+"text": "<ch><l>freddie<t>Awww . . .<p><ch><r>shelby<t>Go on! It's a fun school!"
+,
+"nextPage": 1
+},
+{"type": "read",
+"text": "When I walked into the classroom, a dinosaur with thick glasses and a flower dress smiled at me. And she had flat teeth! Whew! I knew she wasn't a carnivore.<p>But she looked familiar. Very familiar.<p><im>7<height>6"
+},
+{"type": "questiontitle",
+"question": "Is this teacher Miss Shelby in disguise?",
+"questionNumber":4
+},
+{"type": "read",
+"text": "<ch><r>shelbydisguised<t>Well howdy, stranger! I am Miss Steig, the teacher. Who might you be?<p><ch><l>freddie<t>Freddie.<p><ch><r>shelbydisguised<t>Nice to meet you for the very first time, Freddie."
+},
+{"type": "read",
+"text": "<ch><l>freddie<t>Do you know a Miss Shelby?<p><ch><r>shelbydisguised<t>Why, yes. She's . . .  uh . . .. my sister."
+},
+{"type": "read",
+"text": "<ch><l>freddie<t>Then why are you wearing a name tag that says \"Miss Shelby\"?<p><ch><r>shelbydisguised<t>Silly me. I must have taken her name tag this morning."
+},
+{"type": "read",
+"text": "How could I trust her if she wasn't telling me the truth? I had to trick Miss Shelby into revealing herself. \n\n<p>But how? What would be something that only bus drivers would care about?"
+},
+{"type": "question",
+"question": "What should I tell Miss Shelby to upset her?",
+"answers":[ 
+"I left a sandwich on the bus.",
+"I didn't bathe this week.",
+"I only eat vegetables.",
+"School is fun."
+]
+},
+{"type": "read",
+"text": "<ch><r>shelbydisguised<t>There's no eating on the bus!<p><ch><l>freddie<t>I knew it was you, Miss Shelby!<p><ch><r>shelbydisguised<t>Please don't tell anybody. One of the parents ate the real Miss Steig, and I'm pretending to be her until they find a replacement."
+},
+{"type": "read",
+"text": "<ch><r>shelbydisguised<t>The children would cry if they found out.<p><ch><l>freddie<t>Okay. Your secret is safe with me.<p><ch><r>shelbydisguised<t>Do you want to meet your classmates?<p><ch><l>freddie<t>Will they eat me?"
+},
+{"type": "read",
+"text": "<ch><r>shelbydisguised<t>No. We split into two groups, herbivores and carnivores. Now show me your teeth so I can see where you belong.<p>I smiled. Miss Steig hemmed and hawed, deep in thought.<p><im>8<height>5"
+},
+{"type": "read",
+"text": "<ch><r>shelbydisguised<t>Your teeth are sharp and also flat. Just to be safe, I will put you with the carnivore group. I wouldn't want to put a meat eater into the herbivore group!<p><ch><l>freddie<t>Wait, no!"
+},
+{"type": "read",
+"text": "Before she could hear me, she pushed me into the classroom and introduced me.\n\n<p><ch><r>shelbydisguised<t>Hello, carnivores! Welcome your new classmate, Freddie!<p><ch><l>freddie<t>I'm not supposed to be here."
+},
+{"type": "read",
+"text": "<ch><r>shelbydisguised<t>Don't be shy. You are our first human classmate. Tell them about yourself.<p><ch><l>freddie<t>I like riding my bike and playing video games.<p><ch><r>billy<t>Miss Steig, can we eat humans?"
+},
+{"type": "read",
+"text": "<ch><r>shelbydisguised<t>What did I say about eating your classmates, Billy?<p><ch><r>billy<t>Not unless you are starving to death?"
+},
+{"type": "read",
+"text": "<ch><r>shelbydisguised<t>No! Never!<p><ch><r>billy<t>Awww... Miss Steig. His skin is so soft!<p><im>9<height>6"
+},
+{"type": "questiontitle",
+"question": "How can I escape the carnivore group?",
+"questionNumber":5
+},
+{"type": "read",
+"text": "I remembered I had my lunch in my backpack: a ham and cheese sandwich, a beef jerky stick, a juice box, carrots, and celery. Maybe I could eat something that would gross them out."
+},
+{"type": "question",
+"question": "What should I eat first to get kicked out of the carnivore group?",
+"answers":[ 
+"The carrots and celery",
+"The beef jerky",
+"The ham and cheese sandwich",
+"The juice box"
+]
+},
+{"type": "read",
+"text": "\"Ewwww, that's so gross! You eat vegetables!\" said a girl dinosaur. \"Go hang out with the herbivores, will ya?\"\n\n<p>And that's when Trixie grabbed my hand and pulled me away from the meat-eating dinosaurs."
+},
+{"type": "read",
+"text": "<ch><r>trixie<t>You're with me.<p><ch><l>freddie<t>Thanks for saving me! I thought I was going to be lunch!<p><ch><r>trixie<t>I heard humans eat vegetables and meat. That's weird. Can you eat vegetables only? What's your favorite vegetable?"
+},
+{"type": "read",
+"text": "<ch><r>trixie<t>I like carrots. They are kind of sweet. I don't get to eat them at home. My mom only gives me green leafy vegetables.<p><im>10<height>6"
+},
+{"type": "read",
+"text": "<ch><l>freddie<t>I like celery . . .<p><ch><r>trixie<t>My sister is named Emma. We aren't real sisters, but we hatched from the same nest together, so we're like sisters. The school is kind of small, so all the grades are in one classroom."
+},
+{"type": "read",
+"text": "<ch><l>freddie<t>Trixie, you sure talk a lot. I'm getting bored.<p><ch><r>trixie<t>You're the first human I've ever met. Dad says humans are evil. He says they will kill us and put us in museums. Is that true?<p><ch><l>freddie<t>No, we love dinosaurs."
+},
+{"type": "read",
+"text": "<ch><r>trixie<t>Whew, I'm so glad you said that. Do you like my tail? Mom says it's my best feature. I'm going to be a star with my cute tail. I'll sing and dance and swirl my tail around for all dinosaurs to see. And I'm going to live forever and ever -- like, millions and millions of years."
+},
+{"type": "read",
+"text": "<ch><l>freddie<t>Don't you all die?<p>The noisy classroom suddenly went silent. Everybody stared at me.<p><im>11<height>6"
+},
+{"type": "question",
+"question": "Why did everyone become silent?",
+"answers":[ 
+"I told them they were all going to die.",
+"I am a carnivore.",
+"They know Miss Steig's secret.",
+"Trixie is a great dancer."
+]
+},
+{"type": "read",
+"text": "I could have sworn they were all going to eat me from the angry looks on their faces. I had to think fast. What could I do?\n\n<p><ch><r>trixie<t>What do you mean, all die? Do humans kill us?"
+},
+{"type": "read",
+"text": "<ch><r>billy<t>I should have snacked on you on the bus! Can I eat him now, Miss Steig?<p><ch><r>shelbydisguised<t>No, you may not.<p><ch><r>shelbydisguised<t>Oh, Freddie, you and your silly theories! Such a joker!"
+},
+{"type": "read",
+"text": "<ch><l>freddie<t>Hahaha, Miss Steig, you got me. Didn't you all die laughing there?<p><ch><r>shelbydisguised<t>Class . . . Freddie just told us a human joke. Wasn't it funny?<p>The kids half-chuckled, but at least they weren't growling at me. Whew! Saved from being dino food again!"
+},
+{"type": "read",
+"text": "Emma silently approached when the kids turned away.<p><im>12<height>6<p><ch><r>emma<t>I know the truth.<p><ch><l>freddie<t>What truth?"
+},
+{"type": "read",
+"text": "<ch><r>emma<t>Dinosaurs all die. They don't teach that here.<p><ch><l>freddie<t>So what do they teach?<p><ch><r>emma<t>You'll learn soon enough in science class, but first we have math."
+},
+{"type": "read",
+"text": "And that was my first day at dino school. I survived! \n\n<p>I wanted to come back to learn more about them and teach them about humans . . . if they wouldn't eat me first."
+},
+{
+
+ "type": "end"}
+]
+}
