@@ -1,6 +1,6 @@
 <template>
   <div class="homeBackground">
-    <div>
+    <div class="container text-center">
       <GradeSelector v-for="Grade in GradeArray" :key=Grade.id :Grade="Grade"/>
     </div>
   </div>

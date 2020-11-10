@@ -1,5 +1,5 @@
 <template>
-  <div class="bubble"
+  <div class="bubble d-inline-flex align-items-center justify-content-center text-white"
        :style="{background: Grade.color}"
        @click="handleGradeDispatch">
     <div>
