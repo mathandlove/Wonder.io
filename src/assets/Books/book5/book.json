@@ -1,0 +1,189 @@
+{"title": "The Case of the\nHaunted House",
+"author": "Loni Kim",
+"illustrator": "Silvia Amelio",
+"bookNumber": "5",
+"available": 1,
+"series": "1",
+ "grade": "2",
+"nextInSeries":0,
+"pageData": [
+{"type": "cover"},
+{"type": "read",
+"text": "I was walking home from school with my friends, passing the abandoned house on Coral Street, when a strange howl stopped us in our tracks. \n\n <p><im>1<height>6"
+},
+{"type": "questiontitle",
+"question": "What made the weird sound?",
+"questionNumber":-99
+},
+{"type": "read",
+"text": "The noise seemed to be coming from inside the house. This was strange because everyone knew no one had lived there for years.I turned to my friends. They both had stunned looks on their faces.<p><im>2<height>6"
+},
+{"type": "read",
+"text": "<ch><l>aliz<t>Did you just hear that?<p>Jessi shook her head, her eyes wide with fear. Nick met my eyes and shrugged.\n\n<p><ch><l>aliz<t>Do you think someone's inside the house?<p><ch><r>jessi<t>No way! No one's inside the house."
+},
+{"type": "read",
+"text": "I couldn't believe what I was hearing. Of course someone . . . or something . . . was inside the house! What else could have made the noise?\n\n<p>I looked at Nick, hoping he'd back me up."
+},
+{"type": "read",
+"text": "<ch><r>nick<t>Why don't you go inside?<p><ch><l>aliz<t>Me?<p><ch><r>nick<t>What? Are you scared?<p>I gritted my teeth, annoyed at the accusation."
+},
+{"type": "read",
+"text": "Without even glancing back, I marched across the messy lawn with overgrown weeds toward the house. \n\n<p>The front door rattled at my touch but didn't open. If Nick thought I was a scaredy-cat, I was going to prove him wrong."
+},
+{"type": "read",
+"text": "I walked around the house, looking for a different way in. I spotted another door that was thinner and had a screen on it."
+},
+{"type": "read",
+"text": "I pushed it lightly and it swung open, revealing the kitchen.\n\n <p><im>3<height>6<p>Right away I saw that there was a dead rat on the floor! Gross."
+},
+{"type": "question",
+"question": "Who left the dead rat in the kitchen?",
+"answers":[
+"A cat",
+"The ghost",
+"My friend Aliz",
+"My friend Nick"
+]
+},
+{"type": "read",
+"text": "A cat came out of her hiding spot and started to rub against my leg. She picked up the rat and then gave it to me. Eww! I wasn't going to touch a dead rat. So I made my way into the house.<p><im>4<height>6"
+},
+{"type": "read",
+"text": "The cat followed me, meowing every two seconds. I knew the weird sound my friends and I heard wasn't a meow.So if it wasn't the cat, there had to be something else in the house!"
+},
+{"type": "questiontitle",
+"question": "Who is inside the house?",
+"questionNumber":-99
+},
+{"type": "read",
+"text": "I saw some creaky stairs. There were cobwebs on them. As I walked up slowly, a spider scurried near my foot. I stomped on it.<p><im>5<height>6"
+},
+{"type": "read",
+"text": "It was too fast for me!\n\n<p>When I arrived upstairs, I saw that there were several doors. The cat followed me as I opened the first door and walked in."
+},
+{"type": "read",
+"text": "A sudden bright ray of light hit my eyes, and I had to shield them with my arms. When I could see again without squinting, I realized I was in some kind of a garden."
+},
+{"type": "read",
+"text": "But there was something strange. All the plants had leaves with their tips gone. Someone had been in here, nibbling on them!<p><im>6<height>6"
+},
+{"type": "questiontitle",
+"question": "Who chewed the tips of all the leaves?",
+"questionNumber":1
+},
+{"type": "read",
+"text": "I had some suspicions about what kind of creature could have left these marks, based on what I learned the other day in Mrs. Fields's science class.<p><im>7<height>6"
+},
+{"type": "choice",
+"question": "What animal do you want to learn about?",
+"answers":[
+"Caterpillar",
+"Elephant",
+"Spider",
+"I know who chewed the tips."
+],
+"topages": [
+1,
+3,
+4,
+7
+]
+}
+,{"type": "read",
+"text": "<ch><r>jessi<t>I know caterpillars turn into butterflies. But do they also suck on honey like butterflies?<p><ch><r>fields<t>They don't! Before turning into butterflies, caterpillars will feed on a host plant, eating its leaves. They usually will eat the whole leaf, but sometimes just the center."
+},
+{"type": "read",
+"text": "<ch><r>jessi<t>Why only the center? Are they picky?<p><ch><r>fields<t>They certainly can be! But sometimes when the plant realizes it's being eaten, it will send out poison to kill the caterpillar that's eating it. So the caterpillar has to move onto another plant."
+,
+"nextPage": -2
+},
+{"type": "read",
+"text": "<ch><r>jessi<t>Do elephants catch their food?<p><ch><r>fields<t>Elephants use their long trunks to scoop up a lot of food at once. They eat more than 400 pounds of vegetation a day. Vegetation is things like grass, tree bark, and fruit."
+,
+"nextPage": -3
+},
+{"type": "read",
+"text": "<ch><r>nick<t>I know what spiders eat. They trap other insects in their web for snacks.<p><ch><r>fields<t>Well, actually not all spiders do that. Some species of spider are mostly vegetarian."
+},
+{"type": "read",
+"text": "I looked up, surprised. A vegetarian is someone who doesn't eat meat.\n\n<p><ch><r>fields<t>For example, the Central American jumping spider will hunt plant leaves.<p><ch><r>jessi<t>Why do they have to hunt leaves? Leaves don't move."
+},
+{"type": "read",
+"text": "<ch><r>fields<t>No, but they may be guarded by a lot of ants. So the spider has to take the leaf away from the ants. Because this can be hard to do, the spider will usually jump to eat only the tip of the leaf."
+,
+"nextPage": -6
+},
+{"type": "question",
+"question": "Which animal chewed up the leaf tips?",
+"answerCoords":[
+[753,-149,206,140],[538,-282,227,241],[323,-122,176,178],[305,-316,159,144]
+],"image": 7},
+{"type": "read",
+"text": "But as far as I knew, spiders didn't make strange howling sounds. \n\n<p>That meant there was something else in the house besides the cat and the spider."
+},
+{"type": "read",
+"text": "I left the weird garden and opened the second door on the floor to find out. But I suddenly went blind!<p><im>8<height>6"
+},
+{"type": "question",
+"question": "Why is the room so dark?",
+"answerCoords":[
+[745,-173,210,246],[719,-469,217,347],[325,-734,629,326],[170,-180,332,391]
+],"image": 8},
+{"type": "read",
+"text": "There were lightbulbs in the ceiling, but they were all smashed. That was why I couldn't see anything."
+},
+{"type": "read",
+"text": "When my eyes adjusted to the darkness, I saw that there were curious little dots on the floor. They smelled bad and looked kind of like my dog's poo. I could also see a few dead flies in them. Yuck.\n\n<p>The dots appeared to be fresh. Whoever left them couldn't be far away."
+},
+{"type": "questiontitle",
+"question": "Who left these little dots on the floor?",
+"questionNumber":3
+},
+{"type": "read",
+"text": "I looked for any signs of clue on the wall. All I could see was the paint falling off, like something had scratched it.\n\n<p>I looked up at the ceiling to see if I could find anything besides the lightbulbs. When I squinted, I could see similar scratch marks. There were so many of them, I couldn't count them all!"
+},
+{"type": "read",
+"text": "I walked over to the corner of the room. It was darker here. I reached out my hand and something sticky landed on my head! \n\n<p>When I put my hand on the sticky object, I found that it was some kind of clear, gray slime. I looked up at the ceiling again and there it was! A slug making its way across the top. Eww."
+},
+{"type": "read",
+"text": "Shaking my head in disgust, I continued my search when something furry rubbed up against my arm! \n\n<p>Suddenly alert, I turned around to find a small bat flying away. I saw it hang upside down on the ceiling."
+},
+{"type": "question",
+"question": "What animal made it dark by breaking the lightbulb?",
+"answers":[
+"Bat",
+"Dog",
+"Spider",
+"Slugs"
+]
+},
+{"type": "read",
+"text": "When I walked out of the strange cave room, I saw a spider crawling slowly toward me. Beside it was the cat I found in the kitchen. They both stopped to look at me, waiting."
+},
+{"type": "read",
+"text": "And then . . . the bat I saw earlier flew out and landed on my head.<p><im>9<height>6<p>It kept pulling on my hair! I tried to shake it off, but it continued its attack. I ran down the stairs screaming!"
+},
+{"type": "read",
+"text": "Back through the kitchen and out the door, I was finally able to get rid of the bat. They don't like bright places. Phew!\n\n<p>But then I remembered why I entered the house. I wanted to discover who had made the howling noise. Bats don't make sounds humans can hear. So if it wasn't the bat, it wasn't the cat, and it wasn't the spider . . ."
+},
+{"type": "read",
+"text": "Who was it?\n\n<p>Just as I asked the question in my head, I heard the howling noise again! But this time it seemed to come from below.\n\n<p>Taking a deep breath, I walked out of the kitchen and saw a set of stairs leading down to the basement."
+},
+{"type": "read",
+"text": "As I climbed down, it got colder and colder. I could see scratch marks on the wall and suddenly I felt very scared.\n\n<p>Finally I reached the door to the basement. Leaning against it, I listened for the howling noise . . .<p><im>10<height>5"
+},
+{"type": "read",
+"text": "Yes, the noise was coming from the basement! But while my ears were glued to the door, it started to shake!\n\n<p> I jumped back from the door at once."
+},
+{"type": "questiontitle",
+"question": "Who's inside the basement?",
+"questionNumber":-99
+},
+{"type": "read",
+"text": "To be continued . . ."
+},
+{
+
+ "type": "end"}
+]
+}

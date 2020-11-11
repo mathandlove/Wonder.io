@@ -2,6 +2,8 @@
 	"title": "The Weird Voice\nin the Woods",
 	"available": 1,
 	"nextInSeries": 18,
+	"grade": "2",
+	"bookNumber": "2",
 	"pageData": [
 		{
 			"type": "cover"
@@ -383,7 +385,7 @@
 					-527,
 					414,
 					396
-					
+
 				],
 				[
 					554,
@@ -498,8 +500,8 @@
 			"type": "read",
 			"text": "<ch><r>billy<t>I don't know, but we don't have time to find out now.<p><ch><l>tilly<t>No, but we'll solve this mystery no matter what."
 				},
-				
-				
+
+
 		{
 			"type": "read",
 			"text": "To be continued...."

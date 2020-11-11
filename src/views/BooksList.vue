@@ -1,21 +1,27 @@
 <template>
   <div class="backgroundPadding">
-    <div class="container border border-dark bg-light">
+    <div class="container border border-dark bg-light vh-100">
       <div class="navBarColor py-2 row text-center">
         <div class="col-2">
           <router-link to="/">
-            <img class="imageSize" alt="" src="../assets/Images/MenuButton.png"/>
+            <img class="iconSize" alt="" src="../assets/Images/MenuButton.png"/>
           </router-link>
         </div>
         <input class="col-4 col-md-2" type="text" placeholder="Search..." v-model="WordFilter"/>
-        <h3 class="col-6 col-md-4 pt-2"><strong>Wonder Stories</strong></h3>
-        <div class="col-md-4"/>
+        <h3 class="col-6 col-md-4 pt-2 d-none d-md-block"><strong>Wonder Stories</strong></h3>
+        <h6 class="col-6 col-md-4 pt-2 d-md-none"><strong>Wonder Stories</strong></h6>
+        <div class="col-md-4 d-none d-md-block">
+          <div>GradeFilter: {{GradeFilter}}</div>
+          <div>WordFilter: {{WordFilter}}</div>
+        </div>
       </div>
-      <div class="text-center">
-        <h1>This is the Books Page</h1>
-        <h3>Grade Filter set to: {{GradeFilter}}</h3>
-        <h3>Word Filter set to: {{WordFilter}}</h3>
-      </div>
+      <router-link v-for="Book in WordFilteredBooks"
+           :key="Book.bookNumber"
+           :to="{name: 'Book', params: {id: Book.bookNumber}}"
+           class="d-inline-flex cardSize m-md-3 m-1">
+          <img alt="" class="w-100"
+            :src="require(`../assets/Books/book${Book.bookNumber}/images/cover.png`)"/>
+      </router-link>
     </div>
   </div>
 </template>
@@ -25,7 +31,24 @@ export default {
   data() {
     const { GradeFilter } = this.$store.state;
     const WordFilter = '';
-    return { GradeFilter, WordFilter };
+    const GradeFilteredBooks = [];
+    const WordFilteredBooks = [];
+    return {
+      GradeFilter, WordFilter, GradeFilteredBooks, WordFilteredBooks,
+    };
+  },
+  created() {
+    if (this.GradeFilter === 'NONE') {
+      this.GradeFilteredBooks = this.$store.state.BookDataArray;
+    } else {
+      this.GradeFilteredBooks = this.$store.state.BookDataArray
+        .filter((book) => book.grade === this.GradeFilter);
+    }
+    this.WordFilteredBooks = this.GradeFilteredBooks;
+  },
+  beforeUpdate() {
+    this.WordFilteredBooks = this.GradeFilteredBooks
+      .filter((book) => book.title.toLowerCase().includes(this.WordFilter));
   },
 };
 </script>
@@ -36,13 +59,16 @@ export default {
   min-width: 100vw;
   background-color: grey;
 }
-.imageSize {
+.cardSize {
+  width: 10rem;
+  max-width: 20%;
+  height: auto;
+}
+.iconSize {
   height: 3rem;
   width: auto;
 }
-
 .navBarColor {
-  background-color: #19b7aa;
+  background-color: #3aaaa3;
 }
-
 </style>

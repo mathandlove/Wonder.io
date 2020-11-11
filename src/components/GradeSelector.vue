@@ -32,7 +32,7 @@ export default {
   border-style: solid;
   border-color: black;
   border-width: 1px;
-  border-radius: 5rem;
+  border-radius: 50%;
 }
 .bubble:hover {
   text-underline: black;

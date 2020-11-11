@@ -1,0 +1,190 @@
+{"title": "The Case of the\nMissing Moon",
+"author": "Shanna Germain",
+"illustrator": "Kelly Latham",
+"bookNumber": "4",
+"available": 1,
+"series": "1",
+ "grade": "3",
+"nextInSeries":0,
+"pageData": [
+{"type": "cover"},
+{"type": "questiontitle",
+"question": "What is missing in my room?",
+"questionNumber":0
+},
+{"type": "read",
+"text": "Today is Science Day at school! I need to pack my notebook, my pencil, my smartphone, my science book, and my moon.\n\n<p> I can't wait to take the moon I made to class. It is an exact copy of the actual moon; it has real craters and everything."
+},
+{"type": "read",
+"text": "I look inside my backpack, but something is missing!<p><im>1<height>6"
+},
+{"type": "question",
+"question": "What is missing from my backpack?",
+"answers":[
+"My moon",
+"My notebook",
+"My pencil",
+"My smartphone"
+]
+},
+{"type": "questiontitle",
+"question": "Where's my moon?",
+"questionNumber":-99
+},
+{"type": "read",
+"text": "I look under my blankets. I look under the dresser. I look in the closet. My moon isn't there. What could have happened to it? I need to find a clue!"
+},
+{"type": "question",
+"question": "Click on a clue.",
+"answerCoords":[
+[818,-695,200,222],[548,-414,252,592],[271,-577,332,384],[895,-502,459,163]
+],"image": 2},
+{"type": "read",
+"text": "I hear a noise and look under the bed.\n\n<p><ch><l>kara<t>Miles! What are you doing in my room? Did you take my moon?<p><ch><r>miles<t>I was just gonna play astronauts with it.<p><ch><l>kara<t>I need it for school. Can I have it back?"
+},
+{"type": "read",
+"text": "<ch><r>miles<t>No. I don't have it.<p><ch><l>kara<t>Where did you put it?<p><ch><r>miles<t>A monster took it!<p>Miles has a big imagination. He must mean one of our pets. But which one?"
+},
+{"type": "read",
+"text": "<ch><l>kara<t>What kind of monster, Miles?<p><ch><r>miles<t>One with a slobbery tongue!"
+},
+{"type": "question",
+"question": "Which of my pets took my moon?",
+"answers":[
+"My dog, Cookie",
+"My hamster",
+"A tiny kitten",
+"An alien"
+]
+},
+{"type": "read",
+"text": "Aha! Our dog, Cookie, must have taken the moon to play fetch with! I just have to find Cookie, and that will lead me right to the moon. I might not even be late for school."
+},
+{"type": "read",
+"text": "I go downstairs to the living room. The room is a mess. On the floor, on the couch, all over the place are brown, muddy dog prints. Mom is going to be so upset.<p><im>3<height>6"
+},
+{"type": "question",
+"question": "Where did Cookie go with the moon?",
+"answers":[
+"Outside",
+"To the moon",
+"To my room",
+"To the kitchen"
+]
+},
+{"type": "read",
+"text": "Clearly, Cookie was outside and got all muddy, but there was something strange about this scene. Cookie doesn't normally make such a mess.\n\n<p> But that wasn't it... there was something else in this room that was strange."
+},
+{"type": "question",
+"question": "Click on what was strange.",
+"answerCoords":[
+[869,-214,717,362],[219,-831,274,119],[655,-798,259,215],[381,-558,155,502]
+],"image": 3},
+{"type": "read",
+"text": "How did Cookie's footprints get on the ceiling? I'm pretty sure Cookie can't fly, and I've never seen a dog crawl on the wall like a spider. Something strange was going on."
+},
+{"type": "read",
+"text": "I go to the backyard to find muddy Cookie.There she is! She's got my moon in her mouth.<p><im>4<height>6"
+},
+{"type": "read",
+"text": "<ch><l>kara<t>Hey, Cookie! Bring me the moon! C'mon, girl! Wait . . . who are you playing fetch with?<p><ch><r>cookie<t>Woof!"
+},
+{"type": "read",
+"text": "As I watch, a tall, green creature with big eyes takes the moon from Cookie and then throws it across the yard. Cookie goes chasing after it.<p><im>5<height>6"
+},
+{"type": "questiontitle",
+"question": "What is this strange creature doing?",
+"questionNumber":-99
+},
+{"type": "read",
+"text": "Before I approach the creature, I need to figure out what it is to make sure it's not dangerous. \n\n<p>The creature is an alien; I can tell that much. But which kind? I use my smartphone to look up different kinds of aliens."
+},
+{"type": "read",
+"text": "My smartphone vibrates back with the following information: \n\n<p><font=\"Moboto SDF\"><size=78>Venusians are aliens from Venus. On Venus, there are no moons. Out of jealousy, Venusians will break anything that looks like one."
+},
+{"type": "read",
+"text": "<font=\"Moboto SDF\"><size=78>Martians are aliens from Mars. Martians like playing with animals and can cause them to levitate. \n\n<p><font=\"Moboto SDF\"><size=78>Plutonians are aliens from Pluto. They are very tiny, like Pluto, and howl like monkeys."
+},
+{"type": "question",
+"question": "What is this alien creature?",
+"answers":[
+"A Martian",
+"A Plutonian",
+"A Venusian",
+"A dog"
+]
+},
+{"type": "read",
+"text": "It's a Martian! I've never seen a Martian before. I wonder why he's here?\n\n<p><ch><l>kara<t>Hello! My name is Kara.<p><ch><r>martian<t>Bleep, boop, bleepity, boop."
+},
+{"type": "read",
+"text": "<ch><l>kara<t>I've never met a Martian before. Why are you here?<p><ch><r>martian<t>Bleepity, boop, bleep, boop.<p><im>6<height>5"
+},
+{"type": "read",
+"text": "Hm. That's not going to work. I don't know if she can understand me, but I definitely can't understand her. \n\n<p>How else can I communicate with her to find out why she is here?"
+},
+{"type": "question",
+"question": "How should Kara communicate to the Martian?",
+"answers":[
+"Draw some pictures.",
+"Talk to the alien.",
+"Text the alien on her phone.",
+"Use a radio."
+]
+},
+{"type": "read",
+"text": "I know! Maybe I can draw something that she will understand.\n\n<p>I take out my notebook. Hm. What could a Martian want? Maybe she is hungry. I draw a hamburger.\n\n<p> Maybe she is lost. I draw a map. Or maybe she wants me to take a ride in her spaceship. I saw that in a movie once."
+},
+{"type": "read",
+"text": "I show the Martian the page in my notebook. She uses her very long fingers to take the image of the spaceship out of my hands. And then she rips it in half.<p><im>7<height>6"
+},
+{"type": "question",
+"question": "What is the alien trying to say?",
+"answers":[
+"Her spaceship is broken.",
+"Kara needs to draw better.",
+"She wants to play frisbee.",
+"She is hungry."
+]
+},
+{"type": "read",
+"text": "<ch><l>kara<t>Is your spaceship broken? Maybe I can help you fix it?<p>I point to the spaceship again and make fixing gestures, putting the pieces of paper together. I have no idea if she understands what I'm saying, but I want to try."
+},
+{"type": "read",
+"text": "I don't even care that I'm going to be late for school. This is too cool. I'm talking - sort of - to a real, live Martian! \n\n<p>The Martian seems to understand me, at least a little, because she waves her long fingers, and suddenly I can see her spaceship."
+},
+{"type": "read",
+"text": "It must have been invisible, right here this whole time. \n\n<p>It's so cool-looking. I can't wait to tell everyone in class.<p><im>8<height>6"
+},
+{"type": "read",
+"text": "The Martian opens a little door. Inside is so much stuff - I don't even know what it's all for. She points to a place where something's missing."
+},
+{"type": "read",
+"text": "It looks like a big circle. That must be the piece she needs in order to fix the spaceship.<p><im>9<height>6"
+},
+{"type": "question",
+"question": "What could fit into the empty spot?",
+"answers":[
+"My moon",
+"The drawing I made",
+"A really big rock",
+"My textbooks"
+]
+},
+{"type": "read",
+"text": "I bet my moon would fit in there perfectly! I call Cookie over. \n\n<p>The moon's all covered in dog slobber, but I bet it will still work. This moon is my favorite toy, and I need it for science class. But I think the Martian needs it more. I hold it out to the Martian."
+},
+{"type": "read",
+"text": "<ch><l>kara<t>You can use this in your spaceship. To fly home.<p>I make a \"fly\" gesture with my hand. The Martian seems to understand. She takes the moon from me and puts it in the empty spot. Suddenly, the spaceship lights up and starts to make a humming noise."
+},
+{"type": "read",
+"text": "The Martian smiles and nods. She says something that I can't understand, but she seems happy. That makes me happy, too."
+},
+{"type": "read",
+"text": "<ch><l>kara<t>Hey, want to come to class with me before you fly away? It's Science Day, and I bet everyone would love to meet you.<p><im>10<height>6"
+},
+{
+
+ "type": "end"}
+]
+}

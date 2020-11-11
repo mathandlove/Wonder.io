@@ -4,6 +4,7 @@
 "bookNumber": "3",
 "available": 1,
 "series": "1",
+ "grade": "2",
 "nextInSeries":0,
 "pageData": [
 {"type": "cover"},
@@ -29,7 +30,7 @@
 },
 {"type": "question",
 "question": "What type of dinosaur is Miss Shelby?",
-"answers":[ 
+"answers":[
 "Triceratops",
 "T. rex",
 "Brontosaurus",
@@ -47,7 +48,7 @@
 },
 {"type": "question",
 "question": "Will Miss Shelby the triceratops eat me?",
-"answers":[ 
+"answers":[
 "No, her horns for self-defense.",
 "Yes, she eats people like rhinos.",
 "Yes, she is a dinosaur.",
@@ -69,7 +70,7 @@
 },
 {"type": "question",
 "question": "How can I tell if Billy is a carnivore?",
-"answers":[ 
+"answers":[
 "Ask him to smile for a picture.",
 "Try to eat him first.",
 "Ask him if he likes rhinos.",
@@ -99,7 +100,7 @@
 },
 {"type": "question",
 "question": "What's wrong with what Trixie said?",
-"answers":[ 
+"answers":[
 "It's not Saturday; it's a school day.",
 "Field trips are always on Sundays.",
 "Today is Friday.",
@@ -134,7 +135,7 @@
 },
 {"type": "choice",
 "question": "How should Freddie avoid going to school?",
-"answers":[ 
+"answers":[
 "Fake being sick",
 "Stay on the bus until school is over",
 "Face his fears"
@@ -187,7 +188,7 @@
 },
 {"type": "question",
 "question": "What should I tell Miss Shelby to upset her?",
-"answers":[ 
+"answers":[
 "I left a sandwich on the bus.",
 "I didn't bathe this week.",
 "I only eat vegetables.",
@@ -227,7 +228,7 @@
 },
 {"type": "question",
 "question": "What should I eat first to get kicked out of the carnivore group?",
-"answers":[ 
+"answers":[
 "The carrots and celery",
 "The beef jerky",
 "The ham and cheese sandwich",
@@ -257,7 +258,7 @@
 },
 {"type": "question",
 "question": "Why did everyone become silent?",
-"answers":[ 
+"answers":[
 "I told them they were all going to die.",
 "I am a carnivore.",
 "They know Miss Steig's secret.",
