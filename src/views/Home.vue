@@ -1,6 +1,6 @@
 <template>
-  <div class="homebackground padding">
-    <div class="container text-center">
+  <div class="homeBackground">
+    <div>
       <GradeSelector v-for="Grade in GradeArray" :key=Grade.id :Grade="Grade"/>
     </div>
   </div>
@@ -51,7 +51,7 @@ export default {
 </script>
 
 <style scoped>
-.homebackground {
+.homeBackground {
   min-height: 100vh;
   min-width: 100vw;
   background: linear-gradient(to left, rgba(7,27,82,1) 0%, rgba(0,128,128,1) 100%);

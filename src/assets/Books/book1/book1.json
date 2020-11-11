@@ -1,0 +1,370 @@
+{
+	"title": "The Case of the Bedroom Egg",
+	"available": 1,
+	"nextInSeries": 0,
+	"pageData": [
+		{
+			"type": "cover"
+		},
+		{
+			"type": "chapterTitle",
+			"text": "The Case of the Bedroom Egg",
+			"chapterNumber": 1
+		},
+		{
+			"type": "read",
+			"text": "A loud cracking noise woke me with a jolt. <p>Even though I was shivering, I threw off my blanket and hopped out of bed.<p><im>1<height>5"
+		},
+		{
+			"type": "questionTitle",
+			"question": "What was cracking?"
+		},
+		{
+			"type": "read",
+			"text": "Being cold didn't matter, something was not right. <p> \n\nFor a second the cracking stopped, all I could hear was the breeze in the window and my Mom making breakfast downstairs."
+		},
+		{
+			"type": "read",
+			"text": "But then it started again.<p>\n\n The crack was not like glass or wood but with something more like a shell.<p> \n\nMom was going to want me down for breakfast soon. Where was this noise coming from?"
+		},
+		{
+			"type": "question",
+			"question": "Click on what was cracking.",
+			"answerCoords": [
+				[
+					936,
+					-535,
+					276,
+					328
+				],
+				[
+					566,
+					-456,
+					464,
+					487
+				],
+				[
+					158,
+					-349,
+					366,
+					542
+				],
+				[
+					1002,
+					-196,
+					319,
+					351
+				]
+			],
+			"image": 1
+		},
+		{
+			"type": "read",
+			"text": "I knocked on the beach ball sized egg. It was so heavy it did not budge. <p>\n\nWhoever put this egg in my room must have been strong. It looks like I had a new case. "
+		},
+		{
+			"type": "questiontitle",
+			"question": "Who put this egg in my room?",
+			"questionNumber": -99
+		},
+		{
+			"type": "read",
+			"text": "<b>Suspect 1: Mom</b>\n\n<p>I walked downstairs. As I suspected, my mother was making breakfast.<p><im>2<height>5<p>The kitchen was smoky, but this was usual. Mom always burnt the toast."
+		},
+		{
+			"type": "questiontitle",
+			"question": "How is Mom feeling?"
+		},
+		{
+			"type": "read",
+			"text": "<ch><l>dee<t> Mom, did you put a giant egg in my room?<p><ch><r>mom<t> We don't have time for this. Quick, eat your eggs Dee. You're going to be late to school. "
+		},
+		{
+			"type": "read",
+			"text": "<ch><l>dee<t> Did you just say eggs? So you did hide the egg in my room! <p><ch><r>mom<t> I don't know what you are talking about. If you don't hurry, the bus will leave without you."
+		},
+		{
+			"type": "question",
+			"question": "How is Mom feeling?",
+			"answers": [
+				"Worried I'll miss school",
+				"Hungry for eggs",
+				"She stole the egg!",
+				"Angry at Dad"
+			]
+		},
+		{
+			"type": "read",
+			"text": "Usually it's Mom who is the culprit. A culprit is someone who did the crime. \n\n<p> Time was running out. I would have to ask the others at the breakfast table."
+		},
+		{
+			"type": "questiontitle",
+			"question": "How is Dad feeling?"
+		},
+		{
+			"type": "read",
+			"text": "I turned to Dad. His eyes were closed and his head was nodded down. <p><im>3<height>5<p> He gave a loud yawn. He hadn't touched his eggs. He was also going to be late."
+		},
+		{
+			"type": "read",
+			"text": "<ch><l>dee<t> Dad, did you put the egg in my room?<p><ch><r>dad<t> ZZzzzzzzz. <p><ch><l>dee<t> Wake up Dad. <p><ch><r>dad<t> Zzzzzzz."
+		},
+		{
+			"type": "read",
+			"text": "I took a glass of water and threw it at him. His eyes opened wide. I tried again.<p><im>35<height>7<p><ch><l>dee<t> Dad, did you put the egg in my room?"
+		},
+		{
+			"type": "read",
+			"text": "<p><ch><r>dad<t>Sorry Dee, I was up late last night, bowling with your Uncle TBone.<ch><l>dee<t>But what about the egg?<p><ch><r>dad<t>The only eggs I know about are the ones I'm eating in front of me."
+		},
+		{
+			"type": "question",
+			"question": "How is Dad feeling?",
+			"answers": [
+				"Really tired.",
+				"Hungry for eggs.",
+				"He stole the egg!",
+				"Missing Uncle TBone."
+			]
+		},
+		{
+			"type": "questiontitle",
+			"question": "Who is Uncle TBone?"
+		},
+		{
+			"type": "read",
+			"text": "<b>Suspect 3:\nUncle TBone</b><p>\n\nMom was in a hurry, Dad was tired, the only other suspect at the table was Uncle TBone.<p><im>4<height>6"
+		},
+		{
+			"type": "read",
+			"text": "Now I didn't know Uncle TBone very well. And Mom said I should be polite. \n\n<p>But the case was running cold. <p> Running cold means that I was running out of clues and might not solve the crime."
+		},
+		{
+			"type": "read",
+			"text": "<ch><l>dee<t>Uncle TBone, did you put an egg in my room?<p><ch><r>tbone<t>..................<p>Uncle TBone just stared at me blankly.<p>\n\nI was running out of time. I would have to ask again."
+		},
+		{
+			"type": "read",
+			"text": "<ch><l>dee<t>Uncle TBone, did you put an egg in my room?<p><ch><r>tbone<t> ROOOoooooar!!!<p>It sounded like something was in Uncle TBone's throat."
+		},
+		{
+			"type": "read",
+			"text": "I was expecting Uncle TBone to tell me to mind my own business.<p>\n\nBut instead, he lifted his legs on the table and started putting claw marks all over the wood. <p>\n\nTake note: I hope Mom won't blame me for those scratches."
+		},
+		{
+			"type": "read",
+			"text": "While clawing the table, Uncle TBone opened his mouth wide. He had a bunch of sharp teeth.<p><im>45<height>7<p>And I also noticed his skin seemed rather green and scaly."
+		},
+		{
+			"type": "read",
+			"text": "<ch><r>tbone<t>ROOOAR!!!!!<p><ch><l>dee<t>So I take it you don't want to talk about the egg?"
+		},
+		{
+			"type": "question",
+			"question": "Who is Uncle TBone?",
+			"answers": [
+				"A real, live dinosaur",
+				"An egg",
+				"An expert bowler",
+				"Just a normal human"
+			]
+		},
+		{
+			"type": "read",
+			"text": "I put my clues together:<p>\n\n1.   Uncle TBone roared like a wild animal. <p>\n\n2.    He also smelled like a wild animal. But I didn't want to write that down. <p>\n\n3.    Uncle TBone had claws and skin like a reptile."
+		},
+		{
+			"type": "read",
+			"text": "Putting the clues together, I decided Uncle TBone was a real dinosaur.<p>\n\nFrom school, I had also learned that dinosaurs lay eggs!"
+		},
+		{
+			"type": "question",
+			"question": "Click on who would put an egg in my room.",
+			"answerCoords": [
+				[
+					909,
+					-323,
+					371,
+					476
+				],
+				[
+					210,
+					-371,
+					521,
+					736
+				],
+				[
+					579,
+					-880,
+					507,
+					506
+				],
+				[
+					0,
+					0,
+					0,
+					0
+				]
+			],
+			"image": 8
+		},
+		{
+			"type": "read",
+			"text": "I pointed my finger at TBone, the way detectives do.\n\n<p><ch><l>dee<t>It was you who put the egg in my room!<p><im>42<height>5"
+		},
+		{
+			"type": "read",
+			"text": "<ch><r>tbone<t>??????<p><ch><r>tbone<t>ROOOAR!!!!!<p>I think dinosaurs scare easily because Uncle TBone jumped out of his seat and straight through the window."
+		},
+		{
+			"type": "read",
+			"text": "<im>5<height>5<p>Glass crashed everywhere I hope Mom doesn't think that was my fault."
+		},
+		{
+			"type": "chapterTitle",
+			"text": "Chasing Dinosaurs",
+			"chapterNumber": 2
+		},
+		{
+			"type": "questionTitle",
+			"question": "Where did Uncle TBone go?",
+			"questionNumber": -99
+		},
+		{
+			"type": "choice",
+			"question": "Choose how you want to find Uncle TBone.",
+			"answers": [
+				"Ask your Mom for help!",
+				"Ask your dog Toby for help.",
+				"Jump through the window."
+			],
+			"topages": [
+				1,
+				3,
+				5
+			]
+		},
+		{
+			"type": "read",
+			"text": "Mom didn't really notice the window crash, she was too focused on the burning bacon.<p>\n\n<ch><l>dee<t>Mom do you know where Uncle TBone went?<ch><r>mom<t>Oh no. He left without finishing his eggs!"
+		},
+		{
+			"type": "read",
+			"text": "<ch><l>dee<t>Focus Mom, you don't want me to miss school.<p><ch><r>mom<t>He must have gone back to the toolshed. He's been spending a lot of time back there.",
+			"nextPage": 7
+		},
+		{
+			"type": "read",
+			"text": "It looks like I was going to need to call in help from my dog Toby. <p>\n\nI whistled, and Toby came running downstairs, nearly knocking me over.<p> I petted Toby and showed him the torn clothes TBone left all over the table."
+		},
+		{
+			"type": "read",
+			"text": "Toby smelled the shirt and looked disgusted. I don't blame him, it did smell bad. I wouldn't want to smell it either.\n\n<p> After a few seconds, Toby jumped up from the table and ran out the window. As I walked around, I saw Toby energetically smelling the toolshed.",
+			"nextPage": 5
+		},
+		{
+			"type": "read",
+			"text": "Now I'm not very tall and that glass looks really dangerous.\n\n<p> Are you sure you want me to jump through that window with broken glass?"
+		},
+		{
+			"type": "read",
+			"text": "\n\n\n\n\n<align=center>Are you really sure?"
+		},
+		{
+			"type": "read",
+			"text": "Summoning up all my bravery I took a step back. Jumped on the table. And started running as fast as I could.\n\n<p> Around the uneaten eggs.\n\n<p> Around sleeping Dad.\n\n<p> And then I jumped."
+		},
+		{
+			"type": "read",
+			"text": "I made it through to the other side, without a scratch.\n\n<p> Jumping through the window saved me just enough time to see something that looked like a dinosaur tail run into the woods."
+		},
+		{
+			"type": "read",
+			"text": "It was raining pretty hard outside and my clothes started to get cold. As I walked toward the tool shed I held my breath.\n\n<p> I couldn't hear anything but the dripping of the rain.\n\n<p> I cracked the rotting door open."
+		},
+		{
+			"type": "read",
+			"text": "Nothing was inside. Uncle TBone must have escaped! I looked around the tool shed. \n\n<p>Lucky for me, the rain made mud and there were footprints leading off in different directions."
+		},
+		{
+			"type": "read",
+			"text": "Here is a picture of the three different footprints I saw.<p><im>6<height>10"
+		},
+		{
+			"type": "questionTitle",
+			"question": "Which footprints are \nTBones?"
+		},
+		{
+			"type": "read",
+			"text": "I pulled out my smart phone and went to the University of Colorado's webpage:\n\n<font=\"Moboto SDF\"><size=78>Dinosaurs have four toes. Three in the front and one in the back.<p> When they step, they step on their toes, which makes them look taller."
+		},
+		{
+			"type": "read",
+			"text": "<font=\"Moboto SDF\"><size=78>Because they step on their front toes, they do not leave a foot print in the back.<p>\n\nIf you look at a Dinosaur footprint you would only see three web like toes in the front."
+		},
+		{
+			"type": "question",
+			"question": "Which foot prints are TBones?",
+			"answerCoords": [
+				[
+					214,
+					-556,
+					532,
+					582
+				],
+				[
+					628,
+					-823,
+					359,
+					348
+				],
+				[
+					994,
+					-603,
+					459,
+					489
+				],
+				[
+					0,
+					0,
+					0,
+					0
+				]
+			],
+			"image": 6
+		},
+		{
+			"type": "read",
+			"text": "I headed to the library. I hoped the readers were all right.<p> I jogged for 10 minutes, following the path towards my library.<p>\n\nBut the muddy foot prints didn't go into the building."
+		},
+		{
+			"type": "read",
+			"text": "Instead, the tracks headed around the side of the library to Long Neck Lake.<p> He must have jumped in.<p>\n\nI lost him. The case was turning cold again."
+		},
+		{
+			"type": "read",
+			"text": "As I turned around, I saw a note pinned high in a tree. I jumped to take it off, but slipped in the mud and tore the note in half.<p><im>7<height>8"
+		},
+		{
+			"type": "question",
+			"question": "What did the note say?",
+			"answers": [
+				"TBone needs my help.",
+				"Sorry about the window.",
+				"TBone wants to go bowling.",
+				"TBone is a baby."
+			]
+		},
+		{
+			"type": "read",
+			"text": "Case Closed.<p>\nToday I learned who put the egg in my bedroom. It was Uncle TBone, who is actually a dinosaur.<p>\n\nHe put the egg in my room because he is in danger and needs to hide.<p>\n\nI wonder what he is hiding from."
+		},
+		{
+			"type": "read",
+			"text": "And why does this egg keep making cracking sounds?<p><im>9<height>6<p>\n\nTo be continued...."
+		},
+		{
+			"type": "end"
+		}
+	]
+}
