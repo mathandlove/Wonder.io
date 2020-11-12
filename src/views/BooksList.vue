@@ -16,11 +16,11 @@
         </div>
       </div>
       <router-link v-for="Book in WordFilteredBooks"
-           :key="Book.bookNumber"
-           :to="{name: 'Book', params: {id: Book.bookNumber}}"
+           :key="Book"
+           :to="{name: 'Book', params: {id: Book}}"
            class="d-inline-flex cardSize m-md-3 m-1">
           <img alt="" class="w-100"
-            :src="require(`../assets/Books/book${Book.bookNumber}/images/cover.png`)"/>
+            :src="require(`../assets/Books/book${Book}/images/cover.png`)"/>
       </router-link>
     </div>
   </div>
@@ -38,17 +38,13 @@ export default {
     };
   },
   created() {
-    if (this.GradeFilter === 'NONE') {
-      this.GradeFilteredBooks = this.$store.state.BookDataArray;
-    } else {
-      this.GradeFilteredBooks = this.$store.state.BookDataArray
-        .filter((book) => book.grade === this.GradeFilter);
-    }
+    this.GradeFilteredBooks = this.$store.state.GradeBookOrder[this.$store.state.GradeFilter];
     this.WordFilteredBooks = this.GradeFilteredBooks;
   },
   beforeUpdate() {
-    this.WordFilteredBooks = this.GradeFilteredBooks
-      .filter((book) => book.title.toLowerCase().includes(this.WordFilter));
+    this.WordFilteredBooks = this.GradeFilteredBooks.filter(
+      (book) => this.$store.state.BookNameArray[book - 1].toLowerCase().includes(this.WordFilter),
+    );
   },
 };
 </script>
