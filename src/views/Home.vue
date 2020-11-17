@@ -39,9 +39,6 @@ export default {
       {
         id: '6', top: 'GRADE', mid: '6+', color: 'teal',
       },
-      {
-        id: 'NONE', top: 'ALL', mid: 'View', color: 'grey',
-      },
     ];
     return {
       GradeArray,

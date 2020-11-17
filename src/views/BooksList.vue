@@ -17,7 +17,7 @@
       </div>
       <router-link v-for="Book in WordFilteredBooks"
            :key="Book"
-           :to="{name: 'Book', params: {id: Book}}"
+           :to="{name: 'Book', params: {id: Book, page: 1}}"
            class="d-inline-flex cardSize m-md-3 m-1">
           <img alt="" class="w-100"
             :src="require(`../assets/Books/book${Book}/images/cover.png`)"/>
@@ -43,7 +43,7 @@ export default {
   },
   beforeUpdate() {
     this.WordFilteredBooks = this.GradeFilteredBooks.filter(
-      (book) => this.$store.state.BookNameArray[book - 1].toLowerCase().includes(this.WordFilter),
+      (book) => this.$store.state.BookArray[book - 1].title.toLowerCase().includes(this.WordFilter),
     );
   },
 };
@@ -55,14 +55,30 @@ export default {
   min-width: 100vw;
   background-color: grey;
 }
-.cardSize {
-  width: 10rem;
-  max-width: 20%;
-  height: auto;
+@media (max-width: 767px) {
+  .cardSize {
+    width: 4rem;
+    height: 7rem;
+  }
+  .iconSize {
+    height: 2rem;
+    width: auto;
+  }
 }
-.iconSize {
-  height: 3rem;
-  width: auto;
+@media (min-width: 768px) {
+  .cardSize {
+    width: 10rem;
+    height: 16rem;
+  }
+  .iconSize {
+    height: 3rem;
+    width: auto;
+  }
+}
+
+.cardSize:hover {
+  cursor: pointer;
+  transform: scale(1.1);
 }
 .navBarColor {
   background-color: #3aaaa3;
