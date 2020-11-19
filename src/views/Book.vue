@@ -30,9 +30,8 @@
       </div>
       <div v-else-if="this.GetPageData.type=='read'" :key=page class="PageSize">
         <img alt="" class="imageSize" src="../assets/Images/notepadWithLines.png"/>
-        <div class="textFraming">
-          <h4 v-if="this.GetPageData.text">{{this.GetPageData.text}}</h4>
-        </div>
+        <PageRead v-if="this.GetPageData.text"
+                  :page-text="this.GetPageData.text" :book-number="id"/>
       </div>
       <div v-else-if="this.GetPageData.type.toLowerCase()=='questiontitle'"
            :key=page class="PageSize">
@@ -84,8 +83,10 @@
 </template>
 
 <script>
+import PageRead from '@/components/PageRead.vue';
 
 export default {
+  components: { PageRead },
   props: {
     id: {
       type: String,
