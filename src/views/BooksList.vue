@@ -1,15 +1,15 @@
 <template>
   <div class="backgroundPadding">
     <div class="container border border-dark bg-light vh-100">
-      <div class="navBarColor py-2 row text-center">
+      <div class="navBarColor navBarHeight row text-center">
         <div class="col-2">
           <router-link to="/">
             <img class="iconSize" alt="" src="../assets/Images/MenuButton.png"/>
           </router-link>
         </div>
-        <input class="col-4 col-md-2" type="text" placeholder="Search..." v-model="WordFilter"/>
-        <h3 class="col-6 col-md-4 pt-2 d-none d-md-block"><strong>Wonder Stories</strong></h3>
-        <h6 class="col-6 col-md-4 pt-2 d-md-none"><strong>Wonder Stories</strong></h6>
+        <input class="col-4 col-md-2 inputSize" type="text"
+               placeholder="Search..." v-model="WordFilter"/>
+        <div class="col-6 col-md-4 WonderStyle"><strong>Wonder Stories</strong></div>
         <div class="col-md-4 d-none d-md-block">
           <div>GradeFilter: {{GradeFilter}}</div>
           <div>WordFilter: {{WordFilter}}</div>
@@ -55,32 +55,33 @@ export default {
   min-width: 100vw;
   background-color: grey;
 }
-@media (max-width: 767px) {
-  .cardSize {
-    width: 4rem;
-    height: 7rem;
-  }
-  .iconSize {
-    height: 2rem;
-    width: auto;
-  }
+.cardSize {
+  width: 20vw;
+  max-width: 20vh;
+  height: 32vw;
+  max-height: 32vh;
 }
-@media (min-width: 768px) {
-  .cardSize {
-    width: 10rem;
-    height: 16rem;
-  }
-  .iconSize {
-    height: 3rem;
-    width: auto;
-  }
+.iconSize {
+  height: 5vh;
+  margin-top: 1.5vh;
+  width: auto;
 }
-
 .cardSize:hover {
   cursor: pointer;
   transform: scale(1.1);
 }
 .navBarColor {
   background-color: #3aaaa3;
+}
+.navBarHeight {
+  height: 8vh;
+}
+.WonderStyle {
+  font-size: 3vh;
+  padding-top: 2vh;
+}
+.inputSize {
+  height: 5vh;
+  margin-top: 1.5vh;
 }
 </style>

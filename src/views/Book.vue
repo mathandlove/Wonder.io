@@ -1,14 +1,14 @@
 <template>
   <div class="backgroundPadding">
-    <div class="container border border-dark BackGroundColor vh-100">
-      <div class="navBarColor py-2 row text-center">
+    <div class="container BackGroundColor w-100">
+      <div class="navBarColor navBarHeight row text-center">
         <div class="col-4">
           <router-link :to="{name: 'Book', params: {id: id, page: 1}}">
             <img class="iconSize" alt="" src="../assets/Images/restart.png"/>
           </router-link>
         </div>
-        <div class="col-4 p-2">
-            <div class="progress-bar">Page: {{page}} of {{this.TotalPages}}</div>
+        <div class="col-4">
+            <div class="progress-bar progressBarSize">Page: {{page}} of {{this.TotalPages}}</div>
         </div>
         <div class="col-4">
           <router-link to="/books">
@@ -16,53 +16,34 @@
           </router-link>
         </div>
       </div>
-      <div v-if="this.GetPageData.type=='cover'" :key=page class="PageSize">
-        <img alt="" class="imageSize" :src="require(`../assets/Books/book${id}/images/cover.png`)"/>
+      <div v-if="this.GetPageData.type=='cover'" :key=page class="pageContainer">
+        <PageCover :book-number="id"/>
       </div>
-      <div v-else-if="this.GetPageData.type=='chapterTitle'" :key=page class="PageSize">
-        <img alt="" class="imageSize" src="../assets/Images/NotepadWithoutLines.png"/>
-        <div class="textFraming">
-          <h1 v-if="this.GetPageData.chapterNumber" class="pb-4">
-            Chapter {{this.GetPageData.chapterNumber}}
-          </h1>
-          <h3 v-if="this.GetPageData.text">{{this.GetPageData.text}}</h3>
-        </div>
+      <div v-else-if="this.GetPageData.type=='chapterTitle'" :key=page class="pageContainer">
+        <PageChapter :chapter-number="this.GetPageData.chapterNumber"
+                     :page-text="this.GetPageData.text"/>
       </div>
-      <div v-else-if="this.GetPageData.type=='read'" :key=page class="PageSize">
-        <img alt="" class="imageSize" src="../assets/Images/notepadWithLines.png"/>
-        <PageRead v-if="this.GetPageData.text"
-                  :page-text="this.GetPageData.text" :book-number="id"/>
+      <div v-else-if="this.GetPageData.type=='read'" :key=page class="pageContainer">
+        <PageRead :page-text="this.GetPageData.text" :book-number="id"/>
       </div>
       <div v-else-if="this.GetPageData.type.toLowerCase()=='questiontitle'"
-           :key=page class="PageSize">
-        <img alt="" class="imageSize" src="../assets/Images/NotepadWithoutLines.png"/>
-        <div class="textFraming">
-          <h1 class="pb-4">Question</h1>
-          <h3 v-if="this.GetPageData.question">{{this.GetPageData.question}}</h3>
-        </div>
+           :key=page class="pageContainer">
+        <PageQuestionTitle :question="this.GetPageData.question"/>
       </div>
-      <div v-else-if="this.GetPageData.type=='question'" :key=page class="PageSize">
-        <img alt="" class="imageSize" src="../assets/Images/NotepadWithoutLines.png"/>
-        <div class="textFraming">
-          <h1 class="pb-4">Question</h1>
-          <h3 v-if="this.GetPageData.question">{{this.GetPageData.question}}</h3>
-          <img v-if="this.GetPageData.image" alt="" class="w-50"
-               :src="require(`../assets/Books/book${id}/images/${this.GetPageData.image}.png`)"/>
-          <p v-if="this.GetPageData.answerCoords">{{this.GetPageData.answerCoords}}</p>
-        </div>
+      <div v-else-if="this.GetPageData.type=='question'" :key=page class="pageContainer">
+        <PageQuestion :questionData="this.GetPageData" :book-number="id"/>
       </div>
-      <div v-else-if="this.GetPageData.type=='choice'" :key=page class="PageSize">
-        <p>Show Choice</p>
+      <div v-else-if="this.GetPageData.type=='choice'" :key=page class="pageContainer">
+        <PageChoice/>
       </div>
-      <div v-else-if="this.GetPageData.type=='end'" :key=page class="PageSize">
-        <img alt="" class="imageSize" src="../assets/Images/notepadWithLines.png"/>
-        <h1 class="textFraming"><u><i>THE END</i></u></h1>
+      <div v-else-if="this.GetPageData.type=='end'" :key=page class="pageContainer">
+        <PageEnd/>
       </div>
-      <div v-else :key=page class="PageSize">
+      <div v-else :key=page class="pageContainer">
         <p>New Page Type Is</p>
         <p v-if="this.GetPageData.type">{{this.GetPageData.type}}</p>
       </div>
-      <div class="py-2 row text-center">
+      <div class="footerHeight row text-center">
         <div class="col-4">
           <router-link :to="{name: 'Book', params: {id: id, page: +page - 1}}" v-if="page!=1">
             <img class="iconSize" alt="" src="../assets/Images/computerBack.png"/>
@@ -84,9 +65,23 @@
 
 <script>
 import PageRead from '@/components/PageRead.vue';
+import PageChapter from '@/components/PageChapter.vue';
+import PageCover from '@/components/PageCover.vue';
+import PageEnd from '@/components/PageEnd.vue';
+import PageChoice from '@/components/PageChoice.vue';
+import PageQuestionTitle from '@/components/PageQuestionTitle.vue';
+import PageQuestion from '@/components/PageQuestion.vue';
 
 export default {
-  components: { PageRead },
+  components: {
+    PageQuestionTitle,
+    PageChapter,
+    PageRead,
+    PageCover,
+    PageEnd,
+    PageChoice,
+    PageQuestion,
+  },
   props: {
     id: {
       type: String,
@@ -116,54 +111,35 @@ export default {
 
 <style scoped>
 .backgroundPadding {
-  min-height: 100vh;
-  min-width: 100vw;
+  height: 100vh;
+  width: 100vw;
   background-color: grey;
 }
-@media (max-width: 767px) {
-  .PageSize {
-    position: relative;
-    top: 40%;
-    left: 50%;
-    transform: translate(-50%,-50%);
-    height: 80%;
-    width: auto;
-  }
-
-}
-@media (min-width: 768px) {
-  .PageSize {
-    position: relative;
-    top: 40%;
-    left: 50%;
-    transform: translate(-50%,-50%);
-    height: 80%;
-    width: 50%;
-  }
-}
 .iconSize {
-  height: 3rem;
+  height: 5vh;
+  margin-top: 1.5vh;
   width: auto;
 }
-.textFraming {
-  padding-top: 25%;
+.pageContainer {
+  position: relative;
   text-align: center;
-  padding-left: 15%;
-  padding-right: 15%;
+  height: 84vh;
+  padding-top: 1vh;
+  padding-bottom: 1vh;
 }
-.imageSize {
-  z-index: -1;
-  width: auto;
-  height: 100%;
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%,-50%);
-  padding: 2%;
-}
-
 .navBarColor {
   background-color: #3aaaa3;
+}
+.navBarHeight {
+  height: 8vh;
+}
+.footerHeight {
+  height: 8vh;
+}
+.progressBarSize {
+  height: 4vh;
+  width: auto;
+  margin-top: 2vh;
 }
 .BackGroundColor {
   background-color: #96c5c2;

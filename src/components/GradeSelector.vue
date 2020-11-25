@@ -3,8 +3,8 @@
        :style="{background: Grade.color}"
        @click="handleGradeDispatch">
     <div>
-        <h5 class="customBorder textSize">{{ Grade.top }}</h5>
-        <h1 class="customBorder textSize">{{ Grade.mid }}</h1>
+        <div class="customBorder TopTextSize">{{ Grade.top }}</div>
+        <div class="customBorder MidTextSize">{{ Grade.mid }}</div>
     </div>
   </div>
 </template>
@@ -26,23 +26,11 @@ export default {
 </script>
 
 <style scoped>
-@media (max-width: 767px) {
-  .bubble {
-    width: 7rem;
-    height: 7rem;
-  }
-  h1 {
-    font-size: 25px;
-  }
-  h5 {
-    font-size: 10px;
-  }
-}
-@media (min-width: 768px) {
-  .bubble {
-    width: 10rem;
-    height: 10rem;
-  }
+.bubble {
+  width: 12em;
+  height: 12em;
+  max-width: 24vh;
+  max-height: 24vh;
 }
 .bubble {
   border-style: solid;
@@ -50,7 +38,6 @@ export default {
   border-width: 1px;
   border-radius: 50%;
 }
-
 .bubble:hover {
   text-underline: black;
   cursor: pointer;
@@ -64,5 +51,11 @@ export default {
     1px -1px 0 #000,
     -1px 1px 0 #000,
     1px 1px 0 #000;
+}
+.TopTextSize {
+  font-size: 2.5vh;
+}
+.MidTextSize {
+  font-size: 5vh;
 }
 </style>

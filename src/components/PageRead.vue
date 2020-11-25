@@ -1,5 +1,6 @@
 <template>
-  <div class="textAlign">
+  <img alt="" class="h-100" src="../assets/Images/notepadWithLines.png"/>
+  <div class="PageTextAlign">
     <div v-for="item in this.displayArray" :key="item">
       <div v-if="typeof item == 'string'" class="pb-4 textSize">{{item}}</div>
       <div v-else-if="item.image">
@@ -42,26 +43,16 @@ export default {
 </script>
 
 <style scoped>
-.textAlign {
-  padding-top: 40%;
-  padding-left: 0;
-  padding-right: 0;
-}
-@media (max-width: 767px) {
-  .textAlign {
-    padding-top: 30%;
-    padding-left: 15%;
-    padding-right: 15%;
-  }
-}
-@media (min-width: 992px) {
-  .textAlign {
-    padding-top: 25%;
-    padding-left: 15%;
-    padding-right: 15%;
-  }
+.PageTextAlign {
+  position: absolute;
+  top: 14.5vh;
+  left: 50%;
+  transform: translate(-50%);
+  width: 100vh;
+  max-width: 45vh;
 }
 .textSize {
-  font-size: 20px;
+  text-align: left;
+  font-size: 3.25vh;
 }
 </style>
