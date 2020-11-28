@@ -2,24 +2,33 @@
   <img alt="" class="h-100" src="../assets/Images/NotepadWithoutLines.png"/>
   <div class="questionAlign">
     <div class="pb-4 QuestionTitleSize">Question</div>
-    <div v-if="questionData.question" class="QuestionTextSize">{{questionData.question}}</div>
-    <img v-if="questionData.image" alt="" class="w-100"
-         :src="require(`../assets/Books/book${bookNumber}/images/${questionData.image}.png`)"/>
-    <p v-if="questionData.answerCoords">{{questionData.answerCoords}}</p>
+    <div v-for="pagePart in this.data" :key="pagePart">
+      <div v-if="pagePart.lineParts[0].words[0].includes('<im>')">
+        <img :src="require(`../assets/Books/book${bookNumber}/images/${
+                pagePart.lineParts[0].words[0].charAt(4)}.png`)"
+             alt=""
+             class="w-100"
+             :style="{height: pagePart.lineParts[0].words[0].charAt(13)*5+'vh'}"/>
+      </div>
+      <div v-else class="pb-4 QuestionTextSize">{{pagePart.lineParts[0].words.join(" ")}}</div>
+    </div>
   </div>
 </template>
 
 <script>
 export default {
   props: {
-    questionData: {
-      type: Object,
+    data: {
+      type: Array,
       required: true,
     },
     bookNumber: {
       type: String,
       required: true,
     },
+  },
+  created() {
+    console.log('Question_Page data is =', this.data);
   },
 };
 </script>

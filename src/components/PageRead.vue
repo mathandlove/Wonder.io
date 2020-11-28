@@ -1,13 +1,43 @@
 <template>
   <img alt="" class="h-100" src="../assets/Images/notepadWithLines.png"/>
   <div class="PageTextAlign">
-    <div v-for="item in this.displayArray" :key="item">
-      <div v-if="typeof item == 'string'" class="pb-4 textSize">{{item}}</div>
-      <div v-else-if="item.image">
-        <img :src="require(`../assets/Books/book${bookNumber}/images/${item.image}.png`)"
-             alt="" class="w-100" />
+    <div v-for="pagePart in this.data" :key="pagePart">
+      <div v-if="pagePart.lineParts[0].words[0].includes('<im>')">
+        <img :src="require(`../assets/Books/book${bookNumber}/images/${
+                pagePart.lineParts[0].words[0].charAt(4)}.png`)"
+             alt=""
+             class="w-100 py-2"
+             :style="{height: pagePart.lineParts[0].words[0].charAt(13)*5+'vh'}"/>
       </div>
-      <div v-else>Add Display for {{item}}</div>
+      <div v-else-if="pagePart.lineParts[0].words[0].includes('<l>')">
+        <div class="row py-2">
+          <img :src="require(`../assets/Books/book${bookNumber}/characters/${
+                  this.charImageLeft(pagePart.lineParts[0].words[0])}.png`)"
+               alt=""
+               class="charHeight col-3"/>
+          <div class="textSize col-8">
+            {{this.charSpeech(pagePart.lineParts[0].words)}}
+          </div>
+        </div>
+      </div>
+      <div v-else-if="pagePart.lineParts[0].words[0].includes('<r>')">
+        <div class="row py-2">
+          <div class="col-1 m-0 p-0"/>
+          <div class="textSize col-8">
+            {{this.charSpeech(pagePart.lineParts[0].words)}}
+          </div>
+          <img :src="require(`../assets/Books/book${bookNumber}/characters/${
+                  this.charImageRight(pagePart.lineParts[0].words[0])}.png`)"
+               alt=""
+               class="charHeight col-3"/>
+        </div>
+      </div>
+      <div v-else-if="pagePart.lineParts[0].words[0].includes('Moboto')">
+        <div class="textSize py-2" :style="{fontFamily: 'Roboto'}">
+          {{robotoFont(pagePart.lineParts[0].words)}}
+        </div>
+      </div>
+      <div v-else class="textSize py-2">{{pagePart.lineParts[0].words.join(' ')}}</div>
     </div>
   </div>
 </template>
@@ -15,8 +45,8 @@
 <script>
 export default {
   props: {
-    pageText: {
-      type: String,
+    data: {
+      type: Array,
       required: true,
     },
     bookNumber: {
@@ -24,20 +54,22 @@ export default {
       required: true,
     },
   },
-  data() {
-    const displayArray = [];
-    return { displayArray };
-  },
   created() {
-    const tempArray = this.pageText.split('\n');
-    tempArray.forEach((item) => {
-      if (item.includes('<im>')) {
-        const splitHeight = item.split('<height>');
-        const splitNumber = splitHeight[0].split('<im>');
-        this.displayArray.push({ image: splitNumber.pop(), height: splitHeight.pop() });
-      } else this.displayArray.push(item);
-    });
-    console.log(this.displayArray);
+    console.log('Read_Page data is =', this.data);
+  },
+  methods: {
+    charImageLeft(inputString) {
+      return inputString.split('<t>')[0].split('<l>')[1];
+    },
+    charImageRight(inputString) {
+      return inputString.split('<t>')[0].split('<r>')[1];
+    },
+    charSpeech(inputArray) {
+      return inputArray.join(' ').split('<t>')[1];
+    },
+    robotoFont(inputArray) {
+      return inputArray.join(' ').split('>')[2];
+    },
   },
 };
 </script>
@@ -49,10 +81,14 @@ export default {
   left: 50%;
   transform: translate(-50%);
   width: 100vh;
-  max-width: 45vh;
+  max-width: 43vh;
 }
 .textSize {
   text-align: left;
-  font-size: 3.25vh;
+  font-size: 2.5vh;
+  padding: 0;
+}
+.charHeight {
+  height: 7.5vh;
 }
 </style>

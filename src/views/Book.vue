@@ -24,14 +24,14 @@
                      :page-text="this.GetPageData.text"/>
       </div>
       <div v-else-if="this.GetPageData.type=='read'" :key=page class="pageContainer">
-        <PageRead :page-text="this.GetPageData.text" :book-number="id"/>
+        <PageRead :data="this.GetPageData.pageParts" :book-number="id"/>
       </div>
-      <div v-else-if="this.GetPageData.type.toLowerCase()=='questiontitle'"
+      <div v-else-if="this.GetPageData.type=='questiontitle'"
            :key=page class="pageContainer">
-        <PageQuestionTitle :question="this.GetPageData.question"/>
+        <PageQuestionTitle :data="this.GetPageData.pageParts"/>
       </div>
       <div v-else-if="this.GetPageData.type=='question'" :key=page class="pageContainer">
-        <PageQuestion :questionData="this.GetPageData" :book-number="id"/>
+        <PageQuestion :data="this.GetPageData.pageParts" :book-number="id"/>
       </div>
       <div v-else-if="this.GetPageData.type=='choice'" :key=page class="pageContainer">
         <PageChoice/>
@@ -98,13 +98,14 @@ export default {
     return { BookObject, TotalPages };
   },
   computed: {
-    GetPageData() { return this.BookObject.pageData[+this.page - 1]; },
+    GetPageData() {
+      console.log('Page data is =', this.BookObject.pages[+this.page - 1]);
+      return this.BookObject.pages[+this.page - 1];
+    },
   },
   created() {
     this.BookObject = this.$store.state.BookArray[this.id - 1];
-    while (this.BookObject.pageData[this.TotalPages]) {
-      this.TotalPages += 1;
-    }
+    this.TotalPages = this.BookObject.totalPages;
   },
 };
 </script>

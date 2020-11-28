@@ -2,17 +2,22 @@
   <img alt="" class="h-100" src="../assets/Images/NotepadWithoutLines.png"/>
   <div class="centeredQuestionTitle">
     <div class="pb-4 fontSizeQuestionTitle">Question</div>
-    <div class="fontSizeQuestionText">{{question}}</div>
+    <div v-for="pagePart in this.data" :key="pagePart" class="fontSizeQuestionText">
+      {{pagePart.lineParts[0].words.join(" ")}}
+    </div>
   </div>
 </template>
 
 <script>
 export default {
   props: {
-    question: {
-      type: String,
+    data: {
+      type: Array,
       required: true,
     },
+  },
+  created() {
+    console.log('Question_Title data is =', this.data);
   },
 };
 </script>
