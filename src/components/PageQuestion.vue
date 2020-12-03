@@ -27,9 +27,6 @@ export default {
       required: true,
     },
   },
-  created() {
-    console.log('Question_Page data is =', this.data);
-  },
 };
 </script>
 
@@ -40,7 +37,7 @@ export default {
   left: 50%;
   transform: translate(-50%);
   width: 100vh;
-  max-width: 45vh;
+  max-width: 38vh;
 }
 .QuestionTitleSize {
   font-size: 6vh;

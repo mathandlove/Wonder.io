@@ -34,7 +34,7 @@
         <PageQuestion :data="this.GetPageData.pageParts" :book-number="id"/>
       </div>
       <div v-else-if="this.GetPageData.type=='choice'" :key=page class="pageContainer">
-        <PageChoice/>
+        <PageChoice :data="this.GetPageData.pageParts"/>
       </div>
       <div v-else-if="this.GetPageData.type=='end'" :key=page class="pageContainer">
         <PageEnd/>

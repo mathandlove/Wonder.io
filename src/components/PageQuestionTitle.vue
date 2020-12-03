@@ -1,8 +1,8 @@
 <template>
-  <img alt="" class="h-100" src="../assets/Images/NotepadWithoutLines.png"/>
-  <div class="centeredQuestionTitle">
-    <div class="pb-4 fontSizeQuestionTitle">Question</div>
-    <div v-for="pagePart in this.data" :key="pagePart" class="fontSizeQuestionText">
+  <img alt="" class="h-100" src="../assets/Images/NotepadPartialTornNoLines.png"/>
+  <div class="centeredQuestionTitle fontSizeQuestionTitle">
+    <div class="pb-4"><strong>Question ?:</strong></div>
+    <div v-for="pagePart in this.data" :key="pagePart">
       {{pagePart.lineParts[0].words.join(" ")}}
     </div>
   </div>
@@ -16,26 +16,19 @@ export default {
       required: true,
     },
   },
-  created() {
-    console.log('Question_Title data is =', this.data);
-  },
 };
 </script>
 
 <style scoped>
 .centeredQuestionTitle {
   position: absolute;
-  top: 14.5vh;
+  top: 20vh;
   left: 50%;
   transform: translate(-50%);
   width: 100vh;
-  max-width: 45vh;
+  max-width: 38vh;
 }
 .fontSizeQuestionTitle {
   font-size: 6vh;
-}
-.fontSizeQuestionText {
-  font-size: 3vh;
-  max-width: 45vh;
 }
 </style>
