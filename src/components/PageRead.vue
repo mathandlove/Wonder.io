@@ -14,7 +14,7 @@
           <img :src="require(`../assets/Books/book${bookNumber}/characters/${
                   this.charImageLeft(pagePart.lineParts[0].words[0])}.png`)"
                alt=""
-               class="charHeight col-3"/>
+               class="charHeight col-4"/>
           <div class="col-8">
             {{this.charSpeech(pagePart.lineParts[0].words)}}
           </div>
@@ -22,14 +22,13 @@
       </div>
       <div v-else-if="pagePart.lineParts[0].words[0].includes('<r>')">
         <div class="row textSize bottomCharPadding">
-          <div class="col-1 m-0 p-0"/>
           <div class=" col-8">
             {{this.charSpeech(pagePart.lineParts[0].words)}}
           </div>
           <img :src="require(`../assets/Books/book${bookNumber}/characters/${
                   this.charImageRight(pagePart.lineParts[0].words[0])}.png`)"
                alt=""
-               class="charHeight col-3"/>
+               class="charHeight col-4"/>
         </div>
       </div>
       <div v-else-if="this.data[index+1]">
@@ -100,7 +99,7 @@ export default {
 <style scoped>
 .PageTextAlign {
   position: absolute;
-  top: 14.2vh;
+  top: 15vh;
   left: 50%;
   transform: translate(-50%);
   width: 100vh;
@@ -112,10 +111,10 @@ export default {
 }
 .textSizeRoboto {
   text-align: left;
-  font-size: 3.1vh;
+  font-size: 2.6vh;
 }
 .bottomPadding {
-  padding-bottom: 2.5rem;
+  padding-bottom: 4.6vh;
 }
 .bottomPaddingRoboto {
   padding-bottom: 3rem;
@@ -124,6 +123,6 @@ export default {
   padding-bottom: 2.5rem;
 }
 .charHeight {
-  height: 7.5vh;
+  height: 10vh;
 }
 </style>
