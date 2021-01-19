@@ -32,8 +32,9 @@
            :style="{height: this.data[0].totalLines*5+'vh'}"/>
       <div v-for:="(choice,index) in AnswerArray">
         <button v-if="choice.name" class="button buttonFormat"
-                :style="{backgroundColor:
-                  choice.clickedOn ? choice.value ? 'aquamarine' : 'pink' : 'grey'}"
+                :style="{
+                    backgroundColor: choice.clickedOn && choice.value  ? '#9cd4d4' : 'white',
+                    borderColor: choice.clickedOn && !choice.value ? '#fc7574' : '#9cd4d4'}"
                 :disabled="choice.clickedOn || this.allDisabled"
                 @click="choiceClick(index)">
           {{ choice.name.join(" ") }}
@@ -144,11 +145,15 @@ export default {
   font-size: 3.5vh;
 }
 .buttonFormat {
-  font-size: 2vh;
+  text-align: left;
+  font-size: 2.2vh;
   padding: 1vh;
   margin: 1vh;
   min-height: 4vh;
   width: 100%;
+  border-style: solid;
+  border-width: 4px;
+  border-radius: 30px;
 }
 .coordFormat {
   font-size: 1.5vh;

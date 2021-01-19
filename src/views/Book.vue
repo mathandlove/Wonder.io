@@ -8,7 +8,11 @@
           </router-link>
         </div>
         <div class="col-4">
-            <div class="progress-bar progressBarSize">Page: {{page}} of {{this.TotalPages}}</div>
+            <div class="progressBarStyle" :style="{background:
+                 // eslint-disable-next-line max-len
+                 `linear-gradient(to right, #8f9ad8 0%, #8f9ad8 ${this.PagePercent}%, #3aaaa3 ${this.PagePercent}%, #3aaaa3 100%)`}">
+              Page {{page}}
+            </div>
         </div>
         <div class="col-4">
           <router-link to="/books">
@@ -102,6 +106,10 @@ export default {
       console.log('Page data is =', this.BookObject.pages[+this.page - 1]);
       return this.BookObject.pages[+this.page - 1];
     },
+    PagePercent() {
+      const percentage = (this.page / this.TotalPages) * 100;
+      return percentage;
+    },
   },
   created() {
     this.BookObject = this.$store.state.BookArray[this.id - 1];
@@ -137,10 +145,17 @@ export default {
 .footerHeight {
   height: 8vh;
 }
-.progressBarSize {
+.progressBarStyle {
   height: 4vh;
+  font-size: 2vh;
+  font-family: "Roboto";
+  padding-top: 0.2vh;
   width: auto;
   margin-top: 2vh;
+  color: white;
+  border-style: solid;
+  border-color: white;
+  border-radius: 15px;
 }
 .BackGroundColor {
   background-color: #96c5c2;

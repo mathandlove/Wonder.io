@@ -2,7 +2,7 @@
   <img alt="" class="h-100" src="../assets/Images/NotepadPartialTornNoLines.png"/>
   <div class="centeredQuestionTitle fontSizeQuestionTitle">
     <div class="pb-4"><strong>Question ?:</strong></div>
-    <div v-for="pagePart in this.data" :key="pagePart">
+    <div v-for="pagePart in this.data" :key="pagePart" class="fontsizeQuestionText">
       {{pagePart.lineParts[0].words.join(" ")}}
     </div>
   </div>
@@ -30,5 +30,8 @@ export default {
 }
 .fontSizeQuestionTitle {
   font-size: 6vh;
+}
+.fontsizeQuestionText {
+  font-size: 5vh;
 }
 </style>
