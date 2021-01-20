@@ -3,9 +3,8 @@
     <div class="container BackGroundColor w-100">
       <div class="navBarColor navBarHeight row text-center">
         <div class="col-4">
-          <router-link :to="{name: 'Book', params: {id: id, page: 1}}">
-            <img class="iconSize" alt="" src="../assets/Images/restart.png"/>
-          </router-link>
+            <img class="iconSize hoverHand" alt="" src="../assets/Images/restart.png"
+                 @click="this.ViewRestartModal=true"/>
         </div>
         <div class="col-4">
             <div class="progressBarStyle" :style="{background:
@@ -19,6 +18,9 @@
             <img class="iconSize" alt="" src="../assets/Images/home.png"/>
           </router-link>
         </div>
+      </div>
+      <div v-if="this.ViewRestartModal">
+        <RestartModal :book-number="id" @close-modal="this.ViewRestartModal = false"/>
       </div>
       <div v-if="this.GetPageData.type=='cover'" :key=page class="pageContainer">
         <PageCover :book-number="id"/>
@@ -75,6 +77,7 @@ import PageEnd from '@/components/PageEnd.vue';
 import PageChoice from '@/components/PageChoice.vue';
 import PageQuestionTitle from '@/components/PageQuestionTitle.vue';
 import PageQuestion from '@/components/PageQuestion.vue';
+import RestartModal from '@/components/RestartModal.vue';
 
 export default {
   components: {
@@ -85,6 +88,7 @@ export default {
     PageEnd,
     PageChoice,
     PageQuestion,
+    RestartModal,
   },
   props: {
     id: {
@@ -99,7 +103,8 @@ export default {
   data() {
     const BookObject = {};
     const TotalPages = 1;
-    return { BookObject, TotalPages };
+    const ViewRestartModal = false;
+    return { BookObject, TotalPages, ViewRestartModal };
   },
   computed: {
     GetPageData() {
@@ -159,5 +164,8 @@ export default {
 }
 .BackGroundColor {
   background-color: #96c5c2;
+}
+.hoverHand:hover {
+  cursor: pointer;
 }
 </style>
