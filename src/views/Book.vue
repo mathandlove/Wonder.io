@@ -19,7 +19,7 @@
           </router-link>
         </div>
       </div>
-      <div v-if="this.ViewRestartModal" :key=page>
+      <div v-if="this.ViewRestartModal">
         <RestartModal :book-number="id" @close-modal="this.ViewRestartModal = false"/>
       </div>
       <div v-if="this.GetPageData.type=='cover'" :key=page class="pageContainer">
@@ -140,6 +140,7 @@ export default {
   height: 84vh;
   padding-top: 1vh;
   padding-bottom: 1vh;
+  z-index: 0;
 }
 .navBarColor {
   background-color: #3aaaa3;

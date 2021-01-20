@@ -1,12 +1,12 @@
 <template>
-  <div class="RestartModalStyle darkBackground">
+  <div class="RestartModalStyle">
     <div class="restartQuestionStyle">Are you sure you want to RESTART?</div>
     <router-link :to="{name: 'Book', params: {id: this.bookNumber, page: 1}}"
                  @click="this.closeThisModal" class="ButtonStyle YesButtonColor">
       <img class="yesImageHeight" :src="require(`../assets/Images/checkmark.png`)"/>
       <div class="textSize">YES</div>
     </router-link>
-    <button class="ButtonStyle NoButtonColor darkBackground" @click="this.closeThisModal">
+    <button class="ButtonStyle NoButtonColor" @click="this.closeThisModal">
       <img class="noImageHeight" :src="require(`../assets/Images/X.png`)"/>
       <div class="textSize">NO</div>
     </button>
@@ -32,16 +32,13 @@ export default {
 <style scoped>
 .RestartModalStyle {
   position: absolute;
+  background-color: #000000;
   height: 81vh;
   width: 50vh;
   margin-top: 2vh;
   z-index: 1;
   left: 50%;
   transform: translate(-50%);
-}
-.darkBackground {
-  background-color: #000000;
-  opacity: 90%;
 }
 .restartQuestionStyle {
   color: white;
@@ -65,6 +62,7 @@ export default {
 }
 .NoButtonColor {
   color: #fc7474;
+  background-color: #000000;
 }
 .NoButtonColor:hover {
   cursor: pointer;
