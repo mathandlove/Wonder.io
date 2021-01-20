@@ -33,6 +33,7 @@ export default {
 .RestartModalStyle {
   position: absolute;
   background-color: #000000;
+  opacity: 0.9;
   height: 81vh;
   width: 50vh;
   margin-top: 2vh;
