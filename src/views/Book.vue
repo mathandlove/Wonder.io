@@ -19,7 +19,7 @@
           </router-link>
         </div>
       </div>
-      <div v-if="this.ViewRestartModal">
+      <div v-if="this.ViewRestartModal" :key=page>
         <RestartModal :book-number="id" @close-modal="this.ViewRestartModal = false"/>
       </div>
       <div v-if="this.GetPageData.type=='cover'" :key=page class="pageContainer">
