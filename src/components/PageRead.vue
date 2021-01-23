@@ -1,45 +1,46 @@
 <template>
   <img alt="" class="h-100" src="../assets/Images/NotepadPartialTorn.png"/>
   <div class="PageTextAlign">
-    <div v-for="pagePart in this.data" :key="pagePart">
-      <div v-if="pagePart.lineParts[0].words[0].includes('<im>')">
+    <div v-for="linePart in this.data[0].lineParts" :key="linePart">
+      <div v-if="linePart.words[0].includes('<im>')">
         <img :src="require(`../assets/Books/book${bookNumber}/images/${
-                pagePart.lineParts[0].words[0].charAt(4)}.png`)"
+                this.imageNumber(linePart.words[0])}.png`)"
              alt=""
-             :style="{height: pagePart.lineParts[0].words[0].charAt(
-               pagePart.lineParts[0].words[0].length-1)*4.4+'vh'}"/>
+             :style="{height: this.imageHeight(linePart.words[0])*4.4+'vh'}"/>
       </div>
-      <div v-else-if="pagePart.lineParts[0].words[0].includes('<l>')">
+      <div v-else-if="linePart.words[0].includes('<l>')">
         <div class="bottomCharPadding d-flex justify-content-start">
           <img :src="require(`../assets/Books/book${bookNumber}/characters/${
-                  this.charImageLeft(pagePart.lineParts[0].words[0])}.png`)"
+                  this.charImageLeft(linePart.words[0])}.png`)"
                alt=""
                class="charHeight"/>
           <div class="leftTextPadding textSize">
-            {{this.charSpeech(pagePart.lineParts[0].words)}}
+            {{this.charSpeech(linePart.words)}}
           </div>
         </div>
       </div>
-      <div v-else-if="pagePart.lineParts[0].words[0].includes('<r>')">
+      <div v-else-if="linePart.words[0].includes('<r>')">
         <div class="bottomCharPadding d-flex justify-content-between">
           <div class="rightTextPadding textSize">
-            {{this.charSpeech(pagePart.lineParts[0].words)}}
+            {{this.charSpeech(linePart.words)}}
           </div>
           <img :src="require(`../assets/Books/book${bookNumber}/characters/${
-                  this.charImageRight(pagePart.lineParts[0].words[0])}.png`)"
+                  this.charImageRight(linePart.words[0])}.png`)"
                alt=""
                class="charHeight"/>
         </div>
       </div>
       <div v-else>
-        <div v-if="pagePart.lineParts[0].words[0].includes('Moboto')">
+        <div v-if="linePart.words[0].includes('Moboto')">
           <div class="textSizeRoboto" :style="{fontFamily: 'Roboto'}">
-            {{robotoFont(pagePart.lineParts[0].words)}}
+            {{robotoFont(linePart.words)}}
           </div>
         </div>
         <div v-else class="textSize">
-          {{pagePart.lineParts[0].words.join(' ')}}
+          {{linePart.words.join(' ')}}
         </div>
+        <div v-if="linePart.words[linePart.words.length-2].includes(`\n\n`)" class="BlnkLine"></div>
+        <div v-if="linePart.words[linePart.words.length-1].includes(`\n\n`)" class="BlnkLine"></div>
       </div>
     </div>
   </div>
@@ -70,6 +71,16 @@ export default {
     robotoFont(inputArray) {
       return inputArray.join(' ').split('>')[2];
     },
+    imageNumber(inputString) {
+      let tempNumber = inputString.slice(4, 6);
+      if (tempNumber.includes('<')) { tempNumber = tempNumber.charAt(0); }
+      return tempNumber;
+    },
+    imageHeight(inputString) {
+      let tempHeight = inputString.charAt(inputString.length - 1);
+      if (tempHeight > 6) { tempHeight = 6; }
+      return tempHeight;
+    },
   },
 };
 </script>
@@ -96,12 +107,15 @@ export default {
 }
 .textSizeRoboto {
   text-align: left;
-  font-size: 2.6vh;
+  font-size: 2.55vh;
 }
 .bottomCharPadding {
   padding-bottom: 4.8vh;
 }
 .charHeight {
   height: 9vh;
+}
+.BlnkLine {
+  height: 4.6vh;
 }
 </style>

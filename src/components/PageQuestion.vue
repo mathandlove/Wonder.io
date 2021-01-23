@@ -44,7 +44,7 @@
                 choice.clickedOn ? choice.value ? 'aquamarine' : 'pink' : 'grey'}"
                 :disabled="choice.clickedOn || this.allDisabled"
                 @click="choiceClick(index)">
-          Enter Answer Coords
+          {{choice.coords}}
         </button>
       </div>
     </div>
@@ -68,21 +68,25 @@ export default {
       {
         name: this.data[0].lineParts[1].words,
         value: this.data[0].lineParts[1].isCorrectAnswer,
+        coords: this.data[0].lineParts[1].answerCoords,
         clickedOn: false,
       },
       {
         name: this.data[0].lineParts[2].words,
         value: this.data[0].lineParts[2].isCorrectAnswer,
+        coords: this.data[0].lineParts[2].answerCoords,
         clickedOn: false,
       },
       {
         name: this.data[0].lineParts[3].words,
         value: this.data[0].lineParts[3].isCorrectAnswer,
+        coords: this.data[0].lineParts[3].answerCoords,
         clickedOn: false,
       },
       {
         name: this.data[0].lineParts[4].words,
         value: this.data[0].lineParts[4].isCorrectAnswer,
+        coords: this.data[0].lineParts[4].answerCoords,
         clickedOn: false,
       },
     ];
@@ -145,12 +149,17 @@ export default {
   font-size: 3.5vh;
 }
 .buttonFormat {
+  display: flex;
+  justify-content: start;
   text-align: left;
   font-size: 2.2vh;
-  padding: 1vh;
-  margin: 1vh;
+  padding-top: 1vh;
+  padding-bottom: 1vh;
+  padding-left: 2vh;
+  margin-top: 1vh;
+  margin-bottom: 1vh;
   min-height: 4vh;
-  width: 100%;
+  width: 95%;
   border-style: solid;
   border-width: 4px;
   border-radius: 30px;

@@ -40,7 +40,8 @@
         <PageQuestion :data="this.GetPageData.pageParts" :book-number="id"/>
       </div>
       <div v-else-if="this.GetPageData.type=='choice'" :key=page class="pageContainer">
-        <PageChoice :data="this.GetPageData.pageParts"/>
+        <PageChoice :data="this.GetPageData.pageParts" :book-number="id" :book-page="page"
+                    @chosen-page="AddChoice"/>
       </div>
       <div v-else-if="this.GetPageData.type=='end'" :key=page class="pageContainer">
         <PageEnd/>
@@ -51,7 +52,7 @@
       </div>
       <div class="footerHeight row text-center">
         <div class="col-4">
-          <router-link :to="{name: 'Book', params: {id: id, page: +page - 1}}" v-if="page!=1">
+          <router-link :to="{name: 'Book', params: {id: id, page: this.PrevPage}}" v-if="page!=1">
             <img class="iconSize" alt="" src="../assets/Images/computerBack.png"/>
           </router-link>
         </div>
@@ -59,7 +60,7 @@
           <img class="iconSize" alt="" src="../assets/Images/blackAudioOn.png"/>
         </div>
         <div class="col-4">
-          <router-link :to="{name: 'Book', params: {id: id, page: +page + 1}}"
+          <router-link :to="{name: 'Book', params: {id: id, page: this.NextPage}}"
                        v-if="page!=this.TotalPages">
             <img class="iconSize" alt="" src="../assets/Images/nextButton.png"/>
           </router-link>
@@ -104,7 +105,10 @@ export default {
     const BookObject = {};
     const TotalPages = 1;
     const ViewRestartModal = false;
-    return { BookObject, TotalPages, ViewRestartModal };
+    const PageSkipArray = [];
+    return {
+      BookObject, TotalPages, ViewRestartModal, PageSkipArray,
+    };
   },
   computed: {
     GetPageData() {
@@ -115,10 +119,56 @@ export default {
       const percentage = (this.page / this.TotalPages) * 100;
       return percentage;
     },
+    PrevPage() {
+      let tempPage = +this.page - 1;
+      this.PageSkipArray.forEach((choice) => {
+        if (tempPage > choice.StartPage && tempPage < choice.EndPage) {
+          if (choice.SelectedPage && tempPage >= choice.SelectedPage) {
+            tempPage = choice.SelectedPage;
+          } else { tempPage = choice.StartPage; }
+        }
+      });
+      return tempPage;
+    },
+    NextPage() {
+      let tempPage = +this.page + 1;
+      this.PageSkipArray.forEach((choice) => {
+        if (tempPage > choice.StartPage && tempPage < choice.EndPage) {
+          if (choice.SelectedPage && tempPage <= choice.SelectedPage) {
+            tempPage = choice.SelectedPage;
+          } else { tempPage = choice.EndPage; }
+        }
+      });
+      return tempPage;
+    },
+  },
+  methods: {
+    createPageSkipArray() {
+      this.BookObject.pages.forEach((page) => {
+        if (page.type === 'choice') {
+          const firstPage = page.pageNumber + 1;
+          const totalOptions = page.pageParts[0].lineParts.length;
+          const lastPage = firstPage + totalOptions;
+          this.PageSkipArray.push({
+            StartPage: firstPage,
+            SelectedPage: null,
+            EndPage: lastPage,
+          });
+        }
+      });
+    },
+    AddChoice(pageChosen) {
+      this.PageSkipArray.forEach((choice, index) => {
+        if (pageChosen > choice.StartPage && pageChosen < choice.EndPage) {
+          this.PageSkipArray[index].SelectedPage = pageChosen;
+        }
+      });
+    },
   },
   created() {
-    this.BookObject = this.$store.state.BookArray[this.id - 1];
+    [this.BookObject] = this.$store.state.BookArray[this.id - 1];
     this.TotalPages = this.BookObject.totalPages;
+    this.createPageSkipArray();
   },
 };
 </script>

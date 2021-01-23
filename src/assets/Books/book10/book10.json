@@ -1,0 +1,222 @@
+{"title": "The Case of the\nSidewalk Pirate Ship",
+"author": "Tula Eriksson Turtiainen",
+"illustrator": "Silvia Amelio",
+"bookNumber": "10",
+"available": 1,
+"series": "1",
+"nextInSeries":22,
+"pageData": [
+{"type": "cover"},
+{"type": "questiontitle",
+"question": "What strange thing is going on?",
+"questionNumber":0
+},
+{"type": "read",
+"text": "Mom tells me to go to bed. As I lie down, I hear strange noises from outside.  There are sounds of wood planks creaking and people moving around. I try to see out the window from bed.\n\n<p> There is something that should not be there. I jump out of bed in surprise. The bedsheet trips me, but I manage to regain my balance."
+},
+{"type": "question",
+"question": "What is surprising?",
+"answerCoords":[ 
+[543,-210,640,363],[71,-297,168,400],[652,-746,458,236],[1069,-682,240,471]
+],"image": 1},
+{"type": "read",
+"text": "I go to the window and look outside. The road is a river! <p>On the river is a big ship with a black flag. On the flag is a picture of a skull with two bones under it. People walk around on the ship in weird clothes. They have swords.<p><im>2<height>5"
+},
+{"type": "questiontitle",
+"question": "How can I get on the pirate ship?",
+"questionNumber":-99
+},
+{"type": "read",
+"text": "I am supposed to be sleeping. If my parents see me, they will carry me back to bed. There are voices coming from downstairs.\n\n<p> I quietly walk down the stairs and avoid the step that creaks. The voices are coming from the kitchen. I peek inside."
+},
+{"type": "questiontitle",
+"question": "Who is talking downstairs?",
+"questionNumber":1
+},
+{"type": "read",
+"text": "<ch><l>mystery1<t>The teacher said that our son did well on her gymnastics test.<p><ch><r>mystery2<t>That is great. I wish he tried harder with math as well.<p><ch><l>mystery1<t>He does his homework most of the time. I can't expect him to be the best at everything."
+},
+{"type": "question",
+"question": "Who is talking downstairs?",
+"answers":[ 
+"My parents",
+"My gym teacher",
+"My math teacher",
+"The TV"
+]
+},
+{"type": "read",
+"text": "Mom and Dad are sitting at the dinner table. I need to get to the door. Mom is facing the opening to the hall, so if I try to pass, she will see me.\n\n<p> Dad is sitting on the back legs of his chair. I am not allowed to do that, as I could fall backward. Why is he allowed to?"
+},
+{"type": "read",
+"text": "There are dirty plates from dinner in the sink. A sausage I didn't want to eat earlier is on the counter, just about an arm's reach away.\n\n<p>Buster, our dog, is under the table. His tail is wagging, and he is looking at Mom and Dad. He must be hungry."
+},
+{"type": "read",
+"text": "There is a kettle on the stove, probably brewing some gross coffee. Mom says, \"I do not make coffee, I brew it.\" I think she is just picky, and so does Dad.<p><im>3<height>6"
+},
+{"type": "question",
+"question": "How can I distract Mom and Dad?",
+"answers":[ 
+"Throw a sausage to Buster",
+"Put soap in the coffee",
+"Push Dad's chair over",
+"Eat pizza"
+]
+},
+{"type": "read",
+"text": "I pick up the sausage and throw it toward Buster. It lands on the table. Buster runs after it and jumps onto the table.\n\n<p><ch><r>mom<t>Buster, no! Get down!<p><ch><r>dad<t>Whoa! No!"
+},
+{"type": "read",
+"text": "There are three crashes: one as Buster hits the table and knocks plates to the floor, one as Dad falls backward and hits the floor, and one as Mom drops her coffee mug.<p><im>4<height>6"
+},
+{"type": "read",
+"text": "While my parents are distracted, I sneak outside.\n\n<p> The ship is big, with three masts. I can see someone climbing at the top of a mast."
+},
+{"type": "read",
+"text": "A plank is going from the ship down to the ground, and there stands the pirate captain.\n\n <p><im>5<height>6"
+},
+{"type": "read",
+"text": "<ch><r>captain<t>Ahoy! Matey, welcome to the ship.<p><ch><l>main<t>I can't wait to ride on a pirate ship.<p>The pirate puts on a pair of old-looking glasses and peers at me."
+},
+{"type": "read",
+"text": "<ch><r>captain<t>Wait a second, what are those pants? Why, they're pajamas! You're not a pirate! You're a landlubber.<p><ch><l>main<t>Landlubber?<p><ch><r>captain<t>You landlubbers might say \"land lover,\" someone who is afraid of the sea and only lives on land."
+},
+{"type": "question",
+"question": "What do I need to do in order to get on the pirate ship?",
+"answers":[ 
+"Look like a pirate",
+"Be a land lover",
+"Tell Mom and Dad",
+"Ride on Buster"
+]
+},
+{"type": "questiontitle",
+"question": "What should I wear to look like a pirate?",
+"questionNumber":-99
+},
+{"type": "read",
+"text": "I go back inside the house to search. I find a shelf of books. Looking through them, I find a book called \"Captain Fin\". I start to read.<p><im>6<height>6"
+},
+{"type": "read",
+"text": "<font=\"Moboto SDF\"><size=78>One day, Captain Fin decided to catch his own lunch. He takes his fishing rod and some bait down to the docks. If he catches a nice big fish, his crew will be impressed. \n\n<p>He throws  the bait in the water and waits. With his hat on, he is safe from the strong sun. It's boring to wait. To make it more fun, he plays on his harmonica."
+},
+{"type": "read",
+"text": "<im>7<height>6<p><font=\"Moboto SDF\"><size=78>Then there's a bite! In surprise, he drops the harmonica into the water. He tries to reel the line in, but it's very hard with only one hand as a hook."
+},
+{"type": "read",
+"text": "<font=\"Moboto SDF\"><size=78> The pull from the fish is so strong that he falls into the water and drops his fishing rod.<p><im>8<height>6<p><font=\"Moboto SDF\"><size=78>He is soaking wet and decides he will just buy a fish instead."
+},
+{"type": "read",
+"text": "I'm starting to get an idea. There might be something I can use in the bathroom, so I go there."
+},
+{"type": "question",
+"question": "What could I use in the bathroom to look more like a pirate?",
+"answerCoords":[ 
+[907,-180,159,231],[575,-325,246,578],[940,-578,441,477],[329,-676,709,456]
+],"image": 9},
+{"type": "read",
+"text": "I remember that Dad was putting up some hooks for towels in the bathroom. With the hook in hand, I swish it around, already a step closer to being a pirate.<p><im>10<height>6"
+},
+{"type": "read",
+"text": "A hook is not enough to look like a pirate, though. Going back to the bookshelf, I see another pirate book. With my hook, I pull it out. This one is called \"How Bella Became Pirate Captain\". \n\n<p><font=\"Moboto SDF\"><size=78>Bella is the daughter of a pirate captain. On board the ship, she had to clean the deck. It was very boring and hard work."
+},
+{"type": "read",
+"text": "<font=\"Moboto SDF\"><size=78>One day her father said he was going to move to an island and stop being a pirate. The crew of the ship would have to decide who would become the next captain.\n\n<p><font=\"Moboto SDF\"><size=78>Bella raised her voice and said she wanted to be captain, but the crew laughed at her. They all said she was not strong or scary enough."
+},
+{"type": "read",
+"text": "<font=\"Moboto SDF\"><size=78>She would show them. The first thing she got was a tattoo of a whale, but the crew all just laughed at her.  \n\n<p><font=\"Moboto SDF\"><size=78>The next day, she wore a cool jacket and hat. But the pirates just laughed again."
+},
+{"type": "read",
+"text": "<font=\"Moboto SDF\"><size=78>On the third day, she wore an eye patch! She told the crew that she hurt her eye fighting a crocodile. Finally, the crew was impressed, and Bella became the captain.<p><im>11<height>6"
+},
+{"type": "question",
+"question": "What should I wear to make myself look scarier?",
+"answers":[ 
+"An eye patch",
+"A whale tattoo",
+"A cool jacket",
+"A crocodile"
+]
+},
+{"type": "read",
+"text": "Last year at Halloween, Dad wore an eye patch. It should still be in the costume box. I pull the box out from under my bed and search. I throw out a lot of weird clothes and find the eye patch at the bottom of the box.\n\n<p>At the end of the book \"How Bella Became Pirate Captain\" is a small comic with some fun pictures. It shows Clint, one of Bella's crew members."
+},
+{"type": "read",
+"text": "<font=\"Moboto SDF\"><size=78>Clint is having trouble climbing up the mast, as his pants keep falling down. Gloves on his hands make it easy for him to hold on to the ropes, even without his pants. \n\n<p>He jumps down to the deck and rolls straight into a barrel. Everyone laughs, and Clint turns red as a beet. He hides his face in his shirt and walks away."
+},
+{"type": "read",
+"text": "<font=\"Moboto SDF\"><size=78>Captain Bella finds Clint and gives him a piece of red cloth. Clint asks what he is supposed to do with it. Bella tells him to tie it around his waist so he will not drop his pants again. After that, Clint has no problem climbing up the mast."
+},
+{"type": "question",
+"question": "What should I use to hold my pirate pants up?",
+"answerCoords":[ 
+[859,-347,216,745],[839,-820,226,191],[267,-591,523,307],[378,-800,161,141]
+],"image": 12},
+{"type": "read",
+"text": "I tie the sash around my waist. It fits perfectly and will keep my pants up. <p>In my mirror is a dashing-looking pirate. I wave to the image, and it waves back. Hey! I am a good-looking pirate!<p><im>13<height>6"
+},
+{"type": "read",
+"text": "The red sash makes me look bold. The eye patch makes me look scary and mysterious. And the hook makes me look dangerous.\n\n<p> I still feel as if there is something missing. I need to add one last item to make my pirate look perfect."
+},
+{"type": "choice",
+"question": "What last item should I add?",
+"answers":[ 
+"A tattoo",
+"A hat with a blue feather",
+"A sword"
+],
+"topages": [
+1,
+2,
+3
+]
+}
+,{"type": "read",
+"text": "With a sticker on my arm, it looks as if I have a tattoo. Perfect!<p><im>98<height>9"
+,
+"nextPage": 3
+},
+{"type": "read",
+"text": "With a hat, I will be protected from the sun and look even cooler. Perfect!<p><im>97<height>9"
+,
+"nextPage": 2
+},
+{"type": "read",
+"text": "With the sword, I will be ready to protect the ship. Perfect!<p><im>96<height>9"
+,
+"nextPage": 1
+},
+{"type": "read",
+"text": "Now I truly look like a pirate! My room is a mess, with clothes all over the floor. A thought pops up in my mind. What if my parents come to check that I am in bed?"
+},
+{"type": "read",
+"text": "It would not be good if they find out I am out on an adventure instead of sleeping. I put some clothes under the blanket to make it look like a body is under it. But I need something for the head, something round."
+},
+{"type": "question",
+"question": "What should I use for the body's head?",
+"answerCoords":[ 
+[78,-710,160,185],[838,-484,155,161],[578,-370,199,224],[642,-773,384,253]
+],"image": 15},
+{"type": "read",
+"text": "I put the fishbowl on my pillow and pull up the blanket. It looks a bit odd, not like my head. \n\n<p>Looking around, I see one of my hats on the floor and put it on the ball. Now it looks like I am sleeping with a hat  -  a bit silly, but my face is hidden."
+},
+{"type": "read",
+"text": "The bed is fixed. With the new outfit on, I sneak back outside to the pirate ship. The captain is standing on the ship and shouting orders at his crew.\n\n<p><ch><r>captain<t>Get ready to set sail! Remove the gangplank and raise the anchor!<p>I see that they are about to leave."
+},
+{"type": "read",
+"text": "<ch><l>main<t>Wait! Captain, let me on board!<p>The captain turns around as I shout.\n\n<p><ch><r>captain<t>Wait for our last crew member!<p>I run up onto the ship."
+},
+{"type": "read",
+"text": "<ch><r>captain<t>Cutting it close there, matey! But welcome to the Emerald Snake!<p><ch><l>main<t>Thank you, Captain.<p><ch><r>captain<t>We need all hands we can get on this adventure"
+},
+{"type": "read",
+"text": "<ch><r>captain<t>We are searching for the lost treasure of Captain Blackbear, and I want you to help us find it.<p><im>16<height>5"
+},
+{"type": "read",
+"text": "What can this treasure the Captain is talking about be? And what do they need help with?  \n\n<p>Those thoughts fill my mind and the wind plays with my hair as I sail away."
+},
+{
+
+ "type": "end"}
+]
+}
