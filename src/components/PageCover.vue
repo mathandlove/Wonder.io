@@ -4,11 +4,15 @@
 
 <script>
 export default {
+  emits: ['ShowHand', 'show-hand'],
   props: {
     bookNumber: {
       type: String,
       required: true,
     },
+  },
+  created() {
+    this.$emit('show-hand', true);
   },
 };
 </script>

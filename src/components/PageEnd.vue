@@ -4,7 +4,12 @@
 </template>
 
 <script>
-
+export default {
+  emits: ['ShowHand', 'show-hand'],
+  created() {
+    this.$emit('show-hand', false);
+  },
+};
 </script>
 
 <style scoped>

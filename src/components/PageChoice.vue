@@ -17,7 +17,7 @@
 
 <script>
 export default {
-  emits: ['ChosenPage', 'chosen-page'],
+  emits: ['ChosenPage', 'chosen-page', 'ShowHand', 'show-hand'],
   props: {
     data: {
       type: Array,
@@ -40,6 +40,7 @@ export default {
     console.log('Choice page =', this.data);
     this.data[0].lineParts.forEach((item) => { this.AnswerArray.push(item.words.join(' ')); });
     this.AnswerArray.shift();
+    this.$emit('show-hand', false);
   },
   methods: {
     choiceClick(index) {

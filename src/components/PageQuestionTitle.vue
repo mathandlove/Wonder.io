@@ -10,11 +10,15 @@
 
 <script>
 export default {
+  emits: ['ShowHand', 'show-hand'],
   props: {
     data: {
       type: Array,
       required: true,
     },
+  },
+  created() {
+    this.$emit('show-hand', true);
   },
 };
 </script>

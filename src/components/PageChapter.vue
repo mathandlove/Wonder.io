@@ -10,6 +10,7 @@
 
 <script>
 export default {
+  emits: ['ShowHand', 'show-hand'],
   props: {
     pageText: {
       type: String,
@@ -19,6 +20,9 @@ export default {
       type: Number,
       required: true,
     },
+  },
+  created() {
+    this.$emit('show-hand', true);
   },
 };
 </script>

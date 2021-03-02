@@ -53,6 +53,7 @@
 
 <script>
 export default {
+  emits: ['ShowHand', 'show-hand'],
   props: {
     data: {
       type: Array,
@@ -122,13 +123,14 @@ export default {
         setTimeout(() => { this.soundCorrect.play(); }, 4400);
         setTimeout(() => { this.soundApplause.play(); }, 4800);
         setTimeout(() => { this.soundApplause.pause(); }, 5750);
+        setTimeout(() => { this.$emit('show-hand', true); }, 5750);
       } else {
         setTimeout(() => { this.soundFail.play(); }, 4400);
       }
     },
   },
   created() {
-    console.log('Question page =', this.data);
+    this.$emit('show-hand', false);
   },
 };
 </script>

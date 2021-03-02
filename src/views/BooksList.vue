@@ -18,6 +18,7 @@
       <router-link v-for="Book in WordFilteredBooks"
            :key="Book"
            :to="{name: 'Book', params: {id: Book, page: 1}}"
+           @click="this.deleteCache"
            class="d-inline-flex cardSize m-md-3 m-1">
           <img alt="" class="w-100"
             :src="require(`../assets/Books/book${Book}/images/cover.png`)"/>
@@ -45,6 +46,11 @@ export default {
     this.WordFilteredBooks = this.GradeFilteredBooks.filter(
       (book) => this.$store.state.BookArray[book - 1].title.toLowerCase().includes(this.WordFilter),
     );
+  },
+  methods: {
+    deleteCache() {
+      localStorage.removeItem('HighestPage');
+    },
   },
 };
 </script>

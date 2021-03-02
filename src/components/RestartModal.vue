@@ -1,12 +1,11 @@
 <template>
   <div class="RestartModalStyle">
     <div class="restartQuestionStyle">Are you sure you want to RESTART?</div>
-    <router-link :to="{name: 'Book', params: {id: this.bookNumber, page: 1}}"
-                 @click="this.closeThisModal" class="ButtonStyle YesButtonColor">
+    <button class="ButtonStyle YesButtonColor" @click="this.YesSelected" >
       <img class="yesImageHeight" :src="require(`../assets/Images/checkmark.png`)"/>
       <div class="textSize">YES</div>
-    </router-link>
-    <button class="ButtonStyle NoButtonColor" @click="this.closeThisModal">
+    </button>
+    <button class="ButtonStyle NoButtonColor" @click="this.NoSelected">
       <img class="noImageHeight" :src="require(`../assets/Images/X.png`)"/>
       <div class="textSize">NO</div>
     </button>
@@ -22,7 +21,12 @@ export default {
     },
   },
   methods: {
-    closeThisModal() {
+    NoSelected() {
+      this.$emit('close-modal');
+    },
+    YesSelected() {
+      this.$store.dispatch('setHighestPage', 1);
+      this.$router.push(`/book/${this.bookNumber}/1`);
       this.$emit('close-modal');
     },
   },
@@ -60,12 +64,13 @@ export default {
 }
 .YesButtonColor {
   color: #04d41c;
+  background-color: #000000;
 }
 .NoButtonColor {
   color: #fc7474;
   background-color: #000000;
 }
-.NoButtonColor:hover {
+.NoButtonColor:hover,.YesButtonColor:hover {
   cursor: pointer;
   text-decoration: underline;
 }

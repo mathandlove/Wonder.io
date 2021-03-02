@@ -1,7 +1,7 @@
 <template>
   <img alt="" class="h-100" src="../assets/Images/NotepadPartialTorn.png"/>
   <div class="PageTextAlign">
-    <div v-for="linePart in this.data[0].lineParts" :key="linePart">
+    <div v-for="linePart in this.ParagraphDisplay" :key="linePart">
       <div v-if="linePart.words[0].includes('<im>')">
         <img :src="require(`../assets/Books/book${bookNumber}/images/${
                 this.imageNumber(linePart.words[0])}.png`)"
@@ -39,15 +39,17 @@
         <div v-else class="textSize">
           {{linePart.words.join(' ')}}
         </div>
-        <div v-if="linePart.words[linePart.words.length-2].includes(`\n\n`)" class="BlnkLine"></div>
-        <div v-if="linePart.words[linePart.words.length-1].includes(`\n\n`)" class="BlnkLine"></div>
       </div>
+    </div>
+    <div v-if="this.ParagraphCounter<this.ParagraphTotal" @click="this.incrementPageCounter">
+      <img :src="require('../assets/Images/Pencil.png')" alt="" class="pencilAlign"/>
     </div>
   </div>
 </template>
 
 <script>
 export default {
+  emits: ['ShowHand', 'show-hand'],
   props: {
     data: {
       type: Array,
@@ -57,6 +59,21 @@ export default {
       type: String,
       required: true,
     },
+  },
+  data() {
+    const ParagraphCounter = 1;
+    const ParagraphTotal = 1;
+    const ParagraphDisplay = [];
+    return { ParagraphCounter, ParagraphTotal, ParagraphDisplay };
+  },
+  created() {
+    this.ParagraphTotal = this.data[0].lineParts.length;
+    this.ParagraphDisplay.push(this.data[0].lineParts[0]);
+    if (this.ParagraphTotal === 1) {
+      this.$emit('show-hand', true);
+    } else {
+      this.$emit('show-hand', false);
+    }
   },
   methods: {
     charImageLeft(inputString) {
@@ -80,6 +97,13 @@ export default {
       let tempHeight = inputString.charAt(inputString.length - 1);
       if (tempHeight > 6) { tempHeight = 6; }
       return tempHeight;
+    },
+    incrementPageCounter() {
+      this.ParagraphDisplay.push(this.data[0].lineParts[this.ParagraphCounter]);
+      this.ParagraphCounter += 1;
+      if (this.ParagraphCounter === this.ParagraphTotal) {
+        this.$emit('show-hand', true);
+      }
     },
   },
 };
@@ -115,7 +139,8 @@ export default {
 .charHeight {
   height: 9vh;
 }
-.BlnkLine {
-  height: 4.6vh;
+.pencilAlign {
+  height: 4vh;
+  padding-left: 75%;
 }
 </style>

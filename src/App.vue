@@ -5,7 +5,8 @@
 <style>
 @font-face {
   font-family: "Roboto";
-  src: local("Roboto"),url("./fonts/Roboto Regular.ttf") format("truetype");
+  src: local("Roboto"),
+    url("../../AngularChecklist/src/assets/Roboto Regular.ttf") format("truetype");
 }
 @font-face {
   font-family: "CoopForged";
