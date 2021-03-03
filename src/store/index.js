@@ -17,6 +17,8 @@ export default createStore({
     },
     BookArray: [1, 2, 3, 4, 5, 6, 7, 8, 9, Book10],
     HighestPage: +localStorage.getItem('HighestPage') || 1,
+    BookID: +localStorage.getItem('BookID') || null,
+    BookPage: +localStorage.getItem('BookPage') || 1,
   },
   mutations: {
     SET_GRADE_FILTER(state, event) {
@@ -27,6 +29,14 @@ export default createStore({
       state.HighestPage = event;
       localStorage.setItem('HighestPage', event);
     },
+    SET_BOOK_ID(state, event) {
+      state.BookID = event;
+      localStorage.setItem('BookID', event);
+    },
+    SET_BOOK_PAGE(state, event) {
+      state.BookPage = event;
+      localStorage.setItem('BookPage', event);
+    },
   },
   actions: {
     setGradeFilter({ commit }, filterValue) {
@@ -34,6 +44,12 @@ export default createStore({
     },
     setHighestPage({ commit }, newPage) {
       commit('SET_HIGHEST_PAGE', newPage);
+    },
+    setBookID({ commit }, newID) {
+      commit('SET_BOOK_ID', newID);
+    },
+    setBookPage({ commit }, newPage) {
+      commit('SET_BOOK_PAGE', newPage);
     },
   },
   modules: {

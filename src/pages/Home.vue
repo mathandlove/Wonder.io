@@ -7,7 +7,7 @@
 </template>
 
 <script>
-import GradeSelector from '@/components/GradeSelector.vue';
+import GradeSelector from '@/molecules/GradeSelector.vue';
 
 export default {
   components: {

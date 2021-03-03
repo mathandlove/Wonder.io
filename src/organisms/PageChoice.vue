@@ -23,14 +23,6 @@ export default {
       type: Array,
       required: true,
     },
-    bookNumber: {
-      type: String,
-      required: true,
-    },
-    bookPage: {
-      type: String,
-      required: true,
-    },
   },
   data() {
     const AnswerArray = [];
@@ -44,9 +36,10 @@ export default {
   },
   methods: {
     choiceClick(index) {
-      const newPage = +this.bookPage + index + 1;
+      const newPage = +this.$store.state.BookPage + index + 1;
       this.$emit('chosen-page', newPage);
-      this.$router.push(`/book/${this.bookNumber}/${newPage}`);
+      this.$store.dispatch('setBookPage', newPage);
+      this.$router.push(`/book/${this.$store.state.BookID}/${newPage}`);
     },
   },
 };

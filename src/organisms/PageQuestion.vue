@@ -25,7 +25,7 @@
         {{this.data[0].lineParts[0].words.join(' ')}}
       </div>
       <img v-if="this.data[0].partImageUrl !== '0'"
-           :src="require(`../assets/Books/book${bookNumber}/images/${
+           :src="require(`../assets/Books/book${this.$store.state.BookID}/images/${
               this.data[0].partImageUrl}.png`)"
            alt=""
            class="w-100"
@@ -57,10 +57,6 @@ export default {
   props: {
     data: {
       type: Array,
-      required: true,
-    },
-    bookNumber: {
-      type: String,
       required: true,
     },
   },

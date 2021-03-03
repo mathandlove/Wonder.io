@@ -15,14 +15,11 @@
           <div>WordFilter: {{WordFilter}}</div>
         </div>
       </div>
-      <router-link v-for="Book in WordFilteredBooks"
-           :key="Book"
-           :to="{name: 'Book', params: {id: Book, page: 1}}"
-           @click="this.deleteCache"
+      <div v-for="Book in WordFilteredBooks" :key="Book" @click="BookSelected(Book)"
            class="d-inline-flex cardSize m-md-3 m-1">
           <img alt="" class="w-100"
             :src="require(`../assets/Books/book${Book}/images/cover.png`)"/>
-      </router-link>
+      </div>
     </div>
   </div>
 </template>
@@ -48,8 +45,11 @@ export default {
     );
   },
   methods: {
-    deleteCache() {
+    BookSelected(bookID) {
       localStorage.removeItem('HighestPage');
+      this.$store.dispatch('setBookID', bookID);
+      this.$store.dispatch('setBookPage', 1);
+      this.$router.push(`/book/${bookID}/1`);
     },
   },
 };

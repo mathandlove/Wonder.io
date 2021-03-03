@@ -2,24 +2,23 @@
   <img alt="" class="h-100" src="../assets/Images/notepadWithLines.png"/>
   <div class="centeredNoExist">
     <div class="fontSizeExist"><u><i>Page Doesn't Exist</i></u></div>
-    <router-link :to="{name: 'Book', params: {id: this.bookNumber, page: 1}}"
-                 class="btn btn-info buttonHeight">
+    <button class="btn btn-info buttonHeight" @click="ReturnToStart">
       Return to Beginning
-    </router-link>
+    </button>
   </div>
 </template>
 
 <script>
 export default {
   emits: ['ShowHand', 'show-hand'],
-  props: {
-    bookNumber: {
-      type: String,
-      required: true,
-    },
-  },
   created() {
     this.$emit('show-hand', false);
+  },
+  methods: {
+    ReturnToStart() {
+      this.$store.dispatch('setBookPage', 1);
+      this.$router.push(`/book/${this.$store.state.BookID}/1`);
+    },
   },
 };
 </script>

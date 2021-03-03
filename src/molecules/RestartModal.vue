@@ -14,19 +14,14 @@
 
 <script>
 export default {
-  props: {
-    bookNumber: {
-      type: String,
-      required: true,
-    },
-  },
   methods: {
     NoSelected() {
       this.$emit('close-modal');
     },
     YesSelected() {
       this.$store.dispatch('setHighestPage', 1);
-      this.$router.push(`/book/${this.bookNumber}/1`);
+      this.$store.dispatch('setBookPage', 1);
+      this.$router.push(`/book/${this.$store.state.BookID}/1`);
       this.$emit('close-modal');
     },
   },

@@ -3,14 +3,14 @@
   <div class="PageTextAlign">
     <div v-for="linePart in this.ParagraphDisplay" :key="linePart">
       <div v-if="linePart.words[0].includes('<im>')">
-        <img :src="require(`../assets/Books/book${bookNumber}/images/${
+        <img :src="require(`../assets/Books/book${this.$store.state.BookID}/images/${
                 this.imageNumber(linePart.words[0])}.png`)"
              alt=""
              :style="{height: this.imageHeight(linePart.words[0])*4.4+'vh'}"/>
       </div>
       <div v-else-if="linePart.words[0].includes('<l>')">
         <div class="bottomCharPadding d-flex justify-content-start">
-          <img :src="require(`../assets/Books/book${bookNumber}/characters/${
+          <img :src="require(`../assets/Books/book${this.$store.state.BookID}/characters/${
                   this.charImageLeft(linePart.words[0])}.png`)"
                alt=""
                class="charHeight"/>
@@ -24,7 +24,7 @@
           <div class="rightTextPadding textSize">
             {{this.charSpeech(linePart.words)}}
           </div>
-          <img :src="require(`../assets/Books/book${bookNumber}/characters/${
+          <img :src="require(`../assets/Books/book${this.$store.state.BookID}/characters/${
                   this.charImageRight(linePart.words[0])}.png`)"
                alt=""
                class="charHeight"/>
@@ -53,10 +53,6 @@ export default {
   props: {
     data: {
       type: Array,
-      required: true,
-    },
-    bookNumber: {
-      type: String,
       required: true,
     },
   },

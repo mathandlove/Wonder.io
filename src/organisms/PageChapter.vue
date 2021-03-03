@@ -2,9 +2,9 @@
   <img alt="" class="h-100" src="../assets/Images/NotepadWithoutLines.png"/>
   <div class="centeredTitleText">
     <h1 v-if="chapterNumber" class="pb-4 fontSizeChapterTitle">
-      Chapter {{chapterNumber}}
+      Chapter {{this.Number}}
     </h1>
-    <h3 v-if="pageText" class="fontSizeChapterText">{{pageText}}</h3>
+    <h3 v-if="pageText" class="fontSizeChapterText">{{this.pageText}}</h3>
   </div>
 </template>
 
@@ -16,7 +16,7 @@ export default {
       type: String,
       required: true,
     },
-    chapterNumber: {
+    Number: {
       type: Number,
       required: true,
     },
