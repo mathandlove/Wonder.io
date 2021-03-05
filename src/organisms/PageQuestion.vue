@@ -19,7 +19,7 @@
     <img alt="" class="h-100" src="../assets/Images/NotepadWithoutLines.png"/>
     <div class="questionAlign">
       <div class="QuestionTitleSize text-left">
-        Question X:
+        Question {{ counter }}:
       </div>
       <div v-if="this.data[0]" class="pb-2 QuestionSize text-left">
         {{this.data[0].lineParts[0].words.join(' ')}}
@@ -58,6 +58,10 @@ export default {
     data: {
       type: Array,
       required: true,
+    },
+    counter: {
+      type: Number,
+      required: false,
     },
   },
   data() {
@@ -148,7 +152,7 @@ export default {
 }
 .buttonFormat {
   display: flex;
-  justify-content: start;
+  justify-content: flex-start;
   text-align: left;
   font-size: 2.2vh;
   padding-top: 1vh;

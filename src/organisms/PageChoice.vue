@@ -29,7 +29,6 @@ export default {
     return { AnswerArray };
   },
   created() {
-    console.log('Choice page =', this.data);
     this.data[0].lineParts.forEach((item) => { this.AnswerArray.push(item.words.join(' ')); });
     this.AnswerArray.shift();
     this.$emit('show-hand', false);
@@ -66,7 +65,7 @@ export default {
 }
 .choiceButtonFormat {
   display: flex;
-  justify-content: start;
+  justify-content: flex-start;
   text-align: left;
   font-size: 2.2vh;
   padding-top: 1vh;

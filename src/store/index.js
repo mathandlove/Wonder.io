@@ -1,5 +1,5 @@
 import { createStore } from 'vuex';
-import Book10 from '../assets/Books/book10/book10old2.json';
+import Book10 from '../assets/Books/book10/book.json';
 
 export default createStore({
   state: {

@@ -1,7 +1,12 @@
 <template>
   <img alt="" class="h-100" src="../assets/Images/NotepadPartialTornNoLines.png"/>
   <div class="centeredQuestionTitle fontSizeQuestionTitle">
-    <div class="pb-4"><strong>Question ?:</strong></div>
+    <div v-if="this.data[0].questionId===-99">
+      <div>THE BIG QUESTION:</div>
+    </div>
+    <div v-else class="pb-4">
+      <strong>Question {{counter}}:</strong>
+    </div>
     <div v-for="pagePart in this.data" :key="pagePart" class="fontsizeQuestionText">
       {{pagePart.lineParts[0].words.join(" ")}}
     </div>
@@ -15,6 +20,9 @@ export default {
     data: {
       type: Array,
       required: true,
+    },
+    counter: {
+      type: Number,
     },
   },
   created() {

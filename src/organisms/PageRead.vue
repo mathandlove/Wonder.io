@@ -2,7 +2,8 @@
   <img alt="" class="h-100" src="../assets/Images/NotepadPartialTorn.png"/>
   <div class="PageTextAlign">
     <div v-for="linePart in this.ParagraphDisplay" :key="linePart">
-      <div v-if="linePart.words[0].includes('<im>')">
+      <div v-if="linePart.words.length < 1" class="BlankLine"/>
+      <div v-else-if="linePart.words[0].includes('<im>')">
         <img :src="require(`../assets/Books/book${this.$store.state.BookID}/images/${
                 this.imageNumber(linePart.words[0])}.png`)"
              alt=""
@@ -63,13 +64,14 @@ export default {
     return { ParagraphCounter, ParagraphTotal, ParagraphDisplay };
   },
   created() {
-    this.ParagraphTotal = this.data[0].lineParts.length;
+    this.ParagraphTotal = this.data.length;
     this.ParagraphDisplay.push(this.data[0].lineParts[0]);
     if (this.ParagraphTotal === 1) {
       this.$emit('show-hand', true);
     } else {
       this.$emit('show-hand', false);
     }
+    console.log("Read Page see's data as =", this.data);
   },
   methods: {
     charImageLeft(inputString) {
@@ -95,7 +97,10 @@ export default {
       return tempHeight;
     },
     incrementPageCounter() {
-      this.ParagraphDisplay.push(this.data[0].lineParts[this.ParagraphCounter]);
+      if (this.data[this.ParagraphCounter - 1].lineParts[1]) {
+        this.ParagraphDisplay.push({ words: [] });
+      }
+      this.ParagraphDisplay.push(this.data[this.ParagraphCounter].lineParts[0]);
       this.ParagraphCounter += 1;
       if (this.ParagraphCounter === this.ParagraphTotal) {
         this.$emit('show-hand', true);
@@ -108,15 +113,20 @@ export default {
 <style scoped>
 .PageTextAlign {
   position: absolute;
-  top: 14.9vh;
+  top: 14.5vh;
   left: 49.3%;
   transform: translate(-50%);
   width: 100vh;
   max-width: 37.8vh;
 }
 .textSize {
+  padding-top: 0.2vh;
   text-align: left;
   font-size: 3.15vh;
+  line-height: 1.51
+}
+.BlankLine {
+  padding-bottom: 4.7vh;
 }
 .leftTextPadding {
   padding-left: 1vh;
@@ -127,10 +137,11 @@ export default {
 }
 .textSizeRoboto {
   text-align: left;
-  font-size: 2.55vh;
+  font-size: 2.4vh;
+  line-height: 1.95;
 }
 .bottomCharPadding {
-  padding-bottom: 4.8vh;
+  padding-bottom: 4.7vh;
 }
 .charHeight {
   height: 9vh;
