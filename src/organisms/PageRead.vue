@@ -6,7 +6,7 @@
       <div v-else-if="linePart.words[0].includes('<im>')">
         <img :src="require(`../assets/Books/book${this.$store.state.BookID}/images/${
                 this.imageNumber(linePart.words[0])}.png`)"
-             alt=""
+             alt="" class="ImageMarginBottom"
              :style="{height: this.imageHeight(linePart.words[0])*4.4+'vh'}"/>
       </div>
       <div v-else-if="linePart.words[0].includes('<l>')">
@@ -149,5 +149,8 @@ export default {
 .pencilAlign {
   height: 4vh;
   padding-left: 75%;
+}
+.ImageMarginBottom {
+  margin-bottom: 1.7vh;
 }
 </style>
