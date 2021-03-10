@@ -17,19 +17,13 @@
   </template>
   <template v-else>
     <img alt="" class="h-100" src="../assets/Images/NotepadWithoutLines.png"/>
-    <div class="questionAlign">
+    <div class="questionAlign maxWidth">
       <div class="QuestionTitleSize text-left">
         Question {{ counter }}:
       </div>
-      <div v-if="this.data[0]" class="pb-2 QuestionSize text-left">
+      <div v-if="this.data[0]" class="QuestionSize text-left">
         {{this.data[0].lineParts[0].words.join(' ')}}
       </div>
-      <img v-if="this.data[0].partImageUrl !== '0'"
-           :src="require(`../assets/Books/book${this.$store.state.BookID}/images/${
-              this.data[0].partImageUrl}.png`)"
-           alt=""
-           class="w-100"
-           :style="{height: this.data[0].totalLines*5+'vh'}"/>
       <div v-for:="(choice,index) in AnswerArray">
         <button v-if="choice.name" class="button buttonFormat"
                 :style="{
@@ -39,15 +33,29 @@
                 @click="choiceClick(index)">
           {{ choice.name.join(" ") }}
         </button>
-        <button v-if="!choice.name" class="button coordFormat"
-                :style="{backgroundColor:
-                choice.clickedOn ? choice.value ? 'aquamarine' : 'pink' : 'grey'}"
+        <button v-if="!choice.name" class="buttonFixed border-0 bg-transparent"
+                :style="{
+                    left: 49+(choice.coords[0]-Baseline.centerX)/Baseline.width*130+'%',
+                    top: 147-(choice.coords[1]-Baseline.centerY)/Baseline.width*180+'%',
+                    width: choice.coords[2]/Baseline.width*125+'%',
+                    height: choice.coords[3]/Baseline.height*330+'%',
+                }"
                 :disabled="choice.clickedOn || this.allDisabled"
                 @click="choiceClick(index)">
-          {{choice.coords}}
+          <img v-if="choice.clickedOn && choice.value" class="w-100 h-100"
+               :src="require(`../assets/Images/Circle.png`)"/>
+          <img v-else-if="choice.clickedOn && !choice.value" class="w-100 h-100"
+               :src="require(`../assets/Images/X.png`)"/>
         </button>
       </div>
     </div>
+    <img v-if="this.data[0].partImageUrl !== '0'"
+         :src="require(`../assets/Books/book${this.$store.state.BookID}/images/${
+              this.data[0].partImageUrl}.png`)"
+         alt=""
+         class="w-100 imageCenter maxWidth"
+         :style="{height: this.data[0].totalLines*5+'vh'}"/>
+
   </template>
 </template>
 
@@ -93,6 +101,9 @@ export default {
     ];
     let AnswerValue;
     let allDisabled;
+    const Baseline = {
+      centerX: 629, centerY: -337, width: 1491, height: 2598,
+    };
     const soundClap = new Audio(require('../assets/sounds/woodclap.wav'));
     const soundCorrect = new Audio(require('../assets/sounds/274178__littlerobotsoundfactory__jingle-win-synth-02.wav'));
     const soundApplause = new Audio(require('../assets/sounds/audienceClap.wav'));
@@ -107,6 +118,7 @@ export default {
       soundApplause,
       soundStart,
       soundFail,
+      Baseline,
     };
   },
   methods: {
@@ -131,24 +143,40 @@ export default {
   },
   created() {
     this.$emit('show-hand', false);
+    console.log('QuestionPage data is =', this.data);
   },
 };
 </script>
 
 <style scoped>
+.maxWidth {
+  max-width: 38vh;
+}
 .questionAlign {
+  z-index: 1;
   position: absolute;
   top: 20%;
   left: 50%;
   transform: translate(-50%);
   width: 100vh;
-  max-width: 38vh;
+}
+.imageCenter {
+  z-index: 0;
+  position: absolute;
+  top: 65%;
+  left: 49%;
+  transform: translate(-50%, -50%);
+}
+.buttonFixed {
+  position: fixed;
+  transform: translate(-50%, -50%);
 }
 .QuestionTitleSize {
   font-size: 6vh;
 }
 .QuestionSize {
   font-size: 3.5vh;
+  min-height: 15vh;
 }
 .buttonFormat {
   display: flex;
@@ -165,11 +193,6 @@ export default {
   border-style: solid;
   border-width: 4px;
   border-radius: 30px;
-}
-.coordFormat {
-  font-size: 1.5vh;
-  margin: 0.5vh;
-  height: 3vh;
 }
 .centeredAnswerText {
   position: absolute;

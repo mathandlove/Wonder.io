@@ -41,7 +41,8 @@ export default {
   },
   beforeUpdate() {
     this.WordFilteredBooks = this.GradeFilteredBooks.filter(
-      (book) => this.$store.state.BookArray[book - 1].title.toLowerCase().includes(this.WordFilter),
+      (book) => this.$store.state.BookArray[book - 1][0].title[0].toLowerCase()
+        .includes(this.WordFilter),
     );
   },
   methods: {
