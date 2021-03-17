@@ -71,7 +71,6 @@ export default {
     } else {
       this.$emit('show-hand', false);
     }
-    console.log("Read Page see's data as =", this.data);
   },
   methods: {
     charImageLeft(inputString) {
@@ -113,20 +112,20 @@ export default {
 <style scoped>
 .PageTextAlign {
   position: absolute;
-  top: 14.5vh;
-  left: 49.3%;
+  top: 13.9vh;
+  left: 49.6%;
   transform: translate(-50%);
   width: 100vh;
-  max-width: 37.8vh;
+  max-width: 36.4vh;
 }
 .textSize {
-  padding-top: 0.2vh;
+  padding-top: 0.1vh;
   text-align: left;
-  font-size: 3.15vh;
-  line-height: 1.51
+  font-size: 3.00vh;
+  line-height: 1.5;
 }
 .BlankLine {
-  padding-bottom: 4.7vh;
+  padding-bottom: 4.4vh;
 }
 .leftTextPadding {
   padding-left: 1vh;
@@ -138,10 +137,10 @@ export default {
 .textSizeRoboto {
   text-align: left;
   font-size: 2.4vh;
-  line-height: 1.95;
+  line-height: 1.86;
 }
 .bottomCharPadding {
-  padding-bottom: 4.7vh;
+  padding-bottom: 4.3vh;
 }
 .charHeight {
   height: 9vh;
@@ -151,6 +150,6 @@ export default {
   padding-left: 75%;
 }
 .ImageMarginBottom {
-  margin-bottom: 1.7vh;
+  margin-bottom: 0.4vh;
 }
 </style>

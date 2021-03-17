@@ -1,5 +1,5 @@
 <template>
-  <img alt="" class="h-100"
+  <img alt="" class="h-100 coverWidth"
        :src="require(`../assets/Books/book${this.$store.state.BookID}/images/cover.png`)"
   />
   <div class="illustrator">Illustrator: {{GetIllustrator}}</div>
@@ -19,6 +19,9 @@ export default {
 };
 </script>
 <style scoped>
+.coverWidth {
+  max-width: 45.8vh;
+}
 .illustrator {
   position: absolute;
   top: 95.7%;

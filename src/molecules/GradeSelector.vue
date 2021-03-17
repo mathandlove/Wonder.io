@@ -1,23 +1,22 @@
 <template>
-  <div class="bubble d-inline-flex align-items-center justify-content-center text-white"
-       :style="{background: Grade.color}"
-       @click="handleGradeDispatch">
-    <div>
-        <div class="customBorder TopTextSize">{{ Grade.top }}</div>
-        <div class="customBorder MidTextSize">{{ Grade.mid }}</div>
-    </div>
+  <div class="d-inline-flex align-items-center justify-content-center">
+    <img alt="" class="cardFormat"
+         :src="require(`../assets/Images/Grade${Grade}.svg`)"
+         @click="handleGradeDispatch"/>
   </div>
 </template>
 
 <script>
-
 export default {
   props: {
-    Grade: Object,
+    Grade: {
+      type: String,
+      required: true,
+    },
   },
   methods: {
     handleGradeDispatch() {
-      this.$store.dispatch('setGradeFilter', this.Grade.id).then(() => {
+      this.$store.dispatch('setGradeFilter', this.Grade).then(() => {
         this.$router.push('/books');
       });
     },
@@ -26,36 +25,14 @@ export default {
 </script>
 
 <style scoped>
-.bubble {
-  width: 12em;
-  height: 12em;
-  max-width: 24vh;
-  max-height: 24vh;
+.cardFormat {
+  width: 9rem;
+  max-width: 30vw;
+  height: auto;
 }
-.bubble {
-  border-style: solid;
-  border-color: black;
-  border-width: 1px;
-  border-radius: 50%;
-}
-.bubble:hover {
-  text-underline: black;
+.cardFormat:hover {
   cursor: pointer;
-  transform: scale(1.05);
+  transform: scale(1.1);
   z-index: 1;
-  border-color: white;
-}
-.customBorder {
-  text-shadow:
-    -1px -1px 0 #000,
-    1px -1px 0 #000,
-    -1px 1px 0 #000,
-    1px 1px 0 #000;
-}
-.TopTextSize {
-  font-size: 2.5vh;
-}
-.MidTextSize {
-  font-size: 5vh;
 }
 </style>

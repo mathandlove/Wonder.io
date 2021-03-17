@@ -5,7 +5,7 @@ export default createStore({
   state: {
     GradeFilter: localStorage.getItem('GradeFilter') || 'NONE',
     GradeBookOrder: {
-      PRE: [10],
+      PreK: [10],
       K: [10],
       1: [10],
       2: [10],

@@ -1,22 +1,20 @@
 <template>
-  <template v-if="this.AnswerValue==true">
-    <img alt="" class="h-100" src="../assets/Images/NotepadWithoutLines.png"/>
+  <img alt="" class="h-100" src="../assets/Images/NotepadWithoutLines.png"/>
+  <div v-if="this.AnswerValue===true">
     <div class="animation centeredImage"/>
     <img alt="" class="centeredImage fadeOpacityImage" src="../assets/Images/D3.png"/>
     <div class="centeredAnswerText fadeOpacityWord">
       <h1 class="fontSizeAnswer">Correct!</h1>
     </div>
-  </template>
-  <template v-else-if="this.AnswerValue==false">
-    <img alt="" class="h-100" src="../assets/Images/NotepadWithoutLines.png"/>
+  </div>
+  <div v-else-if="this.AnswerValue===false">
     <div class="animation centeredImage"/>
     <img alt="" class="centeredImage fadeOpacityImage" src="../assets/Images/W3.png"/>
     <div class="centeredAnswerText fadeOpacityWord">
       <h1 class="fontSizeAnswer">Wrong!</h1>
     </div>
-  </template>
-  <template v-else>
-    <img alt="" class="h-100" src="../assets/Images/NotepadWithoutLines.png"/>
+  </div>
+  <div v-else>
     <div class="questionAlign maxWidth">
       <div class="QuestionTitleSize text-left">
         Question {{ counter }}:
@@ -35,8 +33,8 @@
         </button>
         <button v-if="!choice.name" class="buttonFixed border-0 bg-transparent"
                 :style="{
-                    left: 49+(choice.coords[0]-Baseline.centerX)/Baseline.width*130+'%',
-                    top: 147-(choice.coords[1]-Baseline.centerY)/Baseline.width*180+'%',
+                    left: 50+(choice.coords[0]-Baseline.centerX)/Baseline.width*125+'%',
+                    top: 139-(choice.coords[1]-Baseline.centerY)/Baseline.height*330+'%',
                     width: choice.coords[2]/Baseline.width*125+'%',
                     height: choice.coords[3]/Baseline.height*330+'%',
                 }"
@@ -56,7 +54,7 @@
          class="w-100 imageCenter maxWidth"
          :style="{height: this.data[0].totalLines*5+'vh'}"/>
 
-  </template>
+  </div>
 </template>
 
 <script>
@@ -143,7 +141,6 @@ export default {
   },
   created() {
     this.$emit('show-hand', false);
-    console.log('QuestionPage data is =', this.data);
   },
 };
 </script>

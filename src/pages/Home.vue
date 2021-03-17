@@ -1,56 +1,49 @@
 <template>
-  <div class="homeBackground">
-    <div class="container text-center">
-      <GradeSelector v-for="Grade in GradeArray" :key=Grade.id :Grade="Grade"/>
+  <div class="blueBackground">
+    <div class="paddingTop"/>
+    <div class="ChalkboardBackground text-center">
+      <GradeSelector v-for="Grade in GradeArray" :key="Grade" :Grade="Grade"/>
+      <div class="text-black textThickness">Choose your Reading Grade</div>
     </div>
   </div>
 </template>
 
 <script>
 import GradeSelector from '@/molecules/GradeSelector.vue';
-
 export default {
   components: {
     GradeSelector,
   },
   data() {
-    const GradeArray = [
-      {
-        id: 'PRE', top: 'PRE-', mid: 'K', color: 'pink',
-      },
-      {
-        id: 'K', top: 'GRADE', mid: 'K', color: 'yellow',
-      },
-      {
-        id: '1', top: 'GRADE', mid: '1', color: 'red',
-      },
-      {
-        id: '2', top: 'GRADE', mid: '2', color: 'blue',
-      },
-      {
-        id: '3', top: 'GRADE', mid: '3', color: 'green',
-      },
-      {
-        id: '4', top: 'GRADE', mid: '4', color: 'purple',
-      },
-      {
-        id: '5', top: 'GRADE', mid: '5', color: 'orange',
-      },
-      {
-        id: '6', top: 'GRADE', mid: '6+', color: 'teal',
-      },
-    ];
-    return {
-      GradeArray,
-    };
+    const GradeArray = ['PreK', 'K', '1', '2', '3', '4', '5', '6'];
+    return { GradeArray };
   },
 };
 </script>
 
 <style scoped>
-.homeBackground {
-  min-height: 100vh;
-  min-width: 100vw;
-  background: linear-gradient(to left, rgba(7,27,82,1) 0%, rgba(0,128,128,1) 100%);
+.blueBackground {
+  width: 100%;
+  height: 100vh;
+  background: #9bcbc9;
+}
+.paddingTop {
+  padding-top: 15vh;
+}
+.ChalkboardBackground {
+  height: 85vh;
+  overflow: hidden;
+  margin-left: 5vw;
+  margin-right: 5vw;
+  padding-left: 5vw;
+  padding-right: 5vw;
+  padding-top: 7vw;
+  background-image: url("../assets/Images/Chalkboard.png");
+  background-size: 100%;
+  background-repeat: no-repeat;
+}
+.textThickness {
+  font-weight: 900;
+  font-size: 4vw;
 }
 </style>
