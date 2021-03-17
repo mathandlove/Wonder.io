@@ -21,7 +21,7 @@
       </div>
       <MainFooter :total-pages="this.TotalPages" :points="this.GetPointsData"/>
       <NavArrows @next-page="this.RouteNextPage(false)"
-                 @prev-page="RoutePrevPage" :page="+this.page"/>
+                 @prev-page="RoutePrevPage"/>
       <NavTearHand @next-page="this.RouteNextPage(true)" v-if="this.ShowHand"/>
     </div>
   </div>

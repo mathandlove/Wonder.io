@@ -12,12 +12,6 @@
 <script>
 export default {
   emits: ['NextPage', 'next-page','PrevPage','prev-page'],
-  props: {
-    page: {
-      type: Number,
-      required: true,
-    },
-  },
   data() {
     let windowWidth = 1;
     let windowHeight = 1;
