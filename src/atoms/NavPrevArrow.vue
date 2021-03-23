@@ -1,17 +1,15 @@
 <template>
-  <img class="iconSize ArrowAlign" alt="" src="../assets/Images/computerBack.png"
+  <img class="PrevArrowSize PrevArrowAlign" alt="" src="../assets/Images/computerBack.png"
        @click="this.$emit('prev-page')"
        v-if="+this.$store.state.BookPage!==1"
-       :style="{left: windowWidth/2-windowHeight*0.24+'px'}"/>
-  <img class="iconSize ArrowAlign" alt="" src="../assets/Images/nextButton.png"
-       v-if="this.$store.state.HighestPage > this.$store.state.BookPage"
-       :style="{left: windowWidth/2+windowHeight*0.23+'px'}"
-       @click="this.$emit('next-page')"/>
+       :style="{left: this.$store.state.AspectRatio > 2
+           ? windowWidth/2-windowHeight*0.19+'px'
+           : windowWidth/2-windowHeight*0.24+'px'}"/>
 </template>
 
 <script>
 export default {
-  emits: ['NextPage', 'next-page','PrevPage','prev-page'],
+  emits: ['PrevPage','prev-page'],
   data() {
     let windowWidth = 1;
     let windowHeight = 1;
@@ -34,14 +32,13 @@ export default {
 </script>
 
 <style scoped>
-.iconSize {
-  height: 5vh;
-  margin-top: 1.5vh;
-  width: auto;
-}
-.ArrowAlign {
+.PrevArrowAlign {
   position: fixed;
-  top: 48%;
+  top: 50%;
   transform: translate(-50%, -50%);
+}
+.PrevArrowSize {
+  width: auto;
+  height: min(5vh,9vw)
 }
 </style>

@@ -1,6 +1,7 @@
 <template v-else>
   <img alt="" class="h-100" src="../assets/Images/NotepadWithoutLines.png"/>
-  <div class="centeredChoiceText">
+  <div class="centeredChoiceText"
+       :style="{top: this.$store.state.AspectRatio > 2 ? '20%' : '15%'}">
     <div class="ChoiceTitleSize">
       Your Choice:
     </div>
@@ -47,33 +48,32 @@ export default {
 <style scoped>
 .centeredChoiceText {
   position: absolute;
-  top: 13%;
   left: 49%;
   transform: translate(-50%);
   width: 100vh;
-  max-width: 38vh;
+  max-width: min(38vh,67vw);
 }
 .ChoiceTitleSize {
   text-align: left;
-  font-size: 7vh;
-  padding-bottom: 5vh;
+  font-size: min(7vh,12.5vw);
+  padding-bottom: min(5vh,9vw);
 }
 .ChoiceTextSize {
   text-align: left;
-  font-size: 3vh;
-  max-width: 45vh;
+  font-size: min(3vh,5vw);
+  max-width: min(45vh,81vw);
 }
 .choiceButtonFormat {
   display: flex;
   justify-content: flex-start;
   text-align: left;
-  font-size: 2.2vh;
-  padding-top: 1vh;
-  padding-bottom: 1vh;
-  padding-left: 2vh;
-  margin-top: 1vh;
-  margin-bottom: 1vh;
-  min-height: 4vh;
+  font-size: min(2.2vh,4vw);
+  padding-top: min(1.2vh,2vw);
+  padding-bottom: min(1vh,1.8vw);
+  padding-left: min(1vh,3.6vw);
+  margin-top: min(1vh,1.8vw);
+  margin-bottom: min(1vh,1.8vw);
+  min-height: min(4vh,7.2vw);
   width: 95%;
   border-style: solid;
   border-width: 4px;

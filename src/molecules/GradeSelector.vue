@@ -26,9 +26,8 @@ export default {
 
 <style scoped>
 .cardFormat {
-  width: 9rem;
-  max-width: 30vw;
-  height: auto;
+  width: auto;
+  height: min(18vh,31vw);
 }
 .cardFormat:hover {
   cursor: pointer;

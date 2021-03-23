@@ -31,12 +31,28 @@
                 @click="choiceClick(index)">
           {{ choice.name.join(" ") }}
         </button>
-        <button v-if="!choice.name" class="buttonFixed border-0 bg-transparent"
+        <button v-if="!choice.name && this.$store.state.AspectRatio < 2"
+                class="buttonFixed border-0 bg-transparent"
                 :style="{
                     left: 50+(choice.coords[0]-Baseline.centerX)/Baseline.width*125+'%',
                     top: 139-(choice.coords[1]-Baseline.centerY)/Baseline.height*330+'%',
                     width: choice.coords[2]/Baseline.width*125+'%',
                     height: choice.coords[3]/Baseline.height*330+'%',
+                }"
+                :disabled="choice.clickedOn || this.allDisabled"
+                @click="choiceClick(index)">
+          <img v-if="choice.clickedOn && choice.value" class="w-100 h-100"
+               :src="require(`../assets/Images/Circle.png`)"/>
+          <img v-else-if="choice.clickedOn && !choice.value" class="w-100 h-100"
+               :src="require(`../assets/Images/X.png`)"/>
+        </button>
+        <button v-if="!choice.name && this.$store.state.AspectRatio > 2"
+                class="buttonFixed border-0 bg-transparent"
+                :style="{
+                    left: 52+(choice.coords[0]-Baseline.centerX)/Baseline.width*125+'%',
+                    top: 145-(choice.coords[1]-Baseline.centerY)/Baseline.height*440+'%',
+                    width: choice.coords[2]/Baseline.width*130+'%',
+                    height: choice.coords[3]/Baseline.height*400+'%',
                 }"
                 :disabled="choice.clickedOn || this.allDisabled"
                 @click="choiceClick(index)">
@@ -147,7 +163,7 @@ export default {
 
 <style scoped>
 .maxWidth {
-  max-width: 38vh;
+  max-width: min(38vh,67vw);
 }
 .questionAlign {
   z-index: 1;
@@ -169,23 +185,23 @@ export default {
   transform: translate(-50%, -50%);
 }
 .QuestionTitleSize {
-  font-size: 6vh;
+  font-size: min(6vh,10vw);
 }
 .QuestionSize {
-  font-size: 3.5vh;
-  min-height: 15vh;
+  font-size: min(3.5vh,6.5vw);
+  min-height: min(15vh,27vw);
 }
 .buttonFormat {
   display: flex;
   justify-content: flex-start;
   text-align: left;
-  font-size: 2.2vh;
-  padding-top: 1vh;
-  padding-bottom: 1vh;
-  padding-left: 2vh;
-  margin-top: 1vh;
-  margin-bottom: 1vh;
-  min-height: 4vh;
+  font-size: min(2.2vh,4vw);
+  padding-top: min(1.2vh,2vw);
+  padding-bottom: min(1vh,1.8vw);
+  padding-left: min(1vh,3.6vw);
+  margin-top: min(1vh,1.8vw);
+  margin-bottom: min(1vh,1.8vw);
+  min-height: min(4vh,7.2vw);
   width: 95%;
   border-style: solid;
   border-width: 4px;
@@ -201,12 +217,12 @@ export default {
   position: absolute;
   top: 50%;
   left: 50%;
-  width: 30vh;
-  height: 45vh;
+  width: min(30vh,54vw);
+  height: min(45vh,81vw);
   transform: translate(-50%, -50%);
 }
 .fontSizeAnswer {
-  font-size: 8vh;
+  font-size: min(8vh,14vw);
 }
 .animation {
   background-size: cover;

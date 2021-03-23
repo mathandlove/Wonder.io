@@ -20,6 +20,6 @@ export default {
   transform: translate(-50%, -50%);
 }
 .fontSizeEND {
-  font-size: 6vh;
+  font-size: min(6vh,10vw);
 }
 </style>

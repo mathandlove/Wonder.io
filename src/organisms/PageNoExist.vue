@@ -31,11 +31,11 @@ export default {
   transform: translate(-50%, -50%);
 }
 .fontSizeExist {
-  font-size: 5vh;
-  margin-bottom: 3.5vh;
+  font-size: min(5vh,9vw);
+  margin-bottom: min(3.5vh,6vw);
 }
 .buttonHeight {
-  width: 15vh;
+  width: min(15vh,35vw);
   padding-top: 1vh;
   font-size: 1.5vh;
 }

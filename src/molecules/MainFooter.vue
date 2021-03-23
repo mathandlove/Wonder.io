@@ -1,6 +1,8 @@
 <template>
-  <div class="footerHeight row text-center">
-    <div class="col-4 col-lg-3 col-xl-2">
+  <div class="footerHeight row text-center"
+       :style="{'padding-top': this.$store.state.AspectRatio > 2 ? '4vh' : '0'}">
+    <div class="d-none d-lg-block col-lg-3"/>
+    <div class="col-4 col-lg-2">
       <div class="fontRoboto textSize">POINTS</div>
       <div class="progressBarStyle fontRoboto bg-white">
         <div class="row d-flex">
@@ -12,8 +14,8 @@
         </div>
       </div>
     </div>
-    <div class="col-4 col-lg-6 col-xl-8"></div>
-    <div class="col-4 col-lg-3 col-xl-2">
+    <div class="col-4 col-lg-2"></div>
+    <div class="col-4 col-lg-2">
       <div class="fontRoboto textSize">PAGE</div>
       <div class="progressBarStyle fontRoboto" :style="{background:
                // eslint-disable-next-line max-len
@@ -21,6 +23,7 @@
         {{this.PageNum()}}
       </div>
     </div>
+    <div class="d-none d-lg-block col-lg-3"/>
   </div>
 </template>
 

@@ -19,6 +19,7 @@ export default createStore({
     HighestPage: +localStorage.getItem('HighestPage') || 1,
     BookID: +localStorage.getItem('BookID') || null,
     BookPage: +localStorage.getItem('BookPage') || 1,
+    AspectRatio: +localStorage.getItem('AspectRatio') || 1,
   },
   mutations: {
     SET_GRADE_FILTER(state, event) {
@@ -37,6 +38,10 @@ export default createStore({
       state.BookPage = event;
       localStorage.setItem('BookPage', event);
     },
+    SET_ASPECT_RATIO(state, event) {
+      state.AspectRatio = event;
+      localStorage.setItem('AspectRatio', event);
+    },
   },
   actions: {
     setGradeFilter({ commit }, filterValue) {
@@ -50,6 +55,9 @@ export default createStore({
     },
     setBookPage({ commit }, newPage) {
       commit('SET_BOOK_PAGE', newPage);
+    },
+    setAspectRatio({ commit }, newRatio) {
+      commit('SET_ASPECT_RATIO', newRatio);
     },
   },
   modules: {

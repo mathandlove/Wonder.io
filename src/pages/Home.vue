@@ -28,10 +28,10 @@ export default {
   background: #9bcbc9;
 }
 .paddingTop {
-  padding-top: 15vh;
+  padding-top: 10vh;
 }
 .ChalkboardBackground {
-  height: 85vh;
+  height: 90vh;
   overflow: hidden;
   margin-left: 5vw;
   margin-right: 5vw;
