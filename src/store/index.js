@@ -20,6 +20,12 @@ export default createStore({
     BookID: +localStorage.getItem('BookID') || null,
     BookPage: +localStorage.getItem('BookPage') || 1,
     AspectRatio: +localStorage.getItem('AspectRatio') || 1,
+    Scores: [
+      { id: 0, name: localStorage.getItem('UserName'), score: 54066 },
+      { id: 1, name: 'BotName1', score: 90890 },
+      { id: 2, name: 'BotName2', score: 45200 },
+      { id: 3, name: 'BotName3', score: 2333 },
+    ],
   },
   mutations: {
     SET_GRADE_FILTER(state, event) {
@@ -42,6 +48,10 @@ export default createStore({
       state.AspectRatio = event;
       localStorage.setItem('AspectRatio', event);
     },
+    SET_USER_NAME(state, event) {
+      state.Scores[0].name = event;
+      localStorage.setItem('UserName', event);
+    },
   },
   actions: {
     setGradeFilter({ commit }, filterValue) {
@@ -58,6 +68,9 @@ export default createStore({
     },
     setAspectRatio({ commit }, newRatio) {
       commit('SET_ASPECT_RATIO', newRatio);
+    },
+    setUserName({ commit }, newName) {
+      commit('SET_USER_NAME', newName);
     },
   },
   modules: {

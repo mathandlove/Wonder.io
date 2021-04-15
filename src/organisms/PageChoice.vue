@@ -70,7 +70,7 @@ export default {
   font-size: min(2.2vh,4vw);
   padding-top: min(1.2vh,2vw);
   padding-bottom: min(1vh,1.8vw);
-  padding-left: min(1vh,3.6vw);
+  padding-left: min(3vh,5vw);
   margin-top: min(1vh,1.8vw);
   margin-bottom: min(1vh,1.8vw);
   min-height: min(4vh,7.2vw);

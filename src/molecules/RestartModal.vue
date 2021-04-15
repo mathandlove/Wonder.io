@@ -21,7 +21,7 @@ export default {
     YesSelected() {
       this.$store.dispatch('setHighestPage', 1);
       this.$store.dispatch('setBookPage', 1);
-      this.$router.push(`/book/${this.$store.state.BookID}/1`);
+      this.$router.push('/join');
       this.$emit('close-modal');
     },
   },

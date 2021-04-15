@@ -11,13 +11,13 @@
         <img class="navIconSize" alt="" src="../assets/Images/home.png"/>
       </router-link>
     </div>
-    <div class="col-2 col-xl-1">
+    <div v-if="this.$route.name!=='Join'" class="col-2 col-xl-1">
       <img class="navIconSize hoverHand" alt="" src="../assets/Images/restart.png"
-           @click="this.$emit('show-modal')"/>
+            @click="this.$emit('show-modal')"/>
     </div>
     <div class="col-2 col-xl-1">
-      <img class="navIconSize hoverHand" alt="" src="../assets/Images/blackAudioOnWhiteBackground.png"
-           @click="audioClick('hello')"/>
+      <img class="navIconSize hoverHand" src="../assets/Images/blackAudioOnWhiteBackground.png"
+           @click="audioClick('hello')" alt=""/>
     </div>
     <div class="d-none d-xl-block col-xl-3"/>
   </div>

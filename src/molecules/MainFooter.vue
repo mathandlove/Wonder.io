@@ -4,15 +4,7 @@
     <div class="d-none d-lg-block col-lg-3"/>
     <div class="col-4 col-lg-2">
       <div class="fontRoboto textSize">POINTS</div>
-      <div class="progressBarStyle fontRoboto bg-white">
-        <div class="row d-flex">
-          <img class="col-3 starSize pr-1" alt="" src="../assets/Images/Star.svg"/>
-          <div class="col-6">
-            {{ points }}
-          </div>
-          <img class="col-3 starSize pl-1" alt="" src="../assets/Images/Star.svg"/>
-        </div>
-      </div>
+      <ScoreBar :points="this.$store.state.Scores[0].score"/>
     </div>
     <div class="col-4 col-lg-2"></div>
     <div class="col-4 col-lg-2">
@@ -28,13 +20,12 @@
 </template>
 
 <script>
+import ScoreBar from '@/atoms/ScoreBar.vue';
+
 export default {
+  components: { ScoreBar },
   props: {
     totalPages: {
-      type: Number,
-      required: true,
-    },
-    points: {
       type: Number,
       required: true,
     },
@@ -72,9 +63,5 @@ export default {
   border-color: black;
   border-radius: 15px;
   box-shadow: 3px 3px black;
-}
-.starSize {
-  height: 2vh;
-  margin-top: 0.5vh;
 }
 </style>

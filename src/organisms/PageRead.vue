@@ -55,6 +55,8 @@
       <img :src="require('../assets/Images/Pencil.png')" alt="" class="pencilAlign"/>
     </div>
   </div>
+  <div v-if="this.ParagraphCounter<this.ParagraphTotal" class="pencilInvisibleBox"
+       @click="this.incrementPageCounter"/>
 </template>
 
 <script>
@@ -123,8 +125,8 @@ export default {
   position: absolute;
   left: 49%;
   transform: translate(-50%);
-  width: 100vh;
-  max-width: min(37vh,69vw);
+  width: min(37vh,69vw);
+  z-index: 1;
 }
 .TextSize1 {
   padding-top: 0.2vh;
@@ -169,5 +171,17 @@ export default {
 .pencilAlign {
   height: min(4vh,8vw);
   padding-left: 75%;
+}
+.pencilInvisibleBox {
+  position: absolute;
+  transform: translate(-50%);
+  width: min(37vh,69vw);
+  left: 49%;
+  bottom: 0;
+  height: 80%;
+  z-index: 0;
+}
+.pencilInvisibleBox:hover,.pencilAlign:hover {
+  cursor: pointer;
 }
 </style>

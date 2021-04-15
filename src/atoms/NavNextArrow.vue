@@ -1,25 +1,26 @@
 <template>
-  <img class="NextArrowSize NextArrowAlign" alt="" src="../assets/Images/nextButton.png"
-       @click="this.$emit('next-page')"
-       :style="{left: this.$store.state.AspectRatio > 2
-           ? windowWidth/2+windowHeight*0.18+'px'
-           : windowWidth/2+windowHeight*0.23+'px'}"/>
+  <div @click="this.$emit('next-page')"
+       :style="{width: this.$store.state.AspectRatio > 1 ? this.$store.state.AspectRatio > 1.5 ?
+        '14vw' : '23vw' : windowWidth/2-windowHeight*0.25+'px'}"
+       class="NextButtonSize">
+    <img class="NextArrowSize NextArrowAlign" alt="" src="../assets/Images/nextButton.png"/>
+  </div>
 </template>
 
 <script>
 export default {
-  emits: ['NextPage','next-page'],
+  emits: ['NextPage', 'next-page'],
   data() {
-    let windowWidth = 1;
-    let windowHeight = 1;
+    const windowWidth = 1;
+    const windowHeight = 1;
     return { windowWidth, windowHeight };
   },
   created() {
-    window.addEventListener('resize',this.handleResize);
+    window.addEventListener('resize', this.handleResize);
     this.handleResize();
   },
   unmounted() {
-    window.removeEventListener('resize',this.handleResize);
+    window.removeEventListener('resize', this.handleResize);
   },
   methods: {
     handleResize() {
@@ -32,12 +33,22 @@ export default {
 
 <style scoped>
 .NextArrowAlign {
-  position: fixed;
+  position: absolute;
   top: 50%;
+  left: 50%;
   transform: translate(-50%, -50%);
 }
 .NextArrowSize {
   width: auto;
   height: min(5vh,9vw)
+}
+.NextButtonSize {
+  position: fixed;
+  top: 15%;
+  height: 70%;
+  right: 0;
+}
+.NextButtonSize:hover {
+  cursor: pointer;
 }
 </style>

@@ -22,11 +22,10 @@
       <div v-if="this.data[0]" class="QuestionSize text-left">
         {{this.data[0].lineParts[0].words.join(' ')}}
       </div>
-      <div v-for:="(choice,index) in AnswerArray">
+      <LoadBar v-if="showLoadBar && AnswerArray[0].name" @load-done="this.showLoadBar=false"
+               timer-text="Loading Answers" timer-length="3" class="mt-4"/>
+      <div v-else v-for:="(choice,index) in AnswerArray">
         <button v-if="choice.name" class="button buttonFormat"
-                :style="{
-                    backgroundColor: choice.clickedOn && choice.value  ? '#9cd4d4' : 'white',
-                    borderColor: choice.clickedOn && !choice.value ? '#fc7574' : '#9cd4d4'}"
                 :disabled="choice.clickedOn || this.allDisabled"
                 @click="choiceClick(index)">
           {{ choice.name.join(" ") }}
@@ -74,7 +73,10 @@
 </template>
 
 <script>
+import LoadBar from '../atoms/LoadBar.vue';
+
 export default {
+  components: { LoadBar },
   emits: ['ShowHand', 'show-hand'],
   props: {
     data: {
@@ -87,6 +89,7 @@ export default {
     },
   },
   data() {
+    const showLoadBar = true;
     const AnswerArray = [
       {
         name: this.data[0].lineParts[1].words,
@@ -124,6 +127,7 @@ export default {
     const soundStart = new Audio(require('../assets/sounds/387232__isteak__badge-coin-win.wav'));
     const soundFail = new Audio(require('../assets/sounds/FailHonkShort2.mp3'));
     return {
+      showLoadBar,
       AnswerArray,
       AnswerValue,
       allDisabled,
@@ -140,16 +144,21 @@ export default {
       this.AnswerArray[index].clickedOn = true;
       this.allDisabled = this.AnswerArray[index].value;
       this.AnswerValue = this.AnswerArray[index].value;
-      setTimeout(() => { this.AnswerValue = null; }, 5750);
+      setTimeout(() => { this.AnswerValue = null; }, 6000);
       setTimeout(() => { this.soundStart.play(); }, 500);
       setTimeout(() => { this.soundClap.play(); }, 1000);
       setTimeout(() => { this.soundClap.play(); }, 2000);
       setTimeout(() => { this.soundClap.play(); }, 3000);
       if (this.AnswerArray[index].value) {
+        const tempPage = +this.$store.state.BookPage + 1;
+        if (tempPage > this.$store.state.HighestPage) {
+          this.$store.dispatch('setHighestPage', tempPage);
+        }
+        this.$store.dispatch('setBookPage', tempPage);
         setTimeout(() => { this.soundCorrect.play(); }, 4400);
         setTimeout(() => { this.soundApplause.play(); }, 4800);
         setTimeout(() => { this.soundApplause.pause(); }, 5750);
-        setTimeout(() => { this.$emit('show-hand', true); }, 5750);
+        setTimeout(() => { this.$router.push('/scoreboard'); }, 5750);
       } else {
         setTimeout(() => { this.soundFail.play(); }, 4400);
       }
@@ -198,14 +207,20 @@ export default {
   font-size: min(2.2vh,4vw);
   padding-top: min(1.2vh,2vw);
   padding-bottom: min(1vh,1.8vw);
-  padding-left: min(1vh,3.6vw);
+  padding-left: min(3vh,5vw);
   margin-top: min(1vh,1.8vw);
   margin-bottom: min(1vh,1.8vw);
   min-height: min(4vh,7.2vw);
   width: 95%;
+  background-color: white;
   border-style: solid;
+  border-color: #9cd4d4;
   border-width: 4px;
   border-radius: 30px;
+}
+.buttonFormat:disabled {
+  color: black;
+  border-color: #fc7574;
 }
 .centeredAnswerText {
   position: absolute;

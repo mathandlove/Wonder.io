@@ -16,16 +16,21 @@
         <div>WordFilter: {{WordFilter}}</div>
       </div>
     </div>
-    <div v-for="Book in WordFilteredBooks" :key="Book" @click="BookSelected(Book)"
-         class="d-inline-flex cardSize m-md-3 m-1">
-        <img alt="" class="w-100"
-          :src="require(`../assets/Books/book${Book}/images/cover.png`)"/>
+    <div v-for="Book in WordFilteredBooks" :key="Book"
+         class="d-inline-flex m-md-3 m-1">
+      <div class="cardSize" @click="BookSelected(Book)">
+        <img alt="" class="w-100" :src="require(`../assets/Books/book${Book}/images/cover.png`)"/>
+        <ScoreBar class="ScoreBarAlignment" :points="0"/>
+      </div>
     </div>
   </div>
 </template>
 
 <script>
+import ScoreBar from '@/atoms/ScoreBar.vue';
+
 export default {
+  components: { ScoreBar },
   data() {
     const { GradeFilter } = this.$store.state;
     const WordFilter = '';
@@ -50,7 +55,7 @@ export default {
       localStorage.removeItem('HighestPage');
       this.$store.dispatch('setBookID', bookID);
       this.$store.dispatch('setBookPage', 1);
-      this.$router.push(`/book/${bookID}/1`);
+      this.$router.push('/join');
     },
   },
 };
@@ -90,5 +95,10 @@ export default {
 .inputSize {
   height: 5vh;
   margin-top: 1.5vh;
+}
+.ScoreBarAlignment {
+  margin-top: 2vh;
+  margin-left: 10%;
+  margin-right: 10%;
 }
 </style>

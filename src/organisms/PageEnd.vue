@@ -7,7 +7,7 @@
 export default {
   emits: ['ShowHand', 'show-hand'],
   created() {
-    this.$emit('show-hand', false);
+    this.$emit('show-hand', true);
   },
 };
 </script>

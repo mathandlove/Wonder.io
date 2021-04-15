@@ -1,5 +1,5 @@
 <template>
-  <div class="backgroundPadding BackGroundColor noSelectText">
+  <div class="BookBackGroundStyle noSelectText">
     <div class="container w-100">
       <MainNavBar @show-modal="this.ViewRestartModal=true"/>
       <RestartModal v-if="this.ViewRestartModal" @close-modal="this.ViewRestartModal=false"/>
@@ -20,7 +20,7 @@
         <PageEnd v-else-if="this.GetPageData.type==='end'" @show-hand="ToggleHand"/>
         <PageNoExist v-else @show-hand="ToggleHand"/>
       </div>
-      <MainFooter :total-pages="this.TotalPages" :points="this.GetPointsData"/>
+      <MainFooter :total-pages="this.TotalPages"/>
       <NavPrevArrow @prev-page="RoutePrevPage"/>
       <NavNextArrow @next-page="this.RouteNextPage(true)"
                     v-if="this.ShowHand || (this.HighestPage > this.page)"/>
@@ -88,9 +88,6 @@ export default {
       if (tempData) { return (tempData); }
       return [{ type: null }];
     },
-    GetPointsData() {
-      return 0
-    }
   },
   methods: {
     AdjustQuestionCounter(data) {
@@ -123,18 +120,22 @@ export default {
     },
     RouteNextPage(newHighestPage) {
       let tempPage = +this.page + 1;
-      this.PageSkipArray.forEach((choice) => {
-        if (tempPage > choice.StartPage && tempPage < choice.EndPage) {
-          if (choice.SelectedPage && tempPage <= choice.SelectedPage) {
-            tempPage = choice.SelectedPage;
-          } else { tempPage = choice.EndPage; }
+      if (tempPage > this.TotalPages) {
+        this.$router.push('/like');
+      } else {
+        this.PageSkipArray.forEach((choice) => {
+          if (tempPage > choice.StartPage && tempPage < choice.EndPage) {
+            if (choice.SelectedPage && tempPage <= choice.SelectedPage) {
+              tempPage = choice.SelectedPage;
+            } else { tempPage = choice.EndPage }
+          }
+        });
+        if (newHighestPage && tempPage > this.$store.state.HighestPage) {
+          this.$store.dispatch('setHighestPage', tempPage);
         }
-      });
-      if (newHighestPage && tempPage > this.$store.state.HighestPage) {
-        this.$store.dispatch('setHighestPage', tempPage);
+        this.$store.dispatch('setBookPage', tempPage);
+        this.$router.push(`/book/${this.$store.state.BookID}/${tempPage}`);
       }
-      this.$store.dispatch('setBookPage', tempPage);
-      this.$router.push(`/book/${this.$store.state.BookID}/${tempPage}`);
     },
     RoutePrevPage() {
       let tempPage = this.page - 1;
@@ -159,7 +160,6 @@ export default {
     [this.BookObject] = this.$store.state.BookArray[this.id - 1];
     this.TotalPages = this.BookObject.totalPages;
     this.createPageSkipArray();
-    this.$store.dispatch('setAspectRatio',window.innerHeight/window.innerWidth);
   },
   beforeUpdate() {
     this.page = this.$store.state.BookPage;
@@ -169,9 +169,10 @@ export default {
 </script>
 
 <style scoped>
-.backgroundPadding {
+.BookBackGroundStyle {
   height: 100vh;
   width: 100vw;
+  background-color: #96c5c2;
 }
 .pageContainer {
   position: relative;
@@ -182,8 +183,5 @@ export default {
 }
 .noSelectText {
   user-select: none;
-}
-.BackGroundColor {
-  background-color: #96c5c2;
 }
 </style>
