@@ -4,7 +4,7 @@
     <div class="d-none d-lg-block col-lg-3"/>
     <div class="col-4 col-lg-2">
       <div class="fontRoboto textSize">POINTS</div>
-      <ScoreBar :points="this.$store.state.Scores[0].score"/>
+      <ScoreBar :points="this.$store.state.Scores[0].NewScore"/>
     </div>
     <div class="col-4 col-lg-2"></div>
     <div class="col-4 col-lg-2">

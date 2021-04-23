@@ -7,8 +7,8 @@
         {{this.SortedPlayers[2].name}}
       </div>
       <img  class="MedalStyle MedalDrop ShiftBronze" src="../assets/Images/MedalBronze.svg" alt=""/>
-      <div v-if="this.SortedPlayers[0].score" class="PlayerScore ShiftBronze">
-        {{CommaFormat(this.SortedPlayers[2].score)}}
+      <div v-if="this.SortedPlayers[0].NewScore" class="PlayerScore ShiftBronze">
+        {{CommaFormat(this.SortedPlayers[2].NewScore)}}
       </div>
     </div>
     <div v-if="MakeSilverDrop">
@@ -16,8 +16,8 @@
         {{this.SortedPlayers[1].name}}
       </div>
       <img class="MedalStyle MedalDrop ShiftSilver" src="../assets/Images/MedalSilver.svg" alt=""/>
-      <div v-if="this.SortedPlayers[0].score" class="PlayerScore ShiftSilver">
-        {{CommaFormat(this.SortedPlayers[1].score)}}
+      <div v-if="this.SortedPlayers[0].NewScore" class="PlayerScore ShiftSilver">
+        {{CommaFormat(this.SortedPlayers[1].NewScore)}}
       </div>
     </div>
     <div v-if="MakeGoldDrop">
@@ -25,8 +25,8 @@
         {{this.SortedPlayers[0].name}}
       </div>
       <img class="MedalStyle MedalDrop ShiftGold" src="../assets/Images/MedalGold.svg" alt=""/>
-      <div v-if="this.SortedPlayers[0].score" class="PlayerScore ShiftGold">
-        {{CommaFormat(this.SortedPlayers[0].score)}}
+      <div v-if="this.SortedPlayers[0].NewScore" class="PlayerScore ShiftGold">
+        {{CommaFormat(this.SortedPlayers[0].NewScore)}}
       </div>
     </div>
     <button class="btn bg-success NextStyle border border-dark"
@@ -55,8 +55,8 @@ export default {
       return formatType.format(number);
     },
     numberDescend(a, b) {
-      const number1 = a.score;
-      const number2 = b.score;
+      const number1 = a.NewScore;
+      const number2 = b.NewScore;
       let comparison = 0;
       if (number1 < number2) { comparison = 1; } else if (number1 > number2) { comparison = -1; }
       return comparison;

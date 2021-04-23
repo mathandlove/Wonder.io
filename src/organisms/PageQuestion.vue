@@ -23,7 +23,7 @@
         {{this.data[0].lineParts[0].words.join(' ')}}
       </div>
       <LoadBar v-if="showLoadBar && AnswerArray[0].name" @load-done="this.showLoadBar=false"
-               timer-text="Loading Answers" timer-length="3" class="mt-4"/>
+               timer-text="Loading Questions" timer-length="3" class="mt-4"/>
       <div v-else v-for:="(choice,index) in AnswerArray">
         <button v-if="choice.name" class="button buttonFormat"
                 :disabled="choice.clickedOn || this.allDisabled"
@@ -121,6 +121,7 @@ export default {
     const Baseline = {
       centerX: 629, centerY: -337, width: 1491, height: 2598,
     };
+    const wrongCounter = 0;
     const soundClap = new Audio(require('../assets/sounds/woodclap.wav'));
     const soundCorrect = new Audio(require('../assets/sounds/274178__littlerobotsoundfactory__jingle-win-synth-02.wav'));
     const soundApplause = new Audio(require('../assets/sounds/audienceClap.wav'));
@@ -137,6 +138,7 @@ export default {
       soundStart,
       soundFail,
       Baseline,
+      wrongCounter,
     };
   },
   methods: {
@@ -158,8 +160,11 @@ export default {
         setTimeout(() => { this.soundCorrect.play(); }, 4400);
         setTimeout(() => { this.soundApplause.play(); }, 4800);
         setTimeout(() => { this.soundApplause.pause(); }, 5750);
-        setTimeout(() => { this.$router.push('/scoreboard'); }, 5750);
+        setTimeout(() => {
+          this.$router.push({ name: 'Scoreboard', params: { wrongAnswers: this.wrongCounter } });
+        }, 5750);
       } else {
+        this.wrongCounter += 1;
         setTimeout(() => { this.soundFail.play(); }, 4400);
       }
     },

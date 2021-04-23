@@ -58,8 +58,7 @@ export default {
   components: { MainNavBar },
   data() {
     let userName;
-    let oldUsername;
-    return { userName, oldUsername };
+    return { userName };
   },
   methods: {
     getBookInfo() {
@@ -71,16 +70,10 @@ export default {
       };
     },
     HandleLetsGo() {
-      this.$store.dispatch('setUserName', this.userName).then(() => {
+      this.$store.dispatch('setUserName', { id: 0, name: this.userName }).then(() => {
         this.$router.push(`/book/${this.$store.state.BookID}/1`);
       });
     },
-  },
-  created() {
-    if (!localStorage.getItem('UserName')) {
-      this.$store.dispatch('setUserName', 'Jane Doe');
-    }
-    this.oldUsername = localStorage.getItem('UserName');
   },
 };
 </script>

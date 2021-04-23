@@ -20,11 +20,19 @@ export default createStore({
     BookID: +localStorage.getItem('BookID') || null,
     BookPage: +localStorage.getItem('BookPage') || 1,
     AspectRatio: +localStorage.getItem('AspectRatio') || 1,
-    Scores: [
-      { id: 0, name: localStorage.getItem('UserName'), score: 54066 },
-      { id: 1, name: 'BotName1', score: 90890 },
-      { id: 2, name: 'BotName2', score: 45200 },
-      { id: 3, name: 'BotName3', score: 2333 },
+    Scores: JSON.parse(localStorage.getItem('Scores')) || [
+      {
+        id: 0, name: 'Jane Doe', OldScore: 0, NewScore: 0,
+      },
+      {
+        id: 1, name: 'BotName1', OldScore: 0, NewScore: 0,
+      },
+      {
+        id: 2, name: 'BotName2', OldScore: 0, NewScore: 0,
+      },
+      {
+        id: 3, name: 'BotName3', OldScore: 0, NewScore: 0,
+      },
     ],
   },
   mutations: {
@@ -49,8 +57,20 @@ export default createStore({
       localStorage.setItem('AspectRatio', event);
     },
     SET_USER_NAME(state, event) {
-      state.Scores[0].name = event;
-      localStorage.setItem('UserName', event);
+      state.Scores[event.id].name = event.name;
+      localStorage.setItem('Scores', JSON.stringify(state.Scores));
+    },
+    SET_USER_SCORE_ADD(state, event) {
+      state.Scores[event.id].OldScore = state.Scores[event.id].NewScore;
+      state.Scores[event.id].NewScore += event.add;
+      localStorage.setItem('Scores', JSON.stringify(state.Scores));
+    },
+    CLEAR_SCORES(state) {
+      for (let i = 0; i <= 3; i += 1) {
+        state.Scores[i].OldScore = 0;
+        state.Scores[i].NewScore = 0;
+      }
+      localStorage.setItem('Scores', JSON.stringify(state.Scores));
     },
   },
   actions: {
@@ -69,8 +89,14 @@ export default createStore({
     setAspectRatio({ commit }, newRatio) {
       commit('SET_ASPECT_RATIO', newRatio);
     },
-    setUserName({ commit }, newName) {
-      commit('SET_USER_NAME', newName);
+    setUserName({ commit }, newNameInfo) {
+      commit('SET_USER_NAME', newNameInfo);
+    },
+    setUserScoreAdd({ commit }, newScoreAdd) {
+      commit('SET_USER_SCORE_ADD', newScoreAdd);
+    },
+    ClearScores({ commit }) {
+      commit('CLEAR_SCORES');
     },
   },
   modules: {

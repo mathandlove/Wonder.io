@@ -21,6 +21,7 @@ export default {
     YesSelected() {
       this.$store.dispatch('setHighestPage', 1);
       this.$store.dispatch('setBookPage', 1);
+      this.$store.dispatch('ClearScores');
       this.$router.push('/join');
       this.$emit('close-modal');
     },

@@ -55,6 +55,7 @@ export default {
       localStorage.removeItem('HighestPage');
       this.$store.dispatch('setBookID', bookID);
       this.$store.dispatch('setBookPage', 1);
+      this.$store.dispatch('ClearScores');
       this.$router.push('/join');
     },
   },

@@ -39,6 +39,7 @@ const routes = [
     name: 'Scoreboard',
     component: ScoreBoard,
     meta: { title: 'Wonder.io - Scoreboard' },
+    props: true,
   },
   {
     path: '/join',
