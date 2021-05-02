@@ -18,7 +18,7 @@
       <div v-for="Book in WordFilteredBooks" :key="Book" @click="BookSelected(Book)"
            class="d-inline-flex cardSize m-md-3 m-1">
           <img alt="" class="w-100"
-            :src="require(`../assets/Books/book${Book}/images/cover.png`)"/>
+            src="https://necromonicon.sfo2.cdn.digitaloceanspaces.com/images/book10/cover.png"/>
       </div>
     </div>
   </div>
