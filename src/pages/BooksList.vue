@@ -45,6 +45,7 @@ export default {
         .includes(this.WordFilter),
     );
   },
+  
   methods: {
     BookSelected(bookID) {
       localStorage.removeItem('HighestPage');
@@ -53,6 +54,9 @@ export default {
       this.$router.push(`/book/${bookID}/1`);
     },
   },
+  mounted() {
+    console.log("mounted!!");
+  }
 };
 </script>
 
