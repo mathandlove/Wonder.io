@@ -21,7 +21,8 @@ export default {
     YesSelected() {
       this.$store.dispatch('setHighestPage', 1);
       this.$store.dispatch('setBookPage', 1);
-      this.$router.push(`/book/${this.$store.state.BookID}/1`);
+      this.$store.dispatch('ClearScores');
+      this.$router.push('/join');
       this.$emit('close-modal');
     },
   },
@@ -33,8 +34,8 @@ export default {
   position: absolute;
   background-color: #000000;
   opacity: 0.9;
-  height: 81vh;
-  width: 50vh;
+  height: min(81vh,145vw);
+  width: min(50vh,90vw);
   margin-top: 2vh;
   z-index: 1;
   left: 50%;
@@ -43,18 +44,18 @@ export default {
 .restartQuestionStyle {
   color: white;
   text-align: center;
-  font-size: 5vh;
-  padding-top: 15vh;
-  padding-left: 10vh;
-  padding-bottom: 5vh;
-  width: 38vh;
+  font-size: min(5vh,9vw);
+  padding-top: min(15vh,27vw);
+  padding-left: min(10vh,18vw);
+  padding-bottom: min(5vh,9vw);
+  width: min(38vh,68vw);
 }
 .ButtonStyle {
   display: inline-flex;
   flex-wrap: wrap;
   justify-content: center;
-  width: 15vh;
-  margin-left: 7vh;
+  width: min(15vh,27vw);
+  margin-left: min(7vh,12.5vw);
   border-width: 0;
 }
 .YesButtonColor {
@@ -70,12 +71,12 @@ export default {
   text-decoration: underline;
 }
 .textSize {
-  font-size: 8vh;
+  font-size: min(8vh,14.4vw);
 }
 .noImageHeight {
-  height: 8vh;
+  height: min(8vh,14.4vw);
 }
 .yesImageHeight {
-  height: 10vh;
+  height: min(10vh,18vw);
 }
 </style>

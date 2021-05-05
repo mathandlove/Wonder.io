@@ -22,21 +22,36 @@
       <div v-if="this.data[0]" class="QuestionSize text-left">
         {{this.data[0].lineParts[0].words.join(' ')}}
       </div>
-      <div v-for:="(choice,index) in AnswerArray">
+      <LoadBar v-if="showLoadBar && AnswerArray[0].name" @load-done="this.showLoadBar=false"
+               timer-text="Loading Questions" timer-length="3" class="mt-4"/>
+      <div v-else v-for:="(choice,index) in AnswerArray">
         <button v-if="choice.name" class="button buttonFormat"
-                :style="{
-                    backgroundColor: choice.clickedOn && choice.value  ? '#9cd4d4' : 'white',
-                    borderColor: choice.clickedOn && !choice.value ? '#fc7574' : '#9cd4d4'}"
                 :disabled="choice.clickedOn || this.allDisabled"
                 @click="choiceClick(index)">
           {{ choice.name.join(" ") }}
         </button>
-        <button v-if="!choice.name" class="buttonFixed border-0 bg-transparent"
+        <button v-if="!choice.name && this.$store.state.AspectRatio < 2"
+                class="buttonFixed border-0 bg-transparent"
                 :style="{
                     left: 50+(choice.coords[0]-Baseline.centerX)/Baseline.width*125+'%',
                     top: 139-(choice.coords[1]-Baseline.centerY)/Baseline.height*330+'%',
                     width: choice.coords[2]/Baseline.width*125+'%',
                     height: choice.coords[3]/Baseline.height*330+'%',
+                }"
+                :disabled="choice.clickedOn || this.allDisabled"
+                @click="choiceClick(index)">
+          <img v-if="choice.clickedOn && choice.value" class="w-100 h-100"
+               :src="require(`../assets/Images/Circle.png`)"/>
+          <img v-else-if="choice.clickedOn && !choice.value" class="w-100 h-100"
+               :src="require(`../assets/Images/X.png`)"/>
+        </button>
+        <button v-if="!choice.name && this.$store.state.AspectRatio > 2"
+                class="buttonFixed border-0 bg-transparent"
+                :style="{
+                    left: 52+(choice.coords[0]-Baseline.centerX)/Baseline.width*125+'%',
+                    top: 145-(choice.coords[1]-Baseline.centerY)/Baseline.height*440+'%',
+                    width: choice.coords[2]/Baseline.width*130+'%',
+                    height: choice.coords[3]/Baseline.height*400+'%',
                 }"
                 :disabled="choice.clickedOn || this.allDisabled"
                 @click="choiceClick(index)">
@@ -58,7 +73,10 @@
 </template>
 
 <script>
+import LoadBar from '../atoms/LoadBar.vue';
+
 export default {
+  components: { LoadBar },
   emits: ['ShowHand', 'show-hand'],
   props: {
     data: {
@@ -71,6 +89,7 @@ export default {
     },
   },
   data() {
+    const showLoadBar = true;
     const AnswerArray = [
       {
         name: this.data[0].lineParts[1].words,
@@ -102,12 +121,14 @@ export default {
     const Baseline = {
       centerX: 629, centerY: -337, width: 1491, height: 2598,
     };
+    const wrongCounter = 0;
     const soundClap = new Audio(require('../assets/sounds/woodclap.wav'));
     const soundCorrect = new Audio(require('../assets/sounds/274178__littlerobotsoundfactory__jingle-win-synth-02.wav'));
     const soundApplause = new Audio(require('../assets/sounds/audienceClap.wav'));
     const soundStart = new Audio(require('../assets/sounds/387232__isteak__badge-coin-win.wav'));
     const soundFail = new Audio(require('../assets/sounds/FailHonkShort2.mp3'));
     return {
+      showLoadBar,
       AnswerArray,
       AnswerValue,
       allDisabled,
@@ -117,6 +138,7 @@ export default {
       soundStart,
       soundFail,
       Baseline,
+      wrongCounter,
     };
   },
   methods: {
@@ -124,17 +146,25 @@ export default {
       this.AnswerArray[index].clickedOn = true;
       this.allDisabled = this.AnswerArray[index].value;
       this.AnswerValue = this.AnswerArray[index].value;
-      setTimeout(() => { this.AnswerValue = null; }, 5750);
+      setTimeout(() => { this.AnswerValue = null; }, 6000);
       setTimeout(() => { this.soundStart.play(); }, 500);
       setTimeout(() => { this.soundClap.play(); }, 1000);
       setTimeout(() => { this.soundClap.play(); }, 2000);
       setTimeout(() => { this.soundClap.play(); }, 3000);
       if (this.AnswerArray[index].value) {
+        const tempPage = +this.$store.state.BookPage + 1;
+        if (tempPage > this.$store.state.HighestPage) {
+          this.$store.dispatch('setHighestPage', tempPage);
+        }
+        this.$store.dispatch('setBookPage', tempPage);
         setTimeout(() => { this.soundCorrect.play(); }, 4400);
         setTimeout(() => { this.soundApplause.play(); }, 4800);
         setTimeout(() => { this.soundApplause.pause(); }, 5750);
-        setTimeout(() => { this.$emit('show-hand', true); }, 5750);
+        setTimeout(() => {
+          this.$router.push({ name: 'Scoreboard', params: { wrongAnswers: this.wrongCounter } });
+        }, 5750);
       } else {
+        this.wrongCounter += 1;
         setTimeout(() => { this.soundFail.play(); }, 4400);
       }
     },
@@ -147,7 +177,7 @@ export default {
 
 <style scoped>
 .maxWidth {
-  max-width: 38vh;
+  max-width: min(38vh,67vw);
 }
 .questionAlign {
   z-index: 1;
@@ -169,27 +199,33 @@ export default {
   transform: translate(-50%, -50%);
 }
 .QuestionTitleSize {
-  font-size: 6vh;
+  font-size: min(6vh,10vw);
 }
 .QuestionSize {
-  font-size: 3.5vh;
-  min-height: 15vh;
+  font-size: min(3.5vh,6.5vw);
+  min-height: min(15vh,27vw);
 }
 .buttonFormat {
   display: flex;
   justify-content: flex-start;
   text-align: left;
-  font-size: 2.2vh;
-  padding-top: 1vh;
-  padding-bottom: 1vh;
-  padding-left: 2vh;
-  margin-top: 1vh;
-  margin-bottom: 1vh;
-  min-height: 4vh;
+  font-size: min(2.2vh,4vw);
+  padding-top: min(1.2vh,2vw);
+  padding-bottom: min(1vh,1.8vw);
+  padding-left: min(3vh,5vw);
+  margin-top: min(1vh,1.8vw);
+  margin-bottom: min(1vh,1.8vw);
+  min-height: min(4vh,7.2vw);
   width: 95%;
+  background-color: white;
   border-style: solid;
+  border-color: #9cd4d4;
   border-width: 4px;
   border-radius: 30px;
+}
+.buttonFormat:disabled {
+  color: black;
+  border-color: #fc7574;
 }
 .centeredAnswerText {
   position: absolute;
@@ -201,12 +237,12 @@ export default {
   position: absolute;
   top: 50%;
   left: 50%;
-  width: 30vh;
-  height: 45vh;
+  width: min(30vh,54vw);
+  height: min(45vh,81vw);
   transform: translate(-50%, -50%);
 }
 .fontSizeAnswer {
-  font-size: 8vh;
+  font-size: min(8vh,14vw);
 }
 .animation {
   background-size: cover;

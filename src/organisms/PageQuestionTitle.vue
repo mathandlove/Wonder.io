@@ -34,16 +34,16 @@ export default {
 <style scoped>
 .centeredQuestionTitle {
   position: absolute;
-  top: 20vh;
+  top: min(20vh,38vw);
   left: 50%;
   transform: translate(-50%);
   width: 100vh;
-  max-width: 38vh;
+  max-width: min(38vh,65vw);
 }
 .fontSizeQuestionTitle {
-  font-size: 6vh;
+  font-size: min(6vh,10vw);
 }
 .fontsizeQuestionText {
-  font-size: 5vh;
+  font-size: min(5vh,9vw);;
 }
 </style>

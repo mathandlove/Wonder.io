@@ -1,31 +1,36 @@
 <template>
-  <div class="backgroundPadding">
-    <div class="container border border-dark bg-light vh-100">
-      <div class="navBarColor navBarHeight row text-center">
-        <div class="col-2">
-          <router-link to="/">
-            <img class="iconSize" alt="" src="../assets/Images/MenuButton.png"/>
-          </router-link>
-        </div>
-        <input class="col-4 col-md-2 inputSize" type="text"
-               placeholder="Search..." v-model="WordFilter"/>
-        <div class="col-6 col-md-4 WonderStyle"><strong>Wonder Stories</strong></div>
-        <div class="col-md-4 d-none d-md-block">
-          <div>GradeFilter: {{GradeFilter}}</div>
-          <div>WordFilter: {{WordFilter}}</div>
-        </div>
+  <div class="container-fluid bg-light backgroundPadding">
+    <div class="navBarColor navBarHeight row text-center">
+      <div class="col-2 p-0 m-0">
+        <router-link to="/">
+          <img class="menuIconSize" alt="" src="../assets/Images/MenuButton.png"/>
+        </router-link>
       </div>
-      <div v-for="Book in WordFilteredBooks" :key="Book" @click="BookSelected(Book)"
-           class="d-inline-flex cardSize m-md-3 m-1">
-          <img alt="" class="w-100"
-            src="https://necromonicon.sfo2.cdn.digitaloceanspaces.com/images/book10/cover.png"/>
+      <input class="col-4 col-md-2 inputSize" type="text"
+             placeholder="Search..." v-model="WordFilter"/>
+      <div class="col-6 col-md-4">
+        <img class="WonderLogoStyle" alt="" src="../assets/Images/WonderStories_Logo_BlackAlt.png"/>
+      </div>
+      <div class="col-md-4 d-none d-md-block">
+        <div>GradeFilter: {{GradeFilter}}</div>
+        <div>WordFilter: {{WordFilter}}</div>
+      </div>
+    </div>
+    <div v-for="Book in WordFilteredBooks" :key="Book"
+         class="d-inline-flex m-md-3 m-1">
+      <div class="cardSize" @click="BookSelected(Book)">
+        <img alt="" class="w-100" src="https://necromonicon.sfo2.cdn.digitaloceanspaces.com/images/book10/cover.png"/>
+        <ScoreBar class="ScoreBarAlignment" :points="0"/>
       </div>
     </div>
   </div>
 </template>
 
 <script>
+import ScoreBar from '@/atoms/ScoreBar.vue';
+
 export default {
+  components: { ScoreBar },
   data() {
     const { GradeFilter } = this.$store.state;
     const WordFilter = '';
@@ -51,7 +56,8 @@ export default {
       localStorage.removeItem('HighestPage');
       this.$store.dispatch('setBookID', bookID);
       this.$store.dispatch('setBookPage', 1);
-      this.$router.push(`/book/${bookID}/1`);
+      this.$store.dispatch('ClearScores');
+      this.$router.push('/join');
     },
   },
   mounted() {
@@ -64,7 +70,6 @@ export default {
 .backgroundPadding {
   min-height: 100vh;
   min-width: 100vw;
-  background-color: grey;
 }
 .cardSize {
   width: 20vw;
@@ -72,7 +77,7 @@ export default {
   height: 32vw;
   max-height: 32vh;
 }
-.iconSize {
+.menuIconSize {
   height: 5vh;
   margin-top: 1.5vh;
   width: auto;
@@ -87,12 +92,18 @@ export default {
 .navBarHeight {
   height: 8vh;
 }
-.WonderStyle {
-  font-size: 3vh;
-  padding-top: 2vh;
+.WonderLogoStyle {
+  margin-top: 2vh;
+  height: auto;
+  width: 18vh;
 }
 .inputSize {
   height: 5vh;
   margin-top: 1.5vh;
+}
+.ScoreBarAlignment {
+  margin-top: 2vh;
+  margin-left: 10%;
+  margin-right: 10%;
 }
 </style>

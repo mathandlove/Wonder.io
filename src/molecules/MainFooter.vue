@@ -1,19 +1,13 @@
 <template>
-  <div class="footerHeight row text-center">
-    <div class="col-4 col-lg-3 col-xl-2">
+  <div class="footerHeight row text-center"
+       :style="{'padding-top': this.$store.state.AspectRatio > 2 ? '4vh' : '0'}">
+    <div class="d-none d-lg-block col-lg-3"/>
+    <div class="col-4 col-lg-2">
       <div class="fontRoboto textSize">POINTS</div>
-      <div class="progressBarStyle fontRoboto bg-white">
-        <div class="row d-flex">
-          <img class="col-3 starSize pr-1" alt="" src="../assets/Images/Star.svg"/>
-          <div class="col-6">
-            {{ points }}
-          </div>
-          <img class="col-3 starSize pl-1" alt="" src="../assets/Images/Star.svg"/>
-        </div>
-      </div>
+      <ScoreBar :points="this.$store.state.Scores[0].NewScore"/>
     </div>
-    <div class="col-4 col-lg-6 col-xl-8"></div>
-    <div class="col-4 col-lg-3 col-xl-2">
+    <div class="col-4 col-lg-2"></div>
+    <div class="col-4 col-lg-2">
       <div class="fontRoboto textSize">PAGE</div>
       <div class="progressBarStyle fontRoboto" :style="{background:
                // eslint-disable-next-line max-len
@@ -21,17 +15,17 @@
         {{this.PageNum()}}
       </div>
     </div>
+    <div class="d-none d-lg-block col-lg-3"/>
   </div>
 </template>
 
 <script>
+import ScoreBar from '@/atoms/ScoreBar.vue';
+
 export default {
+  components: { ScoreBar },
   props: {
     totalPages: {
-      type: Number,
-      required: true,
-    },
-    points: {
       type: Number,
       required: true,
     },
@@ -69,9 +63,5 @@ export default {
   border-color: black;
   border-radius: 15px;
   box-shadow: 3px 3px black;
-}
-.starSize {
-  height: 2vh;
-  margin-top: 0.5vh;
 }
 </style>

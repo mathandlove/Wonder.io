@@ -1,7 +1,8 @@
 <template>
-  <div class="blueBackground">
-    <div class="paddingTop"/>
-    <div class="ChalkboardBackground text-center">
+  <div class="blueBackground text-center">
+    <div :style="{'padding-top': this.$store.state.AspectRatio > 2 ? '20vh' : '10vh'}"/>
+    <div :class="[this.$store.state.AspectRatio > 1 ? this.$store.state.AspectRatio > 2 ?
+          'ChalkboardTall' : 'ChalkboardMid' : 'ChalkboardWide']" class="ChalkboardBasics">
       <GradeSelector v-for="Grade in GradeArray" :key="Grade" :Grade="Grade"/>
       <div class="text-black textThickness">Choose your Reading Grade</div>
     </div>
@@ -10,6 +11,7 @@
 
 <script>
 import GradeSelector from '@/molecules/GradeSelector.vue';
+
 export default {
   components: {
     GradeSelector,
@@ -23,27 +25,40 @@ export default {
 
 <style scoped>
 .blueBackground {
-  width: 100%;
+  background-color: #96c5c2;
   height: 100vh;
-  background: #9bcbc9;
+  width: 100vw;
 }
-.paddingTop {
-  padding-top: 15vh;
-}
-.ChalkboardBackground {
-  height: 85vh;
-  overflow: hidden;
+.ChalkboardBasics {
   margin-left: 5vw;
   margin-right: 5vw;
-  padding-left: 5vw;
-  padding-right: 5vw;
-  padding-top: 7vw;
-  background-image: url("../assets/Images/Chalkboard.png");
   background-size: 100%;
   background-repeat: no-repeat;
+  overflow: hidden;
+}
+.ChalkboardWide {
+  height: 90vh;
+  padding-left: 8vw;
+  padding-right: 8vw;
+  padding-top: 5vw;
+  background-image: url("../assets/Images/Chalkboard.png");
+}
+.ChalkboardMid {
+  height: 90vh;
+  padding-left: 5vw;
+  padding-right: 5vw;
+  padding-top: 15vh;
+  background-image: url("../assets/Images/phoneBoard.png");
+}
+.ChalkboardTall {
+  height: 80vh;
+  padding-left: 5vw;
+  padding-right: 5vw;
+  padding-top: 10vh;
+  background-image: url("../assets/Images/phoneBoard.png");
 }
 .textThickness {
   font-weight: 900;
-  font-size: 4vw;
+  font-size: min(3vw,5vh);
 }
 </style>

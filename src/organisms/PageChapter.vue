@@ -35,10 +35,10 @@ export default {
   transform: translate(-50%, -50%);
 }
 .fontSizeChapterTitle {
-  font-size: 6vh;
+  font-size: min(6vh,10vw);
 }
 .fontSizeChapterText {
-  font-size: 4vh;
-  max-width: 45vh;
+  font-size: min(4vh,7.2vw);
+  max-width: min(45vh,81vw);
 }
 </style>

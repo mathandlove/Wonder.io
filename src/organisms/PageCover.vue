@@ -27,6 +27,6 @@ export default {
   top: 95.7%;
   left: 50%;
   transform: translate(-50%, -50%);
-  font-size: 2vh;
+  font-size: min(2vh,3.6vw);
 }
 </style>

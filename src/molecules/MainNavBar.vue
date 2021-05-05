@@ -1,22 +1,25 @@
 <template>
-  <div class="navBarHeight row text-center">
-    <div class="col-6">
-      <img class="iconSize" alt="" src="../assets/Images/WonderStories_Logo_BlackAlt.png"/>
+  <div :style="{height: this.$store.state.AspectRatio > 2 ? '17.5vh' : '10vh',
+                'padding-top': this.$store.state.AspectRatio > 2 ? '6vh' : '2vh'}"
+        class="row text-center">
+    <div class="d-none d-xl-block col-xl-3"/>
+    <div class="col-6 col-xl-3">
+      <img alt="" src="../assets/Images/WonderStories_Logo_BlackAlt.png" class="NavWonderLogo"/>
     </div>
-    <div class="d-none d-lg-block col-lg-3"/>
-    <div class="col-2 col-lg-1">
+    <div class="col-2 col-xl-1">
       <router-link to="/books">
-        <img class="iconSize" alt="" src="../assets/Images/home.png"/>
+        <img class="navIconSize" alt="" src="../assets/Images/home.png"/>
       </router-link>
     </div>
-    <div class="col-2 col-lg-1">
-      <img class="iconSize hoverHand" alt="" src="../assets/Images/restart.png"
-           @click="this.$emit('show-modal')"/>
+    <div v-if="this.$route.name!=='Join'" class="col-2 col-xl-1">
+      <img class="navIconSize hoverHand" alt="" src="../assets/Images/restart.png"
+            @click="this.$emit('show-modal')"/>
     </div>
-    <div class="col-2 col-lg-1">
-      <img class="iconSize hoverHand" alt="" src="../assets/Images/blackAudioOnWhiteBackground.png"
-           @click="audioClick('hello')"/>
+    <div class="col-2 col-xl-1">
+      <img class="navIconSize hoverHand" src="../assets/Images/blackAudioOnWhiteBackground.png"
+           @click="audioClick('hello')" alt=""/>
     </div>
+    <div class="d-none d-xl-block col-xl-3"/>
   </div>
 </template>
 
@@ -32,10 +35,14 @@ export default {
 </script>
 
 <style scoped>
-.navBarHeight {
-  height: 10vh;
-}
 .hoverHand:hover {
   cursor: pointer;
+}
+.NavWonderLogo {
+  height: min(5vh,9vw);
+}
+.navIconSize {
+  height: min(4.5vh,9vw);
+  width: auto;
 }
 </style>

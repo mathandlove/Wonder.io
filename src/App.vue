@@ -1,12 +1,19 @@
 <template>
   <router-view/>
 </template>
+<script>
+export default {
+  created() {
+    this.$store.dispatch('setAspectRatio', window.innerHeight / window.innerWidth);
+  },
+};
+</script>
 
 <style>
 @font-face {
   font-family: "Roboto";
   src: local("Roboto"),
-    url("/AngularChecklist/src/assets/Roboto Regular.ttf") format("truetype");
+    url("/assets/fonts/Roboto Regular.ttf") format("truetype");
 }
 @font-face {
   font-family: "CoopForged";

@@ -1,9 +1,10 @@
 <template>
-  <div class="backgroundPadding">
-    <div class="container BackGroundColor w-100">
+  <div class="BookBackGroundStyle noSelectText">
+    <div class="container w-100">
       <MainNavBar @show-modal="this.ViewRestartModal=true"/>
       <RestartModal v-if="this.ViewRestartModal" @close-modal="this.ViewRestartModal=false"/>
-      <div :key=page class="pageContainer">
+      <div :key=page class="pageContainer"
+           :style="{height: this.$store.state.AspectRatio > 2 ? '65vh' : '80vh'}">
         <PageCover v-if="this.GetPageData.type==='cover'" @show-hand="ToggleHand"/>
         <PageChapter v-else-if="this.GetPageData.type==='chapterTitle'" @show-hand="ToggleHand"
                      :number="this.GetPageData.chapterNumber" :page-text="this.GetPageData.text"/>
@@ -19,10 +20,10 @@
         <PageEnd v-else-if="this.GetPageData.type==='end'" @show-hand="ToggleHand"/>
         <PageNoExist v-else @show-hand="ToggleHand"/>
       </div>
-      <MainFooter :total-pages="this.TotalPages" :points="this.GetPointsData"/>
-      <NavArrows @next-page="this.RouteNextPage(false)"
-                 @prev-page="RoutePrevPage" :page="+this.page"/>
-      <NavTearHand @next-page="this.RouteNextPage(true)" v-if="this.ShowHand"/>
+      <MainFooter :total-pages="this.TotalPages"/>
+      <NavPrevArrow @prev-page="RoutePrevPage"/>
+      <NavNextArrow @next-page="this.RouteNextPage(true)"
+                    v-if="this.ShowHand || (this.HighestPage > this.page)"/>
     </div>
   </div>
 </template>
@@ -39,13 +40,13 @@ import RestartModal from '@/molecules/RestartModal.vue';
 import PageNoExist from '@/organisms/PageNoExist.vue';
 import MainNavBar from '@/molecules/MainNavBar.vue';
 import MainFooter from '@/molecules/MainFooter.vue';
-import NavArrows from '@/atoms/NavArrows.vue';
-import NavTearHand from '@/atoms/NavTearHand';
+import NavPrevArrow from '@/atoms/NavPrevArrow.vue';
+import NavNextArrow from '@/atoms/NavNextArrow.vue';
 
 export default {
   components: {
-    NavTearHand,
-    NavArrows,
+    NavNextArrow,
+    NavPrevArrow,
     MainFooter,
     PageQuestionTitle,
     PageChapter,
@@ -87,9 +88,6 @@ export default {
       if (tempData) { return (tempData); }
       return [{ type: null }];
     },
-    GetPointsData() {
-      return 0
-    }
   },
   methods: {
     AdjustQuestionCounter(data) {
@@ -122,18 +120,22 @@ export default {
     },
     RouteNextPage(newHighestPage) {
       let tempPage = +this.page + 1;
-      this.PageSkipArray.forEach((choice) => {
-        if (tempPage > choice.StartPage && tempPage < choice.EndPage) {
-          if (choice.SelectedPage && tempPage <= choice.SelectedPage) {
-            tempPage = choice.SelectedPage;
-          } else { tempPage = choice.EndPage; }
+      if (tempPage > this.TotalPages) {
+        this.$router.push('/like');
+      } else {
+        this.PageSkipArray.forEach((choice) => {
+          if (tempPage > choice.StartPage && tempPage < choice.EndPage) {
+            if (choice.SelectedPage && tempPage <= choice.SelectedPage) {
+              tempPage = choice.SelectedPage;
+            } else { tempPage = choice.EndPage }
+          }
+        });
+        if (newHighestPage && tempPage > this.$store.state.HighestPage) {
+          this.$store.dispatch('setHighestPage', tempPage);
         }
-      });
-      if (newHighestPage && tempPage > this.$store.state.HighestPage) {
-        this.$store.dispatch('setHighestPage', tempPage);
+        this.$store.dispatch('setBookPage', tempPage);
+        this.$router.push(`/book/${this.$store.state.BookID}/${tempPage}`);
       }
-      this.$store.dispatch('setBookPage', tempPage);
-      this.$router.push(`/book/${this.$store.state.BookID}/${tempPage}`);
     },
     RoutePrevPage() {
       let tempPage = this.page - 1;
@@ -167,20 +169,19 @@ export default {
 </script>
 
 <style scoped>
-.backgroundPadding {
+.BookBackGroundStyle {
   height: 100vh;
   width: 100vw;
-  background-color: grey;
+  background-color: #96c5c2;
 }
 .pageContainer {
   position: relative;
   text-align: center;
-  height: 80vh;
   padding-top: 1vh;
   padding-bottom: 1vh;
   z-index: 0;
 }
-.BackGroundColor {
-  background-color: #96c5c2;
+.noSelectText {
+  user-select: none;
 }
 </style>
