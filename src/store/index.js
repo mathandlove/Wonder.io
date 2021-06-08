@@ -36,6 +36,11 @@ export default createStore({
     ],
   },
   mutations: {
+    SET_BOOK_LIST(state, event) {
+      console.log('found books '+JSON.stringify(event));
+      state.BookArray = event;
+      localStorage.setItem('BookArray', event);
+    },
     SET_GRADE_FILTER(state, event) {
       state.GradeFilter = event;
       localStorage.setItem('GradeFilter', event);
@@ -74,6 +79,9 @@ export default createStore({
     },
   },
   actions: {
+    setBookList({ commit }, bookList) {
+      commit('SET_BOOK_LIST', bookList);
+    },
     setGradeFilter({ commit }, filterValue) {
       commit('SET_GRADE_FILTER', filterValue);
     },

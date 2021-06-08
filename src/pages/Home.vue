@@ -11,6 +11,10 @@
 
 <script>
 import GradeSelector from '@/molecules/GradeSelector.vue';
+import axios from 'axios';
+
+const resource_uri = 'https://localhost:49155/book';
+// const resource_uri = 'https://wonder-stories-api.web.app/book/';
 
 export default {
   components: {
@@ -20,6 +24,20 @@ export default {
     const GradeArray = ['PreK', 'K', '1', '2', '3', '4', '5', '6'];
     return { GradeArray };
   },
+  async mounted() {
+    await this.getApiBooks();
+  },
+  methods: {
+    getApiBooks: async function() {
+      try {
+        await axios.get(resource_uri).
+        then(response => (this.$store.dispatch('setBookList',response.data)));
+        
+      } catch {
+
+      }
+    }
+  }
 };
 </script>
 
