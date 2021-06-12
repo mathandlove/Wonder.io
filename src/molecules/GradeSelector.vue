@@ -17,6 +17,7 @@ export default {
   },
   methods: {
     handleGradeDispatch() {
+      
       this.$store.dispatch('setGradeFilter', this.Grade).then(() => {
         this.$router.push('/books');
       });

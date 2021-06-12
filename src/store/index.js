@@ -1,5 +1,8 @@
 import { createStore } from 'vuex';
+import axios from 'axios';
 import Book10 from '../assets/Books/book10/book.json';
+
+const resource_uri = 'https://localhost:49155/book';
 
 export default createStore({
   state: {
@@ -41,10 +44,15 @@ export default createStore({
       state.BookArray = event;
       localStorage.setItem('BookArray', event);
     },
+    SET_GRADE_BOOK_ORDER(state, event) {
+      state.GradeBookOrder = event;
+      localStorage.setItem('GradeBookOrder', event);
+    },
     SET_GRADE_FILTER(state, event) {
       state.GradeFilter = event;
       localStorage.setItem('GradeFilter', event);
     },
+    
     SET_HIGHEST_PAGE(state, event) {
       state.HighestPage = event;
       localStorage.setItem('HighestPage', event);
@@ -79,6 +87,11 @@ export default createStore({
     },
   },
   actions: {
+    async fetchGradeFilters({ commit }) {
+      console.log('hellothere');
+      const response = await axios.get(resource_uri + '/gradefilters');
+      commit('SET_GRADE_BOOK_ORDER',response.data);
+    },
     setBookList({ commit }, bookList) {
       commit('SET_BOOK_LIST', bookList);
     },

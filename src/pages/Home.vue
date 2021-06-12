@@ -30,9 +30,10 @@ export default {
   methods: {
     getApiBooks: async function() {
       try {
+        console.log('lohlah')
         await axios.get(resource_uri).
         then(response => (this.$store.dispatch('setBookList',response.data)));
-        
+        await this.$store.dispatch('fetchGradeFilters');
       } catch {
 
       }
