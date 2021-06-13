@@ -2,7 +2,7 @@
   <div class="d-inline-flex align-items-center justify-content-center">
     <img :class="[this.$store.state.AspectRatio > 1 ? this.$store.state.AspectRatio > 1.5 ?
           'GradeTall' : 'GradeMid' : 'GradeWide']"
-         :src="require(`../assets/Images/Grade${Grade}.svg`)"
+         :src="require(`../assets/Images/${Grade}.svg`)"
          @click="handleGradeDispatch" alt="" />
   </div>
 </template>

@@ -19,7 +19,7 @@
     <div v-for="Book in WordFilteredBooks" :key="Book"
          class="d-inline-flex m-md-3 m-1">
       <div class="cardSize" @click="BookSelected(Book)">
-        <img alt="" class="w-100" src="https://necromonicon.sfo2.cdn.digitaloceanspaces.com/images/book10/cover.png"/>
+        <img alt="" class="w-100" :src="Book.bookCoverImageUrl"/>
         <ScoreBar class="ScoreBarAlignment" :points="0"/>
       </div>
     </div>
@@ -41,14 +41,13 @@ export default {
     };
   },
   created() {
-    this.GradeFilteredBooks = this.$store.state.GradeBookOrder[this.$store.state.GradeFilter];
+    this.GradeFilteredBooks = this.$store.state.BookArray
+    .filter((book) => this.$store.state.GradeBookOrder[this.$store.state.GradeFilter].includes(parseInt(book.bookId))) ;
+    
     this.WordFilteredBooks = this.GradeFilteredBooks;
   },
   beforeUpdate() {
-    this.WordFilteredBooks = this.GradeFilteredBooks.filter(
-      (book) => this.$store.state.BookArray[book - 1][0].title[0].toLowerCase()
-        .includes(this.WordFilter),
-    );
+    this.WordFilteredBooks = this.GradeFilteredBooks;
   },
   
   methods: {

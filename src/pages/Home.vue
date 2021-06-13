@@ -21,7 +21,7 @@ export default {
     GradeSelector,
   },
   data() {
-    const GradeArray = ['PreK', 'K', '1', '2', '3', '4', '5', '6'];
+    const GradeArray = ['gradePreK', 'gradeK', 'grade1', 'grade2', 'grade3', 'grade4', 'grade5', 'grade6'];
     return { GradeArray };
   },
   async mounted() {
@@ -30,9 +30,7 @@ export default {
   methods: {
     getApiBooks: async function() {
       try {
-        console.log('lohlah')
-        await axios.get(resource_uri).
-        then(response => (this.$store.dispatch('setBookList',response.data)));
+        await this.$store.dispatch('setBookList');
         await this.$store.dispatch('fetchGradeFilters');
       } catch {
 

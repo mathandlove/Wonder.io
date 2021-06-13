@@ -40,7 +40,6 @@ export default createStore({
   },
   mutations: {
     SET_BOOK_LIST(state, event) {
-      console.log('found books '+JSON.stringify(event));
       state.BookArray = event;
       localStorage.setItem('BookArray', event);
     },
@@ -88,12 +87,13 @@ export default createStore({
   },
   actions: {
     async fetchGradeFilters({ commit }) {
-      console.log('hellothere');
       const response = await axios.get(resource_uri + '/gradefilters');
       commit('SET_GRADE_BOOK_ORDER',response.data);
     },
-    setBookList({ commit }, bookList) {
-      commit('SET_BOOK_LIST', bookList);
+    async setBookList({ commit }) {
+      
+      const resposne = await axios.get(resource_uri);
+      commit('SET_BOOK_LIST', resposne.data);
     },
     setGradeFilter({ commit }, filterValue) {
       commit('SET_GRADE_FILTER', filterValue);
