@@ -1,12 +1,32 @@
 <template>
-  <div class="ScoreBarStyle text-center"
-       :style="{'background-color': points > 5000 ? points > 10000 ? 'gold' : 'silver' : 'white'}">
-    <div class="row d-flex">
-      <img class="col-3 starSize pr-1" alt="" src="../assets/Images/Star.svg"/>
-      <div class="col-6">
+  <div
+    class="
+      scoreContainer
+      text-center
+      d-flex
+      flex-column
+      align-items-center
+      justify-content-center
+    "
+  >
+    <div class="buttonTitle">Score</div>
+    <div
+      class="
+        ScoreBarStyle
+        text-center
+        d-flex
+        justify-content-between
+        align-items-center
+      "
+      :style="{
+        'background-color': 'white',
+      }"
+    >
+      <img class="starSize" alt="" src="../assets/Images/Star.svg" />
+      <div class="scoreStyle">
         {{ points }}
       </div>
-      <img class="col-3 starSize pl-1" alt="" src="../assets/Images/Star.svg"/>
+      <img class="starSize" alt="" src="../assets/Images/Star.svg" />
     </div>
   </div>
 </template>
@@ -24,11 +44,10 @@ export default {
 
 <style scoped>
 .ScoreBarStyle {
-  font-family: "Roboto",serif;
-  height: 4vh;
-  font-size: 2vh;
-  padding-top: 0.2vh;
-  width: auto;
+  font-family: "Roboto", serif;
+  height: 40px;
+  font-size: 20px;
+  width: 150px;
   color: black;
   border-style: solid;
   border-color: black;
@@ -36,7 +55,36 @@ export default {
   box-shadow: 3px 3px black;
 }
 .starSize {
-  height: 2vh;
-  margin-top: 0.5vh;
+  height: 15px;
+  margin: 7px;
+}
+
+.buttonTitle {
+  font-weight: 700;
+  margin-bottom: 1px;
+  font-family: "Roboto", serif;
+}
+.scoreContainer {
+  margin-bottom: 10px;
+  padding: 0;
+}
+.scoreStyle {
+  flex-grow: 1;
+}
+
+@media (max-height: 800px) {
+  .ScoreBarStyle {
+    height: 30px;
+    width: 100px;
+    font-size: 16px;
+  }
+  .starSize {
+    height: 12px;
+  }
+  .buttonTitle {
+    margin-bottom: 0px;
+    font-family: "Roboto", serif;
+    font-size: 11px;
+  }
 }
 </style>

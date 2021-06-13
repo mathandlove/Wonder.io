@@ -1,26 +1,33 @@
 <template>
-  <div class="footerHeight row text-center"
-       :style="{'padding-top': this.$store.state.AspectRatio > 2 ? '4vh' : '0'}">
-    <div class="d-none d-lg-block col-lg-3"/>
+  <div
+    class="footerHeight row text-center"
+    :style="{ 'padding-top': this.$store.state.AspectRatio > 2 ? '4vh' : '0' }"
+  >
+    <div class="d-none d-lg-block col-lg-3" />
     <div class="col-4 col-lg-2">
       <div class="fontRoboto textSize">POINTS</div>
-      <ScoreBar :points="this.$store.state.Scores[0].NewScore"/>
+      <ScoreBar :points="this.$store.state.Scores[0].NewScore" />
     </div>
     <div class="col-4 col-lg-2"></div>
     <div class="col-4 col-lg-2">
       <div class="fontRoboto textSize">PAGE</div>
-      <div class="progressBarStyle fontRoboto" :style="{background:
-               // eslint-disable-next-line max-len
-               `linear-gradient(to right, #8f9ad8 0%, #8f9ad8 ${this.PagePercent}%, #FFFFFF ${this.PagePercent}%, #FFFFFF 100%)`}">
-        {{this.PageNum()}}
+      <div
+        class="progressBarStyle fontRoboto"
+        :style="{
+          background:
+            // eslint-disable-next-line max-len
+            `linear-gradient(to right, #8f9ad8 0%, #8f9ad8 ${this.PagePercent}%, #FFFFFF ${this.PagePercent}%, #FFFFFF 100%)`,
+        }"
+      >
+        {{ this.PageNum() }}
       </div>
     </div>
-    <div class="d-none d-lg-block col-lg-3"/>
+    <div class="d-none d-lg-block col-lg-3" />
   </div>
 </template>
 
 <script>
-import ScoreBar from '@/atoms/ScoreBar.vue';
+import ScoreBar from "@/atoms/ScoreBar.vue";
 
 export default {
   components: { ScoreBar },
@@ -48,7 +55,7 @@ export default {
   height: 10vh;
 }
 .fontRoboto {
-  font-family: "Roboto",serif;
+  font-family: "Roboto", serif;
 }
 .textSize {
   font-size: 2vh;
