@@ -11,10 +11,6 @@
 
 <script>
 import GradeSelector from '@/molecules/GradeSelector.vue';
-import axios from 'axios';
-
-const resource_uri = 'https://localhost:49155/book';
-// const resource_uri = 'https://wonder-stories-api.web.app/book/';
 
 export default {
   components: {
