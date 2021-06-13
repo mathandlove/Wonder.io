@@ -1,4 +1,4 @@
 module.exports = {
-  productionSourceMap: false, 
-  outputDir: 'dist',
+  productionSourceMap: false,
+  outputDir: 'dist'
 };

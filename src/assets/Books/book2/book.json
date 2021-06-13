@@ -1,0 +1,513 @@
+{
+	"title": "Danger in the woods The Weird Voice and the dog",
+	"available": 1,
+	"nextInSeries": 18,
+	"grade": "2",
+	"bookNumber": "2",
+	"pageData": [
+		{
+			"type": "cover"
+		},
+		{
+			"type": "chapterTitle",
+			"text": "The Mysterious Voice Calls",
+			"chapterNumber": 1
+		},
+		{
+			"type": "read",
+			"text": "Okay, I was daydreaming... and theres nothing wrong with that, right? At least I'd finished my homework.<p><im>1<height>6"
+		},
+		{
+			"type": "read",
+			"text": "I was brought back to the real world by a strange voice. <p>\n\n“Tilly,” it said, and my whole body shivered at the spooky sound of my name.<p>\n\nThe voice sounded like it was coming from a long way away."
+		},
+		{
+			"type": "read",
+			"text": "But who'd called my name? There was no one in the room with me, not even Max, our dog.<p>\n\nThat was really odd. Max always kept to his basket when someone was in the room with him.<p>\n\nHe was pretty lazy for a little dog."
+		},
+		{
+			"type": "question",
+			"question": "Where is Max supposed to be? (Tap on image)",
+			"answerCoords": [
+				[
+					312,
+					-726,
+					303,
+					212
+				],
+				[
+					505,
+					-296,
+					253,
+					268
+				],
+				[
+					811,
+					-265,
+					180,
+					149
+				],
+				[
+					908,
+					-616,
+					551,
+					461
+				]
+			],
+			"image": 2
+		},
+		{
+			"type": "questionTitle",
+			"question": "Who called out my name?",
+			"questionNumber": -99
+		},
+		{
+			"type": "read",
+			"text": "My first suspect was Mum.<p>\n\nShe was in her art studio as she always was during the day.<p><im>3<height>6<p>She didn't like to be disturbed but I couldn't let that stop me."
+		},
+		{
+			"type": "questionTitle",
+			"question": "Did Mom call my name?"
+		},
+		{
+			"type": "read",
+			"text": "<ch><l>tilly<t>Mum, did you call out my name?<p><ch><r>mum<t> . . .  sigh<p><ch><l>tilly<t>Mum!<p><ch><r>mum<t>What are you doing in here? I'm working."
+		},
+		{
+			"type": "read",
+			"text": "<ch><r>mum<t>Have you seen my viridian paint? I was sure I had a new tube of it.<ch><l>tilly<t>What's viridian?<p><ch><r>mum<t>It's a shade of green. I really need it.<p><ch><l>tilly<t>No, I haven't seen it."
+		},
+		{
+			"type": "question",
+			"question": "What is Mum thinking?",
+			"answers": [
+				"She's worried about her paint.",
+				"Her nose is viridian.",
+				"She wants Tilly to paint.",
+				"She made the spooky voice.",
+				"She misses Max."
+			]
+		},
+		{
+			"type": "read",
+			"text": "When Mum's working she's too focused to think of anything else. I hope she doesn't blame me for her missing paint.<p>\n\nI needed to move on with my questioning. On top of that, I was still worried about Max. Why hadn't he been in his bed?"
+		},
+		{
+			"type": "read",
+			"text": "My second suspect was Dad. He often likes to act silly so I may be onto something.<p>\n\nI found him in the kitchen chopping vegetables for the evening meal.<p><im>4<height>6"
+		},
+		{
+			"type": "questionTitle",
+			"question": "Did Dad call my name?"
+		},
+		{
+			"type": "read",
+			"text": "<ch><l>tilly<t>Hey, Dad, did you just call me?<p><ch><r>dad<t>What? I thought you were at Edna's doing your homework.<p><ch><l>tilly<t>Edna? Heck, no! I finished it in the living room."
+		},
+		{
+			"type": "read",
+			"text": "<ch><r>dad<t>Neat. Do you want a piece of carrot?<p><ch><l>tilly<t>Raw carrot? No way!<p><ch><r>dad<t>They're good for you. Help you see in the dark.<p><ch><l>tilly<t>That was actually made up during World War 2, Dad."
+		},
+		{
+			"type": "question",
+			"question": "Why couldn't Dad have scared me?",
+			"answers": [
+				"He thought I was doing homework.",
+				"He's actually a carrot.",
+				"I was at Edna's.",
+				"He was painting with Mum."
+			]
+		},
+		{
+			"type": "read",
+			"text": "Dad likes to put on silly voices but he wouldn't have called out if he thought I wasn't here.<p>\n\nI had a look around the kitchen while I was here, but still no sign of Max."
+		},
+		{
+			"type": "read",
+			"text": "My final suspect was Billy, my twin brother.<p>\nHe was in his bedroom reading a huge pile of comics.<p><im>5<height>6<p>He's so annoying that it could only be him. He lived to get on my nerves."
+		},
+		{
+			"type": "read",
+			"text": "<ch><l>tilly<t>Billy, did you just call me in a weird voice?<p><ch><r>billy<t>What did it sound like?<p><ch><l>tilly<t>Um... Like a scary little kid. Tiii-lyyy...<p><ch><r>billy<t>Look, I'm in this really good comic, I don't have time for spooky voices."
+		},
+
+		{
+			"type": "read",
+			"text": "<ch><l>tilly<t>Where did you get all of those?<p><ch><r>billy<t>Mrs. Marston next door. They used to belong to her son."
+		},
+		{
+			"type": "read",
+			"text": "<ch><l>tilly<t>Have you done your homework?<p><ch><r>billy<t>I'll do it when I finish reading these.<p><ch><l>tilly<t>That'll take you a week.<p><ch><r>billy<t>Maybe. Who cares?."
+		},
+		{
+			"type": "question",
+			"question": "Why couldn't have Billy scared me?",
+			"answers": [
+				"He was too focused on his comics.",
+				"He wasn't smart enough.",
+				"He hates homework.",
+				"He made the spooky sound."
+			]
+		},
+		{
+			"type": "read",
+			"text": "As annoying as Billy is, I don't think he called my name. That means no one in the house called my name. <p>\n\nThis really is weird. If Max was here I'm sure he'd be able to help sniff out the person who scared me.<p>\n\nBut the dog was nowhere to be seen - I had to find him.."
+		},
+		{
+			"type": "questionTitle",
+			"question": "Where on Earth could Max be?"
+		},
+		{
+			"type": "choice",
+			"question": "Where should you look for Max?",
+			"answers": [
+				"Search the attic",
+				"Look in the front garden",
+				"Check out the garage",
+				"Ask the neighbours"
+			],
+			"topages": [
+				1,
+				3,
+				6,
+				9
+			]
+		},
+		{
+			"type": "read",
+			"text": "Dad didn't like me going into the attic on my own, but I climbed the ladder anyway. <p>\n\n Unfortunately, there was no sign of Max up there. I even checked Dad's old boxes of vinyl records, but all I found were cobwebs and dust."
+		},
+		{
+			"type": "read",
+			"text": "Yuk! Then I heard a bark from the back of the house and looked through the attic window.<p>\n\nI still couldn't see Max but I spotted a hole in the fence so I raced down there.",
+			"nextPage": 9
+		},
+		{
+			"type": "read",
+			"text": "The front garden's pretty small, so I peered up and down the street and called out Max's name.<p>\n\n Then, I had to hide behind the garden wall because Edna the Ear was walking down the street and I didn't have time for her nonsense.<p>\n\n She loved to gossip and I had no time to waste on that today."
+		},
+				{
+			"type": "read",
+			"text": "I had to hold my breath for a full minute to make sure she didn't hear my breathing as she passed.<p>\n\nShe has almost freakish hearing, and I was too busy for games.."
+		},
+
+				{
+			"type": "read",
+			"text": "Suddenly, I heard a bark from behind the house and raced down the side and into the back garden. <p>\n\nI still couldn't see Max, but there was a hole in the fence so I dashed over.",
+			"nextPage": 6
+		},
+		{
+			"type": "read",
+			"text": "I don't know why we call it the garage as Mum and Dad never put the car in here.<p>\n\nNot that they could get one in with all the clutter in the way. "
+		},
+		{
+			"type": "read",
+			"text": "I looked all over - under the workbench and the dust sheets coving some old boxes - but Max wasn't anywhere in here."
+		},
+		{
+			"type": "read",
+			"text": "Bark! It came from behind the garage. I looked through the dirty garage window. <p>\n\nI didn't see Max, but I saw a hole in the fence so I left the garage and ran over to it.",
+			"nextPage": 3
+		},
+		{
+			"type": "read",
+			"text": "The neighbours on either side of us were in their gardens so I asked them if they'd seen Max.<p>\n\nGrumpy Graham to our left said that if the dog came into his garden he'd have it taken away. "
+		},
+		{
+			"type": "read",
+			"text": "I couldn't get any sense out of Mrs. Marston, poor thing - she seemed to think I was talking about her son. <p>\n\nBark! It came from the back yard. I spotted a hole in the fence, so I ran over. "
+		},
+		{
+			"type": "read",
+			"text": "The hole in the fence was big enough for Max to get through and into the woods at the other side. <p>\n\n Suddenly, the hairs on the back of my neck began to prickle and I shuddered like something spooky was nearby.<p>\n\n I had no idea what it might be so I examined the hole more closely. "
+		},
+		{
+			"type": "read",
+			"text": "Around it were smears of some strange, green, iridescent, glowing substance. (Iridescent means shimmering and it sounds like a cool word to me.)<p><im>6<height>8 "
+		},
+		{
+			"type": "read",
+			"text": "It looked a bit like the green paint Mum had lost, but she never used shiny colors.<p>\nAlthough Mum and Dad told us never to go into the woods, I climbed over the fence anyway. I had to find our dog.<p><im>7<height>6 "
+		},
+		{
+			"type": "chapterTitle",
+			"text": "Billy Investigates",
+			"chapterNumber": 2
+		},
+		{
+			"type": "read",
+			"text": "I had all these great superhero comics to read and didn't want to be disturbed.<p><im>8<height>6"
+		},
+				{
+			"type": "read",
+			"text": "Then, a shiver ran down my spine and I heard something spooky. \"Billy, come here...\": It was a creepy kid's voice, just like Tilly had described!"
+		},
+		{
+			"type": "read",
+			"text": "I wanted to carry on reading, but I had to know what was going on.<p>\nI couldn't find Tilly upstairs so I went down to the kitchen where Dad had pots boiling on the stove. He loved to cook.<p><im>9<height>6"
+		},
+		{
+			"type": "read",
+			"text": "<ch><l>billy<t>Don't burn dinner with those old pans, Dad.<p><ch><r>dad<t>Why, you cheeky... I never burn anything.<p><ch><l>billy<t>So, what do you want, Dad?<p><ch><r>dad<t>Nothing, why?"
+		},
+				{
+			"type": "read",
+			"text": "<ch><l>billy<t>You just called me in a cartoon voice.<p><ch><r>dad<t>Not me, buddy. Have you seen Tilly? Dinner's in ten minutes.<p><ch><l>billy<t>She was bugging me earlier.<p><ch><r>dad<t>I last saw her in the garden looking for Max."
+		},
+				{
+			"type": "question",
+			"question": "What does Dad want?",
+			"answers": [
+				"He wants me to find Tilly.",
+				"A new set of pans.",
+				"He wants to find Max.",
+				"He needs more carrots."
+			]
+		},
+				{
+			"type": "questionTitle",
+			"question": "Where is Tilly?"
+		},
+				{
+			"type": "read",
+			"text": "I could take a hint. Dad wanted me to look for Tilly. If she's not in the garden, maybe she went into the street.<p> I went out front to look for her and saw Mr. Jones across the road cleaning his car, so I asked him.<p><im>10<height>6"
+		},
+						{
+			"type": "read",
+			"text": "<ch><l>billy<t>Hi, Mr. Jones. Have you seen Tilly?<p><ch><r>jones<t>No, but I heard her shouting like crazy for Max.<p><ch><l>billy<t>Yeah, she can be pretty crazy.<p><ch><r>jones<t>Ha ha! All kids are crazy."
+		},
+						{
+			"type": "question",
+			"question": "What was Tilly up to?",
+			"answers": [
+				"She was searching for Max.",
+				"She was hiding from Mr. Jones.",
+				"She was cleaning a car.",
+				"She was stealing my comics."
+			]
+		},
+								{
+			"type": "read",
+			"text": "If Tilly was looking for Max, that must mean he'd escaped from the house. I saw two of my friends, Archie and Mel. They looked pretty bored.<p><im>11<height>6"
+		},
+								{
+			"type": "read",
+			"text": "<ch><l>billy<t>Hey, did either of you see Tilly?<p><ch><r>archie<t>What do you need with her when you've got mates like us?"
+				},
+												{
+			"type": "read",
+			"text": "<ch><l>billy<t>Dinner's nearly ready, and I have to find her.<p><ch><r>mel<t>We will help you look. I'll go to the park and Archie can check the shops.<ch><l>billy<t>Hey, wait!"
+				},
+								{
+			"type": "read",
+			"text": "They vanished quicker than a plate of free cupcakes.\n\n<p>Tilly had only been gone ten minutes. She couldn't have reached the park or the shops."
+		},
+										{
+			"type": "read",
+			"text": "I like Archie and Mel, but they always rush into things without letting me explain. If they find Tilly it will be by sheer luck.<p>\n\nI heard a dog barking. That must be Max! I ran down the street after the sound."
+		},
+												{
+			"type": "read",
+			"text": "I turned the corner into a small dead-end street and saw Max at the far end. He was tied to the fence that separated the street from the woods.<p><im>12<height>6"
+		},
+														{
+			"type": "read",
+			"text": "When I got close, I could see the rope was covered in some shimmering green paint. I'd never seen anything like it."
+		},
+														{
+			"type": "read",
+			"text": "I untied the rope from the fence and asked Max where Tilly was. He put his front paws up against the fence and barked a couple of times. <p>\n\n Tilly must be in the woods. But who tied up Max? I tucked Max under my arm and climbed the fence to search for Tilly. I just hoped Dad would never find out."
+		},
+				{
+			"type": "chapterTitle",
+			"text": "Twins in Danger",
+			"chapterNumber": 3
+		},
+																{
+			"type": "read",
+			"text": "I knew dinner was nearly ready and I knew we weren't allowed in the woods, but I had to find Max, no matter what."
+		},
+																		{
+			"type": "read",
+			"text": "The trees and grass were thick and blocked my way. I needed something to beat a path through the wild growth.<p><im>13<height>6"
+		},
+		{
+			"type": "question",
+			"question": "What will help me best? (Tap on the image.)",
+			"answerCoords": [
+				[
+					238,
+					-549,
+					276,
+					393
+				],
+				[
+					891,
+					-517,
+					351,
+					458
+				],
+				[
+					580,
+					-215,
+					390,
+					458
+				],
+				[
+					548,
+					-712,
+					303,
+					320
+				]
+			],
+			"image": 14
+		},
+																		{
+			"type": "read",
+			"text": "This old machete was perfect to help me find my way. I beat at the undergrowth with the machete, which was a kind of large knife.<p>\n\n It was harder than I'd expected, but the tall grass fell away with each swipe of the old blade."
+		},
+																				{
+			"type": "read",
+			"text": "I soon came to a narrow path, which must have been created by the woodland animals. I hoped they weren't still around. Wild animals could be dangerous.<p>\n\nI had a problem, though - there were three paths and I had to choose one of them."
+		},
+		{
+			"type": "question",
+			"question": "Which path should I take? (Tap on the image.)",
+			"answerCoords": [
+				[
+					970,
+					-510,
+					464,
+					497
+				],
+				[
+					182,
+					-527,
+					414,
+					396
+
+				],
+				[
+					554,
+					-255,
+					366,
+					432
+				],
+				[
+					0,
+					0,
+					0,
+					0
+				]
+			],
+			"image": 15
+		},
+			{
+			"type": "read",
+			"text": "The ground was damp and Max had left paw prints heading to the right. I'd found the clue I needed.<p>\n\nI also noticed more of the green stuff, so there must be a connection.<p>\n\nI hurried along the path - I had to find Max quickly."
+		},
+					{
+			"type": "read",
+			"text": "I'd only followed the path for about thirty seconds when a frightened yell came through the trees ahead of me. Someone was in serious trouble."
+		},
+							{
+			"type": "read",
+			"text": "Someone started calling for help. This wasn't the mysterious voice I'd heard earlier, but it was one I recognized.<p>\n\n It was my twin brother, Billy!<p><im>16<height>6"
+		},
+
+												{
+			"type": "read",
+			"text": "<ch><l>tilly<t>Billy! Max! What on Earth happened?<p><ch><r>billy<t>I was looking for you and Max led me into the woods.<p><ch><r>billy<t>Then I fell down this ravine and trapped my foot in this root."
+				},
+
+																{
+			"type": "read",
+			"text": "<ch><r>billy<t>What can I do? If I tell Mum or Dad we'll be grounded for a month!<p><ch><r>billy<t>You need to help me free my foot. It's not injured.<p><ch><l>tilly<t>How? I can't chop it in case I hurt you."
+				},
+												{
+			"type": "read",
+			"text": "<ch><r>billy<t>You just need a lever to pull the roots apart.<p><ch><l>tilly<t> What do you mean by that?<p><ch><r>billy<t>A lever is a long item like a pole or a board and you push on the end.<p><ch><r>billy<t>Levers are really good at opening things."
+				},
+																{
+			"type": "read",
+			"text": "<ch><l>billy<t>Ahhh... hurry Tilly, these roots really hurt."
+				},
+		{
+			"type": "question",
+			"question": "Click on what I could use as a lever.",
+			"answerCoords": [
+				[
+					274,
+					-338,
+					389,
+					520
+				],
+				[
+					236,
+					-698,
+					313,
+					267
+				],
+				[
+					773,
+					-500,
+					826,
+					613
+				],
+				[
+					866,
+					-196,
+					523,
+					351
+				]
+			],
+			"image": 17
+		},
+
+		{
+					"type": "read",
+			"text": "Of course! If I understood Billy right, the branch would make a perfect lever. With the branch, I forced the roots apart and Billy quickly pulled his foot free.<p><im>18<height>6"
+				},
+																				{
+			"type": "read",
+			"text": "<ch><r>billy<t>Thanks for rescuing me.<p><ch><l>tilly<t>No problem. We can't tell anyone we've been in the woods.<p><ch><r>billy<t>No way. That goes for you, too, Max. Ha ha!"
+				},
+						{
+					"type": "read",
+			"text": "Max barked loudly. We laughed. It was as if Max was agreeing with us. <p>\n\nSuddenly, we heard a noise behind us and turned around cautiously, scared that it was a wild beast.<p>\n\nAt first we couldn't see anything. Then, it stepped out of the shadows."
+				},
+										{
+					"type": "read",
+			"text": "It was a young child, a girl I think, but she looked more like a wild animal than a human. Her clothing was covered with the green shimmering paint! <p>Then she pointed to us and opened her mouth.<p><im>19<height>6"
+				},
+														{
+					"type": "read",
+			"text":"<ch><l>strange<t>Tilly... Billy...<p>My whole body shivered at the spooky sound of my name. It sounded like it came from a long way away, but she was only nearby.<p>\n\nBilly and I looked at each other, a bit scared but very curious."
+				},
+																				{
+			"type": "read",
+			"text": "<ch><l>tilly<t>That's the voice I heard!<p><ch><r>billy<t>You, too?!<p><ch><l>tilly<t>Weird, right?"
+				},
+					{
+			"type": "read",
+			"text": "The woodland child ran off with a laugh and quickly disappeared into the shadows. Billy and I were completely astonished.<p><im>20<height>6"
+				},
+									{
+			"type": "read",
+			"text": "<ch><r>billy<t>We need to get home or Dad will have a fit.<p><ch><l>tilly<t>But... who was that?<p><ch><r>billy<t>Weird, right?"
+				},
+													{
+			"type": "read",
+			"text": "<ch><r>billy<t>I don't know, but we don't have time to find out now.<p><ch><l>tilly<t>No, but we'll solve this mystery no matter what."
+				},
+
+
+		{
+			"type": "read",
+			"text": "To be continued...."
+		},
+						{
+			"type": "end"
+		}
+	]
+}
