@@ -21,7 +21,6 @@
       alt=""
       src="@/assets/Images/Star.svg"
     />
-
     <div class="scoreStyle">
       {{ value }}
     </div>
