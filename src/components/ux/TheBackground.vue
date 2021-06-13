@@ -1,5 +1,11 @@
 
   <template>
+  <meta name="viewport" content="width=device-width, user-scalable=no" />
+  <meta
+    name="viewport"
+    content="user-scalable=no, initial-scale=1, maximum-scale=1, minimum-scale=1"
+  />
+
   <body
     class="BookBackGroundStyle noSelectText makeBorder d-flex flex-column"
     :style="dynamicBodyHeight"

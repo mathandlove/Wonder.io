@@ -1,5 +1,5 @@
   <template>
-  <div class="pageContainer makeBorder" ref="notepadholder">
+  <div class="pageContainer" ref="notepadholder">
     <img
       alt=""
       src="@/assets/Images/notepadWithLines.png"
@@ -8,7 +8,7 @@
       @load="updateBase"
       :style="adjustingBox"
     />
-    <div class="writableArea makeBorder2" :style="notepadHolderStyle">
+    <div class="writableArea" :style="notepadHolderStyle">
       <div class="notepadText" :style="nts">{{ name }}</div>
       <div class="squareMeLeft" :style="leftArrowSize">
         <nav-prev-arrow-e></nav-prev-arrow-e>
@@ -107,12 +107,10 @@ export default {
       this.counter++;
     },
     updateBase: function () {
-      try {
+      if (this.$refs.base != null) {
         this.iw = this.$refs.base.width;
         this.ih = this.$refs.base.height;
         this.switchAdjustBox();
-      } catch {
-        console.log("found null val in ih iw");
       }
     },
     //Note that I made a decision to have 10% on left and right at all times
@@ -124,7 +122,11 @@ export default {
       this.currentAspect = aspectScreen;
       const aspectImage = 2565 / 1495;
       this.$store.state.AspectRatio = aspectScreen;
-      this.name = this.$store.state.AspectRatio;
+      this.name =
+        this.$store.state.AspectRatio +
+        " w: " +
+        window.innerHeight / window.innerWidth;
+
       if (aspectScreen < aspectImage) {
         this.adjustingBox.height = "100%";
         this.adjustingBox.width = "auto";
@@ -187,8 +189,6 @@ export default {
 }
 
 .squareMeLeft {
-  height: 30px;
-  width: 30px;
   position: absolute;
   left: 0;
   top: 50%;
@@ -196,8 +196,6 @@ export default {
 }
 
 .squareMeRight {
-  height: 30px;
-  width: 30px;
   position: absolute;
   right: 0;
   top: 50%;

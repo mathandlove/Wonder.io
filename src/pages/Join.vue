@@ -2,14 +2,7 @@
   <the-background>
     <MainNavBar @show-modal="this.ViewRestartModal = true" />
     <notebook-page> </notebook-page>
-    <div class="footer hasBorder">
-      <div
-        class="col-6 d-flex align-items-center justify-content-center j h-100"
-      >
-        <score-bar :points="99000"></score-bar>
-      </div>
-      <div class="col-6"></div>
-    </div>
+    <book-footer></book-footer>
   </the-background>
 </template>
 
@@ -30,55 +23,48 @@
 <template>
   <div class="JoinBackGround">
     <div class="container w-100">
-      <MainNavBar />
+      <MainNavBar/>
       <div class="row">
-        <div class="col-12 col-lg-3" />
+        <div class="col-12 col-lg-3"/>
         <div class="col-12 col-lg-6 text-center">
-          <div class="JoinTextStyling">Join the game</div>
+          <div class="JoinTextStyling">Join the Game</div>
           <form>
-            <input
-              type="text"
-              class="JoinInputStyle"
-              placeholder="Enter Nickname"
-              v-model="userName"
-              autocomplete="off"
-            />
-            <div />
-            <button
-              v-if="userName"
-              type="submit"
-              class="JoinButtonStyle RobotoFont"
-              @click="HandleLetsGo"
-            >
-              LET'S GO!
+            <input type="text"
+                   class="JoinInputStyle"
+                   placeholder="Enter Nickname"
+                   v-model="userName"
+                   autocomplete="off"/>
+            <div/>
+            <button v-if="userName" type="submit" class="JoinButtonStyle RobotoFont"
+                 @click="HandleLetsGo">LET'S GO!
             </button>
-            <div v-else class="JoinButtonStyle" />
+            <div v-else class="JoinButtonStyle"/>
           </form>
         </div>
         <div class="col-12 col-lg-3 DetailsTopPadding">
           <h3 class="text-center text-lg-left">[Arrow] In this Book</h3>
           <div class="RobotoFont py-2 text-center text-lg-left">
-            <strong>{{ getBookInfo().title[0] }}</strong>
+            <strong>{{getBookInfo().title[0]}}</strong>
           </div>
           <div class="row py-2 RobotoFont">
             <div class="col-6 col-lg-2 text-right text-lg-center">[Pencil]</div>
             <div class="col-6 col-lg-10 text-left">
               <div class="RobotoFont">Author</div>
-              <div class="RobotoFont">{{ getBookInfo().author }}</div>
+              <div class="RobotoFont">{{getBookInfo().author}}</div>
             </div>
           </div>
           <div class="row py-2 RobotoFont">
             <div class="col-6 col-lg-2 text-right text-lg-center">[Paint]</div>
             <div class="col-6 col-lg-10 text-left">
               <div class="RobotoFont">Art</div>
-              <div class="RobotoFont">{{ getBookInfo().illustrator }}</div>
+              <div class="RobotoFont">{{getBookInfo().illustrator}}</div>
             </div>
           </div>
           <div class="row py-2 RobotoFont">
             <div class="col-6 col-lg-2 text-right text-lg-center">[Book]</div>
             <div class="col-6 col-lg-10 text-left">
               <div class="RobotoFont">Length</div>
-              <div class="RobotoFont">{{ getBookInfo().totalPages }} pages</div>
+              <div class="RobotoFont">{{getBookInfo().totalPages}} pages</div>
             </div>
           </div>
         </div>
@@ -87,16 +73,21 @@
   </div>
 </template>
 -->
-
 <script>
 import MainNavBar from "@/molecules/MainNavBar.vue";
-import ScoreBar from "../atoms/ScoreBar.vue";
-import LoadBar from "../atoms/LoadBar.vue";
-
+import BookFooter from "@/components/booklayout/BookFooter.vue";
+import TheBackground from "@/components/ux/TheBackground.vue";
+import NotebookPage from "@/components/ux/NotebookPage.vue";
 export default {
-  components: { MainNavBar, ScoreBar, LoadBar },
+  components: {
+    MainNavBar,
+    BookFooter,
+    TheBackground,
+    NotebookPage,
+  },
   data() {
-    return { userName: "hello" };
+    let userName;
+    return { userName };
   },
   methods: {
     getBookInfo() {
@@ -122,6 +113,11 @@ export default {
 </script>
 
 <style scoped>
+.JoinBackGround {
+  background-color: #96c5c2;
+  height: 100vh;
+  width: 100vw;
+}
 .DetailsTopPadding {
   padding-top: 8vh;
 }
@@ -150,6 +146,7 @@ export default {
   color: red;
 }
 .RobotoFont {
+  font-family: "Roboto", serif;
   font-family: "Roboto", serif;
 }
 
@@ -186,7 +183,7 @@ export default {
 
 .hasBorder {
   border-width: 10px;
-  border: none;
+  border: solid;
   border-color: greenyellow;
 }
 #time {
@@ -196,14 +193,5 @@ export default {
 
   height: 100%;
   width: auto;
-}
-.footer {
-  height: 10%;
-}
-
-@media (max-height: 800px) {
-  .footer {
-    height: 70px;
-  }
 }
 </style>
