@@ -2,7 +2,7 @@ import { createStore } from 'vuex';
 import axios from 'axios';
 import Book10 from '../assets/Books/book10/book.json';
 
-// const resource_uri = 'https://localhost:49155/book';
+// const resource_uri = 'https://localhost:49161/book';
 const resource_uri = 'https://wonder-stories-api.web.app/book';
 
 export default createStore({
