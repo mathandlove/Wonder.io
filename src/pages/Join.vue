@@ -1,4 +1,26 @@
 <template>
+  <the-background>
+    <MainNavBar @show-modal="this.ViewRestartModal = true" />
+    <notebook-page> </notebook-page>
+    <book-footer></book-footer>
+  </the-background>
+</template>
+
+
+<!--
+
+
+<template>
+  <body id="b1">
+    <div class="border border-secondary" style="height: 20%"></div>
+
+    <div id="play">
+      <img id="time" src="@/assets/Images/notepadWithLines.png" />
+    </div>
+  </body>
+</template>
+
+<template>
   <div class="JoinBackGround">
     <div class="container w-100">
       <MainNavBar/>
@@ -50,12 +72,26 @@
     </div>
   </div>
 </template>
-
+-->
 <script>
-import MainNavBar from '@/molecules/MainNavBar.vue';
-
+import MainNavBar from "@/molecules/MainNavBar.vue";
+import ScoreBar from "../atoms/ScoreBar.vue";
+import LoadBar from "../atoms/LoadBar.vue";
+import PageBar from "../atoms/PageBar.vue";
+import InfoPill from "@/components/ux/InfoPill.vue";
+import BookFooter from "@/components/booklayout/BookFooter.vue";
+import TheBackground from "@/components/ux/TheBackground.vue";
+import NotebookPage from "@/components/ux/NotebookPage.vue";
 export default {
-  components: { MainNavBar },
+  components: {
+    MainNavBar,
+    ScoreBar,
+    LoadBar,
+    PageBar,
+    BookFooter,
+    TheBackground,
+    NotebookPage,
+  },
   data() {
     let userName;
     return { userName };
@@ -66,13 +102,18 @@ export default {
         return this.$store.state.BookArray[this.$store.state.BookID - 1][0];
       }
       return {
-        title: ['No Book Selected'], author: 'N/A', illustrator: 'N/A', totalPages: 'N/A',
+        title: ["No Book Selected"],
+        author: "N/A",
+        illustrator: "N/A",
+        totalPages: "N/A",
       };
     },
     HandleLetsGo() {
-      this.$store.dispatch('setUserName', { id: 0, name: this.userName }).then(() => {
-        this.$router.push(`/book/${this.$store.state.BookID}/1`);
-      });
+      this.$store
+        .dispatch("setUserName", { id: 0, name: this.userName })
+        .then(() => {
+          this.$router.push(`/book/${this.$store.state.BookID}/1`);
+        });
     },
   },
 };
@@ -88,7 +129,7 @@ export default {
   padding-top: 8vh;
 }
 .JoinTextStyling {
-  font-size: min(7vh,10vw);
+  font-size: min(7vh, 10vw);
   padding-bottom: 3vh;
 }
 .JoinInputStyle {
@@ -106,12 +147,58 @@ export default {
   border: none;
   cursor: pointer;
   padding-top: 4vh;
-  min-height: 8vh
+  min-height: 8vh;
 }
 .JoinButtonStyle:hover {
   color: red;
 }
 .RobotoFont {
-  font-family: 'Roboto',serif;
+  font-family: "Roboto", serif;
+  font-family: "Roboto", serif;
+}
+
+.BookBackGroundStyle {
+  height: 100vh;
+  width: 100vw;
+  background-color: #96c5c2;
+}
+
+.TitleQuestion {
+  margin-top: 6.8vh;
+  font-size: 4vh;
+  line-height: 100;
+}
+
+.makeBorder {
+  border: solid;
+  border-color: black;
+  border-width: 3px;
+  box-sizing: border-box;
+}
+
+#test {
+  height: 100%;
+}
+#b1 {
+  height: 400px;
+  width: 100vw;
+  background-color: #96c5c2;
+  position: fixed;
+  padding: 0;
+  margin: 0;
+}
+
+.hasBorder {
+  border-width: 10px;
+  border: solid;
+  border-color: greenyellow;
+}
+#time {
+  border-width: 10px;
+  border: solid;
+  border-color: coral;
+
+  height: 100%;
+  width: auto;
 }
 </style>
