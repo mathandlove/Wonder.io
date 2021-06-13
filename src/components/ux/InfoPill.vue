@@ -8,16 +8,20 @@
       justify-content-between
       align-items-center
     "
-    :style="{
-      'background-color': 'white',
-    }"
+    style="background: white"
   >
+    <div
+      v-if="showProgressBar"
+      class="insideProgressFill"
+      :style="{ width: pagePercent }"
+    ></div>
     <img
       v-if="hasStars"
       class="starSize"
       alt=""
       src="@/assets/Images/Star.svg"
     />
+
     <div class="scoreStyle">
       {{ value }}
     </div>
@@ -44,6 +48,25 @@ export default {
       type: Boolean,
       default: true,
     },
+    numberOfPages: {
+      type: Number,
+      default: 1,
+    },
+    showProgressBar: {
+      type: Boolean,
+      default: false,
+    },
+  },
+  data() {
+    return {};
+  },
+  computed: {
+    pagePercent() {
+      let truePercent = (this.value / this.numberOfPages) * 100;
+      truePercent = 80;
+      const calculatedPercent = 30 + truePercent * 0.7;
+      return calculatedPercent + "%";
+    },
   },
 };
 </script>
@@ -59,10 +82,12 @@ export default {
   border-color: black;
   border-radius: 200px;
   box-shadow: 3px 3px black;
+  position: relative;
 }
 .starSize {
   height: 15px;
   margin: 7px;
+  z-index: 1;
 }
 
 .buttonTitle {
@@ -73,6 +98,17 @@ export default {
 
 .scoreStyle {
   flex-grow: 1;
+  z-index: 1;
+}
+
+.insideProgressFill {
+  background-color: #8f9ad8;
+  height: 100%;
+  position: absolute;
+  line-height: inherit;
+  width: 80%;
+  border-radius: 200px;
+  z-index: 0;
 }
 
 @media (max-width: 400px) and (max-aspect-ratio: 110/100) {

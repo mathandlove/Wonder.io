@@ -6,11 +6,10 @@ import 'bootstrap';
 import 'bootstrap/dist/css/bootstrap.min.css';
 
 
-import theHeader from './components/ux/TheHeader.vue';
+
 import notebookPage from './components/ux/NotebookPage.vue';
 import theBackground from './components/ux/TheBackground.vue';
 const app = createApp(App);
-app.component('the-header', theHeader)
 app.component('notebook-page', notebookPage)
 app.component('the-background', theBackground)
 
