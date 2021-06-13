@@ -1,15 +1,32 @@
 <template>
-  <body>
-    <the-background>
-      <the-header> </the-header>
-      <!-- <notebook-page>
-        <p class="TitleQuestion">Join the Game</p>
-      </notebook-page> -->
-    </the-background>
+  <the-background>
+    <MainNavBar @show-modal="this.ViewRestartModal = true" />
+    <notebook-page> </notebook-page>
+    <div class="footer hasBorder">
+      <div
+        class="col-6 d-flex align-items-center justify-content-center j h-100"
+      >
+        <score-bar :points="99000"></score-bar>
+      </div>
+      <div class="col-6"></div>
+    </div>
+  </the-background>
+</template>
+
+
+<!--
+
+
+<template>
+  <body id="b1">
+    <div class="border border-secondary" style="height: 20%"></div>
+
+    <div id="play">
+      <img id="time" src="@/assets/Images/notepadWithLines.png" />
+    </div>
   </body>
 </template>
 
-<!--
 <template>
   <div class="JoinBackGround">
     <div class="container w-100">
@@ -73,12 +90,13 @@
 
 <script>
 import MainNavBar from "@/molecules/MainNavBar.vue";
+import ScoreBar from "../atoms/ScoreBar.vue";
+import LoadBar from "../atoms/LoadBar.vue";
 
 export default {
-  components: { MainNavBar },
+  components: { MainNavBar, ScoreBar, LoadBar },
   data() {
-    let userName;
-    return { userName };
+    return { userName: "hello" };
   },
   methods: {
     getBookInfo() {
@@ -104,11 +122,6 @@ export default {
 </script>
 
 <style scoped>
-.JoinBackGround {
-  background-color: #96c5c2;
-  height: 100vh;
-  width: 100vw;
-}
 .DetailsTopPadding {
   padding-top: 8vh;
 }
@@ -146,13 +159,51 @@ export default {
   background-color: #96c5c2;
 }
 
-.noSelectText {
-  user-select: none;
-}
-
 .TitleQuestion {
   margin-top: 6.8vh;
   font-size: 4vh;
   line-height: 100;
+}
+
+.makeBorder {
+  border: solid;
+  border-color: black;
+  border-width: 3px;
+  box-sizing: border-box;
+}
+
+#test {
+  height: 100%;
+}
+#b1 {
+  height: 400px;
+  width: 100vw;
+  background-color: #96c5c2;
+  position: fixed;
+  padding: 0;
+  margin: 0;
+}
+
+.hasBorder {
+  border-width: 10px;
+  border: none;
+  border-color: greenyellow;
+}
+#time {
+  border-width: 10px;
+  border: solid;
+  border-color: coral;
+
+  height: 100%;
+  width: auto;
+}
+.footer {
+  height: 10%;
+}
+
+@media (max-height: 800px) {
+  .footer {
+    height: 70px;
+  }
 }
 </style>

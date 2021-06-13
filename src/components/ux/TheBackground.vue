@@ -1,33 +1,29 @@
 
   <template>
-  <body class="noSelectText" ref="fullbody">
+  <body
+    class="BookBackGroundStyle noSelectText makeBorder d-flex flex-column"
+    :style="dynamicBodyHeight"
+  >
     <slot> </slot>
   </body>
 </template>
 <script>
-import DisableBodyScroll from "body-scroll-lock";
 export default {
   data() {
-    return {};
-  },
-  components: {
-    DisableBodyScroll,
+    return {
+      dynamicBodyHeight: {
+        height: "30px",
+      },
+    };
   },
   methods: {
-    ToggleFullScreen() {
-      window.addEventListener("scroll", (e) => {
-        e.preventDefault();
-        window.scrollTo(0, 0);
-      });
-
-      document.getElementById("fullbody").ontouchend = (e) => {
-        e.preventDefault();
-        return false;
-      };
+    makeClientViewSize() {
+      this.dynamicBodyHeight = window.screen.Height + "px";
     },
   },
   mounted() {
-    this.ToggleFullScreen();
+    window.addEventListener("resize", this.makeClientViewSize);
+    this.makeClientViewSize();
   },
 };
 </script>
@@ -35,32 +31,21 @@ export default {
 
 <style scoped>
 .BookBackGroundStyle {
-  height: 100vh;
+  height: 100%;
   width: 100vw;
   background-color: #96c5c2;
+  position: fixed;
+  padding: 0;
+  margin: 0;
 }
 .noSelectText {
   user-select: none;
 }
-body {
-  height: 100vh;
-  width: 100vw;
-  margin: 0;
 
-  /* prevent overscroll bounce*/
-  background-color: #96c5c2;
-  overflow-y: clip;
-  overflow: hidden;
-  touch-action: none;
-  top: -30px;
-  -webkit-overflow-scrolling: touch;
-  /* iOS velocity scrolling */
-}
-
-html {
-  position: static;
-  overflow-y: hidden;
-  height: 100%;
-  max-height: 100%;
+.makeBorder {
+  border: none;
+  border-color: greenyellow;
+  border-width: 3px;
+  box-sizing: border-box;
 }
 </style>

@@ -1,34 +1,63 @@
 <template>
-  <div :style="{height: this.$store.state.AspectRatio > 2 ? '17.5vh' : '10vh',
-                'padding-top': this.$store.state.AspectRatio > 2 ? '6vh' : '2vh'}"
-        class="row text-center">
-    <div class="d-none d-xl-block col-xl-3"/>
-    <div class="col-6 col-xl-3">
-      <img alt="" src="../assets/Images/WonderStories_Logo_BlackAlt.png" class="NavWonderLogo"/>
+  <div class="headerBlock row text-center">
+    <div class="col-6 h-100 align-items-center d-flex pr-2">
+      <img
+        alt=""
+        src="../assets/Images/WonderStories_Logo_BlackAlt.png"
+        class="NavWonderLogo"
+        :style="{
+          width: $store.state.AspectRatio > 1.1 ? '100%' : '300px',
+        }"
+      />
     </div>
-    <div class="col-2 col-xl-1">
-      <router-link to="/books">
-        <img class="navIconSize" alt="" src="../assets/Images/home.png"/>
+    <div
+      class="
+        col-6
+        h-100
+        align-items-center
+        d-flex
+        justify-content-end
+        pl-5
+        py-3
+      "
+    >
+      <img
+        class="navIconSize hoverHand"
+        src="../assets/Images/blackAudioOnWhiteBackground.png"
+        @click="audioClick('hello')"
+        alt=""
+        v-if="false"
+      />
+      <router-link to="/books" class="navIconSize">
+        <img
+          class="iconInsideLink"
+          alt=""
+          href="home"
+          src="../assets/Images/home.png"
+        />
       </router-link>
+
+      <img
+        class="navIconSize hoverHand"
+        alt=""
+        src="../assets/Images/restart.png"
+        @click="this.$emit('show-modal')"
+      />
     </div>
-    <div v-if="this.$route.name!=='Join'" class="col-2 col-xl-1">
-      <img class="navIconSize hoverHand" alt="" src="../assets/Images/restart.png"
-            @click="this.$emit('show-modal')"/>
-    </div>
-    <div class="col-2 col-xl-1">
-      <img class="navIconSize hoverHand" src="../assets/Images/blackAudioOnWhiteBackground.png"
-           @click="audioClick('hello')" alt=""/>
-    </div>
-    <div class="d-none d-xl-block col-xl-3"/>
   </div>
 </template>
 
 <script>
 export default {
-  emits: ['ShowModal', 'show-modal'],
+  emits: ["ShowModal", "show-modal"],
+  computed: {
+    hope() {
+      return this.$store.state.AspectRatio;
+    },
+  },
   methods: {
     async audioClick(word) {
-      console.log('TextToSpeech word is =', word);
+      console.log("TextToSpeech word is =", word);
     },
   },
 };
@@ -39,10 +68,44 @@ export default {
   cursor: pointer;
 }
 .NavWonderLogo {
-  height: min(5vh,9vw);
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  margin-left: 5px;
 }
+
+.headerBlock {
+  height: 10%;
+  /* padding-top: 6%;
+  padding-bottom: 6%; */
+  margin: 0;
+  padding: 0;
+  padding-top: 10px;
+  padding-bottom: 10px;
+}
+
+.iconInsideLink {
+  height: 40px;
+  width: 40px;
+}
+
 .navIconSize {
-  height: min(4.5vh,9vw);
-  width: auto;
+  height: 40px;
+  width: 40px;
+  margin-left: 15px;
+
+  display: flex;
+}
+
+@media (min-width: 800px) {
+  .navIconSize {
+    margin-right: 30px;
+    height: 50px;
+    width: 50px;
+  }
+  .iconInsideLink {
+    height: 50px;
+    width: 50px;
+  }
 }
 </style>
