@@ -2,26 +2,34 @@
   <div class="pageContainer" ref="notepadholder">
     <img
       alt=""
-      src="@/assets/Images/notepadWithLines.png"
+      :src="notepadImageLocation"
       ref="base"
       id="base"
       @load="updateBase"
       :style="adjustingBox"
     />
-    <div class="writableArea border border-danger" :style="notepadHolderStyle">
-      <div class="notepadText border border-primary" :style="nts">
-        Lorem ipsum dolor sit amet consectetur adipisicing elit. Dolorem
-        aperiam, quibusdam dignissimos, repudiandae sint odit laboriosam
-        corrupti quae aspernatur culpa, voluptates incidunt. Quis sit ex quaerat
-        nulla. Ut, molestiae optio? Debitis, possimus distinctio et nesciunt
-        necessitatibus placeat nemo exercitationem rem eveniet laboriosam
-        praesentium aliquam, in error, doloribus fugiat autem eius suscipit
-        nobis itaque? Beatae, quis placeat minima ad est ipsa!
+    <div class="writableArea" :style="notepadHolderStyle">
+      <div class="notepadText" :style="nts">
+        <slot>
+          <h1 class="centerTitle">Join Game</h1>
+          <div style="text-align: center">
+            <input class="pillBoxLong" type="text" maxLength="12" />
+            <button>PLAY</button>
+          </div>
+        </slot>
       </div>
-      <div class="squareMeLeft" :style="leftArrowSize">
+      <div
+        v-if="this.NIV.showPrevious"
+        class="squareMeLeft"
+        :style="leftArrowSize"
+      >
         <nav-prev-arrow-e></nav-prev-arrow-e>
       </div>
-      <div class="squareMeRight" :style="rightArrowSize">
+      <div
+        v-if="this.NIV.showNext"
+        class="squareMeRight"
+        :style="rightArrowSize"
+      >
         <nav-next-arrow-e></nav-next-arrow-e>
       </div>
     </div>
@@ -36,6 +44,7 @@ export default {
     NavNextArrowE,
     NavPrevArrowE,
   },
+  inject: ["NIV"],
   data() {
     return {
       counter: 0,
@@ -57,6 +66,13 @@ export default {
     };
   },
   computed: {
+    notepadImageLocation() {
+      if (this.NIV.hasLines)
+        return require("@/assets/Images/notepadWithLines.png");
+      else {
+        return require("@/assets/Images/NotepadWithoutLines.png");
+      }
+    },
     leftArrowSize() {
       const size = 0.08 * this.ih + "px";
       const temp = {
@@ -92,7 +108,8 @@ export default {
       return temp;
     },
     nts() {
-      this.baseFontSize = this.ih * 0.046;
+      this.baseFontSize = this.ih * 0.04;
+      this.lineHeightC = this.ih * 0.04 * 1.45 + "px";
       const ntso = {
         fontSize: this.baseFontSize + "px",
         lineHeight: this.lineHeightC,
@@ -102,7 +119,7 @@ export default {
     notepadHolderStyle() {
       this.styleObject.width = this.iw + 0 + "px";
       this.styleObject.height = this.ih + 0 + "px";
-      this.styleObject.paddingTop = this.ih * 0.13 + "px";
+      this.styleObject.paddingTop = this.ih * 0.16 + "px";
       this.styleObject.paddingLeft = this.iw * 0.08 + "px";
       this.styleObject.paddingRight = this.iw * 0.1 + "px";
       this.styleObject.paddingBottom = this.ih * 0.03 + "px";
@@ -181,6 +198,61 @@ export default {
   height: 100%;
   width: 100%;
   font-family: "CoopForged";
+}
+
+h1 {
+  text-align: center;
+  font-size: 2em;
+  padding-top: 1em;
+}
+
+input {
+  margin-top: 1em;
+  background-color: red;
+}
+
+.pillBoxLong {
+  font-family: "Roboto", serif;
+
+  height: 2.5em;
+  font-size: 0.7em;
+  padding: 1em;
+  width: 15em;
+  color: black;
+  border-style: solid;
+  border-color: black;
+  border-radius: 0.8em;
+  box-shadow: 3px 3px black;
+  position: relative;
+  background-color: white;
+}
+
+.authorInformation {
+  background-color: red;
+  position: absolute;
+  right: 0;
+}
+
+.pillBoxLong:hover {
+  background-color: rgba(233, 233, 233, 0.281);
+}
+*:focus {
+  outline: none;
+}
+
+Button {
+  font-family: "Roboto", serif;
+  font-size: 0.8em;
+  font-weight: bold;
+  margin-top: 2em;
+  background-color: #96c5c2;
+  padding-left: 2em;
+  padding-right: 2em;
+  border-radius: 200px;
+  border: none;
+}
+Button:hover {
+  background-color: #7da8a5;
 }
 
 #testImage {

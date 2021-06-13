@@ -1,9 +1,17 @@
 <template>
   <div class="d-inline-flex align-items-center justify-content-center">
-    <img :class="[this.$store.state.AspectRatio > 1 ? this.$store.state.AspectRatio > 1.5 ?
-          'GradeTall' : 'GradeMid' : 'GradeWide']"
-         :src="require(`../assets/Images/${Grade}.svg`)"
-         @click="handleGradeDispatch" alt="" />
+    <img
+      :class="[
+        this.$store.state.AspectRatio > 1
+          ? this.$store.state.AspectRatio > 1.5
+            ? 'GradeTall'
+            : 'GradeMid'
+          : 'GradeWide',
+      ]"
+      :src="require(`../assets/Images/${Grade}.svg`)"
+      @click="handleGradeDispatch"
+      alt=""
+    />
   </div>
 </template>
 
@@ -17,9 +25,8 @@ export default {
   },
   methods: {
     handleGradeDispatch() {
-      
-      this.$store.dispatch('setGradeFilter', this.Grade).then(() => {
-        this.$router.push('/books');
+      this.$store.dispatch("setGradeFilter", this.Grade).then(() => {
+        this.$router.push("/books");
       });
     },
   },
@@ -37,9 +44,11 @@ export default {
 }
 .GradeWide {
   height: auto;
-  width: min(16vw,32vh);
+  width: min(16vw, 32vh);
 }
-.GradeTall:hover,.GradeMid:hover,.GradeWide:hover {
+.GradeTall:hover,
+.GradeMid:hover,
+.GradeWide:hover {
   cursor: pointer;
   transform: scale(1.1);
   z-index: 1;

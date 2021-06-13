@@ -12,7 +12,11 @@
           justify-content-center
         "
       >
-        <info-pill :value="3700" title="Score"></info-pill>
+        <info-pill
+          v-if="this.NIV.showScore"
+          :value="3700"
+          title="Score"
+        ></info-pill>
       </div>
     </div>
     <div class="col-6 d-flex align-items-center justify-content-end j h-100">
@@ -28,6 +32,7 @@
         "
       >
         <info-pill
+          v-if="this.NIV.showPage"
           :value="50"
           title="Page"
           :hasStars="false"
@@ -42,11 +47,12 @@
 import InfoPill from "@/components/ux/InfoPill.vue";
 export default {
   components: { InfoPill },
+  inject: ["NIV"],
 };
 </script>
 <style  scoped>
 .footer {
-  height: 10%;
+  height: 100px;
   display: flex;
 }
 
@@ -69,12 +75,15 @@ export default {
   .scoreContainerLeft {
     position: absolute;
     left: 15%;
-    top: -120%;
+    top: -300%;
   }
   .scoreContainerRight {
     position: absolute;
     right: 15%;
-    top: -120%;
+    top: -300%;
+  }
+  .footer {
+    height: 50px;
   }
 }
 </style>

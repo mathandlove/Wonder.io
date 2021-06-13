@@ -1,7 +1,8 @@
 <template>
   <the-background>
     <MainNavBar @show-modal="this.ViewRestartModal = true" />
-    <notebook-page> </notebook-page>
+    <author-info></author-info>
+    <notebook-page></notebook-page>
     <book-footer></book-footer>
   </the-background>
 </template>
@@ -77,17 +78,35 @@
 import MainNavBar from "@/molecules/MainNavBar.vue";
 import BookFooter from "@/components/booklayout/BookFooter.vue";
 import TheBackground from "@/components/ux/TheBackground.vue";
-import NotebookPage from "@/components/ux/NotebookPage.vue";
+import NotebookPage from "@/components/booklayout/NotebookPage.vue";
+import AuthorInfo from "@/components/booklayout/AuthorInfo.vue";
 export default {
   components: {
     MainNavBar,
     BookFooter,
     TheBackground,
     NotebookPage,
+    AuthorInfo,
   },
+
   data() {
     let userName;
-    return { userName };
+    return {
+      userName: "'",
+      NIV: {
+        hasLines: false,
+        showScore: false,
+        showPage: false,
+        showNext: false,
+        showPrevious: false,
+        showAuthorFull: true,
+      },
+    };
+  },
+  provide() {
+    return {
+      NIV: this.NIV,
+    };
   },
   methods: {
     getBookInfo() {
