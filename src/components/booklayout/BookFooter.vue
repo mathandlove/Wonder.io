@@ -12,7 +12,7 @@
           justify-content-center
         "
       >
-        <info-pill :value="99000" title="Score" hasStars="false"></info-pill>
+        <info-pill :value="3700" title="Score"></info-pill>
       </div>
     </div>
     <div class="col-6 d-flex align-items-center justify-content-end j h-100">
@@ -27,7 +27,13 @@
           justify-content-center
         "
       >
-        <info-pill :value="3" title="Pages"></info-pill>
+        <info-pill
+          :value="50"
+          title="Page"
+          :hasStars="false"
+          :showProgressBar="true"
+          :numberOfPages="200"
+        ></info-pill>
       </div>
     </div>
   </div>
@@ -55,6 +61,7 @@ export default {
 @media (max-height: 800px) {
   .footer {
     height: 70px;
+    margin: 3%;
   }
 }
 
@@ -67,7 +74,7 @@ export default {
   .scoreContainerRight {
     position: absolute;
     right: 15%;
-    top: -130%;
+    top: -120%;
   }
 }
 </style>

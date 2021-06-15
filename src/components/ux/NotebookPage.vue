@@ -8,8 +8,16 @@
       @load="updateBase"
       :style="adjustingBox"
     />
-    <div class="writableArea" :style="notepadHolderStyle">
-      <div class="notepadText" :style="nts">{{ name }}</div>
+    <div class="writableArea border border-danger" :style="notepadHolderStyle">
+      <div class="notepadText border border-primary" :style="nts">
+        Lorem ipsum dolor sit amet consectetur adipisicing elit. Dolorem
+        aperiam, quibusdam dignissimos, repudiandae sint odit laboriosam
+        corrupti quae aspernatur culpa, voluptates incidunt. Quis sit ex quaerat
+        nulla. Ut, molestiae optio? Debitis, possimus distinctio et nesciunt
+        necessitatibus placeat nemo exercitationem rem eveniet laboriosam
+        praesentium aliquam, in error, doloribus fugiat autem eius suscipit
+        nobis itaque? Beatae, quis placeat minima ad est ipsa!
+      </div>
       <div class="squareMeLeft" :style="leftArrowSize">
         <nav-prev-arrow-e></nav-prev-arrow-e>
       </div>
@@ -94,10 +102,10 @@ export default {
     notepadHolderStyle() {
       this.styleObject.width = this.iw + 0 + "px";
       this.styleObject.height = this.ih + 0 + "px";
-      this.styleObject.paddingTop = 7 + "vh";
-      this.styleObject.paddingLeft = 3.5 + "vh";
-      this.styleObject.paddingRight = 4 + "vh";
-      this.styleObject.paddingBottom = 3.5 + "vh";
+      this.styleObject.paddingTop = this.ih * 0.13 + "px";
+      this.styleObject.paddingLeft = this.iw * 0.08 + "px";
+      this.styleObject.paddingRight = this.iw * 0.1 + "px";
+      this.styleObject.paddingBottom = this.ih * 0.03 + "px";
 
       return this.styleObject;
     },
@@ -122,10 +130,10 @@ export default {
       this.currentAspect = aspectScreen;
       const aspectImage = 2565 / 1495;
       this.$store.state.AspectRatio = aspectScreen;
-      this.name =
-        this.$store.state.AspectRatio +
-        " w: " +
-        window.innerHeight / window.innerWidth;
+      // this.name =
+      //   this.$store.state.AspectRatio +
+      //   " w: " +
+      //   window.innerHeight / window.innerWidth;
 
       if (aspectScreen < aspectImage) {
         this.adjustingBox.height = "100%";
@@ -169,6 +177,10 @@ export default {
 
 .notepadText {
   text-align: left;
+  overflow: clip;
+  height: 100%;
+  width: 100%;
+  font-family: "CoopForged";
 }
 
 #testImage {

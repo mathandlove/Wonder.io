@@ -82,22 +82,23 @@ export default {
   padding: 0;
   padding-top: 10px;
   padding-bottom: 10px;
+  margin-bottom: 4%;
 }
 
 .iconInsideLink {
-  height: 40px;
-  width: 40px;
+  height: 35px;
+  width: 35px;
 }
 
 .navIconSize {
-  height: 40px;
-  width: 40px;
+  height: 35px;
+  width: 35px;
   margin-left: 15px;
 
   display: flex;
 }
 
-@media (min-width: 800px) {
+@media (min-width: 700px) {
   .navIconSize {
     margin-right: 30px;
     height: 50px;
