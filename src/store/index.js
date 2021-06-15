@@ -19,6 +19,8 @@ export default createStore({
       grade6: [],
       none: [],
     },
+    SelectedBookItem: null,
+    BookData: null,
     BookArray:  [],
     HighestPage: +localStorage.getItem('HighestPage') || 1,
     BookID: +localStorage.getItem('BookID') || null,
@@ -52,7 +54,10 @@ export default createStore({
       state.GradeFilter = event;
       localStorage.setItem('GradeFilter', event);
     },
-    
+    SET_BOOK_DATA(state, event) {
+      state.BookData = event;
+      localStorage.setItem('BookData', event);
+    },
     SET_HIGHEST_PAGE(state, event) {
       state.HighestPage = event;
       localStorage.setItem('HighestPage', event);
@@ -60,6 +65,10 @@ export default createStore({
     SET_BOOK_ID(state, event) {
       state.BookID = event;
       localStorage.setItem('BookID', event);
+    },
+    SET_BOOK_ITEM(state, event) {
+      state.SelectedBookItem = event;
+      localStorage.setItem('SelectedBook', event);
     },
     SET_BOOK_PAGE(state, event) {
       state.BookPage = event;
@@ -91,10 +100,17 @@ export default createStore({
       const response = await axios.get(resource_uri + '/gradefilters');
       commit('SET_GRADE_BOOK_ORDER',response.data);
     },
+    async fetchBookData({ commit }, bookId) {
+      const response = await axios.get(resource_uri + `/${bookId}`);
+      commit('SET_BOOK_DATA', response.data);
+    },
     async setBookList({ commit }) {
       
       const resposne = await axios.get(resource_uri);
       commit('SET_BOOK_LIST', resposne.data);
+    },
+    setBookItem({ commit }, bookItem) {
+      commit('SET_BOOK_ITEM', bookItem);
     },
     setGradeFilter({ commit }, filterValue) {
       commit('SET_GRADE_FILTER', filterValue);

@@ -12,6 +12,7 @@
         :style="{ height: this.$store.state.AspectRatio > 2 ? '65vh' : '80vh' }"
       >
         <PageCover
+        :bookId="this.id"
           v-if="this.GetPageData.type === 'cover'"
           @show-hand="ToggleHand"
         />
@@ -115,12 +116,15 @@ export default {
   },
   computed: {
     GetPageData() {
-      const tempData = this.BookObject.pages[+this.page - 1];
-      this.AdjustQuestionCounter(
-        this.BookObject.pages.slice(0, +this.page - 1)
-      );
-      if (tempData) {
-        return tempData;
+      var tempData;
+      if(this.BookObject.pages) {
+        tempData = this.BookObject.pages[+this.page - 1];
+        this.AdjustQuestionCounter(
+          this.BookObject.pages.slice(0, +this.page - 1)
+        );
+        if (tempData) {
+          return tempData;
+        }
       }
       return [{ type: null }];
     },
@@ -199,9 +203,11 @@ export default {
     this.id = this.$route.params.id;
     this.page = this.$route.params.page;
     this.$store.dispatch("setBookPage", this.page);
-    [this.BookObject] = this.$store.state.BookArray[this.id - 1];
-    this.TotalPages = this.BookObject.totalPages;
-    this.createPageSkipArray();
+    if(this.$store.state.BookData) {
+      this.BookObject = this.$store.state.BookData;
+      this.TotalPages = this.BookObject.totalPages;
+      this.createPageSkipArray();
+    }
   },
   beforeUpdate() {
     this.page = this.$store.state.BookPage;
