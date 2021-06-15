@@ -20,17 +20,19 @@
          class="d-inline-flex m-md-3 m-1">
       <div class="cardSize" @click="BookSelected(Book)">
         <img alt="" class="w-100" :src="Book.bookCoverImageUrl"/>
-        <ScoreBar class="ScoreBarAlignment" :points="0"/>
+        <info-pill :value="0" 
+        :hasStars="true"
+        :showProgressBar="false"
+        :numberOfPages="Book.totalPages" />
       </div>
     </div>
   </div>
 </template>
 
 <script>
-import ScoreBar from '@/atoms/ScoreBar.vue';
+import InfoPill from "@/components/ux/InfoPill.vue";
 
 export default {
-  components: { ScoreBar },
   data() {
     const { GradeFilter } = this.$store.state;
     const WordFilter = '';
@@ -41,31 +43,53 @@ export default {
     };
   },
   created() {
-    this.GradeFilteredBooks = this.$store.state.BookArray
-    .filter((book) => this.$store.state.GradeBookOrder[this.$store.state.GradeFilter].includes(parseInt(book.bookId))) ;
-    
-    this.WordFilteredBooks = this.GradeFilteredBooks;
+    this.setGradeFilteredBooks();
   },
   beforeUpdate() {
     this.WordFilteredBooks = this.GradeFilteredBooks;
   },
   
+  components: { InfoPill },
   methods: {
-    BookSelected(bookID) {
+    setGradeFilteredBooks() {
+    this.GradeFilteredBooks = this.$store.state.BookArray
+    .filter((book) => { 
+      let gradeBookOrder = this.$store.state.GradeBookOrder[this.$store.state.GradeFilter];
+      if(gradeBookOrder) {
+          return gradeBookOrder.includes(parseInt(book.bookId));
+      } else {
+        return true;
+      }
+    });
+    
+    this.WordFilteredBooks = this.GradeFilteredBooks;
+    },
+    async BookSelected(bookListItem) {
+      console.log("selected with book :", bookListItem);
+      let bookId = parseInt(bookListItem.bookId);
       localStorage.removeItem('HighestPage');
-      this.$store.dispatch('setBookID', bookID);
+      this.$store.dispatch('setBookID', bookId);
       this.$store.dispatch('setBookPage', 1);
       this.$store.dispatch('ClearScores');
-      this.$router.push('/join');
+      await this.$store.dispatch('fetchBookData', bookId).then(() => { 
+        this.$store.dispatch('setBookItem', bookListItem);
+        this.$router.push(`/book/${bookId}/1`); 
+        });
     },
   },
-  mounted() {
-    console.log("mounted!!");
+  async mounted() {
+    if(this.$store.state.BookArray.length == 0) {
+        await this.$store.dispatch('setBookList').then(() => this.setGradeFilteredBooks());
+    }
+  },
+  loaded() {
+    console.log('book images done loaded, hide load screen!');
   }
 };
 </script>
 
 <style scope>
+
 .backgroundPadding {
   min-height: 100vh;
   min-width: 100vw;
@@ -73,8 +97,8 @@ export default {
 .cardSize {
   width: 20vw;
   max-width: 20vh;
-  height: 32vw;
-  max-height: 32vh;
+  height: 38vw;
+  max-height: 38vh;
 }
 .menuIconSize {
   height: 5vh;

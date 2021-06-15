@@ -2,24 +2,26 @@ import { createStore } from 'vuex';
 import axios from 'axios';
 import Book10 from '../assets/Books/book10/book.json';
 
-// const resource_uri = 'https://localhost:49161/book';
-const resource_uri = 'https://wonder-stories-api.web.app/book';
+const resource_uri = 'https://localhost:44312/book';
+// const resource_uri = 'https://wonderstories-api-dev-as.azurewebsites.net/book';
 
 export default createStore({
   state: {
-    GradeFilter: localStorage.getItem('GradeFilter') || 'NONE',
-    GradeBookOrder: {
-      PreK: [10],
-      K: [10],
-      1: [10],
-      2: [10],
-      3: [10],
-      4: [10],
-      5: [10],
-      6: [10],
-      NONE: [10],
+    GradeFilter: localStorage.getItem('GradeFilter') || 'none',
+    GradeBookOrder: localStorage.getItem('GradeBookOrder') || {
+      gradePreK: [],
+      gradeK: [],
+      grade1: [],
+      grade2: [],
+      grade3: [],
+      grade4: [],
+      grade5: [],
+      grade6: [],
+      none: [],
     },
-    BookArray: [1, 2, 3, 4, 5, 6, 7, 8, 9, Book10],
+    SelectedBookItem: null,
+    BookData: null,
+    BookArray:  [],
     HighestPage: +localStorage.getItem('HighestPage') || 1,
     BookID: +localStorage.getItem('BookID') || null,
     BookPage: +localStorage.getItem('BookPage') || 1,
@@ -52,7 +54,10 @@ export default createStore({
       state.GradeFilter = event;
       localStorage.setItem('GradeFilter', event);
     },
-    
+    SET_BOOK_DATA(state, event) {
+      state.BookData = event;
+      localStorage.setItem('BookData', event);
+    },
     SET_HIGHEST_PAGE(state, event) {
       state.HighestPage = event;
       localStorage.setItem('HighestPage', event);
@@ -60,6 +65,10 @@ export default createStore({
     SET_BOOK_ID(state, event) {
       state.BookID = event;
       localStorage.setItem('BookID', event);
+    },
+    SET_BOOK_ITEM(state, event) {
+      state.SelectedBookItem = event;
+      localStorage.setItem('SelectedBook', event);
     },
     SET_BOOK_PAGE(state, event) {
       state.BookPage = event;
@@ -91,10 +100,17 @@ export default createStore({
       const response = await axios.get(resource_uri + '/gradefilters');
       commit('SET_GRADE_BOOK_ORDER',response.data);
     },
+    async fetchBookData({ commit }, bookId) {
+      const response = await axios.get(resource_uri + `/${bookId}`);
+      commit('SET_BOOK_DATA', response.data);
+    },
     async setBookList({ commit }) {
       
       const resposne = await axios.get(resource_uri);
       commit('SET_BOOK_LIST', resposne.data);
+    },
+    setBookItem({ commit }, bookItem) {
+      commit('SET_BOOK_ITEM', bookItem);
     },
     setGradeFilter({ commit }, filterValue) {
       commit('SET_GRADE_FILTER', filterValue);

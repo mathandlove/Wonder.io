@@ -1,17 +1,21 @@
 <template>
-  <img alt="" class="h-100 coverWidth"
-       :src="require(`../assets/Books/book${this.$store.state.BookID}/images/cover.png`)"
+  <img alt="" class="h-100 coverWidth" :src="GetBookCoverImage"
   />
   <div class="illustrator">Illustrator: {{GetIllustrator}}</div>
 </template>
 
 <script>
 export default {
+  props: {
+  },
   emits: ['ShowHand', 'show-hand'],
   computed: {
     GetIllustrator() {
-      return this.$store.state.BookArray[this.$store.state.BookID - 1][0].illustrator;
+      return this.$store.state.BookData.illustrator;
     },
+    GetBookCoverImage() {
+      return this.$store.state.SelectedBookItem.largeBookCoverImageUrl;
+    }
   },
   created() {
     this.$emit('show-hand', true);
