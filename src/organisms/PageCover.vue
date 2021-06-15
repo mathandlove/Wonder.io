@@ -7,10 +7,6 @@
 <script>
 export default {
   props: {
-    bookId: {
-      type: Number,
-      default: 14
-    }
   },
   emits: ['ShowHand', 'show-hand'],
   computed: {

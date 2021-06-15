@@ -12,7 +12,6 @@
         :style="{ height: this.$store.state.AspectRatio > 2 ? '65vh' : '80vh' }"
       >
         <PageCover
-        :bookId="this.id"
           v-if="this.GetPageData.type === 'cover'"
           @show-hand="ToggleHand"
         />
