@@ -34,29 +34,24 @@ import InfoPill from "@/components/ux/InfoPill.vue";
 
 export default {
   data() {
-    const { GradeFilter } = this.$store.state;
+    const { GradeFilter, GradeFilteredBookItems, WordFilteredBooks} = this.$store.state;
     const WordFilter = '';
-    const GradeFilteredBooks = [];
-    const WordFilteredBooks = [];
     return {
-      GradeFilter, WordFilter, GradeFilteredBooks, WordFilteredBooks,
+      GradeFilter, WordFilter, GradeFilteredBookItems, WordFilteredBooks,
     };
   },
   created() {
-      if(this.$store.state.BookArray.length > 0) {
-        this.setGradeFilteredBooks();
-      }
   },
   beforeUpdate() {
-    this.WordFilteredBooks = this.GradeFilteredBooks;
+    
   },
   
   components: { InfoPill },
   methods: {
-    setGradeFilteredBooks() {
+    filterBooks() {
+    let gradeBookOrder = this.$store.state.GradeBookOrder[this.$store.state.GradeFilter];
         var filteredBooks = this.$store.state.BookArray
         .filter((book) => { 
-          let gradeBookOrder = this.$store.state.GradeBookOrder[this.$store.state.GradeFilter];
           if(gradeBookOrder) {
               return gradeBookOrder.includes(parseInt(book.bookId));
           } else {
@@ -65,8 +60,6 @@ export default {
         });
         this.GradeFilteredBooks = filteredBooks; 
         this.WordFilteredBooks = filteredBooks;
-    
-    console.log('filtering books',JSON.stringify(this.WordFilteredBooks));
     },
     async BookSelected(bookListItem) {
       console.log("selected with book :", bookListItem);
@@ -83,11 +76,16 @@ export default {
   },
   async mounted() {
     if(this.$store.state.BookArray.length == 0) {
-        this.$store.dispatch('setGradeFilter','grade2');
-        await this.$store.dispatch('setBookList');
+      this.$router.push('/');
+        // await this.$store.dispatch('fetchGradeFilters').then(
+        // this.$store.dispatch('setGradeFilter','grade2'));
+        // await this.$store.dispatch('setBookList').then();
+    } else {
+      this.filterBooks();
     }
   },
   loaded() {
+    this.setGradeFilteredBooks();
     console.log('book images done loaded, hide load screen!');
   }
 };

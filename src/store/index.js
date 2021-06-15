@@ -19,6 +19,8 @@ export default createStore({
       grade6: [],
       none: [],
     },
+    WordFilteredBooks: [],
+    GradeFilteredBookItems: [],
     SelectedBookItem: null,
     BookData: null,
     BookArray:  [],
