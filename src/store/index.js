@@ -2,24 +2,24 @@ import { createStore } from 'vuex';
 import axios from 'axios';
 import Book10 from '../assets/Books/book10/book.json';
 
-// const resource_uri = 'https://localhost:44312/book';
-const resource_uri = 'https://wonderstories-api-dev-as.azurewebsites.net/book';
+const resource_uri = 'https://localhost:44312/book';
+// const resource_uri = 'https://wonderstories-api-dev-as.azurewebsites.net/book';
 
 export default createStore({
   state: {
-    GradeFilter: localStorage.getItem('GradeFilter') || 'NONE',
-    GradeBookOrder: {
-      PreK: [10],
-      K: [10],
-      1: [10],
-      2: [10],
-      3: [10],
-      4: [10],
-      5: [10],
-      6: [10],
-      NONE: [10],
+    GradeFilter: localStorage.getItem('GradeFilter') || 'none',
+    GradeBookOrder: localStorage.getItem('GradeBookOrder') || {
+      gradePreK: [],
+      gradeK: [],
+      grade1: [],
+      grade2: [],
+      grade3: [],
+      grade4: [],
+      grade5: [],
+      grade6: [],
+      none: [],
     },
-    BookArray: [1, 2, 3, 4, 5, 6, 7, 8, 9, Book10],
+    BookArray:  [],
     HighestPage: +localStorage.getItem('HighestPage') || 1,
     BookID: +localStorage.getItem('BookID') || null,
     BookPage: +localStorage.getItem('BookPage') || 1,

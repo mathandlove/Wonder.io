@@ -20,7 +20,7 @@
          class="d-inline-flex m-md-3 m-1">
       <div class="cardSize" @click="BookSelected(Book)">
         <img alt="" class="w-100" :src="Book.bookCoverImageUrl"/>
-        <ScoreBar class="ScoreBarAlignment" :points="0"/>
+        
       </div>
     </div>
   </div>
@@ -41,16 +41,26 @@ export default {
     };
   },
   created() {
-    this.GradeFilteredBooks = this.$store.state.BookArray
-    .filter((book) => this.$store.state.GradeBookOrder[this.$store.state.GradeFilter].includes(parseInt(book.bookId))) ;
-    
-    this.WordFilteredBooks = this.GradeFilteredBooks;
+    this.setGradeFilteredBooks();
   },
   beforeUpdate() {
     this.WordFilteredBooks = this.GradeFilteredBooks;
   },
   
   methods: {
+    setGradeFilteredBooks() {
+    this.GradeFilteredBooks = this.$store.state.BookArray
+    .filter((book) => { 
+      let gradeBookOrder = this.$store.state.GradeBookOrder[this.$store.state.GradeFilter];
+      if(gradeBookOrder) {
+          return gradeBookOrder.includes(parseInt(book.bookId));
+      } else {
+        return true;
+      }
+    });
+    
+    this.WordFilteredBooks = this.GradeFilteredBooks;
+    },
     BookSelected(bookID) {
       localStorage.removeItem('HighestPage');
       this.$store.dispatch('setBookID', bookID);
@@ -59,8 +69,11 @@ export default {
       this.$router.push('/join');
     },
   },
-  mounted() {
-    console.log("mounted!!");
+  async mounted() {
+    console.log("mounted!! with gradeFilter :", this.$store.state.GradeFilter);
+    if(this.$store.state.BookArray.length == 0) {
+        await this.$store.dispatch('setBookList').then(() => this.setGradeFilteredBooks());
+    }
   }
 };
 </script>
