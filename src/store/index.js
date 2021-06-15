@@ -2,8 +2,8 @@ import { createStore } from 'vuex';
 import axios from 'axios';
 import Book10 from '../assets/Books/book10/book.json';
 
-const resource_uri = 'https://localhost:44312/book';
-// const resource_uri = 'https://wonderstories-api-dev-as.azurewebsites.net/book';
+// const resource_uri = 'https://localhost:44312/book';
+const resource_uri = 'https://wonderstories-api-dev-as.azurewebsites.net/book';
 
 export default createStore({
   state: {
