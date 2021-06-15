@@ -10,19 +10,7 @@
     />
     <div class="writableArea" :style="notepadHolderStyle">
       <div class="notepadText" :style="nts">
-        <slot>
-          <h1 class="centerTitle">Join Game</h1>
-          <div style="text-align: center">
-            <input
-              class="pillBoxLong"
-              type="text"
-              maxLength="12"
-              placeholder="Player Name"
-            />
-            <button>PLAY</button>
-            <author-info-mobile></author-info-mobile>
-          </div>
-        </slot>
+        <slot> </slot>
       </div>
       <div
         v-if="this.NIV.showPrevious"
@@ -178,7 +166,7 @@ export default {
   },
 };
 </script>
-<style scoped>
+<style >
 .writableArea {
   position: absolute;
   top: 50%;

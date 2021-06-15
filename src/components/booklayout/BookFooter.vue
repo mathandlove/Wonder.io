@@ -71,19 +71,21 @@ export default {
   }
 }
 
-@media (min-aspect-ratio: 110/100) {
-  .scoreContainerLeft {
-    position: absolute;
-    left: 15%;
-    top: -300%;
-  }
-  .scoreContainerRight {
-    position: absolute;
-    right: 15%;
-    top: -300%;
-  }
-  .footer {
-    height: 50px;
+@media (min-aspect-ratio: 76/61) {
+  @media (min-height: 600px) {
+    .scoreContainerLeft {
+      position: absolute;
+      left: 15%;
+      top: -300%;
+    }
+    .scoreContainerRight {
+      position: absolute;
+      right: 15%;
+      top: -300%;
+    }
+    .footer {
+      height: 50px;
+    }
   }
 }
 </style>

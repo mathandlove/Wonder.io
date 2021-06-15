@@ -1,9 +1,10 @@
 <template>
   <the-background>
     <MainNavBar @show-modal="this.ViewRestartModal = true" />
-
-    <notebook-page></notebook-page>
-    <book-footer></book-footer>
+    <notebook-page>
+      <join-elements />
+    </notebook-page>
+    <book-footer />
   </the-background>
 </template>
 
@@ -79,14 +80,14 @@ import MainNavBar from "@/molecules/MainNavBar.vue";
 import BookFooter from "@/components/booklayout/BookFooter.vue";
 import TheBackground from "@/components/ux/TheBackground.vue";
 import NotebookPage from "@/components/booklayout/NotebookPage.vue";
-import AuthorInfo from "@/components/booklayout/AuthorInfo.vue";
+import JoinElements from "@/components/booklayout/JoinElements.vue";
 export default {
   components: {
+    JoinElements,
     MainNavBar,
     BookFooter,
     TheBackground,
     NotebookPage,
-    AuthorInfo,
   },
 
   data() {
@@ -99,8 +100,7 @@ export default {
         showPage: false,
         showNext: false,
         showPrevious: false,
-        showAuthorFull: true,
-        showAuthorMobile: false,
+        bookTitle: "The Case of the Mystery Egg",
       },
     };
   },
@@ -132,86 +132,4 @@ export default {
 };
 </script>
 
-<style scoped>
-.JoinBackGround {
-  background-color: #96c5c2;
-  height: 100vh;
-  width: 100vw;
-}
-.DetailsTopPadding {
-  padding-top: 8vh;
-}
-.JoinTextStyling {
-  font-size: min(7vh, 10vw);
-  padding-bottom: 3vh;
-}
-.JoinInputStyle {
-  width: 20rem;
-  max-width: 70vw;
-  border-color: black;
-  border-style: solid;
-  border-width: 1px;
-  border-radius: 10px;
-  padding-left: 2vh;
-}
-.JoinButtonStyle {
-  font-weight: 700;
-  background-color: #96c5c2;
-  border: none;
-  cursor: pointer;
-  padding-top: 4vh;
-  min-height: 8vh;
-}
-.JoinButtonStyle:hover {
-  color: red;
-}
-.RobotoFont {
-  font-family: "Roboto", serif;
-  font-family: "Roboto", serif;
-}
 
-.BookBackGroundStyle {
-  height: 100vh;
-  width: 100vw;
-  background-color: #96c5c2;
-}
-
-.TitleQuestion {
-  margin-top: 6.8vh;
-  font-size: 4vh;
-  line-height: 100;
-}
-
-.makeBorder {
-  border: solid;
-  border-color: black;
-  border-width: 3px;
-  box-sizing: border-box;
-}
-
-#test {
-  height: 100%;
-}
-#b1 {
-  height: 400px;
-  width: 100vw;
-  background-color: #96c5c2;
-  position: fixed;
-  padding: 0;
-  margin: 0;
-}
-
-.hasBorder {
-  border-width: 10px;
-  border: solid;
-  border-color: greenyellow;
-}
-#time {
-  border-width: 10px;
-  border: solid;
-  border-color: coral;
-
-  height: 100%;
-  width: auto;
-}
-</style>

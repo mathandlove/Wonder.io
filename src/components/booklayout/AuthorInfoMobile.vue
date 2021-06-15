@@ -1,5 +1,5 @@
 <template>
-  <div v-if="NIV.showAuthorFull || NIV.showAuthorMobile" class="authorPanel">
+  <div v-if="NIV.showAuthorFull" class="authorPanel">
     <div
       v-if="NIV.showAuthorFull"
       class="d-flex align-items-end justify-content-start"
@@ -7,7 +7,7 @@
       <img id="glass" src="@/assets/Images/infoGlass.png" />
       <p class="h2a">About this Book</p>
     </div>
-    <p class="h3a">The Case of the Mystery Egg</p>
+    <p class="h3a">{{ NIV.bookTitle }}</p>
     <p class="h4a">
       Author: <b>Mur Laferty</b><br />
       Art: <b>Silvia Armelo</b><br />

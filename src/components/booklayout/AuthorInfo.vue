@@ -1,5 +1,5 @@
 <template>
-  <div v-if="NIV.showAuthorFull" class="authorPanel">
+  <div class="authorPanel">
     <div class="d-flex align-items-end justify-content-start">
       <img id="glass" src="@/assets/Images/infoGlass.png" />
       <p class="h2a">About this Book</p>
