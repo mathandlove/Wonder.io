@@ -43,7 +43,9 @@ export default {
     };
   },
   created() {
-    this.setGradeFilteredBooks();
+      if(this.$store.state.BookArray.length > 0) {
+        this.setGradeFilteredBooks();
+      }
   },
   beforeUpdate() {
     this.WordFilteredBooks = this.GradeFilteredBooks;
@@ -52,17 +54,19 @@ export default {
   components: { InfoPill },
   methods: {
     setGradeFilteredBooks() {
-    this.GradeFilteredBooks = this.$store.state.BookArray
-    .filter((book) => { 
-      let gradeBookOrder = this.$store.state.GradeBookOrder[this.$store.state.GradeFilter];
-      if(gradeBookOrder) {
-          return gradeBookOrder.includes(parseInt(book.bookId));
-      } else {
-        return true;
-      }
-    });
+        var filteredBooks = this.$store.state.BookArray
+        .filter((book) => { 
+          let gradeBookOrder = this.$store.state.GradeBookOrder[this.$store.state.GradeFilter];
+          if(gradeBookOrder) {
+              return gradeBookOrder.includes(parseInt(book.bookId));
+          } else {
+            return true;
+          }
+        });
+        this.GradeFilteredBooks = filteredBooks; 
+        this.WordFilteredBooks = filteredBooks;
     
-    this.WordFilteredBooks = this.GradeFilteredBooks;
+    console.log('filtering books',JSON.stringify(this.WordFilteredBooks));
     },
     async BookSelected(bookListItem) {
       console.log("selected with book :", bookListItem);
@@ -79,7 +83,8 @@ export default {
   },
   async mounted() {
     if(this.$store.state.BookArray.length == 0) {
-        await this.$store.dispatch('setBookList').then(() => this.setGradeFilteredBooks());
+        this.$store.dispatch('setGradeFilter','grade2');
+        await this.$store.dispatch('setBookList');
     }
   },
   loaded() {

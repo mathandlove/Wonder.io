@@ -7,7 +7,7 @@ const resource_uri = 'https://localhost:44312/book';
 
 export default createStore({
   state: {
-    GradeFilter: localStorage.getItem('GradeFilter') || 'none',
+    GradeFilter: +localStorage.getItem('GradeFilter') || 'none',
     GradeBookOrder: localStorage.getItem('GradeBookOrder') || {
       gradePreK: [],
       gradeK: [],
