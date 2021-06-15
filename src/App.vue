@@ -1,10 +1,13 @@
 <template>
-  <router-view/>
+  <router-view />
 </template>
 <script>
 export default {
   created() {
-    this.$store.dispatch('setAspectRatio', window.innerHeight / window.innerWidth);
+    this.$store.dispatch(
+      "setAspectRatio",
+      window.innerHeight / window.innerWidth
+    );
   },
 };
 </script>
@@ -12,12 +15,12 @@ export default {
 <style>
 @font-face {
   font-family: "Roboto";
-  src: local("Roboto"),
-    url("/assets/fonts/Roboto Regular.ttf") format("truetype");
+  src: local("Roboto"), url("assets/fonts/RobotoRegular.ttf") format("truetype");
 }
 @font-face {
   font-family: "CoopForged";
-  src: local("CoopForged"),url("assets/fonts/CoopForged Regular.otf") format("opentype");
+  src: local("CoopForged"),
+    url("assets/fonts/CoopForged Regular.otf") format("opentype");
 }
 #app {
   font-family: "CoopForged", Helvetica, Arial, sans-serif;

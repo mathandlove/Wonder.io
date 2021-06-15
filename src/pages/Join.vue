@@ -99,7 +99,8 @@ export default {
         showPage: false,
         showNext: false,
         showPrevious: false,
-        showAuthorFull: true,
+        showAuthorFull: false,
+        showAuthorMobile: true,
       },
     };
   },

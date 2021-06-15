@@ -13,8 +13,14 @@
         <slot>
           <h1 class="centerTitle">Join Game</h1>
           <div style="text-align: center">
-            <input class="pillBoxLong" type="text" maxLength="12" />
+            <input
+              class="pillBoxLong"
+              type="text"
+              maxLength="12"
+              placeholder="Player Name"
+            />
             <button>PLAY</button>
+            <author-info-mobile></author-info-mobile>
           </div>
         </slot>
       </div>
@@ -38,11 +44,13 @@
 <script>
 import NavPrevArrowE from "@/atoms/NavPrevArrowE.vue";
 import NavNextArrowE from "@/atoms/NavNextArrowE.vue";
+import AuthorInfoMobile from "@/components/booklayout/AuthorInfoMobile.vue";
 
 export default {
   components: {
     NavNextArrowE,
     NavPrevArrowE,
+    AuthorInfoMobile,
   },
   inject: ["NIV"],
   data() {
@@ -165,7 +173,7 @@ export default {
     window.addEventListener("resize", this.updateBase);
     this.updateBase();
   },
-  destroyed() {
+  unmounted() {
     window.removeEventListener("resize", this.updateBase);
   },
 };
