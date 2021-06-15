@@ -1,7 +1,7 @@
 <template>
   <the-background>
     <MainNavBar @show-modal="this.ViewRestartModal = true" />
-    <author-info></author-info>
+
     <notebook-page></notebook-page>
     <book-footer></book-footer>
   </the-background>
@@ -99,8 +99,8 @@ export default {
         showPage: false,
         showNext: false,
         showPrevious: false,
-        showAuthorFull: false,
-        showAuthorMobile: true,
+        showAuthorFull: true,
+        showAuthorMobile: false,
       },
     };
   },

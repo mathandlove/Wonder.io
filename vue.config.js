@@ -10,7 +10,8 @@ module.exports = {
       favicon16: './favicon.ico',
       appleTouchIcon: './favicon.ico',
       maskIcon: './favicon.ico',
-      msTileImage: './favicon.ico'
+      msTileImage: './favicon.ico',
+      androidChrome: './favicon.ico'
     }
   }
 };
