@@ -19,7 +19,7 @@
             `linear-gradient(to right, #8f9ad8 0%, #8f9ad8 ${this.PagePercent}%, #FFFFFF ${this.PagePercent}%, #FFFFFF 100%)`,
         }"
       >
-        {{ this.PageNum }}
+        {{ BookPage }}
       </div>
     </div>
     <div class="d-none d-lg-block col-lg-3" />
@@ -44,9 +44,6 @@ export default {
     PagePercent() {
         return (this.BookPage / this.totalPages) * 100;
       },
-      PageNum() {
-      return this.BookPage;
-    },
     ...mapState(['BookPage'])
   },
 };

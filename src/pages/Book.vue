@@ -149,6 +149,9 @@ export default {
     questionCounter() {
 
     },
+    setPageNumber() {
+      this.page = parseInt(this.$store.state.BookPage);
+    },
     ...mapState(['BookData'])
   },
   methods: {
@@ -170,7 +173,6 @@ export default {
     },
     RouteNextPage(newHighestPage) {
       let tempPage = +this.page + 1;
-      console.log('totalPages?', JSON.stringify(this.TotalPages));
       if (tempPage > this.TotalPages) {
         this.$router.push("/like");
       } else {
@@ -186,8 +188,8 @@ export default {
         if (newHighestPage && tempPage > this.$store.state.HighestPage) {
           this.$store.dispatch("setHighestPage", tempPage);
         }
-        this.$store.dispatch("setBookPage", tempPage);
-        this.$router.push(`/book/${this.$store.state.BookID}/${tempPage}`);
+        console.log('temp?', JSON.stringify(tempPage));
+        this.$store.dispatch("setBookPage", tempPage).then(this.$router.push(`/book/${this.$store.state.BookID}/${tempPage}`));
       }
     },
     RoutePrevPage() {
@@ -219,6 +221,7 @@ export default {
       let selectedItem = this.$store.state.BookArray.filter(book => book.bookId == this.id)[0]; 
       if(selectedItem) {
         await this.$store.dispatch('setBookItem',selectedItem);
+        this.$store.dispatch("setBookPage", this.page);
       }
     });
     await this.$store.dispatch('fetchBookData', this.id);
