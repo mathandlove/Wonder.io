@@ -33,7 +33,7 @@
       >
         <info-pill
           v-if="this.NIV.showPage"
-          :value="50"
+          :value="this.NIV.pageNumber"
           title="Page"
           :hasStars="false"
           :showProgressBar="true"

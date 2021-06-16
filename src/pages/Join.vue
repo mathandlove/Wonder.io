@@ -2,7 +2,7 @@
   <the-background>
     <MainNavBar @show-modal="this.ViewRestartModal = true" />
     <notebook-page>
-      <read-elements />
+      <joinElements />
     </notebook-page>
     <book-footer />
   </the-background>
@@ -15,6 +15,7 @@ import TheBackground from "@/components/ux/TheBackground.vue";
 import NotebookPage from "@/components/booklayout/NotebookPage.vue";
 import JoinElements from "@/components/booklayout/JoinElements.vue";
 import ReadElements from "@/components/booklayout/ReadElements.vue";
+import QuestionTitleElements from "@/components/booklayout/QuestionTitleElements.vue";
 
 export default {
   components: {
@@ -24,9 +25,11 @@ export default {
     TheBackground,
     NotebookPage,
     ReadElements,
+    QuestionTitleElements,
   },
   data() {
     let userName;
+
     return {
       userName: "'",
       NIV: {
@@ -36,6 +39,8 @@ export default {
         showNext: false,
         showPrevious: false,
         bookTitle: "The Case of the Mystery Egg",
+        questionNumber: 2,
+        mainText: "What strange thing is going on?",
       },
     };
   },
@@ -43,6 +48,23 @@ export default {
     return {
       NIV: this.NIV,
     };
+  },
+  methods: {
+    formatQuestion() {
+      this.formatNormalRead();
+      this.NIV.hasLines = false;
+    },
+    formatNormalRead() {
+      this.NIV.showScore = true;
+      this.NIV.showPage = true;
+      this.NIV.showNext = true;
+      this.NIV.showPrevious = true;
+    },
+  },
+  mounted() {
+    this.formatQuestion();
+    this.$store.dispatch("setBookID", 10);
+    this.$store.dispatch("setBookPage", 2);
   },
 };
 </script>
