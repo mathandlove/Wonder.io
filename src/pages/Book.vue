@@ -189,7 +189,8 @@ export default {
           this.$store.dispatch("setHighestPage", tempPage);
         }
         console.log('temp?', JSON.stringify(tempPage));
-        this.$store.dispatch("setBookPage", tempPage).then(this.$router.push(`/book/${this.$store.state.BookID}/${tempPage}`));
+        this.$store.dispatch("setBookPage", tempPage);
+        this.$router.push(`/book/${this.$store.state.BookID}/${tempPage}`);
       }
     },
     RoutePrevPage() {
