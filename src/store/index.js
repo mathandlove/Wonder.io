@@ -21,7 +21,7 @@ export default createStore({
     },
     WordFilteredBooks: [Book10Item],
     GradeFilteredBookItems: [Book10Item],
-    SelectedBookItem: JSON.parse(localStorage.getItem('SelectedBook')) ||  Book10Item,
+    SelectedBookItem: JSON.parse(localStorage.getItem('SelectedBook')) || Book10Item,
     BookData: JSON.parse(localStorage.getItem('BookData')) || Book10,
     BookArray: JSON.parse(localStorage.getItem('BookArray')) || [Book10Item],
     HighestPage: +localStorage.getItem('HighestPage') || 1,
@@ -42,12 +42,29 @@ export default createStore({
         id: 3, name: 'BotName3', OldScore: 0, NewScore: 0,
       },
     ],
+
+    questionNumber: 0
+
   },
   getters: {
     currentBookParagraph: state => {
       let pageNumber = parseInt(state.BookPage);
       return state.BookData.pages[+pageNumber - 1];
+    },
+
+    //Needs to be part of server data
+    questionNumber: state => {
+      return state.questionNumber;
+    },
+
+    mainText: state => {
+      return state.BookData.pages[state.BookPage - 1].pageParts[0].lineParts[0].words.join(" ")
+    },
+
+    pageNumber: state => {
+      return state.BookPage;
     }
+
   },
   mutations: {
     SET_BOOK_LIST(state, event) {
@@ -106,11 +123,11 @@ export default createStore({
   actions: {
     async fetchGradeFilters({ commit }) {
       let existingFilters = localStorage.getItem('GradeBookOrder');
-      if(existingFilters == null) {
+      if (existingFilters == null) {
         const response = await axios.get(resource_uri + '/gradefilters');
-        commit('SET_GRADE_BOOK_ORDER',response.data);
+        commit('SET_GRADE_BOOK_ORDER', response.data);
       } else {
-        commit('SET_GRADE_BOOK_ORDER',JSON.parse(existingFilters));
+        commit('SET_GRADE_BOOK_ORDER', JSON.parse(existingFilters));
       }
     },
     async fetchBookData({ commit }, bookId) {
@@ -119,11 +136,11 @@ export default createStore({
     },
     async setBookList({ commit }) {
       let existingArray = localStorage.getItem('BookArray');
-      if(existingArray == null) {
+      if (existingArray == null) {
         const resposne = await axios.get(resource_uri);
         commit('SET_BOOK_LIST', resposne.data);
-      }else {
-        commit('SET_BOOK_LIST',JSON.parse(existingArray));
+      } else {
+        commit('SET_BOOK_LIST', JSON.parse(existingArray));
       }
     },
     setBookItem({ commit }, bookItem) {

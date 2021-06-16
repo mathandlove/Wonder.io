@@ -1,24 +1,27 @@
  <template>
   <div class="h1c">
     {{
-      NIV.questionNumber != -99
-        ? "Question " + NIV.questionNumber + ":"
+      questionNumber != -99
+        ? "Question " + questionNumber + ":"
         : "The Big Question:"
     }}
   </div>
   <div class="LargeBodyText" style="text-align: center">
-    <slot>{{ NIV.mainText }}</slot>
+    <slot>{{ mainText }}</slot>
   </div>
 </template>
 <script>
+import { mapGetters } from "vuex";
 export default {
   components: {},
-  inject: ["NIV"],
   methods: {
     setupNIV() {},
   },
   mounted() {},
   dismounted() {},
+  computed: {
+    ...mapGetters(["questionNumber", "mainText"]),
+  },
 };
 </script>
 
