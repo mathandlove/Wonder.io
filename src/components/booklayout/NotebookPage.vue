@@ -199,12 +199,19 @@ export default {
   font-family: "CoopForged";
 }
 
-h1 {
+.h1c {
   text-align: center;
   font-size: 2em;
   padding-top: 1em;
+  font-weight: 700;
+  margin-bottom: 1em;
+  margin-top: 0.5em;
 }
 
+.LargeBodyText {
+  font-size: 1.6em;
+  line-height: 1.3;
+}
 input {
   margin-top: 1em;
   background-color: red;
