@@ -208,6 +208,10 @@ export default {
   margin-top: 0.5em;
 }
 
+.LargeBodyText {
+  font-size: 1.6em;
+  line-height: 1.3;
+}
 input {
   margin-top: 1em;
   background-color: red;

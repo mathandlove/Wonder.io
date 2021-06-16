@@ -210,14 +210,9 @@ export default {
         if (tempPage > this.$store.state.HighestPage) {
           this.$store.dispatch("setHighestPage", tempPage);
         }
-<<<<<<< HEAD
         console.log("temp?", JSON.stringify(tempPage));
         this.$store.dispatch("setBookPage", tempPage);
         this.$router.push(`/book/${this.$store.state.BookID}/${tempPage}`);
-=======
-        console.log('temp?', JSON.stringify(tempPage));
-        this.$store.dispatch("setBookPage", tempPage).then(this.$router.push(`/book/${this.$store.state.BookID}/${tempPage}`));
->>>>>>> parent of 1a9cdd1 (ui workflow update)
       }
     },
     RoutePrevPage() {
