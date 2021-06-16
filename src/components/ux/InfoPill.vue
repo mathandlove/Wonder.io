@@ -62,7 +62,6 @@ export default {
   computed: {
     pagePercent() {
       let truePercent = (this.value / this.numberOfPages) * 100;
-      truePercent = 80;
       const calculatedPercent = 30 + truePercent * 0.7;
       return calculatedPercent + "%";
     },

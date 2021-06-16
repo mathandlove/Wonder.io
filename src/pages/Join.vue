@@ -14,7 +14,6 @@ import BookFooter from "@/components/booklayout/BookFooter.vue";
 import TheBackground from "@/components/ux/TheBackground.vue";
 import NotebookPage from "@/components/booklayout/NotebookPage.vue";
 import JoinElements from "@/components/booklayout/JoinElements.vue";
-import ReadElements from "@/components/booklayout/ReadElements.vue";
 import QuestionTitleElements from "@/components/booklayout/QuestionTitleElements.vue";
 
 export default {
@@ -24,7 +23,6 @@ export default {
     BookFooter,
     TheBackground,
     NotebookPage,
-    ReadElements,
     QuestionTitleElements,
   },
   data() {

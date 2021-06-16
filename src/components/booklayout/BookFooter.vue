@@ -13,8 +13,8 @@
         "
       >
         <info-pill
-          v-if="this.NIV.showScore"
-          :value="3700"
+          v-if="showScorePill"
+          :value="playerScore"
           title="Score"
         ></info-pill>
       </div>
@@ -32,12 +32,12 @@
         "
       >
         <info-pill
-          v-if="this.NIV.showPage"
-          :value="this.NIV.pageNumber"
+          v-if="showPagePill"
+          :value="pageNumber"
           title="Page"
           :hasStars="false"
           :showProgressBar="true"
-          :numberOfPages="200"
+          :numberOfPages="totalNumberOfPages"
         ></info-pill>
       </div>
     </div>
@@ -45,9 +45,18 @@
 </template>
 <script>
 import InfoPill from "@/components/ux/InfoPill.vue";
+import { mapGetters } from "vuex";
 export default {
   components: { InfoPill },
-  inject: ["NIV"],
+  computed: {
+    ...mapGetters([
+      "pageNumber",
+      "totalNumberOfPages",
+      "playerScore",
+      "showPagePill",
+      "showScorePill",
+    ]),
+  },
 };
 </script>
 <style  scoped>

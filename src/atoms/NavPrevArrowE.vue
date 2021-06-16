@@ -3,12 +3,17 @@
     class="PrevArrowSize PrevArrowAlign"
     alt=""
     src="../assets/Images/computerBack.png"
+    v-if="showPrevButton"
   />
-  <div @click="NIV.gotoPrev" class="PrevButtonSize"></div>
+  <div v-if="showPrevButton" @click="NIV.gotoPrev" class="PrevButtonSize"></div>
 </template>
 
 <script>
+import { mapGetters } from "vuex";
 export default {
+  computed: {
+    ...mapGetters(["showPrevButton", "nextPage"]),
+  },
   data() {
     const windowWidth = 1;
     const windowHeight = 1;

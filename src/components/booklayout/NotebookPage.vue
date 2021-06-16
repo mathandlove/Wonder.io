@@ -12,18 +12,10 @@
       <div class="notepadText" :style="nts">
         <slot> </slot>
       </div>
-      <div
-        v-if="this.NIV.showPrevious"
-        class="squareMeLeft"
-        :style="leftArrowSize"
-      >
+      <div class="squareMeLeft" :style="leftArrowSize">
         <nav-prev-arrow-e></nav-prev-arrow-e>
       </div>
-      <div
-        v-if="this.NIV.showNext"
-        class="squareMeRight"
-        :style="rightArrowSize"
-      >
+      <div class="squareMeRight" :style="rightArrowSize">
         <nav-next-arrow-e></nav-next-arrow-e>
       </div>
     </div>
@@ -34,13 +26,13 @@ import NavPrevArrowE from "@/atoms/NavPrevArrowE.vue";
 import NavNextArrowE from "@/atoms/NavNextArrowE.vue";
 import AuthorInfoMobile from "@/components/booklayout/AuthorInfoMobile.vue";
 
+import { mapGetters } from "vuex";
 export default {
   components: {
     NavNextArrowE,
     NavPrevArrowE,
     AuthorInfoMobile,
   },
-  inject: ["NIV"],
   data() {
     return {
       counter: 0,
@@ -62,10 +54,14 @@ export default {
     };
   },
   computed: {
+    ...mapGetters(["sheetHasLines", "pageType", "coverHREF"]),
+
     notepadImageLocation() {
-      if (this.NIV.hasLines)
+      if (this.pageType == "cover") {
+        return this.coverHREF;
+      } else if (this.sheetHasLines) {
         return require("@/assets/Images/notepadWithLines.png");
-      else {
+      } else {
         return require("@/assets/Images/NotepadWithoutLines.png");
       }
     },

@@ -1,10 +1,20 @@
 <template>
-  <img class="NextArrowSize" alt="" src="../assets/Images/nextButton.png" />
-  <div @click="NIV.gotoNext" class="NextButtonSize"></div>
+  <img
+    v-if="showNextButton"
+    class="NextArrowSize"
+    alt=""
+    src="../assets/Images/nextButton.png"
+  />
+  <div v-if="showNextButton" @click="NIV.gotoNext" class="NextButtonSize"></div>
 </template>
 
 <script>
+import { mapGetters } from "vuex";
 export default {
+  inject: ["NIV"],
+  computed: {
+    ...mapGetters(["showNextButton"]),
+  },
   data() {
     return { windowWidth: 1, windowHeight: 1 };
   },

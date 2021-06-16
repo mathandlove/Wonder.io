@@ -6,7 +6,8 @@
       @close-modal="this.ViewRestartModal = false"
     />
     <notebook-page>
-      <question-title-elements />
+      <question-title-elements v-if="pageType === 'questiontitle'" />
+      <cover-element />
       <!-- <PageCover
         v-if="this.bookPageData.type === 'cover'"
         @show-hand="ToggleHand"
@@ -66,20 +67,18 @@ import PageQuestionTitle from "@/organisms/PageQuestionTitle.vue";
 import PageQuestion from "@/organisms/PageQuestion.vue";
 import RestartModal from "@/molecules/RestartModal.vue";
 import PageNoExist from "@/organisms/PageNoExist.vue";
-import MainFooter from "@/molecules/MainFooter.vue";
 
 import MainNavBar from "@/molecules/MainNavBar.vue";
 import BookFooter from "@/components/booklayout/BookFooter.vue";
 import TheBackground from "@/components/ux/TheBackground.vue";
 import NotebookPage from "@/components/booklayout/NotebookPage.vue";
 import JoinElements from "@/components/booklayout/JoinElements.vue";
-import ReadElements from "@/components/booklayout/ReadElements.vue";
 import QuestionTitleElements from "@/components/booklayout/QuestionTitleElements.vue";
 
 import { mapState } from "vuex";
+import { mapGetters } from "vuex";
 export default {
   components: {
-    MainFooter,
     PageQuestionTitle,
     PageChapter,
     PageRead,
@@ -95,7 +94,6 @@ export default {
     BookFooter,
     TheBackground,
     NotebookPage,
-    ReadElements,
     QuestionTitleElements,
   },
   data() {
@@ -118,18 +116,8 @@ export default {
       QuestionCounter,
 
       NIV: {
-        hasLines: false,
-        showScore: false,
-        showPage: false,
-        pageNumber: 2,
-        showNext: false,
         gotoNext: this.RouteNextPage,
-
-        showPrevious: false,
         gotoPrev: this.RoutePrevPage,
-        bookTitle: "The Case of the Mystery Egg",
-        questionNumber: 2,
-        mainText: "No cheating",
       },
     };
   },
@@ -174,7 +162,8 @@ export default {
     setPageNumber() {
       this.page = parseInt(this.$store.state.BookPage);
     },
-    ...mapState(["BookData"]),
+    ...mapState(["BookData", "bookStyle"]),
+    ...mapGetters(["pageType"]),
   },
   methods: {
     AdjustQuestionCounter(data) {
@@ -213,6 +202,7 @@ export default {
         console.log("temp?", JSON.stringify(tempPage));
         this.$store.dispatch("setBookPage", tempPage);
         this.$router.push(`/book/${this.$store.state.BookID}/${tempPage}`);
+        this.formatPage();
       }
     },
     RoutePrevPage() {
@@ -228,27 +218,33 @@ export default {
       });
       this.$store.dispatch("setBookPage", tempPage);
       this.$router.push(`/book/${this.$store.state.BookID}/${tempPage}`);
+      this.formatPage();
     },
     ToggleHand(newValue) {
       this.ShowHand = newValue;
     },
     //Elliott Added Methods
-    formatQuestion() {
+    formatPage() {
       this.formatNormalRead();
-      this.NIV.hasLines = false;
-      this.NIV.mainText =
-        this.GetPageData.pageParts[0].lineParts[0].words.join(" ");
-      if (this.GetPageData.pageParts[0].hasOwnProperty("questionNumber")) {
-        this.NIV.questionNumber = this.GetPageData.pageParts[0].questionNumber;
-      } else {
-        this.NIV.questionNumber = 0;
+      if (this.pageType == "questiontitle") {
+        this.formatQuestion();
+      } else if (this.pageType == "cover") {
+        this.formatCover();
       }
     },
+
+    formatQuestion() {
+      this.bookStyle.sheetHasLines = true;
+    },
+    formatCover() {
+      this.bookStyle.showPrevButton = false;
+    },
+
     formatNormalRead() {
-      this.NIV.showScore = true;
-      this.NIV.showPage = true;
-      this.NIV.showNext = true;
-      this.NIV.showPrevious = true;
+      this.bookStyle.showScorePill = true;
+      this.bookStyle.showPagePill = true;
+      this.bookStyle.showNextButton = true;
+      this.bookStyle.showPrevButton = true;
     },
   },
   created() {
@@ -256,7 +252,7 @@ export default {
     this.$store.dispatch("setBookID", this.id);
     this.page = this.$route.params.page;
     this.$store.dispatch("setBookPage", this.page);
-    this.formatQuestion();
+    this.formatPage();
   },
   async mounted() {
     await this.$store.dispatch("setBookList").then(async () => {

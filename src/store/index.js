@@ -26,7 +26,7 @@ export default createStore({
     BookArray: JSON.parse(localStorage.getItem('BookArray')) || [Book10Item],
     HighestPage: +localStorage.getItem('HighestPage') || 1,
     BookID: +localStorage.getItem('BookID') || 10,
-    BookPage: +localStorage.getItem('BookPage') || 1,
+    BookPage: +parseInt(localStorage.getItem('BookPage')) || 1,
     AspectRatio: +localStorage.getItem('AspectRatio') || 1,
     Scores: JSON.parse(localStorage.getItem('Scores')) || [
       {
@@ -43,7 +43,16 @@ export default createStore({
       },
     ],
 
-    questionNumber: 0
+    questionNumber: 0,
+
+    bookStyle: {
+      showPagePill: true,
+      showScorePill: false,
+      showPrevButton: true,
+      showNextButton: true,
+      sheetHasLines: false,
+      showPagePill: true
+    }
 
   },
   getters: {
@@ -63,7 +72,42 @@ export default createStore({
 
     pageNumber: state => {
       return state.BookPage;
+    },
+
+    totalNumberOfPages: state => {
+      return state.BookData.pages.length;
+    },
+
+    pageType: state => {
+      console.log(state.BookData.pages[state.BookPage - 1])
+      return state.BookData.pages[state.BookPage - 1].type;
+    },
+
+    playerScore: state => {
+      return state.Scores[0].pointsEnd;  //Note, I'm not sure pointsEnd is the right score
+    },
+
+    showPagePill: state => {
+      return state.bookStyle.showPagePill;
+    },
+
+    showScorePill: state => {
+      return state.bookStyle.showScorePill;
+    },
+
+    showPrevButton: state => {
+      return state.bookStyle.showPrevButton;
+    },
+    showNextButton: state => {
+      return state.bookStyle.showNextButton;
+    },
+    sheetHasLines: state => {
+      return state.bookStyle.sheetHasLines;
+    },
+    coverHREF: state => {
+      return state.SelectedBookItem.largeBookCoverImageUrl
     }
+
 
   },
   mutations: {
@@ -119,6 +163,8 @@ export default createStore({
       }
       localStorage.setItem('Scores', JSON.stringify(state.Scores));
     },
+
+
   },
   actions: {
     async fetchGradeFilters({ commit }) {
@@ -137,8 +183,8 @@ export default createStore({
     async setBookList({ commit }) {
       let existingArray = localStorage.getItem('BookArray');
       if (existingArray == null) {
-        const resposne = await axios.get(resource_uri);
-        commit('SET_BOOK_LIST', resposne.data);
+        const response = await axios.get(resource_uri);
+        commit('SET_BOOK_LIST', response.data);
       } else {
         commit('SET_BOOK_LIST', JSON.parse(existingArray));
       }
@@ -156,7 +202,7 @@ export default createStore({
       commit('SET_BOOK_ID', newID);
     },
     setBookPage({ commit }, newPage) {
-      commit('SET_BOOK_PAGE', newPage);
+      commit('SET_BOOK_PAGE', parseInt(newPage));
     },
     setAspectRatio({ commit }, newRatio) {
       commit('SET_ASPECT_RATIO', newRatio);
@@ -170,6 +216,7 @@ export default createStore({
     ClearScores({ commit }) {
       commit('CLEAR_SCORES');
     },
+
   },
   modules: {
   },
