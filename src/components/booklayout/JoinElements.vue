@@ -1,5 +1,5 @@
  <template>
-  <h1>Join Game</h1>
+  <div class="h1c">Join Game</div>
   <div style="text-align: center">
     <input
       class="pillBoxLong"
@@ -8,7 +8,7 @@
       placeholder="Player Name"
     />
     <button class>PLAY</button>
-    <author-info-mobile></author-info-mobile>
+    <author-info-mobile />
   </div>
 </template>
 <script>
@@ -18,7 +18,6 @@ export default {
   components: {
     AuthorInfoMobile,
   },
-  inject: ["NIV"],
   methods: {
     setupNIV() {},
   },

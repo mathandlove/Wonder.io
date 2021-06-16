@@ -4,17 +4,17 @@
     alt=""
     src="../assets/Images/computerBack.png"
   />
-  <div @click="this.$emit('prev-page')" class="PrevButtonSize"></div>
+  <div @click="NIV.gotoPrev" class="PrevButtonSize"></div>
 </template>
 
 <script>
 export default {
-  emits: ["PrevPage", "prev-page"],
   data() {
     const windowWidth = 1;
     const windowHeight = 1;
     return { windowWidth, windowHeight };
   },
+  inject: ["NIV"],
   created() {
     window.addEventListener("resize", this.handleResize);
     this.handleResize();

@@ -1,31 +1,31 @@
 import { createStore } from 'vuex';
 import axios from 'axios';
 import Book10 from '../assets/Books/book10/book.json';
-import Book10Item from '../assets/Books/book10/book10item.json';
+
 const resource_uri = 'https://localhost:44312/book';
 // const resource_uri = 'https://wonderstories-api-dev-as.azurewebsites.net/book';
 
 export default createStore({
   state: {
     GradeFilter: +localStorage.getItem('GradeFilter') || 'none',
-    GradeBookOrder: JSON.parse(localStorage.getItem('GradeBookOrder')) || {
-      gradePreK: [10],
-      gradeK: [10],
-      grade1: [10],
-      grade2: [10],
-      grade3: [10],
-      grade4: [10],
-      grade5: [10],
-      grade6: [10],
-      none: [10],
+    GradeBookOrder: localStorage.getItem('GradeBookOrder') || {
+      gradePreK: [],
+      gradeK: [],
+      grade1: [],
+      grade2: [],
+      grade3: [],
+      grade4: [],
+      grade5: [],
+      grade6: [],
+      none: [],
     },
-    WordFilteredBooks: [Book10Item],
-    GradeFilteredBookItems: [Book10Item],
-    SelectedBookItem: JSON.parse(localStorage.getItem('SelectedBook')) ||  Book10Item,
-    BookData: JSON.parse(localStorage.getItem('BookData')) || Book10,
-    BookArray: JSON.parse(localStorage.getItem('BookArray')) || [Book10Item],
+    WordFilteredBooks: [],
+    GradeFilteredBookItems: [],
+    SelectedBookItem: null,
+    BookData: null,
+    BookArray: [],
     HighestPage: +localStorage.getItem('HighestPage') || 1,
-    BookID: +localStorage.getItem('BookID') || 10,
+    BookID: +localStorage.getItem('BookID') || null,
     BookPage: +localStorage.getItem('BookPage') || 1,
     AspectRatio: +localStorage.getItem('AspectRatio') || 1,
     Scores: JSON.parse(localStorage.getItem('Scores')) || [
@@ -43,28 +43,22 @@ export default createStore({
       },
     ],
   },
-  getters: {
-    currentBookParagraph: state => {
-      let pageNumber = parseInt(state.BookPage);
-      return state.BookData.pages[+pageNumber - 1];
-    }
-  },
   mutations: {
     SET_BOOK_LIST(state, event) {
       state.BookArray = event;
-      localStorage.setItem('BookArray', JSON.stringify(state.BookArray));
+      localStorage.setItem('BookArray', event);
     },
     SET_GRADE_BOOK_ORDER(state, event) {
       state.GradeBookOrder = event;
-      localStorage.setItem('GradeBookOrder', JSON.stringify(state.GradeBookOrder));
+      localStorage.setItem('GradeBookOrder', event);
     },
     SET_GRADE_FILTER(state, event) {
       state.GradeFilter = event;
-      localStorage.setItem('GradeFilter', state.GradeFilter);
+      localStorage.setItem('GradeFilter', event);
     },
     SET_BOOK_DATA(state, event) {
       state.BookData = event;
-      localStorage.setItem('BookData', JSON.stringify(state.BookData));
+      localStorage.setItem('BookData', event);
     },
     SET_HIGHEST_PAGE(state, event) {
       state.HighestPage = event;
@@ -76,7 +70,7 @@ export default createStore({
     },
     SET_BOOK_ITEM(state, event) {
       state.SelectedBookItem = event;
-      localStorage.setItem('SelectedBook', JSON.stringify(state.SelectedBookItem));
+      localStorage.setItem('SelectedBook', event);
     },
     SET_BOOK_PAGE(state, event) {
       state.BookPage = event;
@@ -105,26 +99,19 @@ export default createStore({
   },
   actions: {
     async fetchGradeFilters({ commit }) {
-      let existingFilters = localStorage.getItem('GradeBookOrder');
-      if(existingFilters == null) {
-        const response = await axios.get(resource_uri + '/gradefilters');
-        commit('SET_GRADE_BOOK_ORDER',response.data);
-      } else {
-        commit('SET_GRADE_BOOK_ORDER',JSON.parse(existingFilters));
-      }
+      const response = await axios.get(resource_uri + '/gradefilters');
+      commit('SET_GRADE_BOOK_ORDER', response.data);
     },
     async fetchBookData({ commit }, bookId) {
       const response = await axios.get(resource_uri + `/${bookId}`);
       commit('SET_BOOK_DATA', response.data);
+
+
     },
     async setBookList({ commit }) {
-      let existingArray = localStorage.getItem('BookArray');
-      if(existingArray == null) {
-        const resposne = await axios.get(resource_uri);
-        commit('SET_BOOK_LIST', resposne.data);
-      }else {
-        commit('SET_BOOK_LIST',JSON.parse(existingArray));
-      }
+
+      const resposne = await axios.get(resource_uri);
+      commit('SET_BOOK_LIST', response.data);
     },
     setBookItem({ commit }, bookItem) {
       commit('SET_BOOK_ITEM', bookItem);
@@ -135,8 +122,9 @@ export default createStore({
     setHighestPage({ commit }, newPage) {
       commit('SET_HIGHEST_PAGE', newPage);
     },
-    setBookID({ commit }, newID) {
+    setBookID({ dispatch, commit }, newID) {
       commit('SET_BOOK_ID', newID);
+      //dispatch("fetchBookData");
     },
     setBookPage({ commit }, newPage) {
       commit('SET_BOOK_PAGE', newPage);
@@ -153,6 +141,27 @@ export default createStore({
     ClearScores({ commit }) {
       commit('CLEAR_SCORES');
     },
+  },
+  getters: {
+
+    illustrator: (state) => {
+      // 
+      if (state.BookData != null)
+        return state.BookData.illustrator;
+      else {
+        return '...'
+      }
+    },
+    bookTitle: (state) => {
+      return 'joe malone';
+    },
+    totalNumberPages: (state) => {
+      return '21';
+    },
+    author: (state) => {
+      return '21';
+    }
+
   },
   modules: {
   },

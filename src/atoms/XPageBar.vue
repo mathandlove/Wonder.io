@@ -9,7 +9,7 @@
       justify-content-center
     "
   >
-    <div class="buttonTitle">Page</div>
+    <div class="buttonTitle">Page2</div>
     <div
       class="
         ScoreBarStyle
@@ -24,7 +24,7 @@
     >
       <img class="starSize" alt="" src="../assets/Images/Star.svg" />
       <div class="scoreStyle">
-        {{ points }}
+        {{ 10 }}
       </div>
       <img class="starSize" alt="" src="../assets/Images/Star.svg" />
     </div>
@@ -33,12 +33,7 @@
 
 <script>
 export default {
-  props: {
-    points: {
-      type: Number,
-      required: true,
-    },
-  },
+  inject: ["NIV"],
 };
 </script>
 

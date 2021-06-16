@@ -2,7 +2,7 @@
   <the-background>
     <MainNavBar @show-modal="this.ViewRestartModal = true" />
     <notebook-page>
-      <question-elements></question-elements>
+      <joinElements />
     </notebook-page>
     <book-footer />
   </the-background>
@@ -15,7 +15,7 @@ import TheBackground from "@/components/ux/TheBackground.vue";
 import NotebookPage from "@/components/booklayout/NotebookPage.vue";
 import JoinElements from "@/components/booklayout/JoinElements.vue";
 import ReadElements from "@/components/booklayout/ReadElements.vue";
-import QuestionElements from "@/components/booklayout/QuestionElements.vue";
+import QuestionTitleElements from "@/components/booklayout/QuestionTitleElements.vue";
 
 export default {
   components: {
@@ -25,7 +25,7 @@ export default {
     TheBackground,
     NotebookPage,
     ReadElements,
-    QuestionElements,
+    QuestionTitleElements,
   },
   data() {
     let userName;
@@ -57,10 +57,14 @@ export default {
     formatNormalRead() {
       this.NIV.showScore = true;
       this.NIV.showPage = true;
+      this.NIV.showNext = true;
+      this.NIV.showPrevious = true;
     },
   },
   mounted() {
     this.formatQuestion();
+    this.$store.dispatch("setBookID", 10);
+    this.$store.dispatch("setBookPage", 2);
   },
 };
 </script>

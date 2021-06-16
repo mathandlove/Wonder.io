@@ -1,63 +1,59 @@
 <template>
-  <div class="BookBackGroundStyle noSelectText">
-    <div class="container w-100">
-      <MainNavBar @show-modal="this.ViewRestartModal = true" />
-      <RestartModal
-        v-if="this.ViewRestartModal"
-        @close-modal="this.ViewRestartModal = false"
+  <the-background>
+    <MainNavBar @show-modal="this.ViewRestartModal = true" />
+    <RestartModal
+      v-if="this.ViewRestartModal"
+      @close-modal="this.ViewRestartModal = false"
+    />
+    <notebook-page>
+      <question-title-elements />
+      <!-- <PageCover
+        v-if="this.bookPageData.type === 'cover'"
+        @show-hand="ToggleHand"
       />
-      <div
-        :key="page"
-        class="pageContainer"
-        :style="{ height: this.$store.state.AspectRatio > 2 ? '65vh' : '80vh' }"
-      >
-        <PageCover
-          v-if="this.bookPageData.type === 'cover'"
-          @show-hand="ToggleHand"
-        />
-        <PageChapter
-          v-else-if="this.GetPageData.type === 'chapterTitle'"
-          @show-hand="ToggleHand"
-          :number="this.GetPageData.chapterNumber"
-          :page-text="this.GetPageData.text"
-        />
-        <PageRead
-          v-else-if="this.GetPageData.type === 'read'"
-          @show-hand="ToggleHand"
-          :data="this.GetPageData.pageParts"
-        />
-        <PageQuestionTitle
-          v-else-if="this.GetPageData.type === 'questiontitle'"
-          :data="this.GetPageData.pageParts"
-          @show-hand="ToggleHand"
-          :counter="this.QuestionCounter"
-        />
-        <PageQuestion
-          v-else-if="this.GetPageData.type === 'question'"
-          @show-hand="ToggleHand"
-          :data="this.GetPageData.pageParts"
-          :counter="this.QuestionCounter"
-        />
-        <PageChoice
-          v-else-if="this.GetPageData.type === 'choice'"
-          :data="this.GetPageData.pageParts"
-          @chosen-page="AddChoice"
-          @show-hand="ToggleHand"
-        />
-        <PageEnd
-          v-else-if="this.GetPageData.type === 'end'"
-          @show-hand="ToggleHand"
-        />
-        <PageNoExist v-else @show-hand="ToggleHand" />
-      </div>
-      <MainFooter :total-pages="this.TotalPages" />
-      <NavPrevArrow @prev-page="RoutePrevPage" />
-      <NavNextArrow
-        @next-page="this.RouteNextPage(true)"
-        v-if="this.ShowHand || this.HighestPage > this.page"
+      <PageChapter
+        v-else-if="this.GetPageData.type === 'chapterTitle'"
+        @show-hand="ToggleHand"
+        :number="this.GetPageData.chapterNumber"
+        :page-text="this.GetPageData.text"
       />
-    </div>
-  </div>
+      <PageRead
+        v-else-if="this.GetPageData.type === 'read'"
+        @show-hand="ToggleHand"
+        :data="this.GetPageData.pageParts"
+      />
+      <PageQuestionTitle
+        v-else-if="this.GetPageData.type === 'questiontitle'"
+        :data="this.GetPageData.pageParts"
+        @show-hand="ToggleHand"
+        :counter="this.QuestionCounter"
+      />
+      <PageQuestion
+        v-else-if="this.GetPageData.type === 'question'"
+        @show-hand="ToggleHand"
+        :data="this.GetPageData.pageParts"
+        :counter="this.QuestionCounter"
+      />
+      <PageChoice
+        v-else-if="this.GetPageData.type === 'choice'"
+        :data="this.GetPageData.pageParts"
+        @chosen-page="AddChoice"
+        @show-hand="ToggleHand"
+      />
+      <PageEnd
+        v-else-if="this.GetPageData.type === 'end'"
+        @show-hand="ToggleHand"
+      />
+      <PageNoExist v-else @show-hand="ToggleHand" /> -->
+    </notebook-page>
+    <!-- <MainFooter :total-pages="this.TotalPages" />
+    <NavPrevArrow @prev-page="RoutePrevPage" />
+    <NavNextArrow
+      @next-page="this.RouteNextPage(true)"
+      v-if="this.ShowHand || this.HighestPage > this.page"
+    /> -->
+    <book-footer />
+  </the-background>
 </template>
 
 <script>
@@ -70,16 +66,19 @@ import PageQuestionTitle from "@/organisms/PageQuestionTitle.vue";
 import PageQuestion from "@/organisms/PageQuestion.vue";
 import RestartModal from "@/molecules/RestartModal.vue";
 import PageNoExist from "@/organisms/PageNoExist.vue";
-import MainNavBar from "@/molecules/MainNavBar.vue";
 import MainFooter from "@/molecules/MainFooter.vue";
-import NavPrevArrow from "@/atoms/NavPrevArrow.vue";
-import NavNextArrow from "@/atoms/NavNextArrow.vue";
 
-import { mapState } from 'vuex';
+import MainNavBar from "@/molecules/MainNavBar.vue";
+import BookFooter from "@/components/booklayout/BookFooter.vue";
+import TheBackground from "@/components/ux/TheBackground.vue";
+import NotebookPage from "@/components/booklayout/NotebookPage.vue";
+import JoinElements from "@/components/booklayout/JoinElements.vue";
+import ReadElements from "@/components/booklayout/ReadElements.vue";
+import QuestionTitleElements from "@/components/booklayout/QuestionTitleElements.vue";
+
+import { mapState } from "vuex";
 export default {
   components: {
-    NavNextArrow,
-    NavPrevArrow,
     MainFooter,
     PageQuestionTitle,
     PageChapter,
@@ -90,7 +89,14 @@ export default {
     PageQuestion,
     RestartModal,
     PageNoExist,
+
+    JoinElements,
     MainNavBar,
+    BookFooter,
+    TheBackground,
+    NotebookPage,
+    ReadElements,
+    QuestionTitleElements,
   },
   data() {
     const ViewRestartModal = false;
@@ -110,12 +116,32 @@ export default {
       id,
       HighestPage,
       QuestionCounter,
+
+      NIV: {
+        hasLines: false,
+        showScore: false,
+        showPage: false,
+        pageNumber: 2,
+        showNext: false,
+        gotoNext: this.RouteNextPage,
+
+        showPrevious: false,
+        gotoPrev: this.RoutePrevPage,
+        bookTitle: "The Case of the Mystery Egg",
+        questionNumber: 2,
+        mainText: "No cheating",
+      },
+    };
+  },
+  provide() {
+    return {
+      NIV: this.NIV,
     };
   },
   computed: {
     GetPageData() {
       var tempData;
-      if(this.BookObject.pages) {
+      if (this.BookObject.pages) {
         this.TotalPages = this.BookObject.pages.length;
         tempData = this.BookObject.pages[+this.page - 1];
         this.AdjustQuestionCounter(
@@ -129,9 +155,7 @@ export default {
     },
     bookPageData() {
       this.TotalPages = this.BookData.pages.length;
-      this.AdjustQuestionCounter(
-          this.BookData.pages.slice(0, +this.page - 1)
-        );
+      this.AdjustQuestionCounter(this.BookData.pages.slice(0, +this.page - 1));
       this.BookData.pages.forEach((page) => {
         if (page.type === "choice") {
           const firstPage = page.pageNumber + 1;
@@ -146,13 +170,11 @@ export default {
       });
       return this.BookData.pages[+this.page - 1];
     },
-    questionCounter() {
-
-    },
+    questionCounter() {},
     setPageNumber() {
       this.page = parseInt(this.$store.state.BookPage);
     },
-    ...mapState(['BookData'])
+    ...mapState(["BookData"]),
   },
   methods: {
     AdjustQuestionCounter(data) {
@@ -171,7 +193,7 @@ export default {
         }
       });
     },
-    RouteNextPage(newHighestPage) {
+    RouteNextPage() {
       let tempPage = +this.page + 1;
       if (tempPage > this.TotalPages) {
         this.$router.push("/like");
@@ -185,10 +207,10 @@ export default {
             }
           }
         });
-        if (newHighestPage && tempPage > this.$store.state.HighestPage) {
+        if (tempPage > this.$store.state.HighestPage) {
           this.$store.dispatch("setHighestPage", tempPage);
         }
-        console.log('temp?', JSON.stringify(tempPage));
+        console.log("temp?", JSON.stringify(tempPage));
         this.$store.dispatch("setBookPage", tempPage);
         this.$router.push(`/book/${this.$store.state.BookID}/${tempPage}`);
       }
@@ -210,22 +232,43 @@ export default {
     ToggleHand(newValue) {
       this.ShowHand = newValue;
     },
+    //Elliott Added Methods
+    formatQuestion() {
+      this.formatNormalRead();
+      this.NIV.hasLines = false;
+      this.NIV.mainText =
+        this.GetPageData.pageParts[0].lineParts[0].words.join(" ");
+      if (this.GetPageData.pageParts[0].hasOwnProperty("questionNumber")) {
+        this.NIV.questionNumber = this.GetPageData.pageParts[0].questionNumber;
+      } else {
+        this.NIV.questionNumber = 0;
+      }
+    },
+    formatNormalRead() {
+      this.NIV.showScore = true;
+      this.NIV.showPage = true;
+      this.NIV.showNext = true;
+      this.NIV.showPrevious = true;
+    },
   },
   created() {
     this.id = this.$route.params.id;
     this.$store.dispatch("setBookID", this.id);
     this.page = this.$route.params.page;
     this.$store.dispatch("setBookPage", this.page);
+    this.formatQuestion();
   },
   async mounted() {
-    await this.$store.dispatch('setBookList').then(async () => {
-      let selectedItem = this.$store.state.BookArray.filter(book => book.bookId == this.id)[0]; 
-      if(selectedItem) {
-        await this.$store.dispatch('setBookItem',selectedItem);
+    await this.$store.dispatch("setBookList").then(async () => {
+      let selectedItem = this.$store.state.BookArray.filter(
+        (book) => book.bookId == this.id
+      )[0];
+      if (selectedItem) {
+        await this.$store.dispatch("setBookItem", selectedItem);
         this.$store.dispatch("setBookPage", this.page);
       }
     });
-    await this.$store.dispatch('fetchBookData', this.id);
+    await this.$store.dispatch("fetchBookData", this.id);
   },
   beforeUpdate() {
     this.page = this.$store.state.BookPage;

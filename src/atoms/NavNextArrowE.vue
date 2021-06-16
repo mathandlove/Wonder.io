@@ -1,16 +1,14 @@
 <template>
   <img class="NextArrowSize" alt="" src="../assets/Images/nextButton.png" />
-  <div @click="this.$emit('next-page')" class="NextButtonSize"></div>
+  <div @click="NIV.gotoNext" class="NextButtonSize"></div>
 </template>
 
 <script>
 export default {
-  emits: ["NextPage", "next-page"],
   data() {
-    const windowWidth = 1;
-    const windowHeight = 1;
-    return { windowWidth, windowHeight };
+    return { windowWidth: 1, windowHeight: 1 };
   },
+  inject: ["NIV"],
   created() {
     window.addEventListener("resize", this.handleResize);
     this.handleResize();

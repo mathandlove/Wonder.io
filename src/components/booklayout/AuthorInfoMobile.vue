@@ -1,24 +1,27 @@
+
 <template>
-  <div v-if="NIV.showAuthorFull" class="authorPanel">
-    <div
-      v-if="NIV.showAuthorFull"
-      class="d-flex align-items-end justify-content-start"
-    >
+  <div class="authorPanel">
+    <div class="d-flex align-items-end justify-content-start">
       <img id="glass" src="@/assets/Images/infoGlass.png" />
       <p class="h2a">About this Book</p>
     </div>
-    <p class="h3a">{{ NIV.bookTitle }}</p>
+    <p class="h3a">{{ bookTitle }}</p>
     <p class="h4a">
-      Author: <b>Mur Laferty</b><br />
-      Art: <b>Silvia Armelo</b><br />
-      <b>255 Pages</b>
+      Author: <b>{{ author }}</b
+      ><br />
+      Art: <b>{{ illustrator }}</b
+      ><br />
+      <b>{{ totalNumberPages + " Pages" }}</b>
     </p>
   </div>
 </template>
 
 <script>
+import { mapGetters } from "vuex";
 export default {
-  inject: ["NIV"],
+  computed: {
+    ...mapGetters(["illustrator", "bookTitle", "totalNumberPages", "author"]),
+  },
 };
 </script>
 

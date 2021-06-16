@@ -138,7 +138,6 @@ export default {
     updateStyles: function () {},
     switchAdjustBox: function () {
       if (this.$refs.notepadholder != undefined) {
-        console.log(this.$refs.notepadholder);
         const aspectScreen =
           this.$refs.notepadholder.clientHeight /
           (this.$refs.notepadholder.clientWidth * 0.8);
@@ -201,7 +200,8 @@ export default {
 
 .h1c {
   text-align: center;
-  font-size: 2em;
+  font-size: 1.8em;
+  line-height: 1;
   padding-top: 1em;
   font-weight: 700;
   margin-bottom: 1em;
