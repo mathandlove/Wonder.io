@@ -137,23 +137,26 @@ export default {
     //Note that I made a decision to have 10% on left and right at all times
     updateStyles: function () {},
     switchAdjustBox: function () {
-      const aspectScreen =
-        this.$refs.notepadholder.clientHeight /
-        (this.$refs.notepadholder.clientWidth * 0.8);
-      this.currentAspect = aspectScreen;
-      const aspectImage = 2565 / 1495;
-      this.$store.state.AspectRatio = aspectScreen;
-      // this.name =
-      //   this.$store.state.AspectRatio +
-      //   " w: " +
-      //   window.innerHeight / window.innerWidth;
+      if (this.$refs.notepadholder != undefined) {
+        console.log(this.$refs.notepadholder);
+        const aspectScreen =
+          this.$refs.notepadholder.clientHeight /
+          (this.$refs.notepadholder.clientWidth * 0.8);
+        this.currentAspect = aspectScreen;
+        const aspectImage = 2565 / 1495;
+        this.$store.state.AspectRatio = aspectScreen;
+        // this.name =
+        //   this.$store.state.AspectRatio +
+        //   " w: " +
+        //   window.innerHeight / window.innerWidth;
 
-      if (aspectScreen < aspectImage) {
-        this.adjustingBox.height = "100%";
-        this.adjustingBox.width = "auto";
-      } else {
-        this.adjustingBox.height = "auto";
-        this.adjustingBox.width = "80%";
+        if (aspectScreen < aspectImage) {
+          this.adjustingBox.height = "100%";
+          this.adjustingBox.width = "auto";
+        } else {
+          this.adjustingBox.height = "auto";
+          this.adjustingBox.width = "80%";
+        }
       }
     },
   },
