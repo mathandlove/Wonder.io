@@ -12,7 +12,7 @@
         :style="{ height: this.$store.state.AspectRatio > 2 ? '65vh' : '80vh' }"
       >
         <PageCover
-          v-if="this.GetPageData.type === 'cover'"
+          v-if="this.bookPageData.type === 'cover'"
           @show-hand="ToggleHand"
         />
         <PageChapter
@@ -75,6 +75,7 @@ import MainFooter from "@/molecules/MainFooter.vue";
 import NavPrevArrow from "@/atoms/NavPrevArrow.vue";
 import NavNextArrow from "@/atoms/NavNextArrow.vue";
 
+import { mapState } from 'vuex';
 export default {
   components: {
     NavNextArrow,
@@ -92,8 +93,6 @@ export default {
     MainNavBar,
   },
   data() {
-    const BookObject = {};
-    const TotalPages = 1;
     const ViewRestartModal = false;
     const ShowHand = false;
     const HighestPage = 1;
@@ -102,8 +101,8 @@ export default {
     let page;
     let id;
     return {
-      BookObject,
-      TotalPages,
+      BookObject: this.$store.state.BookData,
+      TotalPages: this.$store.state.BookData.pages.length,
       ViewRestartModal,
       PageSkipArray,
       ShowHand,
@@ -127,19 +126,8 @@ export default {
       }
       return [{ type: null }];
     },
-  },
-  methods: {
-    AdjustQuestionCounter(data) {
-      let tempCounter = 1;
-      data.forEach((item) => {
-        if (item.type === "question") {
-          tempCounter += 1;
-        }
-      });
-      this.QuestionCounter = tempCounter;
-    },
-    createPageSkipArray() {
-      this.BookObject.pages.forEach((page) => {
+    bookPageData() {
+      this.BookData.pages.forEach((page) => {
         if (page.type === "choice") {
           const firstPage = page.pageNumber + 1;
           const totalOptions = page.pageParts[0].lineParts.length;
@@ -151,6 +139,22 @@ export default {
           });
         }
       });
+      return this.BookData.pages[+this.page - 1];
+    },
+    questionCounter() {
+
+    },
+    ...mapState(['BookData'])
+  },
+  methods: {
+    AdjustQuestionCounter(data) {
+      let tempCounter = 1;
+      data.forEach((item) => {
+        if (item.type === "question") {
+          tempCounter += 1;
+        }
+      });
+      this.QuestionCounter = tempCounter;
     },
     AddChoice(pageChosen) {
       this.PageSkipArray.forEach((choice, index) => {
@@ -161,6 +165,7 @@ export default {
     },
     RouteNextPage(newHighestPage) {
       let tempPage = +this.page + 1;
+      console.log('totalPages?', JSON.stringify(this.TotalPages));
       if (tempPage > this.TotalPages) {
         this.$router.push("/like");
       } else {
@@ -200,16 +205,18 @@ export default {
   },
   created() {
     this.id = this.$route.params.id;
+    this.$store.dispatch("setBookID", this.id);
     this.page = this.$route.params.page;
     this.$store.dispatch("setBookPage", this.page);
-    if(this.$store.state.BookData) {
-      this.BookObject = this.$store.state.BookData;
-      this.TotalPages = this.BookObject.totalPages;
-      this.createPageSkipArray();
-    }
   },
   async mounted() {
-      await this.$store.dispatch('fetchBookData', this.id).then(this.createPageSkipArray());
+    await this.$store.dispatch('setBookList').then(async () => {
+      let selectedItem = this.$store.state.BookArray.filter(book => book.bookId == this.id)[0]; 
+      if(selectedItem) {
+        await this.$store.dispatch('setBookItem',selectedItem);
+      }
+    });
+    await this.$store.dispatch('fetchBookData', this.id);
   },
   beforeUpdate() {
     this.page = this.$store.state.BookPage;

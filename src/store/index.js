@@ -21,7 +21,7 @@ export default createStore({
     },
     WordFilteredBooks: [Book10Item],
     GradeFilteredBookItems: [Book10Item],
-    SelectedBookItem: JSON.parse(localStorage.getItem('SelectedBook')) ||  Book10,
+    SelectedBookItem: JSON.parse(localStorage.getItem('SelectedBook')) ||  Book10Item,
     BookData: JSON.parse(localStorage.getItem('BookData')) || Book10,
     BookArray: JSON.parse(localStorage.getItem('BookArray')) || [Book10Item],
     HighestPage: +localStorage.getItem('HighestPage') || 1,
