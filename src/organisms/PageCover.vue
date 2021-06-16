@@ -1,22 +1,17 @@
 <template>
-  <img alt="" class="h-100 coverWidth" :src="GetBookCoverImage"
+  <img alt="" class="h-100 coverWidth" :src="coverImage"
   />
-  <div class="illustrator">Illustrator: {{GetIllustrator}}</div>
+  <div class="illustrator">Illustrator: {{illustrator}}</div>
 </template>
 
 <script>
+import { mapState } from 'vuex';
 export default {
-  props: {
-  },
   emits: ['ShowHand', 'show-hand'],
-  computed: {
-    GetIllustrator() {
-      return this.$store.state.BookData.illustrator;
-    },
-    GetBookCoverImage() {
-      return this.$store.state.SelectedBookItem.largeBookCoverImageUrl;
-    }
-  },
+  computed: mapState({
+    illustrator: state => state.BookData.illustrator,
+    coverImage: state => state.SelectedBookItem.largeBookCoverImageUrl
+  }),
   created() {
     this.$emit('show-hand', true);
   },

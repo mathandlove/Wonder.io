@@ -6,7 +6,7 @@
     <div class="d-none d-lg-block col-lg-3" />
     <div class="col-4 col-lg-2">
       <div class="fontRoboto textSize">POINTS</div>
-      <ScoreBar :points="this.$store.state.Scores[0].NewScore" />
+      <info-pill :value="this.$store.state.Scores[0].NewScore" />
     </div>
     <div class="col-4 col-lg-2"></div>
     <div class="col-4 col-lg-2">
@@ -19,7 +19,7 @@
             `linear-gradient(to right, #8f9ad8 0%, #8f9ad8 ${this.PagePercent}%, #FFFFFF ${this.PagePercent}%, #FFFFFF 100%)`,
         }"
       >
-        {{ this.PageNum() }}
+        {{ this.PageNum }}
       </div>
     </div>
     <div class="d-none d-lg-block col-lg-3" />
@@ -27,10 +27,11 @@
 </template>
 
 <script>
-import ScoreBar from "@/atoms/ScoreBar.vue";
+import { mapState } from 'vuex';
+import InfoPill from '@/components/ux/InfoPill.vue';
 
 export default {
-  components: { ScoreBar },
+  components: { InfoPill },
   props: {
     totalPages: {
       type: Number,
@@ -38,14 +39,15 @@ export default {
     },
   },
   methods: {
-    PageNum() {
-      return this.$store.state.BookPage;
-    },
   },
   computed: {
     PagePercent() {
-      return (this.$store.state.BookPage / this.totalPages) * 100;
+        return (this.BookPage / this.totalPages) * 100;
+      },
+      PageNum() {
+      return this.BookPage;
     },
+    ...mapState(['BookPage'])
   },
 };
 </script>
