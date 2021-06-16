@@ -31,6 +31,7 @@
 
 <script>
 import InfoPill from "@/components/ux/InfoPill.vue";
+import { mapState } from 'vuex';
 
 export default {
   data() {
@@ -40,12 +41,11 @@ export default {
       GradeFilter, WordFilter, GradeFilteredBookItems, WordFilteredBooks,
     };
   },
-  created() {
+  computed: {
+    ...mapState({
+      totalBooks: state => state.BookArray.length,
+    })
   },
-  beforeUpdate() {
-    
-  },
-  
   components: { InfoPill },
   methods: {
     filterBooks() {
@@ -68,21 +68,19 @@ export default {
       this.$store.dispatch('setBookID', bookId);
       this.$store.dispatch('setBookPage', 1);
       this.$store.dispatch('ClearScores');
-      await this.$store.dispatch('fetchBookData', bookId).then(() => { 
-        this.$store.dispatch('setBookItem', bookListItem);
-        this.$router.push(`/book/${bookId}/1`); 
-        });
+      this.$store.dispatch('setBookItem', bookListItem);
+      this.$router.push(`/book/${bookId}/1`);
     },
   },
   async mounted() {
-    if(this.$store.state.BookArray.length == 0) {
-      this.$router.push('/');
-        // await this.$store.dispatch('fetchGradeFilters').then(
-        // this.$store.dispatch('setGradeFilter','grade2'));
-        // await this.$store.dispatch('setBookList').then();
-    } else {
-      this.filterBooks();
-    }
+    console.log('totalBooks', JSON.stringify(this.totalBooks));
+      if(this.totalBooks == 1) {
+          await this.$store.dispatch('fetchGradeFilters').then(
+          this.$store.dispatch('setGradeFilter','grade2'));
+          await this.$store.dispatch('setBookList').then();
+      } else {
+        this.filterBooks();
+      }
   },
   loaded() {
     this.setGradeFilteredBooks();

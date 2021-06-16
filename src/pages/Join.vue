@@ -8,8 +8,6 @@
   </the-background>
 </template>
 
-
-
 <script>
 import MainNavBar from "@/molecules/MainNavBar.vue";
 import BookFooter from "@/components/booklayout/BookFooter.vue";
@@ -17,6 +15,7 @@ import TheBackground from "@/components/ux/TheBackground.vue";
 import NotebookPage from "@/components/booklayout/NotebookPage.vue";
 import JoinElements from "@/components/booklayout/JoinElements.vue";
 import ReadElements from "@/components/booklayout/ReadElements.vue";
+
 export default {
   components: {
     JoinElements,
@@ -26,7 +25,6 @@ export default {
     NotebookPage,
     ReadElements,
   },
-
   data() {
     let userName;
     return {
@@ -48,5 +46,3 @@ export default {
   },
 };
 </script>
-
-

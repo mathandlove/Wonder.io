@@ -110,22 +110,30 @@
 </template>
 
 <script>
+import { mapState } from 'vuex';
 export default {
   emits: ["ShowHand", "show-hand"],
-  props: {
-    data: {
-      type: Array,
-      default: "test",
+  computed: {
+    currentParagraph() {
+      this.data = this.$store.currentBookParagraph();
+      this.ParagraphTotal = this.data.length;
+
     },
+    getParagraphTotal(){
+      return 
+    },
+    ...mapState({
+      bookData: state => state.BookData
+    })
   },
   data() {
     const ParagraphCounter = 1;
     const ParagraphTotal = 1;
     const ParagraphDisplay = [];
-    return { ParagraphCounter, ParagraphTotal, ParagraphDisplay };
+    const data = [{type: null}];
+    return { ParagraphCounter, ParagraphTotal, ParagraphDisplay, data };
   },
   created() {
-    this.ParagraphTotal = this.data.length;
     this.ParagraphDisplay.push(this.data[0].lineParts[0]);
     if (this.ParagraphTotal === 1) {
       this.$emit("show-hand", true);

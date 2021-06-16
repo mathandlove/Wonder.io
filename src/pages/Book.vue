@@ -208,6 +208,9 @@ export default {
       this.createPageSkipArray();
     }
   },
+  async mounted() {
+      await this.$store.dispatch('fetchBookData', this.id).then(this.createPageSkipArray());
+  },
   beforeUpdate() {
     this.page = this.$store.state.BookPage;
     this.HighestPage = this.$store.state.HighestPage;
