@@ -1,5 +1,5 @@
  <template>
-  <div v-for="linePart in testData" :key="linePart" class="textContainer">
+  <div v-for="linePart in textSeries" :key="linePart" class="textContainer">
     <div
       v-if="
         linePart.type == 'character' && linePart.characterOrientation == 'l'
@@ -10,7 +10,11 @@
       }"
     >
       <img :src="linePart.urlForCharacter" alt="" class="leftCharImage" />
-      <div class="leftCharText">
+      <div
+        class="leftCharText"
+        :style="{ width: 80 - (linePart.charPadding * 80) / 100 + 20 + '%' }"
+        :class="{ robotoLeft: linePart.fontStyle == 'roboto' }"
+      >
         {{ linePart.text + "\n\n" }}
       </div>
     </div>
@@ -24,13 +28,21 @@
         minHeight: 1.45 * 3 - 0.1 + 'em',
       }"
     >
-      <div class="rightCharText">
+      <div
+        class="rightCharText"
+        :style="{ width: 80 - (linePart.charPadding * 80) / 100 + 20 + '%' }"
+        :class="{ robotoRight: linePart.fontStyle == 'roboto' }"
+      >
         {{ linePart.text + "\n\n" }}
       </div>
       <img :src="linePart.urlForCharacter" alt="" class="rightCharImage" />
     </div>
 
-    <div v-if="linePart.type == 'text'" class="mainText">
+    <div
+      v-if="linePart.type == 'text'"
+      class="mainText"
+      :class="{ roboto: linePart.fontStyle == 'roboto' }"
+    >
       {{ linePart.text }}
     </div>
     <div v-if="linePart.type == 'image'">
@@ -48,84 +60,7 @@ import { mapGetters } from "vuex";
 export default {
   components: {},
   data() {
-    return {
-      testData: [
-        {
-          type: "character",
-          text: "The race is on how fast can elliott type. Hes doing it without even looking and he should probably go to bed soon.",
-          characterOrientation: "r",
-          urlForCharacter: require(`@/assets/Books/book10/characters/captain.png`),
-          urlForImage: "",
-          imgHeight: "",
-          charPadding: 0,
-          fontStyle: "",
-        },
-        {
-          type: "character",
-          text: "Short Text",
-          characterOrientation: "r",
-          urlForCharacter: require(`@/assets/Books/book10/characters/captain.png`),
-          urlForImage: "",
-          imgHeight: "",
-          charPadding: 0,
-          fontStyle: "",
-        },
-        {
-          type: "character",
-          text: "Longer Text but not that long.",
-          characterOrientation: "r",
-          urlForCharacter: require(`@/assets/Books/book10/characters/captain.png`),
-          urlForImage: "",
-          imgHeight: "",
-          charPadding: 0,
-          fontStyle: "",
-        },
-        {
-          type: "text",
-          text: "Aaron thanks for all your help making mre words hwerea asdfas asdthis look really good!",
-          characterOrientation: "",
-          urlForCharacter: "",
-          urlForImage: "",
-          imgHeight: "",
-          charPadding: 0,
-          fontStyle: "roboto",
-        },
-        // {
-        //   type: "image",
-        //   text: "",
-        //   characterOrientation: "",
-        //   urlForCharacter: "",
-        //   urlForImage: require(`@/assets/Books/book10/images/2.png`),
-        //   imgHeight: "7",
-        // },
-
-        // {
-        //   type: "text",
-        //   text: "Aaron thanks for all your help making this look really good!",
-        //   characterOrientation: "",
-        //   urlForCharacter: "",
-        //   urlForImage: "",
-        //   imgHeight: "",
-        // },
-        // {
-        //   type: "text",
-        //   text: "Aaron thanks for all your help making this look really good!",
-        //   characterOrientation: "",
-        //   urlForCharacter: "",
-        //   urlForImage: "",
-        //   imgHeight: "",
-        // },
-
-        // {
-        //   type: "text",
-        //   text: "Aaron thanks for all your help making this look really good!",
-        //   characterOrientation: "",
-        //   urlForCharacter: "",
-        //   urlForImage: "",
-        //   imgHeight: "",
-        // },
-      ],
-    };
+    return {};
   },
   methods: {
     setupNIV() {},
@@ -142,10 +77,13 @@ export default {
 .mainText {
   white-space: pre-line;
   margin-bottom: 0em;
+  width: 100%;
 }
 .mainImage {
   padding-bottom: 0.5em;
   padding-top: 0.3em;
+  width: 100%;
+  object-fit: contain;
   border: none;
   border-color: green;
 }
@@ -184,5 +122,18 @@ export default {
   padding-right: 2.4em;
   white-space: pre-line;
   text-align: left;
+  float: right;
+}
+.robotoLeft {
+  font-family: "Roboto";
+  font-size: 0.8em;
+  padding-left: 3em; /*2.4/.8*/
+}
+.robotoRight {
+  padding-right: 3em; /*2.4/.8*/
+}
+.roboto {
+  font-family: "Roboto";
+  font-size: 0.8em;
 }
 </style>

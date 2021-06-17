@@ -52,7 +52,45 @@ export default createStore({
       showNextButton: true,
       sheetHasLines: false,
       showPagePill: true
-    }
+    },
+
+    textSeries: [
+      {
+        type: "text",
+        text: "Aaron thanks for your help.\n\n",
+        characterOrientation: "",
+        urlForCharacter: "",
+        urlForImage: "",
+        imgHeight: "",
+        charPadding: 0,
+        fontStyle: "roboto",
+      },
+
+      {
+        type: "character",
+        text: "The character is saying this text!",
+        characterOrientation: "l",
+        urlForCharacter: require(`@/assets/Books/book10/characters/captain.png`),
+        urlForImage: "",
+        imgHeight: "",
+        charPadding: 20,
+        fontStyle: "roboto",
+      },
+
+      {
+        type: "image",
+        text: "",
+        characterOrientation: "",
+        urlForCharacter: "",
+        urlForImage: require(`@/assets/Books/book10/images/2.png`),
+        imgHeight: "8",
+        charPadding: 0,
+        fontStyle: "",
+      },
+
+
+    ],
+    textSeriesRevealed: 0
 
   },
   getters: {
@@ -108,17 +146,11 @@ export default createStore({
       return state.SelectedBookItem.largeBookCoverImageUrl
     },
     textSeries: state => {
-      let textToDisplay = [];
-      let combinedLines = "";
-      for (let i = 0; i < state.BookData.pages[state.BookPage - 1].pageParts.length; i++) {
-        combinedLines = "";
-        for (let j = 0; j < state.BookData.pages[state.BookPage - 1].pageParts[i].lineParts.length; j++) {
-          combinedLines += state.BookData.pages[state.BookPage - 1].pageParts[i].lineParts[j].words.join(" ");
-        }
-        textToDisplay.push(combinedLines);
-      }
-      console.log(textToDisplay)
-      return textToDisplay;
+      return state.textSeries;
+
+    },
+    seriesAllRead: state => {
+      return state.textSeries.length >= state.textSeriesRevealed
     }
 
 
