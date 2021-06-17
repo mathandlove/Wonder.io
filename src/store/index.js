@@ -84,7 +84,7 @@ export default createStore({
     },
 
     playerScore: state => {
-      return state.Scores[0].pointsEnd;  //Note, I'm not sure pointsEnd is the right score
+      return state.Scores[0].NewScore;
     },
 
     showPagePill: state => {
