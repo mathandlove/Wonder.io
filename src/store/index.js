@@ -106,6 +106,19 @@ export default createStore({
     },
     coverHREF: state => {
       return state.SelectedBookItem.largeBookCoverImageUrl
+    },
+    textSeries: state => {
+      let textToDisplay = [];
+      let combinedLines = "";
+      for (let i = 0; i < state.BookData.pages[state.BookPage - 1].pageParts.length; i++) {
+        combinedLines = "";
+        for (let j = 0; j < state.BookData.pages[state.BookPage - 1].pageParts[i].lineParts.length; j++) {
+          combinedLines += state.BookData.pages[state.BookPage - 1].pageParts[i].lineParts[j].words.join(" ");
+        }
+        textToDisplay.push(combinedLines);
+      }
+      console.log(textToDisplay)
+      return textToDisplay;
     }
 
 

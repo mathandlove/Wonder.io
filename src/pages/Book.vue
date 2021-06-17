@@ -7,7 +7,8 @@
     />
     <notebook-page>
       <question-title-elements v-if="pageType === 'questiontitle'" />
-      <cover-element />
+      <read-elements v-if="pageType === 'read'" />
+      <!-- <read-elements /> -->
       <!-- <PageCover
         v-if="this.bookPageData.type === 'cover'"
         @show-hand="ToggleHand"
@@ -74,6 +75,7 @@ import TheBackground from "@/components/ux/TheBackground.vue";
 import NotebookPage from "@/components/booklayout/NotebookPage.vue";
 import JoinElements from "@/components/booklayout/JoinElements.vue";
 import QuestionTitleElements from "@/components/booklayout/QuestionTitleElements.vue";
+import ReadElements from "@/components/booklayout/ReadElements.vue";
 
 import { mapState } from "vuex";
 import { mapGetters } from "vuex";
@@ -95,6 +97,7 @@ export default {
     TheBackground,
     NotebookPage,
     QuestionTitleElements,
+    ReadElements,
   },
   data() {
     const ViewRestartModal = false;
@@ -230,14 +233,19 @@ export default {
         this.formatQuestion();
       } else if (this.pageType == "cover") {
         this.formatCover();
+      } else if (this.pageType == "read") {
+        this.formatRead();
       }
     },
 
     formatQuestion() {
-      this.bookStyle.sheetHasLines = true;
+      this.bookStyle.sheetHasLines = false;
     },
     formatCover() {
       this.bookStyle.showPrevButton = false;
+    },
+    formatRead() {
+      this.bookStyle.sheetHasLines = true;
     },
 
     formatNormalRead() {
