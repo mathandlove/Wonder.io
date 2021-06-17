@@ -79,6 +79,7 @@ import ReadElements from "@/components/booklayout/ReadElements.vue";
 
 import { mapState } from "vuex";
 import { mapGetters } from "vuex";
+import { mapActions } from "vuex";
 export default {
   components: {
     PageQuestionTitle,
@@ -121,6 +122,7 @@ export default {
       NIV: {
         gotoNext: this.RouteNextPage,
         gotoPrev: this.RoutePrevPage,
+        onNotepadClick: this.incrementTextRevealed,
       },
     };
   },
@@ -165,10 +167,11 @@ export default {
     setPageNumber() {
       this.page = parseInt(this.$store.state.BookPage);
     },
-    ...mapState(["BookData", "bookStyle"]),
-    ...mapGetters(["pageType"]),
+    ...mapState(["BookData", "bookStyle", "textSeriesRevealed"]),
+    ...mapGetters(["pageType", "seriesAllRead"]),
   },
   methods: {
+    ...mapActions(["setNotepadOnClick"]),
     AdjustQuestionCounter(data) {
       let tempCounter = 1;
       data.forEach((item) => {
@@ -185,7 +188,7 @@ export default {
         }
       });
     },
-    RouteNextPage() {
+    RouteNextPage(event) {
       let tempPage = +this.page + 1;
       if (tempPage > this.TotalPages) {
         this.$router.push("/like");
@@ -206,9 +209,10 @@ export default {
         this.$store.dispatch("setBookPage", tempPage);
         this.$router.push(`/book/${this.$store.state.BookID}/${tempPage}`);
         this.formatPage();
+        event.stopPropagation();
       }
     },
-    RoutePrevPage() {
+    RoutePrevPage(event) {
       let tempPage = this.page - 1;
       this.PageSkipArray.forEach((choice) => {
         if (tempPage > choice.StartPage && tempPage < choice.EndPage) {
@@ -222,12 +226,15 @@ export default {
       this.$store.dispatch("setBookPage", tempPage);
       this.$router.push(`/book/${this.$store.state.BookID}/${tempPage}`);
       this.formatPage();
+      event.stopPropagation();
     },
     ToggleHand(newValue) {
       this.ShowHand = newValue;
     },
     //Elliott Added Methods
     formatPage() {
+      console.log(this.pageType);
+      this.resetPage();
       this.formatNormalRead();
       if (this.pageType == "questiontitle") {
         this.formatQuestion();
@@ -237,7 +244,9 @@ export default {
         this.formatRead();
       }
     },
-
+    resetPage() {
+      this.$store.state.textSeriesRevealed = 1;
+    },
     formatQuestion() {
       this.bookStyle.sheetHasLines = false;
     },
@@ -246,8 +255,19 @@ export default {
     },
     formatRead() {
       this.bookStyle.sheetHasLines = true;
+      if (!this.seriesAllRead) {
+        this.NIV.onNotepadClick = this.incrementTextRevealed;
+        this.bookStyle.showNextButton = false;
+      }
     },
+    incrementTextRevealed() {
+      this.$store.state.textSeriesRevealed++;
 
+      if (this.seriesAllRead) {
+        this.NIV.onNotepadClick = function () {};
+        this.bookStyle.showNextButton = true;
+      }
+    },
     formatNormalRead() {
       this.bookStyle.showScorePill = true;
       this.bookStyle.showPagePill = true;

@@ -50,6 +50,7 @@ export default createStore({
       showScorePill: false,
       showPrevButton: true,
       showNextButton: true,
+      showNotepadClickButton: false,
       sheetHasLines: false,
       showPagePill: true
     },
@@ -90,7 +91,7 @@ export default createStore({
 
 
     ],
-    textSeriesRevealed: 0
+    textSeriesRevealed: 1,
 
   },
   getters: {
@@ -105,7 +106,7 @@ export default createStore({
     },
 
     mainText: state => {
-      return state.BookData.pages[state.BookPage - 1].pageParts[0].lineParts[0].words.join(" ")
+      return "The QuestionText Goes here"
     },
 
     pageNumber: state => {
@@ -117,7 +118,6 @@ export default createStore({
     },
 
     pageType: state => {
-      console.log(state.BookData.pages[state.BookPage - 1])
       return state.BookData.pages[state.BookPage - 1].type;
     },
 
@@ -146,11 +146,19 @@ export default createStore({
       return state.SelectedBookItem.largeBookCoverImageUrl
     },
     textSeries: state => {
-      return state.textSeries;
+      console.log(state.textSeriesRevealed)
+      return state.textSeries.slice(0, state.textSeriesRevealed);
 
     },
     seriesAllRead: state => {
-      return state.textSeries.length >= state.textSeriesRevealed
+      return state.textSeries.length <= (state.textSeriesRevealed)
+    },
+    onNotepadClick: state => {
+      if (state.functionOnNotepadClick == null)
+        return function () { };
+      else {
+        return state.functionOnNotepadClick;
+      }
     }
 
 

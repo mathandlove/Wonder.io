@@ -8,7 +8,11 @@
       @load="updateBase"
       :style="adjustingBox"
     />
-    <div class="writableArea" :style="notepadHolderStyle">
+    <div
+      class="writableArea"
+      :style="notepadHolderStyle"
+      @click="NIV.onNotepadClick"
+    >
       <div class="notepadText" :style="nts">
         <slot> </slot>
       </div>
@@ -53,8 +57,9 @@ export default {
       },
     };
   },
+  inject: ["NIV"],
   computed: {
-    ...mapGetters(["sheetHasLines", "pageType", "coverHREF"]),
+    ...mapGetters(["sheetHasLines", "pageType", "coverHREF", "onNotepadClick"]),
 
     notepadImageLocation() {
       if (this.pageType == "cover") {
@@ -120,9 +125,6 @@ export default {
     },
   },
   methods: {
-    submit() {
-      this.counter++;
-    },
     updateBase: function () {
       if (this.$refs.base != null) {
         this.iw = this.$refs.base.width;
@@ -170,6 +172,8 @@ export default {
   top: 50%;
   left: 51%;
   transform: translate(-50%, -50%);
+
+  display: block;
 }
 
 .makeBorder {
