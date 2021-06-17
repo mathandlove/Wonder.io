@@ -90,7 +90,35 @@ export default createStore({
       },
 
 
+
     ],
+    answerArray: [
+      {
+        name: "Pigs",
+        isCorrect: true,
+        coords: [0, 0, 0, 0],
+        clickedOn: false,
+      },
+      {
+        name: "Frogs",
+        isCorrect: false,
+        coords: [0, 0, 0, 0],
+        clickedOn: false,
+      },
+      {
+        name: "Kermit",
+        isCorrect: false,
+        coords: [0, 0, 0, 0],
+        clickedOn: false,
+      },
+      {
+        name: "Frogs 2",
+        isCorrect: false,
+        coords: [0, 0, 0, 0],
+        clickedOn: false,
+      },
+    ],
+
     textSeriesRevealed: 1,
 
   },
@@ -159,6 +187,10 @@ export default createStore({
       else {
         return state.functionOnNotepadClick;
       }
+    },
+    answerArray: state => {
+      //Answer Array is an array of answers the student can guess. Please randomize answers.
+      return state.answerArray;
     }
 
 
@@ -216,6 +248,10 @@ export default createStore({
       }
       localStorage.setItem('Scores', JSON.stringify(state.Scores));
     },
+    SET_ANSWER_CLICKED(state, index) {
+      console.log(index)
+      state.answerArray[index].clickedOn = true;
+    }
 
 
   },
@@ -269,6 +305,9 @@ export default createStore({
     ClearScores({ commit }) {
       commit('CLEAR_SCORES');
     },
+    SetAnswerClicked({ commit }, index) {
+      commit('SET_ANSWER_CLICKED', index);
+    }
 
   },
   modules: {

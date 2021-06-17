@@ -8,6 +8,7 @@
     <notebook-page>
       <question-title-elements v-if="pageType === 'questiontitle'" />
       <read-elements v-if="pageType === 'read'" />
+      <question-elements />
       <!-- <read-elements /> -->
       <!-- <PageCover
         v-if="this.bookPageData.type === 'cover'"
@@ -76,6 +77,7 @@ import NotebookPage from "@/components/booklayout/NotebookPage.vue";
 import JoinElements from "@/components/booklayout/JoinElements.vue";
 import QuestionTitleElements from "@/components/booklayout/QuestionTitleElements.vue";
 import ReadElements from "@/components/booklayout/ReadElements.vue";
+import QuestionElements from "@/components/booklayout/QuestionElements.vue";
 
 import { mapState } from "vuex";
 import { mapGetters } from "vuex";
@@ -99,6 +101,7 @@ export default {
     NotebookPage,
     QuestionTitleElements,
     ReadElements,
+    QuestionElements,
   },
   data() {
     const ViewRestartModal = false;
