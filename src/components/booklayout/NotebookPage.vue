@@ -111,7 +111,7 @@ export default {
     notepadHolderStyle() {
       this.styleObject.width = this.iw + 0 + "px";
       this.styleObject.height = this.ih + 0 + "px";
-      this.styleObject.paddingTop = this.ih * 0.16 + "px";
+      this.styleObject.paddingTop = this.ih * 0.163 + "px";
       this.styleObject.paddingLeft = this.iw * 0.08 + "px";
       this.styleObject.paddingRight = this.iw * 0.1 + "px";
       this.styleObject.paddingBottom = this.ih * 0.03 + "px";
@@ -188,7 +188,7 @@ export default {
 
 .notepadText {
   text-align: left;
-  overflow: clip;
+  overflow: visible;
   height: 100%;
   width: 100%;
   font-family: "CoopForged";
