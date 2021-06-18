@@ -3,19 +3,13 @@
   <div class="questionText">{{ mainText }}</div>
   <div class="answerContainer">
     <button
-      v-for="(answerB, index) in answerArray"
+      v-for="answerB in answerArray"
       :key="answerB.name"
       class="answerButton"
-      :class="{
-        wrongClicked: answerB.clickedOn && !answerB.isCorrect,
-        rightClicked: answerB.clickedOn && answerB.isCorrect,
-      }"
       @click="
-        {
-          $store.dispatch('setChoiceClicked', index);
-        }
+        updateChoice(answerB.toPages);
+        NIV.gotoNext($event);
       "
-      :disabled="answerB.disabled"
     >
       {{ answerB.name }}
     </button>
@@ -25,15 +19,19 @@
 import { mapGetters } from "vuex";
 import { mapActions } from "vuex";
 export default {
+  inject: ["NIV"],
   data() {
     return {};
   },
-  mounted() {
-    // this.$store.dispatch("setPageStyle", "question");
+  methods: {
+    updateChoice(skipVal) {
+      this.$store.dispatch("setChoiceClicked", skipVal);
+    },
   },
+  mounted() {},
   dismounted() {},
   computed: {
-    ...mapGetters(["questionNumber", "mainText", "answerArray"]),
+    ...mapGetters(["mainText", "answerArray"]),
   },
 };
 </script>

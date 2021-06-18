@@ -12,7 +12,7 @@
 import { mapGetters } from "vuex";
 export default {
   computed: {
-    ...mapGetters(["showPrevButton", "nextPage"]),
+    ...mapGetters(["showPrevButton"]),
   },
   data() {
     const windowWidth = 1;

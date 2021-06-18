@@ -45,14 +45,8 @@ export default createStore({
 
     questionNumber: 0,
 
-    bookStyle: {
-      showPagePill: true,
-      showScorePill: false,
-      showPrevButton: true,
-      showNextButton: true,
-      showNotepadClickButton: false,
-      sheetHasLines: false,
-    },
+    skipNextAmount: 1, //Each page shows next page increase
+
 
     textSeries: [
       {
@@ -126,6 +120,16 @@ export default createStore({
       },
     ],
 
+    //These are UX variables you do not need to change.
+    bookStyle: {
+      showPagePill: true,
+      showScorePill: false,
+      showPrevButton: true,
+      showNextButton: true,
+      showNotepadClickButton: false,
+      sheetHasLines: false,
+    },
+
     textSeriesRevealed: 1,
     pageMicroType: "read"
     //pageMicroType determines that exact state of  the page for example there's a difference between read and read fully
@@ -197,6 +201,10 @@ export default createStore({
     },
     bookStyle: state => {
       return state.bookStyle;
+    },
+    nextPage: state => {
+      console.log(state.BookPage + state.skipNextAmount)
+      return state.BookPage + state.skipNextAmount;
     }
 
 
@@ -259,9 +267,10 @@ export default createStore({
       state.answerArray[index].disabled = true;
 
     },
-    SET_CHOICE_CLICKED(state, index) {
-      console.log(index)
+    SET_CHOICE_CLICKED(state, nextValue) {
 
+      state.skipNextAmount = nextValue;
+      console.log('c' + state.skipNextAmount)
 
     },
     INCREMENT_TEXT_REVEALED(state) {
@@ -386,8 +395,8 @@ export default createStore({
 
 
     },
-    setChoiceClicked({ commit, dispatch, state }, index) {
-      commit('SET_CHOICE_CLICKED', index);
+    setChoiceClicked({ commit, dispatch, state }, skipVal) {
+      commit('SET_CHOICE_CLICKED', skipVal);
     },
     setPageStyle({ commit }) {
       commit('SET_PAGE_STYLE')

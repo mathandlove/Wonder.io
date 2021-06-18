@@ -174,10 +174,9 @@ export default {
       this.page = parseInt(this.$store.state.BookPage);
     },
     ...mapState(["BookData", "bookStyle", "textSeriesRevealed"]),
-    ...mapGetters(["pageType", "seriesAllRead"]),
+    ...mapGetters(["pageType", "seriesAllRead", "nextPage"]),
   },
   methods: {
-    ...mapActions(["setNotepadOnClick"]),
     AdjustQuestionCounter(data) {
       let tempCounter = 1;
       data.forEach((item) => {
@@ -195,27 +194,29 @@ export default {
       });
     },
     RouteNextPage(event) {
-      let tempPage = +this.page + 1;
+      let tempPage = this.nextPage;
       if (tempPage > this.TotalPages) {
         this.$router.push("/like");
-      } else {
-        this.PageSkipArray.forEach((choice) => {
-          if (tempPage > choice.StartPage && tempPage < choice.EndPage) {
-            if (choice.SelectedPage && tempPage <= choice.SelectedPage) {
-              tempPage = choice.SelectedPage;
-            } else {
-              tempPage = choice.EndPage;
-            }
-          }
-        });
-        if (tempPage > this.$store.state.HighestPage) {
-          this.$store.dispatch("setHighestPage", tempPage);
-        }
-
-        this.$store.dispatch("setBookPage", tempPage);
-        this.$router.push(`/book/${this.$store.state.BookID}/${tempPage}`);
-        event.stopPropagation();
       }
+
+      if (tempPage > this.$store.state.HighestPage) {
+        this.$store.dispatch("setHighestPage", tempPage);
+      }
+
+      this.$store.dispatch("setBookPage", tempPage);
+      this.$router.push(`/book/${this.$store.state.BookID}/${tempPage}`);
+      event.stopPropagation();
+
+      // else {
+      //   this.PageSkipArray.forEach((choice) => {
+      //     if (tempPage > choice.StartPage && tempPage < choice.EndPage) {
+      //       if (choice.SelectedPage && tempPage <= choice.SelectedPage) {
+      //         tempPage = choice.SelectedPage;
+      //       } else {
+      //         tempPage = choice.EndPage;
+      //       }
+      //     }
+      //   });
     },
     RoutePrevPage(event) {
       let tempPage = this.page - 1;
