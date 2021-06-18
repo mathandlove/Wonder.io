@@ -20,7 +20,7 @@ const routes = [
     name: 'Book',
     component: Book,
     meta: { title: 'Wonder.io - Book' },
-    props: true,
+    props: false, //Was getting Error here because I don't get these vita Props
   },
   {
     path: '/books',
@@ -98,7 +98,7 @@ router.beforeEach((to, from, next) => {
 
     return tag;
   })
-  // Add the meta tags to the document head.
+    // Add the meta tags to the document head.
     .forEach((tag) => document.head.appendChild(tag));
 
   next();

@@ -17,7 +17,9 @@ export default {
   methods: {
     setupNIV() {},
   },
-  mounted() {},
+  mounted() {
+    // this.$store.dispatch("setPageType", "questiontitle");
+  },
   dismounted() {},
   computed: {
     ...mapGetters(["questionNumber", "mainText"]),

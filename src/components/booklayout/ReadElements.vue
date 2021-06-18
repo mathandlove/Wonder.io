@@ -65,7 +65,9 @@ export default {
   methods: {
     setupNIV() {},
   },
-  mounted() {},
+  mounted() {
+    // this.$store.dispatch("setPageStyle", "read");
+  },
   dismounted() {},
   computed: {
     ...mapGetters(["textSeries"]),

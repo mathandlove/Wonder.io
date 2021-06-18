@@ -52,7 +52,6 @@ export default createStore({
       showNextButton: true,
       showNotepadClickButton: false,
       sheetHasLines: false,
-      showPagePill: true
     },
 
     textSeries: [
@@ -98,28 +97,38 @@ export default createStore({
         isCorrect: true,
         coords: [0, 0, 0, 0],
         clickedOn: false,
+        disabled: false,
+        toPages: 1
       },
       {
         name: "Frogs",
         isCorrect: false,
         coords: [0, 0, 0, 0],
         clickedOn: false,
+        disabled: false,
+        toPages: 2
       },
       {
         name: "Kermit",
         isCorrect: false,
         coords: [0, 0, 0, 0],
         clickedOn: false,
+        disabled: false,
+        toPages: 3
       },
       {
         name: "Frogs 2",
         isCorrect: false,
         coords: [0, 0, 0, 0],
         clickedOn: false,
+        disabled: false,
+        toPages: 4
       },
     ],
 
     textSeriesRevealed: 1,
+    pageMicroType: "read"
+    //pageMicroType determines that exact state of  the page for example there's a difference between read and read fully
 
   },
   getters: {
@@ -181,16 +190,13 @@ export default createStore({
     seriesAllRead: state => {
       return state.textSeries.length <= (state.textSeriesRevealed)
     },
-    onNotepadClick: state => {
-      if (state.functionOnNotepadClick == null)
-        return function () { };
-      else {
-        return state.functionOnNotepadClick;
-      }
-    },
+
     answerArray: state => {
       //Answer Array is an array of answers the student can guess. Please randomize answers.
       return state.answerArray;
+    },
+    bookStyle: state => {
+      return state.bookStyle;
     }
 
 
@@ -249,8 +255,70 @@ export default createStore({
       localStorage.setItem('Scores', JSON.stringify(state.Scores));
     },
     SET_ANSWER_CLICKED(state, index) {
-      console.log(index)
       state.answerArray[index].clickedOn = true;
+      state.answerArray[index].disabled = true;
+
+    },
+    SET_CHOICE_CLICKED(state, index) {
+      console.log(index)
+
+
+    },
+    INCREMENT_TEXT_REVEALED(state) {
+      state.textSeriesRevealed++;
+
+
+    },
+    SET_PAGE_TYPE(state, type) {
+      console.log('microState changed to: ' + type)
+      state.pageMicroType = type;
+
+
+    },
+    SET_PAGE_STYLE(state) {
+      const type = state.pageMicroType;
+
+      state.bookStyle.showScorePill = true;
+      state.bookStyle.showPagePill = true;
+      state.bookStyle.showPrevButton = true;
+      state.bookStyle.showNextButton = true;
+      state.bookStyle.showNotepadClickButton = false;
+      if (type == "questiontitle") {
+        state.bookStyle.sheetHasLines = false;
+      }
+      else if (type == "question") {
+        state.bookStyle.sheetHasLines = false;
+        state.bookStyle.showNextButton = false;
+      }
+      else if (type == "questionAnsweredCorrect") {
+        state.bookStyle.sheetHasLines = false;
+        state.bookStyle.showPrevButton = true;
+        state.bookStyle.showNextButton = true;
+        for (let i = 0; i < state.answerArray.length; i++) {
+          state.answerArray[i].disabled = true;
+        }
+      }
+      else if (type == "choice") {
+        state.bookStyle.sheetHasLines = false;
+        state.bookStyle.showNextButton = false;
+      }
+      else if (type == "read") {
+        state.bookStyle.sheetHasLines = true;
+        state.bookStyle.showNotepadClickButton = true;
+        state.bookStyle.showNextButton = false;
+        if (state.textSeriesRevealed >= state.textSeries.length) {
+          state.bookStyle.showNotepadClickButton = false;
+          state.bookStyle.showNextButton = true;
+        }
+      }
+      else if (type == 'readFull') {
+        state.bookStyle.showNotepadClickButton = false;
+        state.bookStyle.showNextButton = true;
+      }
+
+
+
+
     }
 
 
@@ -264,10 +332,13 @@ export default createStore({
       } else {
         commit('SET_GRADE_BOOK_ORDER', JSON.parse(existingFilters));
       }
+
     },
-    async fetchBookData({ commit }, bookId) {
+    async fetchBookData({ commit, dispatch }, bookId) {
       const response = await axios.get(resource_uri + `/${bookId}`);
       commit('SET_BOOK_DATA', response.data);
+
+
     },
     async setBookList({ commit }) {
       let existingArray = localStorage.getItem('BookArray');
@@ -277,6 +348,7 @@ export default createStore({
       } else {
         commit('SET_BOOK_LIST', JSON.parse(existingArray));
       }
+
     },
     setBookItem({ commit }, bookItem) {
       commit('SET_BOOK_ITEM', bookItem);
@@ -290,8 +362,11 @@ export default createStore({
     setBookID({ commit }, newID) {
       commit('SET_BOOK_ID', newID);
     },
-    setBookPage({ commit }, newPage) {
+    setBookPage({ commit, dispatch }, newPage) {
       commit('SET_BOOK_PAGE', parseInt(newPage));
+      //This probably needs to go somewhere else Aaron, but i need page updated every time a page is loaded
+      dispatch("setPageType");
+
     },
     setAspectRatio({ commit }, newRatio) {
       commit('SET_ASPECT_RATIO', newRatio);
@@ -305,11 +380,42 @@ export default createStore({
     ClearScores({ commit }) {
       commit('CLEAR_SCORES');
     },
-    SetAnswerClicked({ commit }, index) {
+    setAnswerClicked({ commit, dispatch, state }, index) {
       commit('SET_ANSWER_CLICKED', index);
-    }
+      dispatch('setPageType')
 
+
+    },
+    setChoiceClicked({ commit, dispatch, state }, index) {
+      commit('SET_CHOICE_CLICKED', index);
+    },
+    setPageStyle({ commit }) {
+      commit('SET_PAGE_STYLE')
+    },
+
+    incrementTextRevealed({ commit, dispatch, state }) {
+
+      commit('INCREMENT_TEXT_REVEALED');
+      dispatch('setPageType')
+
+
+
+    },
+    setPageType({ commit, dispatch, state }, type = state.BookData.pages[state.BookPage - 1].type) {
+      if (type == 'question' && state.answerArray.some(e => e.clickedOn && e.isCorrect)) {
+        //need to fix 0 up there
+        commit('SET_PAGE_TYPE', "questionAnsweredCorrect")
+      }
+      else if (type == 'read' && state.textSeriesRevealed >= state.textSeries.length) {
+        commit('SET_PAGE_TYPE', 'readFull')
+      }
+      else {
+        commit('SET_PAGE_TYPE', type)
+      }
+      dispatch('setPageStyle')
+    },
   },
+
   modules: {
   },
 });

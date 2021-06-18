@@ -11,7 +11,14 @@
     <div
       class="writableArea"
       :style="notepadHolderStyle"
-      @click="NIV.onNotepadClick"
+      @click="
+        {
+          bookStyle.showNotepadClickButton
+            ? this.$store.dispatch('incrementTextRevealed')
+            : null;
+        }
+      "
+      :class="{ border: bookStyle.showNotepadClickButton }"
     >
       <div class="notepadText" :style="nts">
         <slot> </slot>
@@ -59,12 +66,18 @@ export default {
   },
   inject: ["NIV"],
   computed: {
-    ...mapGetters(["sheetHasLines", "pageType", "coverHREF", "onNotepadClick"]),
+    ...mapGetters([
+      "sheetHasLines",
+      "pageType",
+      "coverHREF",
+      "onNotepadClick",
+      "bookStyle",
+    ]),
 
     notepadImageLocation() {
       if (this.pageType == "cover") {
         return this.coverHREF;
-      } else if (this.sheetHasLines) {
+      } else if (this.bookStyle.sheetHasLines) {
         return require("@/assets/Images/notepadWithLines.png");
       } else {
         return require("@/assets/Images/NotepadWithoutLines.png");

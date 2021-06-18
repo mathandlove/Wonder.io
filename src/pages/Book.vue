@@ -8,7 +8,8 @@
     <notebook-page>
       <question-title-elements v-if="pageType === 'questiontitle'" />
       <read-elements v-if="pageType === 'read'" />
-      <question-elements />
+      <question-elements v-if="pageType === 'question'" />
+      <choice-elements v-if="pageType === 'choice'" />
       <!-- <read-elements /> -->
       <!-- <PageCover
         v-if="this.bookPageData.type === 'cover'"
@@ -78,6 +79,7 @@ import JoinElements from "@/components/booklayout/JoinElements.vue";
 import QuestionTitleElements from "@/components/booklayout/QuestionTitleElements.vue";
 import ReadElements from "@/components/booklayout/ReadElements.vue";
 import QuestionElements from "@/components/booklayout/QuestionElements.vue";
+import ChoiceElements from "@/components/booklayout/ChoiceElements.vue";
 
 import { mapState } from "vuex";
 import { mapGetters } from "vuex";
@@ -102,6 +104,7 @@ export default {
     QuestionTitleElements,
     ReadElements,
     QuestionElements,
+    ChoiceElements,
   },
   data() {
     const ViewRestartModal = false;
@@ -208,10 +211,9 @@ export default {
         if (tempPage > this.$store.state.HighestPage) {
           this.$store.dispatch("setHighestPage", tempPage);
         }
-        console.log("temp?", JSON.stringify(tempPage));
+
         this.$store.dispatch("setBookPage", tempPage);
         this.$router.push(`/book/${this.$store.state.BookID}/${tempPage}`);
-        this.formatPage();
         event.stopPropagation();
       }
     },
@@ -228,7 +230,6 @@ export default {
       });
       this.$store.dispatch("setBookPage", tempPage);
       this.$router.push(`/book/${this.$store.state.BookID}/${tempPage}`);
-      this.formatPage();
       event.stopPropagation();
     },
     ToggleHand(newValue) {
@@ -236,7 +237,6 @@ export default {
     },
     //Elliott Added Methods
     formatPage() {
-      console.log(this.pageType);
       this.resetPage();
       this.formatNormalRead();
       if (this.pageType == "questiontitle") {
@@ -283,7 +283,6 @@ export default {
     this.$store.dispatch("setBookID", this.id);
     this.page = this.$route.params.page;
     this.$store.dispatch("setBookPage", this.page);
-    this.formatPage();
   },
   async mounted() {
     await this.$store.dispatch("setBookList").then(async () => {

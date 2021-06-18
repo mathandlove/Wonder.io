@@ -1,5 +1,5 @@
  <template>
-  <div class="questionNumber">{{ "Question " + questionNumber + ":" }}</div>
+  <div class="questionNumber">Your Choice:</div>
   <div class="questionText">{{ mainText }}</div>
   <div class="answerContainer">
     <button
@@ -10,7 +10,11 @@
         wrongClicked: answerB.clickedOn && !answerB.isCorrect,
         rightClicked: answerB.clickedOn && answerB.isCorrect,
       }"
-      @click="answerClicked(index)"
+      @click="
+        {
+          $store.dispatch('setChoiceClicked', index);
+        }
+      "
       :disabled="answerB.disabled"
     >
       {{ answerB.name }}
@@ -30,12 +34,6 @@ export default {
   dismounted() {},
   computed: {
     ...mapGetters(["questionNumber", "mainText", "answerArray"]),
-  },
-  methods: {
-    ...mapActions(["setPageStyle"]),
-    answerClicked(index) {
-      this.$store.dispatch("setAnswerClicked", index);
-    },
   },
 };
 </script>
