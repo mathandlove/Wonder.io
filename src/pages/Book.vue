@@ -12,6 +12,7 @@
       <question-elements v-else-if="pageType === 'question'" />
       <choice-elements v-else-if="pageType === 'choice'" />
       <chapter-title-elements v-else-if="pageType === 'chapter'" />
+      <end-elements v-else-if="pageType === 'end'" />
       <!-- <read-elements /> -->
       <!-- <PageCover
         v-if="this.bookPageData.type === 'cover'"
@@ -83,10 +84,10 @@ import ReadElements from "@/components/booklayout/ReadElements.vue";
 import QuestionElements from "@/components/booklayout/QuestionElements.vue";
 import ChoiceElements from "@/components/booklayout/ChoiceElements.vue";
 import ChapterTitleElements from "@/components/booklayout/ChapterTitleElements.vue";
+import EndElements from "@/components/booklayout/EndElements.vue";
 
 import { mapState } from "vuex";
 import { mapGetters } from "vuex";
-import { mapActions } from "vuex";
 export default {
   components: {
     PageQuestionTitle,
@@ -109,6 +110,7 @@ export default {
     QuestionElements,
     ChoiceElements,
     ChapterTitleElements,
+    EndElements,
   },
   data() {
     const ViewRestartModal = false;

@@ -42,12 +42,21 @@ export default createStore({
         id: 3, name: 'BotName3', OldScore: 0, NewScore: 0,
       },
     ],
+    //Aaron here a variety of things I need for each page.
+    //Also note that some of my Getters actually found somethings in your BookData in case you chage that.
 
     questionNumber: 0,  //Or Chapter Number if Chapter
-    mainQCText: "The Case of the Bedroom Egg",
+    mainQCText: "The Case of the Bedroom Egg", //Title or Question
 
     skipNextAmount: 1, //Each page shows next page increase
+    totalNumberOfPages: 1,
+    author: "",
+    illustrator: "",
 
+    nextCoverHREF: "", //On the end screen this shows what the next cover of the book down the list
+    nextCoverLink: "", //Link that goes to that next book
+
+    //I'll work on the book selection page another day. Let's get books working first.
 
     textSeries: [
       {
@@ -86,42 +95,44 @@ export default createStore({
 
 
     ],
+    //Used for both Answer and Choices. ClickedOn + Disabled UX will take care of.
+    //Please randomize the order for Questions (Don't randomize for Choices)
     answerArray: [
       {
         name: "Pigs",
         isCorrect: true,
         coords: [0, 0, 0, 0],
+        toPages: 1,
         clickedOn: false,
         disabled: false,
-        toPages: 1
       },
       {
         name: "Frogs",
         isCorrect: false,
         coords: [0, 0, 0, 0],
+        toPages: 1,
         clickedOn: false,
         disabled: false,
-        toPages: 2
       },
       {
         name: "Kermit",
         isCorrect: false,
         coords: [0, 0, 0, 0],
+        toPages: 1,
         clickedOn: false,
         disabled: false,
-        toPages: 3
       },
       {
         name: "Frogs 2",
         isCorrect: false,
         coords: [0, 0, 0, 0],
+        toPages: 1,
         clickedOn: false,
         disabled: false,
-        toPages: 4
       },
     ],
 
-    //These are UX variables you do not need to change.
+    //Everything below are the UX variables you do not need to change.
     bookStyle: {
       showPagePill: true,
       showScorePill: false,
