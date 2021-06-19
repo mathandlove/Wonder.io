@@ -43,7 +43,8 @@ export default createStore({
       },
     ],
 
-    questionNumber: 0,
+    questionNumber: 0,  //Or Chapter Number if Chapter
+    mainQCText: "The Case of the Bedroom Egg",
 
     skipNextAmount: 1, //Each page shows next page increase
 
@@ -147,7 +148,7 @@ export default createStore({
     },
 
     mainText: state => {
-      return "The QuestionText Goes here"
+      return state.mainQCText;
     },
 
     pageNumber: state => {

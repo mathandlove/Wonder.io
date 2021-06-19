@@ -6,10 +6,12 @@
       @close-modal="this.ViewRestartModal = false"
     />
     <notebook-page>
+      <!-- <question-title-elements v-if="pageType === 'questiontitle'" /> -->
       <question-title-elements v-if="pageType === 'questiontitle'" />
-      <read-elements v-if="pageType === 'read'" />
-      <question-elements v-if="pageType === 'question'" />
-      <choice-elements v-if="pageType === 'choice'" />
+      <read-elements v-else-if="pageType === 'read'" />
+      <question-elements v-else-if="pageType === 'question'" />
+      <choice-elements v-else-if="pageType === 'choice'" />
+      <chapter-title-elements v-else-if="pageType === 'chapter'" />
       <!-- <read-elements /> -->
       <!-- <PageCover
         v-if="this.bookPageData.type === 'cover'"
@@ -80,6 +82,7 @@ import QuestionTitleElements from "@/components/booklayout/QuestionTitleElements
 import ReadElements from "@/components/booklayout/ReadElements.vue";
 import QuestionElements from "@/components/booklayout/QuestionElements.vue";
 import ChoiceElements from "@/components/booklayout/ChoiceElements.vue";
+import ChapterTitleElements from "@/components/booklayout/ChapterTitleElements.vue";
 
 import { mapState } from "vuex";
 import { mapGetters } from "vuex";
@@ -105,6 +108,7 @@ export default {
     ReadElements,
     QuestionElements,
     ChoiceElements,
+    ChapterTitleElements,
   },
   data() {
     const ViewRestartModal = false;
