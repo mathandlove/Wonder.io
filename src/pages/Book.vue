@@ -243,47 +243,6 @@ export default {
       this.ShowHand = newValue;
     },
     //Elliott Added Methods
-    formatPage() {
-      this.resetPage();
-      this.formatNormalRead();
-      if (this.pageType == "questiontitle") {
-        this.formatQuestion();
-      } else if (this.pageType == "cover") {
-        this.formatCover();
-      } else if (this.pageType == "read") {
-        this.formatRead();
-      }
-    },
-    resetPage() {
-      this.$store.state.textSeriesRevealed = 1;
-    },
-    formatQuestion() {
-      this.bookStyle.sheetHasLines = false;
-    },
-    formatCover() {
-      this.bookStyle.showPrevButton = false;
-    },
-    formatRead() {
-      this.bookStyle.sheetHasLines = true;
-      if (!this.seriesAllRead) {
-        this.NIV.onNotepadClick = this.incrementTextRevealed;
-        this.bookStyle.showNextButton = false;
-      }
-    },
-    incrementTextRevealed() {
-      this.$store.state.textSeriesRevealed++;
-
-      if (this.seriesAllRead) {
-        this.NIV.onNotepadClick = function () {};
-        this.bookStyle.showNextButton = true;
-      }
-    },
-    formatNormalRead() {
-      this.bookStyle.showScorePill = true;
-      this.bookStyle.showPagePill = true;
-      this.bookStyle.showNextButton = true;
-      this.bookStyle.showPrevButton = true;
-    },
   },
   created() {
     this.id = this.$route.params.id;

@@ -54,7 +54,7 @@ export default createStore({
     illustrator: "",
 
     nextCoverHREF: "", //On the end screen this shows what the next cover of the book down the list
-    nextCoverLink: "", //Link that goes to that next book
+    nextCoverLink: "/book/11/1", //Link that goes to that next book
 
     //I'll work on the book selection page another day. Let's get books working first.
 
@@ -140,6 +140,7 @@ export default createStore({
       showNextButton: true,
       showNotepadClickButton: false,
       sheetHasLines: false,
+      showCover: false
     },
 
     textSeriesRevealed: 1,
@@ -175,7 +176,13 @@ export default createStore({
     },
 
     playerScore: state => {
+      return 975;
       return state.Scores[0].NewScore;
+    },
+
+    scoreRank: state => {
+      //returns "1,2, or 3 - 3 means anything not 1,2"
+      return 1;
     },
 
     showPagePill: state => {
@@ -217,7 +224,15 @@ export default createStore({
     nextPage: state => {
       console.log(state.BookPage + state.skipNextAmount)
       return state.BookPage + state.skipNextAmount;
-    }
+    },
+
+    nextBookHREF: state => {
+      return state.nextCoverHREF;
+    },
+    linkToNextBook: state => {
+      return state.nextCoverLink;
+    },
+
 
 
   },
@@ -304,6 +319,7 @@ export default createStore({
       state.bookStyle.showPrevButton = true;
       state.bookStyle.showNextButton = true;
       state.bookStyle.showNotepadClickButton = false;
+      state.bookStyle.showCover = false;
       if (type == "questiontitle") {
         state.bookStyle.sheetHasLines = false;
       }
@@ -335,6 +351,17 @@ export default createStore({
       else if (type == 'readFull') {
         state.bookStyle.showNotepadClickButton = false;
         state.bookStyle.showNextButton = true;
+      }
+      else if (type == 'end') {
+        state.bookStyle.showNextButton = false;
+        state.bookStyle.showPrevButton = false;
+        state.bookStyle.showScorePill = false;
+        state.bookStyle.showPagePill = false;
+        state.bookStyle.showCover = true;
+      }
+      else if (type == 'cover') {
+        state.bookStyle.showPrevButton = false;
+        state.bookStyle.showCover = true;
       }
 
 
