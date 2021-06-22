@@ -49,9 +49,9 @@ export default createStore({
     mainQCText: "The Case of the Bedroom Egg", //Title or Question
 
     skipNextAmount: 1, //Each page shows next page increase
-    totalNumberOfPages: 1,
-    author: "",
-    illustrator: "",
+    totalNumberOfPages: 100,
+    author: "Elliott Hedman",
+    illustrator: "Aaron Cephers 2",
 
     nextCoverHREF: "", //On the end screen this shows what the next cover of the book down the list
     nextCoverLink: "/book/11/1", //Link that goes to that next book
@@ -149,6 +149,13 @@ export default createStore({
 
   },
   getters: {
+    getAuthor: state => {
+      return state.author;
+    },
+    getIllustrator: state => {
+      return state.illustrator;
+    },
+
     currentBookParagraph: state => {
       let pageNumber = parseInt(state.BookPage);
       return state.BookData.pages[+pageNumber - 1];
@@ -168,11 +175,14 @@ export default createStore({
     },
 
     totalNumberOfPages: state => {
-      return state.BookData.pages.length;
+      return state.totalNumberOfPages;
     },
 
     pageType: state => {
       return state.BookData.pages[state.BookPage - 1].type;
+    },
+    pageMicroType: state => {
+      return state.pageMicroType;
     },
 
     playerScore: state => {
@@ -311,6 +321,16 @@ export default createStore({
 
 
     },
+    SET_PLAYER_NAME(state, sPlayerName) {
+      if (sPlayerName == "") {
+        state.playerName = "Player 1";
+      }
+      else {
+        state.playerName = sPlayerName;
+      }
+      state.Scores[0].name = state.playerName;
+      console.log(state.playerName + 'n' + sPlayerName)
+    },
     SET_PAGE_STYLE(state) {
       const type = state.pageMicroType;
 
@@ -362,6 +382,10 @@ export default createStore({
       else if (type == 'cover') {
         state.bookStyle.showPrevButton = false;
         state.bookStyle.showCover = true;
+      }
+      else if (type == 'join') {
+        state.bookStyle.showPrevButton = false;
+        state.bookStyle.showNextButton = false;
       }
 
 
@@ -449,6 +473,10 @@ export default createStore({
 
 
     },
+    savePlayerName({ commit, dispatch, state }, sPlayerName) {
+      commit('SET_PLAYER_NAME', sPlayerName);
+      dispatch('setPageType');
+    },
     setPageType({ commit, dispatch, state }, type = state.BookData.pages[state.BookPage - 1].type) {
       if (type == 'question' && state.answerArray.some(e => e.clickedOn && e.isCorrect)) {
         //need to fix 0 up there
@@ -457,12 +485,17 @@ export default createStore({
       else if (type == 'read' && state.textSeriesRevealed >= state.textSeries.length) {
         commit('SET_PAGE_TYPE', 'readFull')
       }
+      else if (type == 'cover' && state.playerName == "") {
+        commit('SET_PAGE_TYPE', 'join')
+      }
       else {
         commit('SET_PAGE_TYPE', type)
       }
       dispatch('setPageStyle')
     },
   },
+
+
 
   modules: {
   },

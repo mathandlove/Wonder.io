@@ -9,6 +9,7 @@
       <!-- <question-title-elements v-if="pageType === 'questiontitle'" /> -->
       <question-title-elements v-if="pageType === 'questiontitle'" />
       <read-elements v-else-if="pageType === 'read'" />
+      <join-elements v-else-if="pageMicroType === 'join'" />
       <question-elements v-else-if="pageType === 'question'" />
       <choice-elements v-else-if="pageType === 'choice'" />
       <chapter-title-elements v-else-if="pageType === 'chapter'" />
@@ -180,7 +181,7 @@ export default {
       this.page = parseInt(this.$store.state.BookPage);
     },
     ...mapState(["BookData", "bookStyle", "textSeriesRevealed"]),
-    ...mapGetters(["pageType", "seriesAllRead", "nextPage"]),
+    ...mapGetters(["pageType", "seriesAllRead", "nextPage", "pageMicroType"]),
   },
   methods: {
     AdjustQuestionCounter(data) {

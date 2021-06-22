@@ -6,8 +6,9 @@
       type="text"
       maxLength="12"
       placeholder="Player Name"
+      v-model="inputPlayerName"
     />
-    <button class>PLAY</button>
+    <button @click="savePlayerName">PLAY</button>
     <author-info-mobile />
   </div>
 </template>
@@ -18,8 +19,15 @@ export default {
   components: {
     AuthorInfoMobile,
   },
+  data() {
+    return {
+      inputPlayerName: "",
+    };
+  },
   methods: {
-    setupNIV() {},
+    savePlayerName() {
+      this.$store.dispatch("savePlayerName", this.inputPlayerName);
+    },
   },
   mounted() {},
   dismounted() {},
