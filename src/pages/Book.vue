@@ -6,11 +6,16 @@
       @close-modal="this.ViewRestartModal = false"
     />
     <notebook-page>
-      <!-- <question-title-elements v-if="pageType === 'questiontitle'" /> -->
       <question-title-elements v-if="pageType === 'questiontitle'" />
       <read-elements v-else-if="pageType === 'read'" />
       <join-elements v-else-if="pageMicroType === 'join'" />
+      <fail-animation
+        v-else-if="
+          pageMicroType === 'failAnimation' || pageMicroType === 'passAnimation'
+        "
+      />
       <question-elements v-else-if="pageType === 'question'" />
+
       <choice-elements v-else-if="pageType === 'choice'" />
       <chapter-title-elements v-else-if="pageType === 'chapter'" />
       <end-elements v-else-if="pageType === 'end'" />
@@ -86,6 +91,7 @@ import QuestionElements from "@/components/booklayout/QuestionElements.vue";
 import ChoiceElements from "@/components/booklayout/ChoiceElements.vue";
 import ChapterTitleElements from "@/components/booklayout/ChapterTitleElements.vue";
 import EndElements from "@/components/booklayout/EndElements.vue";
+import FailAnimation from "@/components/booklayout/FailAnimation.vue";
 
 import { mapState } from "vuex";
 import { mapGetters } from "vuex";
@@ -112,6 +118,7 @@ export default {
     ChoiceElements,
     ChapterTitleElements,
     EndElements,
+    FailAnimation,
   },
   data() {
     const ViewRestartModal = false;

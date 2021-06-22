@@ -347,6 +347,11 @@ export default createStore({
         state.bookStyle.sheetHasLines = false;
         state.bookStyle.showNextButton = false;
       }
+      else if (type == "failAnimation" || type == "passAnimation") {
+        state.bookStyle.sheetHasLines = false;
+        state.bookStyle.showNextButton = false;
+        state.bookStyle.showPrevButton = false;
+      }
       else if (type == "questionAnsweredCorrect") {
         state.bookStyle.sheetHasLines = false;
         state.bookStyle.showPrevButton = true;
@@ -454,9 +459,22 @@ export default createStore({
     },
     setAnswerClicked({ commit, dispatch, state }, index) {
       commit('SET_ANSWER_CLICKED', index);
-      dispatch('setPageType')
+      if (state.answerArray[index].isCorrect == false) {
+        dispatch('setPageType', 'failAnimation')
+      }
+      else {
+        dispatch('setPageType', 'passAnimation')
+      }
 
 
+    },
+    dinoAnimationDone({ commit, dispatch, state }) {
+      if (state.pageMicroType == "failAnimation") {
+        dispatch('setPageType', 'question')
+      }
+      else {
+        dispatch('gotoNextPage');
+      }
     },
     setChoiceClicked({ commit, dispatch, state }, skipVal) {
       commit('SET_CHOICE_CLICKED', skipVal);
@@ -477,6 +495,7 @@ export default createStore({
       commit('SET_PLAYER_NAME', sPlayerName);
       dispatch('setPageType');
     },
+
     setPageType({ commit, dispatch, state }, type = state.BookData.pages[state.BookPage - 1].type) {
       if (type == 'question' && state.answerArray.some(e => e.clickedOn && e.isCorrect)) {
         //need to fix 0 up there
