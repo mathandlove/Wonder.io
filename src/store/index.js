@@ -23,14 +23,14 @@ export default createStore({
     GradeFilteredBookItems: [Book10Item],
     SelectedBookItem: JSON.parse(localStorage.getItem('SelectedBook')) || Book10Item,
     BookData: JSON.parse(localStorage.getItem('BookData')) || Book10,
-    BookArray: JSON.parse(localStorage.getItem('BookArray')) || [Book10Item],
+    BookArray: JSON.parse(localStorage.getItem('BookArray')) || [Book10Item, Book10Item, Book10Item, Book10Item, Book10Item, Book10Item, Book10Item, Book10Item, Book10Item, Book10Item, Book10Item, Book10Item, Book10Item, Book10Item],
     HighestPage: +localStorage.getItem('HighestPage') || 1,
     BookID: +localStorage.getItem('BookID') || 10,
     BookPage: +parseInt(localStorage.getItem('BookPage')) || 1,
     AspectRatio: +localStorage.getItem('AspectRatio') || 1,
     Scores: JSON.parse(localStorage.getItem('Scores')) || [
       {
-        id: 0, name: 'Jane Doe', OldScore: 0, NewScore: 0,
+        id: 0, name: 'Player1', OldScore: 0, NewScore: 0,
       },
       {
         id: 1, name: 'BotName1', OldScore: 0, NewScore: 0,
@@ -55,8 +55,6 @@ export default createStore({
 
     nextCoverHREF: "", //On the end screen this shows what the next cover of the book down the list
     nextCoverLink: "/book/11/1", //Link that goes to that next book
-
-    //I'll work on the book selection page another day. Let's get books working first.
 
     textSeries: [
       {
@@ -144,7 +142,9 @@ export default createStore({
     },
 
     textSeriesRevealed: 1,
-    pageMicroType: "read"
+    pageMicroType: "read",
+
+    playerName: ''
     //pageMicroType determines that exact state of  the page for example there's a difference between read and read fully
 
   },
