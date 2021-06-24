@@ -14,11 +14,17 @@
           pageMicroType === 'failAnimation' || pageMicroType === 'passAnimation'
         "
       />
-      <question-elements v-else-if="pageType === 'question'" />
-
+      <question-elements
+        v-else-if="
+          pageMicroType === 'questionLoaded' ||
+          pageMicroType === 'questionAnsweredCorrect'
+        "
+      />
+      <question-load-elements v-else-if="pageType === 'question'" />
       <choice-elements v-else-if="pageType === 'choice'" />
       <chapter-title-elements v-else-if="pageType === 'chapter'" />
       <end-elements v-else-if="pageType === 'end'" />
+
       <!-- <read-elements /> -->
       <!-- <PageCover
         v-if="this.bookPageData.type === 'cover'"
@@ -92,9 +98,11 @@ import ChoiceElements from "@/components/booklayout/ChoiceElements.vue";
 import ChapterTitleElements from "@/components/booklayout/ChapterTitleElements.vue";
 import EndElements from "@/components/booklayout/EndElements.vue";
 import FailAnimation from "@/components/booklayout/FailAnimation.vue";
+import QuestionLoadElements from "@/components/booklayout/QuestionLoadElements.vue";
 
 import { mapState } from "vuex";
 import { mapGetters } from "vuex";
+
 export default {
   components: {
     PageQuestionTitle,
@@ -119,6 +127,7 @@ export default {
     ChapterTitleElements,
     EndElements,
     FailAnimation,
+    QuestionLoadElements,
   },
   data() {
     const ViewRestartModal = false;
@@ -208,17 +217,7 @@ export default {
       });
     },
     RouteNextPage(event) {
-      let tempPage = this.nextPage;
-      if (tempPage > this.TotalPages) {
-        this.$router.push("/like");
-      }
-
-      if (tempPage > this.$store.state.HighestPage) {
-        this.$store.dispatch("setHighestPage", tempPage);
-      }
-
-      this.$store.dispatch("setBookPage", tempPage);
-      this.$router.push(`/book/${this.$store.state.BookID}/${tempPage}`);
+      this.$store.dispatch("gotoNext");
       event.stopPropagation();
 
       // else {

@@ -2,6 +2,7 @@ import { createStore } from 'vuex';
 import axios from 'axios';
 import Book10 from '../assets/Books/book10/book.json';
 import Book10Item from '../assets/Books/book10/book10item.json';
+import router from '../router/index.js'
 // const resource_uri = 'https://localhost:44312/book';
 const resource_uri = 'https://wonderstories-api-dev-as.azurewebsites.net/book';
 
@@ -46,6 +47,7 @@ export default createStore({
     //Also note that some of my Getters actually found somethings in your BookData in case you chage that.
 
     questionNumber: 0,  //Or Chapter Number if Chapter
+    totalNumberOfQuestions: 2,
     mainQCText: "The Case of the Bedroom Egg", //Title or Question
 
     skipNextAmount: 1, //Each page shows next page increase
@@ -242,6 +244,11 @@ export default createStore({
     linkToNextBook: state => {
       return state.nextCoverLink;
     },
+    isDoublePoints: state => {
+      return state.questionNumber / state.totalNumberOfQuestions > .6
+
+    }
+
 
 
 
@@ -278,6 +285,7 @@ export default createStore({
     SET_BOOK_PAGE(state, event) {
       state.BookPage = event;
       localStorage.setItem('BookPage', event);
+      console.log('bp=' + event)
     },
     SET_ASPECT_RATIO(state, event) {
       state.AspectRatio = event;
@@ -331,6 +339,7 @@ export default createStore({
       state.Scores[0].name = state.playerName;
       console.log(state.playerName + 'n' + sPlayerName)
     },
+
     SET_PAGE_STYLE(state) {
       const type = state.pageMicroType;
 
@@ -344,6 +353,10 @@ export default createStore({
         state.bookStyle.sheetHasLines = false;
       }
       else if (type == "question") {
+        state.bookStyle.sheetHasLines = false;
+        state.bookStyle.showNextButton = false;
+      }
+      else if (type == "questionLoaded") {
         state.bookStyle.sheetHasLines = false;
         state.bookStyle.showNextButton = false;
       }
@@ -391,6 +404,8 @@ export default createStore({
       else if (type == 'join') {
         state.bookStyle.showPrevButton = false;
         state.bookStyle.showNextButton = false;
+        state.bookStyle.showScorePill = false;
+        state.bookStyle.showPagePill = false;
       }
 
 
@@ -470,10 +485,10 @@ export default createStore({
     },
     dinoAnimationDone({ commit, dispatch, state }) {
       if (state.pageMicroType == "failAnimation") {
-        dispatch('setPageType', 'question')
+        dispatch('setPageType', 'questionLoaded')
       }
       else {
-        dispatch('gotoNextPage');
+        dispatch('gotoNext');
       }
     },
     setChoiceClicked({ commit, dispatch, state }, skipVal) {
@@ -494,6 +509,20 @@ export default createStore({
     savePlayerName({ commit, dispatch, state }, sPlayerName) {
       commit('SET_PLAYER_NAME', sPlayerName);
       dispatch('setPageType');
+    },
+    gotoNext({ commit, state, dispatch, getters }) {
+      let tempPage = getters.nextPage;
+      console.log(tempPage)
+      if (tempPage > getters.HighestPage) {
+        dispatch("setHighestPage", tempPage);
+      }
+
+      dispatch("setBookPage", tempPage);
+      router.push(`/book/${state.BookID}/${tempPage}`);
+
+    },
+    questionLoadDone({ commit, dispatch }) {
+      dispatch('setPageType', 'questionLoaded');
     },
 
     setPageType({ commit, dispatch, state }, type = state.BookData.pages[state.BookPage - 1].type) {

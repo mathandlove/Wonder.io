@@ -113,7 +113,7 @@ export default {
         } else {
           setTimeout(() => {
             this.soundFail.play();
-          }, 2950);
+          }, 4550);
         }
       }
     },
