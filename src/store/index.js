@@ -49,6 +49,7 @@ export default createStore({
     questionNumber: 0,  //Or Chapter Number if Chapter
     totalNumberOfQuestions: 2,
     mainQCText: "The Case of the Bedroom Egg", //Title or Question
+    questionImageURL: require(`@/assets/Books/book10/images/1.png`),
 
     skipNextAmount: 1, //Each page shows next page increase
     totalNumberOfPages: 100,
@@ -97,11 +98,12 @@ export default createStore({
     ],
     //Used for both Answer and Choices. ClickedOn + Disabled UX will take care of.
     //Please randomize the order for Questions (Don't randomize for Choices)
+    //Do not provide coords if it is not a picture question. Checking if it exists to determine.
     answerArray: [
       {
         name: "Pigs",
         isCorrect: true,
-        coords: [0, 0, 0, 0],
+        coords: [543, -210, 640, 363],
         toPages: 1,
         clickedOn: false,
         disabled: false,
@@ -109,7 +111,7 @@ export default createStore({
       {
         name: "Frogs",
         isCorrect: false,
-        coords: [0, 0, 0, 0],
+        coords: [71, -297, 168, 400],
         toPages: 1,
         clickedOn: false,
         disabled: false,
@@ -117,7 +119,7 @@ export default createStore({
       {
         name: "Kermit",
         isCorrect: false,
-        coords: [0, 0, 0, 0],
+        coords: [652, -746, 458, 236],
         toPages: 1,
         clickedOn: false,
         disabled: false,
@@ -125,7 +127,7 @@ export default createStore({
       {
         name: "Frogs 2",
         isCorrect: false,
-        coords: [0, 0, 0, 0],
+        coords: [1069, -682, 240, 471],
         toPages: 1,
         clickedOn: false,
         disabled: false,
@@ -247,6 +249,12 @@ export default createStore({
     isDoublePoints: state => {
       return state.questionNumber / state.totalNumberOfQuestions > .6
 
+    },
+    showQuestionImage: state => {
+      return state.answerArray[0].coords != "undefined"
+    },
+    questionImageURL: state => {
+      return state.questionImageURL;
     }
 
 

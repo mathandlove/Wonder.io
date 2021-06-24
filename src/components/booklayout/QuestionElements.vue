@@ -1,7 +1,7 @@
  <template>
   <div class="questionNumber">{{ "Question " + questionNumber + ":" }}</div>
   <div class="questionText">{{ mainText }}</div>
-  <div class="answerContainer">
+  <div class="answerContainer" v-if="!showQuestionImage">
     <button
       v-for="(answerB, index) in answerArray"
       :key="answerB.name"
@@ -16,20 +16,63 @@
       {{ answerB.name }}
     </button>
   </div>
+  <div id="questionImgContainer">
+    <img v-if="showQuestionImage" :src="questionImageURL" id="questionImage" />
+    <button
+      v-for="(choice, index) in answerArray"
+      :key="choice"
+      class="answerImgButton"
+      :class="{ correctImageAnswer: choice.isCorrect }"
+      :style="{
+        left: (choice.coords[0] / Baseline.width) * 100 + '%',
+        top: ((-1 * choice.coords[1]) / Baseline.height) * 100 + '%',
+        width: (choice.coords[2] / Baseline.width) * 100 + '%',
+        height: (choice.coords[3] / Baseline.height) * 100 + '%',
+      }"
+      @click="answerClicked(index)"
+      :disabled="choice.disabled"
+    >
+      <img
+        v-if="choice.clickedOn && choice.isCorrect"
+        class="w-100 h-100"
+        :src="require(`@/assets/Images/Circle.png`)"
+      />
+      <img
+        v-else-if="choice.clickedOn && !choice.isCorrect"
+        class="w-100 h-100"
+        :src="require(`@/assets/Images/X.png`)"
+      />
+    </button>
+  </div>
 </template>
 <script>
 import { mapGetters } from "vuex";
 import { mapActions } from "vuex";
 export default {
   data() {
-    return {};
+    const Baseline = {
+      width: 1161,
+      height: 922.5,
+    };
+    return {
+      choice: {
+        coords: [543, -210, 640, 363],
+      },
+      Baseline,
+    };
   },
   mounted() {
     // this.$store.dispatch("setPageStyle", "question");
   },
   dismounted() {},
   computed: {
-    ...mapGetters(["questionNumber", "mainText", "answerArray"]),
+    ...mapGetters([
+      "questionNumber",
+      "mainText",
+      "answerArray",
+      "showQuestionImage",
+      "questionImageURL",
+    ]),
   },
   methods: {
     ...mapActions(["setPageStyle"]),
@@ -89,5 +132,28 @@ export default {
 }
 .rightClicked {
   background-color: #9cd4d4;
+}
+#questionImage {
+  height: 5 * 1.4 em;
+  width: 100%;
+  object-fit: contain;
+}
+#questionImgContainer {
+  width: 100%;
+  position: relative;
+}
+
+.answerImgButton {
+  position: absolute;
+  transform: translate(-50%, -50%);
+  background-color: #00000000;
+  min-width: 0px;
+  padding-left: 0;
+  padding-right: 0;
+  margin: 0;
+  outline: none;
+}
+.correctImageAnswer {
+  z-index: 2;
 }
 </style>

@@ -13,7 +13,7 @@ export default {
   data() {
     const progressPercent = 0;
     let timerUnsubscribe;
-    return { progressPercent, timerUnsubscribe, timerLength: 5 };
+    return { progressPercent, timerUnsubscribe, timerLength: 0.001 };
   },
   methods: {
     UpdatePercent() {
