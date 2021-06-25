@@ -4,20 +4,19 @@
   <div class="answerContainer">
     <button
       v-for="answerB in answerArray"
-      :key="answerB.name"
+      :key="answerB.text"
       class="answerButton"
       @click="
         updateChoice(answerB.toPages);
         NIV.gotoNext($event);
       "
     >
-      {{ answerB.name }}
+      {{ answerB.text }}
     </button>
   </div>
 </template>
 <script>
 import { mapGetters } from "vuex";
-import { mapActions } from "vuex";
 export default {
   inject: ["NIV"],
   data() {

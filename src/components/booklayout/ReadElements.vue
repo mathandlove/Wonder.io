@@ -2,18 +2,18 @@
   <div v-for="linePart in textSeries" :key="linePart" class="textContainer">
     <div
       v-if="
-        linePart.type == 'character' && linePart.characterOrientation == 'l'
+        linePart.lineType == 'character' && linePart.orientation == 'l'
       "
       class="leftChar"
       :style="{
         minHeight: 1.45 * 3 - 0.1 + 'em',
       }"
     >
-      <img :src="linePart.urlForCharacter" alt="" class="leftCharImage" />
+      <img :src="linePart.characterImageUrl" alt="" class="leftCharImage" />
       <div
         class="leftCharText"
         :style="{ width: 80 - (linePart.charPadding * 80) / 100 + 20 + '%' }"
-        :class="{ robotoLeft: linePart.fontStyle == 'roboto' }"
+        :class="{ robotoLeft: linePart.fontStyle == 'Moboto SDF' }"
       >
         {{ linePart.text + "\n\n" }}
       </div>
@@ -21,7 +21,7 @@
 
     <div
       v-if="
-        linePart.type == 'character' && linePart.characterOrientation == 'r'
+        linePart.lineType == 'character' && linePart.orientation == 'r'
       "
       class="rightChar"
       :style="{
@@ -31,24 +31,24 @@
       <div
         class="rightCharText"
         :style="{ width: 80 - (linePart.charPadding * 80) / 100 + 20 + '%' }"
-        :class="{ robotoRight: linePart.fontStyle == 'roboto' }"
+        :class="{ robotoRight: linePart.fontStyle == 'Moboto SDF' }"
       >
         {{ linePart.text + "\n\n" }}
       </div>
-      <img :src="linePart.urlForCharacter" alt="" class="rightCharImage" />
+      <img :src="linePart.characterImageUrl" alt="" class="rightCharImage" />
     </div>
 
     <div
-      v-if="linePart.type == 'text'"
+      v-if="linePart.lineType == 'read'"
       class="mainText"
-      :class="{ roboto: linePart.fontStyle == 'roboto' }"
+      :class="{ roboto: linePart.fontStyle == 'Moboto SDF' }"
     >
       {{ linePart.text }}
     </div>
-    <div v-if="linePart.type == 'image'">
+    <div v-if="linePart.lineType == 'image'">
       <img
         class="mainImage"
-        :src="linePart.urlForImage"
+        :src="linePart.imageUrl"
         :style="{ height: 1.45 * linePart.imgHeight - 0.1 + 'em' }"
       />
       <!-- lineHieght*imgHeight-descenderHeight -->
@@ -66,7 +66,6 @@ export default {
     setupNIV() {},
   },
   mounted() {
-    // this.$store.dispatch("setPageStyle", "read");
   },
   dismounted() {},
   computed: {

@@ -2,8 +2,8 @@ import { createStore } from 'vuex';
 import axios from 'axios';
 import Book10 from '../assets/Books/book10/book.json';
 import Book10Item from '../assets/Books/book10/book10item.json';
-// const resource_uri = 'https://localhost:44312/book';
-const resource_uri = 'https://wonderstories-api-dev-as.azurewebsites.net/book';
+const resource_uri = 'https://localhost:44312/book';
+// const resource_uri = 'https://wonderstories-api-dev-as.azurewebsites.net/book';
 
 export default createStore({
   state: {
@@ -45,13 +45,11 @@ export default createStore({
     //Aaron here a variety of things I need for each page.
     //Also note that some of my Getters actually found somethings in your BookData in case you chage that.
 
-    questionNumber: 0,  //Or Chapter Number if Chapter
     mainQCText: "The Case of the Bedroom Egg", //Title or Question
 
     skipNextAmount: 1, //Each page shows next page increase
     totalNumberOfPages: 1,
     author: "",
-    illustrator: "",
 
     nextCoverHREF: "", //On the end screen this shows what the next cover of the book down the list
     nextCoverLink: "", //Link that goes to that next book
@@ -91,9 +89,6 @@ export default createStore({
         charPadding: 0,
         fontStyle: "",
       },
-
-
-
     ],
     //Used for both Answer and Choices. ClickedOn + Disabled UX will take care of.
     //Please randomize the order for Questions (Don't randomize for Choices)
@@ -148,44 +143,46 @@ export default createStore({
 
   },
   getters: {
+    illustrator: state => {
+      return state.BookData.illustrator;
+    },
     currentBookParagraph: state => {
       let pageNumber = parseInt(state.BookPage);
       return state.BookData.pages[+pageNumber - 1];
     },
-
-    //Needs to be part of server data
-    questionNumber: state => {
-      return state.questionNumber;
+    questionNumber: (state, getters) => {
+      return getters.currentBookParagraph.questionNumber;
     },
-
-    mainText: state => {
-      return state.mainQCText;
+    mainText: (state, getters) => {
+      return getters.currentBookParagraph.pageTitleText;
     },
-
+    questionImageUrl: (state, getters) => {
+      const things = getters.currentBookParagraph.pageParts[0].partImageUrl;
+      return things;
+    },
+    totalLinesOnPage: (state, getters) => {
+      return getters.currentBookParagraph.pageParts[0].totalLines;
+    },
     pageNumber: state => {
-      return state.BookPage;
+      let pageNumber = parseInt(state.BookPage);
+      return pageNumber;
     },
-
     totalNumberOfPages: state => {
       return state.BookData.pages.length;
     },
-
     pageType: state => {
-      return state.BookData.pages[state.BookPage - 1].type;
+      let pageNumber = parseInt(state.BookPage);
+      return state.BookData.pages[pageNumber - 1].type;
     },
-
     playerScore: state => {
       return state.Scores[0].NewScore;
     },
-
     showPagePill: state => {
       return state.bookStyle.showPagePill;
     },
-
     showScorePill: state => {
       return state.bookStyle.showScorePill;
     },
-
     showPrevButton: state => {
       return state.bookStyle.showPrevButton;
     },
@@ -198,18 +195,25 @@ export default createStore({
     coverHREF: state => {
       return state.SelectedBookItem.largeBookCoverImageUrl
     },
-    textSeries: state => {
-      console.log(state.textSeriesRevealed)
-      return state.textSeries.slice(0, state.textSeriesRevealed);
-
+    textSeries: state=> {
+      var pageLineParts = [];
+      let pageNumber = parseInt(state.BookPage);
+      var array = state.BookData.pages[pageNumber - 1].pageParts;
+      
+      for (let index = 0; index < array.length; index++) {
+        const element = array[index];
+        pageLineParts= pageLineParts.concat(element.lineParts);
+      }
+      return pageLineParts.splice(0,state.textSeriesRevealed);
     },
-    seriesAllRead: state => {
-      return state.textSeries.length <= (state.textSeriesRevealed)
+    seriesAllRead: (state, getters)  => {
+      return getters.textSeries.length <= (state.textSeriesRevealed)
     },
-
-    answerArray: state => {
+    answerArray: (state, getters) => {
       //Answer Array is an array of answers the student can guess. Please randomize answers.
-      return state.answerArray;
+      let pageNumber = parseInt(state.BookPage);
+      let answers =  state.BookData.pages[pageNumber - 1].pageParts[0].lineParts.splice(1);
+      return answers;
     },
     bookStyle: state => {
       return state.bookStyle;
@@ -218,8 +222,6 @@ export default createStore({
       console.log(state.BookPage + state.skipNextAmount)
       return state.BookPage + state.skipNextAmount;
     }
-
-
   },
   mutations: {
     SET_BOOK_LIST(state, event) {
@@ -275,9 +277,10 @@ export default createStore({
       localStorage.setItem('Scores', JSON.stringify(state.Scores));
     },
     SET_ANSWER_CLICKED(state, index) {
-      state.answerArray[index].clickedOn = true;
-      state.answerArray[index].disabled = true;
-
+      let pageNumber = parseInt(state.BookPage);
+      const selectedItem = state.BookData.pages[pageNumber - 1].pageParts[0].lineParts.splice(1)[index];
+      selectedItem.clickedOn = true;
+      selectedItem.disabled = true;
     },
     SET_CHOICE_CLICKED(state, nextValue) {
 
@@ -315,8 +318,10 @@ export default createStore({
         state.bookStyle.sheetHasLines = false;
         state.bookStyle.showPrevButton = true;
         state.bookStyle.showNextButton = true;
-        for (let i = 0; i < state.answerArray.length; i++) {
-          state.answerArray[i].disabled = true;
+        const pageIndex = parseInt(state.BookPage) - 1;
+        const answerArray = state.BookData.pages[pageIndex].pageParts[0].lineParts.splice(1);
+        for (let i = 0; i < answerArray.length; i++) {
+          answerArray[i].disabled = true;
         }
       }
       else if (type == "choice") {
@@ -336,13 +341,7 @@ export default createStore({
         state.bookStyle.showNotepadClickButton = false;
         state.bookStyle.showNextButton = true;
       }
-
-
-
-
     }
-
-
   },
   actions: {
     async fetchGradeFilters({ commit }) {

@@ -6,59 +6,15 @@
       @close-modal="this.ViewRestartModal = false"
     />
     <notebook-page>
-      <!-- <question-title-elements v-if="pageType === 'questiontitle'" /> -->
       <question-title-elements v-if="pageType === 'questiontitle'" />
       <read-elements v-else-if="pageType === 'read'" />
       <question-elements v-else-if="pageType === 'question'" />
       <choice-elements v-else-if="pageType === 'choice'" />
       <chapter-title-elements v-else-if="pageType === 'chapter'" />
       <end-elements v-else-if="pageType === 'end'" />
-      <!-- <read-elements /> -->
-      <!-- <PageCover
-        v-if="this.bookPageData.type === 'cover'"
-        @show-hand="ToggleHand"
-      />
-      <PageChapter
-        v-else-if="this.GetPageData.type === 'chapterTitle'"
-        @show-hand="ToggleHand"
-        :number="this.GetPageData.chapterNumber"
-        :page-text="this.GetPageData.text"
-      />
-      <PageRead
-        v-else-if="this.GetPageData.type === 'read'"
-        @show-hand="ToggleHand"
-        :data="this.GetPageData.pageParts"
-      />
-      <PageQuestionTitle
-        v-else-if="this.GetPageData.type === 'questiontitle'"
-        :data="this.GetPageData.pageParts"
-        @show-hand="ToggleHand"
-        :counter="this.QuestionCounter"
-      />
-      <PageQuestion
-        v-else-if="this.GetPageData.type === 'question'"
-        @show-hand="ToggleHand"
-        :data="this.GetPageData.pageParts"
-        :counter="this.QuestionCounter"
-      />
-      <PageChoice
-        v-else-if="this.GetPageData.type === 'choice'"
-        :data="this.GetPageData.pageParts"
-        @chosen-page="AddChoice"
-        @show-hand="ToggleHand"
-      />
-      <PageEnd
-        v-else-if="this.GetPageData.type === 'end'"
-        @show-hand="ToggleHand"
-      />
-      <PageNoExist v-else @show-hand="ToggleHand" /> -->
+      
     </notebook-page>
-    <!-- <MainFooter :total-pages="this.TotalPages" />
-    <NavPrevArrow @prev-page="RoutePrevPage" />
-    <NavNextArrow
-      @next-page="this.RouteNextPage(true)"
-      v-if="this.ShowHand || this.HighestPage > this.page"
-    /> -->
+
     <book-footer />
   </the-background>
 </template>
@@ -144,38 +100,6 @@ export default {
     };
   },
   computed: {
-    GetPageData() {
-      var tempData;
-      if (this.BookObject.pages) {
-        this.TotalPages = this.BookObject.pages.length;
-        tempData = this.BookObject.pages[+this.page - 1];
-        this.AdjustQuestionCounter(
-          this.BookObject.pages.slice(0, +this.page - 1)
-        );
-        if (tempData) {
-          return tempData;
-        }
-      }
-      return [{ type: null }];
-    },
-    bookPageData() {
-      this.TotalPages = this.BookData.pages.length;
-      this.AdjustQuestionCounter(this.BookData.pages.slice(0, +this.page - 1));
-      this.BookData.pages.forEach((page) => {
-        if (page.type === "choice") {
-          const firstPage = page.pageNumber + 1;
-          const totalOptions = page.pageParts[0].lineParts.length;
-          const lastPage = firstPage + totalOptions;
-          this.PageSkipArray.push({
-            StartPage: firstPage,
-            SelectedPage: null,
-            EndPage: lastPage,
-          });
-        }
-      });
-      return this.BookData.pages[+this.page - 1];
-    },
-    questionCounter() {},
     setPageNumber() {
       this.page = parseInt(this.$store.state.BookPage);
     },
@@ -213,16 +137,6 @@ export default {
       this.$router.push(`/book/${this.$store.state.BookID}/${tempPage}`);
       event.stopPropagation();
 
-      // else {
-      //   this.PageSkipArray.forEach((choice) => {
-      //     if (tempPage > choice.StartPage && tempPage < choice.EndPage) {
-      //       if (choice.SelectedPage && tempPage <= choice.SelectedPage) {
-      //         tempPage = choice.SelectedPage;
-      //       } else {
-      //         tempPage = choice.EndPage;
-      //       }
-      //     }
-      //   });
     },
     RoutePrevPage(event) {
       let tempPage = this.page - 1;
