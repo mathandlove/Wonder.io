@@ -51,80 +51,8 @@ export default createStore({
     totalNumberOfPages: 1,
     author: "",
 
-    nextCoverHREF: "", //On the end screen this shows what the next cover of the book down the list
+    nextCoverImageUrl: "", //On the end screen this shows what the next cover of the book down the list
     nextCoverLink: "/book/11/1", //Link that goes to that next book
-
-    textSeries: [
-      {
-        type: "text",
-        text: "Aaron thanks for your help.\n\n",
-        characterOrientation: "",
-        urlForCharacter: "",
-        urlForImage: "",
-        imgHeight: "",
-        charPadding: 0,
-        fontStyle: "roboto",
-      },
-
-      {
-        type: "character",
-        text: "The character is saying this text!",
-        characterOrientation: "l",
-        urlForCharacter: require(`@/assets/Books/book10/characters/captain.png`),
-        urlForImage: "",
-        imgHeight: "",
-        charPadding: 20,
-        fontStyle: "roboto",
-      },
-
-      {
-        type: "image",
-        text: "",
-        characterOrientation: "",
-        urlForCharacter: "",
-        urlForImage: require(`@/assets/Books/book10/images/2.png`),
-        imgHeight: "8",
-        charPadding: 0,
-        fontStyle: "",
-      },
-    ],
-    //Used for both Answer and Choices. ClickedOn + Disabled UX will take care of.
-    //Please randomize the order for Questions (Don't randomize for Choices)
-    //Do not provide coords if it is not a picture question. Checking if it exists to determine.
-    answerArray: [
-      {
-        name: "Pigs",
-        isCorrect: true,
-        coords: [543, -210, 640, 363],
-        toPages: 1,
-        clickedOn: false,
-        disabled: false,
-      },
-      {
-        name: "Frogs",
-        isCorrect: false,
-        coords: [71, -297, 168, 400],
-        toPages: 1,
-        clickedOn: false,
-        disabled: false,
-      },
-      {
-        name: "Kermit",
-        isCorrect: false,
-        coords: [652, -746, 458, 236],
-        toPages: 1,
-        clickedOn: false,
-        disabled: false,
-      },
-      {
-        name: "Frogs 2",
-        isCorrect: false,
-        coords: [1069, -682, 240, 471],
-        toPages: 1,
-        clickedOn: false,
-        disabled: false,
-      },
-    ],
 
     //Everything below are the UX variables you do not need to change.
     bookStyle: {
@@ -157,6 +85,9 @@ export default createStore({
     },
     questionNumber: (state, getters) => {
       return getters.currentBookParagraph.questionNumber;
+    },
+    chapterNumber: (state, getters) => {
+      return getters.currentBookParagraph.chapterNumber;
     },
     mainText: (state, getters) => {
       return getters.currentBookParagraph.pageTitleText;
@@ -220,7 +151,7 @@ export default createStore({
         const element = array[index];
         pageLineParts= pageLineParts.concat(element.lineParts);
       }
-      return pageLineParts.splice(0,state.textSeriesRevealed);
+      return pageLineParts;
     },
     seriesAllRead: (state, getters)  => {
       return getters.textSeries.length <= (state.textSeriesRevealed)
@@ -228,7 +159,7 @@ export default createStore({
     answerArray: (state, getters) => {
       //Answer Array is an array of answers the student can guess. Please randomize answers.
       let pageNumber = parseInt(state.BookPage);
-      let answers =  state.BookData.pages[pageNumber - 1].pageParts[0].lineParts.splice(1);
+      let answers =  [...state.BookData.pages[pageNumber - 1].pageParts[0].lineParts].splice(1);
       return answers;
     },
     bookStyle: state => {
@@ -240,20 +171,18 @@ export default createStore({
     },
 
     nextBookHREF: state => {
-      return state.nextCoverHREF;
+      return state.nextCoverImageUrl;
     },
     linkToNextBook: state => {
       return state.nextCoverLink;
     },
-    isDoublePoints: state => {
-      return state.questionNumber / state.totalNumberOfQuestions > .6
+    isDoublePoints: (state, getters) => {
+      var totalQuestions = state.BookData.pages.filter(page => page.questionNumber > 0 ).length;
+      return getters.questionNumber / totalQuestions > .6
 
     },
-    showQuestionImage: state => {
-      return state.answerArray[0].coords != "undefined"
-    },
-    questionImageURL: state => {
-      return state.questionImageURL;
+    showQuestionImage: (state, getters) => {
+      return getters.answerArray[0].answerCoords != null || getters.answerArray[0].answerCoords != 'undefined';
     }
   },
   mutations: {
@@ -312,26 +241,20 @@ export default createStore({
     },
     SET_ANSWER_CLICKED(state, index) {
       let pageNumber = parseInt(state.BookPage);
-      const selectedItem = state.BookData.pages[pageNumber - 1].pageParts[0].lineParts.splice(1)[index];
+      const selectedItem = [...state.BookData.pages[pageNumber - 1].pageParts[0].lineParts].splice(1)[index];
       selectedItem.clickedOn = true;
       selectedItem.disabled = true;
     },
     SET_CHOICE_CLICKED(state, nextValue) {
-
       state.skipNextAmount = nextValue;
       console.log('c' + state.skipNextAmount)
-
     },
     INCREMENT_TEXT_REVEALED(state) {
       state.textSeriesRevealed++;
-
-
     },
     SET_PAGE_TYPE(state, type) {
       console.log('microState changed to: ' + type)
       state.pageMicroType = type;
-
-
     },
     SET_PLAYER_NAME(state, sPlayerName) {
       if (sPlayerName == "") {
@@ -374,7 +297,7 @@ export default createStore({
         state.bookStyle.showPrevButton = true;
         state.bookStyle.showNextButton = true;
         const pageIndex = parseInt(state.BookPage) - 1;
-        const answerArray = state.BookData.pages[pageIndex].pageParts[0].lineParts.splice(1);
+        const answerArray = [...state.BookData.pages[pageIndex].pageParts[0].lineParts].splice(1);
         for (let i = 0; i < answerArray.length; i++) {
           answerArray[i].disabled = true;
         }
@@ -387,7 +310,9 @@ export default createStore({
         state.bookStyle.sheetHasLines = true;
         state.bookStyle.showNotepadClickButton = true;
         state.bookStyle.showNextButton = false;
-        if (state.textSeriesRevealed >= state.textSeries.length) {
+        const pageIndex = parseInt(state.BookPage) - 1;
+        const answerArray = [...state.BookData.pages[pageIndex].pageParts[0].lineParts];
+        if (state.textSeriesRevealed >= answerArray.length) {
           state.bookStyle.showNotepadClickButton = false;
           state.bookStyle.showNextButton = true;
         }
@@ -413,10 +338,11 @@ export default createStore({
         state.bookStyle.showScorePill = false;
         state.bookStyle.showPagePill = false;
       }
-
-
-
-
+    },
+    SET_NEXT_BOOK(state, bookId) {
+      const nextBook = state.BookArray.filter(book => book.bookId == ""+bookId)[0];
+      state.nextCoverImageUrl = nextBook.bookCoverImageUrl;
+      state.nextCoverLink = nextBook.bookCoverImageUrl;
     }
   },
   actions: {
@@ -433,8 +359,6 @@ export default createStore({
     async fetchBookData({ commit, dispatch }, bookId) {
       const response = await axios.get(resource_uri + `/${bookId}`);
       commit('SET_BOOK_DATA', response.data);
-
-
     },
     async setBookList({ commit }) {
       let existingArray = localStorage.getItem('BookArray');
@@ -478,14 +402,14 @@ export default createStore({
     },
     setAnswerClicked({ commit, dispatch, state }, index) {
       commit('SET_ANSWER_CLICKED', index);
-      if (state.answerArray[index].isCorrect == false) {
+      const pageIndex = parseInt(state.BookPage) - 1;
+      const answerArray = [...state.BookData.pages[pageIndex].pageParts[0].lineParts].splice(1);
+      if (answerArray[index].isCorrectAnswer == false) {
         dispatch('setPageType', 'failAnimation')
       }
       else {
         dispatch('setPageType', 'passAnimation')
       }
-
-
     },
     dinoAnimationDone({ commit, dispatch, state }) {
       if (state.pageMicroType == "failAnimation") {
@@ -506,8 +430,6 @@ export default createStore({
 
       commit('INCREMENT_TEXT_REVEALED');
       dispatch('setPageType')
-
-
 
     },
     savePlayerName({ commit, dispatch, state }, sPlayerName) {
@@ -530,11 +452,18 @@ export default createStore({
     },
 
     setPageType({ commit, dispatch, state }, type = state.BookData.pages[state.BookPage - 1].type) {
-      if (type == 'question' && state.answerArray.some(e => e.clickedOn && e.isCorrect)) {
+      const pageIndex = parseInt(state.BookPage) - 1;
+      var answerArray = [];
+      var textArray = [];
+      if(state.BookData.pages[pageIndex].pageParts.length > 0) {
+        answerArray = answerArray.concat([...state.BookData.pages[pageIndex].pageParts[0].lineParts].splice(1));
+        textArray = textArray.concat( [...state.BookData.pages[pageIndex].pageParts[0].lineParts] );
+      }
+      if (type == 'question' && answerArray.some(e => e.clickedOn && e.isCorrectAnswer)) {
         //need to fix 0 up there
         commit('SET_PAGE_TYPE', "questionAnsweredCorrect")
       }
-      else if (type == 'read' && state.textSeriesRevealed >= state.textSeries.length) {
+      else if (type == 'read' && state.textSeriesRevealed >= textArray.length) {
         commit('SET_PAGE_TYPE', 'readFull')
       }
       else if (type == 'cover' && state.playerName == "") {
@@ -545,10 +474,10 @@ export default createStore({
       }
       dispatch('setPageStyle')
     },
+    setNextBookItem({commit}, bookId) {
+      commit('SET_NEXT_BOOK', bookId);
+    }
   },
-
-
-
   modules: {
   },
 });

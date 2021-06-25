@@ -11,8 +11,7 @@
   </div>
 </template>
 <script>
-import { mapGetters } from "vuex";
-import { mapActions } from "vuex";
+import { mapActions, mapGetters } from "vuex";
 import LoadBar from "@/atoms/LoadBar.vue";
 export default {
   components: { LoadBar },

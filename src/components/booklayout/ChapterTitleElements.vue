@@ -1,6 +1,6 @@
  <template>
   <div class="h1c">
-    {{ "Chapter " + questionNumber }}
+    {{ "Chapter " + chapterNumber }}
   </div>
   <div class="LargeBodyText" style="text-align: center">
     <slot>{{ mainText }}</slot>
@@ -18,7 +18,7 @@ export default {
   },
   dismounted() {},
   computed: {
-    ...mapGetters(["questionNumber", "mainText"]),
+    ...mapGetters(["chapterNumber", "mainText"]),
   },
 };
 </script>

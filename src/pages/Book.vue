@@ -22,7 +22,7 @@
       />
       <question-load-elements v-else-if="pageType === 'question'" />
       <choice-elements v-else-if="pageType === 'choice'" />
-      <chapter-title-elements v-else-if="pageType === 'chapter'" />
+      <chapter-title-elements v-else-if="pageType === 'chapterTitle'" />
       <end-elements v-else-if="pageType === 'end'" />
       
     </notebook-page>
@@ -124,15 +124,6 @@ export default {
     ...mapGetters(["pageType", "seriesAllRead", "nextPage", "pageMicroType"]),
   },
   methods: {
-    AdjustQuestionCounter(data) {
-      let tempCounter = 1;
-      data.forEach((item) => {
-        if (item.type === "question") {
-          tempCounter += 1;
-        }
-      });
-      this.QuestionCounter = tempCounter;
-    },
     AddChoice(pageChosen) {
       this.PageSkipArray.forEach((choice, index) => {
         if (pageChosen > choice.StartPage && pageChosen < choice.EndPage) {

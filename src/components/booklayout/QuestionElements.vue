@@ -1,53 +1,55 @@
  <template>
   <div class="questionNumber">{{ "Question " + questionNumber + ":" }}</div>
   <div class="questionText">{{ mainText }}</div>
-  <div class="answerContainer" v-if="!showQuestionImage">
+  <div v-bind:class="{ 
+    questionImgContainer: this.answerArray[0].lineType == 'answerCoords',
+    answerContainer: this.answerArray[0].lineType == 'answers'
+   }">
+    <div v-for="(answer, index) in answerArray"
+      :key="answer">
     <button
-      v-for="(answerB, index) in answerArray"
-      :key="answerB.name"
+      v-if="answer.text" 
       class="answerButton"
       :class="{
-        wrongClicked: answerB.clickedOn && !answerB.isCorrect,
-        rightClicked: answerB.clickedOn && answerB.isCorrect,
+        wrongClicked: answer.clickedOn && !answer.isCorrectAnswer,
+        rightClicked: answer.clickedOn && answer.isCorrectAnswer,
       }"
       @click="answerClicked(index)"
-      :disabled="answerB.disabled"
+      :disabled="answer.disabled"
     >
-      {{ answerB.name }}
+      {{ answer.text }}
     </button>
-  </div>
-  <div id="questionImgContainer">
-    <img v-if="showQuestionImage" :src="questionImageURL" id="questionImage" />
-    <button
-      v-for="(choice, index) in answerArray"
-      :key="choice"
+   <button
+      v-if="answer.answerCoords" 
       class="answerImgButton"
-      :class="{ correctImageAnswer: choice.isCorrect }"
+      :class="{ correctImageAnswer: answer.isCorrectAnswer }"
       :style="{
-        left: (choice.coords[0] / Baseline.width) * 100 + '%',
-        top: ((-1 * choice.coords[1]) / Baseline.height) * 100 + '%',
-        width: (choice.coords[2] / Baseline.width) * 100 + '%',
-        height: (choice.coords[3] / Baseline.height) * 100 + '%',
+        left: (answer.answerCoords[0] / Baseline.width) * 100 + '%',
+        top: ((-1 * answer.answerCoords[1]) / Baseline.height) * 100 + '%',
+        width: (answer.answerCoords[2] / Baseline.width) * 100 + '%',
+        height: (answer.answerCoords[3] / Baseline.height) * 100 + '%',
       }"
       @click="answerClicked(index)"
-      :disabled="choice.disabled"
+      :disabled="answer.disabled"
     >
       <img
-        v-if="choice.clickedOn && choice.isCorrect"
+        v-if="answer.clickedOn && answer.isCorrectAnswer"
         class="w-100 h-100"
         :src="require(`@/assets/Images/Circle.png`)"
       />
       <img
-        v-else-if="choice.clickedOn && !choice.isCorrect"
+        v-else-if="answer.clickedOn && !answer.isCorrectAnswer"
         class="w-100 h-100"
         :src="require(`@/assets/Images/X.png`)"
       />
     </button>
   </div>
+   <img v-if="showQuestionImage" :src="questionImageUrl" id="questionImage" />
+      
+  </div>
 </template>
 <script>
-import { mapGetters } from "vuex";
-import { mapActions } from "vuex";
+import { mapActions, mapGetters } from "vuex";
 export default {
   data() {
     const Baseline = {
@@ -55,10 +57,8 @@ export default {
       height: 922.5,
     };
     return {
-      choice: {
-        coords: [543, -210, 640, 363],
-      },
       Baseline,
+      answerContainerId: "questionImgContainer"
     };
   },
   mounted() {
@@ -71,7 +71,7 @@ export default {
       "mainText",
       "answerArray",
       "showQuestionImage",
-      "questionImageURL",
+      "questionImageUrl",
     ]),
   },
   methods: {
@@ -138,7 +138,7 @@ export default {
   width: 100%;
   object-fit: contain;
 }
-#questionImgContainer {
+.questionImgContainer {
   width: 100%;
   position: relative;
 }

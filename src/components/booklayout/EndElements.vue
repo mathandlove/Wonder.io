@@ -30,7 +30,7 @@ export default {
     setupNIV() {},
   },
   computed: {
-    ...mapGetters(["playerScore", "coverHREF", "linkToNextBook"]),
+    ...mapGetters(["playerScore", "coverHREF", "linkToNextBook", "scoreRank"]),
     sScoreTitle() {
       if (this.scoreRank == 1) {
         return "First";
