@@ -2,6 +2,7 @@ import { createStore } from 'vuex';
 import axios from 'axios';
 import Book10 from '../assets/Books/book10/book.json';
 import Book10Item from '../assets/Books/book10/book10item.json';
+import router from '../router/index.js'
 const resource_uri = 'https://localhost:44312/book';
 // const resource_uri = 'https://wonderstories-api-dev-as.azurewebsites.net/book';
 
@@ -23,14 +24,14 @@ export default createStore({
     GradeFilteredBookItems: [Book10Item],
     SelectedBookItem: JSON.parse(localStorage.getItem('SelectedBook')) || Book10Item,
     BookData: JSON.parse(localStorage.getItem('BookData')) || Book10,
-    BookArray: JSON.parse(localStorage.getItem('BookArray')) || [Book10Item],
+    BookArray: JSON.parse(localStorage.getItem('BookArray')) || [Book10Item, Book10Item, Book10Item, Book10Item, Book10Item, Book10Item, Book10Item, Book10Item, Book10Item, Book10Item, Book10Item, Book10Item, Book10Item, Book10Item],
     HighestPage: +localStorage.getItem('HighestPage') || 1,
     BookID: +localStorage.getItem('BookID') || 10,
     BookPage: +parseInt(localStorage.getItem('BookPage')) || 1,
     AspectRatio: +localStorage.getItem('AspectRatio') || 1,
     Scores: JSON.parse(localStorage.getItem('Scores')) || [
       {
-        id: 0, name: 'Jane Doe', OldScore: 0, NewScore: 0,
+        id: 0, name: 'Player1', OldScore: 0, NewScore: 0,
       },
       {
         id: 1, name: 'BotName1', OldScore: 0, NewScore: 0,
@@ -46,15 +47,12 @@ export default createStore({
     //Also note that some of my Getters actually found somethings in your BookData in case you chage that.
 
     mainQCText: "The Case of the Bedroom Egg", //Title or Question
-
     skipNextAmount: 1, //Each page shows next page increase
     totalNumberOfPages: 1,
     author: "",
 
     nextCoverHREF: "", //On the end screen this shows what the next cover of the book down the list
-    nextCoverLink: "", //Link that goes to that next book
-
-    //I'll work on the book selection page another day. Let's get books working first.
+    nextCoverLink: "/book/11/1", //Link that goes to that next book
 
     textSeries: [
       {
@@ -92,11 +90,12 @@ export default createStore({
     ],
     //Used for both Answer and Choices. ClickedOn + Disabled UX will take care of.
     //Please randomize the order for Questions (Don't randomize for Choices)
+    //Do not provide coords if it is not a picture question. Checking if it exists to determine.
     answerArray: [
       {
         name: "Pigs",
         isCorrect: true,
-        coords: [0, 0, 0, 0],
+        coords: [543, -210, 640, 363],
         toPages: 1,
         clickedOn: false,
         disabled: false,
@@ -104,7 +103,7 @@ export default createStore({
       {
         name: "Frogs",
         isCorrect: false,
-        coords: [0, 0, 0, 0],
+        coords: [71, -297, 168, 400],
         toPages: 1,
         clickedOn: false,
         disabled: false,
@@ -112,7 +111,7 @@ export default createStore({
       {
         name: "Kermit",
         isCorrect: false,
-        coords: [0, 0, 0, 0],
+        coords: [652, -746, 458, 236],
         toPages: 1,
         clickedOn: false,
         disabled: false,
@@ -120,7 +119,7 @@ export default createStore({
       {
         name: "Frogs 2",
         isCorrect: false,
-        coords: [0, 0, 0, 0],
+        coords: [1069, -682, 240, 471],
         toPages: 1,
         clickedOn: false,
         disabled: false,
@@ -135,15 +134,21 @@ export default createStore({
       showNextButton: true,
       showNotepadClickButton: false,
       sheetHasLines: false,
+      showCover: false
     },
 
     textSeriesRevealed: 1,
-    pageMicroType: "read"
+    pageMicroType: "read",
+
+    playerName: ''
     //pageMicroType determines that exact state of  the page for example there's a difference between read and read fully
 
   },
   getters: {
-    illustrator: state => {
+    getAuthor: state => {
+      return state.BookData.author;
+    },
+    getIllustrator: state => {
       return state.BookData.illustrator;
     },
     currentBookParagraph: state => {
@@ -168,15 +173,26 @@ export default createStore({
       return pageNumber;
     },
     totalNumberOfPages: state => {
-      return state.BookData.pages.length;
+      return state.totalNumberOfPages;
     },
     pageType: state => {
       let pageNumber = parseInt(state.BookPage);
       return state.BookData.pages[pageNumber - 1].type;
     },
+    pageMicroType: state => {
+      return state.pageMicroType;
+    },
+
     playerScore: state => {
+      return 975;
       return state.Scores[0].NewScore;
     },
+
+    scoreRank: state => {
+      //returns "1,2, or 3 - 3 means anything not 1,2"
+      return 1;
+    },
+
     showPagePill: state => {
       return state.bookStyle.showPagePill;
     },
@@ -221,6 +237,23 @@ export default createStore({
     nextPage: state => {
       console.log(state.BookPage + state.skipNextAmount)
       return state.BookPage + state.skipNextAmount;
+    },
+
+    nextBookHREF: state => {
+      return state.nextCoverHREF;
+    },
+    linkToNextBook: state => {
+      return state.nextCoverLink;
+    },
+    isDoublePoints: state => {
+      return state.questionNumber / state.totalNumberOfQuestions > .6
+
+    },
+    showQuestionImage: state => {
+      return state.answerArray[0].coords != "undefined"
+    },
+    questionImageURL: state => {
+      return state.questionImageURL;
     }
   },
   mutations: {
@@ -255,6 +288,7 @@ export default createStore({
     SET_BOOK_PAGE(state, event) {
       state.BookPage = event;
       localStorage.setItem('BookPage', event);
+      console.log('bp=' + event)
     },
     SET_ASPECT_RATIO(state, event) {
       state.AspectRatio = event;
@@ -299,6 +333,17 @@ export default createStore({
 
 
     },
+    SET_PLAYER_NAME(state, sPlayerName) {
+      if (sPlayerName == "") {
+        state.playerName = "Player 1";
+      }
+      else {
+        state.playerName = sPlayerName;
+      }
+      state.Scores[0].name = state.playerName;
+      console.log(state.playerName + 'n' + sPlayerName)
+    },
+
     SET_PAGE_STYLE(state) {
       const type = state.pageMicroType;
 
@@ -307,12 +352,22 @@ export default createStore({
       state.bookStyle.showPrevButton = true;
       state.bookStyle.showNextButton = true;
       state.bookStyle.showNotepadClickButton = false;
+      state.bookStyle.showCover = false;
       if (type == "questiontitle") {
         state.bookStyle.sheetHasLines = false;
       }
       else if (type == "question") {
         state.bookStyle.sheetHasLines = false;
         state.bookStyle.showNextButton = false;
+      }
+      else if (type == "questionLoaded") {
+        state.bookStyle.sheetHasLines = false;
+        state.bookStyle.showNextButton = false;
+      }
+      else if (type == "failAnimation" || type == "passAnimation") {
+        state.bookStyle.sheetHasLines = false;
+        state.bookStyle.showNextButton = false;
+        state.bookStyle.showPrevButton = false;
       }
       else if (type == "questionAnsweredCorrect") {
         state.bookStyle.sheetHasLines = false;
@@ -341,6 +396,27 @@ export default createStore({
         state.bookStyle.showNotepadClickButton = false;
         state.bookStyle.showNextButton = true;
       }
+      else if (type == 'end') {
+        state.bookStyle.showNextButton = false;
+        state.bookStyle.showPrevButton = false;
+        state.bookStyle.showScorePill = false;
+        state.bookStyle.showPagePill = false;
+        state.bookStyle.showCover = true;
+      }
+      else if (type == 'cover') {
+        state.bookStyle.showPrevButton = false;
+        state.bookStyle.showCover = true;
+      }
+      else if (type == 'join') {
+        state.bookStyle.showPrevButton = false;
+        state.bookStyle.showNextButton = false;
+        state.bookStyle.showScorePill = false;
+        state.bookStyle.showPagePill = false;
+      }
+
+
+
+
     }
   },
   actions: {
@@ -402,9 +478,22 @@ export default createStore({
     },
     setAnswerClicked({ commit, dispatch, state }, index) {
       commit('SET_ANSWER_CLICKED', index);
-      dispatch('setPageType')
+      if (state.answerArray[index].isCorrect == false) {
+        dispatch('setPageType', 'failAnimation')
+      }
+      else {
+        dispatch('setPageType', 'passAnimation')
+      }
 
 
+    },
+    dinoAnimationDone({ commit, dispatch, state }) {
+      if (state.pageMicroType == "failAnimation") {
+        dispatch('setPageType', 'questionLoaded')
+      }
+      else {
+        dispatch('gotoNext');
+      }
     },
     setChoiceClicked({ commit, dispatch, state }, skipVal) {
       commit('SET_CHOICE_CLICKED', skipVal);
@@ -421,6 +510,25 @@ export default createStore({
 
 
     },
+    savePlayerName({ commit, dispatch, state }, sPlayerName) {
+      commit('SET_PLAYER_NAME', sPlayerName);
+      dispatch('setPageType');
+    },
+    gotoNext({ commit, state, dispatch, getters }) {
+      let tempPage = getters.nextPage;
+      console.log(tempPage)
+      if (tempPage > getters.HighestPage) {
+        dispatch("setHighestPage", tempPage);
+      }
+
+      dispatch("setBookPage", tempPage);
+      router.push(`/book/${state.BookID}/${tempPage}`);
+
+    },
+    questionLoadDone({ commit, dispatch }) {
+      dispatch('setPageType', 'questionLoaded');
+    },
+
     setPageType({ commit, dispatch, state }, type = state.BookData.pages[state.BookPage - 1].type) {
       if (type == 'question' && state.answerArray.some(e => e.clickedOn && e.isCorrect)) {
         //need to fix 0 up there
@@ -429,12 +537,17 @@ export default createStore({
       else if (type == 'read' && state.textSeriesRevealed >= state.textSeries.length) {
         commit('SET_PAGE_TYPE', 'readFull')
       }
+      else if (type == 'cover' && state.playerName == "") {
+        commit('SET_PAGE_TYPE', 'join')
+      }
       else {
         commit('SET_PAGE_TYPE', type)
       }
       dispatch('setPageStyle')
     },
   },
+
+
 
   modules: {
   },

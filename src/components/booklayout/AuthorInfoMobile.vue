@@ -7,11 +7,11 @@
     </div>
     <p class="h3a">{{ bookTitle }}</p>
     <p class="h4a">
-      Author: <b>{{ author }}</b
+      Author: <b>{{ getAuthor }}</b
       ><br />
-      Art: <b>{{ illustrator }}</b
+      Art: <b>{{ getIllustrator }}</b
       ><br />
-      <b>{{ totalNumberPages + " Pages" }}</b>
+      <b>{{ totalNumberOfPages + " Pages" }}</b>
     </p>
   </div>
 </template>
@@ -20,7 +20,13 @@
 import { mapGetters } from "vuex";
 export default {
   computed: {
-    ...mapGetters(["illustrator", "bookTitle", "totalNumberPages", "author"]),
+    ...mapGetters([
+      "illustrator",
+      "bookTitle",
+      "totalNumberOfPages",
+      "getAuthor",
+      "getIllustrator",
+    ]),
   },
 };
 </script>

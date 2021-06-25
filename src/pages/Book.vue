@@ -8,7 +8,19 @@
     <notebook-page>
       <question-title-elements v-if="pageType === 'questiontitle'" />
       <read-elements v-else-if="pageType === 'read'" />
-      <question-elements v-else-if="pageType === 'question'" />
+      <join-elements v-else-if="pageMicroType === 'join'" />
+      <fail-animation
+        v-else-if="
+          pageMicroType === 'failAnimation' || pageMicroType === 'passAnimation'
+        "
+      />
+      <question-elements
+        v-else-if="
+          pageMicroType === 'questionLoaded' ||
+          pageMicroType === 'questionAnsweredCorrect'
+        "
+      />
+      <question-load-elements v-else-if="pageType === 'question'" />
       <choice-elements v-else-if="pageType === 'choice'" />
       <chapter-title-elements v-else-if="pageType === 'chapter'" />
       <end-elements v-else-if="pageType === 'end'" />
@@ -41,9 +53,12 @@ import QuestionElements from "@/components/booklayout/QuestionElements.vue";
 import ChoiceElements from "@/components/booklayout/ChoiceElements.vue";
 import ChapterTitleElements from "@/components/booklayout/ChapterTitleElements.vue";
 import EndElements from "@/components/booklayout/EndElements.vue";
+import FailAnimation from "@/components/booklayout/FailAnimation.vue";
+import QuestionLoadElements from "@/components/booklayout/QuestionLoadElements.vue";
 
 import { mapState } from "vuex";
 import { mapGetters } from "vuex";
+
 export default {
   components: {
     PageQuestionTitle,
@@ -67,6 +82,8 @@ export default {
     ChoiceElements,
     ChapterTitleElements,
     EndElements,
+    FailAnimation,
+    QuestionLoadElements,
   },
   data() {
     const ViewRestartModal = false;
@@ -104,7 +121,7 @@ export default {
       this.page = parseInt(this.$store.state.BookPage);
     },
     ...mapState(["BookData", "bookStyle", "textSeriesRevealed"]),
-    ...mapGetters(["pageType", "seriesAllRead", "nextPage"]),
+    ...mapGetters(["pageType", "seriesAllRead", "nextPage", "pageMicroType"]),
   },
   methods: {
     AdjustQuestionCounter(data) {
@@ -124,17 +141,7 @@ export default {
       });
     },
     RouteNextPage(event) {
-      let tempPage = this.nextPage;
-      if (tempPage > this.TotalPages) {
-        this.$router.push("/like");
-      }
-
-      if (tempPage > this.$store.state.HighestPage) {
-        this.$store.dispatch("setHighestPage", tempPage);
-      }
-
-      this.$store.dispatch("setBookPage", tempPage);
-      this.$router.push(`/book/${this.$store.state.BookID}/${tempPage}`);
+      this.$store.dispatch("gotoNext");
       event.stopPropagation();
 
     },
@@ -157,47 +164,6 @@ export default {
       this.ShowHand = newValue;
     },
     //Elliott Added Methods
-    formatPage() {
-      this.resetPage();
-      this.formatNormalRead();
-      if (this.pageType == "questiontitle") {
-        this.formatQuestion();
-      } else if (this.pageType == "cover") {
-        this.formatCover();
-      } else if (this.pageType == "read") {
-        this.formatRead();
-      }
-    },
-    resetPage() {
-      this.$store.state.textSeriesRevealed = 1;
-    },
-    formatQuestion() {
-      this.bookStyle.sheetHasLines = false;
-    },
-    formatCover() {
-      this.bookStyle.showPrevButton = false;
-    },
-    formatRead() {
-      this.bookStyle.sheetHasLines = true;
-      if (!this.seriesAllRead) {
-        this.NIV.onNotepadClick = this.incrementTextRevealed;
-        this.bookStyle.showNextButton = false;
-      }
-    },
-    incrementTextRevealed() {
-      this.$store.state.textSeriesRevealed++;
-
-      if (this.seriesAllRead) {
-        this.NIV.onNotepadClick = function () {};
-        this.bookStyle.showNextButton = true;
-      }
-    },
-    formatNormalRead() {
-      this.bookStyle.showScorePill = true;
-      this.bookStyle.showPagePill = true;
-      this.bookStyle.showNextButton = true;
-      this.bookStyle.showPrevButton = true;
-    },
   },
   created() {
     this.id = this.$route.params.id;

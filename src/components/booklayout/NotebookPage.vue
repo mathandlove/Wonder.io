@@ -75,7 +75,7 @@ export default {
     ]),
 
     notepadImageLocation() {
-      if (this.pageType == "cover") {
+      if (this.bookStyle.showCover) {
         return this.coverHREF;
       } else if (this.bookStyle.sheetHasLines) {
         return require("@/assets/Images/notepadWithLines.png");
