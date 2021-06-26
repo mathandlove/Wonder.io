@@ -17,7 +17,7 @@ export default {
   methods: {
     ReturnToStart() {
       this.$store.dispatch('setBookPage', 1);
-      this.$router.push(`/book/${this.$store.state.BookID}/1`);
+      this.$router.push(`/book/${this.$store.state.BookId}/1`);
     },
   },
 };

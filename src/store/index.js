@@ -3,7 +3,7 @@ import axios from 'axios';
 import Book10 from '../assets/Books/book10/book.json';
 import Book10Item from '../assets/Books/book10/book10item.json';
 import router from '../router/index.js'
-const resource_uri = 'https://localhost:44312/book';
+const resource_uri = 'https://localhost:5001/book';
 // const resource_uri = 'https://wonderstories-api-dev-as.azurewebsites.net/book';
 
 export default createStore({
@@ -26,7 +26,7 @@ export default createStore({
     BookData: JSON.parse(localStorage.getItem('BookData')) || Book10,
     BookArray: JSON.parse(localStorage.getItem('BookArray')) || [Book10Item, Book10Item, Book10Item, Book10Item, Book10Item, Book10Item, Book10Item, Book10Item, Book10Item, Book10Item, Book10Item, Book10Item, Book10Item, Book10Item],
     HighestPage: +localStorage.getItem('HighestPage') || 1,
-    BookID: +localStorage.getItem('BookID') || 10,
+    BookId: +localStorage.getItem('BookId') || 10,
     BookPage: +parseInt(localStorage.getItem('BookPage')) || 1,
     AspectRatio: +localStorage.getItem('AspectRatio') || 1,
     Scores: JSON.parse(localStorage.getItem('Scores')) || [
@@ -104,7 +104,7 @@ export default createStore({
       return pageNumber;
     },
     totalNumberOfPages: state => {
-      return state.totalNumberOfPages;
+      return state.BookData.totalPages;
     },
     pageType: state => {
       let pageNumber = parseInt(state.BookPage);
@@ -165,11 +165,13 @@ export default createStore({
     bookStyle: state => {
       return state.bookStyle;
     },
+    bookTitle: state => { 
+      return state.BookData.title;
+    },
     nextPage: state => {
       console.log(state.BookPage + state.skipNextAmount)
       return state.BookPage + state.skipNextAmount;
     },
-
     nextBookHREF: state => {
       return state.nextCoverImageUrl;
     },
@@ -182,7 +184,7 @@ export default createStore({
 
     },
     showQuestionImage: (state, getters) => {
-      return getters.answerArray[0].answerCoords != null || getters.answerArray[0].answerCoords != 'undefined';
+      return getters.answerArray[0].lineType == "answerCoords";
     }
   },
   mutations: {
@@ -207,8 +209,8 @@ export default createStore({
       localStorage.setItem('HighestPage', event);
     },
     SET_BOOK_ID(state, event) {
-      state.BookID = event;
-      localStorage.setItem('BookID', event);
+      state.BookId = event;
+      localStorage.setItem('BookId', event);
     },
     SET_BOOK_ITEM(state, event) {
       state.SelectedBookItem = event;
@@ -356,9 +358,12 @@ export default createStore({
       }
 
     },
-    async fetchBookData({ commit, dispatch }, bookId) {
-      const response = await axios.get(resource_uri + `/${bookId}`);
-      commit('SET_BOOK_DATA', response.data);
+    async fetchBookData({ commit, state }, bookId) {
+      const existingData = localStorage.getItem('BookData');
+      if(existingData && state.BookId != bookId || existingData == null) {
+        const response = await axios.get(resource_uri + `/${bookId}`);
+        commit('SET_BOOK_DATA', response.data);
+      }
     },
     async setBookList({ commit }) {
       let existingArray = localStorage.getItem('BookArray');
@@ -379,8 +384,8 @@ export default createStore({
     setHighestPage({ commit }, newPage) {
       commit('SET_HIGHEST_PAGE', newPage);
     },
-    setBookID({ commit }, newID) {
-      commit('SET_BOOK_ID', newID);
+    setBookId({ commit }, newId) {
+      commit('SET_BOOK_ID', newId);
     },
     setBookPage({ commit, dispatch }, newPage) {
       commit('SET_BOOK_PAGE', parseInt(newPage));
@@ -444,15 +449,16 @@ export default createStore({
       }
 
       dispatch("setBookPage", tempPage);
-      router.push(`/book/${state.BookID}/${tempPage}`);
+      router.push(`/book/${state.BookId}/${tempPage}`);
 
     },
     questionLoadDone({ commit, dispatch }) {
       dispatch('setPageType', 'questionLoaded');
     },
 
-    setPageType({ commit, dispatch, state }, type = state.BookData.pages[state.BookPage - 1].type) {
+    setPageType({ commit, dispatch, state }, ) {
       const pageIndex = parseInt(state.BookPage) - 1;
+      const type = state.BookData.pages[pageIndex].type;
       var answerArray = [];
       var textArray = [];
       if(state.BookData.pages[pageIndex].pageParts.length > 0) {

@@ -6,7 +6,7 @@
       v-for="answerB in answerArray"
       :key="answerB.text"
       class="answerButton"
-      @click="updateChoice(answerB.gotoNext)"
+      @click="updateChoice(answerB.toPages)"
     >
       {{ answerB.text }}
     </button>
