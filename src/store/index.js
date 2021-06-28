@@ -142,30 +142,30 @@ export default createStore({
     coverHREF: state => {
       return state.SelectedBookItem.largeBookCoverImageUrl
     },
-    textSeries: state=> {
+    textSeries: state => {
       var pageLineParts = [];
       let pageNumber = parseInt(state.BookPage);
       var array = state.BookData.pages[pageNumber - 1].pageParts;
-      
+
       for (let index = 0; index < array.length; index++) {
         const element = array[index];
-        pageLineParts= pageLineParts.concat(element.lineParts);
+        pageLineParts = pageLineParts.concat(element.lineParts);
       }
       return pageLineParts;
     },
-    seriesAllRead: (state, getters)  => {
+    seriesAllRead: (state, getters) => {
       return getters.textSeries.length <= (state.textSeriesRevealed)
     },
     answerArray: (state, getters) => {
       //Answer Array is an array of answers the student can guess. Please randomize answers.
       let pageNumber = parseInt(state.BookPage);
-      let answers =  [...state.BookData.pages[pageNumber - 1].pageParts[0].lineParts].splice(1);
+      let answers = [...state.BookData.pages[pageNumber - 1].pageParts[0].lineParts].splice(1);
       return answers;
     },
     bookStyle: state => {
       return state.bookStyle;
     },
-    bookTitle: state => { 
+    bookTitle: state => {
       return state.BookData.title;
     },
     nextPage: state => {
@@ -179,7 +179,7 @@ export default createStore({
       return state.nextCoverLink;
     },
     isDoublePoints: (state, getters) => {
-      var totalQuestions = state.BookData.pages.filter(page => page.questionNumber > 0 ).length;
+      var totalQuestions = state.BookData.pages.filter(page => page.questionNumber > 0).length;
       return getters.questionNumber / totalQuestions > .6
 
     },
@@ -342,7 +342,7 @@ export default createStore({
       }
     },
     SET_NEXT_BOOK(state, bookId) {
-      const nextBook = state.BookArray.filter(book => book.bookId == ""+bookId)[0];
+      const nextBook = state.BookArray.filter(book => book.bookId == "" + bookId)[0];
       state.nextCoverImageUrl = nextBook.bookCoverImageUrl;
       state.nextCoverLink = nextBook.bookCoverImageUrl;
     }
@@ -360,7 +360,7 @@ export default createStore({
     },
     async fetchBookData({ commit, state }, bookId) {
       const existingData = localStorage.getItem('BookData');
-      if(existingData && state.BookId != bookId || existingData == null) {
+      if (existingData && state.BookId != bookId || existingData == null) {
         const response = await axios.get(resource_uri + `/${bookId}`);
         commit('SET_BOOK_DATA', response.data);
       }
@@ -453,34 +453,38 @@ export default createStore({
 
     },
     questionLoadDone({ commit, dispatch }) {
-      dispatch('setPageType', 'questionLoaded');
+      let a = 'questionLoaded';
+      dispatch('setPageType', a);
     },
 
-    setPageType({ commit, dispatch, state }, ) {
+
+    setPageType({ commit, dispatch, state }, microType) {
       const pageIndex = parseInt(state.BookPage) - 1;
-      const type = state.BookData.pages[pageIndex].type;
+      if (microType === undefined)
+        microType = state.BookData.pages[pageIndex].type;
       var answerArray = [];
       var textArray = [];
-      if(state.BookData.pages[pageIndex].pageParts.length > 0) {
+      if (state.BookData.pages[pageIndex].pageParts.length > 0) {
         answerArray = answerArray.concat([...state.BookData.pages[pageIndex].pageParts[0].lineParts].splice(1));
-        textArray = textArray.concat( [...state.BookData.pages[pageIndex].pageParts[0].lineParts] );
+        textArray = textArray.concat([...state.BookData.pages[pageIndex].pageParts[0].lineParts]);
       }
-      if (type == 'question' && answerArray.some(e => e.clickedOn && e.isCorrectAnswer)) {
+      if (microType == 'question' && answerArray.some(e => e.clickedOn && e.isCorrectAnswer)) {
         //need to fix 0 up there
         commit('SET_PAGE_TYPE', "questionAnsweredCorrect")
       }
-      else if (type == 'read' && state.textSeriesRevealed >= textArray.length) {
+      else if (microType == 'read' && state.textSeriesRevealed >= textArray.length) {
         commit('SET_PAGE_TYPE', 'readFull')
       }
-      else if (type == 'cover' && state.playerName == "") {
+      else if (microType == 'cover' && state.playerName == "") {
         commit('SET_PAGE_TYPE', 'join')
       }
       else {
-        commit('SET_PAGE_TYPE', type)
+        commit('SET_PAGE_TYPE', microType)
       }
       dispatch('setPageStyle')
     },
-    setNextBookItem({commit}, bookId) {
+
+    setNextBookItem({ commit }, bookId) {
       commit('SET_NEXT_BOOK', bookId);
     }
   },
