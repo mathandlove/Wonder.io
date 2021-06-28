@@ -468,6 +468,7 @@ export default createStore({
         answerArray = answerArray.concat([...state.BookData.pages[pageIndex].pageParts[0].lineParts].splice(1));
         textArray = textArray.concat([...state.BookData.pages[pageIndex].pageParts[0].lineParts]);
       }
+      console.log(state.BookData)
       if (microType == 'question' && answerArray.some(e => e.clickedOn && e.isCorrectAnswer)) {
         //need to fix 0 up there
         commit('SET_PAGE_TYPE', "questionAnsweredCorrect")
