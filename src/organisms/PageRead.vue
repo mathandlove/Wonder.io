@@ -7,7 +7,7 @@
            :style="{'padding-bottom': this.$store.state.AspectRatio > 2 ? '3.1vh' : '4.4vh'}"
       />
       <div v-else-if="linePart.words[0].includes('<im>')">
-        <img :src="require(`../assets/Books/book${this.$store.state.BookID}/images/${
+        <img :src="require(`../assets/Books/book${this.$store.state.BookId}/images/${
                 this.imageNumber(linePart.words[0])}.png`)" alt=""
              :style="{
                       height: this.$store.state.AspectRatio > 2
@@ -18,7 +18,7 @@
       <div v-else-if="linePart.words[0].includes('<l>')">
         <div class="d-flex justify-content-start"
              :class="[this.$store.state.AspectRatio > 2 ? 'CharPaddingB2' : 'CharPaddingB1']">
-          <img :src="require(`../assets/Books/book${this.$store.state.BookID}/characters/${
+          <img :src="require(`../assets/Books/book${this.$store.state.BookId}/characters/${
                   this.charImageLeft(linePart.words[0])}.png`)" alt=""
                :class="[this.$store.state.AspectRatio > 2 ? 'CharHeight2' : 'CharHeight1']"/>
           <div class="leftTextPadding"
@@ -34,7 +34,7 @@
                :class="[this.$store.state.AspectRatio > 2 ? 'TextSize2' : 'TextSize1']">
             {{this.charSpeech(linePart.words)}}
           </div>
-          <img :src="require(`../assets/Books/book${this.$store.state.BookID}/characters/${
+          <img :src="require(`../assets/Books/book${this.$store.state.BookId}/characters/${
                   this.charImageRight(linePart.words[0])}.png`)" alt=""
                :class="[this.$store.state.AspectRatio > 2 ? 'CharHeight2' : 'CharHeight1']"/>
         </div>

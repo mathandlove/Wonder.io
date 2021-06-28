@@ -41,7 +41,7 @@ export default {
       const newPage = +this.$store.state.BookPage + index + 1;
       this.$emit("chosen-page", newPage);
       this.$store.dispatch("setBookPage", newPage);
-      this.$router.push(`/book/${this.$store.state.BookID}/${newPage}`);
+      this.$router.push(`/book/${this.$store.state.BookId}/${newPage}`);
     },
   },
 };

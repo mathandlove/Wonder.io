@@ -6,10 +6,7 @@
       v-for="answerB in answerArray"
       :key="answerB.text"
       class="answerButton"
-      @click="
-        updateChoice(answerB.toPages);
-        NIV.gotoNext($event);
-      "
+      @click="updateChoice(answerB.toPages)"
     >
       {{ answerB.text }}
     </button>
@@ -18,13 +15,13 @@
 <script>
 import { mapGetters } from "vuex";
 export default {
-  inject: ["NIV"],
   data() {
     return {};
   },
   methods: {
     updateChoice(skipVal) {
       this.$store.dispatch("setChoiceClicked", skipVal);
+      this.$store.dispatch("gotoNext");
     },
   },
   mounted() {},

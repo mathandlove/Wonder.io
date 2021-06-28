@@ -3,7 +3,7 @@ import axios from 'axios';
 import Book10 from '../assets/Books/book10/book.json';
 import Book10Item from '../assets/Books/book10/book10item.json';
 import router from '../router/index.js'
-// const resource_uri = 'https://localhost:44312/book';
+// const resource_uri = 'https://localhost:5001/book';
 const resource_uri = 'https://wonderstories-api-dev-as.azurewebsites.net/book';
 
 export default createStore({
@@ -26,7 +26,7 @@ export default createStore({
     BookData: JSON.parse(localStorage.getItem('BookData')) || Book10,
     BookArray: JSON.parse(localStorage.getItem('BookArray')) || [Book10Item, Book10Item, Book10Item, Book10Item, Book10Item, Book10Item, Book10Item, Book10Item, Book10Item, Book10Item, Book10Item, Book10Item, Book10Item, Book10Item],
     HighestPage: +localStorage.getItem('HighestPage') || 1,
-    BookID: +localStorage.getItem('BookID') || 10,
+    BookId: +localStorage.getItem('BookId') || 10,
     BookPage: +parseInt(localStorage.getItem('BookPage')) || 1,
     AspectRatio: +localStorage.getItem('AspectRatio') || 1,
     Scores: JSON.parse(localStorage.getItem('Scores')) || [
@@ -104,7 +104,7 @@ export default createStore({
       return pageNumber;
     },
     totalNumberOfPages: state => {
-      return state.totalNumberOfPages;
+      return state.BookData.totalPages;
     },
     pageType: state => {
       let pageNumber = parseInt(state.BookPage);
@@ -142,34 +142,36 @@ export default createStore({
     coverHREF: state => {
       return state.SelectedBookItem.largeBookCoverImageUrl
     },
-    textSeries: state=> {
+    textSeries: state => {
       var pageLineParts = [];
       let pageNumber = parseInt(state.BookPage);
       var array = state.BookData.pages[pageNumber - 1].pageParts;
-      
+
       for (let index = 0; index < array.length; index++) {
         const element = array[index];
-        pageLineParts= pageLineParts.concat(element.lineParts);
+        pageLineParts = pageLineParts.concat(element.lineParts);
       }
       return pageLineParts;
     },
-    seriesAllRead: (state, getters)  => {
+    seriesAllRead: (state, getters) => {
       return getters.textSeries.length <= (state.textSeriesRevealed)
     },
     answerArray: (state, getters) => {
       //Answer Array is an array of answers the student can guess. Please randomize answers.
       let pageNumber = parseInt(state.BookPage);
-      let answers =  [...state.BookData.pages[pageNumber - 1].pageParts[0].lineParts].splice(1);
+      let answers = [...state.BookData.pages[pageNumber - 1].pageParts[0].lineParts].splice(1);
       return answers;
     },
     bookStyle: state => {
       return state.bookStyle;
     },
+    bookTitle: state => {
+      return state.BookData.title;
+    },
     nextPage: state => {
       console.log(state.BookPage + state.skipNextAmount)
       return state.BookPage + state.skipNextAmount;
     },
-
     nextBookHREF: state => {
       return state.nextCoverImageUrl;
     },
@@ -177,12 +179,12 @@ export default createStore({
       return state.nextCoverLink;
     },
     isDoublePoints: (state, getters) => {
-      var totalQuestions = state.BookData.pages.filter(page => page.questionNumber > 0 ).length;
+      var totalQuestions = state.BookData.pages.filter(page => page.questionNumber > 0).length;
       return getters.questionNumber / totalQuestions > .6
 
     },
     showQuestionImage: (state, getters) => {
-      return getters.answerArray[0].answerCoords != null || getters.answerArray[0].answerCoords != 'undefined';
+      return getters.answerArray[0].lineType == "answerCoords";
     }
   },
   mutations: {
@@ -207,8 +209,8 @@ export default createStore({
       localStorage.setItem('HighestPage', event);
     },
     SET_BOOK_ID(state, event) {
-      state.BookID = event;
-      localStorage.setItem('BookID', event);
+      state.BookId = event;
+      localStorage.setItem('BookId', event);
     },
     SET_BOOK_ITEM(state, event) {
       state.SelectedBookItem = event;
@@ -340,7 +342,7 @@ export default createStore({
       }
     },
     SET_NEXT_BOOK(state, bookId) {
-      const nextBook = state.BookArray.filter(book => book.bookId == ""+bookId)[0];
+      const nextBook = state.BookArray.filter(book => book.bookId == "" + bookId)[0];
       state.nextCoverImageUrl = nextBook.bookCoverImageUrl;
       state.nextCoverLink = nextBook.bookCoverImageUrl;
     }
@@ -356,9 +358,12 @@ export default createStore({
       }
 
     },
-    async fetchBookData({ commit, dispatch }, bookId) {
-      const response = await axios.get(resource_uri + `/${bookId}`);
-      commit('SET_BOOK_DATA', response.data);
+    async fetchBookData({ commit, state }, bookId) {
+      const existingData = localStorage.getItem('BookData');
+      if (existingData && state.BookId != bookId || existingData == null) {
+        const response = await axios.get(resource_uri + `/${bookId}`);
+        commit('SET_BOOK_DATA', response.data);
+      }
     },
     async setBookList({ commit }) {
       let existingArray = localStorage.getItem('BookArray');
@@ -379,8 +384,8 @@ export default createStore({
     setHighestPage({ commit }, newPage) {
       commit('SET_HIGHEST_PAGE', newPage);
     },
-    setBookID({ commit }, newID) {
-      commit('SET_BOOK_ID', newID);
+    setBookId({ commit }, newId) {
+      commit('SET_BOOK_ID', newId);
     },
     setBookPage({ commit, dispatch }, newPage) {
       commit('SET_BOOK_PAGE', parseInt(newPage));
@@ -444,37 +449,42 @@ export default createStore({
       }
 
       dispatch("setBookPage", tempPage);
-      router.push(`/book/${state.BookID}/${tempPage}`);
+      router.push(`/book/${state.BookId}/${tempPage}`);
 
     },
     questionLoadDone({ commit, dispatch }) {
-      dispatch('setPageType', 'questionLoaded');
+      let a = 'questionLoaded';
+      dispatch('setPageType', a);
     },
 
-    setPageType({ commit, dispatch, state }, type = state.BookData.pages[state.BookPage - 1].type) {
+
+    setPageType({ commit, dispatch, state }, microType) {
       const pageIndex = parseInt(state.BookPage) - 1;
+      if (microType === undefined)
+        microType = state.BookData.pages[pageIndex].type;
       var answerArray = [];
       var textArray = [];
-      if(state.BookData.pages[pageIndex].pageParts.length > 0) {
+      if (state.BookData.pages[pageIndex].pageParts.length > 0) {
         answerArray = answerArray.concat([...state.BookData.pages[pageIndex].pageParts[0].lineParts].splice(1));
-        textArray = textArray.concat( [...state.BookData.pages[pageIndex].pageParts[0].lineParts] );
+        textArray = textArray.concat([...state.BookData.pages[pageIndex].pageParts[0].lineParts]);
       }
-      if (type == 'question' && answerArray.some(e => e.clickedOn && e.isCorrectAnswer)) {
+      if (microType == 'question' && answerArray.some(e => e.clickedOn && e.isCorrectAnswer)) {
         //need to fix 0 up there
         commit('SET_PAGE_TYPE', "questionAnsweredCorrect")
       }
-      else if (type == 'read' && state.textSeriesRevealed >= textArray.length) {
+      else if (microType == 'read' && state.textSeriesRevealed >= textArray.length) {
         commit('SET_PAGE_TYPE', 'readFull')
       }
-      else if (type == 'cover' && state.playerName == "") {
+      else if (microType == 'cover' && state.playerName == "") {
         commit('SET_PAGE_TYPE', 'join')
       }
       else {
-        commit('SET_PAGE_TYPE', type)
+        commit('SET_PAGE_TYPE', microType)
       }
       dispatch('setPageStyle')
     },
-    setNextBookItem({commit}, bookId) {
+
+    setNextBookItem({ commit }, bookId) {
       commit('SET_NEXT_BOOK', bookId);
     }
   },

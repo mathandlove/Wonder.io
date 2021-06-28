@@ -61,8 +61,6 @@ export default {
   },
   mounted() {
     this.formatQuestion();
-    this.$store.dispatch("setBookID", 10);
-    this.$store.dispatch("setBookPage", 2);
   },
 };
 </script>

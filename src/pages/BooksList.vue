@@ -84,7 +84,7 @@ export default {
       console.log("selected with book :", bookListItem);
       let bookId = parseInt(bookListItem.bookId);
       localStorage.removeItem("HighestPage");
-      this.$store.dispatch("setBookID", bookId);
+      this.$store.dispatch("setBookId", bookId);
       this.$store.dispatch("setBookPage", 1);
       this.$store.dispatch("ClearScores");
       this.$store.dispatch("setBookItem", bookListItem);

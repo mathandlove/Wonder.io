@@ -48,7 +48,7 @@ export default {
   },
   methods: {
     HandleNextPage() {
-      this.$router.push(`/book/${this.$store.state.BookID}/${this.$store.state.BookPage}`);
+      this.$router.push(`/book/${this.$store.state.BookId}/${this.$store.state.BookPage}`);
     },
     NewScoreDescend(a, b) {
       const number1 = a.NewScore;

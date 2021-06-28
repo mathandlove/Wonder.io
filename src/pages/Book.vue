@@ -148,7 +148,7 @@ export default {
         }
       });
       this.$store.dispatch("setBookPage", tempPage);
-      this.$router.push(`/book/${this.$store.state.BookID}/${tempPage}`);
+      this.$router.push(`/book/${this.$store.state.BookId}/${tempPage}`);
       event.stopPropagation();
     },
     ToggleHand(newValue) {
@@ -158,7 +158,7 @@ export default {
   },
   created() {
     this.id = this.$route.params.id;
-    this.$store.dispatch("setBookID", this.id);
+    this.$store.dispatch("setBookId", this.id);
     this.page = this.$route.params.page;
     this.$store.dispatch("setBookPage", this.page);
   },

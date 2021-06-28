@@ -21,7 +21,6 @@ import { mapGetters } from "vuex";
 export default {
   computed: {
     ...mapGetters([
-      "illustrator",
       "bookTitle",
       "totalNumberOfPages",
       "getAuthor",

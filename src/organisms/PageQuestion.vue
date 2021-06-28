@@ -63,7 +63,7 @@
       </div>
     </div>
     <img v-if="this.data[0].partImageUrl !== '0'"
-         :src="require(`../assets/Books/book${this.$store.state.BookID}/images/${
+         :src="require(`../assets/Books/book${this.$store.state.BookId}/images/${
               this.data[0].partImageUrl}.png`)"
          alt=""
          class="w-100 imageCenter maxWidth"
