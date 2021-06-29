@@ -1,56 +1,81 @@
  <template>
-  <div class="questionNumber">{{ "Question " + questionNumber + ":" }}</div>
-  <div class="questionText">{{ mainText }}</div>
+  <question-load-elements v-if="pageMicroType === 'question'" />
+  <fail-animation
+    v-show="
+      pageMicroType === 'failAnimation' || pageMicroType === 'passAnimation'
+    "
+  />
   <div
-    v-bind:class="{
-      questionImgContainer: this.answerArray[0].lineType == 'answerCoords',
-      answerContainer: this.answerArray[0].lineType == 'answers',
-    }"
+    v-show="
+      pageMicroType === 'questionLoaded' ||
+      pageMicroType === 'questionAnsweredCorrect'
+    "
   >
-    <div v-for="(answer, index) in answerArray" :key="answer">
-      <button
-        v-if="answer.text"
-        class="answerButton"
-        :class="{
-          wrongClicked: answer.clickedOn && !answer.isCorrectAnswer,
-          rightClicked: answer.clickedOn && answer.isCorrectAnswer,
-        }"
-        @click="answerClicked(index)"
-        :disabled="answer.disabled"
-      >
-        {{ answer.text }}
-      </button>
-      <button
-        v-if="answer.answerCoords"
-        class="answerImgButton"
-        :class="{ correctImageAnswer: answer.isCorrectAnswer }"
-        :style="{
-          left: (answer.answerCoords[0] / Baseline.width) * 100 + '%',
-          top: ((-1 * answer.answerCoords[1]) / Baseline.height) * 100 + '%',
-          width: (answer.answerCoords[2] / Baseline.width) * 100 + '%',
-          height: (answer.answerCoords[3] / Baseline.height) * 100 + '%',
-        }"
-        @click="answerClicked(index)"
-        :disabled="answer.disabled"
-      >
-        <img
-          v-if="answer.clickedOn && answer.isCorrectAnswer"
-          class="w-100 h-100"
-          :src="require(`@/assets/Images/Circle.png`)"
-        />
-        <img
-          v-else-if="answer.clickedOn && !answer.isCorrectAnswer"
-          class="w-100 h-100"
-          :src="require(`@/assets/Images/X.png`)"
-        />
-      </button>
+    <div class="questionNumber">
+      {{ "Question " + questionNumber + ":" }}
     </div>
-    <img v-if="showQuestionImage" :src="questionImageUrl" id="questionImage" />
+    <div class="questionText">{{ mainText }}</div>
+    <div
+      :class="{
+        questionImgContainer: this.answerArray[0].lineType == 'answerCoords',
+        answerContainer: this.answerArray[0].lineType == 'answers',
+      }"
+    >
+      <div v-for="(answer, index) in answerArray" :key="answer">
+        <button
+          v-if="answer.text"
+          class="answerButton"
+          :class="{
+            wrongClicked: answer.clickedOn && !answer.isCorrectAnswer,
+            rightClicked: answer.clickedOn && answer.isCorrectAnswer,
+          }"
+          @click="answerClicked(index)"
+          :disabled="answer.disabled"
+        >
+          {{ answer.text }}
+        </button>
+        <button
+          v-if="answer.answerCoords"
+          class="answerImgButton"
+          :class="{ correctImageAnswer: answer.isCorrectAnswer }"
+          :style="{
+            left: (answer.answerCoords[0] / Baseline.width) * 100 + '%',
+            top: ((-1 * answer.answerCoords[1]) / Baseline.height) * 100 + '%',
+            width: (answer.answerCoords[2] / Baseline.width) * 100 + '%',
+            height: (answer.answerCoords[3] / Baseline.height) * 100 + '%',
+          }"
+          @click="answerClicked(index)"
+          :disabled="answer.disabled"
+        >
+          <img
+            v-if="answer.clickedOn && answer.isCorrectAnswer"
+            class="w-100 h-100"
+            :src="require(`@/assets/Images/Circle.png`)"
+          />
+          <img
+            v-else-if="answer.clickedOn && !answer.isCorrectAnswer"
+            class="w-100 h-100"
+            :src="require(`@/assets/Images/X.png`)"
+          />
+        </button>
+      </div>
+      <img
+        v-if="showQuestionImage"
+        :src="questionImageUrl"
+        id="questionImage"
+      />
+    </div>
   </div>
 </template>
 <script>
 import { mapActions, mapGetters } from "vuex";
+import FailAnimation from "@/components/booklayout/FailAnimation.vue";
+import QuestionLoadElements from "@/components/booklayout/QuestionLoadElements.vue";
 export default {
+  components: {
+    FailAnimation,
+    QuestionLoadElements,
+  },
   data() {
     const Baseline = {
       width: 1161,
@@ -72,6 +97,8 @@ export default {
       "answerArray",
       "showQuestionImage",
       "questionImageUrl",
+      "pageType",
+      "pageMicroType",
     ]),
   },
   methods: {

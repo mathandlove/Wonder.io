@@ -9,22 +9,11 @@
       <question-title-elements v-if="pageType === 'questiontitle'" />
       <read-elements v-else-if="pageType === 'read'" />
       <join-elements v-else-if="pageMicroType === 'join'" />
-      <fail-animation
-        v-else-if="
-          pageMicroType === 'failAnimation' || pageMicroType === 'passAnimation'
-        "
-      />
-      <question-elements
-        v-else-if="
-          pageMicroType === 'questionLoaded' ||
-          pageMicroType === 'questionAnsweredCorrect'
-        "
-      />
-      <question-load-elements v-else-if="pageType === 'question'" />
+
+      <question-elements v-else-if="pageType === 'question'" />
       <choice-elements v-else-if="pageType === 'choice'" />
       <chapter-title-elements v-else-if="pageType === 'chapterTitle'" />
       <end-elements v-else-if="pageType === 'end'" />
-      
     </notebook-page>
 
     <book-footer />
@@ -53,8 +42,6 @@ import QuestionElements from "@/components/booklayout/QuestionElements.vue";
 import ChoiceElements from "@/components/booklayout/ChoiceElements.vue";
 import ChapterTitleElements from "@/components/booklayout/ChapterTitleElements.vue";
 import EndElements from "@/components/booklayout/EndElements.vue";
-import FailAnimation from "@/components/booklayout/FailAnimation.vue";
-import QuestionLoadElements from "@/components/booklayout/QuestionLoadElements.vue";
 
 import { mapState } from "vuex";
 import { mapGetters } from "vuex";
@@ -82,8 +69,6 @@ export default {
     ChoiceElements,
     ChapterTitleElements,
     EndElements,
-    FailAnimation,
-    QuestionLoadElements,
   },
   data() {
     const ViewRestartModal = false;
@@ -134,7 +119,6 @@ export default {
     RouteNextPage(event) {
       this.$store.dispatch("gotoNext");
       event.stopPropagation();
-
     },
     RoutePrevPage(event) {
       let tempPage = this.page - 1;

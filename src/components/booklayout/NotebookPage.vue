@@ -2,11 +2,34 @@
   <div class="pageContainer" ref="notepadholder">
     <img
       alt=""
-      :src="notepadImageLocation"
+      src="@/assets/Images/notepadWithLines.png"
       ref="base"
       id="base"
+      class="nonRefBase"
       @load="updateBase"
       :style="adjustingBox"
+      rel="preload"
+      :class="{
+        makeInvisible: !bookStyle.sheetHasLines || bookStyle.showCover,
+      }"
+    />
+    <img
+      alt=""
+      src="@/assets/Images/NotepadWithoutLines.png"
+      class="nonRefBase"
+      @load="updateBase"
+      :style="adjustingBox"
+      rel="preload"
+      :class="{ makeInvisible: bookStyle.sheetHasLines || bookStyle.showCover }"
+    />
+    <img
+      alt=""
+      :src="coverHREF"
+      class="nonRefBase"
+      @load="updateBase"
+      :style="adjustingBox"
+      rel="preload"
+      :class="{ makeInvisible: !bookStyle.showCover }"
     />
     <div
       class="writableArea"
@@ -138,6 +161,10 @@ export default {
     },
   },
   methods: {
+    preloadImage: function (url) {
+      let img = new Image();
+      img.src = url;
+    },
     updateBase: function () {
       if (this.$refs.base != null) {
         this.iw = this.$refs.base.width;
@@ -173,6 +200,11 @@ export default {
   mounted() {
     window.addEventListener("resize", this.updateBase);
     this.updateBase();
+    // this.preloadImage(require("@/assets/Images/D0.png"));
+    // this.preloadImage(require("@/assets/Images/D1.png"));
+    // this.preloadImage(require("@/assets/Images/D2.png"));
+    // this.preloadImage(require("@/assets/Images/D3.png"));
+    // this.preloadImage(require("@/assets/Images/W3.png"));
   },
   unmounted() {
     window.removeEventListener("resize", this.updateBase);
@@ -284,6 +316,12 @@ Button:hover {
   left: 51%;
   transform: translate(-50%, -50%);
 }
+.nonRefBase {
+  position: absolute;
+  top: 50%;
+  left: 51%;
+  transform: translate(-50%, -50%);
+}
 .pageContainer {
   text-align: center;
   height: 80%;
@@ -308,5 +346,9 @@ Button:hover {
 .LargeBodyText {
   font-size: 1.6em;
   line-height: 1.3;
+}
+
+.makeInvisible {
+  opacity: 0%;
 }
 </style>

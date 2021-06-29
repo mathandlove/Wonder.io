@@ -1,9 +1,11 @@
  <template>
-  <div v-for="linePart in textSeries" :key="linePart" class="textContainer">
+  <div
+    v-for="(linePart, index) in textSeries"
+    :key="linePart"
+    class="textContainer"
+  >
     <div
-      v-if="
-        linePart.lineType == 'character' && linePart.orientation == 'l'
-      "
+      v-if="linePart.lineType == 'character' && linePart.orientation == 'l'"
       class="leftChar"
       :style="{
         minHeight: 1.45 * 3 - 0.1 + 'em',
@@ -20,9 +22,7 @@
     </div>
 
     <div
-      v-if="
-        linePart.lineType == 'character' && linePart.orientation == 'r'
-      "
+      v-if="linePart.lineType == 'character' && linePart.orientation == 'r'"
       class="rightChar"
       :style="{
         minHeight: 1.45 * 3 - 0.1 + 'em',
@@ -32,6 +32,7 @@
         class="rightCharText"
         :style="{ width: 80 - (linePart.charPadding * 80) / 100 + 20 + '%' }"
         :class="{ robotoRight: linePart.fontStyle == 'Moboto SDF' }"
+        :ref="'rchar' + index"
       >
         {{ linePart.text + "\n\n" }}
       </div>
@@ -60,17 +61,19 @@ import { mapGetters } from "vuex";
 export default {
   components: {},
   data() {
-    return {};
+    return {
+      singleCharLine: "joy",
+    };
   },
   methods: {
     setupNIV() {},
   },
-  mounted() {
-  },
+  mounted() {},
   dismounted() {},
   computed: {
     ...mapGetters(["textSeries"]),
   },
+  method: {},
 };
 </script>
 
@@ -85,8 +88,6 @@ export default {
   padding-top: 0.3em;
   width: 100%;
   object-fit: contain;
-  border: none;
-  border-color: green;
 }
 .textContainer {
   display: flex;
@@ -120,7 +121,7 @@ export default {
   width: 100%;
 }
 .rightCharText {
-  padding-right: 2.4em;
+  padding-right: 2.8em;
   white-space: pre-line;
   text-align: left;
   float: right;

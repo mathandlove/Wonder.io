@@ -3,7 +3,8 @@
     class="PrevArrowSize PrevArrowAlign"
     alt=""
     src="../assets/Images/computerBack.png"
-    v-if="showPrevButton"
+    v-show="showPrevButton"
+    rel="preload"
   />
   <div v-if="showPrevButton" @click="NIV.gotoPrev" class="PrevButtonSize"></div>
 </template>

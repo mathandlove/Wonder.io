@@ -4,6 +4,7 @@
       class="dinoImageBackground dinoImage"
       :class="{ backgroundImageAnimation: animationStep == 'D3' }"
       src="@/assets/Images/D0.png"
+      rel="preload"
     />
     <transition name="textreveal">
       <div class="correctSign" v-if="animationStep == 'D3'">
@@ -17,16 +18,18 @@
       v-on:enter="enter"
     >
       <img
-        v-if="animationStep == 'D1'"
+        v-show="animationStep == 'D1'"
         class="dinoImage"
         src="@/assets/Images/D1.png"
+        rel="preload"
       />
     </transition>
     <transition name="reveal2" v-on:after-enter="afterEnter" v-on:enter="enter">
       <img
-        v-if="animationStep == 'D2'"
+        v-show="animationStep == 'D2'"
         class="dinoImage"
         src="@/assets/Images/D2.png"
+        rel="preload"
       />
     </transition>
     <transition
@@ -35,9 +38,10 @@
       v-on:after-enter="animationDone"
     >
       <img
-        v-if="animationStep == 'D3'"
+        v-show="animationStep == 'D3'"
         class="dinoImage"
         :src="correctDinoImage"
+        rel="preload"
       />
     </transition>
   </div>
@@ -64,8 +68,18 @@ export default {
       soundApplause,
       soundFail,
       soundClap,
-      animationStep: "D1",
+      animationStep: "",
     };
+  },
+  watch: {
+    pageMicroType: function () {
+      if (
+        this.pageMicroType == "failAnimation" ||
+        this.pageMicroType == "passAnimation"
+      ) {
+        this.animationStep = "D1";
+      }
+    },
   },
   mounted() {
     // this.$store.dispatch("setPageStyle", "question");
@@ -113,7 +127,7 @@ export default {
         } else {
           setTimeout(() => {
             this.soundFail.play();
-          }, 4550);
+          }, 4000);
         }
       }
     },

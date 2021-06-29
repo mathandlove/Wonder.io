@@ -1,9 +1,10 @@
 <template>
   <img
-    v-if="showNextButton"
+    v-show="showNextButton"
     class="NextArrowSize"
     alt=""
     src="../assets/Images/nextButton.png"
+    rel="preload"
   />
   <div v-if="showNextButton" @click="NIV.gotoNext" class="NextButtonSize"></div>
 </template>
