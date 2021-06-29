@@ -83,14 +83,23 @@ export default createStore({
       let pageNumber = parseInt(state.BookPage);
       return state.BookData.pages[+pageNumber - 1];
     },
+    currentBookParagraph: (state) => (pageNumber) => {
+      return state.BookData.pages[+pageNumber - 1];
+    },
     questionNumber: (state, getters) => {
       return getters.currentBookParagraph.questionNumber;
+    },
+    questionNumber: (state, getters) => (pageNumber) => {
+      return getters.currentBookParagraph(pageNumber).questionNumber;
     },
     chapterNumber: (state, getters) => {
       return getters.currentBookParagraph.chapterNumber;
     },
     mainText: (state, getters) => {
       return getters.currentBookParagraph.pageTitleText;
+    },
+    mainText: (state, getters) => pageNumber => {
+      return getters.currentBookParagraph(pageNumber).pageTitleText;
     },
     questionImageUrl: (state, getters) => {
       const things = getters.currentBookParagraph.pageParts[0].partImageUrl;
@@ -185,6 +194,11 @@ export default createStore({
     },
     showQuestionImage: (state, getters) => {
       return getters.answerArray[0].lineType == "answerCoords";
+    },
+    pageTypeArray: (state) => (pageNumber) => {
+      if (pageNumber == undefined)
+        pageNumber = parseInt(state.BookPage);
+      return state.BookData.pages[pageNumber - 1].type;
     }
   },
   mutations: {

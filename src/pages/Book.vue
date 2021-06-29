@@ -5,17 +5,7 @@
       v-if="this.ViewRestartModal"
       @close-modal="this.ViewRestartModal = false"
     />
-    <notebook-page>
-      <question-title-elements v-if="pageType === 'questiontitle'" />
-      <read-elements v-else-if="pageType === 'read'" />
-      <join-elements v-else-if="pageMicroType === 'join'" />
-
-      <question-elements v-else-if="pageType === 'question'" />
-      <choice-elements v-else-if="pageType === 'choice'" />
-      <chapter-title-elements v-else-if="pageType === 'chapterTitle'" />
-      <end-elements v-else-if="pageType === 'end'" />
-    </notebook-page>
-
+    <filled-page-element />
     <book-footer />
   </the-background>
 </template>
@@ -34,14 +24,7 @@ import PageNoExist from "@/organisms/PageNoExist.vue";
 import MainNavBar from "@/molecules/MainNavBar.vue";
 import BookFooter from "@/components/booklayout/BookFooter.vue";
 import TheBackground from "@/components/ux/TheBackground.vue";
-import NotebookPage from "@/components/booklayout/NotebookPage.vue";
-import JoinElements from "@/components/booklayout/JoinElements.vue";
-import QuestionTitleElements from "@/components/booklayout/QuestionTitleElements.vue";
-import ReadElements from "@/components/booklayout/ReadElements.vue";
-import QuestionElements from "@/components/booklayout/QuestionElements.vue";
-import ChoiceElements from "@/components/booklayout/ChoiceElements.vue";
-import ChapterTitleElements from "@/components/booklayout/ChapterTitleElements.vue";
-import EndElements from "@/components/booklayout/EndElements.vue";
+import FilledPageElement from "@/components/booklayout/FilledPageElement.vue";
 
 import { mapState } from "vuex";
 import { mapGetters } from "vuex";
@@ -58,17 +41,10 @@ export default {
     RestartModal,
     PageNoExist,
 
-    JoinElements,
     MainNavBar,
     BookFooter,
     TheBackground,
-    NotebookPage,
-    QuestionTitleElements,
-    ReadElements,
-    QuestionElements,
-    ChoiceElements,
-    ChapterTitleElements,
-    EndElements,
+    FilledPageElement,
   },
   data() {
     const ViewRestartModal = false;
