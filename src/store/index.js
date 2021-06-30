@@ -240,8 +240,6 @@ export default createStore({
       return getters.answerArray(pageNumber)[0].lineType == "answerCoords";
     },
     booksToDisplay: (state) => {
-      console.log('o');
-      console.log(state.booksToDisplay);
       return state.booksToDisplay;
     }
   },
@@ -330,6 +328,7 @@ export default createStore({
       let numberOfBooksLoaded = state.booksToDisplay.length;
       let toAddArray = state.BookArray.slice(numberOfBooksLoaded, numberOfBooksLoaded + increaseNumber)
       state.booksToDisplay = state.booksToDisplay.concat(toAddArray);
+      console.log(state.GradeBookOrder)
     },
     RESET_BOOKS_TO_DISPLAY(state) {
       state.booksToDisplay = [];
@@ -427,8 +426,8 @@ export default createStore({
     async fetchBookData({ commit, state }, bookId) {
       // const existingData = localStorage.getItem('BookData');
       // if (existingData && state.BookId != bookId || existingData == null) {
-        const response = await axios.get(resource_uri + `/${bookId}`);
-        commit('SET_BOOK_DATA', response.data);
+      const response = await axios.get(resource_uri + `/${bookId}`);
+      commit('SET_BOOK_DATA', response.data);
       // }
     },
     async setBookList({ commit }) {

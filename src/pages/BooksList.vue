@@ -31,7 +31,13 @@
     <div class="bookCardContainer">
       <div v-for="Book in booksToDisplay" :key="Book">
         <div class="cardSize" @click="BookSelected(Book)">
-          <img alt="" :src="Book.bookCoverImageUrl" />
+          <base-spinner class="spinner" v-show="!Book.isLoaded" />
+          <img
+            v-show="Book.isLoaded"
+            alt=""
+            :src="Book.bookCoverImageUrl"
+            @load="bookLoaded(Book)"
+          />
           <info-pill
             :value="0"
             :hasStars="true"
@@ -46,6 +52,7 @@
 
 <script>
 import InfoPill from "@/components/ux/InfoPill.vue";
+import BaseSpinner from "@/components/ux/BaseSpinner.vue";
 import { mapState } from "vuex";
 import { mapGetters } from "vuex";
 
@@ -67,10 +74,28 @@ export default {
     }),
     ...mapGetters(["booksToDisplay"]),
   },
-  components: { InfoPill },
+  components: { InfoPill, BaseSpinner },
   methods: {
+    bookLoaded(book) {
+      console.log("bookLoaded");
+      book.isLoaded = true;
+      this.$store.dispatch("increaseBooksToDisplay", 1);
+    },
+    initiateBookLoad() {
+      this.$store.dispatch("increaseBooksToDisplay", 4);
+    },
     filterBooks() {
-      this.$store.dispatch("increaseBooksToDisplay", 20);
+      let gradeBookOrder =
+        this.$store.state.GradeBookOrder[this.$store.state.GradeFilter];
+      var filteredBooks = this.$store.state.BookArray.filter((book) => {
+        if (gradeBookOrder) {
+          return gradeBookOrder.includes(parseInt(book.bookId));
+        } else {
+          return true;
+        }
+      });
+      this.GradeFilteredBooks = filteredBooks;
+      this.WordFilteredBooks = filteredBooks;
     },
     async BookSelected(bookListItem) {
       console.log("selected with book :", bookListItem);
@@ -93,6 +118,7 @@ export default {
       await this.$store.dispatch("setBookList").then();
     } else {
       this.filterBooks();
+      this.initiateBookLoad();
     }
   },
   unmounted() {
@@ -126,6 +152,10 @@ export default {
   width: 300px;
   height: 487px;
   object-fit: contain;
+}
+.spinner {
+  width: 300px;
+  height: 487px;
 }
 .menuIconSize {
   height: 5vh;
@@ -183,6 +213,10 @@ body {
     height: 365px;
     object-fit: contain;
   }
+  .spinner {
+    width: 225px;
+    height: 365px;
+  }
 }
 @media (max-width: 830px) {
   .bookCardContainer {
@@ -196,6 +230,10 @@ body {
     height: 301px;
     object-fit: contain;
   }
+  .spinner {
+    width: 186px;
+    height: 301px;
+  }
 }
 
 @media (max-width: 700px) {
@@ -208,6 +246,11 @@ body {
 }
 
 @media (max-width: 450px) {
+  .cardSize img {
+    width: 135px;
+    height: 219px;
+    object-fit: contain;
+  }
   .cardSize img {
     width: 135px;
     height: 219px;
