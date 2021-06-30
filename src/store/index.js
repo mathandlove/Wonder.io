@@ -425,11 +425,11 @@ export default createStore({
 
     },
     async fetchBookData({ commit, state }, bookId) {
-      const existingData = localStorage.getItem('BookData');
-      if (existingData && state.BookId != bookId || existingData == null) {
+      // const existingData = localStorage.getItem('BookData');
+      // if (existingData && state.BookId != bookId || existingData == null) {
         const response = await axios.get(resource_uri + `/${bookId}`);
         commit('SET_BOOK_DATA', response.data);
-      }
+      // }
     },
     async setBookList({ commit }) {
       let existingArray = localStorage.getItem('BookArray');
