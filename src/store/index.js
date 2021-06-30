@@ -22,6 +22,7 @@ export default createStore({
     },
     WordFilteredBooks: [Book10Item],
     GradeFilteredBookItems: [Book10Item],
+    filteredBooks: [],
     booksToDisplay: [],
     SelectedBookItem: JSON.parse(localStorage.getItem('SelectedBook')) || Book10Item,
     BookData: JSON.parse(localStorage.getItem('BookData')) || Book10,
@@ -326,12 +327,30 @@ export default createStore({
     },
     INCREASE_BOOKS_TO_DISPLAY(state, increaseNumber) {
       let numberOfBooksLoaded = state.booksToDisplay.length;
-      let toAddArray = state.BookArray.slice(numberOfBooksLoaded, numberOfBooksLoaded + increaseNumber)
+      let toAddArray = state.filteredBooks.slice(numberOfBooksLoaded, numberOfBooksLoaded + increaseNumber)
       state.booksToDisplay = state.booksToDisplay.concat(toAddArray);
-      console.log(state.GradeBookOrder)
+
     },
     RESET_BOOKS_TO_DISPLAY(state) {
       state.booksToDisplay = [];
+    },
+    FILTER_BOOKS(state) {
+      let gradeBookOrder =
+        state.GradeBookOrder[state.GradeFilter];
+
+      //Remove when working
+      let gbo = gradeBookOrder.slice(0, 42); //I'm slicing gO because it repeats itself on my computer.
+      //Remove when working
+
+      gbo = gbo.map(String);
+      //This needs to be cut once we get the right gradeBookOrder into the program.
+      let f1Books = state.BookArray.filter((book) => {
+        return gbo.includes(book.bookId);
+      });
+      let f2Books = f1Books.sort(function compareFn(a, b) {
+        return gbo.indexOf(a.bookId) - gbo.indexOf(b.bookId);
+      });
+      state.filteredBooks = f2Books;
     },
 
     SET_PAGE_STYLE(state) {
@@ -415,12 +434,17 @@ export default createStore({
   actions: {
     async fetchGradeFilters({ commit }) {
       let existingFilters = localStorage.getItem('GradeBookOrder');
-      if (existingFilters == null) {
+      // if (existingFilters == null) {
+      if (true) {
         const response = await axios.get(resource_uri + '/gradefilters');
         commit('SET_GRADE_BOOK_ORDER', response.data);
-      } else {
-        commit('SET_GRADE_BOOK_ORDER', JSON.parse(existingFilters));
+        console.log(response.data);
       }
+
+      // else {
+      //   commit('SET_GRADE_BOOK_ORDER', JSON.parse(existingFilters));
+      //   }
+
 
     },
     async fetchBookData({ commit, state }, bookId) {
@@ -528,6 +552,9 @@ export default createStore({
     },
     resetBooksToDisplay({ commit }) {
       commit('RESET_BOOKS_TO_DISPLAY');
+    },
+    filterBooks({ commit }) {
+      commit('FILTER_BOOKS')
     },
 
 

@@ -76,27 +76,18 @@ export default {
   },
   components: { InfoPill, BaseSpinner },
   methods: {
+    preloadImage: function (url) {
+      let img = new Image();
+      img.src = url;
+    },
     bookLoaded(book) {
-      console.log("bookLoaded");
       book.isLoaded = true;
       this.$store.dispatch("increaseBooksToDisplay", 1);
     },
     initiateBookLoad() {
       this.$store.dispatch("increaseBooksToDisplay", 4);
     },
-    filterBooks() {
-      let gradeBookOrder =
-        this.$store.state.GradeBookOrder[this.$store.state.GradeFilter];
-      var filteredBooks = this.$store.state.BookArray.filter((book) => {
-        if (gradeBookOrder) {
-          return gradeBookOrder.includes(parseInt(book.bookId));
-        } else {
-          return true;
-        }
-      });
-      this.GradeFilteredBooks = filteredBooks;
-      this.WordFilteredBooks = filteredBooks;
-    },
+
     async BookSelected(bookListItem) {
       console.log("selected with book :", bookListItem);
       let bookId = parseInt(bookListItem.bookId);
@@ -117,16 +108,16 @@ export default {
         .then(this.$store.dispatch("setGradeFilter", "grade2"));
       await this.$store.dispatch("setBookList").then();
     } else {
-      this.filterBooks();
+      this.$store.dispatch("filterBooks");
       this.initiateBookLoad();
     }
+    this.preloadImage(require("@/assets/Images/NotepadWithoutLines.png"));
   },
   unmounted() {
     this.$store.dispatch("resetBooksToDisplay");
   },
   loaded() {
     this.setGradeFilteredBooks();
-    console.log("book images done loaded, hide load screen!");
   },
 };
 </script>
@@ -143,12 +134,12 @@ export default {
   align-items: center;
   justify-content: center;
 
-  margin-top: 3vh;
+  margin-top: 12%;
   padding-left: 3vw;
   padding-right: 3vw;
 }
 .cardSize img {
-  margin-bottom: 2%;
+  margin-bottom: 4%;
   width: 300px;
   height: 487px;
   object-fit: contain;
