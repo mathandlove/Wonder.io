@@ -5,9 +5,11 @@
       v-if="this.ViewRestartModal"
       @close-modal="this.ViewRestartModal = false"
     />
-    <filled-page-element v-for="pQ in pageQueue" :key="pQ" :pageNum="pQ">
-      "Why wont you work?"
-    </filled-page-element>
+    <div class="notepadsContainer">
+      <filled-page-element v-for="pQ in pageQueue" :key="pQ" :pageNum="pQ">
+        "Why wont you work?"
+      </filled-page-element>
+    </div>
     <book-footer />
   </the-background>
 </template>
@@ -92,7 +94,7 @@ export default {
       "pageNumber",
     ]),
     pageQueue() {
-      return [this.pageNumber, this.pageNumber + 1];
+      return [this.pageNumber + 1, this.pageNumber - 1, this.pageNumber];
     },
   },
   methods: {
@@ -159,5 +161,10 @@ export default {
   padding-top: 1vh;
   padding-bottom: 1vh;
   z-index: 0;
+}
+.notepadsContainer {
+  height: 100%;
+  width: 100%;
+  position: relative;
 }
 </style>

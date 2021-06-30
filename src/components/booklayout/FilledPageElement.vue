@@ -1,9 +1,8 @@
 <template>
-  <notebook-page>
+  <notebook-page :allInvisible="pageNum !== pageNumber">
     <question-title-elements
       v-if="pageType(pageNum) === 'questiontitle'"
       :pageNum="pageNum"
-      v-show="pageNum == pageNumber"
     />
     <read-elements
       v-else-if="pageType(pageNum) === 'read'"
@@ -12,26 +11,21 @@
     <question-elements
       v-else-if="pageType(pageNum) === 'question'"
       :pageNum="pageNum"
-      v-show="pageNum == pageNumber"
     />
     <choice-elements
       v-else-if="pageType(pageNum) === 'choice'"
       :pageNum="pageNum"
-      v-show="pageNum == pageNumber"
     />
     <chapter-title-elements
       v-else-if="pageType(pageNum) === 'chapterTitle'"
       :pageNum="pageNum"
-      v-show="pageNum == pageNumber"
     />
     <end-elements
       v-else-if="pageType(pageNum) === 'end' && pageNum === pageNumber"
       :pageNum="pageNum"
-      v-show="pageNum == pageNumber"
     />
     <join-elements
       v-else-if="pageMicroType === 'join' && pageNum === pageNumber"
-      v-show="pageNum == pageNumber"
     />
   </notebook-page>
 </template>

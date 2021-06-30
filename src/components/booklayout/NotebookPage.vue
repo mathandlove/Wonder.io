@@ -1,5 +1,9 @@
   <template>
-  <div class="pageContainer" ref="notepadholder">
+  <div
+    class="pageContainer2"
+    ref="notepadholder"
+    :class="{ makeInvisible: allInvisible }"
+  >
     <img
       alt=""
       src="@/assets/Images/notepadWithLines.png"
@@ -62,6 +66,7 @@ import AuthorInfoMobile from "@/components/booklayout/AuthorInfoMobile.vue";
 
 import { mapGetters } from "vuex";
 export default {
+  props: ["allInvisible"],
   components: {
     NavNextArrowE,
     NavPrevArrowE,
@@ -200,18 +205,13 @@ export default {
   mounted() {
     window.addEventListener("resize", this.updateBase);
     this.updateBase();
-    // this.preloadImage(require("@/assets/Images/D0.png"));
-    // this.preloadImage(require("@/assets/Images/D1.png"));
-    // this.preloadImage(require("@/assets/Images/D2.png"));
-    // this.preloadImage(require("@/assets/Images/D3.png"));
-    // this.preloadImage(require("@/assets/Images/W3.png"));
   },
   unmounted() {
     window.removeEventListener("resize", this.updateBase);
   },
 };
 </script>
-<style >
+<style>
 .writableArea {
   position: absolute;
   top: 50%;
@@ -322,12 +322,17 @@ Button:hover {
   left: 51%;
   transform: translate(-50%, -50%);
 }
-.pageContainer {
+.pageContainer2 {
   text-align: center;
   height: 80%;
-  position: relative;
-  flex-grow: 1;
-  border: solid;
+  position: absolute;
+  left: 0%;
+  right: 0%;
+  text-align: center;
+  padding-top: 1vh;
+  padding-bottom: 1vh;
+  z-index: 0;
+  font-size: 10px;
 }
 
 .squareMeLeft {
