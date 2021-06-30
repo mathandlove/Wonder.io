@@ -97,13 +97,15 @@ export default {
     pageQueue() {
       let prevPage = this.pageNumber - 1;
       let currentPage = this.pageNumber;
-      let nextPage = this.pageNumber + 1;
+      let futurePages = 5;
       let returnArray = [];
       if (prevPage >= 1) {
         returnArray.push(prevPage);
       }
-      if (nextPage <= this.totalNumberOfPages) {
-        returnArray.push(nextPage);
+      for (let i = 1; i <= futurePages; i++) {
+        if (currentPage + i <= this.totalNumberOfPages) {
+          returnArray.push(currentPage + i);
+        }
       }
       returnArray.push(currentPage);
       return returnArray;

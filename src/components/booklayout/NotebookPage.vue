@@ -87,8 +87,8 @@ export default {
         width: "300px",
       },
       adjustingBox: {
-        height: "auto",
-        width: "100%",
+        // height: "50%",
+        // width: "auto",
       },
     };
   },
@@ -161,7 +161,6 @@ export default {
       this.styleObject.paddingLeft = this.iw * 0.08 + "px";
       this.styleObject.paddingRight = this.iw * 0.1 + "px";
       this.styleObject.paddingBottom = this.ih * 0.03 + "px";
-
       return this.styleObject;
     },
   },
@@ -202,7 +201,7 @@ export default {
       }
     },
   },
-  mounted() {
+  created() {
     window.addEventListener("resize", this.updateBase);
     this.updateBase();
   },
@@ -320,11 +319,13 @@ Button:hover {
   position: absolute;
   top: 50%;
   left: 51%;
+  height: 100%;
   transform: translate(-50%, -50%);
 }
+
 .pageContainer2 {
   text-align: center;
-  height: 80%;
+  height: 100%;
   position: absolute;
   left: 0%;
   right: 0%;
