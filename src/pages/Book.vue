@@ -92,9 +92,21 @@ export default {
       "nextPage",
       "pageMicroType",
       "pageNumber",
+      "totalNumberOfPages",
     ]),
     pageQueue() {
-      return [this.pageNumber + 1, this.pageNumber - 1, this.pageNumber];
+      let prevPage = this.pageNumber - 1;
+      let currentPage = this.pageNumber;
+      let nextPage = this.pageNumber + 1;
+      let returnArray = [];
+      if (prevPage >= 1) {
+        returnArray.push(prevPage);
+      }
+      if (nextPage <= this.totalNumberOfPages) {
+        returnArray.push(nextPage);
+      }
+      returnArray.push(currentPage);
+      return returnArray;
     },
   },
   methods: {
