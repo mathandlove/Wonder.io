@@ -29,7 +29,7 @@
       </div>
     </div>
     <div class="bookCardContainer">
-      <div v-for="Book in booksToDisplay" :key="Book">
+      <div v-for="Book in WordFilteredBooks" :key="Book">
         <div class="cardSize" @click="BookSelected(Book)">
           <img alt="" :src="Book.bookCoverImageUrl" />
           <info-pill
@@ -47,7 +47,6 @@
 <script>
 import InfoPill from "@/components/ux/InfoPill.vue";
 import { mapState } from "vuex";
-import { mapGetters } from "vuex";
 
 export default {
   data() {
@@ -65,12 +64,21 @@ export default {
     ...mapState({
       totalBooks: (state) => state.BookArray.length,
     }),
-    ...mapGetters(["booksToDisplay"]),
   },
   components: { InfoPill },
   methods: {
     filterBooks() {
-      this.$store.dispatch("increaseBooksToDisplay", 20);
+      let gradeBookOrder =
+        this.$store.state.GradeBookOrder[this.$store.state.GradeFilter];
+      var filteredBooks = this.$store.state.BookArray.filter((book) => {
+        if (gradeBookOrder) {
+          return gradeBookOrder.includes(parseInt(book.bookId));
+        } else {
+          return true;
+        }
+      });
+      this.GradeFilteredBooks = filteredBooks;
+      this.WordFilteredBooks = filteredBooks;
     },
     async BookSelected(bookListItem) {
       console.log("selected with book :", bookListItem);
@@ -80,7 +88,7 @@ export default {
       this.$store.dispatch("setBookPage", 1);
       this.$store.dispatch("ClearScores");
       this.$store.dispatch("setBookItem", bookListItem);
-      this.$store.dispatch("setNextBookItem", bookId + 1);
+      this.$store.dispatch("setNextBookItem", bookId+1);
       this.$router.push(`/book/${bookId}/1`);
     },
   },
@@ -94,9 +102,6 @@ export default {
     } else {
       this.filterBooks();
     }
-  },
-  unmounted() {
-    this.$store.dispatch("resetBooksToDisplay");
   },
   loaded() {
     this.setGradeFilteredBooks();
@@ -112,20 +117,17 @@ export default {
 }
 .cardSize {
   width: 23vw;
+  height: auto;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-
-  margin-top: 3vh;
-  padding-left: 3vw;
-  padding-right: 3vw;
+  margin-top: 8%;
+  margin-bottom: 2vh;
 }
 .cardSize img {
-  margin-bottom: 2%;
-  width: 300px;
-  height: 487px;
-  object-fit: contain;
+  margin-bottom: 4%;
+  width: 80%;
 }
 .menuIconSize {
   height: 5vh;
@@ -153,17 +155,15 @@ export default {
   background-color: white;
 }
 .ScoreBarAlignment {
-  margin-top: 1vh;
+  margin-top: 2vh;
   margin-left: 10%;
   margin-right: 10%;
 }
 .bookCardContainer {
+  border: solid;
   display: grid;
   grid-template-columns: repeat(4, 23vw);
-  justify-items: center;
-  align-items: center;
-  justify-content: center;
-
+  justify-content: space-around;
   width: 100%;
 }
 
@@ -173,45 +173,27 @@ body {
 
 @media (max-width: 1400px) {
   .bookCardContainer {
-    grid-template-columns: repeat(3, 300px);
+    grid-template-columns: repeat(3, 30vw);
   }
   .cardSize {
-    width: 300px;
-  }
-  .cardSize img {
-    width: 225px;
-    height: 365px;
-    object-fit: contain;
+    width: 30vw;
   }
 }
-@media (max-width: 830px) {
-  .bookCardContainer {
-    grid-template-columns: repeat(3, 200px);
-  }
-  .cardSize {
-    width: 300px;
-  }
-  .cardSize img {
-    width: 186px;
-    height: 301px;
-    object-fit: contain;
-  }
-}
-
-@media (max-width: 700px) {
+@media (max-width: 750px) {
   .bookCardContainer {
     grid-template-columns: repeat(2, 48vw);
   }
   .cardSize {
-    width: 40vw;
+    width: 48vw;
   }
 }
 
 @media (max-width: 450px) {
-  .cardSize img {
-    width: 135px;
-    height: 219px;
-    object-fit: contain;
+  .bookCardContainer {
+    grid-template-columns: repeat(1, 90vw);
+  }
+  .cardSize {
+    width: 90vw;
   }
 }
 </style>

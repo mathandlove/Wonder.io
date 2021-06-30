@@ -22,6 +22,7 @@ export default createStore({
     },
     WordFilteredBooks: [Book10Item],
     GradeFilteredBookItems: [Book10Item],
+    booksToDisplay: [],
     SelectedBookItem: JSON.parse(localStorage.getItem('SelectedBook')) || Book10Item,
     BookData: JSON.parse(localStorage.getItem('BookData')) || Book10,
     BookArray: JSON.parse(localStorage.getItem('BookArray')) || [Book10Item, Book10Item, Book10Item, Book10Item, Book10Item, Book10Item, Book10Item, Book10Item, Book10Item, Book10Item, Book10Item, Book10Item, Book10Item, Book10Item],
@@ -237,6 +238,11 @@ export default createStore({
     showQuestionImage: (state, getters) => pageNumber => {
 
       return getters.answerArray(pageNumber)[0].lineType == "answerCoords";
+    },
+    booksToDisplay: (state) => {
+      console.log('o');
+      console.log(state.booksToDisplay);
+      return state.booksToDisplay;
     }
   },
   mutations: {
@@ -319,6 +325,14 @@ export default createStore({
       }
       state.Scores[0].name = state.playerName;
       console.log(state.playerName + 'n' + sPlayerName)
+    },
+    INCREASE_BOOKS_TO_DISPLAY(state, increaseNumber) {
+      let numberOfBooksLoaded = state.booksToDisplay.length;
+      let toAddArray = state.BookArray.slice(numberOfBooksLoaded, numberOfBooksLoaded + increaseNumber)
+      state.booksToDisplay = state.booksToDisplay.concat(toAddArray);
+    },
+    RESET_BOOKS_TO_DISPLAY(state) {
+      state.booksToDisplay = [];
     },
 
     SET_PAGE_STYLE(state) {
@@ -510,6 +524,13 @@ export default createStore({
       let a = 'questionLoaded';
       dispatch('setPageType', a);
     },
+    increaseBooksToDisplay({ commit }, increaseNumber) {
+      commit('INCREASE_BOOKS_TO_DISPLAY', increaseNumber);
+    },
+    resetBooksToDisplay({ commit }) {
+      commit('RESET_BOOKS_TO_DISPLAY');
+    },
+
 
 
     setPageType({ commit, dispatch, state }, microType) {
