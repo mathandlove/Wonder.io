@@ -1,9 +1,9 @@
  <template>
   <div class="questionNumber">Your Choice:</div>
-  <div class="questionText">{{ mainText }}</div>
+  <div class="questionText">{{ mainText(pageNum) }}</div>
   <div class="answerContainer">
     <button
-      v-for="answerB in answerArray"
+      v-for="answerB in answerArray(pageNum)"
       :key="answerB.text"
       class="answerButton"
       @click="updateChoice(answerB.toPages)"
@@ -18,6 +18,7 @@ export default {
   data() {
     return {};
   },
+  props: ["pageNum"],
   methods: {
     updateChoice(skipVal) {
       this.$store.dispatch("setChoiceClicked", skipVal);

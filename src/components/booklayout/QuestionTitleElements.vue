@@ -1,20 +1,20 @@
  <template>
   <div class="h1c">
     {{
-      questionNumber(pageNumber) != -99
-        ? "Question " + questionNumber(pageNumber) + ":"
+      questionNumber(pageNum) != -99
+        ? "Question " + questionNumber(pageNum) + ":"
         : "The Big Question:"
     }}
   </div>
   <div class="LargeBodyText" style="text-align: center">
-    <slot>{{ mainText(pageNumber) }}</slot>
+    <slot>{{ mainText(pageNum) }}</slot>
   </div>
 </template>
 <script>
 import { mapGetters } from "vuex";
 export default {
   components: {},
-  props: ["pageNumber"],
+  props: ["pageNum"],
   mounted() {
     // this.$store.dispatch("setPageType", "questiontitle");
   },

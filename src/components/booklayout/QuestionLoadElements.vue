@@ -1,12 +1,14 @@
  <template>
-  <div class="questionNumber">{{ "Question " + questionNumber + ":" }}</div>
-  <div class="questionText">{{ mainText }}</div>
+  <div class="questionNumber">
+    {{ "Question " + questionNumber(pageNum) + ":" }}
+  </div>
+  <div class="questionText">{{ mainText(pageNum) }}</div>
   <div id="loader">
-    <LoadBar @load-done="questionLoadDone" />
+    <LoadBar v-if="pageNum == pageNumber" @load-done="questionLoadDone" />
     <img
       id="doublepoints"
       src="@/assets/Images/DoublePoints.svg"
-      :class="{ makeInvisible: isDoublePoints }"
+      :class="{ makeInvisible: !isDoublePoints(pageNum) }"
     />
   </div>
 </template>
@@ -15,6 +17,7 @@ import { mapActions, mapGetters } from "vuex";
 import LoadBar from "@/atoms/LoadBar.vue";
 export default {
   components: { LoadBar },
+  props: ["pageNum"],
   data() {
     return {};
   },
@@ -23,7 +26,12 @@ export default {
   },
   dismounted() {},
   computed: {
-    ...mapGetters(["questionNumber", "mainText", "isDoublePoints"]),
+    ...mapGetters([
+      "questionNumber",
+      "mainText",
+      "isDoublePoints",
+      "pageNumber",
+    ]),
   },
   methods: {
     ...mapActions(["setPageStyle", "questionLoadDone"]),

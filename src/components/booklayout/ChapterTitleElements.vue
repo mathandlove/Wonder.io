@@ -1,18 +1,17 @@
  <template>
   <div class="h1c">
-    {{ "Chapter " + chapterNumber }}
+    {{ "Chapter " + chapterNumber(pageNum) }}
   </div>
   <div class="LargeBodyText" style="text-align: center">
-    <slot>{{ mainText }}</slot>
+    <slot>{{ mainText(pageNum) }}</slot>
   </div>
 </template>
 <script>
 import { mapGetters } from "vuex";
 export default {
   components: {},
-  methods: {
-    setupNIV() {},
-  },
+  props: ["pageNum"],
+  methods: {},
   mounted() {
     // this.$store.dispatch("setPageType", "questiontitle");
   },

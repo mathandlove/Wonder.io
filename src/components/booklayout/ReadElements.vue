@@ -1,6 +1,6 @@
  <template>
   <div
-    v-for="(linePart, index) in textSeries"
+    v-for="(linePart, index) in textSeries(pageNum)"
     :key="linePart"
     class="textContainer"
   >
@@ -60,14 +60,11 @@
 import { mapGetters } from "vuex";
 export default {
   components: {},
+  props: ["pageNum"],
   data() {
-    return {
-      singleCharLine: "joy",
-    };
+    return {};
   },
-  methods: {
-    setupNIV() {},
-  },
+  methods: {},
   mounted() {},
   dismounted() {},
   computed: {

@@ -1,27 +1,34 @@
  <template>
-  <question-load-elements v-if="pageMicroType === 'question'" />
+  <question-load-elements
+    v-if="pageMicroType === 'question' || pageNum != pageNumber"
+    :pageNum="pageNum"
+  />
   <fail-animation
     v-show="
-      pageMicroType === 'failAnimation' || pageMicroType === 'passAnimation'
+      (pageMicroType === 'failAnimation' ||
+        pageMicroType === 'passAnimation') &&
+      pageNum === pageNumber
     "
   />
   <div
     v-show="
-      pageMicroType === 'questionLoaded' ||
-      pageMicroType === 'questionAnsweredCorrect'
+      (pageMicroType === 'questionLoaded' ||
+        pageMicroType === 'questionAnsweredCorrect') &&
+      pageNum === pageNumber
     "
   >
     <div class="questionNumber">
-      {{ "Question " + questionNumber + ":" }}
+      {{ "Question " + questionNumber(pageNum) + ":" }}
     </div>
-    <div class="questionText">{{ mainText }}</div>
+    <div class="questionText">{{ mainText(pageNum) }}</div>
     <div
       :class="{
-        questionImgContainer: this.answerArray[0].lineType == 'answerCoords',
-        answerContainer: this.answerArray[0].lineType == 'answers',
+        questionImgContainer:
+          this.answerArray(pageNum)[0].lineType == 'answerCoords',
+        answerContainer: this.answerArray(pageNum)[0].lineType == 'answers',
       }"
     >
-      <div v-for="(answer, index) in answerArray" :key="answer">
+      <div v-for="(answer, index) in answerArray(pageNum)" :key="answer">
         <button
           v-if="answer.text"
           class="answerButton"
@@ -60,8 +67,8 @@
         </button>
       </div>
       <img
-        v-if="showQuestionImage"
-        :src="questionImageUrl"
+        v-if="showQuestionImage(pageNum)"
+        :src="questionImageUrl(pageNum)"
         id="questionImage"
       />
     </div>
@@ -89,6 +96,7 @@ export default {
   mounted() {
     // this.$store.dispatch("setPageStyle", "question");
   },
+  props: ["pageNum"],
   dismounted() {},
   computed: {
     ...mapGetters([
@@ -99,6 +107,7 @@ export default {
       "questionImageUrl",
       "pageType",
       "pageMicroType",
+      "pageNumber",
     ]),
   },
   methods: {

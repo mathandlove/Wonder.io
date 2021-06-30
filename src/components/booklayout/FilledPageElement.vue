@@ -1,19 +1,34 @@
 <template>
   <notebook-page>
-    {{ pageTypeArray(pageNumber) }}
+    {{ pageType(pageNum) }}
 
     <question-title-elements
-      v-if="pageTypeArray(pageNumber) === 'questiontitle'"
-      :pageNumber="pageNumber"
+      v-if="pageType(pageNum) === 'questiontitle'"
+      :pageNum="pageNum"
     />
-    <read-elements v-else-if="pageTypeArray(pageNumber) === 'read'" />
-    <question-elements v-else-if="pageTypeArray(pageNumber) === 'question'" />
-    <choice-elements v-else-if="pageTypeArray(pageNumber) === 'choice'" />
+    <read-elements
+      v-else-if="pageType(pageNum) === 'read'"
+      :pageNum="pageNum"
+    />
+    <question-elements
+      v-else-if="pageType(pageNum) === 'question'"
+      :pageNum="pageNum"
+    />
+    <choice-elements
+      v-else-if="pageType(pageNum) === 'choice'"
+      :pageNum="pageNum"
+    />
     <chapter-title-elements
-      v-else-if="pageTypeArray(pageNumber) === 'chapterTitle'"
+      v-else-if="pageType(pageNum) === 'chapterTitle'"
+      :pageNum="pageNum"
     />
-    <end-elements v-else-if="pageTypeArray(pageNumber) === 'end'" />
-    <join-elements v-else-if="pageMicroType === 'join'" />
+    <end-elements
+      v-else-if="pageType(pageNum) === 'end' && pageNum === pageNumber"
+      :pageNum="pageNum"
+    />
+    <join-elements
+      v-else-if="pageMicroType === 'join' && pageNum === pageNumber"
+    />
   </notebook-page>
 </template>
 
@@ -31,9 +46,7 @@ import { mapGetters } from "vuex";
 
 export default {
   data() {
-    return {
-      pageNumber: 2,
-    };
+    return {};
   },
   components: {
     JoinElements,
@@ -46,10 +59,10 @@ export default {
     NotebookPage,
   },
   computed: {
-    setPageNumber() {
-      this.page = parseInt(this.$store.state.BookPage);
+    ...mapGetters(["pageType", "pageMicroType", "pageNumber"]),
+    pageNum() {
+      return this.pageNumber;
     },
-    ...mapGetters(["pageType", "pageMicroType", "pageTypeArray"]),
   },
 };
 </script>

@@ -95,6 +95,9 @@ export default createStore({
     chapterNumber: (state, getters) => {
       return getters.currentBookParagraph.chapterNumber;
     },
+    chapterNumber: (state, getters) => (pageNumber) => {
+      return getters.currentBookParagraph(pageNumber).chapterNumber;
+    },
     mainText: (state, getters) => {
       return getters.currentBookParagraph.pageTitleText;
     },
@@ -105,8 +108,15 @@ export default createStore({
       const things = getters.currentBookParagraph.pageParts[0].partImageUrl;
       return things;
     },
+    questionImageUrl: (state, getters) => pageNumber => {
+      const things = getters.currentBookParagraph(pageNumber).pageParts[0].partImageUrl;
+      return things;
+    },
     totalLinesOnPage: (state, getters) => {
       return getters.currentBookParagraph.pageParts[0].totalLines;
+    },
+    totalLinesOnPage: (state, getters) => pageNumber => {
+      return getters.currentBookParagraph(pageNumber).pageParts[0].totalLines;
     },
     pageNumber: state => {
       let pageNumber = parseInt(state.BookPage);
@@ -117,6 +127,9 @@ export default createStore({
     },
     pageType: state => {
       let pageNumber = parseInt(state.BookPage);
+      return state.BookData.pages[pageNumber - 1].type;
+    },
+    pageType: state => pageNumber => {
       return state.BookData.pages[pageNumber - 1].type;
     },
     pageMicroType: state => {
@@ -162,12 +175,28 @@ export default createStore({
       }
       return pageLineParts;
     },
+    textSeries: (state) => pageNumber => {
+      var pageLineParts = [];
+      var array = state.BookData.pages[pageNumber - 1].pageParts;
+
+      for (let index = 0; index < array.length; index++) {
+        const element = array[index];
+        pageLineParts = pageLineParts.concat(element.lineParts);
+      }
+      return pageLineParts;
+    },
     seriesAllRead: (state, getters) => {
       return getters.textSeries.length <= (state.textSeriesRevealed)
     },
+
     answerArray: (state, getters) => {
       //Answer Array is an array of answers the student can guess. Please randomize answers.
       let pageNumber = parseInt(state.BookPage);
+      let answers = [...state.BookData.pages[pageNumber - 1].pageParts[0].lineParts].splice(1);
+      return answers;
+    },
+    answerArray: (state, getters) => pageNumber => {
+      //Answer Array is an array of answers the student can guess. Please randomize answers.
       let answers = [...state.BookData.pages[pageNumber - 1].pageParts[0].lineParts].splice(1);
       return answers;
     },
@@ -178,6 +207,11 @@ export default createStore({
       return state.BookData.title;
     },
     nextPage: state => {
+      console.log('nextpage:' + state.BookPage + state.skipNextAmount)
+      return state.BookPage + state.skipNextAmount;
+    },
+    nextPage: state => pageNumber => {
+      // This needs to access the NextPage of the page property (default is 1)
       console.log(state.BookPage + state.skipNextAmount)
       return state.BookPage + state.skipNextAmount;
     },
@@ -192,13 +226,17 @@ export default createStore({
       return getters.questionNumber / totalQuestions > .6
 
     },
+    isDoublePoints: (state, getters) => pageNumber => {
+      var totalQuestions = state.BookData.pages.filter(page => page.questionNumber > 0).length;
+      return getters.questionNumber(pageNumber) / totalQuestions > .6
+
+    },
     showQuestionImage: (state, getters) => {
       return getters.answerArray[0].lineType == "answerCoords";
     },
-    pageTypeArray: (state) => (pageNumber) => {
-      if (pageNumber == undefined)
-        pageNumber = parseInt(state.BookPage);
-      return state.BookData.pages[pageNumber - 1].type;
+    showQuestionImage: (state, getters) => pageNumber => {
+
+      return getters.answerArray(pageNumber)[0].lineType == "answerCoords";
     }
   },
   mutations: {
@@ -456,13 +494,16 @@ export default createStore({
       dispatch('setPageType');
     },
     gotoNext({ commit, state, dispatch, getters }) {
-      let tempPage = getters.nextPage;
+
+      let tempPage = getters.nextPage();
+      console.log('got here' + tempPage)
       if (tempPage > getters.HighestPage) {
         dispatch("setHighestPage", tempPage);
       }
 
       dispatch("setBookPage", tempPage);
       router.push(`/book/${state.BookId}/${tempPage}`);
+      console.log('got here2')
 
     },
     questionLoadDone({ commit, dispatch }) {
@@ -472,6 +513,7 @@ export default createStore({
 
 
     setPageType({ commit, dispatch, state }, microType) {
+      console.log(state.BookPage)
       const pageIndex = parseInt(state.BookPage) - 1;
       if (microType === undefined)
         microType = state.BookData.pages[pageIndex].type;
