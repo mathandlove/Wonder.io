@@ -327,6 +327,7 @@ Button:hover {
   height: 80%;
   position: relative;
   flex-grow: 1;
+  border: solid;
 }
 
 .squareMeLeft {

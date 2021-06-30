@@ -5,7 +5,9 @@
       v-if="this.ViewRestartModal"
       @close-modal="this.ViewRestartModal = false"
     />
-    <filled-page-element />
+    <filled-page-element v-for="pQ in pageQueue" :key="pQ" :pageNum="pQ">
+      "Why wont you work?"
+    </filled-page-element>
     <book-footer />
   </the-background>
 </template>
@@ -82,7 +84,16 @@ export default {
       this.page = parseInt(this.$store.state.BookPage);
     },
     ...mapState(["BookData", "bookStyle", "textSeriesRevealed"]),
-    ...mapGetters(["pageType", "seriesAllRead", "nextPage", "pageMicroType"]),
+    ...mapGetters([
+      "pageType",
+      "seriesAllRead",
+      "nextPage",
+      "pageMicroType",
+      "pageNumber",
+    ]),
+    pageQueue() {
+      return [this.pageNumber, this.pageNumber + 1];
+    },
   },
   methods: {
     AddChoice(pageChosen) {
