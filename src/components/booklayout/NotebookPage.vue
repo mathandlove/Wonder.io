@@ -331,7 +331,7 @@ Button:hover {
 
 .pageContainer2 {
   height: 100%;
-  position: ;
+  position: absolute;
   left: 0%;
   right: 0%;
   text-align: center;
