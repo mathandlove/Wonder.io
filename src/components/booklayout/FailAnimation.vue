@@ -50,6 +50,7 @@
 import { mapGetters } from "vuex";
 import { mapActions } from "vuex";
 export default {
+  props: ["readyToAnimate"],
   data() {
     const soundClap = new Audio(require("@/assets/sounds/woodclap.wav"));
     const soundCorrect = new Audio(
@@ -74,8 +75,9 @@ export default {
   watch: {
     pageMicroType: function () {
       if (
-        this.pageMicroType == "failAnimation" ||
-        this.pageMicroType == "passAnimation"
+        this.readyToAnimate &&
+        (this.pageMicroType == "failAnimation" ||
+          this.pageMicroType == "passAnimation")
       ) {
         this.animationStep = "D1";
       }

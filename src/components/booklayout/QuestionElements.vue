@@ -9,6 +9,7 @@
         pageMicroType === 'passAnimation') &&
       pageNum === pageNumber
     "
+    :readyToAnimate="pageNum === pageNumber"
   />
   <div
     v-show="
