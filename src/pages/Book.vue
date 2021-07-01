@@ -1,10 +1,7 @@
 <template>
   <the-background>
     <MainNavBar @show-modal="this.ViewRestartModal = true" />
-    <RestartModal
-      v-if="this.ViewRestartModal"
-      @close-modal="this.ViewRestartModal = false"
-    />
+
     <div class="notepadsContainer">
       <filled-page-element v-for="pQ in pageQueue" :key="pQ" :pageNum="pQ">
         "Why wont you work?"
@@ -22,7 +19,7 @@ import PageEnd from "@/organisms/PageEnd.vue";
 import PageChoice from "@/organisms/PageChoice.vue";
 import PageQuestionTitle from "@/organisms/PageQuestionTitle.vue";
 import PageQuestion from "@/organisms/PageQuestion.vue";
-import RestartModal from "@/molecules/RestartModal.vue";
+
 import PageNoExist from "@/organisms/PageNoExist.vue";
 
 import MainNavBar from "@/molecules/MainNavBar.vue";
@@ -42,7 +39,7 @@ export default {
     PageEnd,
     PageChoice,
     PageQuestion,
-    RestartModal,
+
     PageNoExist,
 
     MainNavBar,

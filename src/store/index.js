@@ -64,12 +64,12 @@ export default createStore({
       showNextButton: true,
       showNotepadClickButton: false,
       sheetHasLines: false,
-      showCover: false
+      showCover: false,
+      showModal: false
     },
 
     textSeriesRevealed: 1,
     pageMicroType: "read",
-
     playerName: ''
     //pageMicroType determines that exact state of  the page for example there's a difference between read and read fully
 
@@ -155,10 +155,10 @@ export default createStore({
       return state.bookStyle.showScorePill;
     },
     showPrevButton: state => {
-      return state.bookStyle.showPrevButton;
+      return state.bookStyle.showPrevButton && !state.bookStyle.showModal;
     },
     showNextButton: state => {
-      return state.bookStyle.showNextButton;
+      return state.bookStyle.showNextButton && !state.bookStyle.showModal;
     },
     sheetHasLines: state => {
       return state.bookStyle.sheetHasLines;
@@ -297,6 +297,7 @@ export default createStore({
         state.Scores[i].NewScore = 0;
       }
       localStorage.setItem('Scores', JSON.stringify(state.Scores));
+      state.playerName = '';
     },
     SET_ANSWER_CLICKED(state, index) {
       let pageNumber = parseInt(state.BookPage);
@@ -351,6 +352,9 @@ export default createStore({
         return gbo.indexOf(a.bookId) - gbo.indexOf(b.bookId);
       });
       state.filteredBooks = f2Books;
+    },
+    TOGGLE_MODAL(state, bModalOn) {
+      state.bookStyle.showModal = bModalOn;
     },
 
     SET_PAGE_STYLE(state) {
@@ -540,7 +544,7 @@ export default createStore({
 
       dispatch("setBookPage", tempPage);
       router.push(`/book/${state.BookId}/${tempPage}`);
-      console.log('got here2')
+
 
     },
     questionLoadDone({ commit, dispatch }) {
@@ -555,6 +559,18 @@ export default createStore({
     },
     filterBooks({ commit }) {
       commit('FILTER_BOOKS')
+    },
+    toggleModal({ commit }, bModalOn) {
+      commit('TOGGLE_MODAL', bModalOn)
+    },
+    resetBook({ commit, dispatch, state }) {
+      dispatch("setHighestPage", 1);
+      dispatch("setBookPage", 1);
+      dispatch("ClearScores");
+      dispatch("toggleModal", false)
+      router.push(`/book/${state.BookId}/1`);
+      console.log(state.playerName + "playerName")
+      dispatch("setPageType")
     },
 
 

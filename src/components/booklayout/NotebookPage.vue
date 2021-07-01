@@ -21,7 +21,6 @@
       alt=""
       src="@/assets/Images/NotepadWithoutLines.png"
       class="nonRefBase"
-      @load="updateBase"
       :style="adjustingBox"
       rel="preload"
       :class="{ makeInvisible: bookStyle.sheetHasLines || bookStyle.showCover }"
@@ -30,11 +29,11 @@
       alt=""
       :src="coverHREF"
       class="nonRefBase"
-      @load="updateBase"
       :style="adjustingBox"
       rel="preload"
       :class="{ makeInvisible: !bookStyle.showCover }"
     />
+
     <div
       class="writableArea"
       :style="notepadHolderStyle"
@@ -48,6 +47,11 @@
       :class="{ border: bookStyle.showNotepadClickButton }"
     >
       <div class="notepadText" :style="nts">
+        <RestartModal
+          v-if="bookStyle.showModal"
+          @close-modal="this.ViewRestartModal = false"
+          class="nonRefBase"
+        />
         <slot> </slot>
       </div>
       <div class="squareMeLeft" :style="leftArrowSize">
@@ -63,7 +67,7 @@
 import NavPrevArrowE from "@/atoms/NavPrevArrowE.vue";
 import NavNextArrowE from "@/atoms/NavNextArrowE.vue";
 import AuthorInfoMobile from "@/components/booklayout/AuthorInfoMobile.vue";
-
+import RestartModal from "@/molecules/RestartModal.vue";
 import { mapGetters } from "vuex";
 export default {
   props: ["allInvisible"],
@@ -71,6 +75,7 @@ export default {
     NavNextArrowE,
     NavPrevArrowE,
     AuthorInfoMobile,
+    RestartModal,
   },
   data() {
     return {
@@ -81,6 +86,7 @@ export default {
       currentAspect: 0,
       baseFontSize: 0,
       lineHeightC: 2,
+      notepadLoaded: false,
       styleObject: {
         fontSize: "2rem",
         height: "200px",

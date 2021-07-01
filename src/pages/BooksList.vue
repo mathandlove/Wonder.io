@@ -109,6 +109,7 @@ export default {
       this.initiateBookLoad();
     }
     this.preloadImage(require("@/assets/Images/NotepadWithoutLines.png"));
+    this.preloadImage(require("@/assets/Images/notepadWithLines.png"));
   },
   unmounted() {
     this.$store.dispatch("resetBooksToDisplay");
