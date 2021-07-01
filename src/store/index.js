@@ -71,7 +71,8 @@ export default createStore({
     textSeriesRevealed: 1,
     pageMicroType: "read",
     playerName: '',
-    turnOffAnimations: false
+    turnOffAnimations: true,
+    timerStart: 0
     //pageMicroType determines that exact state of  the page for example there's a difference between read and read fully
 
   },
@@ -140,7 +141,6 @@ export default createStore({
     },
 
     playerScore: state => {
-      return 975;
       return state.Scores[0].NewScore;
     },
 
@@ -215,7 +215,7 @@ export default createStore({
     },
     nextPage: state => pageNumber => {
       // This needs to access the NextPage of the page property (default is 1)
-      console.log(state.BookPage + state.skipNextAmount)
+      console.log("going to page: " + (state.BookPage + state.skipNextAmount))
       return state.BookPage + state.skipNextAmount;
     },
     nextBookHREF: state => {
@@ -359,6 +359,13 @@ export default createStore({
     },
     TOGGLE_MODAL(state, bModalOn) {
       state.bookStyle.showModal = bModalOn;
+    },
+    ADD_POINTS(state, points) {
+
+      state.Scores[0].NewScore = state.Scores[0].NewScore + Math.round(points);
+    },
+    START_SCORE_TIMER(state) {
+      state.timerStart = new Date().getTime();
     },
 
     SET_PAGE_STYLE(state) {
@@ -513,7 +520,7 @@ export default createStore({
         dispatch('setPageType', 'passAnimation')
       }
       else if (state.turnOffAnimations && answerArray[index].isCorrectAnswer == true) {
-        dispatch('gotoNext');
+        dispatch('dinoAnimationDone');
       }
     },
     dinoAnimationDone({ commit, dispatch, state }) {
@@ -523,6 +530,7 @@ export default createStore({
         dispatch('setPageType', 'questionLoaded')
       }
       else {
+        dispatch('addPoints')
         dispatch('gotoNext');
       }
     },
@@ -546,7 +554,6 @@ export default createStore({
     gotoNext({ commit, state, dispatch, getters }) {
 
       let tempPage = getters.nextPage();
-      console.log('got here' + tempPage)
       if (tempPage > getters.HighestPage) {
         dispatch("setHighestPage", tempPage);
       }
@@ -557,8 +564,8 @@ export default createStore({
 
     },
     questionLoadDone({ commit, dispatch }) {
-      let a = 'questionLoaded';
-      dispatch('setPageType', a);
+      dispatch('setPageType', 'questionLoaded');
+      dispatch('startScoreTimer')
     },
     increaseBooksToDisplay({ commit }, increaseNumber) {
       commit('INCREASE_BOOKS_TO_DISPLAY', increaseNumber);
@@ -578,14 +585,38 @@ export default createStore({
       dispatch("ClearScores");
       dispatch("toggleModal", false)
       router.push(`/book/${state.BookId}/1`);
-      console.log(state.playerName + "playerName")
       dispatch("setPageType")
+    },
+    addPoints({ commit, state, getters }) {
+      let timeToAnswer = (new Date().getTime() - state.timerStart) / 1000;
+      let points = 0;
+      const fullPointTime = .5;
+      const smallPointTime = 20;
+      if (timeToAnswer < fullPointTime) {
+        points = 100;
+      }
+      else if (timeToAnswer > smallPointTime) {
+
+        points = 20;
+      }
+      else {
+        points = -80 / (smallPointTime - fullPointTime) * (timeToAnswer - fullPointTime) + 100
+      }
+
+
+      console.log(getters.isDoublePoints(state.BookPage))
+      if (getters.isDoublePoints(state.BookPage)) {
+        points = points * 2;
+      }
+      commit('ADD_POINTS', points);
+    },
+    startScoreTimer({ commit }) {
+      commit('START_SCORE_TIMER');
     },
 
 
 
     setPageType({ commit, dispatch, state }, microType) {
-      console.log(state.BookPage)
       const pageIndex = parseInt(state.BookPage) - 1;
       if (microType === undefined)
         microType = state.BookData.pages[pageIndex].type;
@@ -601,9 +632,8 @@ export default createStore({
         //need to fix 0 up there
         commit('SET_PAGE_TYPE', "questionAnsweredCorrect")
       }
-      else if (mainType == 'question' && state.turnOffAnimations) {
-        //need to fix 0 up there
-        commit('SET_PAGE_TYPE', "questionLoaded")
+      else if (mainType == 'question' && microType != 'questionLoaded' && state.turnOffAnimations) {
+        dispatch('questionLoadDone')
       }
       else if (microType == 'read' && state.textSeriesRevealed >= textArray.length) {
         commit('SET_PAGE_TYPE', 'readFull')

@@ -139,7 +139,6 @@ export default {
       } else if (this.animationStep == "D2") {
         this.animationStep = "D3";
       }
-      console.log(this.animationStep);
     },
     ...mapActions(["setPageStyle"]),
     answerClicked(index) {
