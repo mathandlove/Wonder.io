@@ -1,13 +1,9 @@
 <template>
-  <div class="bg-light">
+  <div>
     <div class="navBarColor navBarHeight row text-center">
-      <div class="col-2 p-0 m-0">
+      <div class="p-0 m-0">
         <router-link to="/">
-          <img
-            class="menuIconSize"
-            alt=""
-            src="../assets/Images/MenuButton.png"
-          />
+          <img class="menuIconSize" alt="" src="../assets/Images/home.png" />
         </router-link>
       </div>
       <input
@@ -15,15 +11,16 @@
         type="text"
         placeholder="Search..."
         v-model="WordFilter"
+        v-if="false"
       />
-      <div class="col-6 col-md-4">
+      <div class="wonderLogo">
         <img
           class="WonderLogoStyle"
           alt=""
           src="../assets/Images/WonderStories_Logo_BlackAlt.png"
         />
       </div>
-      <div class="col-md-4 d-none d-md-block">
+      <div v-if="false" class="col-md-4 d-none d-md-block">
         <div>GradeFilter: {{ GradeFilter }}</div>
         <div>WordFilter: {{ WordFilter }}</div>
       </div>
@@ -151,7 +148,13 @@ export default {
 .menuIconSize {
   height: 5vh;
   margin-top: 1.5vh;
+  position: absolute;
+  right: 5%;
   width: auto;
+}
+.wonderLogo {
+  position: absolute;
+  left: 8%;
 }
 .cardSize img:hover {
   cursor: pointer;

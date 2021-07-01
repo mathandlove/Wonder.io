@@ -339,7 +339,7 @@ export default createStore({
         state.GradeBookOrder[state.GradeFilter];
 
       //Remove when working
-      let gbo = gradeBookOrder.slice(0, 42); //I'm slicing gO because it repeats itself on my computer.
+      let gbo = gradeBookOrder.reverse().slice(0, 42); //I'm slicing gO because it repeats itself on my computer.
       //Remove when working
 
       gbo = gbo.map(String);
