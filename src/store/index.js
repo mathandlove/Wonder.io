@@ -31,12 +31,12 @@ export default createStore({
     BookId: +localStorage.getItem('BookId') || 10,
     BookPage: +parseInt(localStorage.getItem('BookPage')) || 1,
     AspectRatio: +localStorage.getItem('AspectRatio') || 1,
-    Scores: JSON.parse(localStorage.getItem('Scores')) || [
+    Scores: [
       {
-        id: 0, name: 'Player1', OldScore: 0, NewScore: 0,
+        id: 0, name: 'Player1', OldScore: 50, NewScore: 100,
       },
       {
-        id: 1, name: 'BotName1', OldScore: 0, NewScore: 0,
+        id: 1, name: 'Bender', OldScore: 0, NewScore: 200,
       },
       {
         id: 2, name: 'BotName2', OldScore: 0, NewScore: 0,
@@ -45,6 +45,8 @@ export default createStore({
         id: 3, name: 'BotName3', OldScore: 0, NewScore: 0,
       },
     ],
+
+    // JSON.parse(localStorage.getItem('Scores')) || 
     //Aaron here a variety of things I need for each page.
     //Also note that some of my Getters actually found somethings in your BookData in case you chage that.
 
@@ -142,6 +144,9 @@ export default createStore({
 
     playerScore: state => {
       return state.Scores[0].NewScore;
+    },
+    allScoreCards: state => {
+      return state.Scores;
     },
 
     scoreRank: state => {
@@ -367,6 +372,15 @@ export default createStore({
     START_SCORE_TIMER(state) {
       state.timerStart = new Date().getTime();
     },
+    UPDATE_SCORES(state) {
+      console.log(state.Scores)
+      state.Scores = state.Scores.sort(function compareFn(a, b) {
+        return b.NewScore - a.NewScore;
+      });
+
+
+
+    },
 
     SET_PAGE_STYLE(state) {
       const type = state.pageMicroType;
@@ -531,7 +545,7 @@ export default createStore({
       }
       else {
         dispatch('addPoints')
-        dispatch('gotoNext');
+        dispatch('setPageType', 'scorePage')
       }
     },
     setChoiceClicked({ commit, dispatch, state }, skipVal) {
@@ -612,6 +626,9 @@ export default createStore({
     },
     startScoreTimer({ commit }) {
       commit('START_SCORE_TIMER');
+    },
+    updateScores({ commit }) {
+      commit('UPDATE_SCORES')
     },
 
 

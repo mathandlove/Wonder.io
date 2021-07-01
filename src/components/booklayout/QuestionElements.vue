@@ -11,11 +11,16 @@
     "
     :readyToAnimate="pageNum === pageNumber"
   />
+  <!-- <score-page
+    v-show="(pageMicroType === 'scorePage' && pageNum === pageNumber) || true"
+  /> -->
+  <score-page v-if="pageNum === pageNumber" />
   <div
     v-show="
       (pageMicroType === 'questionLoaded' ||
         pageMicroType === 'questionAnsweredCorrect') &&
-      pageNum === pageNumber
+      pageNum === pageNumber &&
+      false
     "
   >
     <div class="questionNumber">
@@ -79,10 +84,12 @@
 import { mapActions, mapGetters } from "vuex";
 import FailAnimation from "@/components/booklayout/FailAnimation.vue";
 import QuestionLoadElements from "@/components/booklayout/QuestionLoadElements.vue";
+import ScorePage from "@/components/booklayout/ScorePage.vue";
 export default {
   components: {
     FailAnimation,
     QuestionLoadElements,
+    ScorePage,
   },
   data() {
     const Baseline = {
