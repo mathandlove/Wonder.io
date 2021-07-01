@@ -1,5 +1,5 @@
 <template>
-  <div>
+  <div class="noSelectText">
     <div class="navBarColor navBarHeight row text-center">
       <div class="p-0 m-0">
         <router-link to="/">
@@ -193,6 +193,10 @@ export default {
 
 body {
   overflow-x: hidden;
+}
+
+.noSelectText {
+  user-select: none;
 }
 
 @media (max-width: 1400px) {
