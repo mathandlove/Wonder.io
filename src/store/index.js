@@ -70,7 +70,8 @@ export default createStore({
 
     textSeriesRevealed: 1,
     pageMicroType: "read",
-    playerName: ''
+    playerName: '',
+    turnOffAnimations: false
     //pageMicroType determines that exact state of  the page for example there's a difference between read and read fully
 
   },
@@ -242,6 +243,9 @@ export default createStore({
     },
     booksToDisplay: (state) => {
       return state.booksToDisplay;
+    },
+    turnOffAnimations: (state) => {
+      return state.turnOffAnimations;
     }
   },
   mutations: {
@@ -502,14 +506,19 @@ export default createStore({
       commit('SET_ANSWER_CLICKED', index);
       const pageIndex = parseInt(state.BookPage) - 1;
       const answerArray = [...state.BookData.pages[pageIndex].pageParts[0].lineParts].splice(1);
-      if (answerArray[index].isCorrectAnswer == false) {
+      if (answerArray[index].isCorrectAnswer == false && !state.turnOffAnimations) {
         dispatch('setPageType', 'failAnimation')
       }
-      else {
+      else if (!state.turnOffAnimations) {
         dispatch('setPageType', 'passAnimation')
+      }
+      else if (state.turnOffAnimations && answerArray[index].isCorrectAnswer == true) {
+        dispatch('gotoNext');
       }
     },
     dinoAnimationDone({ commit, dispatch, state }) {
+      console.log('dinoAnimationDone')
+
       if (state.pageMicroType == "failAnimation") {
         dispatch('setPageType', 'questionLoaded')
       }
@@ -580,6 +589,7 @@ export default createStore({
       const pageIndex = parseInt(state.BookPage) - 1;
       if (microType === undefined)
         microType = state.BookData.pages[pageIndex].type;
+      let mainType = state.BookData.pages[pageIndex].type;
       var answerArray = [];
       var textArray = [];
       if (state.BookData.pages[pageIndex].pageParts.length > 0) {
@@ -590,6 +600,10 @@ export default createStore({
       if (microType == 'question' && answerArray.some(e => e.clickedOn && e.isCorrectAnswer)) {
         //need to fix 0 up there
         commit('SET_PAGE_TYPE', "questionAnsweredCorrect")
+      }
+      else if (mainType == 'question' && state.turnOffAnimations) {
+        //need to fix 0 up there
+        commit('SET_PAGE_TYPE', "questionLoaded")
       }
       else if (microType == 'read' && state.textSeriesRevealed >= textArray.length) {
         commit('SET_PAGE_TYPE', 'readFull')

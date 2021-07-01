@@ -108,6 +108,7 @@ export default {
       "pageType",
       "pageMicroType",
       "pageNumber",
+      "turnOffAnimations",
     ]),
   },
   methods: {
