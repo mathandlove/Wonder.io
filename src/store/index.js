@@ -6,7 +6,38 @@ import router from '../router/index.js'
 const resource_uri = 'https://localhost:5001/book';
 // const resource_uri = 'https://wonderstories-api-dev-as.azurewebsites.net/book';
 
+
+//Helper Functions
+
+const randomNum = (a, b) => {
+  const minNum = Math.ceil(a);
+  const maxNum = Math.floor(b);
+  return Math.floor(Math.random() * (maxNum - minNum + 1) + minNum);
+}
+
+const boundScore = (newScore, oldScore, pointsDoubled) => {
+  console.log(newScore)
+  console.log(oldScore)
+  console.log(pointsDoubled)
+  if (newScore - oldScore < 200 * (pointsDoubled ? 2 : 1)) {
+    return oldScore + 200 * (pointsDoubled ? 2 : 1);
+  }
+  else if (pointsDoubled && newScore - oldScore > 2000) {
+    return oldScore + 2000;
+  }
+  else if (!pointsDoubled && newScore - oldScore > 1000) {
+    return oldScore + 1000;
+  }
+  else {
+    return newScore;
+  }
+}
+
+
+
 export default createStore({
+
+
   state: {
     GradeFilter: +localStorage.getItem('GradeFilter') || 'none',
     GradeBookOrder: JSON.parse(localStorage.getItem('GradeBookOrder')) || {
@@ -33,16 +64,16 @@ export default createStore({
     AspectRatio: +localStorage.getItem('AspectRatio') || 1,
     Scores: [
       {
-        id: 0, name: 'Player1', OldScore: 50, NewScore: 100,
+        id: 0, name: 'Player1', OldScore: 0, NewScore: 0, upRank: false
       },
       {
-        id: 1, name: 'Bender', OldScore: 0, NewScore: 1200,
+        id: 1, name: 'Crafter234', OldScore: 0, NewScore: 0, upRank: false
       },
       {
-        id: 2, name: 'BotName2', OldScore: 0, NewScore: 0,
+        id: 2, name: 'MadderMax', OldScore: 0, NewScore: 0, upRank: false
       },
       {
-        id: 3, name: 'BotName3', OldScore: 0, NewScore: 0,
+        id: 3, name: 'GoofyCat6', OldScore: 0, NewScore: 0, upRank: false
       },
     ],
 
@@ -73,7 +104,7 @@ export default createStore({
     textSeriesRevealed: 1,
     pageMicroType: "read",
     playerName: '',
-    turnOffAnimations: false,
+    turnOffAnimations: true,
     timerStart: 0
     //pageMicroType determines that exact state of  the page for example there's a difference between read and read fully
 
@@ -240,6 +271,11 @@ export default createStore({
       return getters.questionNumber(pageNumber) / totalQuestions > .6
 
     },
+    isLastQuestion: (state, getters) => pageNumber => {
+      var totalQuestions = state.BookData.pages.filter(page => page.questionNumber > 0).length;
+      return getters.questionNumber(pageNumber) == totalQuestions;
+
+    },
     showQuestionImage: (state, getters) => {
       return getters.answerArray[0].lineType == "answerCoords";
     },
@@ -252,7 +288,11 @@ export default createStore({
     },
     turnOffAnimations: (state) => {
       return state.turnOffAnimations;
+    },
+    firstBookReadEver: (state) => {
+      return false;
     }
+
   },
   mutations: {
     SET_BOOK_LIST(state, event) {
@@ -292,15 +332,8 @@ export default createStore({
       state.AspectRatio = event;
       localStorage.setItem('AspectRatio', event);
     },
-    SET_USER_NAME(state, event) {
-      state.Scores[event.id].name = event.name;
-      localStorage.setItem('Scores', JSON.stringify(state.Scores));
-    },
-    SET_USER_SCORE_ADD(state, event) {
-      state.Scores[event.id].OldScore = state.Scores[event.id].NewScore;
-      state.Scores[event.id].NewScore += event.add;
-      localStorage.setItem('Scores', JSON.stringify(state.Scores));
-    },
+
+
     CLEAR_SCORES(state) {
       for (let i = 0; i <= 3; i += 1) {
         state.Scores[i].OldScore = 0;
@@ -369,6 +402,13 @@ export default createStore({
     ADD_POINTS(state, points) {
       const index = state.Scores.map(e => e.id).indexOf(0)
       state.Scores[index].NewScore = state.Scores[index].NewScore + Math.round(points);
+    },
+    SET_BOT_POINTS(state, aPoints) {
+      let index = 0
+      for (let i = 1; i < 4; i++) {
+        index = state.Scores.map(e => e.id).indexOf(i)
+        state.Scores[index].NewScore = Math.round(aPoints[i - 1])
+      }
     },
     START_SCORE_TIMER(state) {
       state.timerStart = new Date().getTime();
@@ -612,26 +652,93 @@ export default createStore({
     addPoints({ commit, state, getters }) {
       let timeToAnswer = (new Date().getTime() - state.timerStart) / 1000;
       let points = 0;
-      const fullPointTime = .5;
+      const fullPointTime = .1;
       const smallPointTime = 20;
       if (timeToAnswer < fullPointTime) {
-        points = 100;
+        points = 1000;
       }
       else if (timeToAnswer > smallPointTime) {
 
-        points = 20;
+        points = 200;
       }
       else {
-        points = -80 / (smallPointTime - fullPointTime) * (timeToAnswer - fullPointTime) + 100
+        points = -800 / (smallPointTime - fullPointTime) * (timeToAnswer - fullPointTime) + 1000
       }
 
 
-      console.log(getters.isDoublePoints(state.BookPage))
+
       if (getters.isDoublePoints(state.BookPage)) {
         points = points * 2;
       }
       commit('ADD_POINTS', points);
+      this.dispatch('setBotPoints')
     },
+    setBotPoints({ commit, state, getters }) {
+      let index = 0;
+      let idealNewScore = 0;
+      const isDouble = getters.isDoublePoints(state.BookPage);
+      // Bot 1
+      index = state.Scores.map(e => e.id).indexOf(1)
+      idealNewScore = getters.playerScore + randomNum(-1500, 1500)
+      let bot1Score = boundScore(idealNewScore, state.Scores[index].OldScore, isDouble);
+
+      index = state.Scores.map(e => e.id).indexOf(2)
+      idealNewScore = getters.playerScore + randomNum(-500, 500)
+      let bot2Score = boundScore(idealNewScore, state.Scores[index].OldScore, isDouble);
+
+      index = state.Scores.map(e => e.id).indexOf(3)
+      idealNewScore = getters.playerScore + randomNum(-800, -1)
+      let bot3Score = boundScore(idealNewScore, state.Scores[index].OldScore, isDouble);
+
+      if (getters.isLastQuestion(state.BookPage)) {
+        let playerWins = true;
+        if (Math.random() < .15) {
+          playerWins = false;
+        }
+
+        if (playerWins || getters.firstBookReadEver) {
+          index = state.Scores.map(e => e.id).indexOf(1)
+          idealNewScore = getters.playerScore + randomNum(-1500, -1)
+          bot1Score = boundScore(idealNewScore, state.Scores[index].OldScore, isDouble);
+
+          index = state.Scores.map(e => e.id).indexOf(2)
+          idealNewScore = getters.playerScore + randomNum(-200, -1)
+          bot2Score = boundScore(idealNewScore, state.Scores[index].OldScore, isDouble);
+
+          index = state.Scores.map(e => e.id).indexOf(3)
+          idealNewScore = getters.playerScore + randomNum(-2000, -1000)
+          bot3Score = boundScore(idealNewScore, state.Scores[index].OldScore, isDouble);
+
+        }
+        else {
+
+          index = state.Scores.map(e => e.id).indexOf(2)
+          idealNewScore = getters.playerScore + randomNum(1, 250)
+          bot2Score = boundScore(idealNewScore, state.Scores[index].OldScore, isDouble);
+          if (bot2Score < getters.playerScore) {
+            index = state.Scores.map(e => e.id).indexOf(1)
+            idealNewScore = getters.playerScore + randomNum(1, 250)
+            bot1Score = boundScore(idealNewScore, state.Scores[index].OldScore, isDouble);
+          }
+          else {
+            index = state.Scores.map(e => e.id).indexOf(1)
+            idealNewScore = getters.playerScore + randomNum(-200, -1)
+            bot1Score = boundScore(idealNewScore, state.Scores[index].OldScore, isDouble);
+          }
+
+
+          index = state.Scores.map(e => e.id).indexOf(3)
+          idealNewScore = getters.playerScore + randomNum(-800, -1)
+          bot3Score = boundScore(idealNewScore, state.Scores[index].OldScore, isDouble);
+
+        }
+
+
+      }
+
+      commit('SET_BOT_POINTS', [bot1Score, bot2Score, bot3Score])
+    },
+
     startScoreTimer({ commit }) {
       commit('START_SCORE_TIMER');
     },
@@ -663,7 +770,7 @@ export default createStore({
         //need to fix 0 up there
         commit('SET_PAGE_TYPE', "questionAnsweredCorrect")
       }
-      else if (mainType == 'question' && microType != 'questionLoaded' && microType != 'questionScoreUpdated' && state.turnOffAnimations) {
+      else if (mainType == 'question' && microType != 'questionLoaded' && microType != 'questionScoreUpdated' && microType != 'scorePage' && state.turnOffAnimations) {
         dispatch('questionLoadDone')
       }
       else if (microType == 'read' && state.textSeriesRevealed >= textArray.length) {

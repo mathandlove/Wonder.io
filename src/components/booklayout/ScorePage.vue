@@ -40,7 +40,7 @@ export default {
 
   mounted() {
     // this.$store.dispatch("setPageStyle", "question");
-    setTimeout(this.sortScore, 2000);
+    setTimeout(this.sortScore, 1200);
   },
   dismounted() {},
 

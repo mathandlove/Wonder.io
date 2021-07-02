@@ -20,12 +20,15 @@ export default {
       if (this.number == this.displayNumber) {
         return;
       }
-
       this.interval = window.setInterval(() => {
         if (this.displayNumber != this.number) {
-          var change = (this.number - this.displayNumber) / 30;
+          var change = 50;
           change = change >= 0 ? Math.ceil(change) : Math.floor(change);
-          this.displayNumber = this.displayNumber + change;
+          this.displayNumber = Math.min(
+            this.displayNumber + change,
+            this.number
+          );
+
           if (this.displayNumber == this.number) {
             clearInterval(this.interval);
           }
