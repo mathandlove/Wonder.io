@@ -36,7 +36,7 @@ export default createStore({
         id: 0, name: 'Player1', OldScore: 50, NewScore: 100,
       },
       {
-        id: 1, name: 'Bender', OldScore: 0, NewScore: 200,
+        id: 1, name: 'Bender', OldScore: 0, NewScore: 1200,
       },
       {
         id: 2, name: 'BotName2', OldScore: 0, NewScore: 0,
@@ -73,7 +73,7 @@ export default createStore({
     textSeriesRevealed: 1,
     pageMicroType: "read",
     playerName: '',
-    turnOffAnimations: true,
+    turnOffAnimations: false,
     timerStart: 0
     //pageMicroType determines that exact state of  the page for example there's a difference between read and read fully
 
@@ -143,7 +143,8 @@ export default createStore({
     },
 
     playerScore: state => {
-      return state.Scores[0].NewScore;
+      const index = state.Scores.map(e => e.id).indexOf(0)
+      return state.Scores[index].NewScore;
     },
     allScoreCards: state => {
       return state.Scores;
@@ -366,17 +367,17 @@ export default createStore({
       state.bookStyle.showModal = bModalOn;
     },
     ADD_POINTS(state, points) {
-
-      state.Scores[0].NewScore = state.Scores[0].NewScore + Math.round(points);
+      const index = state.Scores.map(e => e.id).indexOf(0)
+      state.Scores[index].NewScore = state.Scores[index].NewScore + Math.round(points);
     },
     START_SCORE_TIMER(state) {
       state.timerStart = new Date().getTime();
     },
     UPDATE_SCORES(state) {
-      console.log(state.Scores)
       state.Scores = state.Scores.sort(function compareFn(a, b) {
         return b.NewScore - a.NewScore;
       });
+      state.Scores.map(a => a.OldScore = a.NewScore)
 
 
 
@@ -407,6 +408,13 @@ export default createStore({
         state.bookStyle.showNextButton = false;
         state.bookStyle.showPrevButton = false;
       }
+      else if (type == "questionScoreUpdated") {
+        state.bookStyle.sheetHasLines = false;
+        state.bookStyle.showNextButton = true;
+        state.bookStyle.showPrevButton = true;
+
+      }
+
       else if (type == "questionAnsweredCorrect") {
         state.bookStyle.sheetHasLines = false;
         state.bookStyle.showPrevButton = true;
@@ -627,8 +635,12 @@ export default createStore({
     startScoreTimer({ commit }) {
       commit('START_SCORE_TIMER');
     },
-    updateScores({ commit }) {
+    updateScores({ commit, dispatch }) {
       commit('UPDATE_SCORES')
+
+    },
+    scoreAnimationComplete({ commit, dispatch }) {
+      dispatch("setPageType", "questionScoreUpdated")
     },
 
 
@@ -645,11 +657,13 @@ export default createStore({
         textArray = textArray.concat([...state.BookData.pages[pageIndex].pageParts[0].lineParts]);
       }
 
+      console.log("commit: " + microType)
+
       if (microType == 'question' && answerArray.some(e => e.clickedOn && e.isCorrectAnswer)) {
         //need to fix 0 up there
         commit('SET_PAGE_TYPE', "questionAnsweredCorrect")
       }
-      else if (mainType == 'question' && microType != 'questionLoaded' && state.turnOffAnimations) {
+      else if (mainType == 'question' && microType != 'questionLoaded' && microType != 'questionScoreUpdated' && state.turnOffAnimations) {
         dispatch('questionLoadDone')
       }
       else if (microType == 'read' && state.textSeriesRevealed >= textArray.length) {

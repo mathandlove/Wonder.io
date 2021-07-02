@@ -46,7 +46,11 @@ export default {
 
   methods: {
     sortScore() {
+      console.log("got here");
       this.$store.dispatch("updateScores");
+      setTimeout(this.scoreComplete, 700);
+    },
+    scoreComplete() {
       this.$store.dispatch("scoreAnimationComplete");
     },
   },

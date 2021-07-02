@@ -14,13 +14,18 @@
   <!-- <score-page
     v-show="(pageMicroType === 'scorePage' && pageNum === pageNumber) || true"
   /> -->
-  <score-page v-if="pageNum === pageNumber" />
+  <score-page
+    v-if="
+      (pageMicroType === 'scorePage' ||
+        pageMicroType === 'questionScoreUpdated') &&
+      pageNum === pageNumber
+    "
+  />
   <div
     v-show="
       (pageMicroType === 'questionLoaded' ||
         pageMicroType === 'questionAnsweredCorrect') &&
-      pageNum === pageNumber &&
-      false
+      pageNum === pageNumber
     "
   >
     <div class="questionNumber">
