@@ -1,7 +1,7 @@
 <template>
   <notebook-page :allInvisible="pageNum !== pageNumber">
     <question-title-elements
-      v-if="pageType(pageNum) === 'questiontitle'"
+      v-if="pageType(pageNum) === 'questionTitle'"
       :pageNum="pageNum"
     />
     <read-elements
