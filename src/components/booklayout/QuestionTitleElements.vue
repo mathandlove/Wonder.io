@@ -15,9 +15,7 @@ import { mapGetters } from "vuex";
 export default {
   components: {},
   props: ["pageNum"],
-  mounted() {
-    // this.$store.dispatch("setPageType", "questiontitle");
-  },
+  mounted() {},
   dismounted() {},
   computed: {
     ...mapGetters(["questionNumber", "mainText", "mainText"]),

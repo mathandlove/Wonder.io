@@ -164,10 +164,10 @@ export default createStore({
     },
     pageType: state => {
       let pageNumber = parseInt(state.BookPage);
-      return state.BookData.pages[pageNumber - 1].type;
+      return state.BookData.pages[pageNumber - 1].type.toLowerCase();
     },
     pageType: state => pageNumber => {
-      return state.BookData.pages[pageNumber - 1].type;
+      return state.BookData.pages[pageNumber - 1].type.toLowerCase();
     },
     pageMicroType: state => {
       return state.pageMicroType;
@@ -432,6 +432,7 @@ export default createStore({
       state.bookStyle.showNextButton = true;
       state.bookStyle.showNotepadClickButton = false;
       state.bookStyle.showCover = false;
+      state.bookStyle.sheetHasLines = false;
       if (type == "questiontitle") {
         state.bookStyle.sheetHasLines = false;
       }
@@ -439,23 +440,23 @@ export default createStore({
         state.bookStyle.sheetHasLines = false;
         state.bookStyle.showNextButton = false;
       }
-      else if (type == "questionLoaded") {
+      else if (type == "questionloaded") {
         state.bookStyle.sheetHasLines = false;
         state.bookStyle.showNextButton = false;
       }
-      else if (type == "failAnimation" || type == "passAnimation") {
+      else if (type == "failanimation" || type == "passanimation") {
         state.bookStyle.sheetHasLines = false;
         state.bookStyle.showNextButton = false;
         state.bookStyle.showPrevButton = false;
       }
-      else if (type == "questionScoreUpdated") {
+      else if (type == "questionscoreupdated") {
         state.bookStyle.sheetHasLines = false;
         state.bookStyle.showNextButton = true;
         state.bookStyle.showPrevButton = true;
 
       }
 
-      else if (type == "questionAnsweredCorrect") {
+      else if (type == "questionansweredcorrect") {
         state.bookStyle.sheetHasLines = false;
         state.bookStyle.showPrevButton = true;
         state.bookStyle.showNextButton = true;
@@ -480,9 +481,10 @@ export default createStore({
           state.bookStyle.showNextButton = true;
         }
       }
-      else if (type == 'readFull') {
+      else if (type == 'readfull') {
         state.bookStyle.showNotepadClickButton = false;
         state.bookStyle.showNextButton = true;
+        state.bookStyle.sheetHasLines = true;
       }
       else if (type == 'end') {
         state.bookStyle.showNextButton = false;
@@ -576,10 +578,10 @@ export default createStore({
       const pageIndex = parseInt(state.BookPage) - 1;
       const answerArray = [...state.BookData.pages[pageIndex].pageParts[0].lineParts].splice(1);
       if (answerArray[index].isCorrectAnswer == false && !state.turnOffAnimations) {
-        dispatch('setPageType', 'failAnimation')
+        dispatch('setPageType', 'failanimation')
       }
       else if (!state.turnOffAnimations) {
-        dispatch('setPageType', 'passAnimation')
+        dispatch('setPageType', 'passanimation')
       }
       else if (state.turnOffAnimations && answerArray[index].isCorrectAnswer == true) {
         dispatch('dinoAnimationDone');
@@ -588,12 +590,12 @@ export default createStore({
     dinoAnimationDone({ commit, dispatch, state }) {
       console.log('dinoAnimationDone')
 
-      if (state.pageMicroType == "failAnimation") {
-        dispatch('setPageType', 'questionLoaded')
+      if (state.pageMicroType == "failanimation") {
+        dispatch('setPageType', 'questionloaded')
       }
       else {
         dispatch('addPoints')
-        dispatch('setPageType', 'scorePage')
+        dispatch('setPageType', 'scorepage')
       }
     },
     setChoiceClicked({ commit, dispatch, state }, skipVal) {
@@ -626,7 +628,7 @@ export default createStore({
 
     },
     questionLoadDone({ commit, dispatch }) {
-      dispatch('setPageType', 'questionLoaded');
+      dispatch('setPageType', 'questionloaded');
       dispatch('startScoreTimer')
     },
     increaseBooksToDisplay({ commit }, increaseNumber) {
@@ -747,7 +749,7 @@ export default createStore({
 
     },
     scoreAnimationComplete({ commit, dispatch }) {
-      dispatch("setPageType", "questionScoreUpdated")
+      dispatch("setPageType", "questionscoreupdated")
     },
 
 
@@ -755,7 +757,10 @@ export default createStore({
     setPageType({ commit, dispatch, state }, microType) {
       const pageIndex = parseInt(state.BookPage) - 1;
       if (microType === undefined)
-        microType = state.BookData.pages[pageIndex].type;
+        microType = state.BookData.pages[pageIndex].type.toLowerCase();
+      else {
+        microType = microType.toLowerCase();
+      }
       let mainType = state.BookData.pages[pageIndex].type;
       var answerArray = [];
       var textArray = [];
@@ -770,11 +775,11 @@ export default createStore({
         //need to fix 0 up there
         commit('SET_PAGE_TYPE', "questionAnsweredCorrect")
       }
-      else if (mainType == 'question' && microType != 'questionLoaded' && microType != 'questionScoreUpdated' && microType != 'scorePage' && state.turnOffAnimations) {
+      else if (mainType == 'question' && microType != 'questionloaded' && microType != 'questionscoreupdated' && microType != 'scorepage' && state.turnOffAnimations) {
         dispatch('questionLoadDone')
       }
       else if (microType == 'read' && state.textSeriesRevealed >= textArray.length) {
-        commit('SET_PAGE_TYPE', 'readFull')
+        commit('SET_PAGE_TYPE', 'readfull')
       }
       else if (microType == 'cover' && state.playerName == "") {
         commit('SET_PAGE_TYPE', 'join')

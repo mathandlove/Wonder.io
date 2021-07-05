@@ -102,21 +102,11 @@ export default {
   computed: {
     ...mapGetters([
       "sheetHasLines",
-      "pageType",
       "coverHREF",
       "onNotepadClick",
       "bookStyle",
     ]),
 
-    notepadImageLocation() {
-      if (this.bookStyle.showCover) {
-        return this.coverHREF;
-      } else if (this.bookStyle.sheetHasLines) {
-        return require("@/assets/Images/notepadWithLines.png");
-      } else {
-        return require("@/assets/Images/NotepadWithoutLines.png");
-      }
-    },
     leftArrowSize() {
       const size = 0.08 * this.ih + "px";
       const temp = {

@@ -84,7 +84,6 @@ export default {
     },
     ...mapState(["BookData", "bookStyle", "textSeriesRevealed"]),
     ...mapGetters([
-      "pageType",
       "seriesAllRead",
       "nextPage",
       "pageMicroType",

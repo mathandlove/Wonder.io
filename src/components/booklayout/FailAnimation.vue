@@ -76,8 +76,8 @@ export default {
     pageMicroType: function () {
       if (
         this.readyToAnimate &&
-        (this.pageMicroType == "failAnimation" ||
-          this.pageMicroType == "passAnimation")
+        (this.pageMicroType == "failanimation" ||
+          this.pageMicroType == "passanimation")
       ) {
         this.animationStep = "D1";
       }
@@ -90,14 +90,14 @@ export default {
   computed: {
     ...mapGetters(["pageMicroType"]),
     correctText() {
-      if (this.pageMicroType == "failAnimation") {
+      if (this.pageMicroType == "failanimation") {
         return "Wrong!";
       } else {
         return "Correct!";
       }
     },
     correctDinoImage() {
-      if (this.pageMicroType == "failAnimation") {
+      if (this.pageMicroType == "failanimation") {
         return require("@/assets/Images/W3.png");
       } else {
         return require("@/assets/Images/D3.png");

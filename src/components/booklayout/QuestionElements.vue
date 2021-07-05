@@ -5,8 +5,8 @@
   />
   <fail-animation
     v-show="
-      (pageMicroType === 'failAnimation' ||
-        pageMicroType === 'passAnimation') &&
+      (pageMicroType === 'failanimation' ||
+        pageMicroType === 'passanimation') &&
       pageNum === pageNumber
     "
     :readyToAnimate="pageNum === pageNumber"
@@ -16,15 +16,15 @@
   /> -->
   <score-page
     v-if="
-      (pageMicroType === 'scorePage' ||
-        pageMicroType === 'questionScoreUpdated') &&
+      (pageMicroType === 'scorepage' ||
+        pageMicroType === 'questionscoreupdated') &&
       pageNum === pageNumber
     "
   />
   <div
     v-show="
-      (pageMicroType === 'questionLoaded' ||
-        pageMicroType === 'questionAnsweredCorrect') &&
+      (pageMicroType === 'questionloaded' ||
+        pageMicroType === 'questionansweredcorrect') &&
       pageNum === pageNumber
     "
   >
@@ -118,7 +118,6 @@ export default {
       "answerArray",
       "showQuestionImage",
       "questionImageUrl",
-      "pageType",
       "pageMicroType",
       "pageNumber",
       "turnOffAnimations",
