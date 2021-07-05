@@ -50,7 +50,7 @@
       <img
         class="mainImage"
         :src="linePart.imageUrl"
-        :style="{ height: 1.45 * linePart.imgHeight - 0.1 + 'em' }"
+        :style="{ height: 1.45 * linePart.imageHeight - 0.1 + 'em' }"
       />
       <!-- lineHieght*imgHeight-descenderHeight -->
     </div>
@@ -70,7 +70,7 @@ export default {
   computed: {
     ...mapGetters(["textSeries"]),
   },
-  method: {},
+  methods: {},
 };
 </script>
 
