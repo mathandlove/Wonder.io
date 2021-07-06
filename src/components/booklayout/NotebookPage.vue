@@ -69,6 +69,7 @@ import NavNextArrowE from "@/atoms/NavNextArrowE.vue";
 import AuthorInfoMobile from "@/components/booklayout/AuthorInfoMobile.vue";
 import RestartModal from "@/molecules/RestartModal.vue";
 import { mapGetters } from "vuex";
+import { mapState } from "vuex";
 export default {
   props: ["allInvisible"],
   components: {
@@ -144,6 +145,7 @@ export default {
     nts() {
       this.baseFontSize = this.ih * 0.04;
       this.lineHeightC = this.ih * 0.04 * 1.45 + "px";
+      this.$store.dispatch("setLineHeightPixels", this.ih * 0.04 * 1.45);
       const ntso = {
         fontSize: this.baseFontSize + "px",
         lineHeight: this.lineHeightC,

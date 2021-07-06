@@ -105,7 +105,8 @@ export default createStore({
     pageMicroType: "read",
     playerName: '',
     turnOffAnimations: true,
-    timerStart: 0
+    timerStart: 0,
+    lineHeightPixels: 1
     //pageMicroType determines that exact state of  the page for example there's a difference between read and read fully
 
   },
@@ -421,6 +422,9 @@ export default createStore({
 
 
 
+    },
+    SET_LINE_HEIGHT_PIXELS(state, val) {
+      state.lineHeightPixels = val;
     },
 
     SET_PAGE_STYLE(state) {
@@ -751,6 +755,9 @@ export default createStore({
     scoreAnimationComplete({ commit, dispatch }) {
       dispatch("setPageType", "questionscoreupdated")
     },
+    setLineHeightPixels({ commit }, val) {
+      commit('SET_LINE_HEIGHT_PIXELS', val)
+    },
 
 
 
@@ -773,7 +780,7 @@ export default createStore({
 
       if (microType == 'question' && answerArray.some(e => e.clickedOn && e.isCorrectAnswer)) {
         //need to fix 0 up there
-        commit('SET_PAGE_TYPE', "questionAnsweredCorrect")
+        commit('SET_PAGE_TYPE', "questionansweredcorrect")
       }
       else if (mainType == 'question' && microType != 'questionloaded' && microType != 'questionscoreupdated' && microType != 'scorepage' && state.turnOffAnimations) {
         dispatch('questionLoadDone')

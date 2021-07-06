@@ -32,11 +32,20 @@
         class="rightCharText"
         :style="{ width: 80 - (linePart.charPadding * 80) / 100 + 20 + '%' }"
         :class="{ robotoRight: linePart.fontStyle == 'Moboto SDF' }"
-        :ref="'rchar' + index"
+        :ref="'rtext' + index"
+        :id="'rtext' + index"
       >
+        <!-- {{ linePart.text + "\n\n" }} -->
         {{ linePart.text + "\n\n" }}
       </div>
-      <img :src="linePart.characterImageUrl" alt="" class="rightCharImage" />
+      <img
+        :src="linePart.characterImageUrl"
+        alt=""
+        class="rightCharImage"
+        @load="adjustTextLine('rchar' + index, 'rtext' + index)"
+        :ref="'rchar' + index"
+        :id="'rchar' + index"
+      />
     </div>
 
     <div
@@ -58,19 +67,36 @@
 </template>
 <script>
 import { mapGetters } from "vuex";
+import { mapState } from "vuex";
 export default {
   components: {},
   props: ["pageNum"],
   data() {
     return {};
   },
-  methods: {},
-  mounted() {},
+
   dismounted() {},
   computed: {
     ...mapGetters(["textSeries"]),
+    ...mapState(["lineHeightPixels"]),
+    debugText() {
+      console.log(this.$refs.rchar1);
+      if (this.$refs.rchar1 != undefined)
+        return this.$refs.rchar1.scrollHeight / this.lineHeightPixels;
+      else {
+        return "waiting";
+      }
+    },
   },
-  methods: {},
+  mounted() {},
+  methods: {
+    adjustTextLine(refChar, refText) {
+      // console.log(this.$refs[refText].scrollHeight / this.lineHeightPixels);
+      // if (this.$refs[refText].scrollHeight / this.lineHeightPixels < 2.1)
+      //   this.$refs[refChar].style.marginTop =
+      //     -0.5 * this.lineHeightPixels + "px";
+    },
+  },
 };
 </script>
 
@@ -95,6 +121,7 @@ export default {
   height: 2.8em;
   position: absolute;
   left: -0.6em;
+  margin-top: -0.5em;
 }
 
 .leftChar {
@@ -111,6 +138,7 @@ export default {
   position: absolute;
   right: -0.5em;
   top: 0em;
+  margin-top: -0.5em;
 }
 
 .rightChar {
