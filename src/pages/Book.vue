@@ -89,6 +89,7 @@ export default {
       "pageMicroType",
       "pageNumber",
       "totalNumberOfPages",
+      "getBookItem",
     ]),
     pageQueue() {
       let prevPage = this.pageNumber - 1;
@@ -144,6 +145,7 @@ export default {
     this.$store.dispatch("setBookId", this.id);
     this.page = this.$route.params.page;
     this.$store.dispatch("setBookPage", this.page);
+    this.$store.dispatch("setNextBookItem", this.id);
   },
   async mounted() {
     await this.$store.dispatch("setBookList").then(async () => {

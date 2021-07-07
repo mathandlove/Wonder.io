@@ -95,8 +95,7 @@ export default createStore({
     totalNumberOfPages: 1,
     author: "",
 
-    nextCoverImageUrl: "", //On the end screen this shows what the next cover of the book down the list
-    nextCoverLink: "/book/11/1", //Link that goes to that next book
+    nextBook: {},
 
     //Everything below are the UX variables you do not need to change.
     bookStyle: {
@@ -267,10 +266,11 @@ export default createStore({
       return state.BookPage + state.skipNextAmount;
     },
     nextBookHREF: state => {
-      return state.nextCoverImageUrl;
+      return state.nextBook.nextCoverImageUrl;
     },
-    linkToNextBook: state => {
-      return state.nextCoverLink;
+    getNextBook: state => {
+
+      return state.nextBook
     },
     isDoublePoints: (state, getters) => {
       var totalQuestions = state.BookData.pages.filter(page => page.questionNumber > 0).length;
@@ -308,7 +308,12 @@ export default createStore({
         state.bookScoresDict = JSON.parse(localStorage.getItem('BookScoresDictionary'));
       }
       return state.bookScoresDict
+    },
+    getBookItem: (state) => {
+      return state.SelectedBookItem
     }
+
+
 
 
   },
@@ -557,9 +562,10 @@ export default createStore({
       }
     },
     SET_NEXT_BOOK(state, bookId) {
-      const nextBook = state.BookArray.filter(book => book.bookId == "" + bookId)[0];
-      state.nextCoverImageUrl = nextBook.bookCoverImageUrl;
-      state.nextCoverLink = nextBook.bookCoverImageUrl;
+      state.nextBook = state.BookArray.filter(book => book.bookId == "1")[0];
+
+      // state.nextCoverImageUrl = nextBook.bookCoverImageUrl;
+      // state.nextBookId = nextBook.bookId;
     }
   },
   actions: {

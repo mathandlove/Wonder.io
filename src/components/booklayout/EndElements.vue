@@ -12,12 +12,16 @@
   >
     <info-pill :value="playerScore" :title="sScoreTitle"></info-pill>
   </div>
-  <router-link :to="linkToNextBook">
-    <div class="nextBookContainer">
-      <img alt="" :src="coverHREF" id="nextBook" />
-      <button>START</button>
-    </div>
-  </router-link>
+
+  <div class="nextBookContainer">
+    <img
+      alt=""
+      :src="getNextBook.bookCoverImageUrl"
+      id="nextBook"
+      @click="BookSelected(getNextBook)"
+    />
+    <button @click="BookSelected(getNextBook)">START</button>
+  </div>
 </template>
 <script>
 import InfoPill from "@/components/ux/InfoPill.vue";
@@ -26,11 +30,27 @@ export default {
   components: {
     InfoPill,
   },
+  props: ["pageNum"],
   methods: {
-    setupNIV() {},
+    BookSelected(bookListItem) {
+      console.log(bookListItem.bookId);
+      this.$store.dispatch("setBookId", bookListItem.bookId);
+      this.$store.dispatch("setBookItem", bookListItem);
+      this.$store.dispatch("fetchBookData", bookListItem.bookId);
+      this.$store.dispatch("setBookPage", 1);
+      this.$store.dispatch("ClearScores");
+      this.$store.dispatch("setNextBookItem", bookListItem.bookId + 1);
+      this.$router.push(`/book/${bookListItem.bookId}/1`);
+    },
   },
   computed: {
-    ...mapGetters(["playerScore", "coverHREF", "linkToNextBook", "scoreRank"]),
+    ...mapGetters([
+      "playerScore",
+      "coverHREF",
+      "nextBookId",
+      "scoreRank",
+      "getNextBook",
+    ]),
     sScoreTitle() {
       if (this.scoreRank == 1) {
         return "First";
@@ -39,7 +59,6 @@ export default {
       }
     },
   },
-  methods: {},
 };
 </script>
 
