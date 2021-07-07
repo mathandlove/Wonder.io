@@ -3,6 +3,9 @@ import axios from 'axios';
 import Book10 from '../assets/Books/book10/book.json';
 import Book10Item from '../assets/Books/book10/book10item.json';
 import router from '../router/index.js'
+import VueResource from 'vue-resource';
+
+
 const resource_uri = 'https://localhost:5001/book';
 // const resource_uri = 'https://wonderstories-api-dev-as.azurewebsites.net/book';
 
@@ -76,6 +79,12 @@ export default createStore({
         id: 3, name: 'GoofyCat6', OldScore: 0, NewScore: 0, upRank: false
       },
     ],
+    bookScoresDict: {
+    },
+    Bookmark: {
+      pageHistory: [],
+      questionsAnswered: [],
+    },
 
     // JSON.parse(localStorage.getItem('Scores')) || 
     //Aaron here a variety of things I need for each page.
@@ -178,6 +187,10 @@ export default createStore({
       const index = state.Scores.map(e => e.id).indexOf(0)
       return state.Scores[index].NewScore;
     },
+    playerRank: state => {
+      const index = state.Scores.map(e => e.id).indexOf(0)
+      return 1 + index;
+    },
     allScoreCards: state => {
       return state.Scores;
     },
@@ -247,13 +260,10 @@ export default createStore({
     bookTitle: state => {
       return state.BookData.title;
     },
-    nextPage: state => {
-      console.log('nextpage:' + state.BookPage + state.skipNextAmount)
-      return state.BookPage + state.skipNextAmount;
-    },
+
     nextPage: state => pageNumber => {
       // This needs to access the NextPage of the page property (default is 1)
-      console.log("going to page: " + (state.BookPage + state.skipNextAmount))
+      console.log("going to page: " + (state.BookPage + "+" + state.skipNextAmount))
       return state.BookPage + state.skipNextAmount;
     },
     nextBookHREF: state => {
@@ -290,9 +300,16 @@ export default createStore({
     turnOffAnimations: (state) => {
       return state.turnOffAnimations;
     },
-    firstBookReadEver: (state) => {
-      return false;
+    firstBookReadEver: (state, getters) => {
+      return Object.keys(getters.bookScoresDict).length < 3;
+    },
+    bookScoresDict: (state) => {
+      if (Object.keys(state.bookScoresDict).length == 0) {
+        state.bookScoresDict = JSON.parse(localStorage.getItem('BookScoresDictionary'));
+      }
+      return state.bookScoresDict
     }
+
 
   },
   mutations: {
@@ -410,6 +427,37 @@ export default createStore({
         index = state.Scores.map(e => e.id).indexOf(i)
         state.Scores[index].NewScore = Math.round(aPoints[i - 1])
       }
+    },
+    SAVE_FINAL_SCORE(state, [score, rank, bookNumber]) {
+      let oldScoreDict = JSON.parse(localStorage.getItem('BookScoresDictionary'));
+
+      if (oldScoreDict == undefined) {
+        oldScoreDict = {}
+      }
+      let newScore = 0;
+      let newRank = 4;
+      if (bookNumber in oldScoreDict) {
+        if (oldScoreDict[bookNumber][0] < score) {
+          newScore = score;
+        }
+        else {
+          newScore = oldScoreDict[bookNumber][0];
+        }
+        if (oldScoreDict[bookNumber][1] > rank) {
+          newRank = rank;
+        }
+        else {
+          newRank = oldScoreDict[bookNumber][1];
+        }
+        oldScoreDict[bookNumber] = [newScore, newRank]
+      }
+      else {
+        oldScoreDict[bookNumber] = [score, rank]
+      }
+
+      console.log('saved: ' + bookNumber + " " + rank + " " + score)
+      localStorage.setItem('BookScoresDictionary', JSON.stringify(oldScoreDict));
+      state.bookScoresDict = oldScoreDict;
     },
     START_SCORE_TIMER(state) {
       state.timerStart = new Date().getTime();
@@ -758,6 +806,10 @@ export default createStore({
     setLineHeightPixels({ commit }, val) {
       commit('SET_LINE_HEIGHT_PIXELS', val)
     },
+    saveFinalScore({ commit, getters, state }) {
+
+      commit('SAVE_FINAL_SCORE', [getters.playerScore, getters.playerRank, state.BookId])
+    },
 
 
 
@@ -794,6 +846,11 @@ export default createStore({
       else {
         commit('SET_PAGE_TYPE', microType)
       }
+
+      if (microType == 'end') {
+        dispatch('saveFinalScore')
+      }
+
       dispatch('setPageStyle')
     },
 

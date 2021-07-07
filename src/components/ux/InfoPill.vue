@@ -8,7 +8,7 @@
       justify-content-between
       align-items-center
     "
-    style="background: white"
+    :style="{ background: backgroundColorCalc }"
   >
     <div
       v-if="showProgressBar"
@@ -55,6 +55,10 @@ export default {
       type: Boolean,
       default: false,
     },
+    rank: {
+      type: Number,
+      default: 3,
+    },
   },
   data() {
     return {};
@@ -64,6 +68,15 @@ export default {
       let truePercent = (this.value / this.numberOfPages) * 100;
       const calculatedPercent = 30 + truePercent * 0.7;
       return calculatedPercent + "%";
+    },
+    backgroundColorCalc() {
+      if (this.rank >= 3) {
+        return "white";
+      } else if (this.rank == 2) {
+        return "#B6B6B6";
+      } else if (this.rank == 1) {
+        return "rgb(228,199,77)";
+      }
     },
   },
 };

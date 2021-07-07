@@ -36,10 +36,12 @@
             @load="bookLoaded(Book)"
           />
           <info-pill
-            :value="0"
+            :value="bookScore(Book.bookId)"
             :hasStars="true"
             :showProgressBar="false"
-            :numberOfPages="Book.totalPages"
+            :rank="
+              Book.bookId in bookScoresDict ? bookScoresDict[Book.bookId][1] : 0
+            "
           />
         </div>
       </div>
@@ -69,10 +71,17 @@ export default {
     ...mapState({
       totalBooks: (state) => state.BookArray.length,
     }),
-    ...mapGetters(["booksToDisplay"]),
+    ...mapGetters(["booksToDisplay", "bookScoresDict"]),
   },
+
   components: { InfoPill, BaseSpinner },
   methods: {
+    bookScore(bookNum) {
+      if (bookNum in this.bookScoresDict)
+        return this.bookScoresDict[bookNum][0];
+      else return 0;
+    },
+
     preloadImage: function (url) {
       let img = new Image();
       img.src = url;

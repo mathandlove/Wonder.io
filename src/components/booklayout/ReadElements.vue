@@ -95,6 +95,7 @@ export default {
       // if (this.$refs[refText].scrollHeight / this.lineHeightPixels < 2.1)
       //   this.$refs[refChar].style.marginTop =
       //     -0.5 * this.lineHeightPixels + "px";
+      //Went down a rabbit hole to make the character adjust depending on the amount of text. Ended upbeing better at half all the time.
     },
   },
 };
