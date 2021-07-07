@@ -406,7 +406,7 @@ export default createStore({
         state.GradeBookOrder[state.GradeFilter];
 
       //Remove when working
-      let gbo = gradeBookOrder.reverse().slice(0, 42); //I'm slicing gO because it repeats itself on my computer.
+      let gbo = gradeBookOrder.slice(0, 42); //I'm slicing gO because it repeats itself on my computer.
       //Remove when working
 
       gbo = gbo.map(String);
@@ -561,11 +561,12 @@ export default createStore({
         state.bookStyle.showPagePill = false;
       }
     },
-    SET_NEXT_BOOK(state, bookId) {
-      state.nextBook = state.BookArray.filter(book => book.bookId == "1")[0];
+    SET_NEXT_BOOK(state, oldBookId) {
+      let index = state.filteredBooks.findIndex(book => !(book.bookId in state.bookScoresDict))
+      state.nextBook = state.filteredBooks[index];
+      console.log("set next book to: " + state.nextBook)
+      console.log(state.filteredBooks)
 
-      // state.nextCoverImageUrl = nextBook.bookCoverImageUrl;
-      // state.nextBookId = nextBook.bookId;
     }
   },
   actions: {

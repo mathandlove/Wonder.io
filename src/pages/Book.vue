@@ -145,7 +145,6 @@ export default {
     this.$store.dispatch("setBookId", this.id);
     this.page = this.$route.params.page;
     this.$store.dispatch("setBookPage", this.page);
-    this.$store.dispatch("setNextBookItem", this.id);
   },
   async mounted() {
     await this.$store.dispatch("setBookList").then(async () => {
@@ -158,6 +157,9 @@ export default {
       }
     });
     await this.$store.dispatch("fetchBookData", this.id);
+    this.$store.dispatch("filterBooks");
+    this.$store.dispatch("setNextBookItem", this.id);
+    console.log("created");
   },
   beforeUpdate() {
     this.page = this.$store.state.BookPage;
