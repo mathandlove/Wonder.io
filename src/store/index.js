@@ -403,7 +403,7 @@ export default createStore({
     },
     FILTER_BOOKS(state) {
       let gradeBookOrder =
-        state.GradeBookOrder[state.GradeFilter];
+        state.GradeBookOrder[state.GradeFilter].reverse(); //Note I need to get rid of reverse but the gradebook order is wrong.
 
       //Remove when working
       let gbo = gradeBookOrder.slice(0, 42); //I'm slicing gO because it repeats itself on my computer.
@@ -460,7 +460,7 @@ export default createStore({
         oldScoreDict[bookNumber] = [score, rank]
       }
 
-      console.log('saved: ' + bookNumber + " " + rank + " " + score)
+      console.log('saved score: ' + bookNumber + " " + rank + " " + score)
       localStorage.setItem('BookScoresDictionary', JSON.stringify(oldScoreDict));
       state.bookScoresDict = oldScoreDict;
     },
@@ -564,8 +564,8 @@ export default createStore({
     SET_NEXT_BOOK(state, oldBookId) {
       let index = state.filteredBooks.findIndex(book => !(book.bookId in state.bookScoresDict))
       state.nextBook = state.filteredBooks[index];
-      console.log("set next book to: " + state.nextBook)
-      console.log(state.filteredBooks)
+      console.log("set next book to: " + state.nextBook.bookId)
+
 
     }
   },

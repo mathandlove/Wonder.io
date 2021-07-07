@@ -1,10 +1,10 @@
 <template>
-  <the-background>
+  <FinalScoreAnimation />
+  <the-background v-if="false">
     <MainNavBar @show-modal="this.ViewRestartModal = true" />
 
     <div class="notepadsContainer">
       <filled-page-element v-for="pQ in pageQueue" :key="pQ" :pageNum="pQ">
-        "Why wont you work?"
       </filled-page-element>
     </div>
     <book-footer />
@@ -12,40 +12,25 @@
 </template>
 
 <script>
-import PageRead from "@/organisms/PageRead.vue";
-import PageChapter from "@/organisms/PageChapter.vue";
-import PageCover from "@/organisms/PageCover.vue";
-import PageEnd from "@/organisms/PageEnd.vue";
-import PageChoice from "@/organisms/PageChoice.vue";
-import PageQuestionTitle from "@/organisms/PageQuestionTitle.vue";
-import PageQuestion from "@/organisms/PageQuestion.vue";
-
 import PageNoExist from "@/organisms/PageNoExist.vue";
 
 import MainNavBar from "@/molecules/MainNavBar.vue";
 import BookFooter from "@/components/booklayout/BookFooter.vue";
 import TheBackground from "@/components/ux/TheBackground.vue";
 import FilledPageElement from "@/components/booklayout/FilledPageElement.vue";
-
+import FinalScoreAnimation from "@/components/booklayout/FinalScoreAnimation.vue";
 import { mapState } from "vuex";
 import { mapGetters } from "vuex";
 
 export default {
   components: {
-    PageQuestionTitle,
-    PageChapter,
-    PageRead,
-    PageCover,
-    PageEnd,
-    PageChoice,
-    PageQuestion,
-
     PageNoExist,
 
     MainNavBar,
     BookFooter,
     TheBackground,
     FilledPageElement,
+    FinalScoreAnimation,
   },
   data() {
     const ViewRestartModal = false;
