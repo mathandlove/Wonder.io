@@ -102,7 +102,7 @@ export default {
       this.$store.dispatch("setBookPage", 1);
       this.$store.dispatch("ClearScores");
       this.$store.dispatch("setBookItem", bookListItem);
-      this.$store.dispatch("setNextBookItem", bookId + 1);
+      this.$store.dispatch("setNextBookItem", bookId);
       this.$router.push(`/book/${bookId}/1`);
     },
   },

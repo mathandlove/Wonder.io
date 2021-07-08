@@ -112,11 +112,15 @@ export default createStore({
     playerName: '',
     turnOffAnimations: true,
     timerStart: 0,
-    lineHeightPixels: 1
+    lineHeightPixels: 1,
+    bookDataLoaded: false
     //pageMicroType determines that exact state of  the page for example there's a difference between read and read fully
 
   },
   getters: {
+    bookDataLoaded: state => {
+      return state.bookDataLoaded;
+    },
     getAuthor: state => {
       return state.BookData.author;
     },
@@ -330,6 +334,7 @@ export default createStore({
     },
     SET_BOOK_DATA(state, event) {
       state.BookData = event;
+      state.bookDataLoaded = true;
       localStorage.setItem('BookData', JSON.stringify(state.BookData));
     },
     SET_HIGHEST_PAGE(state, event) {
@@ -338,6 +343,7 @@ export default createStore({
     },
     SET_BOOK_ID(state, event) {
       state.BookId = event;
+      state.bookDataLoaded = false;
       localStorage.setItem('BookId', event);
     },
     SET_BOOK_ITEM(state, event) {
@@ -560,7 +566,7 @@ export default createStore({
       }
     },
     SET_NEXT_BOOK(state, oldBookId) {
-      let index = state.filteredBooks.findIndex(book => !(book.bookId in state.bookScoresDict))
+      let index = state.filteredBooks.findIndex(book => !(book.bookId in state.bookScoresDict) && book.bookId != oldBookId)
       state.nextBook = state.filteredBooks[index];
       console.log("set next book to: " + state.nextBook.bookId)
 
