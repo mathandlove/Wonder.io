@@ -19,9 +19,7 @@ const randomNum = (a, b) => {
 }
 
 const boundScore = (newScore, oldScore, pointsDoubled) => {
-  console.log(newScore)
-  console.log(oldScore)
-  console.log(pointsDoubled)
+
   if (newScore - oldScore < 200 * (pointsDoubled ? 2 : 1)) {
     return oldScore + 200 * (pointsDoubled ? 2 : 1);
   }
@@ -543,7 +541,7 @@ export default createStore({
         state.bookStyle.showNextButton = true;
         state.bookStyle.sheetHasLines = true;
       }
-      else if (type == 'end') {
+      else if (type == 'nextbookpage') {
         state.bookStyle.showNextButton = false;
         state.bookStyle.showPrevButton = false;
         state.bookStyle.showScorePill = false;
@@ -818,11 +816,16 @@ export default createStore({
       commit('SAVE_FINAL_SCORE', [getters.playerScore, getters.playerRank, state.BookId])
     },
 
+    showFinalScoreDone({ commit, dispatch }) {
+      dispatch("setPageType", "nextbookpage")
+    },
 
 
-    setPageType({ commit, dispatch, state }, microType) {
+
+    setPageType({ commit, dispatch, state }, microType = '') {
       const pageIndex = parseInt(state.BookPage) - 1;
-      if (microType === undefined)
+
+      if (microType === '')
         microType = state.BookData.pages[pageIndex].type.toLowerCase();
       else {
         microType = microType.toLowerCase();

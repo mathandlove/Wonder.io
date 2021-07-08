@@ -21,10 +21,7 @@
       v-else-if="pageType(pageNum) === 'chaptertitle'"
       :pageNum="pageNum"
     />
-    <end-elements
-      v-else-if="pageType(pageNum) === 'end' && pageNum === pageNumber"
-      :pageNum="pageNum"
-    />
+
     <join-elements
       v-else-if="pageMicroType === 'join' && pageNum === pageNumber"
     />

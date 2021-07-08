@@ -1,4 +1,4 @@
- <template v>
+ <template>
   <div
     v-for="(linePart, index) in textSeries(pageNum)"
     :key="linePart"

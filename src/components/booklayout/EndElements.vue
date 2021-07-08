@@ -1,26 +1,28 @@
  <template>
-  <div
-    class="
-      finalScoreContainer
-      scoreContainerLeft
-      text-center
-      d-flex
-      flex-column
-      align-items-center
-      justify-content-center
-    "
-  >
-    <info-pill :value="playerScore" :title="sScoreTitle"></info-pill>
-  </div>
-
-  <div class="nextBookContainer">
-    <img
-      alt=""
-      :src="getNextBook.bookCoverImageUrl"
-      id="nextBook"
-      @click="BookSelected(getNextBook)"
-    />
-    <button @click="BookSelected(getNextBook)">START</button>
+  <div class="columnContainers">
+    <div class="nextBookContainer webBlock" />
+    <div class="finalScoreContainer">
+      <p class="scoreTitle">{{ sScoreTitle }}</p>
+      <info-pill
+        class="infoPillStyle"
+        :value="playerScore"
+        :rank="scoreRank"
+      ></info-pill>
+      <img :src="coverHREF" class="endCover" />
+    </div>
+    <div class="nextBookContainer">
+      <div class="nextBookHolder">
+        <img
+          alt=""
+          :src="getNextBook.bookCoverImageUrl"
+          id="nextBook"
+          @click="BookSelected(getNextBook)"
+        />
+        <button class="ScoreBarStyle" @click="BookSelected(getNextBook)">
+          Next Book
+        </button>
+      </div>
+    </div>
   </div>
 </template>
 <script>
@@ -50,10 +52,11 @@ export default {
       "nextBookId",
       "scoreRank",
       "getNextBook",
+      "coverHREF",
     ]),
     sScoreTitle() {
       if (this.scoreRank == 1) {
-        return "First";
+        return "1st Place";
       } else {
         return "Fourth Place";
       }
@@ -63,38 +66,87 @@ export default {
 </script>
 
 <style scoped>
-.finalScoreContainer {
-  margin-top: 0;
-  margin-bottom: 10px;
-  margin-left: 8%;
-  margin-right: 3%;
-  padding: 0;
-  position: absolute;
-  left: 0;
-  right: 0;
-  top: -15%;
-}
+.columnContainers {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: center;
 
-.nextBookContainer {
-  position: absolute;
-  right: -80%;
-  top: 10%;
+  padding: 0;
+  margin: 0;
   height: 80%;
-  width: 60%;
+  width: 100%;
+  position: relative;
+}
+.scoreTitle {
+  font-weight: bold;
+  font-size: 6vh;
+  font-weight: bold;
+  font-family: "Coopforged";
+  margin: 0;
+}
+.finalScoreContainer {
+  width: 500px;
+  height: 100%;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
 }
 
+.endCover {
+  height: 70%;
+  object-fit: contain;
+  margin-top: 4vh;
+  margin-bottom: 4vh;
+}
+
+button {
+  margin: 0;
+  padding: 0;
+}
+.ScoreBarStyle {
+  font-family: "Roboto", serif;
+  font-size: 0.8 em;
+  width: 150px;
+  height: 50px;
+  color: black;
+  border-style: solid;
+  border-color: black;
+  border-radius: 200px;
+  box-shadow: 3px 3px black;
+  padding: 0;
+}
+
 #nextBook {
-  height: 50%;
-  width: auto;
+  height: 40%;
+
+  object-fit: contain;
+}
+
+.nextBookContainer {
+  height: 100%;
+  padding-left: 100px;
+  flex-grow: 1;
+
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: start;
+  justify-content: center;
+}
+
+.nextBookHolder {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
 }
 
 Button {
   font-family: "Roboto", serif;
-  font-size: 0.8em;
+  font-size: 1em;
   font-weight: bold;
   margin-top: 2em;
   background-color: white;
@@ -103,7 +155,85 @@ Button {
   border-radius: 200px;
   border: none;
 }
-Button:hover {
+.nextBookHolder {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+}
+.nextBookHolder:hover Button {
   background-color: #7da8a5;
+}
+
+@media (max-height: 753px) {
+  .finalScoreContainer {
+    width: 300px;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+  }
+}
+
+@media (max-aspect-ratio: 1252/872) {
+  .nextBookContainer {
+    padding-left: 00px;
+    margin-right: 60px;
+    margin-left: 60px;
+    align-items: center;
+  }
+}
+
+@media (max-aspect-ratio: 686/912) {
+  .finalScoreContainer {
+    width: 60%;
+
+    margin: 3%;
+  }
+
+  .endCover {
+    width: 100%;
+    height: auto;
+  }
+
+  #nextBook {
+    width: 100%;
+    height: auto;
+
+    object-fit: contain;
+  }
+  .scoreTitle {
+    font-size: 30px;
+  }
+
+  .nextBookContainer {
+    width: 40%;
+    padding-left: 5%;
+    padding-right: 5%;
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    align-items: start;
+    justify-content: center;
+
+    margin: 0;
+  }
+  .nextBookHolder {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 100%;
+    width: 100%;
+  }
+  .ScoreBarStyle {
+    width: 100px;
+    height: 35px;
+  }
+  .webBlock {
+    display: none;
+  }
 }
 </style>
