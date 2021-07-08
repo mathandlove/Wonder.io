@@ -80,9 +80,9 @@ export default {
       "getBookItem",
     ]),
     pageQueue() {
-      let prevPage = this.pageNumber - 1;
+      let prevPage = -1; //this.pageNumber
       let currentPage = this.pageNumber;
-      let futurePages = 5;
+      let futurePages = 6;
       let returnArray = [];
       if (prevPage >= 1) {
         returnArray.push(prevPage);
@@ -119,7 +119,9 @@ export default {
           }
         }
       });
+
       this.$store.dispatch("setBookPage", tempPage);
+      this.$store.dispatch("fillTextIncrement");
       this.$router.push(`/book/${this.$store.state.BookId}/${tempPage}`);
       event.stopPropagation();
     },

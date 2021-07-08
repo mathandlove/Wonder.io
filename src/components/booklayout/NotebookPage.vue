@@ -44,7 +44,6 @@
             : null;
         }
       "
-      :class="{ border: bookStyle.showNotepadClickButton }"
     >
       <div class="notepadText" :style="nts">
         <RestartModal
@@ -175,7 +174,6 @@ export default {
         this.switchAdjustBox();
         this.iw = this.$refs.base.width;
         this.ih = this.$refs.base.height;
-        console.log("updated iwh to: " + this.iw + " " + this.ih);
       }
     },
     //Note that I made a decision to have 10% on left and right at all times
@@ -199,12 +197,6 @@ export default {
           this.adjustingBox.height = "auto";
           this.adjustingBox.width = "80%";
         }
-        console.log(
-          "adjustboxHeight: " +
-            this.$refs.notepadholder.clientHeight +
-            " " +
-            window.innerHeight
-        );
       }
     },
   },
@@ -338,7 +330,7 @@ Button:hover {
   position: absolute;
   left: 0%;
   right: 0%;
-  text-align: center;
+  text-align: left;
   padding-top: 1vh;
   padding-bottom: 1vh;
   z-index: 0;

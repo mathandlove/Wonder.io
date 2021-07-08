@@ -113,7 +113,8 @@ export default createStore({
     turnOffAnimations: true,
     timerStart: 0,
     lineHeightPixels: 1,
-    bookDataLoaded: false
+    bookDataLoaded: false,
+    animatepencil: true
     //pageMicroType determines that exact state of  the page for example there's a difference between read and read fully
 
   },
@@ -219,29 +220,35 @@ export default createStore({
     coverHREF: state => {
       return state.SelectedBookItem.largeBookCoverImageUrl
     },
-    textSeries: state => {
-      var pageLineParts = [];
-      let pageNumber = parseInt(state.BookPage);
-      var array = state.BookData.pages[pageNumber - 1].pageParts;
 
-      for (let index = 0; index < array.length; index++) {
-        const element = array[index];
-        pageLineParts = pageLineParts.concat(element.lineParts);
-      }
-      return pageLineParts;
-    },
     textSeries: (state) => pageNumber => {
+
+
+
       var pageLineParts = [];
       var array = state.BookData.pages[pageNumber - 1].pageParts;
 
-      for (let index = 0; index < array.length; index++) {
-        const element = array[index];
-        pageLineParts = pageLineParts.concat(element.lineParts);
+      if (pageNumber != state.BookPage) {
+        for (let index = 0; index < array.length; index++) {
+          const element = array[index];
+          pageLineParts = pageLineParts.concat(element.lineParts);
+        }
+        return pageLineParts;
       }
-      return pageLineParts;
+      else {
+        for (let index = 0; index < state.textSeriesRevealed; index++) {
+          const element = array[index];
+          pageLineParts = pageLineParts.concat(element.lineParts);
+        }
+        return pageLineParts;
+      }
+
     },
-    seriesAllRead: (state, getters) => {
-      return getters.textSeries.length <= (state.textSeriesRevealed)
+    seriesAllRead: (state) => {
+      return state.BookData.pages[state.BookPage - 1].pageParts.length <= (state.textSeriesRevealed)
+    },
+    animatePencil: (state) => {
+      return state.animatepencil;
     },
 
     answerArray: (state, getters) => {
@@ -381,6 +388,15 @@ export default createStore({
     },
     INCREMENT_TEXT_REVEALED(state) {
       state.textSeriesRevealed++;
+    },
+    RESET_TEXT_INCREMENT(state) {
+      state.textSeriesRevealed = 1;
+
+
+    },
+    FILL_TEXT_INCREMENT(state) {
+      state.textSeriesRevealed = state.BookData.pages[state.BookPage - 1].pageParts.length;
+
     },
     SET_PAGE_TYPE(state, type) {
       console.log('microState changed to: ' + type)
@@ -537,10 +553,8 @@ export default createStore({
         state.bookStyle.showNextButton = false;
         const pageIndex = parseInt(state.BookPage) - 1;
         const answerArray = [...state.BookData.pages[pageIndex].pageParts[0].lineParts];
-        if (state.textSeriesRevealed >= answerArray.length) {
-          state.bookStyle.showNotepadClickButton = false;
-          state.bookStyle.showNextButton = true;
-        }
+        state.bookStyle.showNextButton = false;
+
       }
       else if (type == 'readfull') {
         state.bookStyle.showNotepadClickButton = false;
@@ -669,10 +683,17 @@ export default createStore({
     },
 
     incrementTextRevealed({ commit, dispatch, state }) {
-
+      state.animatepencil = false;
+      setTimeout(() => { state.animatepencil = true; }, 400);
       commit('INCREMENT_TEXT_REVEALED');
       dispatch('setPageType')
 
+    },
+    resetTextIncrement({ commit }) {
+      commit('RESET_TEXT_INCREMENT');
+    },
+    fillTextIncrement({ commit }) {
+      commit('FILL_TEXT_INCREMENT');
     },
     savePlayerName({ commit, dispatch, state }, sPlayerName) {
       commit('SET_PLAYER_NAME', sPlayerName);
@@ -682,9 +703,11 @@ export default createStore({
 
       let tempPage = getters.nextPage();
       if (tempPage > getters.HighestPage) {
-        dispatch("setHighestPage", tempPage);
-      }
 
+        dispatch("setHighestPage", tempPage);
+
+      }
+      dispatch("resetTextIncrement");
       dispatch("setBookPage", tempPage);
       router.push(`/book/${state.BookId}/${tempPage}`);
 
@@ -828,7 +851,7 @@ export default createStore({
 
 
 
-    setPageType({ commit, dispatch, state }, microType = '') {
+    setPageType({ commit, dispatch, state, getters }, microType = '') {
       const pageIndex = parseInt(state.BookPage) - 1;
 
       if (microType === '')
@@ -853,7 +876,7 @@ export default createStore({
       else if (mainType == 'question' && microType != 'questionloaded' && microType != 'questionscoreupdated' && microType != 'scorepage' && state.turnOffAnimations) {
         dispatch('questionLoadDone')
       }
-      else if (microType == 'read' && state.textSeriesRevealed >= textArray.length) {
+      else if (microType == 'read' && getters.seriesAllRead) {
         commit('SET_PAGE_TYPE', 'readfull')
       }
       else if (microType == 'cover' && state.playerName == "") {
