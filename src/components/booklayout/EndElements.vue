@@ -162,7 +162,7 @@ Button {
   justify-content: center;
   height: 100%;
 }
-.nextBookHolder:hover Button {
+Button:hover {
   background-color: #7da8a5;
 }
 
@@ -225,7 +225,6 @@ Button {
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    height: 100%;
     width: 100%;
   }
   .ScoreBarStyle {

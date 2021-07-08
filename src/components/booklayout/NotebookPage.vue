@@ -10,9 +10,9 @@
       ref="base"
       id="base"
       class="nonRefBase"
-      @load="updateBase"
       :style="adjustingBox"
       rel="preload"
+      @load="updateBase"
       :class="{
         makeInvisible: !bookStyle.sheetHasLines || bookStyle.showCover,
       }"
@@ -167,15 +167,18 @@ export default {
       let img = new Image();
       img.src = url;
     },
+    tester() {
+      setTimeout(this.switchAdjustBox, 0);
+    },
     updateBase: function () {
       if (this.$refs.base != null) {
+        this.switchAdjustBox();
         this.iw = this.$refs.base.width;
         this.ih = this.$refs.base.height;
-        this.switchAdjustBox();
+        console.log("updated iwh to: " + this.iw + " " + this.ih);
       }
     },
     //Note that I made a decision to have 10% on left and right at all times
-    updateStyles: function () {},
     switchAdjustBox: function () {
       if (this.$refs.notepadholder != undefined) {
         const aspectScreen =
@@ -196,12 +199,20 @@ export default {
           this.adjustingBox.height = "auto";
           this.adjustingBox.width = "80%";
         }
+        console.log(
+          "adjustboxHeight: " +
+            this.$refs.notepadholder.clientHeight +
+            " " +
+            window.innerHeight
+        );
       }
     },
   },
   created() {
     window.addEventListener("resize", this.updateBase);
-    this.updateBase();
+  },
+  mounted() {
+    this.$nextTick(this.switchAdjustBox);
   },
   unmounted() {
     window.removeEventListener("resize", this.updateBase);
@@ -317,7 +328,8 @@ Button:hover {
   position: absolute;
   top: 50%;
   left: 51%;
-  height: 100%;
+
+  width: 80%;
   transform: translate(-50%, -50%);
 }
 

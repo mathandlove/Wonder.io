@@ -35,7 +35,7 @@ import ReadElements from "@/components/booklayout/ReadElements.vue";
 import QuestionElements from "@/components/booklayout/QuestionElements.vue";
 import ChoiceElements from "@/components/booklayout/ChoiceElements.vue";
 import ChapterTitleElements from "@/components/booklayout/ChapterTitleElements.vue";
-import EndElements from "@/components/booklayout/EndElements.vue";
+
 import NotebookPage from "@/components/booklayout/NotebookPage.vue";
 
 import { mapGetters } from "vuex";
@@ -52,7 +52,7 @@ export default {
     QuestionElements,
     ChoiceElements,
     ChapterTitleElements,
-    EndElements,
+
     NotebookPage,
   },
   computed: {
