@@ -66,6 +66,7 @@
         src="@/assets/Images/Pencil.png"
         class="pencil"
         :class="{ animPencil: animatePencil }"
+        v-if="pageNum === pageNumber"
       />
     </div>
   </div>
@@ -82,7 +83,12 @@ export default {
 
   dismounted() {},
   computed: {
-    ...mapGetters(["textSeries", "seriesAllRead", "animatePencil"]),
+    ...mapGetters([
+      "textSeries",
+      "seriesAllRead",
+      "animatePencil",
+      "pageNumber",
+    ]),
     ...mapState(["lineHeightPixels"]),
     debugText() {
       console.log(this.$refs.rchar1);
@@ -181,7 +187,7 @@ export default {
 .textContainer {
   display: flex;
   flex-direction: column;
-  align-items: center;
+  align-items: start;
   height: 100%;
 }
 .blankSpace:hover {
@@ -198,7 +204,7 @@ export default {
 }
 .animPencil {
   animation: rotate 2.5s infinite;
-  animation-delay: 3.5s;
+  animation-delay: 0.35s;
 }
 
 @keyframes rotate {
