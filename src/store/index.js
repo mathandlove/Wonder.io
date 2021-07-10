@@ -267,10 +267,18 @@ export default createStore({
       return state.BookData.title;
     },
 
-    nextPage: state => pageNumber => {
+    nextPage: (state, getters) => (nextPagePlus) => {
+
+      let pageNumber = state.BookPage;
+      if (nextPagePlus === undefined) {
+        nextPagePlus = getters.skipNextAmount(pageNumber);
+      }
       // This needs to access the NextPage of the page property (default is 1)
-      console.log("going to page: " + (state.BookPage + "+" + state.skipNextAmount))
-      return state.BookPage + state.skipNextAmount;
+      console.log("going to page: " + (pageNumber + "+" + nextPagePlus))
+      return pageNumber + nextPagePlus;
+    },
+    skipNextAmount: state => pageNumber => {
+      return state.BookData.pages[pageNumber - 1].nextPage;
     },
     nextBookHREF: state => {
       return state.nextBook.nextCoverImageUrl;
@@ -382,10 +390,6 @@ export default createStore({
       const selectedItem = [...state.BookData.pages[pageNumber - 1].pageParts[0].lineParts].splice(1)[index];
       selectedItem.clickedOn = true;
       selectedItem.disabled = true;
-    },
-    SET_CHOICE_CLICKED(state, nextValue) {
-      state.skipNextAmount = nextValue;
-
     },
     INCREMENT_TEXT_REVEALED(state) {
       state.textSeriesRevealed++;
@@ -704,9 +708,7 @@ export default createStore({
         dispatch('setPageType', 'scorepage')
       }
     },
-    setChoiceClicked({ commit, dispatch, state }, skipVal) {
-      commit('SET_CHOICE_CLICKED', skipVal);
-    },
+
     setPageStyle({ commit }) {
       commit('SET_PAGE_STYLE')
     },
@@ -728,9 +730,9 @@ export default createStore({
       commit('SET_PLAYER_NAME', sPlayerName);
       dispatch('setPageType');
     },
-    gotoNext({ commit, state, dispatch, getters }) {
-
-      let tempPage = getters.nextPage();
+    gotoNext({ commit, state, dispatch, getters }, skipVal) {
+      console.log('sv: ' + skipVal)
+      let tempPage = getters.nextPage(skipVal);
       if (tempPage > getters.HighestPage) {
 
         dispatch("setHighestPage", tempPage);
@@ -748,8 +750,10 @@ export default createStore({
     gotoPrev({ commit, state, dispatch, getters }) {
       console.log('prev: ' + state.pageHistory);
       let prevPage = 1;
-      if (state.pageHistory.length > 1)
-        prevPage = state.pageHistory.pop();
+      if (state.pageHistory.length > 2) {
+        state.pageHistory.pop();
+        prevPage = state.pageHistory[state.pageHistory.length - 1];
+      }
       else {
         console.log('user error: user loaded story in the middle and went back to page: ' + state.pageHistory[0])
         state.pageHistory = [1];

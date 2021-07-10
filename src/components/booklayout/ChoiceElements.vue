@@ -21,8 +21,7 @@ export default {
   props: ["pageNum"],
   methods: {
     updateChoice(skipVal) {
-      this.$store.dispatch("setChoiceClicked", skipVal);
-      this.$store.dispatch("gotoNext");
+      this.$store.dispatch("gotoNext", skipVal);
     },
   },
   mounted() {},
