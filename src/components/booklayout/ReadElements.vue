@@ -1,6 +1,10 @@
  <template>
   <div class="textContainer">
-    <div v-for="(linePart, index) in textSeries(pageNum)" :key="linePart">
+    <div
+      v-for="(linePart, index) in textSeries(pageNum)"
+      :key="linePart"
+      class="textSeriesHolder"
+    >
       <div
         v-if="linePart.lineType == 'character' && linePart.orientation == 'l'"
         class="leftChar"
@@ -146,6 +150,10 @@ export default {
   white-space: pre-line;
 }
 
+.textSeriesHolder {
+  width: 100%;
+}
+
 .rightCharImage {
   height: 2.8em;
   position: absolute;
@@ -157,6 +165,7 @@ export default {
 .rightChar {
   position: relative;
   width: 100%;
+  align-self: flex-end;
 }
 .rightCharText {
   padding-right: 2.8em;
@@ -199,12 +208,12 @@ export default {
 
   position: absolute;
   right: 20%;
-  margin-top: 1.4em;
+  margin-top: 0;
   transform: rotate(-10deg);
 }
 .animPencil {
   animation: rotate 2.5s infinite;
-  animation-delay: 0.35s;
+  animation-delay: 03.5s;
 }
 
 @keyframes rotate {
