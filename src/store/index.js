@@ -37,7 +37,7 @@ export default createStore({
 
 
   state: {
-    GradeFilter: +localStorage.getItem('GradeFilter') || 'none',
+    GradeFilter: +localStorage.getItem('GradeFilter') || 'grade2',
     GradeBookOrder: JSON.parse(localStorage.getItem('GradeBookOrder')) || {
       gradePreK: [10],
       gradeK: [10],
@@ -47,6 +47,7 @@ export default createStore({
       grade4: [10],
       grade5: [10],
       grade6: [10],
+      preview: [10],
       none: [10],
     },
     WordFilteredBooks: [Book10Item],
@@ -110,7 +111,7 @@ export default createStore({
     lineHeightPixels: 1,
     bookDataLoaded: false,
     animatepencil: true,
-    pageHistory: []
+    pageHistory: [1]
     //pageMicroType determines that exact state of  the page for example there's a difference between read and read fully
 
   },

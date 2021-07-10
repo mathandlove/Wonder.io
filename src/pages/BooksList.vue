@@ -94,7 +94,7 @@ export default {
       this.$store.dispatch("increaseBooksToDisplay", 4);
     },
 
-    async BookSelected(bookListItem) {
+    BookSelected(bookListItem) {
       console.log("selected with book :", bookListItem);
       let bookId = parseInt(bookListItem.bookId);
       localStorage.removeItem("HighestPage");
