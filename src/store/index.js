@@ -8,8 +8,6 @@ import VueResource from 'vue-resource';
 
 const resource_uri = 'https://localhost:5001/book';
 // const resource_uri = 'https://wonderstories-api-dev-as.azurewebsites.net/book';
-
-
 //Helper Functions
 
 const randomNum = (a, b) => {
@@ -76,7 +74,7 @@ export default createStore({
         id: 3, name: 'GoofyCat6', OldScore: 0, NewScore: 0, upRank: false
       },
     ],
-    bookScoresDict: {
+    bookScoresDict: {"1" : []
     },
     bookMarkDict: {
     },
