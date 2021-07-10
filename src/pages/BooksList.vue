@@ -122,6 +122,7 @@ export default {
       ///CHANGE THE ABOVE!!!!!
 
       this.$store.dispatch("filterBooks");
+      this.$store.dispatch("loadScoreDict");
       this.initiateBookLoad();
     }
     this.preloadImage(require("@/assets/Images/NotepadWithoutLines.png"));

@@ -75,7 +75,8 @@ export default createStore({
         id: 3, name: 'GoofyCat6', OldScore: 0, NewScore: 0, upRank: false
       },
     ],
-    bookScoresDict: {"1" : []
+    bookScoresDict: {
+      "1": []
     },
     bookMarkDict: {
     },
@@ -318,15 +319,6 @@ export default createStore({
       return Object.keys(getters.bookScoresDict).length < 3;
     },
     bookScoresDict: (state) => {
-      let temp = null;
-      if (Object.keys(state.bookScoresDict).length == 0) {
-        temp = JSON.parse(localStorage.getItem('BookScoresDictionary'));
-      }
-      if (temp === null)
-        state.bookScoresDict = {};
-      else {
-        state.bookScoresDict = temp;
-      }
 
       return state.bookScoresDict;
 
@@ -543,6 +535,15 @@ export default createStore({
       else {
         state.pageHistory = [1];
         console.log('started new web history for ' + state.BookId)
+      }
+    },
+    LOAD_SCORE_DICT(state) {
+      let temp = {};
+      temp = JSON.parse(localStorage.getItem('BookScoresDictionary'));
+      if (temp === null)
+        state.bookScoresDict = {};
+      else {
+        state.bookScoresDict = temp;
       }
     },
 
@@ -908,6 +909,9 @@ export default createStore({
     saveFinalScore({ commit, getters, state }) {
 
       commit('SAVE_FINAL_SCORE', [getters.playerScore, getters.playerRank, state.BookId])
+    },
+    loadScoreDict({ commit }) {
+      commit('LOAD_SCORE_DICT')
     },
 
     showFinalScoreDone({ commit, dispatch }) {
