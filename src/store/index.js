@@ -107,7 +107,7 @@ export default createStore({
     textSeriesRevealed: 1,
     pageMicroType: "read",
     playerName: '',
-    turnOffAnimations: true,
+    turnOffAnimations: false,
     timerStart: 0,
     lineHeightPixels: 1,
     bookDataLoaded: false,
