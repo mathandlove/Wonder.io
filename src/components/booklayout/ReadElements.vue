@@ -15,7 +15,7 @@
         <img :src="linePart.characterImageUrl" alt="" class="leftCharImage" />
         <div
           class="leftCharText"
-          :style="{ width: 80 - (linePart.charPadding * 80) / 100 + 20 + '%' }"
+          :style="{ width: 80 - (linePart.margin * 80) / 100 + 20 + '%' }"
           :class="{ robotoLeft: linePart.fontStyle == 'Moboto SDF' }"
         >
           {{ linePart.text + "\n\n" }}
@@ -31,12 +31,12 @@
       >
         <div
           class="rightCharText"
-          :style="{ width: 80 - (linePart.charPadding * 80) / 100 + 20 + '%' }"
+          :style="{ width: 80 - (linePart.margin * 80) / 100 + 20 + '%' }"
           :class="{ robotoRight: linePart.fontStyle == 'Moboto SDF' }"
           :ref="'rtext' + index"
           :id="'rtext' + index"
         >
-          <!-- {{ linePart.text + "\n\n" }} -->
+          <!-- {{ linePart.charPadding+ "\n\n" }} -->
           {{ linePart.text + "\n\n" }}
         </div>
         <img
