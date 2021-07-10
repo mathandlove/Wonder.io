@@ -319,10 +319,18 @@ export default createStore({
       return Object.keys(getters.bookScoresDict).length < 3;
     },
     bookScoresDict: (state) => {
+      let temp = null;
       if (Object.keys(state.bookScoresDict).length == 0) {
-        state.bookScoresDict = JSON.parse(localStorage.getItem('BookScoresDictionary'));
+        temp = JSON.parse(localStorage.getItem('BookScoresDictionary'));
       }
-      return state.bookScoresDict
+      if (temp === null)
+        state.bookScoresDict = {};
+      else {
+        state.bookScoresDict = temp;
+      }
+
+      return state.bookScoresDict;
+
     },
     getBookItem: (state) => {
       return state.SelectedBookItem
@@ -429,7 +437,7 @@ export default createStore({
     },
     FILTER_BOOKS(state) {
       let gradeBookOrder =
-        state.GradeBookOrder[state.GradeFilter].reverse(); //Note I need to get rid of reverse but the gradebook order is wrong.
+        state.GradeBookOrder[state.GradeFilter];//Note I need to get rid of reverse but the gradebook order is wrong.
 
       //Remove when working
       let gbo = gradeBookOrder.slice(0, 42); //I'm slicing gO because it repeats itself on my computer.
@@ -488,6 +496,7 @@ export default createStore({
 
 
       localStorage.setItem('BookScoresDictionary', JSON.stringify(oldScoreDict));
+      console.log('saved bookscoresdict to: ' + oldScoreDict)
       state.bookScoresDict = oldScoreDict;
     },
     START_SCORE_TIMER(state) {
