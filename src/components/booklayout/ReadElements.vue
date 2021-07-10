@@ -1,67 +1,77 @@
- <template v>
-  <div
-    v-for="(linePart, index) in textSeries(pageNum)"
-    :key="linePart"
-    class="textContainer"
-  >
+ <template>
+  <div class="textContainer">
     <div
-      v-if="linePart.lineType == 'character' && linePart.orientation == 'l'"
-      class="leftChar"
-      :style="{
-        minHeight: 1.45 * 3 - 0.1 + 'em',
-      }"
-    >
-      <img :src="linePart.characterImageUrl" alt="" class="leftCharImage" />
-      <div
-        class="leftCharText"
-        :style="{ width: 80 - (linePart.charPadding * 80) / 100 + 20 + '%' }"
-        :class="{ robotoLeft: linePart.fontStyle == 'Moboto SDF' }"
-      >
-        {{ linePart.text + "\n\n" }}
-      </div>
-    </div>
-
-    <div
-      v-if="linePart.lineType == 'character' && linePart.orientation == 'r'"
-      class="rightChar"
-      :style="{
-        minHeight: 1.45 * 3 - 0.1 + 'em',
-      }"
+      v-for="(linePart, index) in textSeries(pageNum)"
+      :key="linePart"
+      class="textSeriesHolder"
     >
       <div
-        class="rightCharText"
-        :style="{ width: 80 - (linePart.charPadding * 80) / 100 + 20 + '%' }"
-        :class="{ robotoRight: linePart.fontStyle == 'Moboto SDF' }"
-        :ref="'rtext' + index"
-        :id="'rtext' + index"
+        v-if="linePart.lineType == 'character' && linePart.orientation == 'l'"
+        class="leftChar"
+        :style="{
+          minHeight: 1.45 * 3 - 0.1 + 'em',
+        }"
       >
-        <!-- {{ linePart.text + "\n\n" }} -->
-        {{ linePart.text + "\n\n" }}
+        <img :src="linePart.characterImageUrl" alt="" class="leftCharImage" />
+        <div
+          class="leftCharText"
+          :style="{ width: 80 - (linePart.charPadding * 80) / 100 + 20 + '%' }"
+          :class="{ robotoLeft: linePart.fontStyle == 'Moboto SDF' }"
+        >
+          {{ linePart.text + "\n\n" }}
+        </div>
       </div>
-      <img
-        :src="linePart.characterImageUrl"
-        alt=""
-        class="rightCharImage"
-        @load="adjustTextLine('rchar' + index, 'rtext' + index)"
-        :ref="'rchar' + index"
-        :id="'rchar' + index"
-      />
-    </div>
 
-    <div
-      v-if="linePart.lineType == 'read'"
-      class="mainText"
-      :class="{ roboto: linePart.fontStyle == 'Moboto SDF' }"
-    >
-      {{ linePart.text }}
+      <div
+        v-if="linePart.lineType == 'character' && linePart.orientation == 'r'"
+        class="rightChar"
+        :style="{
+          minHeight: 1.45 * 3 - 0.1 + 'em',
+        }"
+      >
+        <div
+          class="rightCharText"
+          :style="{ width: 80 - (linePart.charPadding * 80) / 100 + 20 + '%' }"
+          :class="{ robotoRight: linePart.fontStyle == 'Moboto SDF' }"
+          :ref="'rtext' + index"
+          :id="'rtext' + index"
+        >
+          <!-- {{ linePart.text + "\n\n" }} -->
+          {{ linePart.text + "\n\n" }}
+        </div>
+        <img
+          :src="linePart.characterImageUrl"
+          alt=""
+          class="rightCharImage"
+          @load="adjustTextLine('rchar' + index, 'rtext' + index)"
+          :ref="'rchar' + index"
+          :id="'rchar' + index"
+        />
+      </div>
+
+      <div
+        v-if="linePart.lineType == 'read'"
+        class="mainText"
+        :class="{ roboto: linePart.fontStyle == 'Moboto SDF' }"
+      >
+        {{ linePart.text }}
+      </div>
+      <div v-if="linePart.lineType == 'image'">
+        <img
+          class="mainImage"
+          :src="linePart.imageUrl"
+          :style="{ height: 1.45 * linePart.imageHeight - 0.1 + 'em' }"
+        />
+        <!-- lineHieght*imgHeight-descenderHeight -->
+      </div>
     </div>
-    <div v-if="linePart.lineType == 'image'">
+    <div class="blankSpace" @click="increment" v-if="!seriesAllRead">
       <img
-        class="mainImage"
-        :src="linePart.imageUrl"
-        :style="{ height: 1.45 * linePart.imageHeight - 0.1 + 'em' }"
+        src="@/assets/Images/Pencil.png"
+        class="pencil"
+        :class="{ animPencil: animatePencil }"
+        v-if="pageNum === pageNumber"
       />
-      <!-- lineHieght*imgHeight-descenderHeight -->
     </div>
   </div>
 </template>
@@ -77,7 +87,12 @@ export default {
 
   dismounted() {},
   computed: {
-    ...mapGetters(["textSeries"]),
+    ...mapGetters([
+      "textSeries",
+      "seriesAllRead",
+      "animatePencil",
+      "pageNumber",
+    ]),
     ...mapState(["lineHeightPixels"]),
     debugText() {
       console.log(this.$refs.rchar1);
@@ -90,6 +105,10 @@ export default {
   },
   mounted() {},
   methods: {
+    increment(event) {
+      event.stopPropagation();
+      this.$store.dispatch("incrementTextRevealed");
+    },
     adjustTextLine(refChar, refText) {
       // console.log(this.$refs[refText].scrollHeight / this.lineHeightPixels);
       // if (this.$refs[refText].scrollHeight / this.lineHeightPixels < 2.1)
@@ -106,6 +125,7 @@ export default {
   white-space: pre-line;
   margin-bottom: 0em;
   width: 100%;
+  flex-grow: 0;
 }
 .mainImage {
   padding-bottom: 0.5em;
@@ -113,11 +133,7 @@ export default {
   width: 100%;
   object-fit: contain;
 }
-.textContainer {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-}
+
 .leftCharImage {
   height: 2.8em;
   position: absolute;
@@ -134,6 +150,10 @@ export default {
   white-space: pre-line;
 }
 
+.textSeriesHolder {
+  width: 100%;
+}
+
 .rightCharImage {
   height: 2.8em;
   position: absolute;
@@ -145,6 +165,7 @@ export default {
 .rightChar {
   position: relative;
   width: 100%;
+  align-self: flex-end;
 }
 .rightCharText {
   padding-right: 2.8em;
@@ -163,5 +184,48 @@ export default {
 .roboto {
   font-family: "Roboto";
   font-size: 0.8em;
+}
+.blankSpace {
+  width: 130%;
+  flex-grow: 3;
+  margin-top: -1.45em;
+  margin-bottom: -1em;
+  padding-top: 1.45em;
+}
+
+.textContainer {
+  display: flex;
+  flex-direction: column;
+  align-items: start;
+  height: 100%;
+}
+.blankSpace:hover {
+  cursor: pointer;
+}
+
+.pencil {
+  height: 2em;
+
+  position: absolute;
+  right: 20%;
+  margin-top: 0;
+  transform: rotate(-10deg);
+}
+.animPencil {
+  animation: rotate 2.5s infinite;
+  animation-delay: 03.5s;
+}
+
+@keyframes rotate {
+  0% {
+    transform: rotate(-10deg);
+  }
+  50% {
+    transform: rotate(10deg);
+  }
+
+  100% {
+    transform: rotate(-10deg);
+  }
 }
 </style>

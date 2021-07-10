@@ -10,9 +10,9 @@
       ref="base"
       id="base"
       class="nonRefBase"
-      @load="updateBase"
       :style="adjustingBox"
       rel="preload"
+      @load="updateBase"
       :class="{
         makeInvisible: !bookStyle.sheetHasLines || bookStyle.showCover,
       }"
@@ -44,7 +44,6 @@
             : null;
         }
       "
-      :class="{ border: bookStyle.showNotepadClickButton }"
     >
       <div class="notepadText" :style="nts">
         <RestartModal
@@ -167,15 +166,17 @@ export default {
       let img = new Image();
       img.src = url;
     },
+    tester() {
+      setTimeout(this.switchAdjustBox, 0);
+    },
     updateBase: function () {
       if (this.$refs.base != null) {
+        this.switchAdjustBox();
         this.iw = this.$refs.base.width;
         this.ih = this.$refs.base.height;
-        this.switchAdjustBox();
       }
     },
     //Note that I made a decision to have 10% on left and right at all times
-    updateStyles: function () {},
     switchAdjustBox: function () {
       if (this.$refs.notepadholder != undefined) {
         const aspectScreen =
@@ -201,7 +202,9 @@ export default {
   },
   created() {
     window.addEventListener("resize", this.updateBase);
-    this.updateBase();
+  },
+  mounted() {
+    this.$nextTick(this.switchAdjustBox);
   },
   unmounted() {
     window.removeEventListener("resize", this.updateBase);
@@ -317,7 +320,8 @@ Button:hover {
   position: absolute;
   top: 50%;
   left: 51%;
-  height: 100%;
+
+  width: 80%;
   transform: translate(-50%, -50%);
 }
 
@@ -326,7 +330,7 @@ Button:hover {
   position: absolute;
   left: 0%;
   right: 0%;
-  text-align: center;
+  text-align: left;
   padding-top: 1vh;
   padding-bottom: 1vh;
   z-index: 0;

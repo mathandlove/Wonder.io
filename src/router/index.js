@@ -8,6 +8,7 @@ import Join from '../pages/Join.vue';
 import Celebration from '../pages/Celebration.vue';
 import Transition from '../pages/Transition.vue';
 
+
 const routes = [
   {
     path: '/',
@@ -20,7 +21,8 @@ const routes = [
     name: 'Book',
     component: Book,
     meta: { title: 'Wonder.io - Book' },
-    props: false, //Was getting Error here because I don't get these vita Props
+    props: true,
+
   },
   {
     path: '/books',
@@ -68,6 +70,10 @@ const router = createRouter({
 
 // eslint-disable-next-line consistent-return
 router.beforeEach((to, from, next) => {
+
+
+  //This changes the title.
+
   // This goes through the matched routes from last to first, finding the closest route with a title
   // e.g., if we have `/some/deep/nested/route` and `/some`, `/deep`, and `/nested` have titles,
   // `/nested`'s will be chosen.
@@ -100,6 +106,7 @@ router.beforeEach((to, from, next) => {
   })
     // Add the meta tags to the document head.
     .forEach((tag) => document.head.appendChild(tag));
+
 
   next();
 });
