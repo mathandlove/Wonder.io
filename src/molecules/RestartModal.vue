@@ -1,14 +1,19 @@
 <template>
   <div class="RestartModalStyle">
     <div class="restartQuestionStyle">Are you sure you want to RESTART?</div>
-    <button class="ButtonStyle YesButtonColor" @click="this.YesSelected" >
-      <img class="yesImageHeight" :src="require(`../assets/Images/checkmark.png`)"/>
-      <div class="textSize">YES</div>
-    </button>
-    <button class="ButtonStyle NoButtonColor" @click="this.NoSelected">
-      <img class="noImageHeight" :src="require(`../assets/Images/X.png`)"/>
-      <div class="textSize">NO</div>
-    </button>
+    <div class="yesnocontainer">
+      <button class="ButtonStyle YesButtonColor" @click="this.YesSelected">
+        <img
+          class="yesImageHeight"
+          :src="require(`../assets/Images/checkmark.png`)"
+        />
+        <div class="textSize">YES</div>
+      </button>
+      <button class="ButtonStyle NoButtonColor" @click="this.NoSelected">
+        <img class="noImageHeight" :src="require(`../assets/Images/X.png`)" />
+        <div class="textSize">NO</div>
+      </button>
+    </div>
   </div>
 </template>
 
@@ -16,14 +21,10 @@
 export default {
   methods: {
     NoSelected() {
-      this.$emit('close-modal');
+      this.$store.dispatch("toggleModal", false);
     },
     YesSelected() {
-      this.$store.dispatch('setHighestPage', 1);
-      this.$store.dispatch('setBookPage', 1);
-      this.$store.dispatch('ClearScores');
-      this.$router.push('/join');
-      this.$emit('close-modal');
+      this.$store.dispatch("resetBook");
     },
   },
 };
@@ -34,29 +35,38 @@ export default {
   position: absolute;
   background-color: #000000;
   opacity: 0.9;
-  height: min(81vh,145vw);
-  width: min(50vh,90vw);
-  margin-top: 2vh;
   z-index: 1;
-  left: 50%;
-  transform: translate(-50%);
+  height: 97%;
+  width: 100%;
+  top: 50%;
+  left: 49%;
+  font-family: "CoopForged";
+  font-size: 1.8em;
+  line-height: 1.3em;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
 }
+
 .restartQuestionStyle {
   color: white;
   text-align: center;
-  font-size: min(5vh,9vw);
-  padding-top: min(15vh,27vw);
-  padding-left: min(10vh,18vw);
-  padding-bottom: min(5vh,9vw);
-  width: min(38vh,68vw);
+  padding: 1em;
+  padding-top: 2em;
+}
+.yesnocontainer {
+  display: flex;
+  flex-direction: row;
 }
 .ButtonStyle {
-  display: inline-flex;
-  flex-wrap: wrap;
+  display: flex;
+  flex-direction: column;
   justify-content: center;
-  width: min(15vh,27vw);
-  margin-left: min(7vh,12.5vw);
+  align-items: center;
   border-width: 0;
+  padding: 1em;
+  outline: none;
 }
 .YesButtonColor {
   color: #04d41c;
@@ -66,17 +76,16 @@ export default {
   color: #fc7474;
   background-color: #000000;
 }
-.NoButtonColor:hover,.YesButtonColor:hover {
+.NoButtonColor:hover,
+.YesButtonColor:hover {
   cursor: pointer;
-  text-decoration: underline;
+  color: white;
 }
-.textSize {
-  font-size: min(8vh,14.4vw);
-}
+
 .noImageHeight {
-  height: min(8vh,14.4vw);
+  height: 1.3em;
 }
 .yesImageHeight {
-  height: min(10vh,18vw);
+  height: 1.3em;
 }
 </style>

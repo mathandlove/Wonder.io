@@ -4,6 +4,7 @@
       class="dinoImageBackground dinoImage"
       :class="{ backgroundImageAnimation: animationStep == 'D3' }"
       src="@/assets/Images/D0.png"
+      rel="preload"
     />
     <transition name="textreveal">
       <div class="correctSign" v-if="animationStep == 'D3'">
@@ -17,16 +18,18 @@
       v-on:enter="enter"
     >
       <img
-        v-if="animationStep == 'D1'"
+        v-show="animationStep == 'D1'"
         class="dinoImage"
         src="@/assets/Images/D1.png"
+        rel="preload"
       />
     </transition>
     <transition name="reveal2" v-on:after-enter="afterEnter" v-on:enter="enter">
       <img
-        v-if="animationStep == 'D2'"
+        v-show="animationStep == 'D2'"
         class="dinoImage"
         src="@/assets/Images/D2.png"
+        rel="preload"
       />
     </transition>
     <transition
@@ -35,9 +38,10 @@
       v-on:after-enter="animationDone"
     >
       <img
-        v-if="animationStep == 'D3'"
+        v-show="animationStep == 'D3'"
         class="dinoImage"
         :src="correctDinoImage"
+        rel="preload"
       />
     </transition>
   </div>
@@ -46,6 +50,7 @@
 import { mapGetters } from "vuex";
 import { mapActions } from "vuex";
 export default {
+  props: ["readyToAnimate"],
   data() {
     const soundClap = new Audio(require("@/assets/sounds/woodclap.wav"));
     const soundCorrect = new Audio(
@@ -64,8 +69,19 @@ export default {
       soundApplause,
       soundFail,
       soundClap,
-      animationStep: "D1",
+      animationStep: "",
     };
+  },
+  watch: {
+    pageMicroType: function () {
+      if (
+        this.readyToAnimate &&
+        (this.pageMicroType == "failanimation" ||
+          this.pageMicroType == "passanimation")
+      ) {
+        this.animationStep = "D1";
+      }
+    },
   },
   mounted() {
     // this.$store.dispatch("setPageStyle", "question");
@@ -74,14 +90,14 @@ export default {
   computed: {
     ...mapGetters(["pageMicroType"]),
     correctText() {
-      if (this.pageMicroType == "failAnimation") {
+      if (this.pageMicroType == "failanimation") {
         return "Wrong!";
       } else {
         return "Correct!";
       }
     },
     correctDinoImage() {
-      if (this.pageMicroType == "failAnimation") {
+      if (this.pageMicroType == "failanimation") {
         return require("@/assets/Images/W3.png");
       } else {
         return require("@/assets/Images/D3.png");
@@ -113,7 +129,7 @@ export default {
         } else {
           setTimeout(() => {
             this.soundFail.play();
-          }, 4550);
+          }, 4000);
         }
       }
     },
@@ -123,7 +139,6 @@ export default {
       } else if (this.animationStep == "D2") {
         this.animationStep = "D3";
       }
-      console.log(this.animationStep);
     },
     ...mapActions(["setPageStyle"]),
     answerClicked(index) {

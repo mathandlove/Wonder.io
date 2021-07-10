@@ -41,19 +41,21 @@
         class="navIconSize hoverHand"
         alt=""
         src="../assets/Images/restart.png"
-        @click="this.$emit('show-modal')"
+        @click="$store.dispatch('toggleModal', !bookStyle.showModal)"
       />
     </div>
   </div>
 </template>
 
 <script>
+import { mapActions } from "vuex";
+import { mapState } from "vuex";
 export default {
-  emits: ["ShowModal", "show-modal"],
   computed: {
-    hope() {
-      return this.$store.state.AspectRatio;
-    },
+    ...mapState(["bookStyle"]),
+  },
+  methods: {
+    ...mapActions(["toggleModal"]),
   },
   methods: {
     async audioClick(word) {

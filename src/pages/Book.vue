@@ -1,89 +1,40 @@
 <template>
-  <the-background>
-    <MainNavBar @show-modal="this.ViewRestartModal = true" />
-    <RestartModal
-      v-if="this.ViewRestartModal"
-      @close-modal="this.ViewRestartModal = false"
-    />
-    <notebook-page>
-      <question-title-elements v-if="pageType === 'questiontitle'" />
-      <read-elements v-else-if="pageType === 'read'" />
-      <join-elements v-else-if="pageMicroType === 'join'" />
-      <fail-animation
-        v-else-if="
-          pageMicroType === 'failAnimation' || pageMicroType === 'passAnimation'
-        "
-      />
-      <question-elements
-        v-else-if="
-          pageMicroType === 'questionLoaded' ||
-          pageMicroType === 'questionAnsweredCorrect'
-        "
-      />
-      <question-load-elements v-else-if="pageType === 'question'" />
-      <choice-elements v-else-if="pageType === 'choice'" />
-      <chapter-title-elements v-else-if="pageType === 'chapterTitle'" />
-      <end-elements v-else-if="pageType === 'end'" />
-      
-    </notebook-page>
+  <FinalScoreAnimation v-if="pageMicroType == 'end'" />
 
-    <book-footer />
+  <the-background v-if="pageMicroType != 'end'">
+    <MainNavBar @show-modal="this.ViewRestartModal = true" />
+    <end-elements v-if="pageMicroType === 'nextbookpage'" />
+    <div class="notepadsContainer" v-if="pageMicroType != 'nextbookpage'">
+      <filled-page-element v-for="pQ in pageQueue" :key="pQ" :pageNum="pQ">
+      </filled-page-element>
+    </div>
+    <book-footer v-if="pageMicroType != 'nextbookpage'" />
   </the-background>
 </template>
 
 <script>
-import PageRead from "@/organisms/PageRead.vue";
-import PageChapter from "@/organisms/PageChapter.vue";
-import PageCover from "@/organisms/PageCover.vue";
-import PageEnd from "@/organisms/PageEnd.vue";
-import PageChoice from "@/organisms/PageChoice.vue";
-import PageQuestionTitle from "@/organisms/PageQuestionTitle.vue";
-import PageQuestion from "@/organisms/PageQuestion.vue";
-import RestartModal from "@/molecules/RestartModal.vue";
 import PageNoExist from "@/organisms/PageNoExist.vue";
 
 import MainNavBar from "@/molecules/MainNavBar.vue";
 import BookFooter from "@/components/booklayout/BookFooter.vue";
 import TheBackground from "@/components/ux/TheBackground.vue";
-import NotebookPage from "@/components/booklayout/NotebookPage.vue";
-import JoinElements from "@/components/booklayout/JoinElements.vue";
-import QuestionTitleElements from "@/components/booklayout/QuestionTitleElements.vue";
-import ReadElements from "@/components/booklayout/ReadElements.vue";
-import QuestionElements from "@/components/booklayout/QuestionElements.vue";
-import ChoiceElements from "@/components/booklayout/ChoiceElements.vue";
-import ChapterTitleElements from "@/components/booklayout/ChapterTitleElements.vue";
+import FilledPageElement from "@/components/booklayout/FilledPageElement.vue";
+import FinalScoreAnimation from "@/components/booklayout/FinalScoreAnimation.vue";
 import EndElements from "@/components/booklayout/EndElements.vue";
-import FailAnimation from "@/components/booklayout/FailAnimation.vue";
-import QuestionLoadElements from "@/components/booklayout/QuestionLoadElements.vue";
-
+import Store from "../store/index.js";
 import { mapState } from "vuex";
 import { mapGetters } from "vuex";
 
 export default {
   components: {
-    PageQuestionTitle,
-    PageChapter,
-    PageRead,
-    PageCover,
-    PageEnd,
-    PageChoice,
-    PageQuestion,
-    RestartModal,
     PageNoExist,
-
-    JoinElements,
+    Store,
     MainNavBar,
     BookFooter,
     TheBackground,
-    NotebookPage,
-    QuestionTitleElements,
-    ReadElements,
-    QuestionElements,
-    ChoiceElements,
-    ChapterTitleElements,
+    FilledPageElement,
+    FinalScoreAnimation,
     EndElements,
-    FailAnimation,
-    QuestionLoadElements,
   },
   data() {
     const ViewRestartModal = false;
@@ -91,16 +42,14 @@ export default {
     const HighestPage = 1;
     const PageSkipArray = [];
     const QuestionCounter = 1;
-    let page;
-    let id;
+
     return {
       BookObject: this.$store.state.BookData,
       TotalPages: this.$store.state.BookData.pages.length,
       ViewRestartModal,
       PageSkipArray,
       ShowHand,
-      page,
-      id,
+
       HighestPage,
       QuestionCounter,
 
@@ -111,6 +60,7 @@ export default {
       },
     };
   },
+  props: ["id", "page"],
   provide() {
     return {
       NIV: this.NIV,
@@ -121,7 +71,45 @@ export default {
       this.page = parseInt(this.$store.state.BookPage);
     },
     ...mapState(["BookData", "bookStyle", "textSeriesRevealed"]),
-    ...mapGetters(["pageType", "seriesAllRead", "nextPage", "pageMicroType"]),
+    ...mapGetters([
+      "seriesAllRead",
+      "nextPage",
+      "pageMicroType",
+      "pageNumber",
+      "totalNumberOfPages",
+      "getBookItem",
+    ]),
+    pageQueue() {
+      let prevPage = -1; //this.pageNumber
+      let currentPage = this.pageNumber;
+      let futurePages = 6;
+      let returnArray = [];
+      if (prevPage >= 1) {
+        returnArray.push(prevPage);
+      }
+      for (let i = 1; i <= futurePages; i++) {
+        if (currentPage + i <= this.totalNumberOfPages) {
+          returnArray.push(currentPage + i);
+        }
+      }
+      returnArray.push(currentPage);
+      return returnArray;
+    },
+  },
+  beforeRouteUpdate(to, from, next) {
+    console.log("Updated Book Route");
+    Store.dispatch("setBookId", to.params.id);
+    Store.dispatch("setBookPage", to.params.page);
+
+    next();
+  },
+  beforeRouteEnter(to, from, next) {
+    console.log("Entered New Book Route");
+    Store.dispatch("setBookId", to.params.id);
+    Store.dispatch("setBookPage", to.params.page);
+    Store.dispatch("loadBookmark");
+    //If people are using links to go to books. We should start them at page 1. Keeping for debugging purposes for now.
+    next();
   },
   methods: {
     AddChoice(pageChosen) {
@@ -134,59 +122,51 @@ export default {
     RouteNextPage(event) {
       this.$store.dispatch("gotoNext");
       event.stopPropagation();
-
     },
     RoutePrevPage(event) {
-      let tempPage = this.page - 1;
-      this.PageSkipArray.forEach((choice) => {
-        if (tempPage > choice.StartPage && tempPage < choice.EndPage) {
-          if (choice.SelectedPage && tempPage >= choice.SelectedPage) {
-            tempPage = choice.SelectedPage;
-          } else {
-            tempPage = choice.StartPage;
-          }
-        }
-      });
-      this.$store.dispatch("setBookPage", tempPage);
-      this.$router.push(`/book/${this.$store.state.BookId}/${tempPage}`);
+      this.$store.dispatch("gotoPrev");
       event.stopPropagation();
-    },
-    ToggleHand(newValue) {
-      this.ShowHand = newValue;
     },
     //Elliott Added Methods
   },
-  created() {
-    this.id = this.$route.params.id;
-    this.$store.dispatch("setBookId", this.id);
-    this.page = this.$route.params.page;
-    this.$store.dispatch("setBookPage", this.page);
-  },
+
   async mounted() {
-    await this.$store.dispatch("setBookList").then(async () => {
-      let selectedItem = this.$store.state.BookArray.filter(
+    await this.$store.dispatch("setBookList");
+    let selectedItem = this.$store.state.BookArray.filter(
         (book) => book.bookId == this.id
       )[0];
       if (selectedItem) {
         await this.$store.dispatch("setBookItem", selectedItem);
         this.$store.dispatch("setBookPage", this.page);
       }
-    });
     await this.$store.dispatch("fetchBookData", this.id);
+    this.$store.dispatch("filterBooks");
+    this.$store.dispatch("setNextBookItem", this.id);
   },
   beforeUpdate() {
-    this.page = this.$store.state.BookPage;
     this.HighestPage = this.$store.state.HighestPage;
   },
 };
 </script>
 
-<style scoped>
+<style>
+img {
+  -webkit-user-drag: none;
+  -khtml-user-drag: none;
+  -moz-user-drag: none;
+  -o-user-drag: none;
+}
+
 .pageContainer {
   position: relative;
   text-align: center;
   padding-top: 1vh;
   padding-bottom: 1vh;
   z-index: 0;
+}
+.notepadsContainer {
+  height: 100%;
+  width: 100%;
+  position: relative;
 }
 </style>

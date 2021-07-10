@@ -1,13 +1,39 @@
   <template>
-  <div class="pageContainer" ref="notepadholder">
+  <div
+    class="pageContainer2"
+    ref="notepadholder"
+    :class="{ makeInvisible: allInvisible }"
+  >
     <img
       alt=""
-      :src="notepadImageLocation"
+      src="@/assets/Images/notepadWithLines.png"
       ref="base"
       id="base"
-      @load="updateBase"
+      class="nonRefBase"
       :style="adjustingBox"
+      rel="preload"
+      @load="updateBase"
+      :class="{
+        makeInvisible: !bookStyle.sheetHasLines || bookStyle.showCover,
+      }"
     />
+    <img
+      alt=""
+      src="@/assets/Images/NotepadWithoutLines.png"
+      class="nonRefBase"
+      :style="adjustingBox"
+      rel="preload"
+      :class="{ makeInvisible: bookStyle.sheetHasLines || bookStyle.showCover }"
+    />
+    <img
+      alt=""
+      :src="coverHREF"
+      class="nonRefBase"
+      :style="adjustingBox"
+      rel="preload"
+      :class="{ makeInvisible: !bookStyle.showCover }"
+    />
+
     <div
       class="writableArea"
       :style="notepadHolderStyle"
@@ -18,9 +44,13 @@
             : null;
         }
       "
-      :class="{ border: bookStyle.showNotepadClickButton }"
     >
       <div class="notepadText" :style="nts">
+        <RestartModal
+          v-if="bookStyle.showModal"
+          @close-modal="this.ViewRestartModal = false"
+          class="nonRefBase"
+        />
         <slot> </slot>
       </div>
       <div class="squareMeLeft" :style="leftArrowSize">
@@ -36,13 +66,16 @@
 import NavPrevArrowE from "@/atoms/NavPrevArrowE.vue";
 import NavNextArrowE from "@/atoms/NavNextArrowE.vue";
 import AuthorInfoMobile from "@/components/booklayout/AuthorInfoMobile.vue";
-
+import RestartModal from "@/molecules/RestartModal.vue";
 import { mapGetters } from "vuex";
+import { mapState } from "vuex";
 export default {
+  props: ["allInvisible"],
   components: {
     NavNextArrowE,
     NavPrevArrowE,
     AuthorInfoMobile,
+    RestartModal,
   },
   data() {
     return {
@@ -53,14 +86,15 @@ export default {
       currentAspect: 0,
       baseFontSize: 0,
       lineHeightC: 2,
+      notepadLoaded: false,
       styleObject: {
         fontSize: "2rem",
         height: "200px",
         width: "300px",
       },
       adjustingBox: {
-        height: "auto",
-        width: "100%",
+        // height: "50%",
+        // width: "auto",
       },
     };
   },
@@ -68,21 +102,11 @@ export default {
   computed: {
     ...mapGetters([
       "sheetHasLines",
-      "pageType",
       "coverHREF",
       "onNotepadClick",
       "bookStyle",
     ]),
 
-    notepadImageLocation() {
-      if (this.bookStyle.showCover) {
-        return this.coverHREF;
-      } else if (this.bookStyle.sheetHasLines) {
-        return require("@/assets/Images/notepadWithLines.png");
-      } else {
-        return require("@/assets/Images/NotepadWithoutLines.png");
-      }
-    },
     leftArrowSize() {
       const size = 0.08 * this.ih + "px";
       const temp = {
@@ -120,6 +144,7 @@ export default {
     nts() {
       this.baseFontSize = this.ih * 0.04;
       this.lineHeightC = this.ih * 0.04 * 1.45 + "px";
+      this.$store.dispatch("setLineHeightPixels", this.ih * 0.04 * 1.45);
       const ntso = {
         fontSize: this.baseFontSize + "px",
         lineHeight: this.lineHeightC,
@@ -133,20 +158,25 @@ export default {
       this.styleObject.paddingLeft = this.iw * 0.08 + "px";
       this.styleObject.paddingRight = this.iw * 0.1 + "px";
       this.styleObject.paddingBottom = this.ih * 0.03 + "px";
-
       return this.styleObject;
     },
   },
   methods: {
+    preloadImage: function (url) {
+      let img = new Image();
+      img.src = url;
+    },
+    tester() {
+      setTimeout(this.switchAdjustBox, 0);
+    },
     updateBase: function () {
       if (this.$refs.base != null) {
+        this.switchAdjustBox();
         this.iw = this.$refs.base.width;
         this.ih = this.$refs.base.height;
-        this.switchAdjustBox();
       }
     },
     //Note that I made a decision to have 10% on left and right at all times
-    updateStyles: function () {},
     switchAdjustBox: function () {
       if (this.$refs.notepadholder != undefined) {
         const aspectScreen =
@@ -170,16 +200,18 @@ export default {
       }
     },
   },
-  mounted() {
+  created() {
     window.addEventListener("resize", this.updateBase);
-    this.updateBase();
+  },
+  mounted() {
+    this.$nextTick(this.switchAdjustBox);
   },
   unmounted() {
     window.removeEventListener("resize", this.updateBase);
   },
 };
 </script>
-<style >
+<style>
 .writableArea {
   position: absolute;
   top: 50%;
@@ -284,11 +316,25 @@ Button:hover {
   left: 51%;
   transform: translate(-50%, -50%);
 }
-.pageContainer {
-  text-align: center;
-  height: 80%;
-  position: relative;
-  flex-grow: 1;
+.nonRefBase {
+  position: absolute;
+  top: 50%;
+  left: 51%;
+
+  width: 80%;
+  transform: translate(-50%, -50%);
+}
+
+.pageContainer2 {
+  height: 100%;
+  position: absolute;
+  left: 0%;
+  right: 0%;
+  text-align: left;
+  padding-top: 1vh;
+  padding-bottom: 1vh;
+  z-index: 0;
+  font-size: 10px;
 }
 
 .squareMeLeft {
@@ -308,5 +354,9 @@ Button:hover {
 .LargeBodyText {
   font-size: 1.6em;
   line-height: 1.3;
+}
+
+.makeInvisible {
+  opacity: 0%;
 }
 </style>

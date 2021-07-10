@@ -1,9 +1,9 @@
  <template>
   <div class="questionNumber">Your Choice:</div>
-  <div class="questionText">{{ mainText }}</div>
+  <div class="questionText">{{ mainText(pageNum) }}</div>
   <div class="answerContainer">
     <button
-      v-for="answerB in answerArray"
+      v-for="answerB in answerArray(pageNum)"
       :key="answerB.text"
       class="answerButton"
       @click="updateChoice(answerB.toPages)"
@@ -18,10 +18,10 @@ export default {
   data() {
     return {};
   },
+  props: ["pageNum"],
   methods: {
     updateChoice(skipVal) {
-      this.$store.dispatch("setChoiceClicked", skipVal);
-      this.$store.dispatch("gotoNext");
+      this.$store.dispatch("gotoNext", skipVal);
     },
   },
   mounted() {},
@@ -48,19 +48,20 @@ export default {
   align-items: center;
   justify-content: start;
   margin-top: 1em;
+  width: 100%;
 }
 
 .answerButton {
   display: flex;
   justify-content: flex-start;
   text-align: left;
-  font-size: 0.7em;
+  font-size: 0.65em;
   color: black;
   font-weight: 300;
-  line-height: 2.2em;
+  line-height: 2.8em;
   padding-left: 1em;
   margin-bottom: 1em;
-  width: 90%;
+  width: 18.5em;
   background-color: white;
   border-style: solid;
   border-color: #9cd4d4;

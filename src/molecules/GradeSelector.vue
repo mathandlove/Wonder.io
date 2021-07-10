@@ -1,18 +1,10 @@
 <template>
-  <div class="d-inline-flex align-items-center justify-content-center">
-    <img
-      :class="[
-        this.$store.state.AspectRatio > 1
-          ? this.$store.state.AspectRatio > 1.5
-            ? 'GradeTall'
-            : 'GradeMid'
-          : 'GradeWide',
-      ]"
-      :src="require(`../assets/Images/${Grade}.svg`)"
-      @click="handleGradeDispatch"
-      alt=""
-    />
-  </div>
+  <img
+    class="GradeWide"
+    :src="require(`../assets/Images/${Grade}.svg`)"
+    @click="handleGradeDispatch"
+    alt=""
+  />
 </template>
 
 <script>
@@ -34,20 +26,9 @@ export default {
 </script>
 
 <style scoped>
-.GradeTall {
-  height: auto;
-  width: 28vw;
-}
-.GradeMid {
-  height: auto;
-  width: 25vw;
-}
 .GradeWide {
-  height: auto;
-  width: min(16vw, 32vh);
+  height: 100%;
 }
-.GradeTall:hover,
-.GradeMid:hover,
 .GradeWide:hover {
   cursor: pointer;
   transform: scale(1.1);

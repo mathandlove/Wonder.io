@@ -1,56 +1,101 @@
  <template>
-  <div class="questionNumber">{{ "Question " + questionNumber + ":" }}</div>
-  <div class="questionText">{{ mainText }}</div>
-  <div v-bind:class="{ 
-    questionImgContainer: this.answerArray[0].lineType == 'answerCoords',
-    answerContainer: this.answerArray[0].lineType == 'answers'
-   }">
-    <div v-for="(answer, index) in answerArray"
-      :key="answer">
-    <button
-      v-if="answer.text" 
-      class="answerButton"
+  <question-load-elements
+    v-if="pageMicroType === 'question' || pageNum != pageNumber"
+    :pageNum="pageNum"
+  />
+  <fail-animation
+    v-show="
+      (pageMicroType === 'failanimation' ||
+        pageMicroType === 'passanimation') &&
+      pageNum === pageNumber
+    "
+    :readyToAnimate="pageNum === pageNumber"
+  />
+  <!-- <score-page
+    v-show="(pageMicroType === 'scorePage' && pageNum === pageNumber) || true"
+  /> -->
+  <score-page
+    v-if="
+      (pageMicroType === 'scorepage' ||
+        pageMicroType === 'questionscoreupdated') &&
+      pageNum === pageNumber
+    "
+  />
+  <div
+    v-show="
+      (pageMicroType === 'questionloaded' ||
+        pageMicroType === 'questionansweredcorrect') &&
+      pageNum === pageNumber
+    "
+  >
+    <div class="questionNumber">
+      {{ "Question " + questionNumber(pageNum) + ":" }}
+    </div>
+    <div class="questionText">{{ mainText(pageNum) }}</div>
+    <div
       :class="{
-        wrongClicked: answer.clickedOn && !answer.isCorrectAnswer,
-        rightClicked: answer.clickedOn && answer.isCorrectAnswer,
+        questionImgContainer:
+          this.answerArray(pageNum)[0].lineType == 'answerCoords',
+        answerContainer: this.answerArray(pageNum)[0].lineType == 'answers',
       }"
-      @click="answerClicked(index)"
-      :disabled="answer.disabled"
     >
-      {{ answer.text }}
-    </button>
-   <button
-      v-if="answer.answerCoords" 
-      class="answerImgButton"
-      :class="{ correctImageAnswer: answer.isCorrectAnswer }"
-      :style="{
-        left: (answer.answerCoords[0] / Baseline.width) * 100 + '%',
-        top: ((-1 * answer.answerCoords[1]) / Baseline.height) * 100 + '%',
-        width: (answer.answerCoords[2] / Baseline.width) * 100 + '%',
-        height: (answer.answerCoords[3] / Baseline.height) * 100 + '%',
-      }"
-      @click="answerClicked(index)"
-      :disabled="answer.disabled"
-    >
+      <div v-for="(answer, index) in answerArray(pageNum)" :key="answer">
+        <button
+          v-if="answer.text"
+          class="answerButton"
+          :class="{
+            wrongClicked: answer.clickedOn && !answer.isCorrectAnswer,
+            rightClicked: answer.clickedOn && answer.isCorrectAnswer,
+          }"
+          @click="answerClicked(index)"
+          :disabled="answer.disabled"
+        >
+          {{ answer.text }}
+        </button>
+        <button
+          v-if="answer.answerCoords"
+          class="answerImgButton"
+          :class="{ correctImageAnswer: answer.isCorrectAnswer }"
+          :style="{
+            left: (answer.answerCoords[0] / Baseline.width) * 100 + '%',
+            top: ((-1 * answer.answerCoords[1]) / Baseline.height) * 100 + '%',
+            width: (answer.answerCoords[2] / Baseline.width) * 100 + '%',
+            height: (answer.answerCoords[3] / Baseline.height) * 100 + '%',
+          }"
+          @click="answerClicked(index)"
+          :disabled="answer.disabled"
+        >
+          <img
+            v-if="answer.clickedOn && answer.isCorrectAnswer"
+            class="w-100 h-100"
+            :src="require(`@/assets/Images/Circle.png`)"
+          />
+          <img
+            v-else-if="answer.clickedOn && !answer.isCorrectAnswer"
+            class="w-100 h-100"
+            :src="require(`@/assets/Images/X.png`)"
+          />
+        </button>
+      </div>
       <img
-        v-if="answer.clickedOn && answer.isCorrectAnswer"
-        class="w-100 h-100"
-        :src="require(`@/assets/Images/Circle.png`)"
+        v-if="showQuestionImage(pageNum)"
+        :src="questionImageUrl(pageNum)"
+        id="questionImage"
       />
-      <img
-        v-else-if="answer.clickedOn && !answer.isCorrectAnswer"
-        class="w-100 h-100"
-        :src="require(`@/assets/Images/X.png`)"
-      />
-    </button>
-  </div>
-   <img v-if="showQuestionImage" :src="questionImageUrl" id="questionImage" />
-      
+    </div>
   </div>
 </template>
 <script>
 import { mapActions, mapGetters } from "vuex";
+import FailAnimation from "@/components/booklayout/FailAnimation.vue";
+import QuestionLoadElements from "@/components/booklayout/QuestionLoadElements.vue";
+import ScorePage from "@/components/booklayout/ScorePage.vue";
 export default {
+  components: {
+    FailAnimation,
+    QuestionLoadElements,
+    ScorePage,
+  },
   data() {
     const Baseline = {
       width: 1161,
@@ -58,12 +103,13 @@ export default {
     };
     return {
       Baseline,
-      answerContainerId: "questionImgContainer"
+      answerContainerId: "questionImgContainer",
     };
   },
   mounted() {
     // this.$store.dispatch("setPageStyle", "question");
   },
+  props: ["pageNum"],
   dismounted() {},
   computed: {
     ...mapGetters([
@@ -72,6 +118,9 @@ export default {
       "answerArray",
       "showQuestionImage",
       "questionImageUrl",
+      "pageMicroType",
+      "pageNumber",
+      "turnOffAnimations",
     ]),
   },
   methods: {
@@ -99,19 +148,20 @@ export default {
   align-items: center;
   justify-content: start;
   margin-top: 1em;
+  width: 100%;
 }
 
 .answerButton {
   display: flex;
   justify-content: flex-start;
   text-align: left;
-  font-size: 0.7em;
+  font-size: 0.6em;
   color: black;
   font-weight: 300;
-  line-height: 2.2em;
+  line-height: 2.8em;
   padding-left: 1em;
   margin-bottom: 1em;
-  width: 90%;
+  width: 21em;
   background-color: white;
   border-style: solid;
   border-color: #9cd4d4;

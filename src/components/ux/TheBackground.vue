@@ -44,14 +44,4 @@ export default {
   padding: 0;
   margin: 0;
 }
-.noSelectText {
-  user-select: none;
-}
-
-.makeBorder {
-  border: none;
-  border-color: greenyellow;
-  border-width: 3px;
-  box-sizing: border-box;
-}
 </style>
