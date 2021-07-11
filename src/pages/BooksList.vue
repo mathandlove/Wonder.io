@@ -131,9 +131,7 @@ export default {
   unmounted() {
     this.$store.dispatch("resetBooksToDisplay");
   },
-  loaded() {
-    this.setGradeFilteredBooks();
-  },
+  loaded() {},
 };
 </script>
 
