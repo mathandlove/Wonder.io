@@ -116,7 +116,13 @@ export default {
         .then(this.$store.dispatch("setGradeFilter", "grade2"));
       await this.$store.dispatch("setBookList").then();
     } else {
+      this.$store.dispatch("setGradeFilter", "grade2");
+
+      //Note we'll always be doing grade2 atm. This will need to change when the data loads correctly.
+      ///CHANGE THE ABOVE!!!!!
+
       this.$store.dispatch("filterBooks");
+      this.$store.dispatch("loadScoreDict");
       this.initiateBookLoad();
     }
     this.preloadImage(require("@/assets/Images/NotepadWithoutLines.png"));
@@ -125,9 +131,7 @@ export default {
   unmounted() {
     this.$store.dispatch("resetBooksToDisplay");
   },
-  loaded() {
-    this.setGradeFilteredBooks();
-  },
+  loaded() {},
 };
 </script>
 
