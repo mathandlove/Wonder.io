@@ -95,7 +95,6 @@ export default {
     ]),
     ...mapState(["lineHeightPixels"]),
     debugText() {
-      console.log(this.$refs.rchar1);
       if (this.$refs.rchar1 != undefined)
         return this.$refs.rchar1.scrollHeight / this.lineHeightPixels;
       else {
@@ -110,10 +109,6 @@ export default {
       this.$store.dispatch("incrementTextRevealed");
     },
     adjustTextLine(refChar, refText) {
-      // console.log(this.$refs[refText].scrollHeight / this.lineHeightPixels);
-      // if (this.$refs[refText].scrollHeight / this.lineHeightPixels < 2.1)
-      //   this.$refs[refChar].style.marginTop =
-      //     -0.5 * this.lineHeightPixels + "px";
       //Went down a rabbit hole to make the character adjust depending on the amount of text. Ended upbeing better at half all the time.
     },
   },

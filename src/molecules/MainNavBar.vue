@@ -59,7 +59,6 @@ export default {
   },
   methods: {
     async audioClick(word) {
-      console.log("TextToSpeech word is =", word);
     },
   },
 };

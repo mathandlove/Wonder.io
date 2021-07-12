@@ -35,7 +35,6 @@ export default {
   props: ["pageNum"],
   methods: {
     BookSelected(bookListItem) {
-      console.log(bookListItem.bookId);
       this.$store.dispatch("setBookId", bookListItem.bookId);
       this.$store.dispatch("setBookItem", bookListItem);
       this.$store.dispatch("fetchBookData", bookListItem.bookId);

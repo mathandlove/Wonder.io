@@ -97,14 +97,12 @@ export default {
     },
   },
   beforeRouteUpdate(to, from, next) {
-    console.log("Updated Book Route");
     Store.dispatch("setBookId", to.params.id);
     Store.dispatch("setBookPage", to.params.page);
 
     next();
   },
   beforeRouteEnter(to, from, next) {
-    console.log("Entered New Book Route");
     Store.dispatch("setBookId", to.params.id);
     Store.dispatch("setBookPage", to.params.page);
     Store.dispatch("loadBookmark");

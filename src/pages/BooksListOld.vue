@@ -81,7 +81,6 @@ export default {
       this.WordFilteredBooks = filteredBooks;
     },
     async BookSelected(bookListItem) {
-      console.log("selected with book :", bookListItem);
       let bookId = parseInt(bookListItem.bookId);
       localStorage.removeItem("HighestPage");
       this.$store.dispatch("setBookId", bookId);
@@ -93,7 +92,6 @@ export default {
     },
   },
   async mounted() {
-    console.log("totalBooks", JSON.stringify(this.totalBooks));
     if (this.totalBooks == 1) {
       await this.$store
         .dispatch("fetchGradeFilters")
@@ -105,7 +103,6 @@ export default {
   },
   loaded() {
     this.setGradeFilteredBooks();
-    console.log("book images done loaded, hide load screen!");
   },
 };
 </script>

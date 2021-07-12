@@ -6,8 +6,8 @@ import router from '../router/index.js'
 import VueResource from 'vue-resource';
 
 
-// const resource_uri = 'https://localhost:5001/book';
-const resource_uri = 'https://wonderstories-api-dev-as.azurewebsites.net/book';
+const resource_uri = 'https://localhost:5001/book';
+// const resource_uri = 'https://wonderstories-api-dev-as.azurewebsites.net/book';
 //Helper Functions
 
 const randomNum = (a, b) => {
@@ -56,7 +56,7 @@ export default createStore({
     booksToDisplay: [],
     SelectedBookItem: JSON.parse(localStorage.getItem('SelectedBook')) || Book10Item,
     BookData: JSON.parse(localStorage.getItem('BookData')) || Book10,
-    BookArray: JSON.parse(localStorage.getItem('BookArray')) || [Book10Item],
+    BookArray: JSON.parse(localStorage.getItem('BookArray')) || [],
     HighestPage: +localStorage.getItem('HighestPage') || 1,
     BookId: +localStorage.getItem('BookId') || 10,
     BookPage: +parseInt(localStorage.getItem('BookPage')) || 1,
@@ -80,19 +80,11 @@ export default createStore({
     },
     bookMarkDict: {
     },
-
-    // JSON.parse(localStorage.getItem('Scores')) || 
-    //Aaron here a variety of things I need for each page.
-    //Also note that some of my Getters actually found somethings in your BookData in case you chage that.
-
     mainQCText: "The Case of the Bedroom Egg", //Title or Question
     skipNextAmount: 1, //Each page shows next page increase
     totalNumberOfPages: 1,
     author: "",
-
     nextBook: {},
-
-    //Everything below are the UX variables you do not need to change.
     bookStyle: {
       showPagePill: true,
       showScorePill: false,
@@ -220,9 +212,6 @@ export default createStore({
     },
 
     textSeries: (state) => pageNumber => {
-
-
-
       var pageLineParts = [];
       var array = state.BookData.pages[pageNumber - 1].pageParts;
 
@@ -274,7 +263,6 @@ export default createStore({
         nextPagePlus = getters.skipNextAmount(pageNumber);
       }
       // This needs to access the NextPage of the page property (default is 1)
-      console.log("going to page: " + (pageNumber + "+" + nextPagePlus))
       return pageNumber + nextPagePlus;
     },
     skipNextAmount: state => pageNumber => {
@@ -329,10 +317,6 @@ export default createStore({
     lastPageVisited: (state) => {
       return state.pageHistory[state.pageHistory.length - 1];
     }
-
-
-
-
   },
   mutations: {
     SET_BOOK_LIST(state, event) {
@@ -374,8 +358,6 @@ export default createStore({
       state.AspectRatio = event;
       localStorage.setItem('AspectRatio', event);
     },
-
-
     CLEAR_SCORES(state) {
       for (let i = 0; i <= 3; i += 1) {
         state.Scores[i].OldScore = 0;
@@ -395,8 +377,6 @@ export default createStore({
     },
     RESET_TEXT_INCREMENT(state) {
       state.textSeriesRevealed = 1;
-
-
     },
     FILL_TEXT_INCREMENT(state) {
       state.textSeriesRevealed = state.BookData.pages[state.BookPage - 1].pageParts.length;
@@ -404,7 +384,6 @@ export default createStore({
     },
     SET_PAGE_TYPE(state, type) {
       const pageIndex = parseInt(state.BookPage) - 1;
-      console.log('microState: ' + type, ' pagetype: ' + state.BookData.pages[pageIndex].type.toLowerCase())
       state.pageMicroType = type;
     },
     SET_PLAYER_NAME(state, sPlayerName) {
@@ -487,7 +466,6 @@ export default createStore({
 
 
       localStorage.setItem('BookScoresDictionary', JSON.stringify(oldScoreDict));
-      console.log('saved bookscoresdict to: ' + oldScoreDict)
       state.bookScoresDict = oldScoreDict;
     },
     START_SCORE_TIMER(state) {
@@ -497,10 +475,7 @@ export default createStore({
       state.Scores = state.Scores.sort(function compareFn(a, b) {
         return b.NewScore - a.NewScore;
       });
-      state.Scores.map(a => a.OldScore = a.NewScore)
-
-
-
+      state.Scores.map(a => a.OldScore = a.NewScore);
     },
     SET_LINE_HEIGHT_PIXELS(state, val) {
       state.lineHeightPixels = val;
@@ -508,9 +483,6 @@ export default createStore({
     SET_NEXT_BOOK(state, oldBookId) {
       let index = state.filteredBooks.findIndex(book => !(book.bookId in state.bookScoresDict) && book.bookId != oldBookId)
       state.nextBook = state.filteredBooks[index];
-      // console.log("set next book to: " + state.nextBook.bookId)
-
-
     },
 
     SAVE_BOOKMARK(state) {
@@ -534,7 +506,6 @@ export default createStore({
       }
       else {
         state.pageHistory = [1];
-        console.log('started new web history for ' + state.BookId)
       }
     },
     LOAD_SCORE_DICT(state) {
@@ -632,24 +603,14 @@ export default createStore({
   actions: {
     async fetchGradeFilters({ commit }) {
       let existingFilters = localStorage.getItem('GradeBookOrder');
-      // if (existingFilters == null) {
       if (true) {
         const response = await axios.get(resource_uri + '/gradefilters');
         commit('SET_GRADE_BOOK_ORDER', response.data);
       }
-
-      // else {
-      //   commit('SET_GRADE_BOOK_ORDER', JSON.parse(existingFilters));
-      //   }
-
-
     },
     async fetchBookData({ commit, state }, bookId) {
-      // const existingData = localStorage.getItem('BookData');
-      // if (existingData && state.BookId != bookId || existingData == null) {
       const response = await axios.get(resource_uri + `/${bookId}`);
       commit('SET_BOOK_DATA', response.data);
-      // }
     },
     async setBookList({ commit }) {
       let existingArray = localStorage.getItem('BookArray');
@@ -674,7 +635,6 @@ export default createStore({
       commit('SET_BOOK_ID', newId);
     },
     setBookPage({ commit, dispatch }, newPage) {
-      console.log('setting book page to: ' + newPage)
       commit('SET_BOOK_PAGE', parseInt(newPage));
       //This probably needs to go somewhere else Aaron, but i need page updated every time a page is loaded
       dispatch("setPageType");
@@ -707,8 +667,6 @@ export default createStore({
       }
     },
     dinoAnimationDone({ commit, dispatch, state }) {
-      console.log('dinoAnimationDone')
-
       if (state.pageMicroType == "failanimation") {
         dispatch('setPageType', 'questionloaded')
       }
@@ -717,11 +675,9 @@ export default createStore({
         dispatch('setPageType', 'scorepage')
       }
     },
-
     setPageStyle({ commit }) {
       commit('SET_PAGE_STYLE')
     },
-
     incrementTextRevealed({ commit, dispatch, state }) {
       state.animatepencil = false;
       setTimeout(() => { state.animatepencil = true; }, 400);
@@ -740,44 +696,33 @@ export default createStore({
       dispatch('setPageType');
     },
     gotoNext({ commit, state, dispatch, getters }, skipVal) {
-      console.log('sv: ' + skipVal)
       let tempPage = getters.nextPage(skipVal);
+
       if (tempPage > getters.HighestPage) {
-
         dispatch("setHighestPage", tempPage);
-
       }
+
       dispatch("resetTextIncrement");
       dispatch("setBookPage", tempPage);
       state.pageHistory.push(tempPage);
       dispatch("saveBookmark");
 
       router.push(`/book/${state.BookId}/${tempPage}`);
-
-
     },
     gotoPrev({ commit, state, dispatch, getters }) {
-      console.log('prev: ' + state.pageHistory);
       let prevPage = 1;
       if (state.pageHistory.length > 2) {
         state.pageHistory.pop();
         prevPage = state.pageHistory[state.pageHistory.length - 1];
       }
       else {
-        console.log('user error: user loaded story in the middle and went back to page: ' + state.pageHistory[0])
         state.pageHistory = [1];
         prevPage = 1;
       }
-
-
-
       dispatch("setBookPage", prevPage);
       dispatch("fillTextIncrement");
       dispatch("saveBookmark");
       router.push(`/book/${state.BookId}/${prevPage}`);
-
-
-
     },
     questionLoadDone({ commit, dispatch }) {
       dispatch('setPageType', 'questionloaded');
@@ -818,9 +763,6 @@ export default createStore({
       else {
         points = -800 / (smallPointTime - fullPointTime) * (timeToAnswer - fullPointTime) + 1000
       }
-
-
-
       if (getters.isDoublePoints(state.BookPage)) {
         points = points * 2;
       }
@@ -880,14 +822,11 @@ export default createStore({
             bot1Score = boundScore(idealNewScore, state.Scores[index].OldScore, isDouble);
           }
 
-
           index = state.Scores.map(e => e.id).indexOf(3)
           idealNewScore = getters.playerScore + randomNum(-800, -1)
           bot3Score = boundScore(idealNewScore, state.Scores[index].OldScore, isDouble);
 
         }
-
-
       }
 
       commit('SET_BOT_POINTS', [bot1Score, bot2Score, bot3Score])
@@ -917,9 +856,6 @@ export default createStore({
     showFinalScoreDone({ commit, dispatch }) {
       dispatch("setPageType", "nextbookpage")
     },
-
-
-
     setPageType({ commit, dispatch, state, getters }, microType = '') {
       const pageIndex = parseInt(state.BookPage) - 1;
 
@@ -970,7 +906,6 @@ export default createStore({
     loadBookmark({ commit, dispatch, state }) {
       state.bookMarkDict = localStorage.getItem('bookMarkDict');
       if (state.bookMarkDict == undefined) {
-        console.log('No Bookmark Dictionary found. Creating a new one.')
         state.bookMarkDict = {};
 
         dispatch('saveBookmark');
@@ -978,7 +913,6 @@ export default createStore({
 
       commit('LOAD_BOOKMARK');
       if (state.pageHistory[state.pageHistory.length - 1] != state.BookPage) {
-        console.log("User Error. User jumped from page " + state.pageHistory[state.pageHistory.length - 1] + " " + state.BookPage)
         //I should likely just send them to page 1 at some point here, but annoying for debugging.
       }
     },

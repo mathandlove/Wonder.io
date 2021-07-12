@@ -13,7 +13,6 @@
 export default {
   methods: {
     LikeBookClick(bool) {
-      console.log('User Selected Liked_Book = ', bool);
       this.$router.push('/celebration');
     },
   },
