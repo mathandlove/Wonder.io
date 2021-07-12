@@ -56,7 +56,7 @@ export default createStore({
     booksToDisplay: [],
     SelectedBookItem: JSON.parse(localStorage.getItem('SelectedBook')) || Book10Item,
     BookData: JSON.parse(localStorage.getItem('BookData')) || Book10,
-    BookArray: JSON.parse(localStorage.getItem('BookArray')) || [Book10Item, Book10Item, Book10Item, Book10Item, Book10Item, Book10Item, Book10Item, Book10Item, Book10Item, Book10Item, Book10Item, Book10Item, Book10Item, Book10Item],
+    BookArray: JSON.parse(localStorage.getItem('BookArray')) || [Book10Item],
     HighestPage: +localStorage.getItem('HighestPage') || 1,
     BookId: +localStorage.getItem('BookId') || 10,
     BookPage: +parseInt(localStorage.getItem('BookPage')) || 1,

@@ -110,17 +110,12 @@ export default {
   },
   async mounted() {
     console.log("totalBooks", JSON.stringify(this.totalBooks));
-    if (this.totalBooks == 0) {
+    if (this.totalBooks == 1) {
       await this.$store
         .dispatch("fetchGradeFilters")
         .then(this.$store.dispatch("setGradeFilter", "grade2"));
       await this.$store.dispatch("setBookList").then();
     } else {
-      this.$store.dispatch("setGradeFilter", "grade2");
-
-      //Note we'll always be doing grade2 atm. This will need to change when the data loads correctly.
-      ///CHANGE THE ABOVE!!!!!
-
       this.$store.dispatch("filterBooks");
       this.$store.dispatch("loadScoreDict");
       this.initiateBookLoad();
