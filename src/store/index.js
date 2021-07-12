@@ -6,8 +6,8 @@ import router from '../router/index.js'
 import VueResource from 'vue-resource';
 
 
-const resource_uri = 'https://localhost:5001/book';
-// const resource_uri = 'https://wonderstories-api-dev-as.azurewebsites.net/book';
+// const resource_uri = 'https://localhost:5001/book';
+const resource_uri = 'https://wonderstories-api-dev-as.azurewebsites.net/book';
 //Helper Functions
 
 const randomNum = (a, b) => {
