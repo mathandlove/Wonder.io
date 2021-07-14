@@ -161,6 +161,7 @@ export default {
   line-height: 2.8em;
   padding-left: 1em;
   margin-bottom: 1em;
+  margin-top: 0em !important;
   width: 21em;
   background-color: white;
   border-style: solid;

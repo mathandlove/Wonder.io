@@ -427,12 +427,8 @@ export default createStore({
       state.booksToDisplay = [];
     },
     FILTER_BOOKS(state) {
-      let gradeBookOrder =
-        state.GradeBookOrder[state.GradeFilter];//Note I need to get rid of reverse but the gradebook order is wrong.
-
-      //Remove when working
-      let gbo = gradeBookOrder.slice(0, 42); //I'm slicing gO because it repeats itself on my computer.
-      //Remove when working
+      let gbo =
+        state.GradeBookOrder[state.GradeFilter];
 
       gbo = gbo.map(String);
       //This needs to be cut once we get the right gradeBookOrder into the program.
