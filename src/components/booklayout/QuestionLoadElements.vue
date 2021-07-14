@@ -52,19 +52,12 @@ export default {
   margin-bottom: 0.25em;
 }
 
-.questionText {
-  margin-top: 2em;
-}
-
 #loader {
-  position: absolute;
-  bottom: 0%;
-  left: 0;
-  right: 0;
   display: flex;
   flex-direction: column;
   align-items: center;
   margin-right: 0.3em;
+  margin-top: 2em;
 }
 #doublepoints {
   height: 4em;
