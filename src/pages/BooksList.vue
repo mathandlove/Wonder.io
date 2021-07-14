@@ -97,14 +97,7 @@ export default {
     BookSelected(bookListItem) {
       console.log("selected with book :", bookListItem);
       let bookId = parseInt(bookListItem.bookId);
-      localStorage.removeItem("HighestPage");
-      this.$store.dispatch("setBookId", bookId);
-      this.$store.dispatch("setBookItem", bookListItem);
-      this.$store.dispatch("ClearScores");
-      this.$store.dispatch("loadBookmark");
-      this.$store.dispatch("setBookPage", this.lastPageVisited);
 
-      this.$store.dispatch("setNextBookItem", bookId);
       this.$router.push(`/book/${bookId}/${this.lastPageVisited}`);
     },
   },

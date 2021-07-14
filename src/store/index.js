@@ -107,7 +107,7 @@ export default createStore({
     textSeriesRevealed: 1,
     pageMicroType: "read",
     playerName: '',
-    turnOffAnimations: false,
+    turnOffAnimations: true,
     timerStart: 0,
     lineHeightPixels: 1,
     bookDataLoaded: false,
@@ -454,6 +454,16 @@ export default createStore({
         state.Scores[index].NewScore = Math.round(aPoints[i - 1])
       }
     },
+    SET_OPPONENTS(state) {
+      let index = state.Scores.map(e => e.id).indexOf(1)
+      state.Scores[index].name = "A";
+      index = state.Scores.map(e => e.id).indexOf(2)
+      state.Scores[index].name = "B";
+      index = state.Scores.map(e => e.id).indexOf(3)
+      state.Scores[index].name = "C";
+      console.log('scoreOpponentsUpdated')
+      console.log(state.Scores)
+    },
     SAVE_FINAL_SCORE(state, [score, rank, bookNumber]) {
       let oldScoreDict = JSON.parse(localStorage.getItem('BookScoresDictionary'));
 
@@ -521,7 +531,7 @@ export default createStore({
     },
     LOAD_BOOKMARK(state) {
 
-      state.bookMarkDict = JSON.parse(localStorage.getItem('bookMarkDict'));
+
 
       if (state.BookId in state.bookMarkDict) {
         state.Scores = state.bookMarkDict[state.BookId].Scores;
@@ -529,9 +539,11 @@ export default createStore({
         state.pageHistory = state.bookMarkDict[state.BookId].pageHistory;
       }
       else {
-        state.pageHistory = [1];
-        console.log('started new web history for ' + state.BookId)
+        console.log("ERROR: COULD not load bookmark for " + state.BookId);
       }
+
+
+
     },
     LOAD_SCORE_DICT(state) {
       let temp = {};
@@ -685,8 +697,12 @@ export default createStore({
     setUserScoreAdd({ commit }, newScoreAdd) {
       commit('SET_USER_SCORE_ADD', newScoreAdd);
     },
-    ClearScores({ commit }) {
+    ClearScores({ commit, dispatch }) {
+      dispatch('setOpponents')
       commit('CLEAR_SCORES');
+    },
+    setOpponents({ commit }) {
+      commit('SET_OPPONENTS')
     },
     setAnswerClicked({ commit, dispatch, state }, index) {
       commit('SET_ANSWER_CLICKED', index);
@@ -792,6 +808,7 @@ export default createStore({
       commit('TOGGLE_MODAL', bModalOn)
     },
     resetBook({ commit, dispatch, state }) {
+      console.log('resettingBook')
       dispatch("setHighestPage", 1);
       dispatch("setBookPage", 1);
       dispatch("ClearScores");
@@ -964,12 +981,19 @@ export default createStore({
       commit('SAVE_BOOKMARK');
     },
     loadBookmark({ commit, dispatch, state }) {
-      state.bookMarkDict = localStorage.getItem('bookMarkDict');
+      state.bookMarkDict = JSON.parse(localStorage.getItem('bookMarkDict'));
       if (state.bookMarkDict == undefined) {
         console.log('No Bookmark Dictionary found. Creating a new one.')
         state.bookMarkDict = {};
+      }
 
-        dispatch('saveBookmark');
+      if (!(state.BookId in state.bookMarkDict)) {
+
+        dispatch("ClearScores")
+        state.pageHistory = [1];
+        dispatch("saveBookmark")
+
+        console.log('started new web history for ' + state.BookId)
       }
 
       commit('LOAD_BOOKMARK');

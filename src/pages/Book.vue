@@ -133,12 +133,12 @@ export default {
   async mounted() {
     await this.$store.dispatch("setBookList");
     let selectedItem = this.$store.state.BookArray.filter(
-        (book) => book.bookId == this.id
-      )[0];
-      if (selectedItem) {
-        await this.$store.dispatch("setBookItem", selectedItem);
-        this.$store.dispatch("setBookPage", this.page);
-      }
+      (book) => book.bookId == this.id
+    )[0];
+    if (selectedItem) {
+      await this.$store.dispatch("setBookItem", selectedItem);
+      this.$store.dispatch("setBookPage", this.page);
+    }
     await this.$store.dispatch("fetchBookData", this.id);
     this.$store.dispatch("filterBooks");
     this.$store.dispatch("setNextBookItem", this.id);
