@@ -393,7 +393,6 @@ export default createStore({
     },
     SET_BOOK_ID(state, event) {
       state.BookId = event;
-      state.bookDataLoaded = false;
       localStorage.setItem('BookId', event);
     },
     SET_BOOK_ITEM(state, event) {
@@ -700,7 +699,9 @@ export default createStore({
     async fetchBookData({ commit, state }, bookId) {
       // const existingData = localStorage.getItem('BookData');
       // if (existingData && state.BookId != bookId || existingData == null) {
+      state.bookDataLoaded = false;
       const response = await axios.get(resource_uri + `/${bookId}`);
+      state.bookDataLoaded = true;
       commit('SET_BOOK_DATA', response.data);
       // }
     },
