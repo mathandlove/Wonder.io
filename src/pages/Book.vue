@@ -107,7 +107,7 @@ export default {
     console.log("Entered New Book Route");
     Store.dispatch("setBookId", to.params.id);
     Store.dispatch("setBookPage", to.params.page);
-    Store.dispatch("loadBookmark");
+
     //If people are using links to go to books. We should start them at page 1. Keeping for debugging purposes for now.
     next();
   },
@@ -142,6 +142,10 @@ export default {
     await this.$store.dispatch("fetchBookData", this.id);
     this.$store.dispatch("filterBooks");
     this.$store.dispatch("setNextBookItem", this.id);
+    this.$store.dispatch("setBookPage", this.page);
+    this.$store.dispatch("loadBookmark");
+    this.$store.dispatch("saveQuestionsToBookmark");
+    this.$store.dispatch("setPageType");
   },
   beforeUpdate() {
     this.HighestPage = this.$store.state.HighestPage;

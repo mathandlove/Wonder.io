@@ -34,6 +34,7 @@
           alt=""
           href="home"
           src="../assets/Images/home.png"
+          @click="BookExit"
         />
       </router-link>
 
@@ -60,6 +61,10 @@ export default {
   methods: {
     async audioClick(word) {
       console.log("TextToSpeech word is =", word);
+    },
+    BookExit(event) {
+      console.log("book exited");
+      this.$store.dispatch("onBookExit");
     },
   },
 };

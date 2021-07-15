@@ -1,4 +1,4 @@
-import { createStore } from 'vuex';
+import { createStore, Store } from 'vuex';
 import axios from 'axios';
 import Book10 from '../assets/Books/book10/book.json';
 import Book10Item from '../assets/Books/book10/book10item.json';
@@ -31,6 +31,8 @@ const boundScore = (newScore, oldScore, pointsDoubled) => {
     return newScore;
   }
 }
+
+
 
 
 export default createStore({
@@ -75,6 +77,7 @@ export default createStore({
         id: 3, name: 'GoofyCat6', OldScore: 0, NewScore: 0, upRank: false
       },
     ],
+    userNameList: [],
     bookScoresDict: {
       "1": []
     },
@@ -112,11 +115,13 @@ export default createStore({
     lineHeightPixels: 1,
     bookDataLoaded: false,
     animatepencil: true,
-    pageHistory: [1]
+    pageHistory: [1],
+    questionPages: [] //Store questions seperately for saving their state
     //pageMicroType determines that exact state of  the page for example there's a difference between read and read fully
 
   },
   getters: {
+
     bookDataLoaded: state => {
       return state.bookDataLoaded;
     },
@@ -249,16 +254,25 @@ export default createStore({
       return state.animatepencil;
     },
 
-    answerArray: (state, getters) => {
-      //Answer Array is an array of answers the student can guess. Please randomize answers.
-      let pageNumber = parseInt(state.BookPage);
-      let answers = [...state.BookData.pages[pageNumber - 1].pageParts[0].lineParts].splice(1);
-      return answers;
-    },
     answerArray: (state, getters) => pageNumber => {
       //Answer Array is an array of answers the student can guess. Please randomize answers.
-      let answers = [...state.BookData.pages[pageNumber - 1].pageParts[0].lineParts].splice(1);
-      return answers;
+      // 
+
+      // const questionNumber = getters.questionNumber;
+      let index = state.questionPages.map(e => (e.pageNumber)).indexOf(pageNumber - 1)
+      console.log(pageNumber)
+      console.log(index)
+      if (index != -1) {
+        return ([...state.questionPages[index].pageParts[0].lineParts].splice(1))
+      }
+      // let answers = [...state.questionPages[index].pageParts[0].lineParts].splice(1);
+
+
+      else {
+        let answers = [...state.BookData.pages[pageNumber - 1].pageParts[0].lineParts].splice(1);
+        return answers;
+        //I do not like that we are passing things (book10) until the book loads
+      }
     },
     bookStyle: state => {
       return state.bookStyle;
@@ -386,7 +400,9 @@ export default createStore({
     },
     SET_ANSWER_CLICKED(state, index) {
       let pageNumber = parseInt(state.BookPage);
-      const selectedItem = [...state.BookData.pages[pageNumber - 1].pageParts[0].lineParts].splice(1)[index];
+      let indexQ = state.questionPages.map(e => (e.pageNumber)).indexOf(pageNumber - 1)
+      const selectedItem = [...state.questionPages[indexQ].pageParts[0].lineParts].splice(1)[index];
+
       selectedItem.clickedOn = true;
       selectedItem.disabled = true;
     },
@@ -454,15 +470,13 @@ export default createStore({
         state.Scores[index].NewScore = Math.round(aPoints[i - 1])
       }
     },
-    SET_OPPONENTS(state) {
+    SET_OPPONENTS(state, [userName1, userName2, userName3]) {
       let index = state.Scores.map(e => e.id).indexOf(1)
-      state.Scores[index].name = "A";
+      state.Scores[index].name = userName1;
       index = state.Scores.map(e => e.id).indexOf(2)
-      state.Scores[index].name = "B";
+      state.Scores[index].name = userName2;
       index = state.Scores.map(e => e.id).indexOf(3)
-      state.Scores[index].name = "C";
-      console.log('scoreOpponentsUpdated')
-      console.log(state.Scores)
+      state.Scores[index].name = userName3;
     },
     SAVE_FINAL_SCORE(state, [score, rank, bookNumber]) {
       let oldScoreDict = JSON.parse(localStorage.getItem('BookScoresDictionary'));
@@ -504,8 +518,13 @@ export default createStore({
         return b.NewScore - a.NewScore;
       });
       state.Scores.map(a => a.OldScore = a.NewScore)
+      localStorage.setItem('Scores', JSON.stringify(state.Scores));
 
 
+
+    },
+    SET_USERNAME_LIST(state, list) {
+      state.listOfNames = list;
 
     },
     SET_LINE_HEIGHT_PIXELS(state, val) {
@@ -524,6 +543,7 @@ export default createStore({
       state.bookMarkDict[state.BookId] = {
         Scores: state.Scores,
         pageHistory: state.pageHistory,
+        questionPages: state.questionPages
 
       }
 
@@ -537,6 +557,7 @@ export default createStore({
         state.Scores = state.bookMarkDict[state.BookId].Scores;
 
         state.pageHistory = state.bookMarkDict[state.BookId].pageHistory;
+        state.questionPages = state.bookMarkDict[state.BookId].questionPages;
       }
       else {
         console.log("ERROR: COULD not load bookmark for " + state.BookId);
@@ -545,6 +566,7 @@ export default createStore({
 
 
     },
+
     LOAD_SCORE_DICT(state) {
       let temp = {};
       temp = JSON.parse(localStorage.getItem('BookScoresDictionary'));
@@ -594,7 +616,8 @@ export default createStore({
         state.bookStyle.showPrevButton = true;
         state.bookStyle.showNextButton = true;
         const pageIndex = parseInt(state.BookPage) - 1;
-        const answerArray = [...state.BookData.pages[pageIndex].pageParts[0].lineParts].splice(1);
+        let indexQ = state.questionPages.map(e => (e.pageNumber)).indexOf(pageIndex)
+        const answerArray = [...state.questionPages[indexQ].pageParts[0].lineParts].splice(1);
         for (let i = 0; i < answerArray.length; i++) {
           answerArray[i].disabled = true;
         }
@@ -698,16 +721,33 @@ export default createStore({
       commit('SET_USER_SCORE_ADD', newScoreAdd);
     },
     ClearScores({ commit, dispatch }) {
-      dispatch('setOpponents')
+      dispatch('loadListOfNames');
+      dispatch('setOpponents');
       commit('CLEAR_SCORES');
+
+
     },
-    setOpponents({ commit }) {
-      commit('SET_OPPONENTS')
+    loadListOfNames({ commit }) {
+      let list = ['star', 'spangle', 'banner'];
+      commit('SET_USERNAME_LIST', list)
+    },
+    setOpponents({ commit, getters, state }) {
+      let index = Math.floor(Math.random() * state.listOfNames.length);
+      let userName1 = state.listOfNames[index];
+      state.listOfNames.splice(index, 1)
+      index = Math.floor(Math.random() * state.listOfNames.length);
+      let userName2 = state.listOfNames[index];
+      state.listOfNames.splice(index, 1)
+      index = Math.floor(Math.random() * state.listOfNames.length);
+      let userName3 = state.listOfNames[index];
+      state.listOfNames.splice(index, 1)
+      commit('SET_OPPONENTS', [userName1, userName2, userName3])
     },
     setAnswerClicked({ commit, dispatch, state }, index) {
       commit('SET_ANSWER_CLICKED', index);
       const pageIndex = parseInt(state.BookPage) - 1;
-      const answerArray = [...state.BookData.pages[pageIndex].pageParts[0].lineParts].splice(1);
+      let indexQ = state.questionPages.map(e => (e.pageNumber)).indexOf(pageIndex)
+      const answerArray = [...state.questionPages[indexQ].pageParts[0].lineParts].splice(1);
       if (answerArray[index].isCorrectAnswer == false && !state.turnOffAnimations) {
         dispatch('setPageType', 'failanimation')
       }
@@ -811,12 +851,26 @@ export default createStore({
       console.log('resettingBook')
       dispatch("setHighestPage", 1);
       dispatch("setBookPage", 1);
-      dispatch("ClearScores");
+
+      dispatch("resetWebHistory")
       dispatch("toggleModal", false)
       router.push(`/book/${state.BookId}/1`);
       dispatch("setPageType")
+      dispatch("toggleModal", false)
     },
-    addPoints({ commit, state, getters }) {
+    resetWebHistory({ commit, dispatch, state }) {
+      console.log('resetWebHistory for: ' + state.BookId)
+      dispatch("ClearScores");
+      this.state.pageHistory = [1];
+      commit('SAVE_BOOKMARK')
+    },
+    onBookExit({ commit, state, dispatch, getters }) {
+      if (getters.pageType(state.BookPage) == "end") {
+        dispatch("resetWebHistory");
+      }
+      commit('SAVE_BOOKMARK');
+    },
+    addPoints({ commit, state, getters, dispatch }) {
       let timeToAnswer = (new Date().getTime() - state.timerStart) / 1000;
       let points = 0;
       const fullPointTime = .1;
@@ -838,7 +892,9 @@ export default createStore({
         points = points * 2;
       }
       commit('ADD_POINTS', points);
-      this.dispatch('setBotPoints')
+      dispatch('setBotPoints')
+      dispatch('saveBookmark')
+
     },
     setBotPoints({ commit, state, getters }) {
       let index = 0;
@@ -911,6 +967,7 @@ export default createStore({
     },
     updateScores({ commit, dispatch }) {
       commit('UPDATE_SCORES')
+      dispatch('saveBookmark')
 
     },
     scoreAnimationComplete({ commit, dispatch }) {
@@ -945,13 +1002,25 @@ export default createStore({
       var answerArray = [];
       var textArray = [];
       if (state.BookData.pages[pageIndex].pageParts.length > 0) {
-        answerArray = answerArray.concat([...state.BookData.pages[pageIndex].pageParts[0].lineParts].splice(1));
+
+        // answerArray = answerArray.concat([...state.BookData.pages[pageIndex].pageParts[0].lineParts].splice(1));
         textArray = textArray.concat([...state.BookData.pages[pageIndex].pageParts[0].lineParts]);
       }
 
+      if (microType == 'question') {
+        let indexQ = state.questionPages.map(e => (e.pageNumber)).indexOf(pageIndex)
+        if (indexQ != -1)
+          answerArray = [...state.questionPages[indexQ].pageParts[0].lineParts].splice(1);
+        else
+          answerArray = [];
+      }
+      else {
+        answerArray == [];
+      }
 
       if (microType == 'question' && answerArray.some(e => e.clickedOn && e.isCorrectAnswer)) {
-        //need to fix 0 up there
+        //need       let pageNumber = parseInt(state.BookPage);
+
         commit('SET_PAGE_TYPE', "questionansweredcorrect")
       }
       else if (mainType == 'question' && microType != 'questionloaded' && microType != 'questionscoreupdated' && microType != 'scorepage' && state.turnOffAnimations) {
@@ -969,6 +1038,7 @@ export default createStore({
 
       if (microType == 'end') {
         dispatch('saveFinalScore')
+
       }
 
       dispatch('setPageStyle')
@@ -979,6 +1049,12 @@ export default createStore({
     },
     saveBookmark({ commit }) {
       commit('SAVE_BOOKMARK');
+    },
+    saveQuestionsToBookmark({ commit, dispatch, state }) {
+      if (Object.keys(state.questionPages).length == 0) {
+        state.questionPages = state.BookData.pages.filter(page => page.questionNumber > 0);
+      }
+      dispatch("saveBookmark")
     },
     loadBookmark({ commit, dispatch, state }) {
       state.bookMarkDict = JSON.parse(localStorage.getItem('bookMarkDict'));
@@ -991,16 +1067,14 @@ export default createStore({
 
         dispatch("ClearScores")
         state.pageHistory = [1];
+        state.questionPages = [];
         dispatch("saveBookmark")
 
         console.log('started new web history for ' + state.BookId)
       }
 
       commit('LOAD_BOOKMARK');
-      if (state.pageHistory[state.pageHistory.length - 1] != state.BookPage) {
-        console.log("User Error. User jumped from page " + state.pageHistory[state.pageHistory.length - 1] + " " + state.BookPage)
-        //I should likely just send them to page 1 at some point here, but annoying for debugging.
-      }
+
     },
   },
   modules: {

@@ -35,12 +35,14 @@ export default {
   props: ["pageNum"],
   methods: {
     BookSelected(bookListItem) {
-      console.log(bookListItem.bookId);
+      console.log("going to via next click: " + bookListItem.bookId);
+      this.$store.dispatch("resetWebHistory");
+      //We need to reset the book to the beginning at the end once something is clicked.
+
       this.$store.dispatch("setBookId", bookListItem.bookId);
       this.$store.dispatch("setBookItem", bookListItem);
       this.$store.dispatch("fetchBookData", bookListItem.bookId);
       this.$store.dispatch("setBookPage", 1);
-      this.$store.dispatch("ClearScores");
       this.$store.dispatch("setNextBookItem", bookListItem.bookId + 1);
       this.$router.push(`/book/${bookListItem.bookId}/1`);
     },

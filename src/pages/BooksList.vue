@@ -95,9 +95,10 @@ export default {
     },
 
     BookSelected(bookListItem) {
-      console.log("selected with book :", bookListItem);
+      console.log("selected with book :", bookListItem.bookId);
       let bookId = parseInt(bookListItem.bookId);
-
+      this.$store.dispatch("setBookId", bookListItem.bookId);
+      this.$store.dispatch("loadBookmark");
       this.$router.push(`/book/${bookId}/${this.lastPageVisited}`);
     },
   },
