@@ -42,23 +42,28 @@
         class="navIconSize hoverHand"
         alt=""
         src="../assets/Images/restart.png"
-        @click="$store.dispatch('toggleModal', !bookStyle.showModal)"
+        @click="restartClicked"
       />
     </div>
   </div>
 </template>
 
 <script>
-import { mapActions } from "vuex";
+import { mapGetters } from "vuex";
 import { mapState } from "vuex";
 export default {
   computed: {
     ...mapState(["bookStyle"]),
+    ...mapGetters(["allScoreCards", "pageMicroType", "pageNumber"]),
   },
   methods: {
-    ...mapActions(["toggleModal"]),
-  },
-  methods: {
+    restartClicked(event) {
+      if (pageMicroType(pageNumber) == "nextbookpage") {
+        this.$store.dispatch("resetBook");
+      } else {
+        this.$store.dispatch("toggleModal", !bookStyle.showModal);
+      }
+    },
     async audioClick(word) {
       console.log("TextToSpeech word is =", word);
     },

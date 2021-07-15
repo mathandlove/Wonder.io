@@ -52,7 +52,7 @@
 <script>
 import InfoPill from "@/components/ux/InfoPill.vue";
 import BaseSpinner from "@/components/ux/BaseSpinner.vue";
-import { mapState } from "vuex";
+
 import { mapGetters } from "vuex";
 
 export default {
@@ -68,14 +68,12 @@ export default {
     };
   },
   computed: {
-    ...mapState({
-      totalBooks: (state) => state.BookArray.length,
-    }),
     ...mapGetters([
       "booksToDisplay",
       "bookScoresDict",
       "lastPageVisited",
       "gradeFilter",
+      "totalBooks",
     ]),
   },
 
@@ -108,7 +106,6 @@ export default {
     },
   },
   async mounted() {
-    console.log("totalBooks", JSON.stringify(this.totalBooks));
     if (this.totalBooks <= 1) {
       await this.$store.dispatch("setBookList");
     }

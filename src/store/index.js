@@ -33,8 +33,8 @@ const boundScore = (newScore, oldScore, pointsDoubled) => {
 }
 
 const shuffle = (array) => {
-  for (var i = array.length - 1; i > 0; i--) {
-    var j = Math.floor(Math.random() * (i + 1));
+  for (var i = 0; i < array.length; i++) {
+    var j = Math.floor(Math.random() * (array.length));
     var temp = array[i];
     array[i] = array[j];
     array[j] = temp;
@@ -195,6 +195,9 @@ export default createStore({
     pageMicroType: state => {
       return state.pageMicroType;
     },
+    totalBooks: state => {
+      return state.BookArray.length
+    },
 
     playerScore: state => {
       const index = state.Scores.map(e => e.id).indexOf(0)
@@ -309,7 +312,6 @@ export default createStore({
       return state.nextBook.nextCoverImageUrl;
     },
     getNextBook: state => {
-
       return state.nextBook
     },
     isDoublePoints: (state, getters) => {
@@ -379,8 +381,6 @@ export default createStore({
       }
       state.GradeFilter = gf;
       localStorage.setItem('GradeFilter', state.GradeFilter);
-      console.log('setGradeFilter')
-      console.log(state.GradeFilter)
     },
     SET_BOOK_DATA(state, event) {
       state.BookData = event;
@@ -455,7 +455,6 @@ export default createStore({
 
     },
     INCREASE_BOOKS_TO_DISPLAY(state, increaseNumber) {
-      console.log('increase')
       let numberOfBooksLoaded = state.booksToDisplay.length;
       let toAddArray = state.filteredBooks.slice(numberOfBooksLoaded, numberOfBooksLoaded + increaseNumber)
       state.booksToDisplay = state.booksToDisplay.concat(toAddArray);
@@ -465,7 +464,6 @@ export default createStore({
       state.booksToDisplay = [];
     },
     FILTER_BOOKS(state) {
-      console.log('filter')
       let gbo =
         state.GradeBookOrder[state.GradeFilter];
 
@@ -530,7 +528,6 @@ export default createStore({
 
 
       localStorage.setItem('BookScoresDictionary', JSON.stringify(oldScoreDict));
-      console.log('saved bookscoresdict to: ' + oldScoreDict)
       state.bookScoresDict = oldScoreDict;
     },
     START_SCORE_TIMER(state) {
@@ -556,6 +553,8 @@ export default createStore({
     SET_NEXT_BOOK(state, oldBookId) {
       let index = state.filteredBooks.findIndex(book => !(book.bookId in state.bookScoresDict) && book.bookId != oldBookId)
       state.nextBook = state.filteredBooks[index];
+      console.log('set next book to ')
+      console.log(state.nextBook)
       // console.log("set next book to: " + state.nextBook.bookId)
 
 
@@ -713,8 +712,7 @@ export default createStore({
         existingArray = received.data
       }
       commit('SET_BOOK_LIST', existingArray);
-      console.log('set book list to ')
-      console.log(existingArray)
+
       //Booklist used to be loaded from memory, but I'll be updating booklist daily and I'd like the update to come through
 
     },
@@ -731,7 +729,6 @@ export default createStore({
       commit('SET_BOOK_ID', newId);
     },
     setBookPage({ commit, dispatch }, newPage) {
-      console.log('setting book page to: ' + newPage)
       commit('SET_BOOK_PAGE', parseInt(newPage));
       //This probably needs to go somewhere else Aaron, but i need page updated every time a page is loaded
       dispatch("setPageType");
@@ -785,7 +782,6 @@ export default createStore({
       }
     },
     dinoAnimationDone({ commit, dispatch, state }) {
-      console.log('dinoAnimationDone')
 
       if (state.pageMicroType == "failanimation") {
         dispatch('setPageType', 'questionloaded')
@@ -818,7 +814,6 @@ export default createStore({
       dispatch('setPageType');
     },
     gotoNext({ commit, state, dispatch, getters }, skipVal) {
-      console.log('sv: ' + skipVal)
       let tempPage = getters.nextPage(skipVal);
       if (tempPage > getters.HighestPage) {
 
@@ -835,7 +830,6 @@ export default createStore({
 
     },
     gotoPrev({ commit, state, dispatch, getters }) {
-      console.log('prev: ' + state.pageHistory);
       let prevPage = 1;
       if (state.pageHistory.length > 2) {
         state.pageHistory.pop();
@@ -874,7 +868,6 @@ export default createStore({
       commit('TOGGLE_MODAL', bModalOn)
     },
     resetBook({ commit, dispatch, state }) {
-      console.log('resettingBook')
       dispatch("setHighestPage", 1);
       dispatch("setBookPage", 1);
 
@@ -885,7 +878,6 @@ export default createStore({
       dispatch("toggleModal", false)
     },
     resetWebHistory({ commit, dispatch, state }) {
-      console.log('resetWebHistory for: ' + state.BookId)
       dispatch("ClearScores");
       state.pageHistory = [1];
       state.questionPages = {};
@@ -1084,7 +1076,6 @@ export default createStore({
         if (state.questionPages.length != 0) {
 
           for (let i = 0; i < state.questionPages.length; i++) {
-            console.log(state.questionPages[i])
             answerArray = [...state.questionPages[i].pageParts[0].lineParts].splice(1);
             answerArray = shuffle(answerArray)
             state.questionPages[i].pageParts[0].lineParts = [state.questionPages[0].pageParts[0].lineParts[0]].concat(answerArray);

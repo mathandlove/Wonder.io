@@ -78,6 +78,8 @@ export default {
       "pageNumber",
       "totalNumberOfPages",
       "getBookItem",
+      "totalBooks",
+      "gradeFilter",
     ]),
     pageQueue() {
       let prevPage = -1; //this.pageNumber
@@ -131,15 +133,23 @@ export default {
   },
 
   async mounted() {
-    await this.$store.dispatch("setBookList");
+    if (this.totalBooks <= 1) {
+      await this.$store.dispatch("setBookList");
+    }
+    if (this.gradeFilter.length < 1) {
+      await this.$store.dispatch("fetchGradeFilters");
+    }
     let selectedItem = this.$store.state.BookArray.filter(
       (book) => book.bookId == this.id
     )[0];
     if (selectedItem) {
       await this.$store.dispatch("setBookItem", selectedItem);
-      this.$store.dispatch("setBookPage", this.page);
     }
     await this.$store.dispatch("fetchBookData", this.id);
+
+    this.$store.dispatch("setGradeFilter");
+    this.$store.dispatch("filterBooks");
+    this.$store.dispatch("loadScoreDict");
     this.$store.dispatch("setNextBookItem");
     this.$store.dispatch("setBookPage", this.page);
     this.$store.dispatch("loadBookmark");
