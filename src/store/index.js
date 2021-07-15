@@ -32,7 +32,15 @@ const boundScore = (newScore, oldScore, pointsDoubled) => {
   }
 }
 
-
+const shuffle = (array) => {
+  for (var i = array.length - 1; i > 0; i--) {
+    var j = Math.floor(Math.random() * (i + 1));
+    var temp = array[i];
+    array[i] = array[j];
+    array[j] = temp;
+  }
+  return array;
+}
 
 
 export default createStore({
@@ -259,20 +267,20 @@ export default createStore({
       // 
 
       // const questionNumber = getters.questionNumber;
-      let index = state.questionPages.map(e => (e.pageNumber)).indexOf(pageNumber - 1)
-      console.log(pageNumber)
-      console.log(index)
-      if (index != -1) {
-        return ([...state.questionPages[index].pageParts[0].lineParts].splice(1))
-      }
-      // let answers = [...state.questionPages[index].pageParts[0].lineParts].splice(1);
+      let answers = [...state.BookData.pages[pageNumber - 1].pageParts[0].lineParts].splice(1);
+      if (state.questionPages.length > 0) {
+        let index = state.questionPages.map(e => (e.pageNumber)).indexOf(pageNumber - 1)
+
+        if (index != -1) {
+          answers = ([...state.questionPages[index].pageParts[0].lineParts].splice(1))
+        }
+        // let answers = [...state.questionPages[index].pageParts[0].lineParts].splice(1);
 
 
-      else {
-        let answers = [...state.BookData.pages[pageNumber - 1].pageParts[0].lineParts].splice(1);
-        return answers;
-        //I do not like that we are passing things (book10) until the book loads
       }
+
+
+      return answers;
     },
     bookStyle: state => {
       return state.bookStyle;
@@ -434,6 +442,7 @@ export default createStore({
 
     },
     INCREASE_BOOKS_TO_DISPLAY(state, increaseNumber) {
+      console.log('increase')
       let numberOfBooksLoaded = state.booksToDisplay.length;
       let toAddArray = state.filteredBooks.slice(numberOfBooksLoaded, numberOfBooksLoaded + increaseNumber)
       state.booksToDisplay = state.booksToDisplay.concat(toAddArray);
@@ -689,6 +698,7 @@ export default createStore({
         commit('SET_BOOK_LIST', response.data);
       } else {
         commit('SET_BOOK_LIST', JSON.parse(existingArray));
+
       }
 
     },
@@ -861,7 +871,8 @@ export default createStore({
     resetWebHistory({ commit, dispatch, state }) {
       console.log('resetWebHistory for: ' + state.BookId)
       dispatch("ClearScores");
-      this.state.pageHistory = [1];
+      state.pageHistory = [1];
+      state.questionPages = {};
       commit('SAVE_BOOKMARK')
     },
     onBookExit({ commit, state, dispatch, getters }) {
@@ -1051,9 +1062,21 @@ export default createStore({
       commit('SAVE_BOOKMARK');
     },
     saveQuestionsToBookmark({ commit, dispatch, state }) {
+      let answerArray
       if (Object.keys(state.questionPages).length == 0) {
-        state.questionPages = state.BookData.pages.filter(page => page.questionNumber > 0);
+        state.questionPages = state.BookData.pages.filter(page => page.questionNumber > 0 && page.type == "question");
+        if (state.questionPages.length != 0) {
+
+          for (let i = 0; i < state.questionPages.length; i++) {
+            console.log(state.questionPages[i])
+            answerArray = [...state.questionPages[i].pageParts[0].lineParts].splice(1);
+            answerArray = shuffle(answerArray)
+            state.questionPages[i].pageParts[0].lineParts = [state.questionPages[0].pageParts[0].lineParts[0]].concat(answerArray);
+          }
+        }
+        // state.questionPages[0] = shuffle(state.questionPages[0]);
       }
+      console.log(state.questionPages)
       dispatch("saveBookmark")
     },
     loadBookmark({ commit, dispatch, state }) {

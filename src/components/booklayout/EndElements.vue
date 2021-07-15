@@ -41,10 +41,14 @@ export default {
 
       this.$store.dispatch("setBookId", bookListItem.bookId);
       this.$store.dispatch("setBookItem", bookListItem);
-      this.$store.dispatch("fetchBookData", bookListItem.bookId);
-      this.$store.dispatch("setBookPage", 1);
-      this.$store.dispatch("setNextBookItem", bookListItem.bookId + 1);
-      this.$router.push(`/book/${bookListItem.bookId}/1`);
+      this.$store.dispatch("fetchBookData", bookListItem.bookId).then(() => {
+        this.$store.dispatch("setBookPage", 1);
+        this.$store.dispatch("setNextBookItem");
+        this.$store.dispatch("loadBookmark");
+        this.$store.dispatch("saveQuestionsToBookmark");
+        this.$store.dispatch("setPageType");
+        this.$router.push(`/book/${bookListItem.bookId}/1`);
+      });
     },
   },
   computed: {

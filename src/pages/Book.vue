@@ -140,8 +140,7 @@ export default {
       this.$store.dispatch("setBookPage", this.page);
     }
     await this.$store.dispatch("fetchBookData", this.id);
-    this.$store.dispatch("filterBooks");
-    this.$store.dispatch("setNextBookItem", this.id);
+    this.$store.dispatch("setNextBookItem");
     this.$store.dispatch("setBookPage", this.page);
     this.$store.dispatch("loadBookmark");
     this.$store.dispatch("saveQuestionsToBookmark");

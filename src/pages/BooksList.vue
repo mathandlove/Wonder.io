@@ -104,7 +104,7 @@ export default {
   },
   async mounted() {
     console.log("totalBooks", JSON.stringify(this.totalBooks));
-    if (this.totalBooks == 1) {
+    if (this.totalBooks <= 1) {
       await this.$store
         .dispatch("fetchGradeFilters")
         .then(this.$store.dispatch("setGradeFilter", "grade2"));
