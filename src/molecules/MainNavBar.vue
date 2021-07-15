@@ -58,10 +58,10 @@ export default {
   },
   methods: {
     restartClicked(event) {
-      if (pageMicroType(pageNumber) == "nextbookpage") {
+      if (this.pageMicroType == "nextbookpage") {
         this.$store.dispatch("resetBook");
       } else {
-        this.$store.dispatch("toggleModal", !bookStyle.showModal);
+        this.$store.dispatch("toggleModal", !this.bookStyle.showModal);
       }
     },
     async audioClick(word) {

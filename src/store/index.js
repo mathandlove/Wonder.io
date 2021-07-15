@@ -124,6 +124,7 @@ export default createStore({
     bookDataLoaded: false,
     animatepencil: true,
     pageHistory: [1],
+    indestructablePageHistory: [1],
     questionPages: [] //Store questions seperately for saving their state
     //pageMicroType determines that exact state of  the page for example there's a difference between read and read fully
 
@@ -362,6 +363,18 @@ export default createStore({
 
   },
   mutations: {
+    CLEAR_BOOK_STATE(state) {
+      state.mainQCText = ""; //Title or Question
+      state.skipNextAmount = 1; //Each page shows next page increase
+      state.totalNumberOfPages = 1;
+      state.author = "";
+      state.textSeriesRevealed = 1;
+      state.pageMicroType = "read";
+      state.playerName = '';
+      state.pageHistory = [1];
+      state.indestructablePageHistory = [1];
+      state.questionPages = [];
+    },
     SET_BOOK_LIST(state, event) {
       state.BookArray = event;
       localStorage.setItem('BookArray', JSON.stringify(state.BookArray));
@@ -436,6 +449,7 @@ export default createStore({
     },
     FILL_TEXT_INCREMENT(state) {
       state.textSeriesRevealed = state.BookData.pages[state.BookPage - 1].pageParts.length;
+      console.log(state.textSeriesRevealed)
 
     },
     SET_PAGE_TYPE(state, type) {
@@ -564,7 +578,8 @@ export default createStore({
       state.bookMarkDict[state.BookId] = {
         Scores: state.Scores,
         pageHistory: state.pageHistory,
-        questionPages: state.questionPages
+        questionPages: state.questionPages,
+        indestructablePageHistory: state.indestructablePageHistory
 
       }
 
@@ -579,6 +594,7 @@ export default createStore({
 
         state.pageHistory = state.bookMarkDict[state.BookId].pageHistory;
         state.questionPages = state.bookMarkDict[state.BookId].questionPages;
+        state.indestructablePageHistory = state.bookMarkDict[state.BookId].indestructablePageHistory
       }
       else {
         console.log("ERROR: COULD not load bookmark for " + state.BookId);
@@ -682,6 +698,9 @@ export default createStore({
 
   },
   actions: {
+    clearBookState({ commit }) {
+      commit('CLEAR_BOOK_STATE')
+    },
     async fetchGradeFilters({ commit }) {
       let existingFilters = localStorage.getItem('GradeBookOrder');
       // if (existingFilters == null) {
@@ -816,15 +835,20 @@ export default createStore({
     },
     gotoNext({ commit, state, dispatch, getters }, skipVal) {
       let tempPage = getters.nextPage(skipVal);
-      if (tempPage > getters.HighestPage) {
 
-        dispatch("setHighestPage", tempPage);
-
-      }
-      dispatch("resetTextIncrement");
       dispatch("setBookPage", tempPage);
-      state.pageHistory.push(tempPage);
+
       dispatch("saveBookmark");
+
+      if (state.indestructablePageHistory.includes(tempPage)) {
+        dispatch("fillTextIncrement");
+      }
+      else {
+        dispatch("resetTextIncrement");
+      }
+
+      state.pageHistory.push(tempPage);
+      state.indestructablePageHistory.push(tempPage);
 
       router.push(`/book/${state.BookId}/${tempPage}`);
 
@@ -869,7 +893,7 @@ export default createStore({
       commit('TOGGLE_MODAL', bModalOn)
     },
     resetBook({ commit, dispatch, state }) {
-      dispatch("setHighestPage", 1);
+      dispatch('clearBookState');
       dispatch("setBookPage", 1);
 
       dispatch("resetWebHistory")
@@ -881,7 +905,9 @@ export default createStore({
     resetWebHistory({ commit, dispatch, state }) {
       dispatch("ClearScores");
       state.pageHistory = [1];
+      state.indestructablePageHistory = [1];
       state.questionPages = {};
+      dispatch("saveQuestionsToBookmark");
       commit('SAVE_BOOKMARK')
     },
     onBookExit({ commit, state, dispatch, getters }) {
@@ -889,6 +915,7 @@ export default createStore({
         dispatch("resetWebHistory");
       }
       commit('SAVE_BOOKMARK');
+      dispatch('clearBookState')
     },
     addPoints({ commit, state, getters, dispatch }) {
       let timeToAnswer = (new Date().getTime() - state.timerStart) / 1000;
@@ -1073,7 +1100,7 @@ export default createStore({
     saveQuestionsToBookmark({ commit, dispatch, state }) {
       let answerArray
       if (Object.keys(state.questionPages).length == 0) {
-        state.questionPages = state.BookData.pages.filter(page => page.questionNumber > 0 && page.type == "question");
+        state.questionPages = state.BookData.pages.filter(page => page.questionNumber > 0 && page.type == "question").slice();
         if (state.questionPages.length != 0) {
 
           for (let i = 0; i < state.questionPages.length; i++) {
@@ -1098,6 +1125,7 @@ export default createStore({
 
         dispatch("ClearScores")
         state.pageHistory = [1];
+        state.indestructablePageHistory = [1];
         state.questionPages = [];
         dispatch("saveBookmark")
 
