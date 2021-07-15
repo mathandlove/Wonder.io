@@ -66,7 +66,7 @@ export default createStore({
     booksToDisplay: [],
     SelectedBookItem: JSON.parse(localStorage.getItem('SelectedBook')) || Book10Item,
     BookData: JSON.parse(localStorage.getItem('BookData')) || Book10,
-    BookArray: JSON.parse(localStorage.getItem('BookArray')) || [Book10Item],
+    BookArray: [],
     HighestPage: +localStorage.getItem('HighestPage') || 1,
     BookId: +localStorage.getItem('BookId') || 10,
     BookPage: +parseInt(localStorage.getItem('BookPage')) || 1,
@@ -231,6 +231,9 @@ export default createStore({
     coverHREF: state => {
       return state.SelectedBookItem.largeBookCoverImageUrl
     },
+    gradeFilter: state => {
+      return state.GradeFilter;
+    },
 
     textSeries: (state) => pageNumber => {
 
@@ -366,8 +369,18 @@ export default createStore({
       localStorage.setItem('GradeBookOrder', JSON.stringify(state.GradeBookOrder));
     },
     SET_GRADE_FILTER(state, event) {
-      state.GradeFilter = event;
+
+      let gf = event;
+      if (gf == undefined) {
+        gf = localStorage.getItem('GradeFilter');
+        if (gf == undefined || gf == "undefined") {
+          gf = "grade2"
+        }
+      }
+      state.GradeFilter = gf;
       localStorage.setItem('GradeFilter', state.GradeFilter);
+      console.log('setGradeFilter')
+      console.log(state.GradeFilter)
     },
     SET_BOOK_DATA(state, event) {
       state.BookData = event;
@@ -452,6 +465,7 @@ export default createStore({
       state.booksToDisplay = [];
     },
     FILTER_BOOKS(state) {
+      console.log('filter')
       let gbo =
         state.GradeBookOrder[state.GradeFilter];
 
@@ -691,15 +705,17 @@ export default createStore({
       commit('SET_BOOK_DATA', response.data);
       // }
     },
-    async setBookList({ commit }) {
-      let existingArray = localStorage.getItem('BookArray');
-      if (existingArray == null) {
-        const response = await axios.get(resource_uri);
-        commit('SET_BOOK_LIST', response.data);
-      } else {
-        commit('SET_BOOK_LIST', JSON.parse(existingArray));
+    async setBookList({ commit, state }) {
+      let existingArray = state.BookArray;
+      if (existingArray.length < 1) {
 
+        const received = await axios.get(resource_uri);
+        existingArray = received.data
       }
+      commit('SET_BOOK_LIST', existingArray);
+      console.log('set book list to ')
+      console.log(existingArray)
+      //Booklist used to be loaded from memory, but I'll be updating booklist daily and I'd like the update to come through
 
     },
     setBookItem({ commit }, bookItem) {

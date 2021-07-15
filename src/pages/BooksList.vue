@@ -71,7 +71,12 @@ export default {
     ...mapState({
       totalBooks: (state) => state.BookArray.length,
     }),
-    ...mapGetters(["booksToDisplay", "bookScoresDict", "lastPageVisited"]),
+    ...mapGetters([
+      "booksToDisplay",
+      "bookScoresDict",
+      "lastPageVisited",
+      "gradeFilter",
+    ]),
   },
 
   components: { InfoPill, BaseSpinner },
@@ -105,15 +110,16 @@ export default {
   async mounted() {
     console.log("totalBooks", JSON.stringify(this.totalBooks));
     if (this.totalBooks <= 1) {
-      await this.$store
-        .dispatch("fetchGradeFilters")
-        .then(this.$store.dispatch("setGradeFilter", "grade2"));
-      await this.$store.dispatch("setBookList").then();
-    } else {
-      this.$store.dispatch("filterBooks");
-      this.$store.dispatch("loadScoreDict");
-      this.initiateBookLoad();
+      await this.$store.dispatch("setBookList");
     }
+    if (this.gradeFilter.length < 1) {
+      await this.$store.dispatch("fetchGradeFilters");
+    }
+    this.$store.dispatch("setGradeFilter");
+    this.$store.dispatch("filterBooks");
+    this.$store.dispatch("loadScoreDict");
+    this.initiateBookLoad();
+
     this.preloadImage(require("@/assets/Images/NotepadWithoutLines.png"));
     this.preloadImage(require("@/assets/Images/notepadWithLines.png"));
   },
