@@ -66,11 +66,7 @@ export default createStore({
     booksToDisplay: [],
     SelectedBookItem: JSON.parse(localStorage.getItem('SelectedBook')) || Book10Item,
     BookData: JSON.parse(localStorage.getItem('BookData')) || Book10,
-<<<<<<< HEAD
     BookArray: [],
-=======
-    BookArray: JSON.parse(localStorage.getItem('BookArray')) || [],
->>>>>>> master
     HighestPage: +localStorage.getItem('HighestPage') || 1,
     BookId: +localStorage.getItem('BookId') || 10,
     BookPage: +parseInt(localStorage.getItem('BookPage')) || 1,
@@ -537,15 +533,11 @@ export default createStore({
       state.Scores = state.Scores.sort(function compareFn(a, b) {
         return b.NewScore - a.NewScore;
       });
-<<<<<<< HEAD
       state.Scores.map(a => a.OldScore = a.NewScore)
       localStorage.setItem('Scores', JSON.stringify(state.Scores));
 
 
 
-=======
-      state.Scores.map(a => a.OldScore = a.NewScore);
->>>>>>> master
     },
 
     SET_LINE_HEIGHT_PIXELS(state, val) {
@@ -554,14 +546,11 @@ export default createStore({
     SET_NEXT_BOOK(state, oldBookId) {
       let index = state.filteredBooks.findIndex(book => !(book.bookId in state.bookScoresDict) && book.bookId != oldBookId)
       state.nextBook = state.filteredBooks[index];
-<<<<<<< HEAD
       console.log('set next book to ')
       console.log(state.nextBook)
       // console.log("set next book to: " + state.nextBook.bookId)
 
 
-=======
->>>>>>> master
     },
 
     SAVE_BOOKMARK(state) {
@@ -588,11 +577,7 @@ export default createStore({
         state.indestructablePageHistory = state.bookMarkDict[state.BookId].indestructablePageHistory
       }
       else {
-<<<<<<< HEAD
         console.log("ERROR: COULD not load bookmark for " + state.BookId);
-=======
-        state.pageHistory = [1];
->>>>>>> master
       }
 
 
@@ -704,12 +689,9 @@ export default createStore({
       }
     },
     async fetchBookData({ commit, state }, bookId) {
-<<<<<<< HEAD
       // const existingData = localStorage.getItem('BookData');
       // if (existingData && state.BookId != bookId || existingData == null) {
       state.bookDataLoaded = false;
-=======
->>>>>>> master
       const response = await axios.get(resource_uri + `/${bookId}`);
       state.bookDataLoaded = true;
       commit('SET_BOOK_DATA', response.data);
@@ -788,10 +770,6 @@ export default createStore({
       }
     },
     dinoAnimationDone({ commit, dispatch, state }) {
-<<<<<<< HEAD
-
-=======
->>>>>>> master
       if (state.pageMicroType == "failanimation") {
         dispatch('setPageType', 'questionloaded')
       }
@@ -823,7 +801,6 @@ export default createStore({
     gotoNext({ commit, state, dispatch, getters }, skipVal) {
       let tempPage = getters.nextPage(skipVal);
 
-<<<<<<< HEAD
       dispatch("setBookPage", tempPage);
 
       dispatch("saveBookmark");
@@ -835,14 +812,6 @@ export default createStore({
         dispatch("resetTextIncrement");
       }
 
-=======
-      if (tempPage > getters.HighestPage) {
-        dispatch("setHighestPage", tempPage);
-      }
-
-      dispatch("resetTextIncrement");
-      dispatch("setBookPage", tempPage);
->>>>>>> master
       state.pageHistory.push(tempPage);
       state.indestructablePageHistory.push(tempPage);
 
@@ -1110,13 +1079,6 @@ export default createStore({
       }
 
       commit('LOAD_BOOKMARK');
-<<<<<<< HEAD
-
-=======
-      if (state.pageHistory[state.pageHistory.length - 1] != state.BookPage) {
-        //I should likely just send them to page 1 at some point here, but annoying for debugging.
-      }
->>>>>>> master
     },
   },
   modules: {
