@@ -28,6 +28,8 @@ export default {
 <style scoped>
 .GradeWide {
   height: 100%;
+  width: 100%;
+  object-fit: contain;
 }
 .GradeWide:hover {
   cursor: pointer;

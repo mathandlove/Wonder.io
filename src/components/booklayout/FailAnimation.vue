@@ -171,7 +171,7 @@ export default {
   text-align: center;
   font-weight: 700;
   font-size: 2em;
-  opacity: 0%;
+  opacity: 0;
 }
 .dinoImage {
   position: absolute;
@@ -180,10 +180,10 @@ export default {
   height: 100%;
   width: 100%;
   object-fit: contain;
-  opacity: 0%;
+  opacity: 0;
 }
 .dinoImageBackground {
-  opacity: 100%;
+  opacity: 1;
 }
 
 .reveal1-enter-active {
