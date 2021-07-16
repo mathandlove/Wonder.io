@@ -489,11 +489,11 @@ export default createStore({
     },
     SET_OPPONENTS(state, [userName1, userName2, userName3]) {
       let index = state.Scores.map(e => e.id).indexOf(1)
-      state.Scores[index].name = userName1;
-      index = state.Scores.map(e => e.id).indexOf(2)
-      state.Scores[index].name = userName2;
-      index = state.Scores.map(e => e.id).indexOf(3)
-      state.Scores[index].name = userName3;
+      state.Scores[index].name = userName1.slice(0, 18);
+      index = state.Scores.map(e => e.id).indexOf(2);
+      state.Scores[index].name = userName2.slice(0, 18);
+      index = state.Scores.map(e => e.id).indexOf(3);
+      state.Scores[index].name = userName3.slice(0, 18);
     },
     SAVE_FINAL_SCORE(state, [score, rank, bookNumber]) {
       let oldScoreDict = JSON.parse(localStorage.getItem('BookScoresDictionary'));

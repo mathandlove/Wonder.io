@@ -4,7 +4,7 @@
     <input
       class="pillBoxLong"
       type="text"
-      maxLength="12"
+      maxLength="15"
       placeholder="Player Name"
       v-model="inputPlayerName"
     />

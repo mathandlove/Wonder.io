@@ -26,8 +26,8 @@ export default {
 <style scoped>
 .cardGrid {
   display: grid;
-  grid-template-columns: 1fr 29% 7%;
-  grid-column-gap: 7%;
+  grid-template-columns: 1fr 30%;
+  grid-column-gap: 2%;
   position: relative;
   align-items: center;
   width: 100%;
@@ -38,7 +38,7 @@ export default {
 p {
   text-align: left;
   font-family: "Roboto", serif;
-  font-size: 0.9em;
+  font-size: 0.8em;
   margin: 0;
   margin-bottom: 0;
 }
@@ -47,6 +47,7 @@ p {
   font-weight: bold;
   margin: 0;
   margin-bottom: 0;
+  font-size: 0.7em;
 }
 .scoreName {
   text-align: right;
