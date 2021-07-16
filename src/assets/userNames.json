@@ -1,0 +1,638 @@
+[
+  {
+    "noun": "Red",
+    "adjective": "Bike"
+  },
+  {
+    "noun": "Orange",
+    "adjective": "Car"
+  },
+  {
+    "noun": "Yellow",
+    "adjective": "Boat"
+  },
+  {
+    "noun": "Green",
+    "adjective": "Airplane"
+  },
+  {
+    "noun": "Blue",
+    "adjective": "Firetruck"
+  },
+  {
+    "noun": "Purple",
+    "adjective": "Mac Truck"
+  },
+  {
+    "noun": "Black",
+    "adjective": "Motorcycle"
+  },
+  {
+    "noun": "White",
+    "adjective": "Hovercraft"
+  },
+  {
+    "noun": "Gold",
+    "adjective": "Bulldozer"
+  },
+  {
+    "noun": "Dragon",
+    "adjective": "Loader"
+  },
+  {
+    "noun": "Wizard",
+    "adjective": "Excavator"
+  },
+  {
+    "noun": "Dwarf",
+    "adjective": "Backhoe"
+  },
+  {
+    "noun": "Elf",
+    "adjective": "Dump Truck"
+  },
+  {
+    "noun": "Leprechaun",
+    "adjective": "Cement Mixer"
+  },
+  {
+    "noun": "Ogre",
+    "adjective": "Crane"
+  },
+  {
+    "noun": "Goblin",
+    "adjective": "Forklift"
+  },
+  {
+    "noun": "Basilisk",
+    "adjective": "Fly"
+  },
+  {
+    "noun": "Yeti",
+    "adjective": "Worm"
+  },
+  {
+    "noun": "Troll",
+    "adjective": "Spider"
+  },
+  {
+    "noun": "Ghost",
+    "adjective": "Beetle"
+  },
+  {
+    "noun": "Zombie",
+    "adjective": "Wasp"
+  },
+  {
+    "noun": "Werewolf",
+    "adjective": "Hornet"
+  },
+  {
+    "noun": "Vampire",
+    "adjective": "Firefly"
+  },
+  {
+    "noun": "Ghoul",
+    "adjective": "Cricket"
+  },
+  {
+    "noun": "Warlock",
+    "adjective": "Boss"
+  },
+  {
+    "noun": "Shapeshiffter",
+    "adjective": "Slugger"
+  },
+  {
+    "noun": "Archangel",
+    "adjective": "Southpaw"
+  },
+  {
+    "noun": "Mummy",
+    "adjective": "Hotshot"
+  },
+  {
+    "noun": "Druid",
+    "adjective": "Small Fry"
+  },
+  {
+    "noun": "Fighting",
+    "adjective": "Tiger"
+  },
+  {
+    "noun": "Fierce",
+    "adjective": "Ace"
+  },
+  {
+    "noun": "Brave",
+    "adjective": "Sport"
+  },
+  {
+    "noun": "Sworn",
+    "adjective": "Snowmobile"
+  },
+  {
+    "noun": "Scary",
+    "adjective": "Steamroller"
+  },
+  {
+    "noun": "Noble",
+    "adjective": "Grasshopper"
+  },
+  {
+    "noun": "Trained",
+    "adjective": "Scooter"
+  },
+  {
+    "noun": "Feared",
+    "adjective": "Griffin"
+  },
+  {
+    "noun": "Honorable",
+    "adjective": "Centaur"
+  },
+  {
+    "noun": "Elite",
+    "adjective": "Minotaur"
+  },
+  {
+    "noun": "Ninja",
+    "adjective": "Cyclope"
+  },
+  {
+    "noun": "Gladiator",
+    "adjective": "Serpent"
+  },
+  {
+    "noun": "Apache",
+    "adjective": "Satyr"
+  },
+  {
+    "noun": "Viking",
+    "adjective": "Poseidon"
+  },
+  {
+    "noun": "Spartan",
+    "adjective": "Hades"
+  },
+  {
+    "noun": "Commando",
+    "adjective": "Zeus"
+  },
+  {
+    "noun": "Aztec",
+    "adjective": "Titan"
+  },
+  {
+    "noun": "Samurai",
+    "adjective": "Minion"
+  },
+  {
+    "noun": "Maori",
+    "adjective": "Dog"
+  },
+  {
+    "noun": "Roman",
+    "adjective": "Turtle"
+  },
+  {
+    "noun": "Girl",
+    "adjective": "Bird"
+  },
+  {
+    "noun": "Daughter",
+    "adjective": "Hampster"
+  },
+  {
+    "noun": "Sister",
+    "adjective": "Guinea Pig"
+  },
+  {
+    "noun": "Femme",
+    "adjective": "Deer"
+  },
+  {
+    "noun": "Lady",
+    "adjective": "Dove"
+  },
+  {
+    "noun": "Damsel",
+    "adjective": "Fish"
+  },
+  {
+    "noun": "Lassie",
+    "adjective": "Butterfly"
+  },
+  {
+    "noun": "Madam",
+    "adjective": "Shoes"
+  },
+  {
+    "noun": "Maiden",
+    "adjective": "Star"
+  },
+  {
+    "noun": "Maid",
+    "adjective": "Makeup"
+  },
+  {
+    "noun": "Chick",
+    "adjective": "Lipstick"
+  },
+  {
+    "noun": "Pink",
+    "adjective": "Eye Shadow"
+  },
+  {
+    "noun": "Purple",
+    "adjective": "Dresses"
+  },
+  {
+    "noun": "Violet",
+    "adjective": "Glitter"
+  },
+  {
+    "noun": "Fuschia",
+    "adjective": "Necklace"
+  },
+  {
+    "noun": "Fall",
+    "adjective": "Tattoo"
+  },
+  {
+    "noun": "Summer",
+    "adjective": "Purse"
+  },
+  {
+    "noun": "Winter",
+    "adjective": "Bow"
+  },
+  {
+    "noun": "Spring",
+    "adjective": "Moon"
+  },
+  {
+    "noun": "Autumn",
+    "adjective": "Planet"
+  },
+  {
+    "noun": "Flower",
+    "adjective": "Sun"
+  },
+  {
+    "noun": "Leaf",
+    "adjective": "Earth"
+  },
+  {
+    "noun": "Pumpkin",
+    "adjective": "Venus"
+  },
+  {
+    "noun": "Snowman",
+    "adjective": "Mars"
+  },
+  {
+    "noun": "Bud",
+    "adjective": "OuterSpace"
+  },
+  {
+    "noun": "Sun",
+    "adjective": "Pluto"
+  },
+  {
+    "noun": "Sunny",
+    "adjective": "Storm"
+  },
+  {
+    "noun": "Storm",
+    "adjective": "Rain"
+  },
+  {
+    "noun": "Rain",
+    "adjective": "Tsunami"
+  },
+  {
+    "noun": "Tsunami",
+    "adjective": "Blizzard"
+  },
+  {
+    "noun": "Blizzard",
+    "adjective": "Sunshine"
+  },
+  {
+    "noun": "Sunshine",
+    "adjective": "Rainbow"
+  },
+  {
+    "noun": "Rainbow",
+    "adjective": "Tornado"
+  },
+  {
+    "noun": "Tornado",
+    "adjective": "Joy"
+  },
+  {
+    "noun": "Friendly",
+    "adjective": "Cheer"
+  },
+  {
+    "noun": "Love",
+    "adjective": "Laughter"
+  },
+  {
+    "noun": "Funny",
+    "adjective": "Delight"
+  },
+  {
+    "noun": "Fluffy",
+    "adjective": "Glee"
+  },
+  {
+    "noun": "Sparkly",
+    "adjective": "Wish"
+  },
+  {
+    "noun": "Happy",
+    "adjective": "Love"
+  },
+  {
+    "noun": "Singing",
+    "adjective": "Shimmer"
+  },
+  {
+    "noun": "Painting",
+    "adjective": "Glitter"
+  },
+  {
+    "noun": "Musical",
+    "adjective": "Rose"
+  },
+  {
+    "noun": "Drawing",
+    "adjective": "Unicorn"
+  },
+  {
+    "noun": "Basketball",
+    "adjective": "Soft"
+  },
+  {
+    "noun": "Tennis",
+    "adjective": "Star"
+  },
+  {
+    "noun": "Volleyball",
+    "adjective": "Pony"
+  },
+  {
+    "noun": "Horseback",
+    "adjective": "Puppy"
+  },
+  {
+    "noun": "Track",
+    "adjective": "Kitten"
+  },
+  {
+    "noun": "Softball",
+    "adjective": "Chick"
+  },
+  {
+    "noun": "Archery",
+    "adjective": "Lamb"
+  },
+  {
+    "noun": "Math",
+    "adjective": "Calf"
+  },
+  {
+    "noun": "Book",
+    "adjective": "Duckling"
+  },
+  {
+    "noun": "Spanish",
+    "adjective": "Fawn"
+  },
+  {
+    "noun": "Italian",
+    "adjective": "Cub"
+  },
+  {
+    "noun": "Russian",
+    "adjective": "Art"
+  },
+  {
+    "noun": "Asian",
+    "adjective": "Poetry"
+  },
+  {
+    "noun": "Dominican",
+    "adjective": "Actress"
+  },
+  {
+    "noun": "Irish",
+    "adjective": "Actor"
+  },
+  {
+    "noun": "Canadian",
+    "adjective": "Swimmer"
+  },
+  {
+    "noun": "Haitian",
+    "adjective": "Runner"
+  },
+  {
+    "noun": "Greek",
+    "adjective": "Biker"
+  },
+  {
+    "noun": "Moroccan",
+    "adjective": "Wizard"
+  },
+  {
+    "noun": "Nail",
+    "adjective": "Dwarf"
+  },
+  {
+    "noun": "Scream",
+    "adjective": "Elf"
+  },
+  {
+    "noun": "Scar",
+    "adjective": "Leprechaun"
+  },
+  {
+    "noun": "Darts",
+    "adjective": "Ogre"
+  },
+  {
+    "noun": "Arrow",
+    "adjective": "Goblin"
+  },
+  {
+    "noun": "Growl",
+    "adjective": "Basilisk"
+  },
+  {
+    "noun": "Spell",
+    "adjective": "Yeti"
+  },
+  {
+    "noun": "Spike",
+    "adjective": "Troll"
+  },
+  {
+    "noun": "Dark",
+    "adjective": "Ghost"
+  },
+  {
+    "noun": "Night",
+    "adjective": "Zombie"
+  },
+  {
+    "noun": "Lost",
+    "adjective": "Werewolf"
+  },
+  {
+    "noun": "Shadow",
+    "adjective": "Vampire"
+  },
+  {
+    "noun": "Darkened",
+    "adjective": "Ghoul"
+  },
+  {
+    "noun": "Mutant",
+    "adjective": "Warlock"
+  },
+  {
+    "noun": "Odd",
+    "adjective": "Alice"
+  },
+  {
+    "noun": "Weird",
+    "adjective": "Cinderella"
+  },
+  {
+    "noun": "Strawberry",
+    "adjective": "Wendy"
+  },
+  {
+    "noun": "theNew",
+    "adjective": "Goldilocks"
+  },
+  {
+    "noun": "the",
+    "adjective": "Gretel"
+  },
+  {
+    "noun": "Uncle",
+    "adjective": "Thumbelina"
+  },
+  {
+    "noun": "King",
+    "adjective": "Rapunzel"
+  },
+  {
+    "noun": "Queen",
+    "adjective": "SleepingBeauty"
+  },
+  {
+    "noun": "Silly",
+    "adjective": "Loco"
+  },
+  {
+    "noun": "Giggling",
+    "adjective": "Cow"
+  },
+  {
+    "noun": "Soccer",
+    "adjective": "Scribbler"
+  },
+  {
+    "noun": "Basketball",
+    "adjective": "Lupus"
+  },
+  {
+    "noun": "Football",
+    "adjective": "Queen"
+  },
+  {
+    "noun": "Dance",
+    "adjective": "King"
+  },
+  {
+    "noun": "Ninja",
+    "adjective": "Newt"
+  },
+  {
+    "noun": "Dirty",
+    "adjective": "Wink"
+  },
+  {
+    "noun": "Slimey",
+    "adjective": "Beast"
+  },
+  {
+    "noun": "Metal",
+    "adjective": "Doggy"
+  },
+  {
+    "noun": "Pizza",
+    "adjective": "Moose"
+  },
+  {
+    "noun": "Cat",
+    "adjective": "Puppy"
+  },
+  {
+    "noun": "Dog",
+    "adjective": "Kitty"
+  },
+  {
+    "noun": "Pet",
+    "adjective": "Beetle"
+  },
+  {
+    "noun": "Tiny",
+    "adjective": "Roo"
+  },
+  {
+    "noun": "Giant",
+    "adjective": "Monkey"
+  },
+  {
+    "noun": "Hiding",
+    "adjective": "oSaurus"
+  },
+  {
+    "noun": "Spit",
+    "adjective": "Drummer"
+  },
+  {
+    "noun": "Soft",
+    "adjective": "ChopStick"
+  },
+  {
+    "noun": "Sporty",
+    "adjective": "Finger"
+  },
+  {
+    "noun": "Wonder",
+    "adjective": "Slime"
+  },
+  {
+    "noun": "Smile",
+    "adjective": "Superhero"
+  },
+  {
+    "noun": "Danger",
+    "adjective": "Pizza"
+  },
+  {
+    "noun": "Baby",
+    "adjective": "Girl"
+  },
+  {
+    "noun": "Toy",
+    "adjective": "Boy"
+  }
+]

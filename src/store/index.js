@@ -464,7 +464,8 @@ export default createStore({
       else {
         state.playerName = sPlayerName;
       }
-      state.Scores[0].name = state.playerName;
+      let index = state.Scores.map(e => e.id).indexOf(0);
+      state.Scores[index].name = state.playerName;
 
     },
     INCREASE_BOOKS_TO_DISPLAY(state, increaseNumber) {
@@ -503,6 +504,9 @@ export default createStore({
         index = state.Scores.map(e => e.id).indexOf(i)
         state.Scores[index].NewScore = Math.round(aPoints[i - 1])
       }
+    },
+    SET_USERNAME_LIST(state) {
+      state.listOfNames = require('@/assets/userNames.json')
     },
     SET_OPPONENTS(state, [userName1, userName2, userName3]) {
       let index = state.Scores.map(e => e.id).indexOf(1)
@@ -556,10 +560,7 @@ export default createStore({
 
 
     },
-    SET_USERNAME_LIST(state, list) {
-      state.listOfNames = list;
 
-    },
     SET_LINE_HEIGHT_PIXELS(state, val) {
       state.lineHeightPixels = val;
     },
@@ -757,13 +758,10 @@ export default createStore({
     setAspectRatio({ commit }, newRatio) {
       commit('SET_ASPECT_RATIO', newRatio);
     },
-    setUserName({ commit }, newNameInfo) {
-      commit('SET_USER_NAME', newNameInfo);
-    },
     setUserScoreAdd({ commit }, newScoreAdd) {
       commit('SET_USER_SCORE_ADD', newScoreAdd);
     },
-    ClearScores({ commit, dispatch }) {
+    ClearScores({ commit, dispatch, state }) {
       dispatch('loadListOfNames');
       dispatch('setOpponents');
       commit('CLEAR_SCORES');
@@ -771,19 +769,18 @@ export default createStore({
 
     },
     loadListOfNames({ commit }) {
-      let list = ['star', 'spangle', 'banner'];
-      commit('SET_USERNAME_LIST', list)
+      commit('SET_USERNAME_LIST')
     },
     setOpponents({ commit, getters, state }) {
       let index = Math.floor(Math.random() * state.listOfNames.length);
-      let userName1 = state.listOfNames[index];
-      state.listOfNames.splice(index, 1)
+      let index2 = Math.floor(Math.random() * state.listOfNames.length);
+      let userName1 = state.listOfNames[index].noun + state.listOfNames[index2].adjective;
       index = Math.floor(Math.random() * state.listOfNames.length);
-      let userName2 = state.listOfNames[index];
-      state.listOfNames.splice(index, 1)
+      index2 = Math.floor(Math.random() * state.listOfNames.length);
+      let userName2 = state.listOfNames[index].noun + state.listOfNames[index2].adjective;
       index = Math.floor(Math.random() * state.listOfNames.length);
-      let userName3 = state.listOfNames[index];
-      state.listOfNames.splice(index, 1)
+      index2 = Math.floor(Math.random() * state.listOfNames.length);
+      let userName3 = state.listOfNames[index].noun + state.listOfNames[index2].adjective;
       commit('SET_OPPONENTS', [userName1, userName2, userName3])
     },
     setAnswerClicked({ commit, dispatch, state }, index) {
@@ -1100,7 +1097,7 @@ export default createStore({
     saveQuestionsToBookmark({ commit, dispatch, state }) {
       let answerArray
       if (Object.keys(state.questionPages).length == 0) {
-        state.questionPages = state.BookData.pages.filter(page => page.questionNumber > 0 && page.type == "question").slice();
+        state.questionPages = JSON.parse(JSON.stringify(state.BookData.pages.filter(page => page.questionNumber > 0 && page.type == "question")));
         if (state.questionPages.length != 0) {
 
           for (let i = 0; i < state.questionPages.length; i++) {

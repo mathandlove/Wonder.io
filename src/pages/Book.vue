@@ -156,9 +156,6 @@ export default {
     this.$store.dispatch("saveQuestionsToBookmark");
     this.$store.dispatch("setPageType");
   },
-  beforeUpdate() {
-    this.HighestPage = this.$store.state.HighestPage;
-  },
 };
 </script>
 

@@ -45,8 +45,12 @@ Button {
   padding-right: 2em;
   border-radius: 200px;
   border: none;
+  outline: none;
 }
 Button:hover {
   background-color: #7da8a5;
+}
+button:focus {
+  outline: none;
 }
 </style>
