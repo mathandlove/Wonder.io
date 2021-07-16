@@ -106,6 +106,7 @@ export default {
   },
   methods: {
     enter() {
+      console.log("animate");
       if (this.animationStep == "D1") {
         setTimeout(() => {
           this.soundStart.play();
@@ -119,7 +120,7 @@ export default {
         setTimeout(() => {
           this.soundClap.play();
         }, 2950);
-        if (this.pageMicroType != "failAnimation") {
+        if (this.pageMicroType != "failanimation") {
           setTimeout(() => {
             this.soundCorrect.play();
           }, 4200);

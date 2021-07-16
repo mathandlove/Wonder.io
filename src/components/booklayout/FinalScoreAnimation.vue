@@ -91,7 +91,7 @@ img {
   text-align: center;
   font-family: "CoopForged";
   font-weight: bold;
-  font-size: 2em;
+  font-size: 3em;
   text-transform: uppercase;
   margin: 0;
   padding: 0;
@@ -129,16 +129,22 @@ img {
   width: auto;
   transform: translateX(-50%);
   animation: bronzeMedalAnimation 50s forwards;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
 }
 
 .silverHolder {
   position: absolute;
-  right: 0%;
+  right: 10%;
   bottom: 15%;
   height: 30%;
   width: auto;
   transform: translateX(50%);
   animation: silverMedalAnimation 50s forwards;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
 }
 
 .goldHolder {
@@ -180,52 +186,6 @@ img {
   height: 30%;
   padding-bottom: 5%;
   transform: translate(50%);
-}
-
-@keyframes bronzeMedalAnimation {
-  0% {
-    left: 10%;
-    bottom: 10%;
-    opacity: 0%;
-    height: 30%;
-  }
-  2% {
-    left: 10%;
-    bottom: 15%;
-    opacity: 100%;
-  }
-  3% {
-    left: 10%;
-    bottom: 15%;
-    opacity: 100%;
-  }
-  4% {
-    left: 45%;
-    bottom: 40%;
-    height: 30%;
-  }
-  7% {
-    left: 45%;
-    bottom: 40%;
-    height: 30%;
-    color: rgba(0, 0, 0, 1);
-  }
-
-  8% {
-    left: 35%;
-    height: 20%;
-
-    bottom: 44%;
-    color: rgba(0, 0, 0, 0);
-  }
-
-  100% {
-    left: 35%;
-    height: 20%;
-
-    bottom: 44%;
-    color: rgba(0, 0, 0, 0);
-  }
 }
 
 @keyframes leftLightAnimation {
@@ -326,6 +286,49 @@ img {
     padding-bottom: 2%;
   }
 }
+@keyframes bronzeMedalAnimation {
+  0% {
+    left: 10%;
+    bottom: 10%;
+    opacity: 0%;
+    height: 30%;
+  }
+  2% {
+    left: 10%;
+    bottom: 15%;
+    opacity: 100%;
+  }
+  3% {
+    left: 10%;
+    bottom: 15%;
+    opacity: 100%;
+  }
+  4% {
+    left: 50%;
+    bottom: 50%;
+    height: 30%;
+  }
+  7% {
+    left: 50%;
+    bottom: 50%;
+    height: 30%;
+    color: rgba(0, 0, 0, 1);
+  }
+
+  8% {
+    left: 35%;
+    height: 20%;
+    color: rgba(0, 0, 0, 0);
+    bottom: 54%;
+  }
+
+  100% {
+    left: 35%;
+    height: 20%;
+    color: rgba(0, 0, 0, 0);
+    bottom: 54%;
+  }
+}
 
 @keyframes silverMedalAnimation {
   0% {
@@ -352,45 +355,30 @@ img {
   }
   11% {
     right: 50%;
-    bottom: 40%;
+    bottom: 50%;
     height: 30%;
   }
   15% {
     right: 50%;
-    bottom: 40%;
+    bottom: 50%;
     height: 30%;
     color: rgba(0, 0, 0, 1);
   }
   16% {
     right: 35%;
     height: 20%;
-
-    bottom: 44%;
     color: rgba(0, 0, 0, 0);
+    bottom: 54%;
   }
 
   100% {
     right: 35%;
     height: 20%;
-
-    bottom: 44%;
     color: rgba(0, 0, 0, 0);
+    bottom: 54%;
   }
 }
-@keyframes centerLightAnimation {
-  0% {
-    opacity: 0;
-  }
-  17% {
-    opacity: 0;
-  }
-  18% {
-    opacity: 80%;
-  }
-  100% {
-    opacity: 80%;
-  }
-}
+
 @keyframes goldMedalAnimation {
   0% {
     right: 50%;
@@ -410,7 +398,7 @@ img {
     right: 50%;
     height: 40%;
 
-    bottom: 40%;
+    bottom: 50%;
     opacity: 100%;
   }
 
@@ -418,7 +406,21 @@ img {
     right: 50%;
     height: 40%;
 
-    bottom: 40%;
+    bottom: 50%;
+  }
+}
+@keyframes centerLightAnimation {
+  0% {
+    opacity: 0;
+  }
+  18.5% {
+    opacity: 0;
+  }
+  19% {
+    opacity: 80%;
+  }
+  100% {
+    opacity: 80%;
   }
 }
 
