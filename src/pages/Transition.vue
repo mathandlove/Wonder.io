@@ -19,7 +19,6 @@ export default {
       this.$router.push('/books');
     },
     RouteAfterLoad() {
-      console.log('Route after transition page');
     },
   },
 };

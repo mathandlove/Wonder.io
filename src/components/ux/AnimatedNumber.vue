@@ -38,7 +38,6 @@ export default {
   },
   watch: {
     number() {
-      console.log("numchange");
       this.createInterval();
     },
   },

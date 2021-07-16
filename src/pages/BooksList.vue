@@ -85,10 +85,6 @@ export default {
       else return 0;
     },
 
-    preloadImage: function (url) {
-      let img = new Image();
-      img.src = url;
-    },
     bookLoaded(book) {
       book.isLoaded = true;
       this.$store.dispatch("increaseBooksToDisplay", 1);
@@ -98,7 +94,10 @@ export default {
     },
 
     BookSelected(bookListItem) {
+<<<<<<< HEAD
       console.log("selected with book :", bookListItem.bookId);
+=======
+>>>>>>> master
       let bookId = parseInt(bookListItem.bookId);
       this.$store.dispatch("setBookId", bookListItem.bookId);
       this.$store.dispatch("loadBookmark");
@@ -106,6 +105,7 @@ export default {
     },
   },
   async mounted() {
+<<<<<<< HEAD
     if (this.totalBooks <= 1) {
       await this.$store.dispatch("setBookList");
     }
@@ -119,6 +119,17 @@ export default {
 
     this.preloadImage(require("@/assets/Images/NotepadWithoutLines.png"));
     this.preloadImage(require("@/assets/Images/notepadWithLines.png"));
+=======
+    if (this.totalBooks == 0) {
+      await this.$store
+        .dispatch("fetchGradeFilters")
+        .then(this.$store.dispatch("setGradeFilter", "grade2"));
+      await this.$store.dispatch("setBookList");
+    } 
+    this.$store.dispatch("filterBooks");
+    this.$store.dispatch("loadScoreDict");
+    this.initiateBookLoad();
+>>>>>>> master
   },
   unmounted() {
     this.$store.dispatch("resetBooksToDisplay");

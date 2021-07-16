@@ -65,7 +65,6 @@ export default {
       }
     },
     async audioClick(word) {
-      console.log("TextToSpeech word is =", word);
     },
     BookExit(event) {
       console.log("book exited");

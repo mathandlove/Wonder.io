@@ -39,9 +39,13 @@ export default {
   },
 
   mounted() {
+<<<<<<< HEAD
     // this.$store.dispatch("setPageStyle", "question");
     // setTimeout(this.sortScore, 1200);
     this.$store.dispatch("updateScores");
+=======
+    setTimeout(this.sortScore, 1200);
+>>>>>>> master
   },
   dismounted() {},
 
