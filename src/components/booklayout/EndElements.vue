@@ -6,7 +6,7 @@
       <info-pill
         class="infoPillStyle"
         :value="playerScore"
-        :rank="scoreRank"
+        :rank="playerRank"
       ></info-pill>
       <img :src="coverHREF" class="endCover" />
     </div>
@@ -55,13 +55,17 @@ export default {
       "playerScore",
       "coverHREF",
       "nextBookId",
-      "scoreRank",
       "getNextBook",
       "coverHREF",
+      "playerRank",
     ]),
     sScoreTitle() {
-      if (this.scoreRank == 1) {
-        return "1st Place";
+      if (this.playerRank == 1) {
+        return "First Place";
+      } else if (this.playerRank == 2) {
+        return "Second Place";
+      } else if (this.playerRank == 3) {
+        return "Third Place";
       } else {
         return "Fourth Place";
       }

@@ -110,7 +110,7 @@ export default createStore({
     textSeriesRevealed: 1,
     pageMicroType: "read",
     playerName: '',
-    turnOffAnimations: true,
+    turnOffAnimations: false,
     timerStart: 0,
     lineHeightPixels: 1,
     bookDataLoaded: false,
@@ -198,15 +198,12 @@ export default createStore({
     },
     playerRank: state => {
       const index = state.Scores.map(e => e.id).indexOf(0)
+      console.log('rank')
+      console.log(1 + index)
       return 1 + index;
     },
     allScoreCards: state => {
       return state.Scores;
-    },
-
-    scoreRank: state => {
-      //returns "1,2, or 3 - 3 means anything not 1,2"
-      return 1;
     },
 
     showPagePill: state => {
@@ -489,11 +486,11 @@ export default createStore({
     },
     SET_OPPONENTS(state, [userName1, userName2, userName3]) {
       let index = state.Scores.map(e => e.id).indexOf(1)
-      state.Scores[index].name = userName1;
-      index = state.Scores.map(e => e.id).indexOf(2)
-      state.Scores[index].name = userName2;
-      index = state.Scores.map(e => e.id).indexOf(3)
-      state.Scores[index].name = userName3;
+      state.Scores[index].name = userName1.slice(0, 18);
+      index = state.Scores.map(e => e.id).indexOf(2);
+      state.Scores[index].name = userName2.slice(0, 18);
+      index = state.Scores.map(e => e.id).indexOf(3);
+      state.Scores[index].name = userName3.slice(0, 18);
     },
     SAVE_FINAL_SCORE(state, [score, rank, bookNumber]) {
       let oldScoreDict = JSON.parse(localStorage.getItem('BookScoresDictionary'));
@@ -763,6 +760,7 @@ export default createStore({
         dispatch('setPageType', 'failanimation')
       }
       else if (!state.turnOffAnimations) {
+        dispatch('addPoints')
         dispatch('setPageType', 'passanimation')
       }
       else if (state.turnOffAnimations && answerArray[index].isCorrectAnswer == true) {
@@ -774,7 +772,6 @@ export default createStore({
         dispatch('setPageType', 'questionloaded')
       }
       else {
-        dispatch('addPoints')
         dispatch('setPageType', 'scorepage')
       }
     },
@@ -915,7 +912,7 @@ export default createStore({
 
       if (getters.isLastQuestion(state.BookPage)) {
         let playerWins = true;
-        if (Math.random() < .15) {
+        if (Math.random() < .3) {
           playerWins = false;
         }
 

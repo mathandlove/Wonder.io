@@ -1,10 +1,14 @@
  <template>
+  <meta
+    name="viewport"
+    content="user-scalable=no, initial-scale=1, maximum-scale=1, minimum-scale=1, width=device-width"
+  />
   <div class="h1c">Join Game</div>
   <div style="text-align: center">
     <input
       class="pillBoxLong"
       type="text"
-      maxLength="12"
+      maxLength="15"
       placeholder="Player Name"
       v-model="inputPlayerName"
     />

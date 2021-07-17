@@ -39,7 +39,10 @@ export default {
       "grade5",
       "grade6",
     ];
-    return { GradeArray };
+
+    return {
+      GradeArray,
+    };
   },
   async mounted() {
     await this.getApiBooks();
@@ -73,10 +76,10 @@ export default {
   margin-right: 5vw;
   background-size: 100%;
   background-repeat: no-repeat;
-  overflow: hidden;
+  overflow: none;
 }
 .ChalkboardWide {
-  height: 80vh;
+  height: 100%;
   padding-left: 8vw;
   padding-right: 8vw;
   padding-top: 8vh;
@@ -84,20 +87,7 @@ export default {
   background-repeat: no-repeat;
   background-size: 100% 110%;
 }
-.ChalkboardMid {
-  height: 90vh;
-  padding-left: 5vw;
-  padding-right: 5vw;
-  padding-top: 15vh;
-  background-image: url("../assets/Images/phoneBoard.png");
-}
-.ChalkboardTall {
-  height: 80vh;
-  padding-left: 5vw;
-  padding-right: 5vw;
-  padding-top: 10vh;
-  background-image: url("../assets/Images/phoneBoard.png");
-}
+
 .textThickness {
   font-weight: 900;
   font-size: min(3vw, 5vh);
@@ -118,6 +108,7 @@ export default {
   justify-content: center;
 
   width: 100%;
+  height: 80vh;
 
   padding-bottom: 10vh;
 }

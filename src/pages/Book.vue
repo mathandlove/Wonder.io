@@ -1,6 +1,16 @@
 <template>
   <FinalScoreAnimation v-if="pageMicroType == 'end'" />
-
+  <audio
+    preload="auto"
+    autoplay
+    v-if="
+      pageMicroType == 'end' ||
+      pageMicroType == 'nextbookpage' ||
+      pageMicroType == 'join'
+    "
+  >
+    <source src="@/assets/sounds/rockTheme.mp3" type="audio/mpeg" />
+  </audio>
   <the-background v-if="pageMicroType != 'end'">
     <MainNavBar @show-modal="this.ViewRestartModal = true" />
     <end-elements v-if="pageMicroType === 'nextbookpage'" />

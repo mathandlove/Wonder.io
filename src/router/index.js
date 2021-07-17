@@ -2,11 +2,8 @@ import { createRouter, createWebHistory } from 'vue-router';
 import Home from '../pages/Home.vue';
 import Books from '../pages/BooksList.vue';
 import Book from '../pages/Book.vue';
-import Like from '../pages/Like.vue';
-import ScoreBoard from '../pages/ScoreBoard.vue';
-import Join from '../pages/Join.vue';
-import Celebration from '../pages/Celebration.vue';
-import Transition from '../pages/Transition.vue';
+
+
 
 
 const routes = [
@@ -30,37 +27,10 @@ const routes = [
     component: Books,
     meta: { title: 'Wonder.io - Books' },
   },
-  {
-    path: '/like',
-    name: 'Like',
-    component: Like,
-    meta: { title: 'Wonder.io - Like' },
-  },
-  {
-    path: '/scoreboard',
-    name: 'Scoreboard',
-    component: ScoreBoard,
-    meta: { title: 'Wonder.io - Scoreboard' },
-    props: true,
-  },
-  {
-    path: '/join',
-    name: 'Join',
-    component: Join,
-    meta: { title: 'Wonder.io - Join' },
-  },
-  {
-    path: '/celebration',
-    name: 'Celebration',
-    component: Celebration,
-    meta: { title: 'Wonder.io - Celebration' },
-  },
-  {
-    path: '/transition',
-    name: 'Transition',
-    component: Transition,
-    meta: { title: 'Wonder.io - Transition' },
-  },
+
+
+
+
 ];
 
 const router = createRouter({

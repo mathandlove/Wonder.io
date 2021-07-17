@@ -91,7 +91,7 @@ img {
   text-align: center;
   font-family: "CoopForged";
   font-weight: bold;
-  font-size: 2em;
+  font-size: 3em;
   text-transform: uppercase;
   margin: 0;
   padding: 0;
@@ -129,16 +129,22 @@ img {
   width: auto;
   transform: translateX(-50%);
   animation: bronzeMedalAnimation 50s forwards;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
 }
 
 .silverHolder {
   position: absolute;
-  right: 0%;
+  right: 10%;
   bottom: 15%;
   height: 30%;
   width: auto;
   transform: translateX(50%);
   animation: silverMedalAnimation 50s forwards;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
 }
 
 .goldHolder {
@@ -182,59 +188,13 @@ img {
   transform: translate(50%);
 }
 
-@keyframes bronzeMedalAnimation {
-  0% {
-    left: 10%;
-    bottom: 10%;
-    opacity: 0%;
-    height: 30%;
-  }
-  2% {
-    left: 10%;
-    bottom: 15%;
-    opacity: 100%;
-  }
-  3% {
-    left: 10%;
-    bottom: 15%;
-    opacity: 100%;
-  }
-  4% {
-    left: 45%;
-    bottom: 40%;
-    height: 30%;
-  }
-  7% {
-    left: 45%;
-    bottom: 40%;
-    height: 30%;
-    color: rgba(0, 0, 0, 1);
-  }
-
-  8% {
-    left: 35%;
-    height: 20%;
-
-    bottom: 44%;
-    color: rgba(0, 0, 0, 0);
-  }
-
-  100% {
-    left: 35%;
-    height: 20%;
-
-    bottom: 44%;
-    color: rgba(0, 0, 0, 0);
-  }
-}
-
 @keyframes leftLightAnimation {
   0% {
     left: -15%;
     width: 50%;
     height: 100%;
     padding-bottom: 2%;
-    opacity: 0%;
+    opacity: 0;
   }
 
   2% {
@@ -242,14 +202,14 @@ img {
     width: 50%;
     height: 100%;
     padding-bottom: 2%;
-    opacity: 0%;
+    opacity: 0;
   }
   3% {
     left: -15%;
     width: 50%;
     height: 100%;
     padding-bottom: 2%;
-    opacity: 100%;
+    opacity: 1;
   }
   4% {
     left: 20%;
@@ -283,14 +243,14 @@ img {
     width: 50%;
     height: 100%;
     padding-bottom: 2%;
-    opacity: 0%;
+    opacity: 0;
   }
   8% {
     right: -15%;
     width: 50%;
     height: 100%;
     padding-bottom: 2%;
-    opacity: 0%;
+    opacity: 0;
   }
 
   10% {
@@ -298,7 +258,7 @@ img {
     width: 50%;
     height: 100%;
     padding-bottom: 2%;
-    opacity: 100%;
+    opacity: 1;
   }
   11% {
     right: 20%;
@@ -324,6 +284,49 @@ img {
     width: 50%;
     height: 100%;
     padding-bottom: 2%;
+  }
+}
+@keyframes bronzeMedalAnimation {
+  0% {
+    left: 10%;
+    bottom: 10%;
+    opacity: 0;
+    height: 30%;
+  }
+  2% {
+    left: 10%;
+    bottom: 15%;
+    opacity: 1;
+  }
+  3% {
+    left: 10%;
+    bottom: 15%;
+    opacity: 1;
+  }
+  4% {
+    left: 50%;
+    bottom: 50%;
+    height: 30%;
+  }
+  7% {
+    left: 50%;
+    bottom: 50%;
+    height: 30%;
+    color: rgba(0, 0, 0, 1);
+  }
+
+  8% {
+    left: 35%;
+    height: 20%;
+    color: rgba(0, 0, 0, 0);
+    bottom: 54%;
+  }
+
+  100% {
+    left: 35%;
+    height: 20%;
+    color: rgba(0, 0, 0, 0);
+    bottom: 54%;
   }
 }
 
@@ -331,112 +334,111 @@ img {
   0% {
     right: 10%;
     bottom: 15%;
-    opacity: 0%;
+    opacity: 0;
     height: 30%;
   }
   7% {
     right: 10%;
     bottom: 15%;
-    opacity: 0%;
+    opacity: 0;
     height: 30%;
   }
   9% {
     right: 10%;
     bottom: 15%;
-    opacity: 100%;
+    opacity: 1;
   }
   10% {
     right: 10%;
     bottom: 15%;
-    opacity: 100%;
+    opacity: 1;
   }
   11% {
     right: 50%;
-    bottom: 40%;
+    bottom: 50%;
     height: 30%;
   }
   15% {
     right: 50%;
-    bottom: 40%;
+    bottom: 50%;
     height: 30%;
     color: rgba(0, 0, 0, 1);
   }
   16% {
     right: 35%;
     height: 20%;
-
-    bottom: 44%;
     color: rgba(0, 0, 0, 0);
+    bottom: 54%;
   }
 
   100% {
     right: 35%;
     height: 20%;
-
-    bottom: 44%;
     color: rgba(0, 0, 0, 0);
+    bottom: 54%;
   }
 }
-@keyframes centerLightAnimation {
-  0% {
-    opacity: 0;
-  }
-  17% {
-    opacity: 0;
-  }
-  18% {
-    opacity: 80%;
-  }
-  100% {
-    opacity: 80%;
-  }
-}
+
 @keyframes goldMedalAnimation {
   0% {
     right: 50%;
     height: 40%;
 
     bottom: 40%;
-    opacity: 0%;
+    opacity: 0;
   }
   19% {
     right: 50%;
     height: 40%;
 
     bottom: 40%;
-    opacity: 0%;
+    opacity: 0;
   }
   20% {
     right: 50%;
     height: 40%;
 
-    bottom: 40%;
-    opacity: 100%;
+    bottom: 50%;
+    opacity: 1;
   }
 
   100% {
     right: 50%;
     height: 40%;
 
-    bottom: 40%;
+    bottom: 50%;
+  }
+}
+@keyframes centerLightAnimation {
+  0% {
+    opacity: 0;
+  }
+  18.5% {
+    opacity: 0;
+  }
+  19% {
+    opacity: 0.8;
+  }
+  100% {
+    opacity: 0.8;
   }
 }
 
 @keyframes continueAnimation {
   0% {
-    opacity: 0%;
+    opacity: 0;
     disabled: true;
   }
   19% {
-    opacity: 0%;
+    opacity: 0;
   }
   20% {
-    opacity: 100%;
+    opacity: 1;
     disabled: false;
   }
 
   100% {
-    opacity: 100%;
+    opacity: 1;
   }
 }
 

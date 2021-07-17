@@ -52,23 +52,7 @@ import { mapActions } from "vuex";
 export default {
   props: ["readyToAnimate"],
   data() {
-    const soundClap = new Audio(require("@/assets/sounds/woodclap.wav"));
-    const soundCorrect = new Audio(
-      require("@/assets/sounds/274178__littlerobotsoundfactory__jingle-win-synth-02.wav")
-    );
-    const soundApplause = new Audio(
-      require("@/assets/sounds/audienceClap.wav")
-    );
-    const soundStart = new Audio(
-      require("@/assets/sounds/387232__isteak__badge-coin-win.wav")
-    );
-    const soundFail = new Audio(require("@/assets/sounds/FailHonkShort2.mp3"));
     return {
-      soundStart,
-      soundCorrect,
-      soundApplause,
-      soundFail,
-      soundClap,
       animationStep: "",
     };
   },
@@ -105,34 +89,6 @@ export default {
     },
   },
   methods: {
-    enter() {
-      if (this.animationStep == "D1") {
-        setTimeout(() => {
-          this.soundStart.play();
-        }, 500);
-        setTimeout(() => {
-          this.soundClap.play();
-        }, 1000);
-        setTimeout(() => {
-          this.soundClap.play();
-        }, 1900);
-        setTimeout(() => {
-          this.soundClap.play();
-        }, 2950);
-        if (this.pageMicroType != "failAnimation") {
-          setTimeout(() => {
-            this.soundCorrect.play();
-          }, 4200);
-          setTimeout(() => {
-            this.soundApplause.play();
-          }, 4500);
-        } else {
-          setTimeout(() => {
-            this.soundFail.play();
-          }, 4000);
-        }
-      }
-    },
     afterEnter() {
       if (this.animationStep == "D1") {
         this.animationStep = "D2";
@@ -170,7 +126,7 @@ export default {
   text-align: center;
   font-weight: 700;
   font-size: 2em;
-  opacity: 0%;
+  opacity: 0;
 }
 .dinoImage {
   position: absolute;
@@ -179,10 +135,10 @@ export default {
   height: 100%;
   width: 100%;
   object-fit: contain;
-  opacity: 0%;
+  opacity: 0;
 }
 .dinoImageBackground {
-  opacity: 100%;
+  opacity: 1;
 }
 
 .reveal1-enter-active {
