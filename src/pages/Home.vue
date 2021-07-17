@@ -39,7 +39,10 @@ export default {
       "grade5",
       "grade6",
     ];
-    return { GradeArray };
+
+    return {
+      GradeArray,
+    };
   },
   async mounted() {
     await this.getApiBooks();

@@ -1,9 +1,8 @@
 
   <template>
-  <meta name="viewport" content="width=device-width, user-scalable=no" />
   <meta
     name="viewport"
-    content="user-scalable=no, initial-scale=1, maximum-scale=1, minimum-scale=1"
+    content="user-scalable=no, initial-scale=1, maximum-scale=1, minimum-scale=1,width=device-width"
   />
 
   <body
@@ -36,6 +35,14 @@ export default {
 
 
 <style scoped>
+html,
+body {
+  overflow-x: hidden;
+}
+body {
+  position: relative;
+}
+
 .BookBackGroundStyle {
   height: 100%;
   width: 100vw;

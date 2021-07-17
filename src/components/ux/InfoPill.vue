@@ -97,6 +97,7 @@ export default {
 }
 .starSize {
   height: 15px;
+  width: 100%;
   margin: 7px;
   z-index: 1;
 }

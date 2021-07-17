@@ -54,6 +54,7 @@ import InfoPill from "@/components/ux/InfoPill.vue";
 import BaseSpinner from "@/components/ux/BaseSpinner.vue";
 
 import { mapGetters } from "vuex";
+import TheBackground from "../components/ux/TheBackground.vue";
 
 export default {
   data() {
@@ -65,6 +66,8 @@ export default {
       WordFilter,
       GradeFilteredBookItems,
       WordFilteredBooks,
+      BaseSpinner,
+      TheBackground,
     };
   },
   computed: {
@@ -77,7 +80,7 @@ export default {
     ]),
   },
 
-  components: { InfoPill, BaseSpinner },
+  components: { InfoPill, BaseSpinner, TheBackground },
   methods: {
     preloadImage: function (url) {
       let img = new Image();
@@ -201,11 +204,13 @@ export default {
 }
 
 body {
-  overflow-x: hidden;
 }
 
 .noSelectText {
   user-select: none;
+  overscroll-behavior: none;
+  overflow-x: hidden;
+  width: 100%;
 }
 
 @media (max-width: 1400px) {
