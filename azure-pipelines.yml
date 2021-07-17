@@ -20,3 +20,19 @@ steps:
     npm run build
   displayName: 'npm install and build'
 
+- task: PublishBuildArtifacts@1
+  displayName: 'Publish artifacts: firebase.json'
+  inputs:
+    PathtoPublish: firebase.json
+
+- task: PublishBuildArtifacts@1
+  displayName: 'Publish artifacts: utils'
+  inputs:
+    PathtoPublish: utils
+
+- task: PublishBuildArtifacts@1
+  displayName: 'Publish artifacts: build'
+  inputs:
+    PathtoPublish: dist
+    ArtifactName: drop/dist
+
