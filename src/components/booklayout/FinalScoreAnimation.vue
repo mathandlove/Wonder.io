@@ -107,7 +107,7 @@ img {
   bottom: 20%;
   width: max(8%, 80px);
   z-index: 3;
-  animation: continueAnimation 0.1s forwards;
+  animation: continueAnimation 50s forwards;
   transform: translateX(50%);
 }
 .continueButton:hover {

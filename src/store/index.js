@@ -117,9 +117,9 @@ export default createStore({
     animatepencil: true,
     pageHistory: [1],
     indestructablePageHistory: [1],
-    questionPages: [] //Store questions seperately for saving their state
+    questionPages: [], //Store questions seperately for saving their state
     //pageMicroType determines that exact state of  the page for example there's a difference between read and read fully
-
+    updateScoreHits: 0
   },
   getters: {
 
@@ -959,9 +959,19 @@ export default createStore({
     startScoreTimer({ commit }) {
       commit('START_SCORE_TIMER');
     },
-    updateScores({ commit, dispatch }) {
-      commit('UPDATE_SCORES')
-      dispatch('saveBookmark')
+    updateScores({ commit, dispatch, state }) {
+      state.updateScoreHits++;
+      if (state.updateScoreHits >= 4) {
+        setTimeout(() => {
+          commit('UPDATE_SCORES')
+          dispatch('saveBookmark')
+        }, 1000)
+      }
+
+
+    },
+    clearUpdateScores({ commit, state }) {
+      state.updateScoreHits = 0;
 
     },
     scoreAnimationComplete({ commit, dispatch }) {

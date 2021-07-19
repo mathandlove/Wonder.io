@@ -122,6 +122,24 @@ export default {
 
     this.preloadImage(require("@/assets/Images/NotepadWithoutLines.png"));
     this.preloadImage(require("@/assets/Images/notepadWithLines.png"));
+
+    document.addEventListener("gesturestart", function (e) {
+      e.preventDefault();
+      // special hack to prevent zoom-to-tabs gesture in safari
+      document.body.style.zoom = 1;
+    });
+
+    document.addEventListener("gesturechange", function (e) {
+      e.preventDefault();
+      // special hack to prevent zoom-to-tabs gesture in safari
+      document.body.style.zoom = 1;
+    });
+
+    document.addEventListener("gestureend", function (e) {
+      e.preventDefault();
+      // special hack to prevent zoom-to-tabs gesture in safari
+      document.body.style.zoom = 1;
+    });
   },
   unmounted() {
     this.$store.dispatch("resetBooksToDisplay");

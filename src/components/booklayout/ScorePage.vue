@@ -39,20 +39,11 @@ export default {
   },
 
   mounted() {
-    // this.$store.dispatch("setPageStyle", "question");
-    // setTimeout(this.sortScore, 1200);
-    this.$store.dispatch("updateScores");
+    this.$store.dispatch("clearUpdateScores");
   },
   dismounted() {},
 
-  methods: {
-    sortScore() {
-      this.$store.dispatch("updateScores");
-    },
-    scoreComplete() {
-      this.$store.dispatch("scoreAnimationComplete");
-    },
-  },
+  methods: {},
 };
 </script>
 

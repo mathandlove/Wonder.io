@@ -2,7 +2,7 @@
   <template>
   <meta
     name="viewport"
-    content="user-scalable=no, initial-scale=1, maximum-scale=1, minimum-scale=1,width=device-width"
+    content="user-scalable=no, initial-scale=1, maximum-scale=1, minimum-scale=1,width=device-width, user-scalable=no"
   />
 
   <body
@@ -29,6 +29,24 @@ export default {
   mounted() {
     window.addEventListener("resize", this.makeClientViewSize);
     this.makeClientViewSize();
+
+    document.addEventListener("gesturestart", function (e) {
+      e.preventDefault();
+      // special hack to prevent zoom-to-tabs gesture in safari
+      document.body.style.zoom = 0.99;
+    });
+
+    document.addEventListener("gesturechange", function (e) {
+      e.preventDefault();
+      // special hack to prevent zoom-to-tabs gesture in safari
+      document.body.style.zoom = 0.99;
+    });
+
+    document.addEventListener("gestureend", function (e) {
+      e.preventDefault();
+      // special hack to prevent zoom-to-tabs gesture in safari
+      document.body.style.zoom = 0.99;
+    });
   },
 };
 </script>
@@ -38,6 +56,7 @@ export default {
 html,
 body {
   overflow-x: hidden;
+  touch-action: manipulation;
 }
 body {
   position: relative;

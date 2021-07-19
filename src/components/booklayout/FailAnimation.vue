@@ -52,8 +52,12 @@ import { mapActions } from "vuex";
 export default {
   props: ["readyToAnimate"],
   data() {
+    const failureMix = new Audio(require("@/assets/sounds/failureMix.mp3"));
+    const successMix = new Audio(require("@/assets/sounds/successMix.mp3"));
     return {
       animationStep: "",
+      failureMix,
+      successMix,
     };
   },
   watch: {
@@ -67,9 +71,7 @@ export default {
       }
     },
   },
-  mounted() {
-    // this.$store.dispatch("setPageStyle", "question");
-  },
+  mounted() {},
   dismounted() {},
   computed: {
     ...mapGetters(["pageMicroType"]),
@@ -96,7 +98,20 @@ export default {
         this.animationStep = "D3";
       }
     },
-    ...mapActions(["setPageStyle"]),
+    enter() {
+      if (this.animationStep == "D1" && this.pageMicroType == "failanimation") {
+        setTimeout(() => {
+          this.failureMix.play();
+        }, 500);
+      } else if (
+        this.animationStep == "D1" &&
+        this.pageMicroType != "failanimation"
+      ) {
+        setTimeout(() => {
+          this.successMix.play();
+        }, 500);
+      }
+    },
     answerClicked(index) {
       this.$store.dispatch("setAnswerClicked", index);
     },

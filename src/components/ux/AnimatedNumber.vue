@@ -22,7 +22,7 @@ export default {
       }
       this.interval = window.setInterval(() => {
         if (this.displayNumber != this.number) {
-          var change = 50;
+          var change = 10;
           change = change >= 0 ? Math.ceil(change) : Math.floor(change);
           this.displayNumber = Math.min(
             this.displayNumber + change,
@@ -31,6 +31,8 @@ export default {
 
           if (this.displayNumber == this.number) {
             clearInterval(this.interval);
+            this.$store.dispatch("updateScores");
+            this.$store.dispatch("scoreAnimationComplete");
           }
         }
       }, 20);
