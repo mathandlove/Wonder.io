@@ -50,12 +50,37 @@
       </div>
 
       <div
-        v-if="linePart.lineType == 'read'"
+        v-if="linePart.lineType == 'read' && linePart.text  != 'codeMonkeyTest'"
         class="mainText"
         :class="{ roboto: linePart.fontStyle == 'Moboto SDF' }"
       >
-        {{ linePart.text }}
+        {{ linePart.text  }}
       </div>
+
+
+      <div
+        v-if="linePart.lineType == 'read' && linePart.text == 'codeMonkeyTest'"
+        class="mainText"
+        :class="{ roboto: linePart.fontStyle == 'Moboto SDF' }"
+      >
+      <div class="h1cCustom">
+              {{ 'Question 4:'}}
+              </div>
+              <div>
+              {{'Pretend the iPad is a drone and take a picture of the monkies being silly.\n' }}
+              </div>
+              <video autoplay 
+              class="streamVideo"
+              ></video>
+        <button
+              
+          class="answerButton"
+          @click="takePhoto"
+        >
+          {{ photoButtonText}}
+        </button>
+      </div>
+
       <div v-if="linePart.lineType == 'image'">
         <img
           class="mainImage"
@@ -82,7 +107,11 @@ export default {
   components: {},
   props: ["pageNum"],
   data() {
-    return {};
+          
+    return {
+    videoRef:undefined,
+    photoButtonText:"Take Photo",
+    };
   },
 
   dismounted() {},
@@ -101,8 +130,11 @@ export default {
         return "waiting";
       }
     },
+    
   },
-  mounted() {},
+  mounted() {
+    this.onGetUserMediaButtonClick();
+  },
   methods: {
     increment(event) {
       event.stopPropagation();
@@ -111,16 +143,71 @@ export default {
     adjustTextLine(refChar, refText) {
       //Went down a rabbit hole to make the character adjust depending on the amount of text. Ended upbeing better at half all the time.
     },
+    onGetUserMediaButtonClick() {
+  navigator.mediaDevices.getUserMedia({video: true})
+  .then(mediaStream => {
+    this.videoRef=document.querySelector('video');
+    this.videoRef.srcObject = mediaStream;
+    
+
+    const track = mediaStream.getVideoTracks()[0];
+    imageCapture = new ImageCapture(track);
+  })
+  .catch(error => console.log(error));
+},
+takePhoto(){
+    if(this.photoButtonText !="RETAKE")
+    {
+      this.videoRef.pause();
+      this.photoButtonText="RETAKE";
+    }
+    else {
+      this.videoRef.play();
+      this.photoButtonText="Take Photo";
+    }
+}
   },
 };
 </script>
 
 <style scoped>
+.h1cCustom{
+  text-align: center;
+  font-size: 1.8em;
+  line-height: .8;
+  padding-top: 0em;
+  font-weight: 700;
+  margin-bottom: 0em;
+  margin-top: 0em;
+}
+.answerButton {
+  display: flex;
+  justify-content: center;
+  text-align: center;
+  font-size: 0.6em;
+  color: black;
+  font-weight: 300;
+  line-height: 2.8em;
+  padding-left: 1em;
+  margin-bottom: 1em;
+  margin-top: 0em !important;
+  width: 50%;
+  background-color: white;
+  border-style: solid;
+  border-color: #9cd4d4;
+  border-width: 4px;
+  border-radius: 30px;
+  font-family: Roboto;
+  outline: none;
+}
 .mainText {
   white-space: pre-line;
   margin-bottom: 0em;
   width: 100%;
   flex-grow: 0;
+}
+.streamVideo{
+  width:100%;
 }
 .mainImage {
   padding-bottom: 0.5em;
