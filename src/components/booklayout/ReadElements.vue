@@ -207,7 +207,7 @@ takePhoto(){
   flex-grow: 0;
 }
 .streamVideo{
-  width:100%;
+  height:9em
 }
 .mainImage {
   padding-bottom: 0.5em;
