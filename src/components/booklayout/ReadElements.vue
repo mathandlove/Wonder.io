@@ -67,7 +67,7 @@
               {{ 'Question 4:'}}
               </div>
               <div>
-              {{'Pretend the iPad is a drone and take a picture of the monkies being silly.\n' }}
+              {{'Pretend your phone is a drone and take a picture of the monkies being silly.\n' }}
               </div>
               <video autoplay 
               class="streamVideo"
@@ -144,7 +144,7 @@ export default {
       //Went down a rabbit hole to make the character adjust depending on the amount of text. Ended upbeing better at half all the time.
     },
     onGetUserMediaButtonClick() {
-  navigator.mediaDevices.getUserMedia({video: true})
+  navigator.mediaDevices.getUserMedia({video: { facingMode: "environment" }})
   .then(mediaStream => {
     this.videoRef=document.querySelector('video');
     this.videoRef.srcObject = mediaStream;
