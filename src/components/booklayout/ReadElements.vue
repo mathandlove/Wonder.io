@@ -69,9 +69,7 @@
               <div>
               {{'Pretend your phone is a drone and take a picture of the monkies being silly.\n' }}
               </div>
-              <video autoplay 
-              class="streamVideo"
-              ></video>
+
         <button
               
           class="answerButton"
@@ -109,7 +107,7 @@ export default {
   data() {
           
     return {
-    videoRef:undefined,
+    //videoRef:undefined,
     photoButtonText:"Take Photo",
     };
   },
@@ -133,7 +131,7 @@ export default {
     
   },
   mounted() {
-    this.onGetUserMediaButtonClick();
+    //this.onGetUserMediaButtonClick();
   },
   methods: {
     increment(event) {
@@ -144,18 +142,18 @@ export default {
       //Went down a rabbit hole to make the character adjust depending on the amount of text. Ended upbeing better at half all the time.
     },
     onGetUserMediaButtonClick() {
-  navigator.mediaDevices.getUserMedia({video: { facingMode: "environment" }})
-  .then(mediaStream => {
-    this.videoRef=document.querySelector('video');
-    this.videoRef.srcObject = mediaStream;
+  // navigator.mediaDevices.getUserMedia({video: { facingMode: "environment" }})
+  // .then(mediaStream => {
+  //  this.videoRef=document.querySelector('video');
+  //  this.videoRef.srcObject = mediaStream;
     
 
-    const track = mediaStream.getVideoTracks()[0];
-    imageCapture = new ImageCapture(track);
-  })
-  .catch(error => console.log(error));
+  //  const track = mediaStream.getVideoTracks()[0];
+  //  imageCapture = new ImageCapture(track);
+ // })
 },
 takePhoto(){
+  /*
     if(this.photoButtonText !="RETAKE")
     {
       this.videoRef.pause();
@@ -165,6 +163,7 @@ takePhoto(){
       this.videoRef.play();
       this.photoButtonText="Take Photo";
     }
+    */
 }
   },
 };

@@ -912,22 +912,23 @@ export default createStore({
 
       if (getters.isLastQuestion(state.BookPage)) {
         let playerWins = true;
-        if (Math.random() < .3) {
+        if (Math.random() < .05) {
           playerWins = false;
         }
 
         if (playerWins || getters.firstBookReadEver) {
           index = state.Scores.map(e => e.id).indexOf(1)
           idealNewScore = getters.playerScore + randomNum(-1500, -1)
-          bot1Score = boundScore(idealNewScore, state.Scores[index].OldScore, isDouble);
+          //bot1Score = boundScore(idealNewScore, state.Scores[index].OldScore, isDouble);
+          bot1Score = idealNewScore;
 
           index = state.Scores.map(e => e.id).indexOf(2)
           idealNewScore = getters.playerScore + randomNum(-200, -1)
-          bot2Score = boundScore(idealNewScore, state.Scores[index].OldScore, isDouble);
+          bot2Score = idealNewScore; //boundScore(idealNewScore, state.Scores[index].OldScore, isDouble);
 
           index = state.Scores.map(e => e.id).indexOf(3)
           idealNewScore = getters.playerScore + randomNum(-2000, -1000)
-          bot3Score = boundScore(idealNewScore, state.Scores[index].OldScore, isDouble);
+          bot3Score = idealNewScore; //boundScore(idealNewScore, state.Scores[index].OldScore, isDouble);
 
         }
         else {
