@@ -681,7 +681,7 @@ export default createStore({
     async fetchGradeFilters({ commit }) {
       let existingFilters = localStorage.getItem('GradeBookOrder');
       if (true) {
-        const response = await axios.get(resource_uri + '/gradefilters');
+        const response = await axios.get(resource_uri + '/grade-filters');
         commit('SET_GRADE_BOOK_ORDER', response.data);
       }
     },
