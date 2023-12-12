@@ -17,6 +17,7 @@ export default {
   },
   methods: {
     handleGradeDispatch() {
+      this.$gtag.event('grade_selected', { event_category: 'GradeLevel', grade: this.Grade, event_label: 'Grade Selected' });
       this.$store.dispatch("setGradeFilter", this.Grade).then(() => {
         this.$router.push("/books");
       });
