@@ -35,7 +35,6 @@ export default {
   props: ["pageNum"],
   methods: {
     async BookSelected(bookListItem) {
-      console.log("going to via next click: " + bookListItem.bookId);
       this.$store.dispatch("resetWebHistory");
       //We need to reset the book to the beginning at the end once something is clicked.
 
