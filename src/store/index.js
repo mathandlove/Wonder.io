@@ -982,8 +982,11 @@ export default createStore({
       commit('SET_LINE_HEIGHT_PIXELS', val)
     },
     saveFinalScore({ commit, getters, state }) {
-
-      commit('SAVE_FINAL_SCORE', [getters.playerScore, getters.playerRank, state.BookId])
+      var score = getters.playerScore;
+      var rank = getters.playerRank;
+      var bookNumber = state.BookId;
+      this.$gtag.event('book_completed', { event_category: 'Book', player_score: score, player_rank: rank, book_id: bookNumber, event_label: 'Book Completed' });
+      commit('SAVE_FINAL_SCORE', [score, rank, bookNumber]);
     },
     loadScoreDict({ commit }) {
       commit('LOAD_SCORE_DICT')

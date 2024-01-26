@@ -103,6 +103,7 @@ export default {
     BookSelected(bookListItem) {
       console.log("selected with book :", bookListItem.bookId);
       let bookId = parseInt(bookListItem.bookId);
+      this.$gtag.event('book_selected', { event_category: 'Book', bookId: bookId, event_label: 'Book Selected' });
       this.$store.dispatch("setBookId", bookListItem.bookId);
       this.$store.dispatch("loadBookmark");
       this.$router.push(`/book/${bookId}/${this.lastPageVisited}`);
@@ -219,9 +220,6 @@ export default {
 
   width: 100%;
   margin-bottom: 100px;
-}
-
-body {
 }
 
 .noSelectText {
