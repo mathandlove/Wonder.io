@@ -2,6 +2,9 @@ import { createRouter, createWebHistory } from 'vue-router';
 import Home from '../pages/Home.vue';
 import Books from '../pages/BooksList.vue';
 import Book from '../pages/Book.vue';
+import Tcr from '../pages/Tcr.vue';
+import TcrIntro from '../pages/TcrIntro.vue';
+import TcrLetterQuiz from '../pages/TcrLetterQuiz.vue';
 
 
 
@@ -27,6 +30,26 @@ const routes = [
     component: Books,
     meta: { title: 'Wonder.io - Books' },
   },
+  {
+    path: '/tcr',
+    name: 'Toddlers Can Read',
+    component: Tcr,
+    meta: { title: 'Toddlers Can Read Prototype' },
+  },
+  {
+    path: '/tcr/intro',
+    name: 'Introduction',
+    component: TcrIntro,
+    meta: { title: 'Toddlers Can Read Prototype' },
+    props: true,
+  },
+  {
+    path: '/tcr/quiz',
+    name: 'Letter Quiz',
+    component: TcrLetterQuiz,
+    meta: { title: 'Toddlers Can Read Prototype' },
+  },
+
 
 
 
