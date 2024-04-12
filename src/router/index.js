@@ -5,6 +5,8 @@ import Book from '../pages/Book.vue';
 import Tcr from '../pages/Tcr.vue';
 import TcrIntro from '../pages/TcrIntro.vue';
 import TcrLetterQuiz from '../pages/TcrLetterQuiz.vue';
+import TcrLibrary from '../pages/TcrLibrary.vue';
+import TcrGameDescription from '../pages/TcrGameDescription.vue';
 
 
 
@@ -48,6 +50,19 @@ const routes = [
     name: 'Letter Quiz',
     component: TcrLetterQuiz,
     meta: { title: 'Toddlers Can Read Prototype' },
+  },
+  {
+    path: '/tcr/library',
+    name: 'Library',
+    component: TcrLibrary,
+    meta: { title: 'Toddlers Can Read Prototype' },
+  },
+  {
+    path: '/tcr/game',
+    name: 'Game',
+    component: TcrGameDescription,
+    meta: { title: 'Toddlers Can Read Prototype' },
+    props: true 
   },
 
 

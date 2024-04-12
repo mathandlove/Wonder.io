@@ -74,6 +74,8 @@ methods: {
   grid-template-rows: repeat(4, 1fr);
   gap: 10px; /* Adjust the gap between items */
   padding:2%;
+  justify-items: center; /* Centers grid items horizontally within their cells */
+  align-items: center; /* Centers grid items vertically within their cells */
   
 }
 
@@ -85,6 +87,7 @@ methods: {
   font-weight: bolder;
   text-align: center;
   border-radius: 20%;
+  transform: translateX(0%);
 }
 
 

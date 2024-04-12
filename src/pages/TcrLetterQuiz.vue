@@ -1,5 +1,5 @@
 <template>
-<img src="..\assets\prototoype\simplebg.jpg" class="backgroundImage">
+<img v-show="false" src="..\assets\prototoype\simplebg.jpg" class="backgroundImage">
 <div  v-show="showGrid" class="grid-container">
     <div v-for="(letter,index) in letterOrder" class="grid-item" :style="getStyle(index)">
       {{letter.toUpperCase()}}
@@ -30,7 +30,8 @@
 
 
 <script>
-import { reactive, ref } from 'vue'
+import { reactive, ref } from 'vue';
+import { mapState, mapActions } from 'vuex';
 /*
 
 */
@@ -40,6 +41,7 @@ export default {
     const showGrid=ref(false);
     var currentLetterIndex=0;
     var currentLetterDisplay = ref("test");
+    var workOnArray=[];
     const letterLearned=
     [
       0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
@@ -109,7 +111,7 @@ export default {
    ]
 
    return {
-      letterOrder,soundOrder,currentLetterDisplay, currentLetterIndex,letterLearned,showGrid
+      letterOrder,soundOrder,currentLetterDisplay, currentLetterIndex,letterLearned,showGrid,workOnArray
     }
 
   },
@@ -123,19 +125,32 @@ export default {
   mounted(){
     this.UpdateLetter();
   },
+  computed: {
+    ...mapState(['tcrWorkOnLetters']), // Map the state to component's computed properties
+  },
+  methods: {
+    ...mapActions(['tcrUpdateWorkOn']), // Map the action to component's methods
+
+  },
+
 
   methods: {
+    ...mapActions(['tcrUpdateWorkOn']),
+    setWorkOn(newOrder)
+    {
+      this.tcrUpdateWorkOn(newOrder);
+    },
     getStyle(index) {
     if(this.letterLearned[index]==0)
     {
-      return { backgroundColor: '#2E4559' };
+      return { backgroundColor: '#BABDBF' };
     }
     else if (this.letterLearned[index]==2) 
       {
-        return { backgroundColor: '#92D95F' };
+        return { backgroundColor: '#A3F26B' };
       }
       else if (this.letterLearned[index]== 1) {
-        return { backgroundColor: '#F27D16' };
+        return { backgroundColor: '#F29727' };
       }
     },
     KnowsLetter(){
@@ -146,10 +161,11 @@ export default {
       setTimeout(() => {
         this.showGrid=false;
       //this.delayedFunction();
-    }, 1500); // 2000 milliseconds = 2 seconds
+    }, 500); 
 
     },
     DoesNotKnowLetter(){
+      this.workOnArray.push(this.letterOrder[this.currentLetterIndex]);
       this.letterLearned[this.currentLetterIndex]=1;
       this.currentLetterIndex++;
       this.UpdateLetter();
@@ -163,19 +179,20 @@ export default {
         this.showGrid=false;
 
 
-    }, 1500); // 2000 milliseconds = 2 seconds
+    }, 500); // 2000 milliseconds = 2 seconds
   }
   else{
     setTimeout(() => {
         this.showGrid=false;
-        this.$router.push({ name: 'Introduction' ,params: { count2: Number(6) }});
-    }, 1500); // 2000 milliseconds = 2 seconds
+        this.setWorkOn(this.workOnArray)
+        this.$router.push({ name: 'Introduction' ,params: { count2: Number(7) }});
+    }, 500); // 2000 milliseconds = 2 seconds
   }
 
     },
     UpdateLetter(){
       var nLetter=this.letterOrder[this.currentLetterIndex];
-      this.currentLetterDisplay=nLetter.toUpperCase()+' '+nLetter.toLowerCase();
+      this.currentLetterDisplay=nLetter.toUpperCase();//+' '+nLetter.toLowerCase();
     },
     PlayPhoneme (){
       var phonemeSound = new Audio(this.soundOrder[this.currentLetterIndex]);
@@ -205,40 +222,52 @@ export default {
 
 .grid-container {
   display: grid;
-  grid-template-columns: repeat(7, 1fr); 
-  grid-template-rows: repeat(4, 1fr);
+  grid-template-columns: repeat(4, 1fr); 
+  grid-template-rows: repeat(7, 1fr);
   gap: 10px; /* Adjust the gap between items */
-  padding:2%;
+  margin:3%;
+  padding: 3%;
+  background-color:#BABDBF;
+  border-radius: 30px;
   
 }
 
 .grid-item {
-  background-color: rgba(255, 255, 255, 0.8);
-  border: 1px solid rgba(0, 0, 0, 0.8);
-  padding: 15%;
+  border: 1px solid black;
+  border-width:2px;
+  padding: 2%;
   font-size: 30px;
   font-weight: bolder;
-  text-align: center;
+  display: flex; /* Use flexbox */
+  align-items: center; /* Center items vertically */
+  justify-content: center; /* Center items horizontally */
   border-radius: 20%;
+  height:9vh;
+  width: 9vh;
   z-index: 6;
 }
 
 
 .letterContainer{
-  border-radius: 20%;
-  height:90%;
-  width:50%;
-  position:absolute;
-  margin-left:25%;
-  margin-top: 2.5%;
-  margin-bottom: 2.5%;
+  border-radius: 30px;
+  height:60%;
+  width:90%;
+  margin: 5%;
+  position: absolute;
+  top: 45%;
+  left: 50%;
+  transform: translate(-55%, -50%);
 
-  background-color:darkslateblue;
-  color:white;
+
+  color:darkslateblue;
   font-size: 50vh;
   font-weight: bolder;
-  text-align: center;
- line-height: 1.8;
+ line-height: 1.4;
+ border-style:solid;
+  border-color:darkslateblue;
+  border-width: 7px;
+  text-align: center; 
+ 
 
   
 }
@@ -265,8 +294,8 @@ export default {
     position: absolute; 
     bottom:0%; 
     width:100%;
-    height:35%;
-    padding: 2.5%;
+    height:18%;
+    padding: 8%;
     padding-top: 0%;
     background-color: transparent;
 }
@@ -291,15 +320,19 @@ export default {
   float: left;
 }
 .audioButton{
-  margin: 0;
+  margin: 2.5%;
   border: none;
   padding: 0;
   background-color:transparent;
-  height: 50%;
+  height: 15%;
   float: right;
-
+  outline:none;
   
 
+}
+.audioButton:focus {
+  outline: none;
+  /* Add additional styling for the focused state */
 }
 
 .buttonImage{

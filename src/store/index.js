@@ -60,6 +60,7 @@ export default createStore({
       preview: [10],
       none: [10],
     },
+    tcrWorkOnLetters:['s','a','t'],
     WordFilteredBooks: [Book10Item],
     GradeFilteredBookItems: [Book10Item],
     filteredBooks: [],
@@ -344,7 +345,10 @@ export default createStore({
     }
   },
   mutations: {
-    CLEAR_BOOK_STATE(state) {
+    TCR_WORK_ON(state,newOrder){
+    state.tcrWorkOnLetters=newOrder;
+    },
+    CLEAR_BOOK_STATE(state,newOrder) {
       state.mainQCText = ""; //Title or Question
       state.skipNextAmount = 1; //Each page shows next page increase
       state.totalNumberOfPages = 1;
@@ -675,6 +679,9 @@ export default createStore({
 
   },
   actions: {
+    tcrUpdateWorkOn({commit},newOrder){
+      commit('TCR_WORK_ON',newOrder)
+    },
     clearBookState({ commit }) {
       commit('CLEAR_BOOK_STATE')
     },
