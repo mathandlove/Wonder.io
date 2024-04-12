@@ -57,7 +57,7 @@ export default {
   data() {
     return {
       isPlaying: false,
-      currentVideoSrc: require('../assets/prototoype/soundAssesment.mp4')  // Default video source
+      currentVideoSrc: 'https://wondersa.blob.core.windows.net/tcrmedia/soundAssesment.mp4'  // Default video source
     }
   },
   mounted() {
@@ -123,14 +123,14 @@ export default {
 
       else if (this.count == 5) {
         this.showMainVideo = true;
-        this.currentVideoSrc=require('../assets/prototoype/soundAssesment.mp4');
+        this.currentVideoSrc='https://wondersa.blob.core.windows.net/tcrmedia/soundAssesment.mp4';
       }
       else if (this.count == 6) {
         this.$router.push({ name: 'Letter Quiz' });
       }
       else if (this.count == 7) {
         this.showMainVideo = true;
-        this.currentVideoSrc=require('../assets/prototoype/gameExplain.mp4');
+        this.currentVideoSrc='https://wondersa.blob.core.windows.net/tcrmedia/gameExplain.mp4';
       }
       else if (this.count == 8) {
         this.$router.push({ name: 'Library' });

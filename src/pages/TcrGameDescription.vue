@@ -24,7 +24,6 @@
 </div>
   <button class="nextButton" @click="turnOnFASQ">SHOW FAQ</button>
   <div v-show="showFAQ">
-  <div class="headerTitle">FAQ's</div>
   <div class="descriptionText">What if I don’t have any letter sound flashcards?</div>
   <ul class="tips"><li >No problem! You can write the letters on anything (computer paper, post-its, envelopes, whiteboards) as long as your little one can see and read the letters. Remember: it’s not the flashcards that make this fun, it’s the game itself. So write down your three letters and get started!</li></ul>
   <div class="descriptionText">What do I do if my child does not like the activity?</div>
@@ -60,13 +59,12 @@ export default {
     },
     currentVideoSrc: {
       type: String,
-      required: false,
-      default: require("../assets/prototoype/game1.mp4")
+      required: true,
+
     },
     currentImageSrc:{
       type: String,
-      required: false,
-      default: require("../assets/prototoype/game1.jpg")
+      required: true,
     },
     bulletPointArray: {
       type: Array,
