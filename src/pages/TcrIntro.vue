@@ -4,6 +4,7 @@
     <div v-show="showMainImage" class="headerTitle">
       {{ headerWords }}
     </div>
+    <div v-show="showMainVideo" class="videoTitle">{{ videoTitle }}</div>
     <img v-show="showMainImage" :src="mainImage" class="mainImage">
       <div v-show="showMainVideo" class="mainVideo" @click="toggleVideo" @ended="handleVideoEnd">
         <video  ref="videoPlayer" >
@@ -28,6 +29,7 @@ import Photo2 from "@/assets/prototoype/example2.png";
 import Photo3 from "@/assets/prototoype/example3.png";
 import Photo4 from "@/assets/prototoype/example4.png";
 /*
+
     <iframe v-show="showMainVideo" class="mainVideo" :src="mainVideoSource" title="YouTube video player" frameborder="0"
       allow=" clipboard-write; encrypted-media; " referrerpolicy="strict-origin-when-cross-origin"
       allowfullscreen></iframe>
@@ -63,18 +65,40 @@ export default {
   mounted() {
     this.Increment();
   },
+  computed: {
+  videoTitle() {
+    const titles = [
+      "", // index 0, no video
+      "", // index 1, no video
+      "", // index 2, no video
+      "", // index 3, no video
+      "", // index 4, no video
+      "Let's Assess Your Child", // index 5
+      "", // index 6, no video, navigation action
+      "Let's Pick a Learning Game", // index 7
+      ""  // index 8, no video, navigation action
+    ];
+    return titles[this.count-1] || this.count; // default to empty string if no title
+  }
+},
 
   methods: {
     toggleVideo() {
-      const video = this.$refs.videoPlayer;
-      if (video.paused) {
-        video.play();
-        this.isPlaying = true;
-      } else {
-        video.pause();
-        this.isPlaying = false;
-      }
-    },
+  const video = this.$refs.videoPlayer;
+  if (video.paused) {
+    video.play();
+    this.isPlaying = true;
+    if (video.requestFullscreen) {
+      video.requestFullscreen(); // request fullscreen mode
+    }
+  } else {
+    if (document.exitFullscreen) {
+      document.exitFullscreen(); // exit fullscreen mode
+    }
+    video.pause();
+    this.isPlaying = false;
+  }
+},
     handleVideoEnd() {
       this.isPlaying = false; // Resets the playing state
     },
@@ -90,7 +114,6 @@ export default {
       this.message = "";
       var message = ref("");
     var headerWords = ref("");
-
 
       if (this.count == 0) {
         this.showLogo = true;
@@ -149,6 +172,18 @@ export default {
 </script>
 
 <style scoped>
+
+.videoTitle {
+  width: 100%;
+  text-align: center;
+  font-size: 24px;
+  color: black;
+  padding: 20px 0;
+  font-family: 'Roboto';
+  font-size: 25px;
+  font-weight: bold;
+  font-family: 'Roboto', sans-serif;
+}
 
 .playButton {
   position: absolute;
@@ -212,7 +247,7 @@ export default {
 .mainVideo {
   position: relative;        /* Keeps the element in the document flow */
   width: 90%;  
-  height: 75vh;              /* Adjust the width to your preference */
+  height: 60vh;              /* Adjust the width to your preference */
   left: 50%;                 /* Centering horizontally */
   transform: translateX(-50%); /* More precise horizontal centering */
   display: block;            /* Ensures it takes a new line */

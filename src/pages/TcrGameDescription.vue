@@ -87,29 +87,48 @@ export default {
   },
   methods: {
     toggleVideo() {
-      const video = this.$refs.videoPlayer;
-      if (video.paused) {
-        video.play();
-        this.isPlaying = true;
-      } else {
-        video.pause();
-        this.isPlaying = false;
-      }
+        const video = this.$refs.videoPlayer;
+        if (video.paused) {
+            video.play();
+            this.isPlaying = true;
+            this.openFullscreen(video); // Trigger fullscreen upon playing
+        } else {
+            if (document.fullscreenElement) {
+                this.closeFullscreen(); // Exit fullscreen when pausing
+            }
+            video.pause();
+            this.isPlaying = false;
+        }
     },
-    turnOnFASQ(){
-      this.showFAQ=!this.showFAQ;
+    openFullscreen(elem) {
+        if (elem.requestFullscreen) {
+            elem.requestFullscreen();
+        } else if (elem.webkitRequestFullscreen) { /* Safari */
+            elem.webkitRequestFullscreen();
+        } else if (elem.msRequestFullscreen) { /* IE11 */
+            elem.msRequestFullscreen();
+        }
+    },
+    closeFullscreen() {
+        if (document.exitFullscreen) {
+            document.exitFullscreen();
+        } else if (document.webkitExitFullscreen) { /* Safari */
+            document.webkitExitFullscreen();
+        } else if (document.msExitFullscreen) { /* IE11 */
+            document.msExitFullscreen();
+        }
     },
     handleVideoEnd() {
-      this.isPlaying = false; // Resets the playing state
+        this.isPlaying = false; // Resets the playing state
+        if (document.fullscreenElement) {
+            this.closeFullscreen(); // Exit fullscreen at the end of the video
+        }
     },
-    backToLibrary()
-    {
-      this.$router.push({ name: 'Library' });
+    backToLibrary() {
+        this.$router.push({ name: 'Library' });
     }
-  },
-  mounted(){
-    console.log(this.gameTitle)
-  },
+},
+
   watch: {
     '$route.query.gameTitle'(newTitle) {
       console.log('gameTitle changed to', newTitle); // Debug: Check if gameTitle updates
@@ -268,13 +287,10 @@ ul li{
 }
 
 video {
-  position: absolute;        /* Absolute position within the .mainVideo div */
-  top: 0;
-  left: 0;
-  width: 100%;               /* Full width of the container */
-  height: 100%;              /* Full height of the container */
+    width: 100% !important; /* Full width */
+    height: 100% !important; /* Full height */
+    object-fit: cover; /* Preserve aspect ratio while filling screen */
 }
-
 .nextButton {
   background-color: #2F4157;
     color: white; /* White text */

@@ -75,8 +75,6 @@ this.tester();
     // Other methods in your component
     tester()
     {
-      //this.tcrUpdateWorkOn(['c','d']);
-      console.log(this.tcrWorkOnLetters);
       this.letterOrder=this.tcrWorkOnLetters;
     },
     gotoGame(gameNumber=2)
