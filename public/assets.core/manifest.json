@@ -1,0 +1,43 @@
+{
+  "id": "assets.core",
+  "version": "1.0.0",
+  "type": "pack",
+  "name": "Core Assets Pack",
+  "description": "Shared core assets for all stories",
+  "assets": {
+    "images": {
+      "map-background": {
+        "id": "map-background",
+        "type": "image",
+        "path": "images/cityMap.png",
+        "description": "Main city map background"
+      },
+      "map-colored": {
+        "id": "map-colored",
+        "type": "image",
+        "path": "images/cityMapColored.png",
+        "description": "Colored city map variant"
+      },
+      "map-outline": {
+        "id": "map-outline",
+        "type": "image",
+        "path": "images/cityMap-outline.png",
+        "description": "City map outline"
+      }
+    },
+    "audio": {
+      "ambient-city": {
+        "id": "ambient-city",
+        "type": "audio",
+        "path": "audio/ambient-city.mp3",
+        "description": "City ambient background sound"
+      },
+      "click": {
+        "id": "click",
+        "type": "audio",
+        "path": "audio/click.mp3",
+        "description": "UI click sound"
+      }
+    }
+  }
+}
