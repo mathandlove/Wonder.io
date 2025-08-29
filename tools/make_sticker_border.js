@@ -62,8 +62,89 @@ async function applyUltraSmoothBoundary(binaryMask, width, height, smoothRadius)
   return result;
 }
 
-async function makeStickerBorder(input, output, strokePx = 16, softness = 0.8, shadow = true, vectorSmooth = false) {
-  strokePx = Math.max(1, Math.min(500, +strokePx || 16)); // Allow up to 500px strokes
+// Extract 1-channel alpha from RGBA
+function extractAlpha(rgba, w, h) {
+  const a = new Uint8Array(w*h);
+  for (let i=0, p=0; i<a.length; i++, p+=4) a[i] = rgba[p+3];
+  return a;
+}
+
+// Build a soft height map from a binary mask (0/1) using Gaussian blur (~bevelPx)
+async function maskToHeight(mask, w, h, bevelPx) {
+  const m8 = Buffer.alloc(w*h);
+  for (let i=0;i<mask.length;i++) m8[i] = mask[i]?255:0;
+  const sigma = Math.max(0.5, bevelPx*0.6);
+  return await sharp(m8, { raw:{width:w, height:h, channels:1} })
+    .blur(sigma)
+    .raw().toBuffer();
+}
+
+// Sobel gradients -> fake normals -> lambert shading
+async function buildBevelLayer({ ringMask, innerMask, w, h, bevelPx, lightDirDeg, intensity }) {
+  // Choose where bevel applies: inner (default) uses innerMask, else ringMask
+  const workMask = innerMask || ringMask;
+  const height = await maskToHeight(workMask, w, h, bevelPx);
+
+  // Sobel kernels
+  const sobelX = [-1,0,1,-2,0,2,-1,0,1];
+  const sobelY = [-1,-2,-1, 0,0,0, 1,2,1];
+
+  const gx = await sharp(height, { raw:{width:w, height:h, channels:1} })
+    .convolve({ width:3, height:3, kernel:sobelX }).raw().toBuffer();
+  const gy = await sharp(height, { raw:{width:w, height:h, channels:1} })
+    .convolve({ width:3, height:3, kernel:sobelY }).raw().toBuffer();
+
+  const rad = (lightDirDeg*Math.PI)/180;
+  const lx = Math.cos(rad), ly = Math.sin(rad);
+
+  const out = Buffer.alloc(w*h*4, 0);
+  for (let y=0; y<h; y++) {
+    for (let x=0; x<w; x++) {
+      const i = y*w + x;
+      if (!workMask[i]) continue;             // only shade on bevel zone
+
+      // Check if this pixel should get bevel effect (southeast direction only)
+      // We need to check if there's empty space to the southeast
+      let hasSoutheastSpace = false;
+      for (let dy = 0; dy <= bevelPx && !hasSoutheastSpace; dy++) {
+        for (let dx = 0; dx <= bevelPx && !hasSoutheastSpace; dx++) {
+          if (dx === 0 && dy === 0) continue; // skip center pixel
+          const checkY = y + dy;
+          const checkX = x + dx;
+          if (checkY < h && checkX < w) {
+            const checkIdx = checkY * w + checkX;
+            if (!workMask[checkIdx]) { // empty space found to southeast
+              hasSoutheastSpace = true;
+            }
+          } else {
+            // Edge of image counts as empty space
+            hasSoutheastSpace = true;
+          }
+        }
+      }
+      
+      if (!hasSoutheastSpace) continue; // no bevel effect if no southeast space
+
+      // central-diff grads → normal
+      const nx = (gx[i]-128)/128;            // ~-1..1
+      const ny = (gy[i]-128)/128;
+      const ndotl = (nx*lx + ny*ly);
+      // map to highlight/shadow around 0.5 gray
+      const shade = 0.5 + ndotl * 0.5 * intensity;   // 0..1
+      const c = Math.max(0, Math.min(1, shade));
+      const idx = i*4;
+      const v = Math.round(c*255);
+      out[idx]   = v;
+      out[idx+1] = v;
+      out[idx+2] = v;
+      out[idx+3] = Math.round(255 * Math.min(1, intensity*1.2)); // opacity cap
+    }
+  }
+  return out;
+}
+
+async function makeStickerBorder(input, output, strokePx = 21, softness = 0.8, shadow = true, vectorSmooth = false, simplifyPx = 0, trimSpikesPx = 0, solidBorder = false, bevelPx = 0, lightDir = 45, bevelIntensity = 0.35, bevelInner = true) {
+  strokePx = Math.max(1, Math.min(500, +strokePx || 21)); // Allow up to 500px strokes
   softness = Math.max(0.1, Math.min(5.0, +softness || 0.8)); // Allow higher softness
   shadow = shadow !== false && shadow !== 'false' && shadow !== '0';
   
@@ -119,17 +200,40 @@ async function makeStickerBorder(input, output, strokePx = 16, softness = 0.8, s
   }
   
   // Step 4: Create border using vector smoothing or improved raster method
-  let borderData;
+  let borderResult;
   
   if (vectorSmooth) {
     console.log(`   🎯 Creating vector-smoothed ${strokePx}px border...`);
-    borderData = await createVectorSmoothBorder(expandedData, newW, newH, strokePx);
+    borderResult = await createVectorSmoothBorder(expandedData, newW, newH, strokePx, bevelPx);
   } else {
     console.log(`   🔍 Creating raster-smoothed ${strokePx}px border...`);
-    borderData = await createRasterSmoothBorder(expandedData, newW, newH, strokePx, softness);
+    borderResult = await createRasterSmoothBorder(expandedData, newW, newH, strokePx, softness, bevelPx);
   }
   
-  // Step 5: Save as lossless WebP
+  let { borderData, ringMask, innerMask, outerMask } = borderResult;
+  
+  // Step 5: Apply bevel shading if enabled
+  if (bevelPx > 0) {
+    console.log(`   ✨ Adding ${bevelPx}px bevel shading (intensity: ${bevelIntensity}, ${bevelInner ? 'inner' : 'outer'})...`);
+    const alphaSrc = extractAlpha(expandedData, newW, newH);
+    const targetMask = bevelInner ? innerMask : outerMask;
+    const bevelLayer = await buildBevelLayer({
+      ringMask, 
+      innerMask: bevelInner ? targetMask : ringMask,
+      w: newW, 
+      h: newH, 
+      bevelPx, 
+      lightDirDeg: lightDir, 
+      intensity: bevelIntensity
+    });
+    
+    // Composite with hard-light for visible 3D plastic effect
+    borderData = await sharp(borderData, { raw:{width:newW, height:newH, channels:4} })
+      .composite([{ input: bevelLayer, raw:{ width:newW, height:newH, channels:4 }, blend: 'hard-light' }])
+      .raw().toBuffer();
+  }
+  
+  // Step 6: Save as lossless WebP
   console.log(`   💾 Saving as lossless WebP...`);
   await sharp(borderData, {
     raw: {
@@ -207,7 +311,7 @@ async function findCharacterFolders() {
 /**
  * Create clean white border without black artifacts
  */
-async function createVectorSmoothBorder(expandedData, newW, newH, strokePx) {
+async function createVectorSmoothBorder(expandedData, newW, newH, strokePx, bevelPx = 0) {
   console.log(`   🎯 Creating clean white border without dark edges...`);
   
   const borderData = Buffer.alloc(newW * newH * 4);
@@ -249,7 +353,66 @@ async function createVectorSmoothBorder(expandedData, newW, newH, strokePx) {
     }
   }
   
-  // Step 2: Now overlay the original character on top, ensuring no gaps
+  // Step 2: Create masks for beveling
+  const ringMask = new Uint8Array(newW * newH);
+  const innerMask = new Uint8Array(newW * newH);
+  const outerMask = new Uint8Array(newW * newH);
+  
+  for (let y = 0; y < newH; y++) {
+    for (let x = 0; x < newW; x++) {
+      const i = y * newW + x;
+      const idx = i * 4;
+      const originalAlpha = expandedData[idx + 3];
+      
+      if (originalAlpha === 0 && borderData[idx + 3] > 0) {
+        ringMask[i] = 1; // This is part of the white ring
+        
+        // For inner mask, check if we're within bevelPx distance from the character
+        let isInner = false;
+        for (let dy = -bevelPx; dy <= bevelPx && !isInner; dy++) {
+          for (let dx = -bevelPx; dx <= bevelPx && !isInner; dx++) {
+            const checkY = y + dy;
+            const checkX = x + dx;
+            if (checkY >= 0 && checkY < newH && checkX >= 0 && checkX < newW) {
+              const checkIdx = (checkY * newW + checkX) * 4;
+              if (expandedData[checkIdx + 3] > 0) {
+                const distance = Math.sqrt(dx * dx + dy * dy);
+                if (distance <= Math.min(bevelPx, strokePx/2)) {
+                  isInner = true;
+                }
+              }
+            }
+          }
+        }
+        if (isInner) innerMask[i] = 1;
+        
+        // For outer mask, check if we're close to the outer edge (no white pixels nearby)
+        let isOuter = false;
+        for (let dy = -bevelPx; dy <= bevelPx && !isOuter; dy++) {
+          for (let dx = -bevelPx; dx <= bevelPx && !isOuter; dx++) {
+            const checkY = y + dy;
+            const checkX = x + dx;
+            if (checkY < 0 || checkY >= newH || checkX < 0 || checkX >= newW) {
+              // Near edge of image
+              isOuter = true;
+            } else {
+              const checkIdx = (checkY * newW + checkX) * 4;
+              if (expandedData[checkIdx + 3] === 0 && borderData[checkIdx + 3] === 0) {
+                // Found transparent space nearby
+                const distance = Math.sqrt(dx * dx + dy * dy);
+                if (distance <= Math.min(bevelPx, strokePx/2)) {
+                  isOuter = true;
+                }
+              }
+            }
+          }
+        }
+        if (isOuter) outerMask[i] = 1;
+      }
+    }
+  }
+
+  // Step 3: Now overlay the original character on top, ensuring no gaps
   for (let i = 0; i < borderData.length; i += 4) {
     const originalAlpha = expandedData[i + 3];
     
@@ -262,13 +425,13 @@ async function createVectorSmoothBorder(expandedData, newW, newH, strokePx) {
     }
   }
   
-  return borderData;
+  return { borderData, ringMask, innerMask, outerMask };
 }
 
 /**
  * Create improved raster-smoothed border with optional shape simplification
  */
-async function createRasterSmoothBorder(expandedData, newW, newH, strokePx, softness = 0.8) {
+async function createRasterSmoothBorder(expandedData, newW, newH, strokePx, softness = 0.8, bevelPx = 0) {
   const borderData = Buffer.alloc(newW * newH * 4);
   
   // Step 1: Build binary mask from expandedData alpha
@@ -337,7 +500,28 @@ async function createRasterSmoothBorder(expandedData, newW, newH, strokePx, soft
     }
   }
   
-  // Step 5: Generate base sticker border  
+  // Step 5: Create the masks needed for beveling
+  const ringMask = new Uint8Array(newW*newH);
+  const innerMask = new Uint8Array(newW*newH);
+  const outerMask = new Uint8Array(newW*newH);
+  for (let y=0; y<newH; y++) {
+    for (let x=0; x<newW; x++) {
+      const i = y*newW + x;
+      const a = expandedData[i*4 + 3];
+      const d = distanceField[i];
+      if (a===0 && d <= strokePx) {
+        ringMask[i] = 1;          // the white ring area
+        
+        // Inner rim: close to character edge
+        if (d <= Math.max(1, Math.min(bevelPx, strokePx/2))) innerMask[i] = 1;
+        
+        // Outer rim: close to outer edge of white border
+        if (d >= strokePx - Math.max(1, Math.min(bevelPx, strokePx/2))) outerMask[i] = 1;
+      }
+    }
+  }
+
+  // Step 6: Generate base sticker border  
   for (let y = 0; y < newH; y++) {
     for (let x = 0; x < newW; x++) {
       const idx = (y * newW + x) * 4;
@@ -360,13 +544,13 @@ async function createRasterSmoothBorder(expandedData, newW, newH, strokePx, soft
   }
   
   
-  return borderData;
+  return { borderData, ringMask, innerMask, outerMask };
 }
 
 /**
  * Process all character cutout images
  */
-async function processAllCharacters(strokePx = 16, softness = 0.8, shadow = true, vectorSmooth = false, simplifyPx = 0) {
+async function processAllCharacters(strokePx = 21, softness = 0.8, shadow = true, vectorSmooth = false, simplifyPx = 0, trimSpikesPx = 0, solidBorder = false, bevelPx = 0, lightDir = 45, bevelIntensity = 0.35, bevelInner = true) {
   console.log('🔖 Processing all character images with sticker borders...\n');
   
   const characterFolders = await findCharacterFolders();
@@ -412,7 +596,7 @@ async function processAllCharacters(strokePx = 16, softness = 0.8, shadow = true
         console.log(`  ⚙️  Processing: ${file}...`);
         
         try {
-          await makeStickerBorder(inputPath, outputPath, strokePx, softness, shadow, vectorSmooth, simplifyPx);
+          await makeStickerBorder(inputPath, outputPath, strokePx, softness, shadow, vectorSmooth, simplifyPx, trimSpikesPx, solidBorder, bevelPx, lightDir, bevelIntensity, bevelInner);
           console.log(`  ✅ Generated: ${baseName}.sticker.webp`);
           folderProcessed++;
           totalProcessed++;
@@ -451,6 +635,10 @@ async function processAllCharacters(strokePx = 16, softness = 0.8, shadow = true
   let input, output, strokePx, softness, shadow;
   let vectorSmooth = false;
   let simplifyPx = 0;
+  let bevelPx = 0;
+  let lightDir = 45;
+  let bevelIntensity = 0.35;
+  let bevelInner = false;
   
   // Check for --vectorSmooth flag
   const vectorSmoothIndex = args.indexOf('--vectorSmooth');
@@ -466,11 +654,39 @@ async function processAllCharacters(strokePx = 16, softness = 0.8, shadow = true
     args.splice(simplifyIndex, 2); // Remove flag and value from args
   }
   
+  // Check for --bevelPx flag
+  const bevelPxIndex = args.indexOf('--bevelPx');
+  if (bevelPxIndex !== -1 && bevelPxIndex + 1 < args.length) {
+    bevelPx = Math.max(0, parseInt(args[bevelPxIndex + 1]) || 0);
+    args.splice(bevelPxIndex, 2);
+  }
+  
+  // Check for --lightDir flag
+  const lightDirIndex = args.indexOf('--lightDir');
+  if (lightDirIndex !== -1 && lightDirIndex + 1 < args.length) {
+    lightDir = parseFloat(args[lightDirIndex + 1]) || 45;
+    args.splice(lightDirIndex, 2);
+  }
+  
+  // Check for --bevelIntensity flag
+  const bevelIntensityIndex = args.indexOf('--bevelIntensity');
+  if (bevelIntensityIndex !== -1 && bevelIntensityIndex + 1 < args.length) {
+    bevelIntensity = Math.max(0, Math.min(1, parseFloat(args[bevelIntensityIndex + 1]) || 0.35));
+    args.splice(bevelIntensityIndex, 2);
+  }
+  
+  // Check for --bevelInner flag
+  const bevelInnerIndex = args.indexOf('--bevelInner');
+  if (bevelInnerIndex !== -1 && bevelInnerIndex + 1 < args.length) {
+    bevelInner = args[bevelInnerIndex + 1] !== 'false';
+    args.splice(bevelInnerIndex, 2);
+  }
+  
   [input, output, strokePx, softness, shadow] = args;
   
   // If no arguments, process all character cutouts
   if (!input && !output) {
-    await processAllCharacters(strokePx, softness, shadow, vectorSmooth, simplifyPx).catch(err => {
+    await processAllCharacters(strokePx, softness, shadow, vectorSmooth, simplifyPx, 0, false, bevelPx, lightDir, bevelIntensity, bevelInner).catch(err => {
       console.error('✖', err.message);
       process.exit(1);
     });
@@ -479,21 +695,26 @@ async function processAllCharacters(strokePx = 16, softness = 0.8, shadow = true
   
   // Single file mode
   if (!input || !output) {
-    console.error('Usage: node tools/make_sticker_border.js [<input> <output>] [strokePx=16] [softness=0.8] [shadow=true] [--vectorSmooth] [--simplifyPx <pixels>]');
+    console.error('Usage: node tools/make_sticker_border.js [<input> <output>] [strokePx=16] [softness=0.8] [shadow=true] [--vectorSmooth] [--simplifyPx <pixels>] [--bevelPx <px>] [--lightDir <deg>] [--bevelIntensity <0..1>] [--bevelInner <bool>]');
     console.error('\nModes:');
     console.error('  No arguments: Process all .cutout.webp files in character folders');
     console.error('  Two arguments: Process single file');
     console.error('\nParameters:');
-    console.error('  strokePx: Border thickness in pixels (1-500, default: 16)');
+    console.error('  strokePx: Border thickness in pixels (1-500, default: 21)');
     console.error('  softness: Blur amount for border growth (0.1-5.0, default: 0.8)');
     console.error('  shadow:   Add drop shadow (true/false, default: true)');
     console.error('  --vectorSmooth: Use vector-like morphological smoothing (default: false)');
     console.error('  --simplifyPx <N>: Close tiny gaps/concavities by N px for cleaner curves (0-50, default: 0)');
+    console.error('  --bevelPx <N>: Thickness of the beveled rim in pixels (0 = off, default: 0)');
+    console.error('  --lightDir <deg>: Light direction angle, 0 = +X (to the right), default: 45');
+    console.error('  --bevelIntensity <0..1>: Shading strength (default: 0.35)');
+    console.error('  --bevelInner <bool>: true = bevel inside the white ring, false = outside (default: true)');
     console.error('\nFeatures:');
     console.error('  - Creates white sticker border around image');
     console.error('  - Vector smoothing: Advanced morphological operations for ultra-smooth borders');
     console.error('  - Raster smoothing: Distance field with hard ring generation for clean edges');
     console.error('  - Shape simplification: Morphological closing to smooth out small concavities');
+    console.error('  - Optional bevel shading layer for 3D plastic/vinyl look');
     console.error('  - Optional subtle drop shadow');
     console.error('  - Outputs transparent lossless WebP');
     console.error('  - Auto-normalizes off-white (cream/yellow) to pure white');
@@ -502,10 +723,11 @@ async function processAllCharacters(strokePx = 16, softness = 0.8, shadow = true
     console.error('  node tools/make_sticker_border.js char.webp sticker.webp           # Process single file');
     console.error('  node tools/make_sticker_border.js "" "" 24 1.2 false --vectorSmooth    # All characters, vector smoothed');
     console.error('  node tools/make_sticker_border.js "" "" 16 0.8 true --simplifyPx 3     # All characters, simplified curves');
+    console.error('  node tools/make_sticker_border.js "" "" 20 0.8 true --bevelPx 8 --lightDir 45 --bevelIntensity 0.4  # All characters, with bevel shading');
     process.exit(1);
   }
   
-  await makeStickerBorder(input, output, strokePx, softness, shadow, vectorSmooth, simplifyPx).catch(err => {
+  await makeStickerBorder(input, output, strokePx, softness, shadow, vectorSmooth, simplifyPx, 0, false, bevelPx, lightDir, bevelIntensity, bevelInner).catch(err => {
     console.error('✖', err.message);
     process.exit(1);
   });
