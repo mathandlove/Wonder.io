@@ -17,6 +17,7 @@ import { fileURLToPath } from 'url';
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
+
 async function cutoutBorderOnly(input, output, tolerance = 220, feather = 2, preblur = 0.6) {
   tolerance = Math.max(0, Math.min(255, +tolerance || 220));
   feather = Math.max(0, Math.min(5, +feather || 2));
