@@ -1,0 +1,31 @@
+{
+  "title": "The Cookie Thief",
+  "storyId": "leo-monster-hunter-001",
+  "scenes": [
+{
+"type":"blank"
+},
+{
+  "type": "character-flow",
+  "character": "leo",
+  "flow": [
+    {
+      "kind": "text",
+      "text": "Hi! I’m Leo the Monster Hunter."
+    },
+    {
+      "kind": "text",
+      "text": "I hunt monsters that steal cookies."
+    },
+    {
+      "kind": "image",
+      "src": "dragonFeet.png",
+      "alt": "Leo investigates a dragon claw"
+    }
+  ]
+}
+
+
+]
+    
+}

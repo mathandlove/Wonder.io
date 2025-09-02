@@ -1,0 +1,90 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    background: #2a2a2a;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    font-family: 'Comic Sans MS', cursive, sans-serif;
+}
+
+.cardboard-container {
+    position: relative;
+}
+
+.cardboard-sign {
+    position: relative;
+    width: 400px;
+    height: 280px;
+    background-image: url('./public/VisualAssets/cardboardSign.webp');
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    filter: drop-shadow(0 8px 16px rgba(0, 0, 0, 0.3));
+}
+
+.red-overlay {
+    position: absolute;
+    width: 85%;
+    height: 65%;
+    background: linear-gradient(145deg, #B8341F, #A02D1A);
+    background-image: url('./public/VisualAssets/constructionTexture.jpg');
+    background-blend-mode: multiply;
+    background-size: cover;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 2px;
+    box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+.title {
+    color: white;
+    text-align: center;
+    font-weight: bold;
+    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+    line-height: 1.1;
+    font-size: 2.2rem;
+    letter-spacing: 1px;
+}
+
+.line-1 {
+    display: block;
+    font-size: 1.8rem;
+    margin-bottom: 5px;
+}
+
+.line-2 {
+    display: block;
+    font-size: 2.2rem;
+}
+
+.tape {
+    position: absolute;
+    background-image: url('./public/VisualAssets/tape.webp');
+    background-size: cover;
+    background-repeat: no-repeat;
+    width: 80px;
+    height: 40px;
+    z-index: 10;
+}
+
+.tape-top-left {
+    top: -10px;
+    left: 20px;
+    transform: rotate(-15deg);
+}
+
+.tape-bottom-right {
+    bottom: 15px;
+    right: 30px;
+    transform: rotate(25deg);
+}

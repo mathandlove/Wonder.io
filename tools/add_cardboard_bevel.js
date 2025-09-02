@@ -125,6 +125,15 @@ async function main(){
   const rad = (lightDir * Math.PI) / 180;
   const lx = Math.cos(rad), ly = Math.sin(rad);
 
+  // Load CardboardEdge for shadow texture
+  const corrugationTile = await sharp("public/VisualAssets/CardboardEdge.png")
+    .ensureAlpha()
+    .raw()
+    .toBuffer();
+  const tileInfo = await sharp("public/VisualAssets/CardboardEdge.png").metadata();
+  const tileW = tileInfo.width || 1;
+  const tileH = tileInfo.height || 1;
+
   // Build separate shadow and highlight maps
   const shadowRGBA = Buffer.alloc(W*H*4, 0);
   const highlightRGBA = Buffer.alloc(W*H*4, 0);
@@ -140,20 +149,18 @@ async function main(){
       const p = i*4;
       
       if (ndotl < 0) {
-        // Shadow pass: dark grayscale, blend with multiply
-        const shadowAlpha = Math.round(255 * intensity * Math.abs(ndotl));
-        shadowRGBA[p] = 0;     // Dark shadow
-        shadowRGBA[p+1] = 0;
-        shadowRGBA[p+2] = 0;
-        shadowRGBA[p+3] = shadowAlpha;
-      } else {
-        // Highlight pass: white, blend with screen
-        const highlightAlpha = Math.round(255 * intensity * Math.abs(ndotl));
-        highlightRGBA[p] = 255;   // White highlight
-        highlightRGBA[p+1] = 255;
-        highlightRGBA[p+2] = 255;
-        highlightRGBA[p+3] = highlightAlpha;
+        // Shadow pass: use corrugation tile texture with full opacity
+        const tileX = x % tileW;
+        const tileY = y % tileH;
+        const tileP = (tileY * tileW + tileX) * 4;
+        
+        // Use corrugation tile directly - no gradient, full opacity
+        shadowRGBA[p] = corrugationTile[tileP];     // Tile R
+        shadowRGBA[p+1] = corrugationTile[tileP+1]; // Tile G  
+        shadowRGBA[p+2] = corrugationTile[tileP+2]; // Tile B
+        shadowRGBA[p+3] = 255;  // Full opacity, no alpha gradient
       }
+      // No highlights - remove highlight pass
     }
   }
 
@@ -163,12 +170,11 @@ async function main(){
     await sharp(alphaBlur, { raw:{width:W,height:H,channels:1} }).png().toFile(output.replace(/\.(png|webp)$/i, ".height.png"));
   }
 
-  // --- Composite shadow and highlight passes over original ---
-  // Start with original RGBA buffer, apply shadow first (multiply), then highlights (screen)
+  // --- Composite only shadow pass over original ---
+  // Start with original RGBA buffer, apply only shadows (multiply for darkening)
   let comp = sharp(rgba, { raw:{ width:W, height:H, channels:4 } })
     .composite([
-      { input: shadowRGBA, raw:{ width:W, height:H, channels:4 }, blend: 'multiply' },
-      { input: highlightRGBA, raw:{ width:W, height:H, channels:4 }, blend: 'screen' }
+      { input: shadowRGBA, raw:{ width:W, height:H, channels:4 }, blend: 'multiply' }
     ]);
 
   const outExt = output.toLowerCase().endsWith(".png") ? "png" : "webp";

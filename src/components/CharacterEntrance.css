@@ -1,0 +1,103 @@
+.character-entrance-container {
+  min-height: 100vh;
+  background: white;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  align-items: center;
+  padding: 2rem;
+  position: relative;
+  margin-top: -100vh;
+  padding-top: calc(2rem + 100vh);
+}
+
+.character-entrance-content {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  max-width: 1200px;
+  width: 100%;
+  height: 100vh;
+}
+
+.character-image-container {
+  position: relative;
+  filter: drop-shadow(0 10px 20px rgba(0, 0, 0, 0.3));
+}
+
+.wooden-dowel {
+  position: absolute;
+  top: calc(100% - 50px);
+  left: 50%;
+  transform: translateX(-50%);
+  width: 20px;
+  height: calc(150vh + 50px);
+  background-image: url('/VisualAssets/pole.webp');
+  background-size: 20px 100%;
+  background-repeat: repeat-y;
+  z-index: 1;
+}
+
+.character-image {
+  width: 300px;
+  height: auto;
+  display: block;
+  transform: rotate(-5deg);
+  transition: transform 0.3s ease;
+  position: relative;
+  z-index: 2;
+}
+
+.character-image:hover {
+  transform: rotate(-3deg) scale(1.05);
+}
+
+/* Bounce arrival animation */
+.bounce-arrival {
+  animation: swing-bounce 0.8s ease-out forwards;
+}
+
+@keyframes swing-bounce {
+  0% {
+    transform: translate(0%, 0%) rotate(-9deg);
+  }
+  50% {
+    transform: translate(5%, -5%) rotate(-14deg);
+  }
+  70% {
+    transform: translate(-3%, 2%) rotate(-4deg);
+  }
+  85% {
+    transform: translate(1%, -1%) rotate(-11deg);
+  }
+  100% {
+    transform: translate(0%, 0%) rotate(-9deg);
+  }
+}
+
+.continue-hint {
+  position: absolute;
+  bottom: 2rem;
+  left: 50%;
+  transform: translateX(-50%);
+  color: #8b7355;
+  font-size: 1rem;
+  opacity: 0.7;
+  animation: fade-pulse 2s ease-in-out infinite;
+}
+
+@keyframes fade-pulse {
+  0%, 100% {
+    opacity: 0.4;
+  }
+  50% {
+    opacity: 0.8;
+  }
+}
+
+/* Responsive design */
+@media (max-width: 768px) {
+  .character-image {
+    width: 200px;
+  }
+}

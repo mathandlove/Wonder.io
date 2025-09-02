@@ -1,0 +1,231 @@
+.flow-scene-container {
+  min-height: 500vh; /* Make it taller for scrolling */
+  background: white;
+  position: relative;
+  cursor: pointer;
+  overflow: hidden;
+}
+
+/* Character positioning */
+.character-container {
+  z-index: 5;
+  filter: drop-shadow(0 10px 20px rgba(0, 0, 0, 0.3));
+}
+
+/* Character swings in from left initially */
+.character-swinging {
+  position: absolute;
+  left: 15%;
+  top: 50%;
+}
+
+/* Character becomes fixed once centered */
+.character-fixed-center {
+  position: fixed !important;
+  left: 15%;
+  top: 50%;
+  transform: translateY(-50%) !important;
+}
+
+.character-image-container {
+  position: relative;
+}
+
+.wooden-dowel {
+  position: absolute;
+  top: calc(100% - 50px);
+  left: 50%;
+  transform: translateX(-50%);
+  width: 20px;
+  height: calc(150vh + 50px);
+  background-image: url('/VisualAssets/pole.webp');
+  background-size: 20px 100%;
+  background-repeat: repeat-y;
+  z-index: 1;
+}
+
+.character-image {
+  width: 300px;
+  height: auto;
+  display: block;
+  transform: rotate(-5deg);
+  transition: transform 0.3s ease;
+  position: relative;
+  z-index: 2;
+}
+
+.character-image:hover {
+  transform: rotate(-3deg) scale(1.05);
+}
+
+/* Flow content scrolls past the character */
+.flow-content {
+  position: relative;
+  right: 0;
+  width: 60%;
+  margin-left: auto;
+  padding: 150vh 4rem 50vh 2rem; /* Start content much later so character arrives first */
+  display: flex;
+  flex-direction: column;
+  gap: 30vh;
+  z-index: 10;
+}
+
+/* Individual flow items */
+.flow-item {
+  min-height: 40vh;
+  display: flex;
+  align-items: center;
+}
+
+/* Bounce arrival animation */
+.bounce-arrival {
+  animation: swing-bounce 0.8s ease-out forwards;
+}
+
+@keyframes swing-bounce {
+  0% {
+    transform: translate(0%, -50%) rotate(-9deg);
+  }
+  50% {
+    transform: translate(5%, -55%) rotate(-14deg);
+  }
+  70% {
+    transform: translate(-3%, -48%) rotate(-4deg);
+  }
+  85% {
+    transform: translate(1%, -51%) rotate(-11deg);
+  }
+  100% {
+    transform: translate(0%, -50%) rotate(-9deg);
+  }
+}
+
+/* Text bubbles */
+.text-bubble {
+  background: white;
+  padding: 2.5rem;
+  border-radius: 20px;
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
+  position: relative;
+  margin-left: 2rem;
+  max-width: 500px;
+}
+
+.text-bubble::before {
+  content: '';
+  position: absolute;
+  left: -20px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 0;
+  height: 0;
+  border-top: 20px solid transparent;
+  border-bottom: 20px solid transparent;
+  border-right: 20px solid white;
+}
+
+.scene-text {
+  font-size: 1.5rem;
+  line-height: 1.8;
+  color: #333;
+  font-family: 'Comic Sans MS', cursive, sans-serif;
+  margin: 0;
+}
+
+/* Image bubbles */
+.image-bubble {
+  background: white;
+  padding: 1.5rem;
+  border-radius: 20px;
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
+  position: relative;
+  margin-left: 2rem;
+  max-width: 600px;
+}
+
+.image-bubble::before {
+  content: '';
+  position: absolute;
+  left: -20px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 0;
+  height: 0;
+  border-top: 20px solid transparent;
+  border-bottom: 20px solid transparent;
+  border-right: 20px solid white;
+}
+
+.flow-image {
+  width: 100%;
+  height: auto;
+  border-radius: 12px;
+  display: block;
+}
+
+.continue-hint {
+  position: fixed;
+  bottom: 2rem;
+  left: 50%;
+  transform: translateX(-50%);
+  color: #8b7355;
+  font-size: 1rem;
+  opacity: 0.7;
+  animation: fade-pulse 2s ease-in-out infinite;
+  z-index: 20;
+}
+
+@keyframes fade-pulse {
+  0%, 100% {
+    opacity: 0.4;
+  }
+  50% {
+    opacity: 0.8;
+  }
+}
+
+/* Responsive design */
+@media (max-width: 768px) {
+  .character-fixed-center {
+    left: 5%;
+  }
+  
+  .flow-content {
+    width: 70%;
+    padding: 50vh 1rem 50vh 1rem;
+  }
+  
+  .character-image {
+    width: 200px;
+  }
+  
+  .text-bubble {
+    margin-left: 0;
+    padding: 1.5rem;
+  }
+  
+  .text-bubble::before {
+    left: 50%;
+    top: -20px;
+    transform: translateX(-50%);
+    border-left: 20px solid transparent;
+    border-right: 20px solid transparent;
+    border-bottom: 20px solid white;
+    border-top: none;
+  }
+  
+  .image-bubble::before {
+    left: 50%;
+    top: -20px;
+    transform: translateX(-50%);
+    border-left: 20px solid transparent;
+    border-right: 20px solid transparent;
+    border-bottom: 20px solid white;
+    border-top: none;
+  }
+  
+  .scene-text {
+    font-size: 1.2rem;
+  }
+}
