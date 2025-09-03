@@ -5,12 +5,24 @@ import EditToolbar from './components/EditToolbar';
 import ConfigHighlights from './components/ConfigHighlights';
 import StoryPanel from './components/StoryPanel';
 import RightEditPanel from './components/RightEditPanel';
+import TestMagneticScroll from './TestMagneticScroll';
+import SimpleScrollSnapTest from './SimpleScrollSnapTest';
+import SimpleButtonTest from './SimpleButtonTest';
+import TwoPanelMagneticTest from './TwoPanelMagneticTest';
+import FreshMagneticTest from './FreshMagneticTest';
 import { selectionAPI } from './services/api';
 
 function App() {
   const [activeTool, setActiveTool] = useState<string | null>(null);
   const [hoveredHotspot, setHoveredHotspot] = useState<string | null>(null);
   const lassoRef = useRef<{ clearAllSelections: () => void }>(null);
+  
+  // Check if we should show test pages
+  const showTestPage = window.location.search.includes('test=magnetic');
+  const showSimpleTest = window.location.search.includes('test=simple');
+  const showJSTest = window.location.search.includes('test=js');
+  const showTwoPanelTest = window.location.search.includes('test=panels');
+  const showFreshTest = window.location.search.includes('test=fresh');
 
   const handleClearAllSelections = async () => {
     if (window.confirm('Are you sure you want to delete all saved selections? This cannot be undone.')) {
@@ -115,6 +127,27 @@ function App() {
   ];
 
   const [isPanelExpanded, setIsPanelExpanded] = useState(true);
+  
+  // Show test pages if requested
+  if (showTestPage) {
+    return <TestMagneticScroll />;
+  }
+  
+  if (showSimpleTest) {
+    return <SimpleScrollSnapTest />;
+  }
+  
+  if (showJSTest) {
+    return <SimpleButtonTest />;
+  }
+  
+  if (showTwoPanelTest) {
+    return <TwoPanelMagneticTest />;
+  }
+  
+  if (showFreshTest) {
+    return <FreshMagneticTest />;
+  }
   
   return (
     <div className="h-screen w-screen bg-gray-900 flex overflow-hidden">
