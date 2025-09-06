@@ -10,8 +10,7 @@
     },
         {
       "type": "full",
-      "text": "Someone has been stealing cookies from the village bakery. The baker needs help!",
-      "background": "square.png"
+      "text": "Someone has been stealing cookies from the village bakery. The baker needs help!"
     },
     {
       "type": "character-flow",

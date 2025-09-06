@@ -187,6 +187,17 @@
   scroll-behavior: smooth;
 }
 
+/* Slow down the scroll snap animation */
+html {
+  scroll-behavior: smooth;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  * {
+    scroll-behavior: smooth;
+  }
+}
+
 /* Hide scrollbar but keep scroll functionality */
 .story-container::-webkit-scrollbar {
   display: none;

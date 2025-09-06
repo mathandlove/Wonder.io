@@ -281,6 +281,28 @@ const StoryModeScroll: React.FC = () => {
                         onError={() => console.log(`Background failed to load for ${content.type} scene: ${content.background}`)}
                       ></div>
                     )}
+                    {/* Keep previous background visible if no background specified */}
+                    {!content.background && index > 0 && (
+                      (() => {
+                        // Find the most recent scene with a background
+                        for (let i = index - 1; i >= 0; i--) {
+                          if (storyContent[i] && storyContent[i].background) {
+                            return (
+                              <div 
+                                className="story-background-image"
+                                style={{
+                                  backgroundImage: `url('/stories/gingerbread.bundle/images/backgrounds/${storyContent[i].background}'), url('/assets.core/images/backgrounds/${storyContent[i].background}')`,
+                                  transform: 'translateY(0)', // Keep it fixed
+                                  transition: 'none'
+                                }}
+                                data-debug={`bg-${index}-inherited-${storyContent[i].background}`}
+                              ></div>
+                            );
+                          }
+                        }
+                        return null;
+                      })()
+                    )}
                     {console.log(`Background for index ${index}: ${content.background}, fixed: ${content.backgroundFixed}, isFirstInFlow: ${content.isFirstInFlow}`)}
                     {content.background && console.log(`Rendering background ${content.background} for ${content.type} scene at index ${index}`)}
                     <TitleScene 
@@ -316,6 +338,28 @@ const StoryModeScroll: React.FC = () => {
                         onError={() => console.log(`Background failed to load for ${content.type} scene: ${content.background}`)}
                       ></div>
                     )}
+                    {/* Keep previous background visible if no background specified */}
+                    {!content.background && index > 0 && (
+                      (() => {
+                        // Find the most recent scene with a background
+                        for (let i = index - 1; i >= 0; i--) {
+                          if (storyContent[i] && storyContent[i].background) {
+                            return (
+                              <div 
+                                className="story-background-image"
+                                style={{
+                                  backgroundImage: `url('/stories/gingerbread.bundle/images/backgrounds/${storyContent[i].background}'), url('/assets.core/images/backgrounds/${storyContent[i].background}')`,
+                                  transform: 'translateY(0)', // Keep it fixed
+                                  transition: 'none'
+                                }}
+                                data-debug={`bg-${index}-inherited-${storyContent[i].background}`}
+                              ></div>
+                            );
+                          }
+                        }
+                        return null;
+                      })()
+                    )}
                     {console.log(`Background for index ${index}: ${content.background}, fixed: ${content.backgroundFixed}, isFirstInFlow: ${content.isFirstInFlow}`)}
                     {content.background && console.log(`Rendering background ${content.background} for ${content.type} scene at index ${index}`)}
                     <div className="story-full-content">
@@ -341,6 +385,28 @@ const StoryModeScroll: React.FC = () => {
                         onLoad={() => console.log(`Background loaded for ${content.type} scene: ${content.background}`)}
                         onError={() => console.log(`Background failed to load for ${content.type} scene: ${content.background}`)}
                       ></div>
+                    )}
+                    {/* Keep previous background visible if no background specified */}
+                    {!content.background && index > 0 && (
+                      (() => {
+                        // Find the most recent scene with a background
+                        for (let i = index - 1; i >= 0; i--) {
+                          if (storyContent[i] && storyContent[i].background) {
+                            return (
+                              <div 
+                                className="story-background-image"
+                                style={{
+                                  backgroundImage: `url('/stories/gingerbread.bundle/images/backgrounds/${storyContent[i].background}'), url('/assets.core/images/backgrounds/${storyContent[i].background}')`,
+                                  transform: 'translateY(0)', // Keep it fixed
+                                  transition: 'none'
+                                }}
+                                data-debug={`bg-${index}-inherited-${storyContent[i].background}`}
+                              ></div>
+                            );
+                          }
+                        }
+                        return null;
+                      })()
                     )}
                     {console.log(`Background for index ${index}: ${content.background}, fixed: ${content.backgroundFixed}, isFirstInFlow: ${content.isFirstInFlow}`)}
                     {content.background && console.log(`Rendering background ${content.background} for ${content.type} scene at index ${index}`)}
