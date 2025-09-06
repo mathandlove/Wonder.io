@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Clear Cache</title>
+</head>
+<body>
+    <h1>Clearing all caches...</h1>
+    <script>
+        // Clear service workers
+        if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.getRegistrations().then(function(registrations) {
+                for(let registration of registrations) {
+                    registration.unregister();
+                }
+                console.log('Service workers unregistered');
+            });
+        }
+        
+        // Clear caches
+        if ('caches' in window) {
+            caches.keys().then(function(names) {
+                for (let name of names) {
+                    caches.delete(name);
+                }
+                console.log('Caches cleared');
+            });
+        }
+        
+        // Redirect to test page after 1 second
+        setTimeout(() => {
+            window.location.href = 'http://localhost:5174/?test=js&nocache=' + Date.now();
+        }, 1000);
+    </script>
+</body>
+</html>

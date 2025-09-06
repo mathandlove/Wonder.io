@@ -29,7 +29,7 @@ export const useMagneticScroller = ({
   onSnapChanging,
   // Legacy props
   cardSelector = '.flow-item',
-  debounceMs = 100,
+  debounceMs = 200,
   onComplete
 }: MagneticScrollOptions = {}) => {
   
@@ -170,6 +170,11 @@ export const useMagneticScroller = ({
     
     const scrollDistance = Math.abs(currentScrollTop - scrollData.startScrollTop);
     
+    // Require minimum scroll distance to trigger momentum
+    if (scrollDistance < 50) {
+      return findNearestElement(); // Too small, just snap to nearest
+    }
+    
     // Determine if this is a small scroll or large scroll
     const itemHeight = 450; // Approximate item height + margin
     const scrolledItems = Math.floor(scrollDistance / itemHeight);
@@ -242,7 +247,7 @@ export const useMagneticScroller = ({
       } else {
         // Update scroll direction based on movement
         const scrollDelta = currentScrollTop - scrollData.lastScrollTop;
-        if (Math.abs(scrollDelta) > 1) {
+        if (Math.abs(scrollDelta) > 5) { // Require more movement to detect direction
           scrollData.direction = scrollDelta > 0 ? 1 : -1;
         }
       }
@@ -260,7 +265,7 @@ export const useMagneticScroller = ({
         // Use momentum-based targeting
         const target = findMomentumTarget();
         
-        if (target && target.element && target.distance > 30) {
+        if (target && target.element && target.distance > 100) {
           setCurrentSnap(target.index);
           onSnapChange?.(target.element);
           snapToElement(target.element);

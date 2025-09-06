@@ -3,20 +3,21 @@
   display: flex;
   justify-content: center;
   align-items: center;
+  padding: 90px;
 }
 
 .cardboard-sign {
   position: relative;
   width: 400px;
   height: 280px;
-  background-image: url('/VisualAssets/cardboardSign.webp');
+  background-image: url('/VisualAssets/cardboardSign.png');
   background-size: cover;
   background-position: center;
   background-repeat: no-repeat;
   display: flex;
   align-items: center;
   justify-content: center;
-  filter: drop-shadow(0 8px 16px rgba(0, 0, 0, 0.5));
+  filter: drop-shadow(4px 8px 16px rgba(0, 0, 0, 0.5));
 }
 
 .red-overlay {
@@ -69,12 +70,12 @@
 }
 
 .title-line-1 {
-  font-size: 1.8rem;
+  font-size: 1.5rem;
   margin-bottom: 5px;
 }
 
 .title-line-2 {
-  font-size: 2.2rem;
+  font-size: 1.8rem;
 }
 
 /* Ensure proper centering for 2-word titles */
@@ -97,7 +98,7 @@
 }
 
 .title-line-3 {
-  font-size: 2.2rem;
+  font-size: 1.8rem;
   margin-top: 5px;
 }
 
@@ -197,20 +198,20 @@
 .wire {
   position: absolute;
   width: 3px;
-  height: 150vh;
+  height: calc(150vh + 90px);
   background: #1a1a1a;
-  bottom: calc(100% - 10px);
+  bottom: calc(100% - 100px);
   z-index: 20;
 }
 
 .wire-left {
-  left: 100px;
+  left: 190px;
   transform: rotate(1deg);
   box-shadow: 1px 0 2px rgba(0, 0, 0, 0.3);
 }
 
 .wire-right {
-  right: 100px;
+  right: 190px;
   transform: rotate(-1deg);
   box-shadow: -1px 0 2px rgba(0, 0, 0, 0.3);
 }

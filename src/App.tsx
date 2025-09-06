@@ -10,6 +10,7 @@ import SimpleScrollSnapTest from './SimpleScrollSnapTest';
 import SimpleButtonTest from './SimpleButtonTest';
 import TwoPanelMagneticTest from './TwoPanelMagneticTest';
 import FreshMagneticTest from './FreshMagneticTest';
+import StoryModeScroll from './StoryModeScroll';
 import { selectionAPI } from './services/api';
 
 function App() {
@@ -23,6 +24,7 @@ function App() {
   const showJSTest = window.location.search.includes('test=js');
   const showTwoPanelTest = window.location.search.includes('test=panels');
   const showFreshTest = window.location.search.includes('test=fresh');
+  const showStoryMode = window.location.search.includes('test=story');
 
   const handleClearAllSelections = async () => {
     if (window.confirm('Are you sure you want to delete all saved selections? This cannot be undone.')) {
@@ -147,6 +149,10 @@ function App() {
   
   if (showFreshTest) {
     return <FreshMagneticTest />;
+  }
+  
+  if (showStoryMode) {
+    return <StoryModeScroll />;
   }
   
   return (

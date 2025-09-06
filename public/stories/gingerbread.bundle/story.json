@@ -2,30 +2,44 @@
   "title": "The Cookie Thief",
   "storyId": "leo-monster-hunter-001",
   "scenes": [
-{
-"type":"blank"
-},
-{
-  "type": "character-flow",
-  "character": "leo",
-  "flow": [
+
     {
-      "kind": "text",
-      "text": "Hi! I’m Leo the Monster Hunter."
+      "type": "full",
+      "text": "Someone has been stealing cookies from the village bakery. The baker needs help!",
+      "background": "river.png"
+    },
+        {
+      "type": "full",
+      "text": "Someone has been stealing cookies from the village bakery. The baker needs help!",
+      "background": "square.png"
     },
     {
-      "kind": "text",
-      "text": "I hunt monsters that steal cookies."
+      "type": "character-flow",
+      "background":"park.png",
+      "character": "leo",
+      "flow": [
+        {
+          "side": "left",
+          "text": "Hi! I'm Leo the Monster Hunter."
+        },
+        {
+          "side": "left",
+          "text": "I hunt monsters that steal cookies."
+        },
+        {
+          "side": "left",
+          "text": "Let me investigate these strange footprints..."
+        },
+        {
+          "side": "left",
+          "text": "My fourth line of text is boring."
+        }
+      ]
     },
     {
-      "kind": "image",
-      "src": "dragonFeet.png",
-      "alt": "Leo investigates a dragon claw"
+      "type": "full",
+      "background": "cobbler.png",
+      "text": "Leo saved the day! The cookies are safe once again."
     }
   ]
-}
-
-
-]
-    
 }

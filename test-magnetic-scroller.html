@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Magnetic Scroller Test</title>
+    <style>
+        body { margin: 0; font-family: Arial, sans-serif; }
+        .test-controls { 
+            position: fixed; 
+            top: 10px; 
+            right: 10px; 
+            z-index: 1000; 
+            background: rgba(0,0,0,0.8); 
+            color: white; 
+            padding: 10px; 
+            border-radius: 5px; 
+        }
+        .test-log { 
+            position: fixed; 
+            bottom: 10px; 
+            right: 10px; 
+            z-index: 1000; 
+            background: rgba(0,0,0,0.8); 
+            color: white; 
+            padding: 10px; 
+            border-radius: 5px; 
+            max-width: 400px; 
+            max-height: 200px; 
+            overflow-y: auto; 
+            font-size: 12px; 
+        }
+        iframe { width: 100%; height: 100vh; border: none; }
+    </style>
+</head>
+<body>
+    <div class="test-controls">
+        <h3>Magnetic Scroller Test</h3>
+        <button onclick="startTest()">Start Test</button>
+        <button onclick="debugPositions()">Debug Positions</button>
+        <button onclick="clearLog()">Clear Log</button>
+    </div>
+    
+    <div class="test-log" id="testLog"></div>
+    
+    <iframe id="appFrame" src="http://localhost:5173?mode=story"></iframe>
+
+    <script>
+        let logContainer;
+        
+        function log(message) {
+            if (!logContainer) logContainer = document.getElementById('testLog');
+            const time = new Date().toLocaleTimeString();
+            logContainer.innerHTML += `[${time}] ${message}<br>`;
+            logContainer.scrollTop = logContainer.scrollHeight;
+            console.log(message);
+        }
+        
+        function clearLog() {
+            document.getElementById('testLog').innerHTML = '';
+        }
+        
+        function debugPositions() {
+            const iframe = document.getElementById('appFrame');
+            try {
+                const iframeWindow = iframe.contentWindow;
+                if (iframeWindow.debugFlowPositions) {
+                    log('🔍 Running debugFlowPositions()');
+                    iframeWindow.debugFlowPositions();
+                } else {
+                    log('❌ debugFlowPositions() not found - app may not be loaded');
+                }
+            } catch (e) {
+                log('❌ Cannot access iframe content - cross-origin issue');
+            }
+        }
+        
+        async function startTest() {
+            log('🚀 Starting magnetic scroller test');
+            
+            const iframe = document.getElementById('appFrame');
+            
+            // Wait for app to load
+            await new Promise(resolve => {
+                iframe.onload = resolve;
+                if (iframe.contentDocument && iframe.contentDocument.readyState === 'complete') {
+                    resolve();
+                }
+            });
+            
+            try {
+                const iframeWindow = iframe.contentWindow;
+                const iframeDoc = iframe.contentDocument;
+                
+                // Wait a bit more for React to mount
+                await new Promise(resolve => setTimeout(resolve, 3000));
+                
+                // Check if flow content is present
+                const flowContent = iframeDoc.querySelector('.flow-content');
+                if (!flowContent) {
+                    log('❌ .flow-content not found - story may not be loaded');
+                    return;
+                }
+                
+                const flowItems = iframeDoc.querySelectorAll('.flow-item');
+                log(`✅ Found ${flowItems.length} flow items`);
+                
+                // Override console.log to capture magnetic scroller logs
+                const originalLog = iframeWindow.console.log;
+                iframeWindow.console.log = function(...args) {
+                    const message = args.join(' ');
+                    if (message.includes('🧲') || message.includes('magnetic') || message.includes('MAGNETIC')) {
+                        log(`🧲 SCROLLER: ${message}`);
+                    }
+                    if (message.includes('🔍') || message.includes('Found') || message.includes('bubbles')) {
+                        log(`🔍 DEBUG: ${message}`);
+                    }
+                    originalLog.apply(this, args);
+                };
+                
+                // Test magnetic scroller by simulating scroll
+                log('📜 Testing scroll behavior...');
+                
+                // Scroll to first bubble
+                iframeWindow.scrollTo({ top: 0, behavior: 'auto' });
+                await new Promise(resolve => setTimeout(resolve, 500));
+                
+                // Test scroll down
+                iframeWindow.scrollBy({ top: 200, behavior: 'auto' });
+                log('📜 Scrolled down 200px - waiting for magnetic snap...');
+                await new Promise(resolve => setTimeout(resolve, 1000));
+                
+                // Test debug function
+                if (iframeWindow.debugFlowPositions) {
+                    log('🔍 Running debugFlowPositions()');
+                    iframeWindow.debugFlowPositions();
+                }
+                
+                // Test centering accuracy
+                const viewportCenter = iframeWindow.innerHeight / 2;
+                flowItems.forEach((item, index) => {
+                    const rect = item.getBoundingClientRect();
+                    const itemCenter = rect.top + rect.height / 2;
+                    const distance = Math.abs(itemCenter - viewportCenter);
+                    
+                    if (distance < 50) { // If this item is close to center
+                        log(`📍 Flow item ${index + 1} center: ${itemCenter.toFixed(1)}px, viewport center: ${viewportCenter}px, distance: ${distance.toFixed(1)}px`);
+                        
+                        if (distance < 10) {
+                            log(`✅ Flow item ${index + 1} is well-centered (within 10px)`);
+                        } else if (distance < 25) {
+                            log(`⚠️ Flow item ${index + 1} is reasonably centered (within 25px)`);
+                        } else {
+                            log(`❌ Flow item ${index + 1} is not well-centered (${distance.toFixed(1)}px off)`);
+                        }
+                    }
+                });
+                
+                log('🎯 Test completed - check console for magnetic scroller logs');
+                
+            } catch (e) {
+                log(`❌ Test error: ${e.message}`);
+            }
+        }
+        
+        // Auto-start test after a delay
+        setTimeout(() => {
+            log('🔄 Auto-starting test...');
+            startTest();
+        }, 2000);
+    </script>
+</body>
+</html>

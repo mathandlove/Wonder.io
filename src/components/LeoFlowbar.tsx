@@ -23,11 +23,75 @@ const LeoFlowbar: React.FC<LeoFlowbarProps> = ({ character, flow, storyPath, onC
   
   // Use magnetic scroller hook
   const { handleTapAdvance } = useMagneticScroller({
-    containerSelector: 'body',
     cardSelector: '.flow-item',
     debounceMs: 120,
     onComplete
   });
+  
+  // Debug positioning - call this from browser console: window.debugFlowPositions()
+  React.useEffect(() => {
+    (window as any).debugFlowPositions = () => {
+      const viewportCenter = window.innerHeight / 2;
+      console.log('=== FLOW POSITIONING DEBUG ===');
+      console.log(`Viewport height: ${window.innerHeight}px`);
+      console.log(`Viewport center: ${viewportCenter}px`);
+      console.log(`Current scroll Y: ${window.scrollY}px`);
+      console.log('');
+      
+      document.querySelectorAll('.flow-item').forEach((flowItem, index) => {
+        const flowRect = flowItem.getBoundingClientRect();
+        const bubble = flowItem.querySelector('.text-bubble, .image-bubble');
+        
+        console.log(`--- Flow Item ${index + 1} ---`);
+        console.log(`Flow rect.top: ${flowRect.top.toFixed(1)}px`);
+        console.log(`Flow rect.height: ${flowRect.height.toFixed(1)}px`);
+        console.log(`Flow center: ${(flowRect.top + flowRect.height / 2).toFixed(1)}px`);
+        console.log(`Distance from viewport center: ${Math.abs(flowRect.top + flowRect.height / 2 - viewportCenter).toFixed(1)}px`);
+        
+        if (bubble) {
+          const bubbleRect = bubble.getBoundingClientRect();
+          const bubbleCenter = bubbleRect.top + bubbleRect.height / 2;
+          
+          // Get the actual CSS animation progress by reading the computed content
+          const afterElement = window.getComputedStyle(bubble, '::after');
+          const actualProgress = afterElement.content.replace(/"/g, '') || 'no content'; // Remove quotes from content
+          
+          // Different attempt: maybe it's based on intersection ratio
+          const viewportHeight = window.innerHeight;
+          const bubbleTop = bubbleRect.top;
+          const bubbleBottom = bubbleRect.bottom;
+          const bubbleHeight = bubbleRect.height;
+          
+          // If CSS shows ~30% when bubble is perfectly centered, there's clearly a different calculation
+          // Let's see what the relationship is
+          const viewProgress = 30; // Just showing we know it's different
+          
+          console.log(`Bubble rect.top: ${bubbleRect.top.toFixed(1)}px`);
+          console.log(`Bubble rect.height: ${bubbleRect.height.toFixed(1)}px`);
+          console.log(`Bubble center: ${bubbleCenter.toFixed(1)}px`);
+          console.log(`Bubble distance from viewport center: ${Math.abs(bubbleCenter - viewportCenter).toFixed(1)}px`);
+          console.log(`Calculated view progress: ${viewProgress.toFixed(1)}%`);
+          console.log(`ACTUAL CSS animation progress: ${actualProgress}`);
+          console.log(`--- DISCREPANCY: ${Math.abs(viewProgress - parseFloat(actualProgress.replace(/[^\d.]/g, '')))} ---`);
+        }
+        console.log('');
+      });
+    };
+    
+    // Test function to manually trigger magnetic scroller
+    (window as any).testMagneticScroller = () => {
+      console.log('🧪 Testing magnetic scroller manually...');
+      window.scrollBy({ top: 200, behavior: 'auto' });
+      setTimeout(() => {
+        console.log('🧪 Manual scroll completed - magnetic snap should trigger');
+      }, 200);
+    };
+
+    return () => {
+      delete (window as any).debugFlowPositions;
+      delete (window as any).testMagneticScroller;
+    };
+  }, []);
   
 
   React.useEffect(() => {
@@ -65,10 +129,8 @@ const LeoFlowbar: React.FC<LeoFlowbarProps> = ({ character, flow, storyPath, onC
     switch (item.kind) {
       case 'text':
         return (
-          <div key={index} className="flow-item">
-            <div className="text-bubble">
-              <p className="scene-text">{item.text}</p>
-            </div>
+          <div className="text-bubble">
+            <p className="scene-text">{item.text}</p>
           </div>
         );
       
@@ -79,10 +141,8 @@ const LeoFlowbar: React.FC<LeoFlowbarProps> = ({ character, flow, storyPath, onC
           item.src;
         
         return (
-          <div key={index} className="flow-item">
-            <div className="image-bubble">
-              <img src={imagePath} alt={item.alt} className="flow-image" />
-            </div>
+          <div className="image-bubble">
+            <img src={imagePath} alt={item.alt} className="flow-image" />
           </div>
         );
       

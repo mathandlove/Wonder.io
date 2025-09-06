@@ -21,7 +21,7 @@ html, html body {
   height: 2px;
   background: rgba(255, 0, 0, 0.8);
   z-index: 1000;
-  display: flex;
+  display: none;
   align-items: center;
   justify-content: center;
   color: red;
@@ -39,6 +39,11 @@ html, html body {
     animation-fill-mode: both;
     animation-timeline: scroll(root);
     animation-range: 0% 25%; /* Leo completes animation in first 25% of scroll */
+  }
+  
+  /* Pause scroll-linked animations during magnetic snap */
+  .magnet-active .character-entrance {
+    animation-play-state: paused;
   }
 
   @keyframes leoSwingIn {
@@ -70,6 +75,11 @@ html, html body {
     animation-timeline: scroll(root), scroll(root);
     animation-range: 30% 100%, 24% 26%;
   }
+  
+  /* Pause flow content animation during magnetic snap */
+  .magnet-active .flow-content-scroll {
+    animation-play-state: paused;
+  }
 
   @keyframes flowUp {
     0% {
@@ -97,42 +107,14 @@ html, html body {
     animation-duration: 1s;
     animation-fill-mode: both;
     animation-timeline: view();
-    animation-range: entry 40% exit 10%; /* Appear when center at 60% from top, shrink when center at 60% from top */
+    animation-range: entry 30% exit 40%; /* Center animation around 35% where bubble is actually centered */
     position: relative;
   }
 
   /* Debug indicator */
   .text-bubble::after,
   .image-bubble::after {
-    content: attr(data-debug);
-    position: absolute;
-    top: -30px;
-    right: 10px;
-    background: rgba(255, 0, 0, 0.8);
-    color: white;
-    padding: 4px 8px;
-    font-size: 12px;
-    border-radius: 4px;
-    z-index: 100;
-    animation-name: debugInfo;
-    animation-duration: 1s;
-    animation-fill-mode: both;
-    animation-timeline: view();
-    animation-range: entry 0% exit 100%;
-  }
-
-  @keyframes debugInfo {
-    0% { content: "Progress: 0%"; }
-    10% { content: "Progress: 10%"; }
-    20% { content: "Progress: 20%"; }
-    30% { content: "Progress: 30%"; }
-    40% { content: "Progress: 40% - APPEAR"; }
-    50% { content: "Progress: 50%"; }
-    60% { content: "Progress: 60%"; }
-    70% { content: "Progress: 70%"; }
-    80% { content: "Progress: 80%"; }
-    90% { content: "Progress: 90% - SHRINK"; }
-    100% { content: "Progress: 100%"; }
+    display: none;
   }
 
   @keyframes textLifecycle {
@@ -248,7 +230,6 @@ html, html body {
   display: flex;
   align-items: center;
   position: relative;
-  border: 3px solid rgba(0, 255, 0, 0.5);
   cursor: pointer;
 }
 
@@ -267,6 +248,7 @@ html, html body {
   font-weight: bold;
   border-radius: 4px;
   z-index: 200;
+  display: none;
 }
 
 /* Counter reset for flow items */

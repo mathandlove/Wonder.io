@@ -118,7 +118,8 @@ const TitleScene: React.FC<TitleSceneProps> = ({ text, author, onComplete }) => 
 
   return (
     <div 
-      className="min-h-screen flex flex-col items-center justify-center bg-neutral-800 px-8 py-16 overflow-hidden relative"
+      className="min-h-screen flex flex-col items-center justify-center px-8 py-16 overflow-hidden relative"
+      style={{ background: 'transparent' }}
     >
       {/* Scroll prompt that disappears after animation settles */}
       {!hasSettled && (
