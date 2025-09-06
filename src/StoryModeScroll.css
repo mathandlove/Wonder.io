@@ -25,7 +25,7 @@
   max-width: 100vw;
 }
 
-/* Character Panel */
+/* Character Panels */
 .story-character-panel {
   width: 350px;
   height: 100vh;
@@ -35,10 +35,19 @@
   justify-content: center;
   flex-shrink: 0;
   position: absolute;
-  left: 0;
   top: 0;
   z-index: 10; /* Above backgrounds and content */
   transition: transform 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Left character panel */
+.story-character-panel.story-character-left {
+  left: 0;
+}
+
+/* Right character panel */
+.story-character-panel.story-character-right {
+  right: 0;
 }
 
 /* Character panel states */
@@ -139,6 +148,10 @@
   animation: cardboard-wavy-settle 1.2s ease-in-out;
 }
 
+.story-bounce-arrival-right {
+  animation: cardboard-wavy-settle-right 1.2s ease-in-out; /* No delay */
+}
+
 @keyframes cardboard-wavy-settle {
   0% {
     transform: rotate(0deg);
@@ -163,6 +176,36 @@
   }
   94% {
     transform: rotate(1deg);
+  }
+  100% {
+    transform: rotate(0deg);
+  }
+}
+
+@keyframes cardboard-wavy-settle-right {
+  0% {
+    transform: rotate(0deg);
+  }
+  15% {
+    transform: rotate(-12deg); /* Different timing and amplitude */
+  }
+  35% {
+    transform: rotate(18deg);
+  }
+  50% {
+    transform: rotate(-10deg);
+  }
+  65% {
+    transform: rotate(6deg);
+  }
+  75% {
+    transform: rotate(-5deg);
+  }
+  85% {
+    transform: rotate(3deg);
+  }
+  92% {
+    transform: rotate(-1deg);
   }
   100% {
     transform: rotate(0deg);
@@ -229,6 +272,20 @@ html {
   right: 0;
 }
 
+/* Container states for right panel */
+.story-container-right-visible {
+  left: 0;
+  width: calc(100% - 350px);
+  right: 350px;
+}
+
+/* Container states for both panels */
+.story-container-both-visible {
+  left: 350px;
+  width: calc(100% - 700px);
+  right: 350px;
+}
+
 /* Story Items */
 .story-items {
   position: relative;
@@ -250,7 +307,18 @@ html {
   scroll-snap-stop: always;
 }
 
-/* Character panels - left justified with padding for any character scene */
+/* Character panels - positioned based on character side */
+.story-item:has(.story-speech-bubble-left) {
+  justify-content: flex-start;
+  padding-left: 40px; /* Keep left padding for left character panels */
+}
+
+.story-item:has(.story-speech-bubble-right) {
+  justify-content: flex-end;
+  padding-right: 40px; /* Add right padding for right character panels */
+}
+
+/* Backwards compatibility - default to left */
 .story-item:has(.story-speech-bubble) {
   justify-content: flex-start;
   padding-left: 40px; /* Keep left padding for character panels only */
@@ -286,8 +354,9 @@ html {
   box-shadow: 0 2px 10px rgba(0,0,0,0.1);
 }
 
-/* Speech Bubble Container with Cardboard Backing */
-.story-speech-bubble {
+/* Speech Bubble Container with Cardboard Backing - Left Side */
+.story-speech-bubble,
+.story-speech-bubble-left {
   position: relative;
   max-width: 500px;
   padding: 15px; /* Outer padding for cardboard */
@@ -302,8 +371,26 @@ html {
   transform-origin: left center;
 }
 
+/* Speech Bubble Container - Right Side */
+.story-speech-bubble-right {
+  position: relative;
+  max-width: 500px;
+  padding: 15px; /* Outer padding for cardboard */
+  background-image: url('/VisualAssets/cardboard.png');
+  background-size: cover;
+  background-repeat: no-repeat;
+  background-position: center;
+  border-radius: 25px;
+  box-shadow: 0 10px 40px rgba(0,0,0,0.3);
+  margin-right: 40px;
+  margin-top: -200px;
+  transform-origin: right center;
+}
+
 /* White text box inside cardboard */
-.story-speech-bubble p {
+.story-speech-bubble p,
+.story-speech-bubble-left p,
+.story-speech-bubble-right p {
   background: white;
   padding: 28px;
   margin: 0;
@@ -316,7 +403,9 @@ html {
   box-shadow: 0 2px 10px rgba(0,0,0,0.1);
 }
 
-.story-speech-tail {
+/* Speech tail - Left side (default) */
+.story-speech-tail,
+.story-speech-tail-left {
   position: absolute;
   left: 0px;
   top: 50%;
@@ -329,8 +418,23 @@ html {
   z-index: 3;
 }
 
-/* Cardboard backing triangle */
-.story-speech-tail::before {
+/* Speech tail - Right side */
+.story-speech-tail-right {
+  position: absolute;
+  right: 0px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 0;
+  height: 0;
+  border-style: solid;
+  border-width: 15px 0 15px 20px;
+  border-color: transparent transparent transparent white;
+  z-index: 3;
+}
+
+/* Cardboard backing triangle - Left side */
+.story-speech-tail::before,
+.story-speech-tail-left::before {
   content: '';
   position: absolute;
   left: -18px;
@@ -341,6 +445,21 @@ html {
   background-size: cover;
   background-position: center;
   clip-path: polygon(100% 0, 100% 100%, 0 50%);
+  z-index: 2;
+}
+
+/* Cardboard backing triangle - Right side */
+.story-speech-tail-right::before {
+  content: '';
+  position: absolute;
+  right: -18px;
+  top: -12px;
+  width: 18px;
+  height: 24px;
+  background-image: url('/VisualAssets/cardboard.png');
+  background-size: cover;
+  background-position: center;
+  clip-path: polygon(0 0, 0 100%, 100% 50%);
   z-index: 2;
 }
 

@@ -15,23 +15,24 @@
     {
       "type": "character-flow",
       "background":"park.png",
-      "character": "leo",
+      "left-character": "leo",
+      "right-character": "bakerMom",
       "flow": [
         {
           "side": "left",
           "text": "Hi! I'm Leo the Monster Hunter."
         },
         {
-          "side": "left",
-          "text": "I hunt monsters that steal cookies."
+          "side": "right",
+          "text": "And I am a baker."
         },
         {
           "side": "left",
-          "text": "Let me investigate these strange footprints..."
+          "text": "Hello Ms. Baker"
         },
         {
-          "side": "left",
-          "text": "My fourth line of text is boring."
+          "side": "right",
+          "text": "I do not like your hat."
         }
       ]
     },
