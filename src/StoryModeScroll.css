@@ -157,6 +157,33 @@
   animation: cardboard-wavy-settle-right 1.2s ease-in-out; /* No delay */
 }
 
+/* Character shake animation when speaking */
+.story-character-speaking {
+  animation: character-shake 1s ease-in-out 1;
+}
+
+.story-character-speaking-right {
+  animation: character-shake-right 1s ease-in-out 1;
+}
+
+@keyframes character-shake {
+  0%, 100% {
+    transform: translateX(0) rotate(0deg);
+  }
+  50% {
+    transform: translateX(-0.5px) rotate(-5deg);
+  }
+}
+
+@keyframes character-shake-right {
+  0%, 100% {
+    transform: translateX(0) rotate(0deg);
+  }
+  50% {
+    transform: translateX(0.5px) rotate(5deg);
+  }
+}
+
 @keyframes cardboard-wavy-settle {
   0% {
     transform: rotate(0deg);

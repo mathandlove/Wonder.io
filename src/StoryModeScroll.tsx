@@ -15,6 +15,8 @@ const StoryModeScroll: React.FC = () => {
   const [hasStartedRightAnimation, setHasStartedRightAnimation] = useState(false); // Prevent multiple starts
   const [leftCharacterFullyExited, setLeftCharacterFullyExited] = useState(false); // Track if exit animation completed
   const [rightCharacterFullyExited, setRightCharacterFullyExited] = useState(false); // Track if exit animation completed
+  const [leftBounceComplete, setLeftBounceComplete] = useState(false);
+  const [rightBounceComplete, setRightBounceComplete] = useState(false);
   const [currentLeftCharacter, setCurrentLeftCharacter] = useState<string | null>(null); // Track current left character
   const [currentRightCharacter, setCurrentRightCharacter] = useState<string | null>(null); // Track current right character
   const [previousItem, setPreviousItem] = useState(0); // Track previous panel for direction
@@ -54,6 +56,7 @@ const StoryModeScroll: React.FC = () => {
           setLeftCharacterFullyExited(true);
           setHasStartedLeftAnimation(false);
           setLeftCharacterProgress(0);
+          setLeftBounceComplete(false);
         } else {
           // Normal animated exit when scrolling down
           setLeftCharacterPanelState('exiting');
@@ -61,6 +64,7 @@ const StoryModeScroll: React.FC = () => {
           setTimeout(() => {
             setLeftCharacterFullyExited(true);
             setLeftCharacterPanelState('hidden');
+            setLeftBounceComplete(false);
           }, 800);
         }
       } else if (leftCharacterPanelState !== 'exiting') {
@@ -68,6 +72,7 @@ const StoryModeScroll: React.FC = () => {
         setHasStartedLeftAnimation(false);
         setLeftCharacterFullyExited(true);
         setLeftCharacterProgress(0);
+        setLeftBounceComplete(false);
       }
     } else {
       setLeftCharacterPanelState('visible');
@@ -83,6 +88,8 @@ const StoryModeScroll: React.FC = () => {
         setLeftCharacterProgress(100);
         setLeftCharacterAnimating(false);
         setHasStartedLeftAnimation(true);
+        // Set bounce complete immediately when scrolling up
+        setLeftBounceComplete(true);
       } else if (!hasStartedLeftAnimation && wasNonCharacterScene) {
         setHasStartedLeftAnimation(true);
         setLeftCharacterAnimating(true);
@@ -95,6 +102,10 @@ const StoryModeScroll: React.FC = () => {
             clearInterval(animationInterval);
             setLeftCharacterProgress(100);
             setLeftCharacterAnimating(false);
+            // Set bounce complete after bounce animation (1.2s)
+            setTimeout(() => {
+              setLeftBounceComplete(true);
+            }, 1200);
           }
         }, 25); // Smooth animation over ~250ms
       }
@@ -109,6 +120,7 @@ const StoryModeScroll: React.FC = () => {
           setRightCharacterFullyExited(true);
           setHasStartedRightAnimation(false);
           setRightCharacterProgress(0);
+          setRightBounceComplete(false);
         } else {
           // Normal animated exit when scrolling down
           setRightCharacterPanelState('exiting');
@@ -116,6 +128,7 @@ const StoryModeScroll: React.FC = () => {
           setTimeout(() => {
             setRightCharacterFullyExited(true);
             setRightCharacterPanelState('hidden');
+            setRightBounceComplete(false);
           }, 800);
         }
       } else if (rightCharacterPanelState !== 'exiting') {
@@ -123,6 +136,7 @@ const StoryModeScroll: React.FC = () => {
         setHasStartedRightAnimation(false);
         setRightCharacterFullyExited(true);
         setRightCharacterProgress(0);
+        setRightBounceComplete(false);
       }
     } else {
       setRightCharacterPanelState('visible');
@@ -138,6 +152,8 @@ const StoryModeScroll: React.FC = () => {
         setRightCharacterProgress(100);
         setRightCharacterAnimating(false);
         setHasStartedRightAnimation(true);
+        // Set bounce complete immediately when scrolling up
+        setRightBounceComplete(true);
       } else if (!hasStartedRightAnimation && wasNonCharacterScene) {
         setHasStartedRightAnimation(true);
         setRightCharacterAnimating(true);
@@ -150,6 +166,10 @@ const StoryModeScroll: React.FC = () => {
             clearInterval(animationInterval);
             setRightCharacterProgress(100);
             setRightCharacterAnimating(false);
+            // Set bounce complete after bounce animation (1.2s)
+            setTimeout(() => {
+              setRightBounceComplete(true);
+            }, 1200);
           }
         }, 25); // Smooth animation over ~250ms
       }
@@ -350,7 +370,27 @@ const StoryModeScroll: React.FC = () => {
                 transition: leftCharacterProgress >= 100 ? 'none' : 'transform 0.1s ease-out'
               }}
             >
-              <div className={`story-character-inner ${!leftCharacterAnimating && leftCharacterProgress >= 100 ? 'story-bounce-arrival' : ''}`}>
+              <div className={`story-character-inner ${
+                (() => {
+                  const currentScene = storyContent[currentItem];
+                  
+                  // Apply entrance bounce only when character just finished animating in (not during speech)
+                  if (!leftCharacterAnimating && leftCharacterProgress >= 100 && !leftBounceComplete) {
+                    return 'story-bounce-arrival';
+                  }
+                  
+                  // Apply shake animation only when this character is speaking and entrance is complete
+                  if (currentScene && currentScene.type === 'character' && currentScene.side === 'left' && 
+                      leftCharacterPanelState === 'visible' && 
+                      !leftCharacterAnimating && 
+                      leftCharacterProgress >= 100 &&
+                      leftBounceComplete) {
+                    return 'story-character-speaking';
+                  }
+                  
+                  return '';
+                })()
+              }`}>
                 <div className="story-wooden-dowel"></div>
                 <img 
                   src={`/stories/gingerbread.bundle/images/characters/${currentLeftCharacter}.sticker-cardboard-3d.webp?${version}`}
@@ -384,7 +424,27 @@ const StoryModeScroll: React.FC = () => {
                 transition: rightCharacterProgress >= 100 ? 'none' : 'transform 0.1s ease-out'
               }}
             >
-              <div className={`story-character-inner ${!rightCharacterAnimating && rightCharacterProgress >= 100 ? 'story-bounce-arrival-right' : ''}`}>
+              <div className={`story-character-inner ${
+                (() => {
+                  const currentScene = storyContent[currentItem];
+                  
+                  // Apply entrance bounce only when character just finished animating in (not during speech)
+                  if (!rightCharacterAnimating && rightCharacterProgress >= 100 && !rightBounceComplete) {
+                    return 'story-bounce-arrival-right';
+                  }
+                  
+                  // Apply shake animation only when this character is speaking and entrance is complete
+                  if (currentScene && currentScene.type === 'character' && currentScene.side === 'right' && 
+                      rightCharacterPanelState === 'visible' && 
+                      !rightCharacterAnimating && 
+                      rightCharacterProgress >= 100 &&
+                      rightBounceComplete) {
+                    return 'story-character-speaking-right';
+                  }
+                  
+                  return '';
+                })()
+              }`}>
                 <div className="story-wooden-dowel"></div>
                 <img 
                   src={`/stories/gingerbread.bundle/images/characters/${currentRightCharacter}.sticker-cardboard-3d.webp?${version}`}
@@ -532,7 +592,7 @@ const StoryModeScroll: React.FC = () => {
                     top: 0,
                     left: 0,
                     transform: contentTransform,
-                    transition: 'none', // Pure transform-driven
+                    transition: 'transform 0.5s ease-out', // Slightly faster than background for parallax
                     pointerEvents: 'auto' // Allow interactions with content
                   }}
                 >
