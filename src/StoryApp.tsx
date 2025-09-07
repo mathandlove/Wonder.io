@@ -1,10 +1,10 @@
 import React from 'react';
-import StoryEngine from './components/StoryEngine';
+import StoryModeScroll from './StoryModeScroll';
 
 const StoryApp: React.FC = () => {
   return (
     <div className="story-app">
-      <StoryEngine storyPath="/stories/gingerbread.bundle/story.json" />
+      <StoryModeScroll />
     </div>
   );
 };

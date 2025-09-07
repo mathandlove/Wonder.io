@@ -27,17 +27,20 @@
 
 /* Character Panels */
 .story-character-panel {
-  width: 350px;
+  width: 280px;
   height: 100vh;
   background: transparent;
   display: flex;
   align-items: center; /* Center vertically instead of flex-end */
   justify-content: center;
   flex-shrink: 0;
-  position: absolute;
+  position: fixed;
   top: 0;
   z-index: 10; /* Above backgrounds and content */
   transition: transform 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+  padding: 0;
+  margin: 0;
+  pointer-events: auto; /* Allow scroll events to be captured */
 }
 
 /* Left character panel */
@@ -82,6 +85,8 @@
   position: relative;
   width: 280px;
   height: 400px;
+  padding: 0;
+  margin: 0;
 }
 
 .story-character-cardboard {
@@ -261,8 +266,8 @@ html {
 }
 
 .story-container-visible {
-  left: 350px;
-  width: calc(100% - 350px);
+  left: 280px;
+  width: calc(100% - 280px);
   right: 0;
 }
 
@@ -275,15 +280,15 @@ html {
 /* Container states for right panel */
 .story-container-right-visible {
   left: 0;
-  width: calc(100% - 350px);
-  right: 350px;
+  width: calc(100% - 280px);
+  right: 280px;
 }
 
 /* Container states for both panels */
 .story-container-both-visible {
-  left: 350px;
-  width: calc(100% - 700px);
-  right: 350px;
+  left: 280px;
+  width: calc(100% - 560px);
+  right: 280px;
 }
 
 /* Story Items */
@@ -310,18 +315,15 @@ html {
 /* Character panels - positioned based on character side */
 .story-item:has(.story-speech-bubble-left) {
   justify-content: flex-start;
-  padding-left: 40px; /* Keep left padding for left character panels */
 }
 
 .story-item:has(.story-speech-bubble-right) {
   justify-content: flex-end;
-  padding-right: 40px; /* Add right padding for right character panels */
 }
 
 /* Backwards compatibility - default to left */
 .story-item:has(.story-speech-bubble) {
   justify-content: flex-start;
-  padding-left: 40px; /* Keep left padding for character panels only */
 }
 
 /* Full Screen Content */
@@ -366,7 +368,7 @@ html {
   background-position: center;
   border-radius: 25px;
   box-shadow: 0 10px 40px rgba(0,0,0,0.3);
-  margin-left: 40px;
+  margin-left: 20px;
   margin-top: -200px;
   transform-origin: left center;
 }
@@ -382,7 +384,7 @@ html {
   background-position: center;
   border-radius: 25px;
   box-shadow: 0 10px 40px rgba(0,0,0,0.3);
-  margin-right: 40px;
+  margin-right: 20px;
   margin-top: -200px;
   transform-origin: right center;
 }
@@ -443,6 +445,7 @@ html {
   height: 24px;
   background-image: url('/VisualAssets/cardboard.png');
   background-size: cover;
+  background-repeat: no-repeat;
   background-position: center;
   clip-path: polygon(100% 0, 100% 100%, 0 50%);
   z-index: 2;
@@ -458,6 +461,7 @@ html {
   height: 24px;
   background-image: url('/VisualAssets/cardboard.png');
   background-size: cover;
+  background-repeat: no-repeat;
   background-position: center;
   clip-path: polygon(0 0, 0 100%, 100% 50%);
   z-index: 2;
@@ -610,6 +614,27 @@ html {
   height: auto;
   margin: 10px 0;
   border-radius: 8px;
+}
+
+/* Comic images - sized to fit viewport */
+.story-comic-image {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 100vh;
+  position: relative;
+  z-index: 5; /* Above background */
+}
+
+.story-comic-image img {
+  width: 100%;
+  height: 100vh;
+  object-fit: contain;
+  border-radius: 0;
+  box-shadow: none;
+  background: none;
+  padding: 0;
 }
 
 /* Scene-specific styling - removed to use cardboard background for all */

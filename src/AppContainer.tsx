@@ -30,6 +30,7 @@ const AppContainer: React.FC = () => {
 
   return (
     <div className="app-container">
+      
       <ModeNav currentMode={mode} onModeChange={handleModeChange} />
       
       {mode === 'story' ? <StoryApp /> : <App />}

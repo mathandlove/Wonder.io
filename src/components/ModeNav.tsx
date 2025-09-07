@@ -17,7 +17,7 @@ const ModeNav: React.FC<ModeNavProps> = ({ currentMode, onModeChange }) => {
               : 'text-gray-600 hover:bg-gray-100'
           }`}
         >
-          🗺️ Map
+          🗺️ Map v1.2
         </button>
         <button
           onClick={() => onModeChange('story')}
@@ -27,7 +27,7 @@ const ModeNav: React.FC<ModeNavProps> = ({ currentMode, onModeChange }) => {
               : 'text-gray-600 hover:bg-gray-100'
           }`}
         >
-          📖 Story
+          📖 Story v1.2
         </button>
       </div>
     </div>

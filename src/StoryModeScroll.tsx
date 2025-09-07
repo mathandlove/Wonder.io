@@ -22,6 +22,8 @@ const StoryModeScroll: React.FC = () => {
   const [storyContent, setStoryContent] = useState<any[]>([]);
   const containerRef = useRef<HTMLDivElement>(null);
   const itemRefs = useRef<(HTMLDivElement | null)[]>([]);
+  const leftPanelRef = useRef<HTMLDivElement>(null);
+  const rightPanelRef = useRef<HTMLDivElement>(null);
 
   // Update character panel states based on current item - completely driven by JSON content
   useEffect(() => {
@@ -45,12 +47,21 @@ const StoryModeScroll: React.FC = () => {
     // Handle left character panel
     if (!needsLeftCharacterPanel) {
       if (leftCharacterPanelState === 'visible') {
-        setLeftCharacterPanelState('exiting');
-        setHasStartedLeftAnimation(false);
-        setTimeout(() => {
-          setLeftCharacterFullyExited(true);
+        if (isScrollingUp) {
+          // Immediately exit when scrolling up, no animation
           setLeftCharacterPanelState('hidden');
-        }, 800);
+          setLeftCharacterFullyExited(true);
+          setHasStartedLeftAnimation(false);
+          setLeftCharacterProgress(0);
+        } else {
+          // Normal animated exit when scrolling down
+          setLeftCharacterPanelState('exiting');
+          setHasStartedLeftAnimation(false);
+          setTimeout(() => {
+            setLeftCharacterFullyExited(true);
+            setLeftCharacterPanelState('hidden');
+          }, 800);
+        }
       } else if (leftCharacterPanelState !== 'exiting') {
         setLeftCharacterPanelState('hidden');
         setHasStartedLeftAnimation(false);
@@ -91,12 +102,21 @@ const StoryModeScroll: React.FC = () => {
     // Handle right character panel (similar logic)
     if (!needsRightCharacterPanel) {
       if (rightCharacterPanelState === 'visible') {
-        setRightCharacterPanelState('exiting');
-        setHasStartedRightAnimation(false);
-        setTimeout(() => {
-          setRightCharacterFullyExited(true);
+        if (isScrollingUp) {
+          // Immediately exit when scrolling up, no animation
           setRightCharacterPanelState('hidden');
-        }, 800);
+          setRightCharacterFullyExited(true);
+          setHasStartedRightAnimation(false);
+          setRightCharacterProgress(0);
+        } else {
+          // Normal animated exit when scrolling down
+          setRightCharacterPanelState('exiting');
+          setHasStartedRightAnimation(false);
+          setTimeout(() => {
+            setRightCharacterFullyExited(true);
+            setRightCharacterPanelState('hidden');
+          }, 800);
+        }
       } else if (rightCharacterPanelState !== 'exiting') {
         setRightCharacterPanelState('hidden');
         setHasStartedRightAnimation(false);
@@ -202,6 +222,41 @@ const StoryModeScroll: React.FC = () => {
     return () => container.removeEventListener('scroll', handleScroll);
   }, [currentItem, isScrolling, storyContent.length]);
 
+  // Forward scroll events from character panels to main container
+  useEffect(() => {
+    const leftPanel = leftPanelRef.current;
+    const rightPanel = rightPanelRef.current;
+    const container = containerRef.current;
+    
+    if (!container) return;
+
+    const forwardScroll = (e: WheelEvent) => {
+      console.log('🎯 Character panel scroll detected, forwarding to center');
+      e.preventDefault();
+      e.stopPropagation();
+      
+      // Forward the scroll to the main container
+      container.scrollBy({
+        top: e.deltaY,
+        behavior: 'auto'
+      });
+    };
+
+    if (leftPanel) {
+      console.log('✅ Adding scroll listener to left panel');
+      leftPanel.addEventListener('wheel', forwardScroll, { passive: false });
+    }
+    if (rightPanel) {
+      console.log('✅ Adding scroll listener to right panel');
+      rightPanel.addEventListener('wheel', forwardScroll, { passive: false });
+    }
+
+    return () => {
+      if (leftPanel) leftPanel.removeEventListener('wheel', forwardScroll);
+      if (rightPanel) rightPanel.removeEventListener('wheel', forwardScroll);
+    };
+  }, [storyContent.length, leftCharacterPanelState, rightCharacterPanelState]);
+
   // Load story content from JSON and flatten character-flow items
   useEffect(() => {
     fetch('/stories/gingerbread.bundle/story.json')
@@ -277,7 +332,7 @@ const StoryModeScroll: React.FC = () => {
       <div className="story-dynamic-layout">
         {/* Left Character panel with dynamic character */}
         {leftCharacterPanelState !== 'hidden' && !leftCharacterFullyExited && (
-        <div className={`story-character-panel story-character-left story-character-${leftCharacterPanelState} ${leftCharacterAnimating ? 'animating' : ''}`}>
+        <div ref={leftPanelRef} className={`story-character-panel story-character-left story-character-${leftCharacterPanelState} ${leftCharacterAnimating ? 'animating' : ''}`}>
           <div className="story-character-content">
             <div 
               className="story-character-cardboard"
@@ -311,7 +366,7 @@ const StoryModeScroll: React.FC = () => {
 
         {/* Right Character panel with dynamic character */}
         {rightCharacterPanelState !== 'hidden' && !rightCharacterFullyExited && (
-        <div className={`story-character-panel story-character-right story-character-${rightCharacterPanelState} ${rightCharacterAnimating ? 'animating' : ''}`}>
+        <div ref={rightPanelRef} className={`story-character-panel story-character-right story-character-${rightCharacterPanelState} ${rightCharacterAnimating ? 'animating' : ''}`}>
           <div className="story-character-content">
             <div 
               className="story-character-cardboard"
@@ -351,14 +406,20 @@ const StoryModeScroll: React.FC = () => {
           'story-container-hidden'
         }`} ref={containerRef}>
           <div className="story-items">
-            {storyContent && storyContent.map((content, index) => {
-              console.log(`Rendering item ${index}:`, content);
-              return (
-              <div
-                key={index}
-                ref={el => itemRefs.current[index] = el}
-                className={`story-item ${currentItem === index ? 'active' : ''}`}
-              >
+            {storyContent.length === 0 ? (
+              <div style={{color: 'white', fontSize: '24px', textAlign: 'center', padding: '50px'}}>
+                Loading story content...
+              </div>
+            ) : (
+              storyContent.map((content, index) => {
+                console.log(`Rendering item ${index}:`, content);
+                return (
+                <div
+                  key={index}
+                  ref={el => itemRefs.current[index] = el}
+                  className={`story-item ${currentItem === index ? 'active' : ''}`}
+                  style={{width: '100%', height: '100vh'}}
+                >
                 {/* Show content based on type and animation state */}
                 {(content.type === 'title' || content.type === 'title2') && (
                   <>
@@ -370,7 +431,7 @@ const StoryModeScroll: React.FC = () => {
                           transform: content.backgroundFixed && currentItem > index ? 
                             'translateY(0)' : 
                             `translateY(${(index - currentItem) * 100}vh)`,
-                          transition: content.backgroundFixed && currentItem > index ? 'none' : 'transform 0.6s ease-out'
+                          transition: 'transform 0.6s ease-out'
                         }}
                         data-debug={`bg-${index}-${content.background}-fixed-${content.backgroundFixed}`}
                         onLoad={() => console.log(`Background loaded for ${content.type} scene: ${content.background}`)}
@@ -389,7 +450,7 @@ const StoryModeScroll: React.FC = () => {
                                 style={{
                                   backgroundImage: `url('/stories/gingerbread.bundle/images/backgrounds/${storyContent[i].background}'), url('/assets.core/images/backgrounds/${storyContent[i].background}')`,
                                   transform: 'translateY(0)', // Keep it fixed
-                                  transition: 'none'
+                                  transition: 'transform 0.6s ease-out'
                                 }}
                                 data-debug={`bg-${index}-inherited-${storyContent[i].background}`}
                               ></div>
@@ -399,8 +460,6 @@ const StoryModeScroll: React.FC = () => {
                         return null;
                       })()
                     )}
-                    {console.log(`Background for index ${index}: ${content.background}, fixed: ${content.backgroundFixed}, isFirstInFlow: ${content.isFirstInFlow}`)}
-                    {content.background && console.log(`Rendering background ${content.background} for ${content.type} scene at index ${index}`)}
                     <TitleScene 
                       text={content.lvl1 && content.lvl2 ? 
                         { lvl1: content.lvl1, lvl2: content.lvl2, ...(content.lvl3 && { lvl3: content.lvl3 }) } :
@@ -427,7 +486,7 @@ const StoryModeScroll: React.FC = () => {
                           transform: content.backgroundFixed && currentItem > index ? 
                             'translateY(0)' : 
                             `translateY(${(index - currentItem) * 100}vh)`,
-                          transition: content.backgroundFixed && currentItem > index ? 'none' : 'transform 0.6s ease-out'
+                          transition: 'transform 0.6s ease-out'
                         }}
                         data-debug={`bg-${index}-${content.background}-fixed-${content.backgroundFixed}`}
                         onLoad={() => console.log(`Background loaded for ${content.type} scene: ${content.background}`)}
@@ -446,7 +505,7 @@ const StoryModeScroll: React.FC = () => {
                                 style={{
                                   backgroundImage: `url('/stories/gingerbread.bundle/images/backgrounds/${storyContent[i].background}'), url('/assets.core/images/backgrounds/${storyContent[i].background}')`,
                                   transform: 'translateY(0)', // Keep it fixed
-                                  transition: 'none'
+                                  transition: 'transform 0.6s ease-out'
                                 }}
                                 data-debug={`bg-${index}-inherited-${storyContent[i].background}`}
                               ></div>
@@ -456,11 +515,38 @@ const StoryModeScroll: React.FC = () => {
                         return null;
                       })()
                     )}
-                    {console.log(`Background for index ${index}: ${content.background}, fixed: ${content.backgroundFixed}, isFirstInFlow: ${content.isFirstInFlow}`)}
-                    {content.background && console.log(`Rendering background ${content.background} for ${content.type} scene at index ${index}`)}
                     <div className="story-full-content">
                       <h2>{content.title}</h2>
                       <p>{content.text}</p>
+                    </div>
+                  </>
+                )}
+                
+                {content.type === 'image' && (
+                  <>
+                    {/* Always use comicBackground for image scenes */}
+                    <div 
+                      className="story-background-image"
+                      style={{
+                        backgroundImage: `url('/VisualAssets/comicBackground.png')`,
+                        transform: `translateY(${(index - currentItem) * 100}vh)`,
+                        transition: 'transform 0.6s ease-out'
+                      }}
+                      data-debug={`bg-${index}-comicBackground`}
+                      onLoad={() => console.log(`Comic background loaded for image scene`)}
+                      onError={() => console.log(`Comic background failed to load for image scene`)}
+                    ></div>
+                    <div className="story-comic-image">
+                      <img 
+                        src={`/stories/gingerbread.bundle/images/story/${content.image}`}
+                        alt="Story Image"
+                        onError={(e) => {
+                          const target = e.target as HTMLImageElement;
+                          if (target.src.includes('gingerbread.bundle')) {
+                            target.src = `/assets.core/images/story/${content.image}`;
+                          }
+                        }}
+                      />
                     </div>
                   </>
                 )}
@@ -475,7 +561,7 @@ const StoryModeScroll: React.FC = () => {
                           transform: content.backgroundFixed && currentItem > index ? 
                             'translateY(0)' : 
                             `translateY(${(index - currentItem) * 100}vh)`,
-                          transition: content.backgroundFixed && currentItem > index ? 'none' : 'transform 0.6s ease-out'
+                          transition: 'transform 0.6s ease-out'
                         }}
                         data-debug={`bg-${index}-${content.background}-fixed-${content.backgroundFixed}`}
                         onLoad={() => console.log(`Background loaded for ${content.type} scene: ${content.background}`)}
@@ -494,7 +580,7 @@ const StoryModeScroll: React.FC = () => {
                                 style={{
                                   backgroundImage: `url('/stories/gingerbread.bundle/images/backgrounds/${storyContent[i].background}'), url('/assets.core/images/backgrounds/${storyContent[i].background}')`,
                                   transform: 'translateY(0)', // Keep it fixed
-                                  transition: 'none'
+                                  transition: 'transform 0.6s ease-out'
                                 }}
                                 data-debug={`bg-${index}-inherited-${storyContent[i].background}`}
                               ></div>
@@ -504,8 +590,6 @@ const StoryModeScroll: React.FC = () => {
                         return null;
                       })()
                     )}
-                    {console.log(`Background for index ${index}: ${content.background}, fixed: ${content.backgroundFixed}, isFirstInFlow: ${content.isFirstInFlow}`)}
-                    {content.background && console.log(`Rendering background ${content.background} for ${content.type} scene at index ${index}`)}
                     <div className={`story-speech-bubble${content.side === 'right' ? '-right' : '-left'} ${currentItem === index ? 'story-bubble-snap-in' : 'story-bubble-hidden'}`}>
                       <div className={`story-speech-tail${content.side === 'right' ? '-right' : '-left'}`}></div>
                       <p>{content.speech}</p>
@@ -514,8 +598,9 @@ const StoryModeScroll: React.FC = () => {
                 )}
                 
               </div>
-              );
-            })}
+                );
+              })
+            )}
           </div>
         </div>
       </div>

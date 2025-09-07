@@ -9,9 +9,15 @@
       "background": "river.png"
     },
         {
-      "type": "full",
-      "text": "Someone has been stealing cookies from the village bakery. The baker needs help!"
+      "type":"image",
+      "image":"dragonFeet.png"
     },
+        {
+      "type": "full",
+      "text": "Someone has been stealing cookies from the village bakery. The baker needs help!",
+      "background": "bakery.png"
+    },
+
     {
       "type": "character-flow",
       "background":"park.png",
