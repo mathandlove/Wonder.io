@@ -20,6 +20,7 @@ const StoryModeScroll: React.FC = () => {
   const [previousItem, setPreviousItem] = useState(0); // Track previous panel for direction
   const [version] = useState(`v${Date.now()}`); // Version for cache busting
   const [storyContent, setStoryContent] = useState<any[]>([]);
+  const [scrollOffset, setScrollOffset] = useState(0); // New state to drive all transforms
   const containerRef = useRef<HTMLDivElement>(null);
   const itemRefs = useRef<(HTMLDivElement | null)[]>([]);
   const leftPanelRef = useRef<HTMLDivElement>(null);
@@ -210,7 +211,11 @@ const StoryModeScroll: React.FC = () => {
       const scrollTop = container.scrollTop;
       const newCurrentItem = Math.round(scrollTop / containerHeight);
       
-      console.log(`Scroll detection: scrollTop=${scrollTop}, containerHeight=${containerHeight}, newCurrentItem=${newCurrentItem}, currentItem=${currentItem}`);
+      // Calculate continuous offset for smooth transforms
+      const newOffset = scrollTop / containerHeight;
+      setScrollOffset(newOffset);
+      
+      console.log(`Scroll detection: scrollTop=${scrollTop}, offset=${newOffset}, newCurrentItem=${newCurrentItem}`);
       
       if (newCurrentItem !== currentItem && newCurrentItem >= 0 && newCurrentItem < storyContent.length) {
         setCurrentItem(newCurrentItem);
@@ -398,210 +403,189 @@ const StoryModeScroll: React.FC = () => {
         </div>
         )}
 
-        {/* Scrolling content - adapts width based on character panels */}
-        <div className={`story-container ${
+        {/* Layer 1: Invisible scroll targets for CSS scroll-snap */}
+        <div className={`story-scroll-targets ${
           (!leftCharacterFullyExited && !rightCharacterFullyExited) ? 'story-container-both-visible' :
           (!leftCharacterFullyExited) ? `story-container-${leftCharacterPanelState}` :
           (!rightCharacterFullyExited) ? 'story-container-right-visible' :
           'story-container-hidden'
         }`} ref={containerRef}>
-          <div className="story-items">
-            {storyContent.length === 0 ? (
-              <div style={{color: 'white', fontSize: '24px', textAlign: 'center', padding: '50px'}}>
-                Loading story content...
-              </div>
+          {storyContent.map((_, index) => (
+            <div key={`scroll-target-${index}`} className="story-scroll-target" />
+          ))}
+        </div>
+
+        {/* Layer 2: Transform-controlled backgrounds */}
+        <div className="story-background-layer">
+          {(() => {
+            // Build a list of background changes
+            const backgroundRanges: Array<{startIndex: number, endIndex: number, background: string, isImage?: boolean}> = [];
+            let currentBg: string | null = null;
+            let rangeStart = 0;
+            
+            storyContent.forEach((content, index) => {
+              // Check if this scene introduces a new background
+              let newBg: string | null = null;
+              
+              if (content.type === 'image') {
+                newBg = 'comicBackground';
+              } else if ((content.type === 'title' || content.type === 'title2' || content.type === 'full' || content.type === 'character') && 
+                         content.background && 
+                         (!content.flowSequence || content.isFirstInFlow)) {
+                newBg = content.background;
+              }
+              
+              // If background changes, save the previous range and start a new one
+              if (newBg && newBg !== currentBg) {
+                if (currentBg) {
+                  backgroundRanges.push({
+                    startIndex: rangeStart,
+                    endIndex: index - 1,
+                    background: currentBg,
+                    isImage: currentBg === 'comicBackground'
+                  });
+                }
+                currentBg = newBg;
+                rangeStart = index;
+              }
+            });
+            
+            // Add the final range
+            if (currentBg) {
+              backgroundRanges.push({
+                startIndex: rangeStart,
+                endIndex: storyContent.length - 1,
+                background: currentBg,
+                isImage: currentBg === 'comicBackground'
+              });
+            }
+            
+            // Render backgrounds based on ranges
+            return backgroundRanges.map((range, rangeIndex) => {
+              // Calculate the background position based on scroll
+              // When we're within the range, background stays at 0
+              // When we scroll past, background scrolls up
+              // When we haven't reached it yet, background waits below
+              
+              let transform = 'translateY(0)';
+              
+              if (scrollOffset < range.startIndex) {
+                // Background is waiting below (not reached yet)
+                transform = `translateY(${(range.startIndex - scrollOffset) * 100}vh)`;
+              } else if (scrollOffset > range.endIndex + 1) {
+                // Background has scrolled up and away
+                transform = `translateY(${(range.endIndex + 1 - scrollOffset) * 100}vh)`;
+              } else {
+                // Background is visible and fixed in place
+                transform = 'translateY(0)';
+              }
+              
+              return (
+                <div 
+                  key={`bg-range-${rangeIndex}`}
+                  className="story-background-image"
+                  style={{
+                    backgroundImage: range.isImage ? 
+                      `url('/VisualAssets/comicBackground.png')` :
+                      `url('/stories/gingerbread.bundle/images/backgrounds/${range.background}'), url('/assets.core/images/backgrounds/${range.background}')`,
+                    transform,
+                    transition: 'transform 0.6s ease-out',
+                    width: '100%',
+                    height: '100vh',
+                    position: 'absolute',
+                    top: 0,
+                    left: 0
+                  }}
+                  data-debug={`bg-range-${range.startIndex}-${range.endIndex}-${range.background}`}
+                ></div>
+              );
+            });
+          })()}
+        </div>
+
+        {/* Layer 3: Transform-controlled content */}
+        <div className={`story-content-layer ${
+          (!leftCharacterFullyExited && !rightCharacterFullyExited) ? 'story-container-both-visible' :
+          (!leftCharacterFullyExited) ? `story-container-${leftCharacterPanelState}` :
+          (!rightCharacterFullyExited) ? 'story-container-right-visible' :
+          'story-container-hidden'
+        }`}>
+          {storyContent.length === 0 ? (
+            <div style={{color: 'white', fontSize: '24px', textAlign: 'center', padding: '50px'}}>
+              Loading story content...
+            </div>
             ) : (
               storyContent.map((content, index) => {
-                console.log(`Rendering item ${index}:`, content);
+                // Calculate transform offset for this content item
+                const contentTransform = `translateY(${(index - scrollOffset) * 100}vh)`;
+                console.log(`Rendering item ${index} with transform: ${contentTransform}`);
+                
                 return (
                 <div
                   key={index}
                   ref={el => itemRefs.current[index] = el}
                   className={`story-item ${currentItem === index ? 'active' : ''}`}
-                  style={{width: '100%', height: '100vh'}}
+                  style={{
+                    width: '100%', 
+                    height: '100vh',
+                    position: 'absolute',
+                    top: 0,
+                    left: 0,
+                    transform: contentTransform,
+                    transition: 'none', // Pure transform-driven
+                    pointerEvents: 'auto' // Allow interactions with content
+                  }}
                 >
                 {/* Show content based on type and animation state */}
                 {(content.type === 'title' || content.type === 'title2') && (
-                  <>
-                    {content.background && (!content.flowSequence || content.isFirstInFlow) && (
-                      <div 
-                        className="story-background-image"
-                        style={{
-                          backgroundImage: `url('/stories/gingerbread.bundle/images/backgrounds/${content.background}'), url('/assets.core/images/backgrounds/${content.background}')`,
-                          transform: content.backgroundFixed && currentItem > index ? 
-                            'translateY(0)' : 
-                            `translateY(${(index - currentItem) * 100}vh)`,
-                          transition: 'transform 0.6s ease-out'
-                        }}
-                        data-debug={`bg-${index}-${content.background}-fixed-${content.backgroundFixed}`}
-                        onLoad={() => console.log(`Background loaded for ${content.type} scene: ${content.background}`)}
-                        onError={() => console.log(`Background failed to load for ${content.type} scene: ${content.background}`)}
-                      ></div>
-                    )}
-                    {/* Keep previous background visible if no background specified */}
-                    {!content.background && index > 0 && (
-                      (() => {
-                        // Find the most recent scene with a background
-                        for (let i = index - 1; i >= 0; i--) {
-                          if (storyContent[i] && storyContent[i].background) {
-                            return (
-                              <div 
-                                className="story-background-image"
-                                style={{
-                                  backgroundImage: `url('/stories/gingerbread.bundle/images/backgrounds/${storyContent[i].background}'), url('/assets.core/images/backgrounds/${storyContent[i].background}')`,
-                                  transform: 'translateY(0)', // Keep it fixed
-                                  transition: 'transform 0.6s ease-out'
-                                }}
-                                data-debug={`bg-${index}-inherited-${storyContent[i].background}`}
-                              ></div>
-                            );
-                          }
-                        }
-                        return null;
-                      })()
-                    )}
-                    <TitleScene 
-                      text={content.lvl1 && content.lvl2 ? 
-                        { lvl1: content.lvl1, lvl2: content.lvl2, ...(content.lvl3 && { lvl3: content.lvl3 }) } :
-                        { lvl1: content.title || '', lvl2: content.subtitle || '' }
+                  <TitleScene 
+                    text={content.lvl1 && content.lvl2 ? 
+                      { lvl1: content.lvl1, lvl2: content.lvl2, ...(content.lvl3 && { lvl3: content.lvl3 }) } :
+                      { lvl1: content.title || '', lvl2: content.subtitle || '' }
+                    }
+                    author={content.author}
+                    onComplete={() => {
+                      // Auto-advance to next panel when title animation completes
+                      if (index < storyContent.length - 1) {
+                        goToItem(index + 1);
                       }
-                      author={content.author}
-                      onComplete={() => {
-                        // Auto-advance to next panel when title animation completes
-                        if (index < storyContent.length - 1) {
-                          goToItem(index + 1);
-                        }
-                      }}
-                    />
-                  </>
+                    }}
+                  />
                 )}
                 
                 {content.type === 'full' && (
-                  <>
-                    {content.background && (!content.flowSequence || content.isFirstInFlow) && (
-                      <div 
-                        className="story-background-image"
-                        style={{
-                          backgroundImage: `url('/stories/gingerbread.bundle/images/backgrounds/${content.background}'), url('/assets.core/images/backgrounds/${content.background}')`,
-                          transform: content.backgroundFixed && currentItem > index ? 
-                            'translateY(0)' : 
-                            `translateY(${(index - currentItem) * 100}vh)`,
-                          transition: 'transform 0.6s ease-out'
-                        }}
-                        data-debug={`bg-${index}-${content.background}-fixed-${content.backgroundFixed}`}
-                        onLoad={() => console.log(`Background loaded for ${content.type} scene: ${content.background}`)}
-                        onError={() => console.log(`Background failed to load for ${content.type} scene: ${content.background}`)}
-                      ></div>
-                    )}
-                    {/* Keep previous background visible if no background specified */}
-                    {!content.background && index > 0 && (
-                      (() => {
-                        // Find the most recent scene with a background
-                        for (let i = index - 1; i >= 0; i--) {
-                          if (storyContent[i] && storyContent[i].background) {
-                            return (
-                              <div 
-                                className="story-background-image"
-                                style={{
-                                  backgroundImage: `url('/stories/gingerbread.bundle/images/backgrounds/${storyContent[i].background}'), url('/assets.core/images/backgrounds/${storyContent[i].background}')`,
-                                  transform: 'translateY(0)', // Keep it fixed
-                                  transition: 'transform 0.6s ease-out'
-                                }}
-                                data-debug={`bg-${index}-inherited-${storyContent[i].background}`}
-                              ></div>
-                            );
-                          }
-                        }
-                        return null;
-                      })()
-                    )}
-                    <div className="story-full-content">
-                      <h2>{content.title}</h2>
-                      <p>{content.text}</p>
-                    </div>
-                  </>
+                  <div className="story-full-content">
+                    <h2>{content.title}</h2>
+                    <p>{content.text}</p>
+                  </div>
                 )}
                 
                 {content.type === 'image' && (
-                  <>
-                    {/* Always use comicBackground for image scenes */}
-                    <div 
-                      className="story-background-image"
-                      style={{
-                        backgroundImage: `url('/VisualAssets/comicBackground.png')`,
-                        transform: `translateY(${(index - currentItem) * 100}vh)`,
-                        transition: 'transform 0.6s ease-out'
+                  <div className="story-comic-image">
+                    <img 
+                      src={`/stories/gingerbread.bundle/images/story/${content.image}`}
+                      alt="Story Image"
+                      onError={(e) => {
+                        const target = e.target as HTMLImageElement;
+                        if (target.src.includes('gingerbread.bundle')) {
+                          target.src = `/assets.core/images/story/${content.image}`;
+                        }
                       }}
-                      data-debug={`bg-${index}-comicBackground`}
-                      onLoad={() => console.log(`Comic background loaded for image scene`)}
-                      onError={() => console.log(`Comic background failed to load for image scene`)}
-                    ></div>
-                    <div className="story-comic-image">
-                      <img 
-                        src={`/stories/gingerbread.bundle/images/story/${content.image}`}
-                        alt="Story Image"
-                        onError={(e) => {
-                          const target = e.target as HTMLImageElement;
-                          if (target.src.includes('gingerbread.bundle')) {
-                            target.src = `/assets.core/images/story/${content.image}`;
-                          }
-                        }}
-                      />
-                    </div>
-                  </>
+                    />
+                  </div>
                 )}
                 
                 {content.type === 'character' && (
-                  <>
-                    {content.background && (!content.flowSequence || content.isFirstInFlow) && (
-                      <div 
-                        className="story-background-image"
-                        style={{
-                          backgroundImage: `url('/stories/gingerbread.bundle/images/backgrounds/${content.background}'), url('/assets.core/images/backgrounds/${content.background}')`,
-                          transform: content.backgroundFixed && currentItem > index ? 
-                            'translateY(0)' : 
-                            `translateY(${(index - currentItem) * 100}vh)`,
-                          transition: 'transform 0.6s ease-out'
-                        }}
-                        data-debug={`bg-${index}-${content.background}-fixed-${content.backgroundFixed}`}
-                        onLoad={() => console.log(`Background loaded for ${content.type} scene: ${content.background}`)}
-                        onError={() => console.log(`Background failed to load for ${content.type} scene: ${content.background}`)}
-                      ></div>
-                    )}
-                    {/* Keep previous background visible if no background specified */}
-                    {!content.background && index > 0 && (
-                      (() => {
-                        // Find the most recent scene with a background
-                        for (let i = index - 1; i >= 0; i--) {
-                          if (storyContent[i] && storyContent[i].background) {
-                            return (
-                              <div 
-                                className="story-background-image"
-                                style={{
-                                  backgroundImage: `url('/stories/gingerbread.bundle/images/backgrounds/${storyContent[i].background}'), url('/assets.core/images/backgrounds/${storyContent[i].background}')`,
-                                  transform: 'translateY(0)', // Keep it fixed
-                                  transition: 'transform 0.6s ease-out'
-                                }}
-                                data-debug={`bg-${index}-inherited-${storyContent[i].background}`}
-                              ></div>
-                            );
-                          }
-                        }
-                        return null;
-                      })()
-                    )}
-                    <div className={`story-speech-bubble${content.side === 'right' ? '-right' : '-left'} ${currentItem === index ? 'story-bubble-snap-in' : 'story-bubble-hidden'}`}>
-                      <div className={`story-speech-tail${content.side === 'right' ? '-right' : '-left'}`}></div>
-                      <p>{content.speech}</p>
-                    </div>
-                  </>
+                  <div className={`story-speech-bubble${content.side === 'right' ? '-right' : '-left'} ${currentItem === index ? 'story-bubble-snap-in' : 'story-bubble-hidden'}`}>
+                    <div className={`story-speech-tail${content.side === 'right' ? '-right' : '-left'}`}></div>
+                    <p>{content.speech}</p>
+                  </div>
                 )}
                 
               </div>
                 );
               })
             )}
-          </div>
         </div>
       </div>
     </div>

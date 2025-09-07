@@ -217,8 +217,8 @@
   }
 }
 
-/* Scrolling Container */
-.story-container {
+/* Layer 1: Invisible scroll targets */
+.story-scroll-targets {
   height: 100vh;
   position: absolute;
   top: 0;
@@ -228,11 +228,44 @@
   overflow-x: hidden;
   background: transparent;
   transition: left 0.8s cubic-bezier(0.4, 0, 0.2, 1), width 0.8s cubic-bezier(0.4, 0, 0.2, 1);
-  z-index: 3; /* Above character panel and backgrounds */
+  z-index: 100; /* Highest z-index to capture scroll events */
   
   /* CSS Scroll Snap */
   scroll-snap-type: y mandatory;
   scroll-behavior: smooth;
+}
+
+.story-scroll-target {
+  height: 100vh;
+  width: 100%;
+  scroll-snap-align: start;
+  scroll-snap-stop: always;
+  /* Completely invisible */
+  background: transparent;
+  pointer-events: none; /* Don't block interactions with lower layers */
+}
+
+/* Layer 2: Transform-controlled backgrounds */
+.story-background-layer {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  z-index: 1; /* Behind content but above base */
+  pointer-events: none;
+}
+
+/* Layer 3: Transform-controlled content */
+.story-content-layer {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100vh;
+  z-index: 50; /* Above backgrounds but below scroll targets */
+  pointer-events: none; /* Content will have pointer-events: auto where needed */
+  transition: left 0.8s cubic-bezier(0.4, 0, 0.2, 1), width 0.8s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 /* Slow down the scroll snap animation */
@@ -258,34 +291,44 @@ html {
   scrollbar-width: none;  /* Firefox */
 }
 
-/* Container states based on character panel */
-.story-container-hidden {
+/* Container states based on character panel - applies to both scroll targets and content layer */
+.story-container-hidden, 
+.story-content-layer.story-container-hidden,
+.story-scroll-targets.story-container-hidden {
   left: 0;
   width: 100%;
   right: 0;
 }
 
-.story-container-visible {
+.story-container-visible,
+.story-content-layer.story-container-visible,
+.story-scroll-targets.story-container-visible {
   left: 280px;
   width: calc(100% - 280px);
   right: 0;
 }
 
-.story-container-exiting {
+.story-container-exiting,
+.story-content-layer.story-container-exiting,
+.story-scroll-targets.story-container-exiting {
   left: 0;
   width: 100%;
   right: 0;
 }
 
 /* Container states for right panel */
-.story-container-right-visible {
+.story-container-right-visible,
+.story-content-layer.story-container-right-visible,
+.story-scroll-targets.story-container-right-visible {
   left: 0;
   width: calc(100% - 280px);
   right: 280px;
 }
 
 /* Container states for both panels */
-.story-container-both-visible {
+.story-container-both-visible,
+.story-content-layer.story-container-both-visible,
+.story-scroll-targets.story-container-both-visible {
   left: 280px;
   width: calc(100% - 560px);
   right: 280px;
