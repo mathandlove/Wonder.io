@@ -1,3 +1,5 @@
+@import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700&display=swap');
+
 .story-main-container {
   height: 100vh;
   width: 100vw;
@@ -283,6 +285,17 @@
   pointer-events: none;
 }
 
+/* Layer 2.5: Image layer - stays fixed like backgrounds */
+.story-image-layer {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  z-index: 20; /* Above backgrounds, below content */
+  pointer-events: none;
+}
+
 /* Layer 3: Transform-controlled content */
 .story-content-layer {
   position: fixed;
@@ -290,9 +303,21 @@
   left: 0;
   width: 100%;
   height: 100vh;
-  z-index: 50; /* Above backgrounds but below scroll targets */
+  z-index: 30; /* Above backgrounds */
   pointer-events: none; /* Content will have pointer-events: auto where needed */
   transition: left 0.8s cubic-bezier(0.4, 0, 0.2, 1), width 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Layer 4: Construction paper overlay layer */
+.story-overlay-layer {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  z-index: 60; /* Above content/images but below scroll targets */
+  pointer-events: none;
+  overflow: hidden;
 }
 
 /* Slow down the scroll snap animation */
@@ -695,9 +720,10 @@ html {
   height: 100vh;
   position: relative;
   z-index: 5; /* Above background */
+  overflow: hidden; /* Hide overflow for triangle */
 }
 
-.story-comic-image img {
+.story-comic-main-image {
   width: 100%;
   height: 100vh;
   object-fit: contain;
@@ -705,6 +731,227 @@ html {
   box-shadow: none;
   background: none;
   padding: 0;
+  position: relative;
+  z-index: 1;
+}
+
+/* Image-text scene container */
+.story-image-text-scene {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 100vh;
+  position: relative;
+  z-index: 5;
+  overflow: hidden;
+}
+
+.story-comic-fixed-image {
+  width: 100%;
+  height: 100vh;
+  object-fit: contain;
+  position: absolute;
+  top: 0;
+  left: 0;
+  z-index: 1;
+}
+
+/* Construction paper triangle in overlay layer */
+.story-construction-triangle {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  width: 100%;
+  height: 40vh; /* Triangle height - 40% at peak */
+  overflow: visible;
+}
+
+.story-construction-triangle::before {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  height: 40vh; /* 40% height at peak */
+  /* Comic background texture */
+  background-image: url('/VisualAssets/comicBackground.png');
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  /* Create triangle with clip-path - 20% height on left, 40% height peak on right */
+  clip-path: polygon(0 100%, 0 50%, 100% 0, 100% 100%);
+  /* Add paper texture shadow */
+  filter: drop-shadow(0 -3px 6px rgba(0, 0, 0, 0.15));
+}
+
+.story-triangle-text-box {
+  background: white;
+  padding: 24px 36px;
+  border-radius: 15px;
+  /* Position relative to viewport, not triangle container */
+  position: absolute;
+  bottom: 50px; /* 50px from viewport bottom */
+  left: 50px; /* 50px from viewport left */
+  right: 50px; /* 50px from viewport right */
+  width: calc(100vw - 100px); /* Full viewport width minus 50px on each side */
+  text-align: center;
+  font-size: 1.4rem;
+  font-weight: 500;
+  color: #333;
+  line-height: 1.6;
+  z-index: 10;
+  font-family: 'Nunito', sans-serif;
+  box-sizing: border-box;
+}
+
+
+/* Quest Container - Central display */
+.story-quest-container {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%) scale(0);
+  background-image: url('/VisualAssets/guildedgoal.png');
+  background-size: 400px auto; /* 400px wide, auto height to maintain aspect ratio */
+  background-position: center;
+  background-repeat: no-repeat;
+  padding: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 300; /* Higher than other elements */
+  animation: questAppear 0.6s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+  width: 400px; /* Container is 400px wide */
+  height: 200px; /* Fixed height for the container */
+  box-sizing: border-box;
+  transform-origin: center center;
+}
+
+.story-quest-container.quest-appear {
+  animation: questAppear 0.6s cubic-bezier(0.34, 1.56, 0.64, 1) forwards, questPulse 2s ease-in-out infinite;
+}
+
+@keyframes questAppear {
+  0% {
+    transform: translate(-50%, -50%) scale(0) rotate(-180deg);
+    opacity: 0;
+  }
+  50% {
+    transform: translate(-50%, -50%) scale(1.1) rotate(10deg);
+    opacity: 1;
+  }
+  100% {
+    transform: translate(-50%, -50%) scale(1) rotate(0deg);
+    opacity: 1;
+  }
+}
+
+@keyframes questPulse {
+  0%, 100% {
+    filter: drop-shadow(0 10px 40px rgba(255, 215, 0, 0.4)) drop-shadow(0 0 60px rgba(255, 215, 0, 0.3));
+  }
+  50% {
+    filter: drop-shadow(0 15px 50px rgba(255, 215, 0, 0.6)) drop-shadow(0 0 80px rgba(255, 215, 0, 0.5));
+  }
+}
+
+
+.story-quest-text {
+  text-align: center;
+  position: absolute; /* Position absolutely within container */
+  color: white;
+  width: 240px; /* 400px - 160px (80px × 2) */
+  height: 120px; /* Constrain height to stay within image */
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  padding: 20px 10px 25px 10px; /* 20px top, 25px bottom, small horizontal padding */
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  box-sizing: border-box;
+  overflow: hidden; /* Prevent content from extending outside */
+}
+
+.quest-label {
+  font-size: 18px;
+  font-weight: 800;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  margin-bottom: 8px; /* Space for divider */
+  color: #fdf8e4; /* Parchment off-white */
+  text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.7);
+  position: relative;
+  padding-bottom: 12px; /* Space for underline */
+}
+
+/* Dark brown divider line under QUEST */
+.quest-label::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 60px;
+  height: 2px;
+  background: linear-gradient(90deg, transparent, #4A2C17, transparent);
+  border-radius: 1px;
+}
+
+.quest-description {
+  font-size: 18px;
+  font-weight: 600;
+  line-height: 1.5; /* Increased line height for better readability */
+  font-family: 'Cinzel', 'Georgia', serif; /* Medieval-style serif font */
+  color: #fdf8e4; /* Parchment off-white */
+  text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.7);
+  word-wrap: break-word;
+  overflow-wrap: break-word;
+  max-width: 100%;
+  margin-top: 8px; /* Space after divider */
+}
+
+/* Quest Top Bar - After moving to top */
+.story-quest-top-bar {
+  position: fixed;
+  top: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  background-image: url('/VisualAssets/guildedgoal.png');
+  background-size: contain;
+  background-position: center;
+  background-repeat: no-repeat;
+  padding: 15px 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  z-index: 200;
+  filter: drop-shadow(0 4px 20px rgba(255, 215, 0, 0.4));
+  animation: slideDown 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+@keyframes slideDown {
+  from {
+    transform: translateX(-50%) translateY(-100px);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(-50%) translateY(0);
+    opacity: 1;
+  }
+}
+
+
+.quest-top-text {
+  color: white;
+  font-size: 14px;
+  font-weight: 600;
+  font-family: 'Nunito', sans-serif;
+  text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
 }
 
 /* Scene-specific styling - removed to use cardboard background for all */

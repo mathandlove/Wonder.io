@@ -23,6 +23,8 @@ const StoryModeScroll: React.FC = () => {
   const [version] = useState(`v${Date.now()}`); // Version for cache busting
   const [storyContent, setStoryContent] = useState<any[]>([]);
   const [scrollOffset, setScrollOffset] = useState(0); // New state to drive all transforms
+  const [imageSceneScrollProgress, setImageSceneScrollProgress] = useState<{[key: number]: number}>({}); // Track scroll progress for each image scene
+  const [activeQuest, setActiveQuest] = useState<{text: string, type: string, movedToTop: boolean} | null>(null); // Track active quest
   const containerRef = useRef<HTMLDivElement>(null);
   const itemRefs = useRef<(HTMLDivElement | null)[]>([]);
   const leftPanelRef = useRef<HTMLDivElement>(null);
@@ -37,14 +39,17 @@ const StoryModeScroll: React.FC = () => {
     const previousContent = storyContent[previousItem];
     
     // Determine if current item needs character panels based on scene type
+    // Include quest scenes to keep character panels visible
     const needsLeftCharacterPanel = currentContent && (
       currentContent.type === 'character' || 
-      currentContent.type === 'character-flow'
+      currentContent.type === 'character-flow' ||
+      currentContent.type === 'quest'
     ) && currentContent.leftCharacter;
     
     const needsRightCharacterPanel = currentContent && (
       currentContent.type === 'character' || 
-      currentContent.type === 'character-flow'
+      currentContent.type === 'character-flow' ||
+      currentContent.type === 'quest'
     ) && currentContent.rightCharacter;
     
     // Handle left character panel
@@ -81,7 +86,8 @@ const StoryModeScroll: React.FC = () => {
       
       const wasNonCharacterScene = !previousContent || (
         previousContent.type !== 'character' && 
-        previousContent.type !== 'character-flow'
+        previousContent.type !== 'character-flow' &&
+        previousContent.type !== 'quest'
       );
       
       if (isScrollingUp && wasNonCharacterScene) {
@@ -145,7 +151,8 @@ const StoryModeScroll: React.FC = () => {
       
       const wasNonCharacterScene = !previousContent || (
         previousContent.type !== 'character' && 
-        previousContent.type !== 'character-flow'
+        previousContent.type !== 'character-flow' &&
+        previousContent.type !== 'quest'
       );
       
       if (isScrollingUp && wasNonCharacterScene) {
@@ -215,6 +222,25 @@ const StoryModeScroll: React.FC = () => {
       goToItem(currentItem - 1);
     }
   }, [currentItem, goToItem]);
+
+  // Handle quest state when current item changes
+  useEffect(() => {
+    const currentContent = storyContent[currentItem];
+    if (currentContent && currentContent.type === 'quest') {
+      // Set active quest when we reach a quest scene
+      setActiveQuest({
+        text: currentContent.text,
+        type: currentContent.questType,
+        movedToTop: false
+      });
+    } else if (activeQuest && !activeQuest.movedToTop && currentItem > previousItem) {
+      // Move quest to top after advancing past quest scene
+      const prevContent = storyContent[currentItem - 1];
+      if (prevContent && prevContent.type === 'quest') {
+        setActiveQuest(prev => prev ? {...prev, movedToTop: true} : null);
+      }
+    }
+  }, [currentItem, storyContent, previousItem]);
 
   // Detect current item from scroll position
   useEffect(() => {
@@ -297,21 +323,59 @@ const StoryModeScroll: React.FC = () => {
             // Flatten character-flow into individual scenes
             scene.flow.forEach((flowItem: any, flowIndex: number) => {
               const isLastInFlow = flowIndex === scene.flow.length - 1;
-              const newItem = {
-                type: 'character',
-                background: scene.background, // All flow items get the same background
-                backgroundFixed: !isLastInFlow, // Only fix background for non-last items
-                flowSequence: true, // Mark as part of flow sequence
-                isFirstInFlow: flowIndex === 0, // Mark first item in flow
-                isLastInFlow: isLastInFlow, // Mark last item in flow
-                speech: flowItem.text,
-                character: scene['left-character'] || scene.character, // Support both property names
-                leftCharacter: scene['left-character'],
-                rightCharacter: scene['right-character'],
-                side: flowItem.side || 'left'
-              };
-              console.log('Adding flow item:', newItem);
-              flattenedContent.push(newItem);
+              
+              // Check if this is a quest item
+              if (flowItem.quest) {
+                const questItem = {
+                  type: 'quest',
+                  questType: flowItem.quest, // 'key' or other quest types
+                  text: flowItem.text,
+                  background: scene.background,
+                  flowSequence: true,
+                  isFirstInFlow: flowIndex === 0,
+                  isLastInFlow: isLastInFlow,
+                  leftCharacter: scene['left-character'],
+                  rightCharacter: scene['right-character']
+                };
+                console.log('Adding quest item:', questItem);
+                flattenedContent.push(questItem);
+              } else {
+                // Regular character dialog
+                const newItem = {
+                  type: 'character',
+                  background: scene.background, // All flow items get the same background
+                  backgroundFixed: !isLastInFlow, // Only fix background for non-last items
+                  flowSequence: true, // Mark as part of flow sequence
+                  isFirstInFlow: flowIndex === 0, // Mark first item in flow
+                  isLastInFlow: isLastInFlow, // Mark last item in flow
+                  speech: flowItem.text,
+                  character: scene['left-character'] || scene.character, // Support both property names
+                  leftCharacter: scene['left-character'],
+                  rightCharacter: scene['right-character'],
+                  side: flowItem.side || 'left'
+                };
+                console.log('Adding flow item:', newItem);
+                flattenedContent.push(newItem);
+              }
+            });
+          } else if (scene.type === 'image' && scene.text) {
+            // Split image scenes with text into two scenes
+            console.log('Splitting image scene with text into two scenes');
+            
+            // First scene: just the image
+            flattenedContent.push({
+              ...scene,
+              type: 'image',
+              text: undefined, // Remove text from first scene
+              originalText: scene.text // Store for reference
+            });
+            
+            // Second scene: image with triangle overlay
+            flattenedContent.push({
+              type: 'image-text',
+              image: scene.image,
+              text: scene.text,
+              isOverlay: true
             });
           } else {
             // Keep other scene types as-is
@@ -352,6 +416,12 @@ const StoryModeScroll: React.FC = () => {
 
   return (
     <div className="story-main-container">
+      {/* Active quest indicator at top */}
+      {activeQuest && activeQuest.movedToTop && (
+        <div className="story-quest-top-bar">
+          <div className="quest-top-text">{activeQuest.text}</div>
+        </div>
+      )}
 
       {/* Dynamic layout container */}
       <div className="story-dynamic-layout">
@@ -489,6 +559,9 @@ const StoryModeScroll: React.FC = () => {
               
               if (content.type === 'image') {
                 newBg = 'comicBackground';
+              } else if (content.type === 'image-text') {
+                // Don't change background for image-text, it continues from previous image
+                return;
               } else if ((content.type === 'title' || content.type === 'title2' || content.type === 'full' || content.type === 'character') && 
                          content.background && 
                          (!content.flowSequence || content.isFirstInFlow)) {
@@ -563,7 +636,90 @@ const StoryModeScroll: React.FC = () => {
           })()}
         </div>
 
-        {/* Layer 3: Transform-controlled content */}
+        {/* Layer 2.5: Image layer - stays fixed like backgrounds */}
+        <div className="story-image-layer">
+          {(() => {
+            // Build a list of image ranges (similar to background ranges)
+            const imageRanges: Array<{startIndex: number, endIndex: number, image: string}> = [];
+            
+            storyContent.forEach((content, index) => {
+              if (content.type === 'image') {
+                // Check if next scene is image-text with same image
+                const nextContent = storyContent[index + 1];
+                if (nextContent && nextContent.type === 'image-text' && nextContent.image === content.image) {
+                  // Image spans both scenes
+                  imageRanges.push({
+                    startIndex: index,
+                    endIndex: index + 1,
+                    image: content.image
+                  });
+                } else {
+                  // Image only for this scene
+                  imageRanges.push({
+                    startIndex: index,
+                    endIndex: index,
+                    image: content.image
+                  });
+                }
+              }
+            });
+            
+            // Render images based on ranges
+            return imageRanges.map((range, rangeIndex) => {
+              // Calculate image position (same logic as backgrounds)
+              let transform = 'translateY(0)';
+              
+              if (scrollOffset < range.startIndex) {
+                // Image is waiting below (not reached yet)
+                transform = `translateY(${(range.startIndex - scrollOffset) * 100}vh)`;
+              } else if (scrollOffset > range.endIndex) {
+                // Image has scrolled up and away (starts scrolling immediately after endIndex)
+                transform = `translateY(${(range.endIndex - scrollOffset) * 100}vh)`;
+              } else {
+                // Image is visible and fixed in place
+                transform = 'translateY(0)';
+              }
+              
+              return (
+                <div
+                  key={`img-range-${rangeIndex}`}
+                  className="story-fixed-image-container"
+                  style={{
+                    transform,
+                    transition: 'transform 0.6s ease-out',
+                    width: '100%',
+                    height: '100vh',
+                    position: 'absolute',
+                    top: 0,
+                    left: 0,
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center'
+                  }}
+                >
+                  <img
+                    src={`/stories/gingerbread.bundle/images/story/${range.image}`}
+                    alt="Story Image"
+                    className="story-fixed-image"
+                    style={{
+                      width: '100%',
+                      height: '100vh',
+                      objectFit: 'contain'
+                    }}
+                    onError={(e) => {
+                      const target = e.target as HTMLImageElement;
+                      if (target.src.includes('gingerbread.bundle')) {
+                        target.src = `/assets.core/images/story/${range.image}`;
+                      }
+                    }}
+                  />
+                </div>
+              );
+            });
+          })()}
+        </div>
+
+        {/* Layer 3: Transform-controlled content (objects) */}
         <div className={`story-content-layer ${
           (!leftCharacterFullyExited && !rightCharacterFullyExited) ? 'story-container-both-visible' :
           (!leftCharacterFullyExited) ? `story-container-${leftCharacterPanelState}` :
@@ -620,19 +776,9 @@ const StoryModeScroll: React.FC = () => {
                   </div>
                 )}
                 
-                {content.type === 'image' && (
-                  <div className="story-comic-image">
-                    <img 
-                      src={`/stories/gingerbread.bundle/images/story/${content.image}`}
-                      alt="Story Image"
-                      onError={(e) => {
-                        const target = e.target as HTMLImageElement;
-                        if (target.src.includes('gingerbread.bundle')) {
-                          target.src = `/assets.core/images/story/${content.image}`;
-                        }
-                      }}
-                    />
-                  </div>
+                {/* Images are now rendered in the image layer, not here */}
+                {(content.type === 'image' || content.type === 'image-text') && (
+                  <div style={{ width: '100%', height: '100vh' }} />
                 )}
                 
                 {content.type === 'character' && (
@@ -642,10 +788,53 @@ const StoryModeScroll: React.FC = () => {
                   </div>
                 )}
                 
+                {content.type === 'quest' && currentItem === index && (
+                  <div className={`story-quest-container ${content.questType === 'key' ? 'quest-key' : ''} quest-appear`}>
+                    <div className="story-quest-text">
+                      <div className="quest-label">QUEST</div>
+                      <div className="quest-description">{content.text}</div>
+                    </div>
+                  </div>
+                )}
+                
               </div>
                 );
               })
             )}
+        </div>
+
+        {/* Layer 4: Construction paper overlay layer */}
+        <div className="story-overlay-layer">
+          {storyContent.map((content, index) => {
+            // Only render overlay for image-text scenes
+            if (content.type !== 'image-text') return null;
+            
+            // Calculate transform for overlay
+            const overlayTransform = `translateY(${(index - scrollOffset) * 100}vh)`;
+            
+            return (
+              <div
+                key={`overlay-${index}`}
+                className="story-overlay-item"
+                style={{
+                  width: '100%',
+                  height: '100vh',
+                  position: 'absolute',
+                  top: 0,
+                  left: 0,
+                  transform: overlayTransform,
+                  transition: 'transform 0.6s ease-out', // Same as image layer
+                  pointerEvents: 'none'
+                }}
+              >
+                <div className="story-construction-triangle">
+                  <div className="story-triangle-text-box">
+                    {content.text}
+                  </div>
+                </div>
+              </div>
+            );
+          })}
         </div>
       </div>
     </div>

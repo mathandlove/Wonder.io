@@ -2,43 +2,69 @@
   "title": "The Cookie Thief",
   "storyId": "leo-monster-hunter-001",
   "scenes": [
-
-    {
-      "type": "full",
-      "text": "Someone has been stealing cookies from the village bakery. The baker needs help!",
-      "background": "river.png"
+            {
+      "type": "title",
+      "lvl1": "The",
+      "lvl2": "Cookie Thief",
+      "author": "Elliott Hedman",
+      "background": "bakery.png"
+    }
+,
+     {
+      "type": "character-flow",
+      "background":"square.png",
+      "left-character": "leo",
+      "flow": [
+        {
+          "side": "left",
+          "text": "Hi! I'm Leo the Monster Hunter."
+        }
+      ]
     },
         {
       "type":"image",
-      "image":"dragonFeet.png"
+      "image":"dragonFeet.png",
+      "text":"I protect my city by searching for clues."
+    },
+    {
+      "type":"image",
+      "image":"dragonFight.png",
+      "text":"Sometimes I have to fight the monsters."
+    },
+        {
+      "type":"image",
+      "image":"cheers.png",
+      "text":"It is worth it because I am protecting all my friends."
+    },
+    {
+      "type": "full",
+      "text": "Today, I was visiting the Drury Lane Bakery, for my daily Muffin.",
+      "background": "bakery.png"
     },
         {
       "type": "full",
-      "text": "Someone has been stealing cookies from the village bakery. The baker needs help!",
+      "text": "When I heard a loud cry for help from Betsy the baker.",
       "background": "bakery.png"
     },
 
     {
       "type": "character-flow",
-      "background":"park.png",
+      "background":"bakery.png",
       "left-character": "leo",
       "right-character": "bakerMom",
       "flow": [
         {
-          "side": "left",
-          "text": "Hi! I'm Leo the Monster Hunter."
+          "side": "right",
+          "text": "Help!"
         },
         {
           "side": "right",
-          "text": "And I am a baker."
+          "text": "Somebody please help me!"
         },
         {
-          "side": "left",
-          "text": "Hello Ms. Baker"
-        },
-        {
-          "side": "right",
-          "text": "I do not like your hat."
+          "quest": "key",
+          "text": "Why does Betsy need help?"
+
         }
       ]
     },
