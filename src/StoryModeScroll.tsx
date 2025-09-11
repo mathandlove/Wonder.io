@@ -1,6 +1,13 @@
 import React, { useState, useRef, useCallback, useEffect } from 'react';
 import './StoryModeScroll.css';
 import TitleScene from './components/TitleScene';
+import CharacterPanel from './components/CharacterPanel';
+import QuestDialog from './components/QuestDialog';
+import InputPrompt from './components/InputPrompt';
+import SpeechBubble from './components/SpeechBubble';
+import BackgroundLayer from './components/BackgroundLayer';
+import ImageLayer from './components/ImageLayer';
+import FullContent from './components/FullContent';
 
 const StoryModeScroll: React.FC = () => {
   const [currentItem, setCurrentItem] = useState(0); // 0-6 for items (7 total)
@@ -24,11 +31,14 @@ const StoryModeScroll: React.FC = () => {
   const [storyContent, setStoryContent] = useState<any[]>([]);
   const [scrollOffset, setScrollOffset] = useState(0); // New state to drive all transforms
   const [imageSceneScrollProgress, setImageSceneScrollProgress] = useState<{[key: number]: number}>({}); // Track scroll progress for each image scene
-  const [activeQuest, setActiveQuest] = useState<{text: string, type: string, movedToTop: boolean} | null>(null); // Track active quest
+  const [activeQuest, setActiveQuest] = useState<{text: string, type: string, state: 'center' | 'top' | 'center-from-top' | 'exit-bottom'} | null>(null); // Track active quest
+  const [activeInput, setActiveInput] = useState<{prompt: string, userInput: string} | null>(null); // Track active input prompt
+  const [userInput, setUserInput] = useState(''); // Track user's typed input
   const containerRef = useRef<HTMLDivElement>(null);
   const itemRefs = useRef<(HTMLDivElement | null)[]>([]);
   const leftPanelRef = useRef<HTMLDivElement>(null);
   const rightPanelRef = useRef<HTMLDivElement>(null);
+
 
   // Update character panel states based on current item - completely driven by JSON content
   useEffect(() => {
@@ -39,17 +49,19 @@ const StoryModeScroll: React.FC = () => {
     const previousContent = storyContent[previousItem];
     
     // Determine if current item needs character panels based on scene type
-    // Include quest scenes to keep character panels visible
+    // Include quest and input scenes to keep character panels visible
     const needsLeftCharacterPanel = currentContent && (
       currentContent.type === 'character' || 
       currentContent.type === 'character-flow' ||
-      currentContent.type === 'quest'
+      currentContent.type === 'quest' ||
+      currentContent.type === 'input'
     ) && currentContent.leftCharacter;
     
     const needsRightCharacterPanel = currentContent && (
       currentContent.type === 'character' || 
       currentContent.type === 'character-flow' ||
-      currentContent.type === 'quest'
+      currentContent.type === 'quest' ||
+      currentContent.type === 'input'
     ) && currentContent.rightCharacter;
     
     // Handle left character panel
@@ -226,21 +238,66 @@ const StoryModeScroll: React.FC = () => {
   // Handle quest state when current item changes
   useEffect(() => {
     const currentContent = storyContent[currentItem];
-    if (currentContent && currentContent.type === 'quest') {
-      // Set active quest when we reach a quest scene
+    const isScrollingUp = currentItem < previousItem;
+    
+    // Quest lifecycle management
+    if (currentContent && currentContent.type === 'quest' && !activeQuest) {
+      // Initialize quest in center state - CSS animation will handle the appear effect
+      console.log('🎯 QUEST DEBUG: Initializing quest in CENTER state', {currentItem, previousItem, currentContent});
       setActiveQuest({
         text: currentContent.text,
         type: currentContent.questType,
-        movedToTop: false
+        state: 'center'
       });
-    } else if (activeQuest && !activeQuest.movedToTop && currentItem > previousItem) {
-      // Move quest to top after advancing past quest scene
+    } else if (activeQuest && activeQuest.state === 'center' && currentItem > previousItem) {
+      // Move to top when scrolling forward past quest
       const prevContent = storyContent[currentItem - 1];
       if (prevContent && prevContent.type === 'quest') {
-        setActiveQuest(prev => prev ? {...prev, movedToTop: true} : null);
+        console.log('🎯 QUEST DEBUG: Moving quest from CENTER to TOP');
+        setActiveQuest(prev => prev ? {...prev, state: 'top'} : null);
+      }
+    } else if (activeQuest && activeQuest.state === 'top' && isScrollingUp) {
+      // Return to center when scrolling back up
+      const questItemIndex = storyContent.findIndex(item => item.type === 'quest');
+      if (questItemIndex >= 0 && currentItem <= questItemIndex) {
+        console.log('🎯 QUEST DEBUG: Moving quest from TOP back to CENTER (scroll up)');
+        setActiveQuest(prev => prev ? {...prev, state: 'center-from-top'} : null);
+      }
+    } else if (activeQuest && activeQuest.state === 'center-from-top' && currentItem > previousItem) {
+      // Move back to top when scrolling forward again from center-from-top
+      const prevContent = storyContent[currentItem - 1];
+      if (prevContent && prevContent.type === 'quest') {
+        console.log('🎯 QUEST DEBUG: Moving quest from CENTER-FROM-TOP back to TOP');
+        setActiveQuest(prev => prev ? {...prev, state: 'top'} : null);
+      }
+    } else if (activeQuest && (activeQuest.state === 'center-from-top' || activeQuest.state === 'center') && isScrollingUp) {
+      // Exit to bottom when scrolling up past quest scene
+      const questItemIndex = storyContent.findIndex(item => item.type === 'quest');
+      if (questItemIndex >= 0 && currentItem < questItemIndex) {
+        console.log('🎯 QUEST DEBUG: Quest exiting to BOTTOM (scroll up past quest)');
+        setActiveQuest(prev => prev ? {...prev, state: 'exit-bottom'} : null);
+        // Remove quest after exit animation completes
+        setTimeout(() => {
+          console.log('🎯 QUEST DEBUG: Removing quest after exit animation');
+          setActiveQuest(null);
+        }, 600); // Match exit animation duration
       }
     }
-  }, [currentItem, storyContent, previousItem]);
+
+    // Debug current quest state and detect unexpected changes
+    if (activeQuest) {
+      console.log(`🎯 QUEST DEBUG: Current state = ${activeQuest.state}, currentItem = ${currentItem}, previousItem = ${previousItem}`);
+      
+      // Detect if quest state changes unexpectedly
+      if (activeQuest.state === 'appearing' && currentItem > 2) {
+        console.log('🚨 QUEST ERROR: Quest reset to APPEARING state unexpectedly!');
+      }
+      
+      if (activeQuest.state === 'center' && previousItem === currentItem && currentItem > 2) {
+        console.log('🚨 QUEST ERROR: Quest reset to CENTER state unexpectedly!');
+      }
+    }
+  }, [currentItem, storyContent, previousItem, activeQuest]);
 
   // Detect current item from scroll position
   useEffect(() => {
@@ -261,7 +318,6 @@ const StoryModeScroll: React.FC = () => {
       const newOffset = scrollTop / containerHeight;
       setScrollOffset(newOffset);
       
-      console.log(`Scroll detection: scrollTop=${scrollTop}, offset=${newOffset}, newCurrentItem=${newCurrentItem}`);
       
       if (newCurrentItem !== currentItem && newCurrentItem >= 0 && newCurrentItem < storyContent.length) {
         setCurrentItem(newCurrentItem);
@@ -339,6 +395,20 @@ const StoryModeScroll: React.FC = () => {
                 };
                 console.log('Adding quest item:', questItem);
                 flattenedContent.push(questItem);
+              } else if (flowItem.input) {
+                // Handle input prompt
+                const inputItem = {
+                  type: 'input',
+                  prompt: flowItem.input,
+                  background: scene.background,
+                  flowSequence: true,
+                  isFirstInFlow: flowIndex === 0,
+                  isLastInFlow: isLastInFlow,
+                  leftCharacter: scene['left-character'],
+                  rightCharacter: scene['right-character']
+                };
+                console.log('Adding input item:', inputItem);
+                flattenedContent.push(inputItem);
               } else {
                 // Regular character dialog
                 const newItem = {
@@ -412,126 +482,48 @@ const StoryModeScroll: React.FC = () => {
     );
   }
 
-  console.log(`Total story items: ${storyContent.length}, Current item: ${currentItem}`);
 
   return (
     <div className="story-main-container">
-      {/* Active quest indicator at top */}
-      {activeQuest && activeQuest.movedToTop && (
-        <div className="story-quest-top-bar">
-          <div className="quest-top-text">{activeQuest.text}</div>
-        </div>
-      )}
+
+      {/* Central Dialog Area - Always 600px wide */}
+      <div className="story-central-dialog">
+        {/* This creates the fixed 600px central space */}
+      </div>
 
       {/* Dynamic layout container */}
       <div className="story-dynamic-layout">
-        {/* Left Character panel with dynamic character */}
-        {leftCharacterPanelState !== 'hidden' && !leftCharacterFullyExited && (
-        <div ref={leftPanelRef} className={`story-character-panel story-character-left story-character-${leftCharacterPanelState} ${leftCharacterAnimating ? 'animating' : ''}`}>
-          <div className="story-character-content">
-            <div 
-              className="story-character-cardboard"
-              style={{
-                transform: leftCharacterPanelState === 'visible' ? 
-                  (leftCharacterProgress < 100 ? 
-                    `translateY(${100 - leftCharacterProgress}vh) translateX(${-100 + leftCharacterProgress}%) rotate(${-45 + (leftCharacterProgress * 0.45)}deg)` : 
-                    'translateY(0vh) translateX(0%) rotate(0deg)') : 
-                  undefined,
-                transition: leftCharacterProgress >= 100 ? 'none' : 'transform 0.1s ease-out'
-              }}
-            >
-              <div className={`story-character-inner ${
-                (() => {
-                  const currentScene = storyContent[currentItem];
-                  
-                  // Apply entrance bounce only when character just finished animating in (not during speech)
-                  if (!leftCharacterAnimating && leftCharacterProgress >= 100 && !leftBounceComplete) {
-                    return 'story-bounce-arrival';
-                  }
-                  
-                  // Apply shake animation only when this character is speaking and entrance is complete
-                  if (currentScene && currentScene.type === 'character' && currentScene.side === 'left' && 
-                      leftCharacterPanelState === 'visible' && 
-                      !leftCharacterAnimating && 
-                      leftCharacterProgress >= 100 &&
-                      leftBounceComplete) {
-                    return 'story-character-speaking';
-                  }
-                  
-                  return '';
-                })()
-              }`}>
-                <div className="story-wooden-dowel"></div>
-                <img 
-                  src={`/stories/gingerbread.bundle/images/characters/${currentLeftCharacter}.sticker-cardboard-3d.webp?${version}`}
-                  alt={`${currentLeftCharacter} Character`}
-                  className="story-character-image"
-                  onError={(e) => {
-                    const target = e.target as HTMLImageElement;
-                    if (target.src.includes('gingerbread.bundle')) {
-                      target.src = `/assets.core/images/characters/${currentLeftCharacter}.sticker-cardboard-3d.webp?${version}`;
-                    }
-                  }}
-                />
-              </div>
-            </div>
-          </div>
-        </div>
-        )}
+        {/* Left Character panel */}
+        <CharacterPanel
+          ref={leftPanelRef}
+          side="left"
+          panelState={leftCharacterPanelState}
+          characterFullyExited={leftCharacterFullyExited}
+          characterAnimating={leftCharacterAnimating}
+          characterProgress={leftCharacterProgress}
+          bounceComplete={leftBounceComplete}
+          currentCharacter={currentLeftCharacter}
+          currentScene={storyContent[currentItem]}
+          currentItem={currentItem}
+          version={version}
+          onBounceComplete={() => setLeftBounceComplete(true)}
+        />
 
-        {/* Right Character panel with dynamic character */}
-        {rightCharacterPanelState !== 'hidden' && !rightCharacterFullyExited && (
-        <div ref={rightPanelRef} className={`story-character-panel story-character-right story-character-${rightCharacterPanelState} ${rightCharacterAnimating ? 'animating' : ''}`}>
-          <div className="story-character-content">
-            <div 
-              className="story-character-cardboard"
-              style={{
-                transform: rightCharacterPanelState === 'visible' ? 
-                  (rightCharacterProgress < 100 ? 
-                    `translateY(${100 - rightCharacterProgress}vh) translateX(${100 - rightCharacterProgress}%) rotate(${45 - (rightCharacterProgress * 0.45)}deg)` : 
-                    'translateY(0vh) translateX(0%) rotate(0deg)') : 
-                  undefined,
-                transition: rightCharacterProgress >= 100 ? 'none' : 'transform 0.1s ease-out'
-              }}
-            >
-              <div className={`story-character-inner ${
-                (() => {
-                  const currentScene = storyContent[currentItem];
-                  
-                  // Apply entrance bounce only when character just finished animating in (not during speech)
-                  if (!rightCharacterAnimating && rightCharacterProgress >= 100 && !rightBounceComplete) {
-                    return 'story-bounce-arrival-right';
-                  }
-                  
-                  // Apply shake animation only when this character is speaking and entrance is complete
-                  if (currentScene && currentScene.type === 'character' && currentScene.side === 'right' && 
-                      rightCharacterPanelState === 'visible' && 
-                      !rightCharacterAnimating && 
-                      rightCharacterProgress >= 100 &&
-                      rightBounceComplete) {
-                    return 'story-character-speaking-right';
-                  }
-                  
-                  return '';
-                })()
-              }`}>
-                <div className="story-wooden-dowel"></div>
-                <img 
-                  src={`/stories/gingerbread.bundle/images/characters/${currentRightCharacter}.sticker-cardboard-3d.webp?${version}`}
-                  alt={`${currentRightCharacter} Character`}
-                  className="story-character-image"
-                  onError={(e) => {
-                    const target = e.target as HTMLImageElement;
-                    if (target.src.includes('gingerbread.bundle')) {
-                      target.src = `/assets.core/images/characters/${currentRightCharacter}.sticker-cardboard-3d.webp?${version}`;
-                    }
-                  }}
-                />
-              </div>
-            </div>
-          </div>
-        </div>
-        )}
+        {/* Right Character panel */}
+        <CharacterPanel
+          ref={rightPanelRef}
+          side="right"
+          panelState={rightCharacterPanelState}
+          characterFullyExited={rightCharacterFullyExited}
+          characterAnimating={rightCharacterAnimating}
+          characterProgress={rightCharacterProgress}
+          bounceComplete={rightBounceComplete}
+          currentCharacter={currentRightCharacter}
+          currentScene={storyContent[currentItem]}
+          currentItem={currentItem}
+          version={version}
+          onBounceComplete={() => setRightBounceComplete(true)}
+        />
 
         {/* Layer 1: Invisible scroll targets for CSS scroll-snap */}
         <div className={`story-scroll-targets ${
@@ -546,178 +538,10 @@ const StoryModeScroll: React.FC = () => {
         </div>
 
         {/* Layer 2: Transform-controlled backgrounds */}
-        <div className="story-background-layer">
-          {(() => {
-            // Build a list of background changes
-            const backgroundRanges: Array<{startIndex: number, endIndex: number, background: string, isImage?: boolean}> = [];
-            let currentBg: string | null = null;
-            let rangeStart = 0;
-            
-            storyContent.forEach((content, index) => {
-              // Check if this scene introduces a new background
-              let newBg: string | null = null;
-              
-              if (content.type === 'image') {
-                newBg = 'comicBackground';
-              } else if (content.type === 'image-text') {
-                // Don't change background for image-text, it continues from previous image
-                return;
-              } else if ((content.type === 'title' || content.type === 'title2' || content.type === 'full' || content.type === 'character') && 
-                         content.background && 
-                         (!content.flowSequence || content.isFirstInFlow)) {
-                newBg = content.background;
-              }
-              
-              // If background changes, save the previous range and start a new one
-              if (newBg && newBg !== currentBg) {
-                if (currentBg) {
-                  backgroundRanges.push({
-                    startIndex: rangeStart,
-                    endIndex: index - 1,
-                    background: currentBg,
-                    isImage: currentBg === 'comicBackground'
-                  });
-                }
-                currentBg = newBg;
-                rangeStart = index;
-              }
-            });
-            
-            // Add the final range
-            if (currentBg) {
-              backgroundRanges.push({
-                startIndex: rangeStart,
-                endIndex: storyContent.length - 1,
-                background: currentBg,
-                isImage: currentBg === 'comicBackground'
-              });
-            }
-            
-            // Render backgrounds based on ranges
-            return backgroundRanges.map((range, rangeIndex) => {
-              // Calculate the background position based on scroll
-              // When we're within the range, background stays at 0
-              // When we scroll past, background scrolls up
-              // When we haven't reached it yet, background waits below
-              
-              let transform = 'translateY(0)';
-              
-              if (scrollOffset < range.startIndex) {
-                // Background is waiting below (not reached yet)
-                transform = `translateY(${(range.startIndex - scrollOffset) * 100}vh)`;
-              } else if (scrollOffset > range.endIndex + 1) {
-                // Background has scrolled up and away
-                transform = `translateY(${(range.endIndex + 1 - scrollOffset) * 100}vh)`;
-              } else {
-                // Background is visible and fixed in place
-                transform = 'translateY(0)';
-              }
-              
-              return (
-                <div 
-                  key={`bg-range-${rangeIndex}`}
-                  className="story-background-image"
-                  style={{
-                    backgroundImage: range.isImage ? 
-                      `url('/VisualAssets/comicBackground.png')` :
-                      `url('/stories/gingerbread.bundle/images/backgrounds/${range.background}'), url('/assets.core/images/backgrounds/${range.background}')`,
-                    transform,
-                    transition: 'transform 0.6s ease-out',
-                    width: '100%',
-                    height: '100vh',
-                    position: 'absolute',
-                    top: 0,
-                    left: 0
-                  }}
-                  data-debug={`bg-range-${range.startIndex}-${range.endIndex}-${range.background}`}
-                ></div>
-              );
-            });
-          })()}
-        </div>
+        <BackgroundLayer storyContent={storyContent} scrollOffset={scrollOffset} />
 
         {/* Layer 2.5: Image layer - stays fixed like backgrounds */}
-        <div className="story-image-layer">
-          {(() => {
-            // Build a list of image ranges (similar to background ranges)
-            const imageRanges: Array<{startIndex: number, endIndex: number, image: string}> = [];
-            
-            storyContent.forEach((content, index) => {
-              if (content.type === 'image') {
-                // Check if next scene is image-text with same image
-                const nextContent = storyContent[index + 1];
-                if (nextContent && nextContent.type === 'image-text' && nextContent.image === content.image) {
-                  // Image spans both scenes
-                  imageRanges.push({
-                    startIndex: index,
-                    endIndex: index + 1,
-                    image: content.image
-                  });
-                } else {
-                  // Image only for this scene
-                  imageRanges.push({
-                    startIndex: index,
-                    endIndex: index,
-                    image: content.image
-                  });
-                }
-              }
-            });
-            
-            // Render images based on ranges
-            return imageRanges.map((range, rangeIndex) => {
-              // Calculate image position (same logic as backgrounds)
-              let transform = 'translateY(0)';
-              
-              if (scrollOffset < range.startIndex) {
-                // Image is waiting below (not reached yet)
-                transform = `translateY(${(range.startIndex - scrollOffset) * 100}vh)`;
-              } else if (scrollOffset > range.endIndex) {
-                // Image has scrolled up and away (starts scrolling immediately after endIndex)
-                transform = `translateY(${(range.endIndex - scrollOffset) * 100}vh)`;
-              } else {
-                // Image is visible and fixed in place
-                transform = 'translateY(0)';
-              }
-              
-              return (
-                <div
-                  key={`img-range-${rangeIndex}`}
-                  className="story-fixed-image-container"
-                  style={{
-                    transform,
-                    transition: 'transform 0.6s ease-out',
-                    width: '100%',
-                    height: '100vh',
-                    position: 'absolute',
-                    top: 0,
-                    left: 0,
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center'
-                  }}
-                >
-                  <img
-                    src={`/stories/gingerbread.bundle/images/story/${range.image}`}
-                    alt="Story Image"
-                    className="story-fixed-image"
-                    style={{
-                      width: '100%',
-                      height: '100vh',
-                      objectFit: 'contain'
-                    }}
-                    onError={(e) => {
-                      const target = e.target as HTMLImageElement;
-                      if (target.src.includes('gingerbread.bundle')) {
-                        target.src = `/assets.core/images/story/${range.image}`;
-                      }
-                    }}
-                  />
-                </div>
-              );
-            });
-          })()}
-        </div>
+        <ImageLayer storyContent={storyContent} scrollOffset={scrollOffset} />
 
         {/* Layer 3: Transform-controlled content (objects) */}
         <div className={`story-content-layer ${
@@ -734,7 +558,6 @@ const StoryModeScroll: React.FC = () => {
               storyContent.map((content, index) => {
                 // Calculate transform offset for this content item
                 const contentTransform = `translateY(${(index - scrollOffset) * 100}vh)`;
-                console.log(`Rendering item ${index} with transform: ${contentTransform}`);
                 
                 return (
                 <div
@@ -770,10 +593,7 @@ const StoryModeScroll: React.FC = () => {
                 )}
                 
                 {content.type === 'full' && (
-                  <div className="story-full-content">
-                    <h2>{content.title}</h2>
-                    <p>{content.text}</p>
-                  </div>
+                  <FullContent title={content.title} text={content.text} />
                 )}
                 
                 {/* Images are now rendered in the image layer, not here */}
@@ -782,19 +602,26 @@ const StoryModeScroll: React.FC = () => {
                 )}
                 
                 {content.type === 'character' && (
-                  <div className={`story-speech-bubble${content.side === 'right' ? '-right' : '-left'} ${currentItem === index ? 'story-bubble-snap-in' : 'story-bubble-hidden'}`}>
-                    <div className={`story-speech-tail${content.side === 'right' ? '-right' : '-left'}`}></div>
-                    <p>{content.speech}</p>
-                  </div>
+                  <SpeechBubble 
+                    side={content.side}
+                    speech={content.speech}
+                    character={content.character}
+                    isActive={currentItem === index}
+                    activeInput={activeInput}
+                  />
                 )}
                 
-                {content.type === 'quest' && currentItem === index && (
-                  <div className={`story-quest-container ${content.questType === 'key' ? 'quest-key' : ''} quest-appear`}>
-                    <div className="story-quest-text">
-                      <div className="quest-label">QUEST</div>
-                      <div className="quest-description">{content.text}</div>
-                    </div>
-                  </div>
+
+                {content.type === 'input' && currentItem === index && (
+                  <InputPrompt 
+                    prompt={content.prompt}
+                    onSubmit={(input) => {
+                      setActiveInput({prompt: content.prompt, userInput: input});
+                      setTimeout(() => {
+                        setCurrentItem(currentItem + 1);
+                      }, 500);
+                    }}
+                  />
                 )}
                 
               </div>
@@ -803,7 +630,10 @@ const StoryModeScroll: React.FC = () => {
             )}
         </div>
 
-        {/* Layer 4: Construction paper overlay layer */}
+        {/* Layer 4: Quest layer - separate behavior from dialog */}
+        <QuestDialog quest={activeQuest} />
+
+        {/* Layer 5: Construction paper overlay layer */}
         <div className="story-overlay-layer">
           {storyContent.map((content, index) => {
             // Only render overlay for image-text scenes

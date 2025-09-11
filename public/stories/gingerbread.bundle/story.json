@@ -2,15 +2,34 @@
   "title": "The Cookie Thief",
   "storyId": "leo-monster-hunter-001",
   "scenes": [
-            {
-      "type": "title",
-      "lvl1": "The",
-      "lvl2": "Cookie Thief",
-      "author": "Elliott Hedman",
-      "background": "bakery.png"
-    }
-,
-     {
+
+ 
+    {
+      "type": "character-flow",
+      "background":"bakery.png",
+      "left-character": "leo",
+      "right-character": "bakerMom",
+      "flow": [
+        {
+          "side": "right",
+          "text": "Help!"
+        },
+        {
+          "side": "right",
+          "text": "Somebody please help me!"
+        },
+        {
+          "quest": "key",
+          "text": "Why does Betsy need help?"
+
+        },
+                {
+          "input": "What should Leo ask?"
+
+        }
+      ]
+    },
+    {
       "type": "character-flow",
       "background":"square.png",
       "left-character": "leo",
@@ -48,30 +67,16 @@
     },
 
     {
-      "type": "character-flow",
-      "background":"bakery.png",
-      "left-character": "leo",
-      "right-character": "bakerMom",
-      "flow": [
-        {
-          "side": "right",
-          "text": "Help!"
-        },
-        {
-          "side": "right",
-          "text": "Somebody please help me!"
-        },
-        {
-          "quest": "key",
-          "text": "Why does Betsy need help?"
-
-        }
-      ]
-    },
-    {
       "type": "full",
       "background": "cobbler.png",
       "text": "Leo saved the day! The cookies are safe once again."
     }
-  ]
+  ],
+  "examples":            {
+      "type": "title",
+      "lvl1": "The",
+      "lvl2": "Cookie Thief",
+      "author": "Elliott Hedman",
+      "background": "bakery.png"
+    }
 }

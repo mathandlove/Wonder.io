@@ -27,14 +27,25 @@
   max-width: 100vw;
 }
 
-/* Character Panels */
+/* Central Dialog Area - Always 600px wide */
+.story-central-dialog {
+  width: 600px;
+  height: 100vh;
+  position: fixed;
+  left: 50%;
+  top: 0;
+  transform: translateX(-50%);
+  z-index: 5; /* Below character panels but above content */
+  pointer-events: none; /* Allow clicks to pass through */
+}
+
+/* Character Panels - Frame the central dialog space */
 .story-character-panel {
   width: 280px;
   height: 100vh;
   background: transparent;
   display: flex;
   align-items: center; /* Center vertically instead of flex-end */
-  justify-content: center;
   flex-shrink: 0;
   position: fixed;
   top: 0;
@@ -45,14 +56,16 @@
   pointer-events: auto; /* Allow scroll events to be captured */
 }
 
-/* Left character panel */
+/* Left character panel - positioned to left of central dialog */
 .story-character-panel.story-character-left {
-  left: 0;
+  right: calc(50% + 300px); /* Right edge touches left edge of central area */
+  justify-content: flex-end; /* Right-align content to frame dialog space */
 }
 
-/* Right character panel */
+/* Right character panel - positioned to right of central dialog */
 .story-character-panel.story-character-right {
-  right: 0;
+  left: calc(50% + 300px); /* Left edge touches right edge of central area */
+  justify-content: flex-start; /* Left-align content to frame dialog space */
 }
 
 /* Character panel states */
@@ -271,7 +284,6 @@
   scroll-snap-stop: always;
   /* Completely invisible */
   background: transparent;
-  pointer-events: none; /* Don't block interactions with lower layers */
 }
 
 /* Layer 2: Transform-controlled backgrounds */
@@ -308,7 +320,18 @@
   transition: left 0.8s cubic-bezier(0.4, 0, 0.2, 1), width 0.8s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-/* Layer 4: Construction paper overlay layer */
+/* Layer 4: Quest layer */
+.story-quest-layer {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  z-index: 50; /* Above content but below overlay */
+  pointer-events: none;
+}
+
+/* Layer 5: Construction paper overlay layer */
 .story-overlay-layer {
   position: fixed;
   top: 0;
@@ -355,9 +378,9 @@ html {
 .story-container-visible,
 .story-content-layer.story-container-visible,
 .story-scroll-targets.story-container-visible {
-  left: 280px;
-  width: calc(100% - 280px);
-  right: 0;
+  left: calc(50vw - 300px);
+  width: 600px;
+  right: auto;
 }
 
 .story-container-exiting,
@@ -372,18 +395,18 @@ html {
 .story-container-right-visible,
 .story-content-layer.story-container-right-visible,
 .story-scroll-targets.story-container-right-visible {
-  left: 0;
-  width: calc(100% - 280px);
-  right: 280px;
+  left: calc(50vw - 300px);
+  width: 600px;
+  right: auto;
 }
 
 /* Container states for both panels */
 .story-container-both-visible,
 .story-content-layer.story-container-both-visible,
 .story-scroll-targets.story-container-both-visible {
-  left: 280px;
-  width: calc(100% - 560px);
-  right: 280px;
+  left: calc(50vw - 300px);
+  width: 600px;
+  right: auto;
 }
 
 /* Story Items */
@@ -830,19 +853,25 @@ html {
 }
 
 .story-quest-container.quest-appear {
-  animation: questAppear 0.6s cubic-bezier(0.34, 1.56, 0.64, 1) forwards, questPulse 2s ease-in-out infinite;
+  animation: questAppear 0.6s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
 }
 
 @keyframes questAppear {
   0% {
-    transform: translate(-50%, -50%) scale(0) rotate(-180deg);
+    top: 100vh;
+    left: 50%;
+    transform: translate(-50%, 0) scale(0.8) rotate(-180deg);
     opacity: 0;
   }
   50% {
+    top: 50%;
+    left: 50%;
     transform: translate(-50%, -50%) scale(1.1) rotate(10deg);
     opacity: 1;
   }
   100% {
+    top: 50%;
+    left: 50%;
     transform: translate(-50%, -50%) scale(1) rotate(0deg);
     opacity: 1;
   }
@@ -914,44 +943,250 @@ html {
   margin-top: 8px; /* Space after divider */
 }
 
-/* Quest Top Bar - After moving to top */
-.story-quest-top-bar {
+/* Input Dialog Container with Cardboard Border */
+.story-input-container {
   position: fixed;
-  top: 20px;
+  bottom: 40px;
   left: 50%;
   transform: translateX(-50%);
-  background-image: url('/VisualAssets/guildedgoal.png');
-  background-size: contain;
-  background-position: center;
-  background-repeat: no-repeat;
-  padding: 15px 40px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 12px;
-  z-index: 200;
-  filter: drop-shadow(0 4px 20px rgba(255, 215, 0, 0.4));
-  animation: slideDown 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
+  width: 500px;
+  max-width: calc(100vw - 40px);
+  z-index: 200; /* Above scroll targets (z-index: 100) */
+  padding: 20px;
+  pointer-events: auto; /* Ensure this container can receive events */
 }
 
-@keyframes slideDown {
+/* Cardboard border around input dialog */
+.story-input-container::before {
+  content: '';
+  position: absolute;
+  top: -10px;
+  left: -10px;
+  right: -10px;
+  bottom: -10px;
+  background-image: url('/VisualAssets/cardboard.png');
+  background-size: cover;
+  background-position: center;
+  border-radius: 20px;
+  z-index: -1;
+}
+
+/* Inner content area */
+.story-input-container::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(255, 255, 255, 0.95);
+  border-radius: 15px;
+  backdrop-filter: blur(10px);
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.2);
+  z-index: -1;
+}
+
+/* Content positioned above pseudo-elements */
+.story-input-container > * {
+  position: relative;
+  z-index: 1;
+}
+
+.story-input-prompt {
+  font-size: 18px;
+  font-weight: 600;
+  color: #333;
+  margin-bottom: 15px;
+  text-align: left;
+  font-family: 'Cinzel', 'Georgia', serif;
+  position: relative;
+  z-index: 1;
+}
+
+.story-input-box {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  position: relative;
+  margin-top: -40px; /* Overlap with the prompt area */
+}
+
+.story-input-box input {
+  flex: 1;
+  padding: 12px 16px;
+  border: 2px solid #ddd;
+  border-radius: 8px;
+  font-size: 16px;
+  font-family: 'Nunito', sans-serif;
+  background: white;
+  transition: border-color 0.2s ease;
+}
+
+.story-input-box input:focus {
+  outline: none;
+  border-color: #4CAF50;
+  box-shadow: 0 0 0 2px rgba(76, 175, 80, 0.2);
+}
+
+.story-input-box button {
+  padding: 12px 20px;
+  background: #4CAF50;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  font-family: 'Nunito', sans-serif;
+}
+
+.story-input-box button:hover:not(:disabled) {
+  background: #45a049;
+  transform: translateY(-1px);
+}
+
+.story-input-box button:disabled {
+  background: #cccccc;
+  cursor: not-allowed;
+  transform: none;
+}
+
+/* Record button styling */
+.story-input-record-button {
+  width: 120px !important;
+  height: 120px !important;
+  border-radius: 50% !important;
+  padding: 0 !important;
+  background-image: url('/VisualAssets/cardboard.png') !important;
+  background-size: 400px 400px !important;
+  background-position: center !important;
+  border: 15px solid #4CAF50 !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  position: relative !important;
+  margin: 0 8px !important;
+  flex-shrink: 0 !important;
+  z-index: 1000 !important;
+  transition: all 0.3s ease !important;
+  pointer-events: auto !important;
+  cursor: pointer !important;
+}
+
+.story-input-record-button:hover {
+  transform: translateY(-4px) scale(1.05) !important;
+  border-color: #45a049 !important;
+  box-shadow: 0 8px 20px rgba(76, 175, 80, 0.4) !important;
+  background-color: rgba(76, 175, 80, 0.1) !important;
+}
+
+.story-input-record-button:hover .record-icon-mask {
+  transform: scale(1.1) !important;
+}
+
+/* Recording state styling */
+.story-input-record-button.recording {
+  border-color: #4CAF50 !important;
+  background-color: rgba(76, 175, 80, 0.2) !important;
+  animation: recordingPulse 1.5s ease-in-out infinite !important;
+}
+
+.story-input-record-button.recording .record-icon-mask {
+  background-color: #4CAF50 !important;
+}
+
+@keyframes recordingPulse {
+  0%, 100% {
+    box-shadow: 0 0 0 0 rgba(76, 175, 80, 0.7);
+  }
+  50% {
+    box-shadow: 0 0 0 20px rgba(76, 175, 80, 0);
+  }
+}
+
+.record-icon-mask {
+  width: 48px;
+  height: 48px;
+  background-color: white;
+  mask-image: url('/VisualAssets/recordIcon.svg');
+  -webkit-mask-image: url('/VisualAssets/recordIcon.svg');
+  mask-size: contain;
+  -webkit-mask-size: contain;
+  mask-repeat: no-repeat;
+  -webkit-mask-repeat: no-repeat;
+  mask-position: center;
+  -webkit-mask-position: center;
+  transition: transform 0.3s ease !important;
+}
+
+/* Quest static positions - no animations after initial appearance */
+.story-quest-container.quest-static-center {
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%) scale(1);
+}
+
+.story-quest-container.quest-static-top {
+  top: 20px !important;
+  left: 50% !important;
+  transform: translateX(-50%) scale(1) !important;
+}
+
+/* Quest moving to top animation - happens once after initial appearance */
+.story-quest-container.quest-move-to-top {
+  animation: questMoveToTop 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+}
+
+/* Quest moving back to center animation - smooth movement from top */
+.story-quest-container.quest-move-to-center {
+  animation: questMoveToCenter 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+}
+
+/* Quest exit to bottom animation - slides down and fades out */
+.story-quest-container.quest-exit-bottom {
+  animation: questExitBottom 0.6s cubic-bezier(0.4, 0, 0.6, 1) forwards;
+}
+
+@keyframes questMoveToTop {
   from {
-    transform: translateX(-50%) translateY(-100px);
-    opacity: 0;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%) scale(1);
   }
   to {
-    transform: translateX(-50%) translateY(0);
-    opacity: 1;
+    top: 20px;
+    left: 50%;
+    transform: translateX(-50%) scale(1);
   }
 }
 
+@keyframes questMoveToCenter {
+  from {
+    top: 20px;
+    left: 50%;
+    transform: translateX(-50%) scale(1);
+  }
+  to {
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%) scale(1);
+  }
+}
 
-.quest-top-text {
-  color: white;
-  font-size: 14px;
-  font-weight: 600;
-  font-family: 'Nunito', sans-serif;
-  text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+@keyframes questExitBottom {
+  from {
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%) scale(1);
+    opacity: 1;
+  }
+  to {
+    top: 100vh;
+    left: 50%;
+    transform: translate(-50%, 0) scale(0.8);
+    opacity: 0;
+  }
 }
 
 /* Scene-specific styling - removed to use cardboard background for all */
