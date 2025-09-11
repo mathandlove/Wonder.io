@@ -612,17 +612,6 @@ const StoryModeScroll: React.FC = () => {
                 )}
                 
 
-                {content.type === 'input' && currentItem === index && (
-                  <InputPrompt 
-                    prompt={content.prompt}
-                    onSubmit={(input) => {
-                      setActiveInput({prompt: content.prompt, userInput: input});
-                      setTimeout(() => {
-                        setCurrentItem(currentItem + 1);
-                      }, 500);
-                    }}
-                  />
-                )}
                 
               </div>
                 );
@@ -632,6 +621,25 @@ const StoryModeScroll: React.FC = () => {
 
         {/* Layer 4: Quest layer - separate behavior from dialog */}
         <QuestDialog quest={activeQuest} />
+
+        {/* Layer 5: Input Prompt layer - separate from scroll targets */}
+        {storyContent.map((content, index) => {
+          if (content.type === 'input' && currentItem === index) {
+            return (
+              <InputPrompt 
+                key={`input-${index}`}
+                prompt={content.prompt}
+                onSubmit={(input) => {
+                  setActiveInput({prompt: content.prompt, userInput: input});
+                  setTimeout(() => {
+                    setCurrentItem(currentItem + 1);
+                  }, 500);
+                }}
+              />
+            );
+          }
+          return null;
+        })}
 
         {/* Layer 5: Construction paper overlay layer */}
         <div className="story-overlay-layer">

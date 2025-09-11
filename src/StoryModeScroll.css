@@ -951,7 +951,7 @@ html {
   transform: translateX(-50%);
   width: 500px;
   max-width: calc(100vw - 40px);
-  z-index: 200; /* Above scroll targets (z-index: 100) */
+  z-index: 100000; /* Way above everything */
   padding: 20px;
   pointer-events: auto; /* Ensure this container can receive events */
 }
@@ -1014,18 +1014,24 @@ html {
 .story-input-box input {
   flex: 1;
   padding: 12px 16px;
-  border: 2px solid #ddd;
+  border: 3px solid transparent;
   border-radius: 8px;
   font-size: 16px;
   font-family: 'Nunito', sans-serif;
-  background: white;
-  transition: border-color 0.2s ease;
+  background: 
+    linear-gradient(#f5f1e8, #f5f1e8) padding-box,
+    url('/VisualAssets/cardboard.png') border-box;
+  background-color: #f5f1e8; /* Parchment/beige background */
+  background-size: auto, 200px 200px;
+  box-shadow: inset 2px 2px 6px rgba(0, 0, 0, 0.15); /* Inner shadow for carved effect */
+  transition: all 0.2s ease;
 }
 
 .story-input-box input:focus {
   outline: none;
-  border-color: #4CAF50;
-  box-shadow: 0 0 0 2px rgba(76, 175, 80, 0.2);
+  box-shadow: 
+    inset 2px 2px 6px rgba(0, 0, 0, 0.15),
+    0 0 0 3px rgba(76, 175, 80, 0.3);
 }
 
 .story-input-box button {
@@ -1074,34 +1080,47 @@ html {
   cursor: pointer !important;
 }
 
-.story-input-record-button:hover {
+.story-input-record-button:hover:not(.recording) {
   transform: translateY(-4px) scale(1.05) !important;
   border-color: #45a049 !important;
   box-shadow: 0 8px 20px rgba(76, 175, 80, 0.4) !important;
   background-color: rgba(76, 175, 80, 0.1) !important;
 }
 
-.story-input-record-button:hover .record-icon-mask {
+.story-input-record-button:hover:not(.recording) .record-icon-mask {
   transform: scale(1.1) !important;
 }
 
 /* Recording state styling */
 .story-input-record-button.recording {
-  border-color: #4CAF50 !important;
-  background-color: rgba(76, 175, 80, 0.2) !important;
+  border-color: #FF6B35 !important;
+  background-color: rgba(255, 107, 53, 0.2) !important;
   animation: recordingPulse 1.5s ease-in-out infinite !important;
 }
 
 .story-input-record-button.recording .record-icon-mask {
-  background-color: #4CAF50 !important;
+  display: none !important; /* Hide the microphone icon */
+}
+
+/* Add "Tap to Stop" text when recording */
+.story-input-record-button.recording::after {
+  content: "Tap to\AStop";
+  white-space: pre;
+  position: absolute;
+  color: white;
+  font-size: 14px;
+  font-weight: bold;
+  text-align: center;
+  line-height: 1.2;
+  font-family: 'Nunito', sans-serif;
 }
 
 @keyframes recordingPulse {
   0%, 100% {
-    box-shadow: 0 0 0 0 rgba(76, 175, 80, 0.7);
+    box-shadow: 0 0 0 0 rgba(255, 107, 53, 0.7);
   }
   50% {
-    box-shadow: 0 0 0 20px rgba(76, 175, 80, 0);
+    box-shadow: 0 0 0 20px rgba(255, 107, 53, 0);
   }
 }
 
@@ -1118,6 +1137,56 @@ html {
   mask-position: center;
   -webkit-mask-position: center;
   transition: transform 0.3s ease !important;
+}
+
+/* Send button styling */
+.story-input-send-button {
+  height: 48px !important; /* Match input height */
+  width: 60px !important;
+  border-radius: 8px !important; /* Match input border-radius */
+  padding: 12px 16px !important; /* Match input padding */
+  background-image: url('/VisualAssets/cardboard.png') !important;
+  background-size: 200px 200px !important;
+  background-position: center !important;
+  border: 3px solid #4CAF50 !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  position: relative !important;
+  margin: 0 20px 0 0px !important;
+  flex-shrink: 0 !important;
+  z-index: 1000 !important;
+  transition: all 0.3s ease !important;
+  cursor: pointer !important;
+  font-family: 'Nunito', sans-serif !important;
+}
+
+.story-input-send-button:disabled {
+  cursor: not-allowed !important;
+  opacity: 0.5 !important;
+  border-color: #ccc !important;
+}
+
+.story-input-send-button.has-text:hover:not(:disabled) {
+  background: #4CAF50 !important;
+  border-color: #4CAF50 !important;
+  transform: translateY(-2px) scale(1.05) !important;
+  box-shadow: 0 4px 12px rgba(76, 175, 80, 0.3) !important;
+}
+
+.send-icon-mask {
+  width: 24px;
+  height: 24px;
+  background-color: white;
+  mask-image: url('/VisualAssets/send.svg');
+  -webkit-mask-image: url('/VisualAssets/send.svg');
+  mask-size: contain;
+  -webkit-mask-size: contain;
+  mask-repeat: no-repeat;
+  -webkit-mask-repeat: no-repeat;
+  mask-position: center;
+  -webkit-mask-position: center;
+  transition: background-color 0.3s ease;
 }
 
 /* Quest static positions - no animations after initial appearance */
