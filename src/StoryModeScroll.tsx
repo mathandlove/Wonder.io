@@ -622,12 +622,13 @@ const StoryModeScroll: React.FC = () => {
                       isActive={currentItem === index}
                       activeInput={activeInput}
                     />
-                    {content.waiting && (
+                    {/* Show waiting bubble if NEXT scene has waiting: true */}
+                    {index < storyContent.length - 1 && storyContent[index + 1].waiting && (
                       <div className="story-waiting-bubble-container">
                         <SpeechBubble 
                           side="right"
                           speech="..."
-                          character={content.rightCharacter || content.leftCharacter}
+                          character={storyContent[index + 1].rightCharacter || storyContent[index + 1].leftCharacter || content.character}
                           isActive={currentItem === index}
                           activeInput={null}
                           isWaiting={true}
