@@ -420,9 +420,10 @@ html {
   width: 100%;
   height: 100vh;
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   justify-content: center; /* Default: centered */
   padding: 0;
+  padding-top: 25vh; /* Position speech bubbles at top 25% of screen */
   position: relative; /* Important for background positioning */
   
   /* CSS Scroll Snap */
@@ -433,15 +434,18 @@ html {
 /* Character panels - positioned based on character side */
 .story-item:has(.story-speech-bubble-left) {
   justify-content: flex-start;
+  padding-left: 10px; /* 10px from left character panel */
 }
 
 .story-item:has(.story-speech-bubble-right) {
   justify-content: flex-end;
+  padding-right: 10px; /* 10px from right character panel */
 }
 
 /* Backwards compatibility - default to left */
 .story-item:has(.story-speech-bubble) {
   justify-content: flex-start;
+  padding-left: 10px; /* 10px from left character panel */
 }
 
 /* Full Screen Content */
@@ -477,8 +481,14 @@ html {
 /* Speech Bubble Container with Cardboard Backing - Left Side */
 .story-speech-bubble,
 .story-speech-bubble-left {
-  position: relative;
+  position: absolute;
+  top: 75px;
+  left: 18px;
+  transform: translateY(-50%); /* Center the bubble vertically at 75px */
+  width: auto;
   max-width: 500px;
+  max-height: 60vh; /* Allow expansion but limit height */
+  overflow: visible; /* Important: let the tail stick out */
   padding: 15px; /* Outer padding for cardboard */
   background-image: url('/VisualAssets/cardboard.png');
   background-size: cover;
@@ -486,15 +496,19 @@ html {
   background-position: center;
   border-radius: 25px;
   box-shadow: 0 10px 40px rgba(0,0,0,0.3);
-  margin-left: 20px;
-  margin-top: -200px;
-  transform-origin: left center;
+  transform-origin: center center;
 }
 
 /* Speech Bubble Container - Right Side */
 .story-speech-bubble-right {
-  position: relative;
+  position: absolute;
+  top: 75px;
+  right: 18px;
+  transform: translateY(-50%); /* Center the bubble vertically at 75px */
+  width: auto;
   max-width: 500px;
+  max-height: 60vh; /* Allow expansion but limit height */
+  overflow: visible; /* Important: let the tail stick out */
   padding: 15px; /* Outer padding for cardboard */
   background-image: url('/VisualAssets/cardboard.png');
   background-size: cover;
@@ -502,16 +516,14 @@ html {
   background-position: center;
   border-radius: 25px;
   box-shadow: 0 10px 40px rgba(0,0,0,0.3);
-  margin-right: 20px;
-  margin-top: -200px;
-  transform-origin: right center;
+  transform-origin: center center;
 }
 
 /* White text box inside cardboard */
 .story-speech-bubble p,
 .story-speech-bubble-left p,
 .story-speech-bubble-right p {
-  background: white;
+  background: #fdf8e4;
   padding: 28px;
   margin: 0;
   border-radius: 15px;
@@ -521,35 +533,59 @@ html {
   line-height: 1.5;
   text-align: left;
   box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+  position: relative;
+}
+
+/* White triangle for left bubbles - comes from the white box */
+.story-speech-bubble p::after,
+.story-speech-bubble-left p::after {
+  content: '';
+  position: absolute;
+  left: -20px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 0;
+  height: 0;
+  border-style: solid;
+  border-width: 15px 28px 15px 0;
+  border-color: transparent #fdf8e4 transparent transparent;
+  z-index: 2;
+}
+
+/* White triangle for right bubbles - comes from the white box */
+.story-speech-bubble-right p::after {
+  content: '';
+  position: absolute;
+  right: -20px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 0;
+  height: 0;
+  border-style: solid;
+  border-width: 15px 0 15px 28px;
+  border-color: transparent transparent transparent #fdf8e4;
+  z-index: 2;
 }
 
 /* Speech tail - Left side (default) */
 .story-speech-tail,
 .story-speech-tail-left {
   position: absolute;
-  left: 0px;
+  left: -20px;
   top: 50%;
   transform: translateY(-50%);
   width: 0;
   height: 0;
-  border-style: solid;
-  border-width: 15px 20px 15px 0;
-  border-color: transparent white transparent transparent;
-  z-index: 3;
 }
 
 /* Speech tail - Right side */
 .story-speech-tail-right {
   position: absolute;
-  right: 0px;
+  right: -20px;
   top: 50%;
   transform: translateY(-50%);
   width: 0;
   height: 0;
-  border-style: solid;
-  border-width: 15px 0 15px 20px;
-  border-color: transparent transparent transparent white;
-  z-index: 3;
 }
 
 /* Cardboard backing triangle - Left side */
@@ -557,33 +593,34 @@ html {
 .story-speech-tail-left::before {
   content: '';
   position: absolute;
-  left: -18px;
-  top: -12px;
-  width: 18px;
-  height: 24px;
+  left: 0;
+  top: -15px;
+  width: 28px;
+  height: 30px;
   background-image: url('/VisualAssets/cardboard.png');
   background-size: cover;
   background-repeat: no-repeat;
   background-position: center;
   clip-path: polygon(100% 0, 100% 100%, 0 50%);
-  z-index: 2;
+  z-index: 1;
 }
 
 /* Cardboard backing triangle - Right side */
 .story-speech-tail-right::before {
   content: '';
   position: absolute;
-  right: -18px;
-  top: -12px;
-  width: 18px;
-  height: 24px;
+  right: 0;
+  top: -15px;
+  width: 28px;
+  height: 30px;
   background-image: url('/VisualAssets/cardboard.png');
   background-size: cover;
   background-repeat: no-repeat;
   background-position: center;
   clip-path: polygon(0 0, 0 100%, 100% 50%);
-  z-index: 2;
+  z-index: 1;
 }
+
 
 
 /* Hidden state for bubbles */
@@ -949,90 +986,61 @@ html {
   bottom: 40px;
   left: 50%;
   transform: translateX(-50%);
-  width: 500px;
-  max-width: calc(100vw - 40px);
+  display: flex;
+  align-items: center;
+  gap: 10px;
   z-index: 100000; /* Way above everything */
-  padding: 20px;
   pointer-events: auto; /* Ensure this container can receive events */
 }
 
-/* Cardboard border around input dialog */
-.story-input-container::before {
-  content: '';
-  position: absolute;
-  top: -10px;
-  left: -10px;
-  right: -10px;
-  bottom: -10px;
+/* Compact input box with cardboard background */
+.story-input-box {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 15px;
+  padding-right: 82px; /* Extended to fully contain larger microphone */
   background-image: url('/VisualAssets/cardboard.png');
   background-size: cover;
   background-position: center;
-  border-radius: 20px;
-  z-index: -1;
+  border-radius: 25px;
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+  margin-right: -72px; /* Overlap to fully contain larger microphone button */
 }
 
-/* Inner content area */
-.story-input-container::after {
+/* Parchment inner area */
+.story-input-box::after {
   content: '';
   position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: rgba(255, 255, 255, 0.95);
-  border-radius: 15px;
-  backdrop-filter: blur(10px);
-  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.2);
-  z-index: -1;
+  top: 3px;
+  left: 3px;
+  right: 3px;
+  bottom: 3px;
+  background: #f5f1e8; /* Parchment color */
+  border-radius: 22px;
+  z-index: 0;
 }
 
 /* Content positioned above pseudo-elements */
-.story-input-container > * {
+.story-input-box > * {
   position: relative;
   z-index: 1;
-}
-
-.story-input-prompt {
-  font-size: 18px;
-  font-weight: 600;
-  color: #333;
-  margin-bottom: 15px;
-  text-align: left;
-  font-family: 'Cinzel', 'Georgia', serif;
-  position: relative;
-  z-index: 1;
-}
-
-.story-input-box {
-  display: flex;
-  gap: 10px;
-  align-items: center;
-  position: relative;
-  margin-top: -40px; /* Overlap with the prompt area */
 }
 
 .story-input-box input {
   flex: 1;
-  padding: 12px 16px;
-  border: 3px solid transparent;
-  border-radius: 8px;
+  padding: 8px 12px;
+  border: 2px solid transparent;
+  border-radius: 6px;
+  background: white; /* White background */
   font-size: 16px;
   font-family: 'Nunito', sans-serif;
-  background: 
-    linear-gradient(#f5f1e8, #f5f1e8) padding-box,
-    url('/VisualAssets/cardboard.png') border-box;
-  background-color: #f5f1e8; /* Parchment/beige background */
-  background-size: auto, 200px 200px;
-  box-shadow: inset 2px 2px 6px rgba(0, 0, 0, 0.15); /* Inner shadow for carved effect */
-  transition: all 0.2s ease;
+  outline: none;
+  min-width: 200px;
+  box-shadow: inset 1px 1px 3px rgba(0, 0, 0, 0.1);
 }
 
-.story-input-box input:focus {
-  outline: none;
-  box-shadow: 
-    inset 2px 2px 6px rgba(0, 0, 0, 0.15),
-    0 0 0 3px rgba(76, 175, 80, 0.3);
-}
 
 .story-input-box button {
   padding: 12px 20px;
@@ -1060,18 +1068,19 @@ html {
 
 /* Record button styling */
 .story-input-record-button {
-  width: 120px !important;
-  height: 120px !important;
+  width: 72px !important;
+  height: 72px !important;
   border-radius: 50% !important;
   padding: 0 !important;
   background-image: url('/VisualAssets/cardboard.png') !important;
-  background-size: 400px 400px !important;
+  background-size: 240px 240px !important;
   background-position: center !important;
-  border: 15px solid #4CAF50 !important;
+  border: 9px solid #4CAF50 !important;
   display: flex !important;
   align-items: center !important;
   justify-content: center !important;
   position: relative !important;
+  z-index: 2 !important;
   margin: 0 8px !important;
   flex-shrink: 0 !important;
   z-index: 1000 !important;
@@ -1108,7 +1117,7 @@ html {
   white-space: pre;
   position: absolute;
   color: white;
-  font-size: 14px;
+  font-size: 8px;
   font-weight: bold;
   text-align: center;
   line-height: 1.2;
@@ -1125,8 +1134,8 @@ html {
 }
 
 .record-icon-mask {
-  width: 48px;
-  height: 48px;
+  width: 29px;
+  height: 29px;
   background-color: white;
   mask-image: url('/VisualAssets/recordIcon.svg');
   -webkit-mask-image: url('/VisualAssets/recordIcon.svg');
@@ -1197,7 +1206,7 @@ html {
 }
 
 .story-quest-container.quest-static-top {
-  top: 20px !important;
+  top: -80px !important;
   left: 50% !important;
   transform: translateX(-50%) scale(1) !important;
 }
@@ -1224,7 +1233,7 @@ html {
     transform: translate(-50%, -50%) scale(1);
   }
   to {
-    top: 20px;
+    top: -80px;
     left: 50%;
     transform: translateX(-50%) scale(1);
   }
@@ -1232,7 +1241,7 @@ html {
 
 @keyframes questMoveToCenter {
   from {
-    top: 20px;
+    top: -80px;
     left: 50%;
     transform: translateX(-50%) scale(1);
   }
@@ -1255,6 +1264,107 @@ html {
     left: 50%;
     transform: translate(-50%, 0) scale(0.8);
     opacity: 0;
+  }
+}
+
+/* Input prompt state styling */
+.story-input-container.story-input-center {
+  bottom: 40px;
+  left: 50%;
+  transform: translateX(-50%);
+}
+
+.story-input-container.story-input-top {
+  bottom: 40px !important;
+  left: 50% !important;
+  transform: translateX(-50%) !important;
+}
+
+.story-input-container.story-input-exit-bottom {
+  animation: inputExitBottom 0.6s cubic-bezier(0.4, 0, 0.6, 1) forwards;
+}
+
+@keyframes inputExitBottom {
+  from {
+    bottom: 40px;
+    left: 50%;
+    transform: translateX(-50%);
+    opacity: 1;
+  }
+  to {
+    bottom: -200px;
+    left: 50%;
+    transform: translateX(-50%);
+    opacity: 0;
+  }
+}
+
+
+
+/* Character container for main speech bubble and optional waiting bubble */
+.story-character-container {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  width: 100%;
+  height: 100vh;
+  position: relative;
+}
+
+/* Right side character containers should align right */
+.story-item:has(.story-speech-bubble-right) .story-character-container {
+  align-items: flex-end;
+}
+
+/* Waiting bubble container - positioned below main bubble */
+.story-waiting-bubble-container {
+  position: absolute;
+  bottom: 20vh; /* Position below the main bubble */
+  right: 10vw;  /* Always positioned to the right */
+  z-index: 6;
+}
+
+/* Waiting bubble styling - make it identical to regular right bubbles */
+.story-bubble-waiting {
+  position: absolute !important;
+  top: 75px !important;
+  right: 18px !important;
+  transform: translateY(-50%) !important; /* Center the bubble vertically at 75px */
+}
+
+/* Animated thinking dots */
+.story-thinking-dots {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.story-thinking-dots .dot {
+  font-size: 32px;
+  line-height: 1;
+  animation: thinkingBounce 1.4s infinite;
+}
+
+.story-thinking-dots .dot:nth-child(1) {
+  animation-delay: 0s;
+}
+
+.story-thinking-dots .dot:nth-child(2) {
+  animation-delay: 0.2s;
+}
+
+.story-thinking-dots .dot:nth-child(3) {
+  animation-delay: 0.4s;
+}
+
+@keyframes thinkingBounce {
+  0%, 60%, 100% {
+    opacity: 0.3;
+    transform: translateY(0);
+  }
+  30% {
+    opacity: 1;
+    transform: translateY(-10px);
   }
 }
 

@@ -19,14 +19,35 @@
           "text": "Somebody please help me!"
         },
         {
+        
+      "side": "left",
+      "text": "Tell me about your last adventure Ms. Baker. What happened? Look I added a sthirsa line here. HOpefully I can see it."
+
+    },
+        {
           "quest": "key",
           "text": "Why does Betsy need help?"
 
         },
+
                 {
           "input": "What should Leo ask?"
 
-        }
+        },
+{
+        
+      "side": "left",
+      "text": "Tell me about your last adventure Ms. Baker. What happened? Look I added a sthirsa line here. HOpefully I can see it."
+
+    },
+    {
+            "waiting": true
+    },
+    {
+      "side": "right",
+      "text": "It all began on Sunday. Or was it Monday. The cookies they were gone. It was quite tragic. But here we are now. And you are about to help me! Oh no too much text here. What are we going to do. This is going to go past what is visible. And I need to come up with a plan for thes overflows."
+    }
+
       ]
     },
     {
@@ -72,7 +93,7 @@
       "text": "Leo saved the day! The cookies are safe once again."
     }
   ],
-  "examples":            {
+  "examplesX":            {
       "type": "title",
       "lvl1": "The",
       "lvl2": "Cookie Thief",

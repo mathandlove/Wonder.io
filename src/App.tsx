@@ -151,7 +151,9 @@ function App() {
     return <FreshMagneticTest />;
   }
   
-  if (showStoryMode) {
+  // Default to story mode unless map mode is specifically requested
+  const showMapMode = window.location.search.includes('test=map');
+  if (!showMapMode) {
     return <StoryModeScroll />;
   }
   

@@ -33,6 +33,7 @@ const StoryModeScroll: React.FC = () => {
   const [imageSceneScrollProgress, setImageSceneScrollProgress] = useState<{[key: number]: number}>({}); // Track scroll progress for each image scene
   const [activeQuest, setActiveQuest] = useState<{text: string, type: string, state: 'center' | 'top' | 'center-from-top' | 'exit-bottom'} | null>(null); // Track active quest
   const [activeInput, setActiveInput] = useState<{prompt: string, userInput: string} | null>(null); // Track active input prompt
+  const [activeInputPrompt, setActiveInputPrompt] = useState<{prompt: string, state: 'center' | 'top' | 'exit-bottom'} | null>(null); // Track active input prompt dialog
   const [userInput, setUserInput] = useState(''); // Track user's typed input
   const containerRef = useRef<HTMLDivElement>(null);
   const itemRefs = useRef<(HTMLDivElement | null)[]>([]);
@@ -243,7 +244,6 @@ const StoryModeScroll: React.FC = () => {
     // Quest lifecycle management
     if (currentContent && currentContent.type === 'quest' && !activeQuest) {
       // Initialize quest in center state - CSS animation will handle the appear effect
-      console.log('🎯 QUEST DEBUG: Initializing quest in CENTER state', {currentItem, previousItem, currentContent});
       setActiveQuest({
         text: currentContent.text,
         type: currentContent.questType,
@@ -253,51 +253,63 @@ const StoryModeScroll: React.FC = () => {
       // Move to top when scrolling forward past quest
       const prevContent = storyContent[currentItem - 1];
       if (prevContent && prevContent.type === 'quest') {
-        console.log('🎯 QUEST DEBUG: Moving quest from CENTER to TOP');
         setActiveQuest(prev => prev ? {...prev, state: 'top'} : null);
       }
     } else if (activeQuest && activeQuest.state === 'top' && isScrollingUp) {
       // Return to center when scrolling back up
       const questItemIndex = storyContent.findIndex(item => item.type === 'quest');
       if (questItemIndex >= 0 && currentItem <= questItemIndex) {
-        console.log('🎯 QUEST DEBUG: Moving quest from TOP back to CENTER (scroll up)');
         setActiveQuest(prev => prev ? {...prev, state: 'center-from-top'} : null);
       }
     } else if (activeQuest && activeQuest.state === 'center-from-top' && currentItem > previousItem) {
       // Move back to top when scrolling forward again from center-from-top
       const prevContent = storyContent[currentItem - 1];
       if (prevContent && prevContent.type === 'quest') {
-        console.log('🎯 QUEST DEBUG: Moving quest from CENTER-FROM-TOP back to TOP');
         setActiveQuest(prev => prev ? {...prev, state: 'top'} : null);
       }
     } else if (activeQuest && (activeQuest.state === 'center-from-top' || activeQuest.state === 'center') && isScrollingUp) {
       // Exit to bottom when scrolling up past quest scene
       const questItemIndex = storyContent.findIndex(item => item.type === 'quest');
       if (questItemIndex >= 0 && currentItem < questItemIndex) {
-        console.log('🎯 QUEST DEBUG: Quest exiting to BOTTOM (scroll up past quest)');
         setActiveQuest(prev => prev ? {...prev, state: 'exit-bottom'} : null);
         // Remove quest after exit animation completes
         setTimeout(() => {
-          console.log('🎯 QUEST DEBUG: Removing quest after exit animation');
           setActiveQuest(null);
         }, 600); // Match exit animation duration
       }
     }
 
-    // Debug current quest state and detect unexpected changes
-    if (activeQuest) {
-      console.log(`🎯 QUEST DEBUG: Current state = ${activeQuest.state}, currentItem = ${currentItem}, previousItem = ${previousItem}`);
-      
-      // Detect if quest state changes unexpectedly
-      if (activeQuest.state === 'appearing' && currentItem > 2) {
-        console.log('🚨 QUEST ERROR: Quest reset to APPEARING state unexpectedly!');
+    // Input prompt lifecycle management
+    if (currentContent && currentContent.type === 'input' && !activeInputPrompt) {
+      // Initialize input prompt in center state
+      setActiveInputPrompt({
+        prompt: currentContent.prompt,
+        state: 'center'
+      });
+    } else if (activeInputPrompt && activeInputPrompt.state === 'center' && currentItem > previousItem) {
+      // Move to top when scrolling forward past input
+      const prevContent = storyContent[currentItem - 1];
+      if (prevContent && prevContent.type === 'input') {
+        setActiveInputPrompt(prev => prev ? {...prev, state: 'top'} : null);
       }
-      
-      if (activeQuest.state === 'center' && previousItem === currentItem && currentItem > 2) {
-        console.log('🚨 QUEST ERROR: Quest reset to CENTER state unexpectedly!');
+    } else if (activeInputPrompt && activeInputPrompt.state === 'top' && isScrollingUp) {
+      // Return to center when scrolling back up
+      const inputItemIndex = storyContent.findIndex(item => item.type === 'input');
+      if (inputItemIndex >= 0 && currentItem <= inputItemIndex) {
+        setActiveInputPrompt(prev => prev ? {...prev, state: 'center'} : null);
+      }
+    } else if (activeInputPrompt && activeInputPrompt.state === 'center' && isScrollingUp) {
+      // Exit to bottom when scrolling up past input scene
+      const inputItemIndex = storyContent.findIndex(item => item.type === 'input');
+      if (inputItemIndex >= 0 && currentItem < inputItemIndex) {
+        setActiveInputPrompt(prev => prev ? {...prev, state: 'exit-bottom'} : null);
+        // Remove input prompt after exit animation completes
+        setTimeout(() => {
+          setActiveInputPrompt(null);
+        }, 600); // Match exit animation duration
       }
     }
-  }, [currentItem, storyContent, previousItem, activeQuest]);
+  }, [currentItem, storyContent, previousItem, activeQuest, activeInputPrompt]);
 
   // Detect current item from scroll position
   useEffect(() => {
@@ -317,7 +329,6 @@ const StoryModeScroll: React.FC = () => {
       // Calculate continuous offset for smooth transforms
       const newOffset = scrollTop / containerHeight;
       setScrollOffset(newOffset);
-      
       
       if (newCurrentItem !== currentItem && newCurrentItem >= 0 && newCurrentItem < storyContent.length) {
         setCurrentItem(newCurrentItem);
@@ -422,7 +433,8 @@ const StoryModeScroll: React.FC = () => {
                   character: scene['left-character'] || scene.character, // Support both property names
                   leftCharacter: scene['left-character'],
                   rightCharacter: scene['right-character'],
-                  side: flowItem.side || 'left'
+                  side: flowItem.side || 'left',
+                  waiting: flowItem.waiting || false // Add waiting state
                 };
                 console.log('Adding flow item:', newItem);
                 flattenedContent.push(newItem);
@@ -602,13 +614,27 @@ const StoryModeScroll: React.FC = () => {
                 )}
                 
                 {content.type === 'character' && (
-                  <SpeechBubble 
-                    side={content.side}
-                    speech={content.speech}
-                    character={content.character}
-                    isActive={currentItem === index}
-                    activeInput={activeInput}
-                  />
+                  <div className="story-character-container">
+                    <SpeechBubble 
+                      side={content.side}
+                      speech={content.speech}
+                      character={content.character}
+                      isActive={currentItem === index}
+                      activeInput={activeInput}
+                    />
+                    {content.waiting && (
+                      <div className="story-waiting-bubble-container">
+                        <SpeechBubble 
+                          side="right"
+                          speech="..."
+                          character={content.rightCharacter || content.leftCharacter}
+                          isActive={currentItem === index}
+                          activeInput={null}
+                          isWaiting={true}
+                        />
+                      </div>
+                    )}
+                  </div>
                 )}
                 
 
@@ -623,23 +649,123 @@ const StoryModeScroll: React.FC = () => {
         <QuestDialog quest={activeQuest} />
 
         {/* Layer 5: Input Prompt layer - separate from scroll targets */}
-        {storyContent.map((content, index) => {
-          if (content.type === 'input' && currentItem === index) {
-            return (
-              <InputPrompt 
-                key={`input-${index}`}
-                prompt={content.prompt}
-                onSubmit={(input) => {
-                  setActiveInput({prompt: content.prompt, userInput: input});
-                  setTimeout(() => {
-                    setCurrentItem(currentItem + 1);
-                  }, 500);
-                }}
-              />
-            );
-          }
-          return null;
-        })}
+        {activeInputPrompt && (
+          <InputPrompt 
+            key={`input-prompt`}
+            prompt={activeInputPrompt.prompt}
+            state={activeInputPrompt.state}
+            onSubmit={(input) => {
+              console.log('🎯 INPUT SUBMIT:', input);
+              console.log('🎯 Current item before submit:', currentItem);
+              setActiveInput({prompt: activeInputPrompt.prompt, userInput: input});
+              
+              // Find the original character-flow scene and insert the dialog into its flow
+              fetch('/stories/gingerbread.bundle/story.json')
+                .then(response => response.json())
+                .then(data => {
+                  const scenes = data.scenes || [];
+                  
+                  // Find the character-flow scene that contains this input
+                  const targetScene = scenes.find((scene: any) => 
+                    scene.type === 'character-flow' && 
+                    scene.flow && 
+                    scene.flow.some((flowItem: any) => flowItem.input === activeInputPrompt.prompt)
+                  );
+                  
+                  console.log('🎯 Found target scene:', targetScene);
+                  
+                  if (targetScene) {
+                    // Find the input item index in the flow
+                    const inputIndex = targetScene.flow.findIndex((flowItem: any) => 
+                      flowItem.input === activeInputPrompt.prompt
+                        );
+                        
+                        console.log('🎯 Input index in flow:', inputIndex);
+                        console.log('🎯 Flow before insert:', targetScene.flow);
+                        
+                        // Insert Leo's response right after the input
+                        const leoResponse = {
+                          side: 'left',
+                          text: input
+                        };
+                        
+                        targetScene.flow.splice(inputIndex + 1, 0, leoResponse);
+                        console.log('🎯 Flow after insert:', targetScene.flow);
+                        
+                        // Re-flatten the content
+                        const flattenedContent: any[] = [];
+                        scenes.forEach((scene: any) => {
+                          if (scene.type === 'character-flow' && scene.flow) {
+                            scene.flow.forEach((flowItem: any) => {
+                              if (flowItem.quest) {
+                                const questItem = {
+                                  type: 'quest',
+                                  questType: flowItem.quest,
+                                  text: flowItem.text,
+                                  background: scene.background,
+                                  leftCharacter: scene['left-character'],
+                                  rightCharacter: scene['right-character']
+                                };
+                                flattenedContent.push(questItem);
+                              } else if (flowItem.input) {
+                                const inputItem = {
+                                  type: 'input',
+                                  prompt: flowItem.input,
+                                  background: scene.background,
+                                  leftCharacter: scene['left-character'],
+                                  rightCharacter: scene['right-character']
+                                };
+                                flattenedContent.push(inputItem);
+                              } else if (flowItem.side && flowItem.text) {
+                                const characterItem = {
+                                  type: 'character',
+                                  side: flowItem.side,
+                                  speech: flowItem.text,
+                                  character: flowItem.side === 'left' ? scene['left-character'] : scene['right-character'],
+                                  background: scene.background,
+                                  leftCharacter: scene['left-character'],
+                                  rightCharacter: scene['right-character'],
+                                  waiting: flowItem.waiting || false // Add waiting state
+                                };
+                                flattenedContent.push(characterItem);
+                              }
+                            });
+                          } else {
+                            flattenedContent.push(scene);
+                          }
+                        });
+                        
+                        console.log('🎯 Flattened content length:', flattenedContent.length);
+                        console.log('🎯 New flattened content:', flattenedContent);
+                        
+                        // Update story content and current item together
+                        setStoryContent(flattenedContent);
+                        const newCurrentItem = currentItem + 1;
+                        console.log('🎯 Setting new current item:', newCurrentItem);
+                        setCurrentItem(newCurrentItem);
+                        
+                        // Force scroll to the new dialog using direct container scroll
+                        setTimeout(() => {
+                          console.log('🎯 Attempting to scroll to item:', newCurrentItem);
+                          if (containerRef.current && itemRefs.current[newCurrentItem]) {
+                            const targetElement = itemRefs.current[newCurrentItem];
+                            const containerElement = containerRef.current;
+                            
+                            // Calculate scroll position
+                            const targetPosition = newCurrentItem * containerElement.clientHeight;
+                            console.log('🎯 Scrolling to position:', targetPosition);
+                            
+                            containerElement.scrollTo({
+                              top: targetPosition,
+                              behavior: 'smooth'
+                            });
+                          }
+                        }, 100);
+                  }
+                });
+            }}
+          />
+        )}
 
         {/* Layer 5: Construction paper overlay layer */}
         <div className="story-overlay-layer">

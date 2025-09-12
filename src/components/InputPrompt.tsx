@@ -4,9 +4,10 @@ interface InputPromptProps {
   prompt: string;
   onSubmit: (input: string) => void;
   autoFocus?: boolean;
+  state?: 'center' | 'top' | 'exit-bottom';
 }
 
-const InputPrompt: React.FC<InputPromptProps> = ({ prompt, onSubmit, autoFocus = true }) => {
+const InputPrompt: React.FC<InputPromptProps> = ({ prompt, onSubmit, autoFocus = true, state = 'center' }) => {
   const [userInput, setUserInput] = useState('');
   const [isRecording, setIsRecording] = useState(false);
   const [recognition, setRecognition] = useState<SpeechRecognition | null>(null);
@@ -134,8 +135,7 @@ const InputPrompt: React.FC<InputPromptProps> = ({ prompt, onSubmit, autoFocus =
   };
 
   return (
-    <div className="story-input-container">
-      <div className="story-input-prompt">{prompt}</div>
+    <div className={`story-input-container story-input-${state}`}>
       <div className="story-input-box">
         <input
           ref={inputRef}
@@ -143,7 +143,7 @@ const InputPrompt: React.FC<InputPromptProps> = ({ prompt, onSubmit, autoFocus =
           value={userInput}
           onChange={(e) => setUserInput(e.target.value)}
           onKeyDown={handleKeyDown}
-          placeholder="Tap the Mic or Type..."
+          placeholder={prompt}
           autoFocus={autoFocus}
         />
         <button 
@@ -154,14 +154,14 @@ const InputPrompt: React.FC<InputPromptProps> = ({ prompt, onSubmit, autoFocus =
         >
           <div className="send-icon-mask"></div>
         </button>
-        <button 
-          className={`story-input-record-button ${isRecording ? 'recording' : ''}`}
-          onClick={handleRecordClick}
-          title={isRecording ? 'Stop recording' : 'Start recording'}
-        >
-          <div className="record-icon-mask"></div>
-        </button>
       </div>
+      <button 
+        className={`story-input-record-button ${isRecording ? 'recording' : ''}`}
+        onClick={handleRecordClick}
+        title={isRecording ? 'Stop recording' : 'Start recording'}
+      >
+        <div className="record-icon-mask"></div>
+      </button>
     </div>
   );
 };
