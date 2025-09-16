@@ -8,8 +8,7 @@ interface CharacterPanelProps {
   characterProgress: number;
   bounceComplete: boolean;
   currentCharacter: string | null;
-  currentScene: any;
-  currentItem: number;
+  isSpeaking: boolean;
   version: string;
   onBounceComplete: () => void;
 }
@@ -22,8 +21,7 @@ const CharacterPanel = forwardRef<HTMLDivElement, CharacterPanelProps>(({
   characterProgress,
   bounceComplete,
   currentCharacter,
-  currentScene,
-  currentItem,
+  isSpeaking,
   version,
   onBounceComplete
 }, ref) => {
@@ -37,18 +35,16 @@ const CharacterPanel = forwardRef<HTMLDivElement, CharacterPanelProps>(({
     if (!characterAnimating && characterProgress >= 100 && !bounceComplete) {
       return side === 'left' ? 'story-bounce-arrival' : 'story-bounce-arrival-right';
     }
-    
+
     // Apply shake animation only when this character is speaking and entrance is complete
-    if (currentScene && 
-        currentScene.type === 'character' && 
-        currentScene.side === side && 
-        panelState === 'visible' && 
-        !characterAnimating && 
+    if (isSpeaking &&
+        panelState === 'visible' &&
+        !characterAnimating &&
         characterProgress >= 100 &&
         bounceComplete) {
       return side === 'left' ? 'story-character-speaking' : 'story-character-speaking-right';
     }
-    
+
     return '';
   };
 
@@ -74,9 +70,10 @@ const CharacterPanel = forwardRef<HTMLDivElement, CharacterPanelProps>(({
   };
 
   return (
-    <div 
-      ref={ref} 
+    <div
+      ref={ref}
       className={`story-character-panel story-character-${side} story-character-${panelState} ${characterAnimating ? 'animating' : ''}`}
+      {...(side === 'right' && currentCharacter === 'bakerMom' && { 'data-wait-anchor': true })}
     >
       <div className="story-character-content">
         <div 

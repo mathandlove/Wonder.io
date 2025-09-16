@@ -1,240 +1,239 @@
 import React, { useState, useRef, useCallback, useEffect } from 'react';
 import './StoryModeScroll.css';
-import TitleScene from './components/TitleScene';
 import CharacterPanel from './components/CharacterPanel';
 import QuestDialog from './components/QuestDialog';
 import InputPrompt from './components/InputPrompt';
-import SpeechBubble from './components/SpeechBubble';
 import BackgroundLayer from './components/BackgroundLayer';
 import ImageLayer from './components/ImageLayer';
-import FullContent from './components/FullContent';
+import WaitingBubbleLayer from './components/WaitingBubbleLayer';
+import StoryContentLayer from './components/StoryContentLayer';
+import OverlayLayer from './components/OverlayLayer';
+import { useKeyboardHandler } from './hooks/useKeyboardHandler';
+import { useScrollHandler } from './hooks/useScrollHandler';
+import { useBubbleHeightTracker } from './hooks/useBubbleHeightTracker';
+
+interface CharacterState {
+  panelState: 'hidden' | 'visible' | 'exiting';
+  animating: boolean;
+  progress: number;
+  hasStartedAnimation: boolean;
+  fullyExited: boolean;
+  bounceComplete: boolean;
+  currentCharacter: string | null;
+}
 
 const StoryModeScroll: React.FC = () => {
-  const [currentItem, setCurrentItem] = useState(0); // 0-6 for items (7 total)
+  const [currentItem, setCurrentItem] = useState(0);
   const [isScrolling, setIsScrolling] = useState(false);
-  const [leftCharacterPanelState, setLeftCharacterPanelState] = useState<'hidden' | 'visible' | 'exiting'>('hidden');
-  const [rightCharacterPanelState, setRightCharacterPanelState] = useState<'hidden' | 'visible' | 'exiting'>('hidden');
-  const [leftCharacterAnimating, setLeftCharacterAnimating] = useState(false);
-  const [rightCharacterAnimating, setRightCharacterAnimating] = useState(false);
-  const [leftCharacterProgress, setLeftCharacterProgress] = useState(0); // Animation progress 0-100
-  const [rightCharacterProgress, setRightCharacterProgress] = useState(0); // Animation progress 0-100
-  const [hasStartedLeftAnimation, setHasStartedLeftAnimation] = useState(false); // Prevent multiple starts
-  const [hasStartedRightAnimation, setHasStartedRightAnimation] = useState(false); // Prevent multiple starts
-  const [leftCharacterFullyExited, setLeftCharacterFullyExited] = useState(false); // Track if exit animation completed
-  const [rightCharacterFullyExited, setRightCharacterFullyExited] = useState(false); // Track if exit animation completed
-  const [leftBounceComplete, setLeftBounceComplete] = useState(false);
-  const [rightBounceComplete, setRightBounceComplete] = useState(false);
-  const [currentLeftCharacter, setCurrentLeftCharacter] = useState<string | null>(null); // Track current left character
-  const [currentRightCharacter, setCurrentRightCharacter] = useState<string | null>(null); // Track current right character
-  const [previousItem, setPreviousItem] = useState(0); // Track previous panel for direction
-  const [version] = useState(`v${Date.now()}`); // Version for cache busting
-  const [storyContent, setStoryContent] = useState<any[]>([]);
+  const [leftCharacter, setLeftCharacter] = useState<CharacterState>({
+    panelState: 'hidden',
+    animating: false,
+    progress: 0,
+    hasStartedAnimation: false,
+    fullyExited: false,
+    bounceComplete: false,
+    currentCharacter: null
+  });
+  const [rightCharacter, setRightCharacter] = useState<CharacterState>({
+    panelState: 'hidden',
+    animating: false,
+    progress: 0,
+    hasStartedAnimation: false,
+    fullyExited: false,
+    bounceComplete: false,
+    currentCharacter: null
+  });
+  const [previousItem, setPreviousItem] = useState(0);
+  const [version] = useState(`v${Date.now()}`);
+  interface StoryContentItem {
+    type: string;
+    showWaitingBubble?: boolean;
+    side?: 'left' | 'right';
+    speech?: string;
+    rightCharacter?: string;
+    leftCharacter?: string;
+    title?: string;
+    subtitle?: string;
+    author?: string;
+    text?: string;
+    prompt?: string;
+    background?: string;
+    image?: string;
+    isWaiting?: boolean;
+    lvl1?: string;
+    lvl2?: string;
+    lvl3?: string;
+    character?: string;
+    questType?: string;
+  }
+  const [storyContent, setStoryContent] = useState<StoryContentItem[]>([]);
   const [scrollOffset, setScrollOffset] = useState(0); // New state to drive all transforms
-  const [imageSceneScrollProgress, setImageSceneScrollProgress] = useState<{[key: number]: number}>({}); // Track scroll progress for each image scene
   const [activeQuest, setActiveQuest] = useState<{text: string, type: string, state: 'center' | 'top' | 'center-from-top' | 'exit-bottom'} | null>(null); // Track active quest
   const [activeInput, setActiveInput] = useState<{prompt: string, userInput: string} | null>(null); // Track active input prompt
   const [activeInputPrompt, setActiveInputPrompt] = useState<{prompt: string, state: 'center' | 'top' | 'exit-bottom'} | null>(null); // Track active input prompt dialog
-  const [userInput, setUserInput] = useState(''); // Track user's typed input
+  const [waitingBubbleAnchored, setWaitingBubbleAnchored] = useState(false); // Track if waiting bubble has been anchored to waiting scene
+  const [receivedMessages, setReceivedMessages] = useState<{[key: number]: string}>({}); // Track received messages by scene index
+  const [allowScrollDown, setAllowScrollDown] = useState(true); // Track if scrolling down is allowed
   const containerRef = useRef<HTMLDivElement>(null);
   const itemRefs = useRef<(HTMLDivElement | null)[]>([]);
   const leftPanelRef = useRef<HTMLDivElement>(null);
   const rightPanelRef = useRef<HTMLDivElement>(null);
+  const sceneBubbleRefs = useRef<{ [key: string]: HTMLDivElement | null }>({});
+
+  // Helper function to update character state
+  const updateCharacterState = useCallback((
+    side: 'left' | 'right',
+    updates: Partial<CharacterState>
+  ) => {
+    if (side === 'left') {
+      setLeftCharacter(prev => ({ ...prev, ...updates }));
+    } else {
+      setRightCharacter(prev => ({ ...prev, ...updates }));
+    }
+  }, []);
+
+  // Helper function to animate character entrance
+  const animateCharacterEntrance = useCallback((side: 'left' | 'right') => {
+    updateCharacterState(side, { hasStartedAnimation: true, animating: true });
+
+    let progress = 0;
+    const animationInterval = setInterval(() => {
+      progress += 10;
+      updateCharacterState(side, { progress });
+      if (progress >= 95) {
+        clearInterval(animationInterval);
+        updateCharacterState(side, { progress: 100, animating: false });
+        setTimeout(() => {
+          updateCharacterState(side, { bounceComplete: true });
+        }, 1200);
+      }
+    }, 25);
+  }, [updateCharacterState]);
 
 
-  // Update character panel states based on current item - completely driven by JSON content
+  // Update character panel states based on current item
   useEffect(() => {
     if (!storyContent || storyContent.length === 0) return;
-    
+
     const isScrollingUp = currentItem < previousItem;
     const currentContent = storyContent[currentItem];
     const previousContent = storyContent[previousItem];
-    
-    // Determine if current item needs character panels based on scene type
-    // Include quest and input scenes to keep character panels visible
-    const needsLeftCharacterPanel = currentContent && (
-      currentContent.type === 'character' || 
-      currentContent.type === 'character-flow' ||
-      currentContent.type === 'quest' ||
-      currentContent.type === 'input'
-    ) && currentContent.leftCharacter;
-    
-    const needsRightCharacterPanel = currentContent && (
-      currentContent.type === 'character' || 
-      currentContent.type === 'character-flow' ||
-      currentContent.type === 'quest' ||
-      currentContent.type === 'input'
-    ) && currentContent.rightCharacter;
-    
-    // Handle left character panel
-    if (!needsLeftCharacterPanel) {
-      if (leftCharacterPanelState === 'visible') {
-        if (isScrollingUp) {
-          // Immediately exit when scrolling up, no animation
-          setLeftCharacterPanelState('hidden');
-          setLeftCharacterFullyExited(true);
-          setHasStartedLeftAnimation(false);
-          setLeftCharacterProgress(0);
-          setLeftBounceComplete(false);
-        } else {
-          // Normal animated exit when scrolling down
-          setLeftCharacterPanelState('exiting');
-          setHasStartedLeftAnimation(false);
-          setTimeout(() => {
-            setLeftCharacterFullyExited(true);
-            setLeftCharacterPanelState('hidden');
-            setLeftBounceComplete(false);
-          }, 800);
-        }
-      } else if (leftCharacterPanelState !== 'exiting') {
-        setLeftCharacterPanelState('hidden');
-        setHasStartedLeftAnimation(false);
-        setLeftCharacterFullyExited(true);
-        setLeftCharacterProgress(0);
-        setLeftBounceComplete(false);
-      }
-    } else {
-      setLeftCharacterPanelState('visible');
-      setLeftCharacterFullyExited(false);
-      setCurrentLeftCharacter(currentContent.leftCharacter); // Store current character
-      
-      const wasNonCharacterScene = !previousContent || (
-        previousContent.type !== 'character' && 
-        previousContent.type !== 'character-flow' &&
-        previousContent.type !== 'quest'
-      );
-      
-      if (isScrollingUp && wasNonCharacterScene) {
-        setLeftCharacterProgress(100);
-        setLeftCharacterAnimating(false);
-        setHasStartedLeftAnimation(true);
-        // Set bounce complete immediately when scrolling up
-        setLeftBounceComplete(true);
-      } else if (!hasStartedLeftAnimation && wasNonCharacterScene) {
-        setHasStartedLeftAnimation(true);
-        setLeftCharacterAnimating(true);
-        
-        let progress = 0;
-        const animationInterval = setInterval(() => {
-          progress += 10; // Double the speed
-          setLeftCharacterProgress(progress);
-          if (progress >= 95) {
-            clearInterval(animationInterval);
-            setLeftCharacterProgress(100);
-            setLeftCharacterAnimating(false);
-            // Set bounce complete after bounce animation (1.2s)
-            setTimeout(() => {
-              setLeftBounceComplete(true);
-            }, 1200);
-          }
-        }, 25); // Smooth animation over ~250ms
-      }
-    }
-    
-    // Handle right character panel (similar logic)
-    if (!needsRightCharacterPanel) {
-      if (rightCharacterPanelState === 'visible') {
-        if (isScrollingUp) {
-          // Immediately exit when scrolling up, no animation
-          setRightCharacterPanelState('hidden');
-          setRightCharacterFullyExited(true);
-          setHasStartedRightAnimation(false);
-          setRightCharacterProgress(0);
-          setRightBounceComplete(false);
-        } else {
-          // Normal animated exit when scrolling down
-          setRightCharacterPanelState('exiting');
-          setHasStartedRightAnimation(false);
-          setTimeout(() => {
-            setRightCharacterFullyExited(true);
-            setRightCharacterPanelState('hidden');
-            setRightBounceComplete(false);
-          }, 800);
-        }
-      } else if (rightCharacterPanelState !== 'exiting') {
-        setRightCharacterPanelState('hidden');
-        setHasStartedRightAnimation(false);
-        setRightCharacterFullyExited(true);
-        setRightCharacterProgress(0);
-        setRightBounceComplete(false);
-      }
-    } else {
-      setRightCharacterPanelState('visible');
-      setRightCharacterFullyExited(false);
-      setCurrentRightCharacter(currentContent.rightCharacter); // Store current character
-      
-      const wasNonCharacterScene = !previousContent || (
-        previousContent.type !== 'character' && 
-        previousContent.type !== 'character-flow' &&
-        previousContent.type !== 'quest'
-      );
-      
-      if (isScrollingUp && wasNonCharacterScene) {
-        setRightCharacterProgress(100);
-        setRightCharacterAnimating(false);
-        setHasStartedRightAnimation(true);
-        // Set bounce complete immediately when scrolling up
-        setRightBounceComplete(true);
-      } else if (!hasStartedRightAnimation && wasNonCharacterScene) {
-        setHasStartedRightAnimation(true);
-        setRightCharacterAnimating(true);
-        
-        let progress = 0;
-        const animationInterval = setInterval(() => {
-          progress += 10; // Double the speed
-          setRightCharacterProgress(progress);
-          if (progress >= 95) {
-            clearInterval(animationInterval);
-            setRightCharacterProgress(100);
-            setRightCharacterAnimating(false);
-            // Set bounce complete after bounce animation (1.2s)
-            setTimeout(() => {
-              setRightBounceComplete(true);
-            }, 1200);
-          }
-        }, 25); // Smooth animation over ~250ms
-      }
-    }
-    
-    setPreviousItem(currentItem);
-  }, [currentItem, hasStartedLeftAnimation, hasStartedRightAnimation, leftCharacterPanelState, rightCharacterPanelState, previousItem, storyContent]);
 
-  // Simple function to go to a specific item using native scrollIntoView
+    // Helper function to handle character state based on scene requirements
+    const handleCharacterForSide = (
+      side: 'left' | 'right',
+      needsCharacter: boolean,
+      characterName: string | null,
+      wasNonCharacterScene: boolean
+    ) => {
+      // Get the current character state at the time of execution
+      const character = side === 'left' ? leftCharacter : rightCharacter;
+
+      if (!needsCharacter) {
+        if (character.panelState === 'visible') {
+          if (isScrollingUp) {
+            updateCharacterState(side, {
+              panelState: 'hidden',
+              fullyExited: true,
+              hasStartedAnimation: false,
+              progress: 0,
+              bounceComplete: false
+            });
+          } else {
+            updateCharacterState(side, {
+              panelState: 'exiting',
+              hasStartedAnimation: false
+            });
+            setTimeout(() => {
+              updateCharacterState(side, {
+                fullyExited: true,
+                panelState: 'hidden',
+                bounceComplete: false
+              });
+            }, 800);
+          }
+        } else if (character.panelState !== 'exiting') {
+          updateCharacterState(side, {
+            panelState: 'hidden',
+            hasStartedAnimation: false,
+            fullyExited: true,
+            progress: 0,
+            bounceComplete: false
+          });
+        }
+      } else {
+        updateCharacterState(side, {
+          panelState: 'visible',
+          fullyExited: false,
+          currentCharacter: characterName
+        });
+
+        if (isScrollingUp && wasNonCharacterScene) {
+          updateCharacterState(side, {
+            progress: 100,
+            animating: false,
+            hasStartedAnimation: true,
+            bounceComplete: true
+          });
+        } else if (!character.hasStartedAnimation && wasNonCharacterScene) {
+          animateCharacterEntrance(side);
+        }
+      }
+    };
+
+    // Determine if scenes need character panels
+    const needsLeftCharacterPanel = currentContent && (
+      currentContent.type === 'character' ||
+      currentContent.type === 'character-flow' ||
+      currentContent.type === 'quest' ||
+      currentContent.type === 'input' ||
+      currentContent.type === 'waiting'
+    ) && currentContent.leftCharacter;
+
+    const needsRightCharacterPanel = currentContent && (
+      currentContent.type === 'character' ||
+      currentContent.type === 'character-flow' ||
+      currentContent.type === 'quest' ||
+      currentContent.type === 'input' ||
+      currentContent.type === 'waiting'
+    ) && currentContent.rightCharacter;
+
+    const wasNonCharacterScene = !previousContent || (
+      previousContent.type !== 'character' &&
+      previousContent.type !== 'character-flow' &&
+      previousContent.type !== 'quest'
+    );
+
+    // Handle both sides using the shared function
+    handleCharacterForSide('left', !!needsLeftCharacterPanel, currentContent?.leftCharacter || null, wasNonCharacterScene);
+    handleCharacterForSide('right', !!needsRightCharacterPanel, currentContent?.rightCharacter || null, wasNonCharacterScene);
+
+    setPreviousItem(currentItem);
+
+    // Check if next scene is waiting and hasn't received a message yet
+    const nextItem = currentItem + 1;
+    if (nextItem < storyContent.length &&
+        storyContent[nextItem]?.type === 'waiting' &&
+        !receivedMessages[nextItem]) {
+      setAllowScrollDown(false);
+    } else {
+      setAllowScrollDown(true);
+    }
+  }, [currentItem, previousItem, storyContent, receivedMessages]);
+
   const goToItem = useCallback((itemIndex: number) => {
-    if (isScrolling) return;
-    if (itemIndex < 0 || itemIndex >= storyContent.length) return;
-    
+    if (isScrolling || itemIndex < 0 || itemIndex >= storyContent.length) return;
+
     const targetElement = itemRefs.current[itemIndex];
     if (!targetElement) return;
-    
+
     setIsScrolling(true);
     setCurrentItem(itemIndex);
-    
-    console.log(`Scrolling to item ${itemIndex}`);
-    
-    // Use native scroll with CSS scroll-snap
-    targetElement.scrollIntoView({
-      behavior: 'smooth',
-      block: 'start'
-    });
-    
-    // Clear scrolling state after animation
-    setTimeout(() => {
-      setIsScrolling(false);
-    }, 600); // Slightly longer for smooth scroll
-  }, [isScrolling]);
 
-  // Navigation functions
-  const goNext = useCallback(() => {
-    if (currentItem < storyContent.length - 1) {
-      goToItem(currentItem + 1);
-    }
-  }, [currentItem, goToItem, storyContent.length]);
+    targetElement.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    setTimeout(() => setIsScrolling(false), 600);
+  }, [isScrolling, storyContent.length]);
 
-  const goPrev = useCallback(() => {
-    if (currentItem > 0) {
-      goToItem(currentItem - 1);
-    }
-  }, [currentItem, goToItem]);
 
   // Handle quest state when current item changes
   useEffect(() => {
@@ -245,8 +244,8 @@ const StoryModeScroll: React.FC = () => {
     if (currentContent && currentContent.type === 'quest' && !activeQuest) {
       // Initialize quest in center state - CSS animation will handle the appear effect
       setActiveQuest({
-        text: currentContent.text,
-        type: currentContent.questType,
+        text: currentContent.text || '',
+        type: currentContent.questType || '',
         state: 'center'
       });
     } else if (activeQuest && activeQuest.state === 'center' && currentItem > previousItem) {
@@ -283,7 +282,7 @@ const StoryModeScroll: React.FC = () => {
     if (currentContent && currentContent.type === 'input' && !activeInputPrompt) {
       // Initialize input prompt in center state
       setActiveInputPrompt({
-        prompt: currentContent.prompt,
+        prompt: currentContent.prompt || '',
         state: 'center'
       });
     } else if (activeInputPrompt && activeInputPrompt.state === 'center' && currentItem > previousItem) {
@@ -311,34 +310,45 @@ const StoryModeScroll: React.FC = () => {
     }
   }, [currentItem, storyContent, previousItem, activeQuest, activeInputPrompt]);
 
-  // Detect current item from scroll position
-  useEffect(() => {
-    const container = containerRef.current;
-    if (!container) return;
-    
-    // Debug scroll container dimensions
-    console.log(`Scroll container: height=${container.clientHeight}, scrollHeight=${container.scrollHeight}, canScroll=${container.scrollHeight > container.clientHeight}`);
+  // Simple scroll to snap function
+  const scrollToSnap = (index: number, behavior: ScrollBehavior = "smooth") => {
+    const snaps = document.querySelectorAll(".story-scroll-target");
+    if (snaps[index]) snaps[index].scrollIntoView({ behavior });
+  };
 
-    const handleScroll = () => {
-      if (isScrolling) return; // Don't update during programmatic scrolling
-      
-      const containerHeight = container.clientHeight;
-      const scrollTop = container.scrollTop;
-      const newCurrentItem = Math.round(scrollTop / containerHeight);
-      
-      // Calculate continuous offset for smooth transforms
-      const newOffset = scrollTop / containerHeight;
-      setScrollOffset(newOffset);
-      
-      if (newCurrentItem !== currentItem && newCurrentItem >= 0 && newCurrentItem < storyContent.length) {
-        setCurrentItem(newCurrentItem);
-        console.log(`Scrolled to item ${newCurrentItem}`);
-      }
-    };
+  useKeyboardHandler({
+    currentItem,
+    storyContent,
+    isScrolling,
+    goToItem,
+    waitingBubbleAnchored,
+    receivedMessages,
+    setReceivedMessages,
+    setWaitingBubbleAnchored,
+    setAllowScrollDown,
+    scrollToSnap
+  });
 
-    container.addEventListener('scroll', handleScroll, { passive: true });
-    return () => container.removeEventListener('scroll', handleScroll);
-  }, [currentItem, isScrolling, storyContent.length]);
+  const handleLeftBubblePosition = () => {};
+
+  // Compute container class for character panel visibility
+  const getContainerClass = useCallback(() => {
+    return (!leftCharacter.fullyExited && !rightCharacter.fullyExited) ? 'story-container-both-visible' :
+           (!leftCharacter.fullyExited) ? `story-container-${leftCharacter.panelState}` :
+           (!rightCharacter.fullyExited) ? 'story-container-right-visible' :
+           'story-container-hidden';
+  }, [leftCharacter.fullyExited, leftCharacter.panelState, rightCharacter.fullyExited]);
+
+  useScrollHandler({
+    containerRef,
+    isScrolling,
+    currentItem,
+    storyContent,
+    allowScrollDown,
+    setScrollOffset,
+    setCurrentItem
+  });
+
 
   // Forward scroll events from character panels to main container
   useEffect(() => {
@@ -373,7 +383,13 @@ const StoryModeScroll: React.FC = () => {
       if (leftPanel) leftPanel.removeEventListener('wheel', forwardScroll);
       if (rightPanel) rightPanel.removeEventListener('wheel', forwardScroll);
     };
-  }, [storyContent.length, leftCharacterPanelState, rightCharacterPanelState]);
+  }, [storyContent.length, leftCharacter.panelState, rightCharacter.panelState]);
+
+  useBubbleHeightTracker({
+    currentItem,
+    storyContent,
+    sceneBubbleRefs
+  });
 
   // Load story content from JSON and flatten character-flow items
   useEffect(() => {
@@ -384,9 +400,7 @@ const StoryModeScroll: React.FC = () => {
         const flattenedContent: any[] = [];
         
         scenes.forEach((scene: any) => {
-          console.log('Processing scene:', scene);
           if (scene.type === 'character-flow' && scene.flow) {
-            console.log('Found character-flow with', scene.flow.length, 'items');
             // Flatten character-flow into individual scenes
             scene.flow.forEach((flowItem: any, flowIndex: number) => {
               const isLastInFlow = flowIndex === scene.flow.length - 1;
@@ -404,7 +418,6 @@ const StoryModeScroll: React.FC = () => {
                   leftCharacter: scene['left-character'],
                   rightCharacter: scene['right-character']
                 };
-                console.log('Adding quest item:', questItem);
                 flattenedContent.push(questItem);
               } else if (flowItem.input) {
                 // Handle input prompt
@@ -418,31 +431,47 @@ const StoryModeScroll: React.FC = () => {
                   leftCharacter: scene['left-character'],
                   rightCharacter: scene['right-character']
                 };
-                console.log('Adding input item:', inputItem);
                 flattenedContent.push(inputItem);
               } else {
-                // Regular character dialog
-                const newItem = {
-                  type: 'character',
-                  background: scene.background, // All flow items get the same background
-                  backgroundFixed: !isLastInFlow, // Only fix background for non-last items
-                  flowSequence: true, // Mark as part of flow sequence
-                  isFirstInFlow: flowIndex === 0, // Mark first item in flow
-                  isLastInFlow: isLastInFlow, // Mark last item in flow
-                  speech: flowItem.text,
-                  character: scene['left-character'] || scene.character, // Support both property names
-                  leftCharacter: scene['left-character'],
-                  rightCharacter: scene['right-character'],
-                  side: flowItem.side || 'left',
-                  waiting: flowItem.waiting || false // Add waiting state
-                };
-                console.log('Adding flow item:', newItem);
-                flattenedContent.push(newItem);
+                if (flowItem.waiting) {
+                  const waitingScene = {
+                    type: 'waiting',
+                    background: scene.background,
+                    backgroundFixed: !isLastInFlow,
+                    flowSequence: true,
+                    isFirstInFlow: false,
+                    isLastInFlow: isLastInFlow,
+                    leftCharacter: scene['left-character'],
+                    rightCharacter: scene['right-character'],
+                    isWaitingScene: true
+                  };
+                  flattenedContent.push(waitingScene);
+                } else {
+                  // Regular character dialog
+                  // Check if next flow item is waiting to show waiting bubble
+                  const nextFlowItem = scene.flow[flowIndex + 1];
+                  const hasWaitingNext = nextFlowItem && nextFlowItem.waiting;
+
+                  const newItem = {
+                    type: 'character',
+                    background: scene.background, // All flow items get the same background
+                    backgroundFixed: !isLastInFlow, // Only fix background for non-last items
+                    flowSequence: true, // Mark as part of flow sequence
+                    isFirstInFlow: flowIndex === 0, // Mark first item in flow
+                    isLastInFlow: isLastInFlow, // Mark last item in flow
+                    speech: flowItem.text,
+                    character: scene['left-character'] || scene.character, // Support both property names
+                    leftCharacter: scene['left-character'],
+                    rightCharacter: scene['right-character'],
+                    side: flowItem.side || 'left',
+                    showWaitingBubble: hasWaitingNext // Show waiting bubble if next item is waiting
+                  };
+                  flattenedContent.push(newItem);
+                }
               }
             });
           } else if (scene.type === 'image' && scene.text) {
             // Split image scenes with text into two scenes
-            console.log('Splitting image scene with text into two scenes');
             
             // First scene: just the image
             flattenedContent.push({
@@ -461,12 +490,10 @@ const StoryModeScroll: React.FC = () => {
             });
           } else {
             // Keep other scene types as-is
-            console.log('Adding regular scene:', scene);
             flattenedContent.push(scene);
           }
         });
-        
-        console.log('Flattened story content:', flattenedContent);
+
         setStoryContent(flattenedContent);
       })
       .catch(error => {
@@ -509,41 +536,34 @@ const StoryModeScroll: React.FC = () => {
         <CharacterPanel
           ref={leftPanelRef}
           side="left"
-          panelState={leftCharacterPanelState}
-          characterFullyExited={leftCharacterFullyExited}
-          characterAnimating={leftCharacterAnimating}
-          characterProgress={leftCharacterProgress}
-          bounceComplete={leftBounceComplete}
-          currentCharacter={currentLeftCharacter}
-          currentScene={storyContent[currentItem]}
-          currentItem={currentItem}
+          panelState={leftCharacter.panelState}
+          characterFullyExited={leftCharacter.fullyExited}
+          characterAnimating={leftCharacter.animating}
+          characterProgress={leftCharacter.progress}
+          bounceComplete={leftCharacter.bounceComplete}
+          currentCharacter={leftCharacter.currentCharacter}
+          isSpeaking={storyContent[currentItem]?.type === 'character' && storyContent[currentItem]?.side === 'left'}
           version={version}
-          onBounceComplete={() => setLeftBounceComplete(true)}
+          onBounceComplete={() => updateCharacterState('left', { bounceComplete: true })}
         />
 
         {/* Right Character panel */}
         <CharacterPanel
           ref={rightPanelRef}
           side="right"
-          panelState={rightCharacterPanelState}
-          characterFullyExited={rightCharacterFullyExited}
-          characterAnimating={rightCharacterAnimating}
-          characterProgress={rightCharacterProgress}
-          bounceComplete={rightBounceComplete}
-          currentCharacter={currentRightCharacter}
-          currentScene={storyContent[currentItem]}
-          currentItem={currentItem}
+          panelState={rightCharacter.panelState}
+          characterFullyExited={rightCharacter.fullyExited}
+          characterAnimating={rightCharacter.animating}
+          characterProgress={rightCharacter.progress}
+          bounceComplete={rightCharacter.bounceComplete}
+          currentCharacter={rightCharacter.currentCharacter}
+          isSpeaking={storyContent[currentItem]?.type === 'character' && storyContent[currentItem]?.side === 'right'}
           version={version}
-          onBounceComplete={() => setRightBounceComplete(true)}
+          onBounceComplete={() => updateCharacterState('right', { bounceComplete: true })}
         />
 
         {/* Layer 1: Invisible scroll targets for CSS scroll-snap */}
-        <div className={`story-scroll-targets ${
-          (!leftCharacterFullyExited && !rightCharacterFullyExited) ? 'story-container-both-visible' :
-          (!leftCharacterFullyExited) ? `story-container-${leftCharacterPanelState}` :
-          (!rightCharacterFullyExited) ? 'story-container-right-visible' :
-          'story-container-hidden'
-        }`} ref={containerRef}>
+        <div className={`story-scroll-targets ${getContainerClass()}`} ref={containerRef}>
           {storyContent.map((_, index) => (
             <div key={`scroll-target-${index}`} className="story-scroll-target" />
           ))}
@@ -556,98 +576,21 @@ const StoryModeScroll: React.FC = () => {
         <ImageLayer storyContent={storyContent} scrollOffset={scrollOffset} />
 
         {/* Layer 3: Transform-controlled content (objects) */}
-        <div className={`story-content-layer ${
-          (!leftCharacterFullyExited && !rightCharacterFullyExited) ? 'story-container-both-visible' :
-          (!leftCharacterFullyExited) ? `story-container-${leftCharacterPanelState}` :
-          (!rightCharacterFullyExited) ? 'story-container-right-visible' :
-          'story-container-hidden'
-        }`}>
-          {storyContent.length === 0 ? (
-            <div style={{color: 'white', fontSize: '24px', textAlign: 'center', padding: '50px'}}>
-              Loading story content...
-            </div>
-            ) : (
-              storyContent.map((content, index) => {
-                // Calculate transform offset for this content item
-                const contentTransform = `translateY(${(index - scrollOffset) * 100}vh)`;
-                
-                return (
-                <div
-                  key={index}
-                  ref={el => itemRefs.current[index] = el}
-                  className={`story-item ${currentItem === index ? 'active' : ''}`}
-                  style={{
-                    width: '100%', 
-                    height: '100vh',
-                    position: 'absolute',
-                    top: 0,
-                    left: 0,
-                    transform: contentTransform,
-                    transition: 'transform 0.5s ease-out', // Slightly faster than background for parallax
-                    pointerEvents: 'auto' // Allow interactions with content
-                  }}
-                >
-                {/* Show content based on type and animation state */}
-                {(content.type === 'title' || content.type === 'title2') && (
-                  <TitleScene 
-                    text={content.lvl1 && content.lvl2 ? 
-                      { lvl1: content.lvl1, lvl2: content.lvl2, ...(content.lvl3 && { lvl3: content.lvl3 }) } :
-                      { lvl1: content.title || '', lvl2: content.subtitle || '' }
-                    }
-                    author={content.author}
-                    onComplete={() => {
-                      // Auto-advance to next panel when title animation completes
-                      if (index < storyContent.length - 1) {
-                        goToItem(index + 1);
-                      }
-                    }}
-                  />
-                )}
-                
-                {content.type === 'full' && (
-                  <FullContent title={content.title} text={content.text} />
-                )}
-                
-                {/* Images are now rendered in the image layer, not here */}
-                {(content.type === 'image' || content.type === 'image-text') && (
-                  <div style={{ width: '100%', height: '100vh' }} />
-                )}
-                
-                {content.type === 'character' && (
-                  <div className="story-character-container">
-                    <SpeechBubble 
-                      side={content.side}
-                      speech={content.speech}
-                      character={content.character}
-                      isActive={currentItem === index}
-                      activeInput={activeInput}
-                    />
-                    {/* Show waiting bubble if NEXT scene has waiting: true */}
-                    {index < storyContent.length - 1 && storyContent[index + 1].waiting && (
-                      <div className="story-waiting-bubble-container">
-                        <SpeechBubble 
-                          side="right"
-                          speech="..."
-                          character={storyContent[index + 1].rightCharacter || storyContent[index + 1].leftCharacter || content.character}
-                          isActive={currentItem === index}
-                          activeInput={null}
-                          isWaiting={true}
-                        />
-                      </div>
-                    )}
-                  </div>
-                )}
-                
-
-                
-              </div>
-                );
-              })
-            )}
-        </div>
+        <StoryContentLayer
+          storyContent={storyContent}
+          scrollOffset={scrollOffset}
+          currentItem={currentItem}
+          activeInput={activeInput}
+          onLeftBubblePosition={handleLeftBubblePosition}
+          sceneBubbleRefs={sceneBubbleRefs}
+          itemRefs={itemRefs}
+          goToItem={goToItem}
+          containerClass={getContainerClass()}
+        />
 
         {/* Layer 4: Quest layer - separate behavior from dialog */}
         <QuestDialog quest={activeQuest} />
+
 
         {/* Layer 5: Input Prompt layer - separate from scroll targets */}
         {activeInputPrompt && (
@@ -656,151 +599,24 @@ const StoryModeScroll: React.FC = () => {
             prompt={activeInputPrompt.prompt}
             state={activeInputPrompt.state}
             onSubmit={(input) => {
-              console.log('🎯 INPUT SUBMIT:', input);
-              console.log('🎯 Current item before submit:', currentItem);
               setActiveInput({prompt: activeInputPrompt.prompt, userInput: input});
-              
-              // Find the original character-flow scene and insert the dialog into its flow
-              fetch('/stories/gingerbread.bundle/story.json')
-                .then(response => response.json())
-                .then(data => {
-                  const scenes = data.scenes || [];
-                  
-                  // Find the character-flow scene that contains this input
-                  const targetScene = scenes.find((scene: any) => 
-                    scene.type === 'character-flow' && 
-                    scene.flow && 
-                    scene.flow.some((flowItem: any) => flowItem.input === activeInputPrompt.prompt)
-                  );
-                  
-                  console.log('🎯 Found target scene:', targetScene);
-                  
-                  if (targetScene) {
-                    // Find the input item index in the flow
-                    const inputIndex = targetScene.flow.findIndex((flowItem: any) => 
-                      flowItem.input === activeInputPrompt.prompt
-                        );
-                        
-                        console.log('🎯 Input index in flow:', inputIndex);
-                        console.log('🎯 Flow before insert:', targetScene.flow);
-                        
-                        // Insert Leo's response right after the input
-                        const leoResponse = {
-                          side: 'left',
-                          text: input
-                        };
-                        
-                        targetScene.flow.splice(inputIndex + 1, 0, leoResponse);
-                        console.log('🎯 Flow after insert:', targetScene.flow);
-                        
-                        // Re-flatten the content
-                        const flattenedContent: any[] = [];
-                        scenes.forEach((scene: any) => {
-                          if (scene.type === 'character-flow' && scene.flow) {
-                            scene.flow.forEach((flowItem: any) => {
-                              if (flowItem.quest) {
-                                const questItem = {
-                                  type: 'quest',
-                                  questType: flowItem.quest,
-                                  text: flowItem.text,
-                                  background: scene.background,
-                                  leftCharacter: scene['left-character'],
-                                  rightCharacter: scene['right-character']
-                                };
-                                flattenedContent.push(questItem);
-                              } else if (flowItem.input) {
-                                const inputItem = {
-                                  type: 'input',
-                                  prompt: flowItem.input,
-                                  background: scene.background,
-                                  leftCharacter: scene['left-character'],
-                                  rightCharacter: scene['right-character']
-                                };
-                                flattenedContent.push(inputItem);
-                              } else if (flowItem.side && flowItem.text) {
-                                const characterItem = {
-                                  type: 'character',
-                                  side: flowItem.side,
-                                  speech: flowItem.text,
-                                  character: flowItem.side === 'left' ? scene['left-character'] : scene['right-character'],
-                                  background: scene.background,
-                                  leftCharacter: scene['left-character'],
-                                  rightCharacter: scene['right-character'],
-                                  waiting: flowItem.waiting || false // Add waiting state
-                                };
-                                flattenedContent.push(characterItem);
-                              }
-                            });
-                          } else {
-                            flattenedContent.push(scene);
-                          }
-                        });
-                        
-                        console.log('🎯 Flattened content length:', flattenedContent.length);
-                        console.log('🎯 New flattened content:', flattenedContent);
-                        
-                        // Update story content and current item together
-                        setStoryContent(flattenedContent);
-                        const newCurrentItem = currentItem + 1;
-                        console.log('🎯 Setting new current item:', newCurrentItem);
-                        setCurrentItem(newCurrentItem);
-                        
-                        // Force scroll to the new dialog using direct container scroll
-                        setTimeout(() => {
-                          console.log('🎯 Attempting to scroll to item:', newCurrentItem);
-                          if (containerRef.current && itemRefs.current[newCurrentItem]) {
-                            const targetElement = itemRefs.current[newCurrentItem];
-                            const containerElement = containerRef.current;
-                            
-                            // Calculate scroll position
-                            const targetPosition = newCurrentItem * containerElement.clientHeight;
-                            console.log('🎯 Scrolling to position:', targetPosition);
-                            
-                            containerElement.scrollTo({
-                              top: targetPosition,
-                              behavior: 'smooth'
-                            });
-                          }
-                        }, 100);
-                  }
-                });
+              goToItem(currentItem + 1);
             }}
           />
         )}
 
         {/* Layer 5: Construction paper overlay layer */}
-        <div className="story-overlay-layer">
-          {storyContent.map((content, index) => {
-            // Only render overlay for image-text scenes
-            if (content.type !== 'image-text') return null;
-            
-            // Calculate transform for overlay
-            const overlayTransform = `translateY(${(index - scrollOffset) * 100}vh)`;
-            
-            return (
-              <div
-                key={`overlay-${index}`}
-                className="story-overlay-item"
-                style={{
-                  width: '100%',
-                  height: '100vh',
-                  position: 'absolute',
-                  top: 0,
-                  left: 0,
-                  transform: overlayTransform,
-                  transition: 'transform 0.6s ease-out', // Same as image layer
-                  pointerEvents: 'none'
-                }}
-              >
-                <div className="story-construction-triangle">
-                  <div className="story-triangle-text-box">
-                    {content.text}
-                  </div>
-                </div>
-              </div>
-            );
-          })}
-        </div>
+        <OverlayLayer storyContent={storyContent} scrollOffset={scrollOffset} />
+
+        {/* Layer 6: Dedicated Waiting Bubble Layer */}
+        <WaitingBubbleLayer
+          storyContent={storyContent}
+          currentItem={currentItem}
+          scrollOffset={scrollOffset}
+          receivedMessages={receivedMessages}
+          activeInput={activeInput}
+          containerClass={getContainerClass()}
+        />
       </div>
     </div>
   );
