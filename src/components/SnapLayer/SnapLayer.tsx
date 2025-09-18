@@ -6,6 +6,7 @@
 // src/components/SnapLayer/SnapLayer.tsx
 import React, { createContext, useCallback, useContext, useEffect, useRef, useState } from "react";
 import type { SnapApi } from "./types";
+import { useNavigation } from "../../context/NavigationContext";
 
 const SnapCtx = createContext<SnapApi | null>(null);
 
@@ -25,6 +26,7 @@ type SnapLayerProps = {
 export function SnapLayer({ children, onSnapChange, initialIndex = 0, className }: SnapLayerProps) {
   const containerRef = useRef<HTMLDivElement | null>(null);
   const [active, setActive] = useState(initialIndex);
+  const { registerSnapApi } = useNavigation();
 
   // Observe slots entering viewport
   useEffect(() => {
@@ -64,6 +66,11 @@ export function SnapLayer({ children, onSnapChange, initialIndex = 0, className 
   const getActiveIndex = useCallback(() => active, [active]);
 
   const api: SnapApi = { scrollTo, getActiveIndex };
+
+  // Register API with NavigationProvider
+  useEffect(() => {
+    registerSnapApi(api);
+  }, [registerSnapApi, api]);
 
   return (
     <div

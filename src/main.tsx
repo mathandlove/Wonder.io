@@ -4,9 +4,16 @@
 import React from 'react'
 import ReactDOM from 'react-dom/client'
 import StoryModeScrollV2 from './StoryModeScrollV2'
+import { DialogueProvider } from "./context/DialogueContext"
+import { NavigationProvider } from "./context/NavigationContext"
+
 
 ReactDOM.createRoot(document.getElementById('root')!).render(
   <React.StrictMode>
-    <StoryModeScrollV2 />
+    <NavigationProvider>
+      <DialogueProvider>
+        <StoryModeScrollV2 />
+      </DialogueProvider>
+    </NavigationProvider>
   </React.StrictMode>,
 )
