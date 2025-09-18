@@ -1,9 +1,19 @@
 
+import React from "react";
+import { useDialogue } from "../../context/DialogueContext";
+
 import type { SceneProps } from "../registry";
 import type { WaitingScene as WaitingSceneType } from "../../types/scene";
 import { WaitingBubble } from "../../components/WaitingBubble";
 
 export default function WaitingScene({ scene, onComplete }: SceneProps<WaitingSceneType>) {
+  const { assistantText, isWaitingPending, arriveAtWaiting } = useDialogue();
+  React.useEffect(() => {
+    if (assistantText) {
+      // We only mark arrival once text exists so the shared-element transition keeps the peek visible during scroll
+      try { arriveAtWaiting(); } catch {}
+    }
+  }, [assistantText, arriveAtWaiting]);
   return (
     <div style={{
       height: "100vh",
@@ -19,8 +29,8 @@ export default function WaitingScene({ scene, onComplete }: SceneProps<WaitingSc
         <WaitingBubble
           layoutId="waitingBubble"
           variant="full"
-          // Waiting scenes show typing animation by default
-          isTyping={true}
+          text={assistantText}
+          isTyping={isWaitingPending && !assistantText}
         />
         {onComplete && (
           <button

@@ -37,7 +37,7 @@ const StoryModeScrollV2: React.FC = () => {
 const StoryContent: React.FC = () => {
   // useStory() is our data hook: it fetches the story JSON and exposes loading/error states
   const { story, loading, error } = useStory(STORY_URL);
-  const { setScenes, currentIndex, setCurrentIndex } = useNavigation();
+  const { setScenes, setCurrentIndex } = useNavigation();
 
   // Derive a stable array of scenes from the loaded story. useMemo avoids re-computing unless story.scenes changes
   // Move useMemo BEFORE any conditional returns to satisfy Rules of Hooks
@@ -66,8 +66,9 @@ const StoryContent: React.FC = () => {
   return (
     <LayoutGroup id="story-shared-layout">
       <SnapLayer // SnapLayer manages the scroll container and reports snap changes
-        initialIndex={currentIndex} // start at the last known scene
-        onSnapChange={setCurrentIndex} // update our state when the user scrolls to a new snap
+        onSnapChange={(index) => {
+          setCurrentIndex(index);
+        }} // update our state when the user scrolls to a new snap
       >
         {scenes.map((scene: Scene, i: number) => ( // map each scene into a full-height snap slot
           <SnapSlot key={`${scene.type}-${i}`} index={i}> {/* one 100vh section that can snap into place */}
@@ -84,18 +85,18 @@ const StoryContent: React.FC = () => {
 // SceneContentWithNavigation: thin wrapper to render a scene and navigate to the next scene when it completes
 const SceneContentWithNavigation = React.memo(function SceneContentWithNavigation({ scene }: { scene: Scene }) {
   // Use navigation context instead of direct snap API
-  const { goToNext } = useNavigation();
+  // const { goToNext } = useNavigation();
 
   // When the scene signals completion, use navigation context to advance
-  const handleComplete = React.useCallback(() => {
-    goToNext();
-  }, [goToNext]);
+  // const handleComplete = React.useCallback(() => {
+  //   goToNext();
+  // }, [goToNext]);
 
   // SceneRenderer picks the right visual component for the given scene.type
   return (
     <SceneRenderer
       scene={scene}
-      onComplete={handleComplete} // callback the scene triggers when it's done (e.g., after a button pressed)
+      // onComplete={handleComplete} // callback the scene triggers when it's done (e.g., after a button pressed)
     />
   );
 });

@@ -19,41 +19,45 @@ export function useSnapApi(): SnapApi {
 type SnapLayerProps = {
   children: React.ReactNode;
   onSnapChange?: (index: number) => void;
-  initialIndex?: number;
   className?: string;
 };
 
-export function SnapLayer({ children, onSnapChange, initialIndex = 0, className }: SnapLayerProps) {
+export function SnapLayer({ children, onSnapChange, className }: SnapLayerProps) {
   const containerRef = useRef<HTMLDivElement | null>(null);
-  const [active, setActive] = useState(initialIndex);
+  const [active, setActive] = useState(0);
   const { registerSnapApi } = useNavigation();
 
+  console.log(`[SnapLayer] Render - active: ${active}`);
+
   // Observe slots entering viewport
-  useEffect(() => {
-    const container = containerRef.current;
-    if (!container) return;
+  // useEffect(() => {
+  //   const container = containerRef.current;
+  //   if (!container) return;
 
-    const slots = Array.from(container.querySelectorAll<HTMLElement>("[data-snap-slot-index]"));
-    const io = new IntersectionObserver(
-      (entries) => {
-        // Pick the most visible entry
-        let best: { idx: number; ratio: number } | null = null;
-        for (const e of entries) {
-          const idx = Number(e.target.getAttribute("data-snap-slot-index") ?? -1);
-          const ratio = e.intersectionRatio;
-          if (!best || ratio > best.ratio) best = { idx, ratio };
-        }
-        if (best && best.idx !== active) {
-          setActive(best.idx);
-          onSnapChange?.(best.idx);
-        }
-      },
-      { root: container, threshold: [0, 0.25, 0.5, 0.75, 1] }
-    );
+  //   const slots = Array.from(container.querySelectorAll<HTMLElement>("[data-snap-slot-index]"));
+  //   const io = new IntersectionObserver(
+  //     (entries) => {
+  //       // Pick the most visible entry
+  //       let best: { idx: number; ratio: number } | null = null;
 
-    slots.forEach((el) => io.observe(el));
-    return () => io.disconnect();
-  }, [onSnapChange, active]);
+  //       for (const e of entries) {
+  //         const idx = Number(e.target.getAttribute("data-snap-slot-index") ?? -1);
+  //         const ratio = e.intersectionRatio;
+  //         if (!best || ratio > best.ratio) best = { idx, ratio };
+  //       }
+
+  //       if (best && best.idx !== active) {
+  //         console.log(`[SnapLayer] IntersectionObserver changing active from ${active} to ${best.idx}`);
+  //         setActive(best.idx);
+  //         onSnapChange?.(best.idx);
+  //       }
+  //     },
+  //     { root: container, threshold: [0, 0.25, 0.5, 0.75, 1] }
+  //   );
+
+  //   slots.forEach((el) => io.observe(el));
+  //   return () => io.disconnect();
+  // }, [onSnapChange, active]);
 
   const scrollTo = useCallback((index: number, opts?: ScrollToOptions) => {
     const container = containerRef.current;

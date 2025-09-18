@@ -42,13 +42,19 @@ interface NavigationProviderProps {
 export function NavigationProvider({ children, initialIndex = 0 }: NavigationProviderProps) {
   const [currentIndex, setCurrentIndex] = useState(initialIndex);
   const [scenes, setScenes] = useState<Scene[]>([]);
+
+  console.log(`[NavigationProvider] Render - currentIndex: ${currentIndex}, initialIndex: ${initialIndex}`);
   const snapApiRef = useRef<{ scrollTo: (index: number, opts?: ScrollToOptions) => void } | null>(null);
   const onceKeysRef = useRef<Set<string>>(new Set());
 
   // Register SnapLayer's API for programmatic control
   const registerSnapApi = useCallback((api: { scrollTo: (index: number, opts?: ScrollToOptions) => void }) => {
     snapApiRef.current = api;
-  }, []);
+    // Sync the visual position to the current index as soon as the API is available
+    requestAnimationFrame(() => {
+      api.scrollTo(currentIndex, { behavior: "auto" });
+    });
+  }, [currentIndex]);
 
   const goToIndex = useCallback((index: number) => {
     const clampedIndex = Math.max(0, Math.min(index, scenes.length - 1));
@@ -127,6 +133,8 @@ export function NavigationProvider({ children, initialIndex = 0 }: NavigationPro
     resetOnce,
     registerSnapApi,
   ]);
+
+  
 
   return (
     <NavigationContext.Provider value={contextValue}>

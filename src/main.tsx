@@ -9,11 +9,11 @@ import { NavigationProvider } from "./context/NavigationContext"
 
 
 ReactDOM.createRoot(document.getElementById('root')!).render(
-  <React.StrictMode>
-    <NavigationProvider>
+  // <React.StrictMode>
+    <NavigationProvider initialIndex={5}>
       <DialogueProvider>
         <StoryModeScrollV2 />
       </DialogueProvider>
     </NavigationProvider>
-  </React.StrictMode>,
+  // </React.StrictMode>,
 )

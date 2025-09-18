@@ -11,16 +11,18 @@ type DialogueState = {
 type DialogueContextType = DialogueState & {
   startAssistantRequest: (prompt: string) => void;
   resetForNewTurn: () => void;
+  arriveAtWaiting: () => void;
 };
 
 const DialogueContext = createContext<DialogueContextType | null>(null);
 
 export function DialogueProvider({ children }: { children: React.ReactNode }) {
-  const [isWaitingPending, setIsWaitingPending] = useState(true);
+  const [isWaitingPending, setIsWaitingPending] = useState(false);
   const [assistantText, setAssistantText] = useState("");
   const [turnId, setTurnId] = useState(0);
   const [hasAdvancedForTurn, setHasAdvancedForTurn] = useState(false);
   const { goToNext } = useNavigation();
+
 
   // Reset function for starting a new turn
   const resetForNewTurn = useCallback(() => {
@@ -30,13 +32,18 @@ export function DialogueProvider({ children }: { children: React.ReactNode }) {
     setHasAdvancedForTurn(false);
   }, []);
 
+  // Function called by WaitingScene when it becomes active
+  const arriveAtWaiting = useCallback(() => {
+    setIsWaitingPending(false);
+  }, []);
+
   // Auto-advance to next scene when assistant message arrives (only once per turn)
   useEffect(() => {
-    if (assistantText && !isWaitingPending && !hasAdvancedForTurn) {
-      setHasAdvancedForTurn(true);
+    if (assistantText && !hasAdvancedForTurn) {
+       setHasAdvancedForTurn(true);
       goToNext();
-    }
-  }, [assistantText, isWaitingPending, hasAdvancedForTurn, turnId, goToNext]);
+     }
+   }, [assistantText, hasAdvancedForTurn, turnId, goToNext]);
 
   // Debug key controls:
   // - 'm' => simulate message arrival with fixed text
@@ -46,7 +53,7 @@ export function DialogueProvider({ children }: { children: React.ReactNode }) {
     const onKeyDown = (e: KeyboardEvent) => {
       if (e.key === "m" || e.key === "M") {
         setAssistantText("The Cookies they are found");
-        setIsWaitingPending(false);
+        // Keep isWaitingPending true - let WaitingScene clear it via arriveAtWaiting()
       } else if (e.key === "w" || e.key === "W") {
         setAssistantText("");
         setIsWaitingPending(true);
@@ -70,7 +77,7 @@ export function DialogueProvider({ children }: { children: React.ReactNode }) {
 
     const text = await res.text();
     setAssistantText(text);
-    setIsWaitingPending(false);
+    // Keep isWaitingPending true - let WaitingScene clear it via arriveAtWaiting()
     // Auto-advance will trigger via useEffect when assistantText is set
   }, [resetForNewTurn]);
 
@@ -81,7 +88,8 @@ export function DialogueProvider({ children }: { children: React.ReactNode }) {
       turnId,
       hasAdvancedForTurn,
       startAssistantRequest,
-      resetForNewTurn
+      resetForNewTurn,
+      arriveAtWaiting
     }}>
       {children}
     </DialogueContext.Provider>

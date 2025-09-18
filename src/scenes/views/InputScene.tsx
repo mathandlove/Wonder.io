@@ -57,7 +57,6 @@ export default function InputScene({ scene, onComplete }: SceneProps<InputScene>
               marginBottom: '1rem',
               outline: 'none'
             }}
-            autoFocus
           />
           <button
             type="submit"
