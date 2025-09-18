@@ -1,3 +1,6 @@
+/**
+ * Application entry point that renders the main story component.
+ */
 import React from 'react'
 import ReactDOM from 'react-dom/client'
 import StoryModeScrollV2 from './StoryModeScrollV2'

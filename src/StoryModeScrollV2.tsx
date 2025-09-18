@@ -1,118 +1,73 @@
-import React, { useState, useEffect } from 'react';
-import SnapScroll from './components/SnapScroll';
+/**
+ * Main story mode component that renders a story as scrollable scenes.
+ * Each scene gets its own 100vh section with snap-scroll behavior.
+ */
+import React, { useMemo, useState } from "react";
+import { useStory } from "./hooks/useStory";
+import { SnapLayer, SnapSlot, useSnapApi } from "./components/SnapLayer";
+import { FlowLayout } from "./components/FlowLayout";
+import { SceneRenderer } from "./components/SceneRenderer";
+import type { Scene } from "./types/scene";
 
-interface FlowItem {
-  side?: 'left' | 'right';
-  text?: string;
-  waiting?: boolean;
-  quest?: string;
-  input?: string;
-}
+const STORY_URL = "/stories/gingerbread.bundle/story.json";
 
-interface StoryContentItem {
-  type: string;
-  text?: string;
-  speaker?: string;
-  background?: string;
-  'left-character'?: string;
-  'right-character'?: string;
-  leftCharacter?: string;
-  rightCharacter?: string;
-  showWaitingBubble?: boolean;
-  image?: string;
-  flow?: FlowItem[];
-  lvl1?: string;
-  lvl2?: string;
-  author?: string;
+function FullScreen({ children }: { children: React.ReactNode }) {
+  return (
+    <div style={{ height: "100vh", width: "100vw", display: "grid", placeItems: "center" }}>
+      <h2>{children}</h2>
+    </div>
+  );
 }
 
 const StoryModeScrollV2: React.FC = () => {
-  const [storyContent, setStoryContent] = useState<StoryContentItem[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
+  const { story, loading, error } = useStory(STORY_URL);
+  const [currentIndex, setCurrentIndex] = useState(0);
 
-  // Load story content from JSON and flatten flow items
-  useEffect(() => {
-    fetch('/stories/gingerbread.bundle/story.json')
-      .then(response => response.json())
-      .then(data => {
-        const scenes = data.scenes || [];
-        const flattenedContent: StoryContentItem[] = [];
+  // Move useMemo BEFORE any conditional returns to satisfy Rules of Hooks
+  const scenes = useMemo(() => story?.scenes || [], [story?.scenes]);
 
-        scenes.forEach((scene: any) => {
-          if (scene.type === 'character-flow' && scene.flow) {
-            // Flatten character-flow into individual scenes
-            scene.flow.forEach((flowItem: any) => {
-              if (flowItem.waiting) {
-                // Waiting state gets its own scene
-                flattenedContent.push({
-                  type: 'waiting',
-                  background: scene.background,
-                  'left-character': scene['left-character'],
-                  'right-character': scene['right-character']
-                });
-              } else if (flowItem.quest) {
-                // Quest item gets its own scene
-                flattenedContent.push({
-                  type: 'quest',
-                  text: flowItem.text,
-                  background: scene.background,
-                  'left-character': scene['left-character'],
-                  'right-character': scene['right-character']
-                });
-              } else if (flowItem.input) {
-                // Input prompt gets its own scene
-                flattenedContent.push({
-                  type: 'input',
-                  text: flowItem.input,
-                  background: scene.background,
-                  'left-character': scene['left-character'],
-                  'right-character': scene['right-character']
-                });
-              } else if (flowItem.text) {
-                // Regular dialog gets its own scene
-                flattenedContent.push({
-                  type: 'character',
-                  text: flowItem.text,
-                  speaker: flowItem.side,
-                  background: scene.background,
-                  'left-character': scene['left-character'],
-                  'right-character': scene['right-character']
-                });
-              }
-            });
-          } else {
-            // Keep other scene types as-is
-            flattenedContent.push(scene);
-          }
-        });
+  if (loading) {
+    return <FullScreen>Loading story…</FullScreen>;
+  }
 
-        console.log('📚 Loaded and flattened story with', flattenedContent.length, 'total scenes');
-        setStoryContent(flattenedContent);
-        setIsLoading(false);
-      })
-      .catch(error => {
-        console.error('Error loading story:', error);
-        setIsLoading(false);
-      });
-  }, []);
-
-  if (isLoading) {
+  if (error || !story || scenes.length === 0) {
     return (
-      <div style={{ height: '100vh', width: '100vw', backgroundColor: '#f0f0f0', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-        <h2>Loading story...</h2>
-      </div>
+      <FullScreen>
+        {error ? `Problem loading story: ${error.message}` : "No story content found"}
+      </FullScreen>
     );
   }
 
-  if (storyContent.length === 0) {
-    return (
-      <div style={{ height: '100vh', width: '100vw', backgroundColor: '#f0f0f0', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-        <h2>No story content found</h2>
-      </div>
-    );
-  }
-
-  return <SnapScroll storyContent={storyContent} />;
+  return (
+    <SnapLayer
+      initialIndex={currentIndex}
+      onSnapChange={setCurrentIndex}
+    >
+      {scenes.map((scene: Scene, i: number) => (
+        <SnapSlot key={`${scene.type}-${i}`} index={i}>
+          <FlowLayout keyId={`${scene.type}-${i}`}>
+            <SceneContentWithNavigation scene={scene} sceneIndex={i} totalScenes={scenes.length} />
+          </FlowLayout>
+        </SnapSlot>
+      ))}
+    </SnapLayer>
+  );
 };
+
+const SceneContentWithNavigation = React.memo(function SceneContentWithNavigation({ scene, sceneIndex, totalScenes }: { scene: Scene; sceneIndex: number; totalScenes: number }) {
+  const snapApi = useSnapApi();
+
+  const handleComplete = React.useCallback(() => {
+    const nextIndex = Math.min(sceneIndex + 1, totalScenes - 1);
+    snapApi.scrollTo(nextIndex, { behavior: "smooth" });
+  }, [sceneIndex, totalScenes, snapApi]);
+
+  return (
+    <SceneRenderer
+      scene={scene}
+      onComplete={handleComplete}
+    />
+  );
+});
 
 export default StoryModeScrollV2;
