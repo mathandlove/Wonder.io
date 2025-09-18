@@ -7,7 +7,7 @@ import type { SceneProps } from "../registry";
 import type { InputScene } from "../../types/scene";
 
 export default function InputScene({ scene, onComplete }: SceneProps<InputScene>) {
-  const [input, setInput] = useState("");
+  const [input, setInput] = useState("Hi, this input text is working hopefully.");
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();

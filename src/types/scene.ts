@@ -12,13 +12,6 @@ export type CharacterScene = {
   "right-character"?: string;
 };
 
-export type WaitingScene = {
-  type: "waiting";
-  background?: string;
-  "left-character"?: string;
-  "right-character"?: string;
-};
-
 export type QuestScene = {
   type: "quest";
   text: string;
@@ -44,7 +37,6 @@ export type ImageScene = {
 
 export type Scene =
   | CharacterScene
-  | WaitingScene
   | QuestScene
   | InputScene
   | ImageScene;

@@ -63,7 +63,7 @@ export default function CharacterScene({ scene }: SceneProps<CharacterSceneType>
             marginTop: 32,
           }}
         >
-          <WaitingBubble layoutId="waitingBubble" variant="peek" isTyping />
+          <WaitingBubble />
         </div>
       )}
     </div>

@@ -41,9 +41,6 @@
 
     },
     {
-            "waiting": true
-    },
-    {
       "side": "right",
       "text": "Not waiting any more."
     }
