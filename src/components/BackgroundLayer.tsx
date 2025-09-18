@@ -14,10 +14,11 @@ export function BackgroundLayer({
   backgroundId,
   transitionDuration = 300
 }: BackgroundLayerProps) {
-  const [currentBackground, setCurrentBackground] = useState<string | null>(backgroundId);
+  const [currentBackground, setCurrentBackground] = useState<string | null>(null);
   const [nextBackground, setNextBackground] = useState<string | null>(null);
   const [isTransitioning, setIsTransitioning] = useState(false);
   const preloadedImages = useRef<Set<string>>(new Set());
+  const isInitialized = useRef(false);
 
   // Preload background image
   const preloadBackground = useCallback((bgId: string) => {
@@ -48,6 +49,17 @@ export function BackgroundLayer({
     // If backgroundId is null, maintain current background (no change)
     if (backgroundId && backgroundId.trim() !== '') {
       preloadBackground(backgroundId);
+
+      // If this is the first background (no current background), set it immediately without transition
+      if (!isInitialized.current || !currentBackground) {
+        console.log(`[BackgroundLayer] Setting initial background: ${backgroundId}`);
+        setCurrentBackground(backgroundId);
+        isInitialized.current = true;
+        return;
+      }
+
+      // Normal transition between backgrounds
+      console.log(`[BackgroundLayer] Transitioning from ${currentBackground} to ${backgroundId}`);
       setNextBackground(backgroundId);
       setIsTransitioning(true);
 
@@ -99,13 +111,13 @@ export function BackgroundLayer({
           backgroundSize: "cover",
           backgroundPosition: "center",
           backgroundColor: "#f0f0f0",
-          opacity: isTransitioning ? 0 : 1,
-          transition: `opacity ${transitionDuration}ms ease-in-out`,
+          transform: isTransitioning ? "translateY(-100%)" : "translateY(0)",
+          transition: `transform ${transitionDuration}ms ease-in-out`,
           zIndex: 0
         }}
       />
 
-      {/* Next Background Layer (for transitions) */}
+      {/* Next Background Layer (scrolls up from bottom) */}
       {nextBackground && (
         <div
           style={{
@@ -117,8 +129,8 @@ export function BackgroundLayer({
             backgroundImage: nextBackgroundUrl,
             backgroundSize: "cover",
             backgroundPosition: "center",
-            opacity: isTransitioning ? 1 : 0,
-            transition: `opacity ${transitionDuration}ms ease-in-out`,
+            transform: isTransitioning ? "translateY(0)" : "translateY(100%)",
+            transition: `transform ${transitionDuration}ms ease-in-out`,
             zIndex: 1
           }}
         />

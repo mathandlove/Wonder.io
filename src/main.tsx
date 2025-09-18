@@ -10,7 +10,7 @@ import { NavigationProvider } from "./context/NavigationContext"
 
 ReactDOM.createRoot(document.getElementById('root')!).render(
   // <React.StrictMode>
-    <NavigationProvider initialIndex={4}>
+    <NavigationProvider initialIndex={6}>
       <DialogueProvider>
         <StoryModeScrollV2 />
       </DialogueProvider>

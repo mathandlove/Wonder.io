@@ -45,63 +45,56 @@ export function SnapLayer({ children, onSnapChange, className }: SnapLayerProps)
     console.log(`[SnapLayer] Setting up IntersectionObserver for ${slots.length} slots`);
 
     let debounceTimer: NodeJS.Timeout;
-    let isSnapping = false;
-
-    // Listen for scroll events to detect when snap animations are happening
-    const handleScroll = () => {
-      isSnapping = true;
-      clearTimeout(debounceTimer);
-      debounceTimer = setTimeout(() => {
-        isSnapping = false;
-      }, 200); // Wait for snap animation to complete
-    };
 
     const io = new IntersectionObserver(
       (entries) => {
-        // Don't update during snap animations to avoid conflicts
-        if (isSnapping) return;
+        console.log(`[SnapLayer] IntersectionObserver fired with ${entries.length} entries`);
 
         // Clear previous debounce
         clearTimeout(debounceTimer);
 
-        // Debounce the intersection changes
+        // Debounce the intersection changes to let snap animations settle
         debounceTimer = setTimeout(() => {
-          // Pick the most visible entry (must be at least 80% visible for snap alignment)
+          console.log(`[SnapLayer] Processing intersection entries after debounce`);
+          // Pick the most visible entry
           let best: { idx: number; ratio: number } | null = null;
 
           for (const e of entries) {
             const idx = Number(e.target.getAttribute("data-snap-slot-index") ?? -1);
             const ratio = e.intersectionRatio;
+            console.log(`[SnapLayer] Entry ${idx}: ratio ${ratio.toFixed(2)}`);
 
-            // Use higher threshold to ensure we're truly snapped to this scene
-            if (ratio >= 0.8 && (!best || ratio > best.ratio)) {
+            // Lower threshold to detect scene changes more reliably
+            if (ratio >= 0.5 && (!best || ratio > best.ratio)) {
               best = { idx, ratio };
             }
           }
 
           if (best && best.idx !== active) {
-            console.log(`[SnapLayer] Scene snapped to ${best.idx} (ratio: ${best.ratio})`);
+            console.log(`[SnapLayer] Scene changing from ${active} to ${best.idx} (ratio: ${best.ratio})`);
             setActive(best.idx);
             onSnapChange?.(best.idx);
+          } else if (best) {
+            console.log(`[SnapLayer] Best scene is ${best.idx} but already active (${active})`);
+          } else {
+            console.log(`[SnapLayer] No suitable scene found (threshold 0.5+)`);
           }
-        }, 150); // Longer debounce to let snap settle
+        }, 300); // Longer debounce to let snap settle completely
       },
       {
         root: container,
-        threshold: [0.8, 0.9, 1], // High thresholds for snap alignment
+        threshold: [0, 0.25, 0.5, 0.75, 1], // Multiple thresholds for better detection
         rootMargin: '0px' // No margin for precise snap detection
       }
     );
 
-    container.addEventListener('scroll', handleScroll);
     slots.forEach((el) => io.observe(el));
 
     return () => {
       clearTimeout(debounceTimer);
-      container.removeEventListener('scroll', handleScroll);
       io.disconnect();
     };
-  }, [onSnapChange, active]);
+  }, [onSnapChange]); // Remove 'active' dependency to prevent observer recreation
 
   const scrollTo = useCallback((index: number, opts?: ScrollToOptions) => {
     const container = containerRef.current;
