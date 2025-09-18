@@ -25,11 +25,6 @@ export default function CharacterScene({ scene }: SceneProps<CharacterSceneType>
         display: "flex",
         alignItems: "center",
         justifyContent: "center",
-        background: scene.background
-          ? `url(/stories/gingerbread.bundle/images/backgrounds/${scene.background})`
-          : "#f0f0f0",
-        backgroundSize: "cover",
-        backgroundPosition: "center",
         padding: "2rem",
         position: "relative",
       }}
@@ -50,17 +45,15 @@ export default function CharacterScene({ scene }: SceneProps<CharacterSceneType>
         <p style={{ fontSize: "1.125rem", lineHeight: 1.5, color: "#444", margin: 0 }}>{scene.text}</p>
       </div>
 
-      {/* Sticky waiting peek near the bottom while we're waiting for AI */}
+      {/* Waiting bubble near the bottom while we're waiting for AI */}
       {isWaitingPending && (
         <div
           style={{
-            position: "sticky",
-            bottom: 24,
-            display: "flex",
-            justifyContent: "center",
-            width: "100%",
+            position: "absolute",
+            bottom: 80,
+            left: "50%",
+            transform: "translateX(-50%)",
             pointerEvents: "none", // so it does not intercept clicks
-            marginTop: 32,
           }}
         >
           <WaitingBubble />

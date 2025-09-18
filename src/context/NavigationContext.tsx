@@ -10,6 +10,8 @@ export interface NavigationContextType {
   setCurrentIndex: (index: number) => void;
   scenes: Scene[];
   setScenes: (scenes: Scene[]) => void;
+  addScene: (scene: Scene) => void;
+  insertScene: (scene: Scene, index: number) => void;
   goToNext: () => void;
   goToPrevious: () => void;
   goToIndex: (index: number) => void;
@@ -21,6 +23,7 @@ export interface NavigationContextType {
   goToTypeOnce: (key: string, type: Scene["type"]) => void;
   resetOnce: (key: string) => void;
   registerSnapApi: (api: { scrollTo: (index: number, opts?: ScrollToOptions) => void }) => void;
+  currentBackgroundId: string | null;
 }
 
 const NavigationContext = createContext<NavigationContextType | null>(null);
@@ -44,6 +47,24 @@ export function NavigationProvider({ children, initialIndex = 0 }: NavigationPro
   const [scenes, setScenes] = useState<Scene[]>([]);
 
   console.log(`[NavigationProvider] Render - currentIndex: ${currentIndex}, initialIndex: ${initialIndex}`);
+
+  // Compute current background from current scene
+  const currentBackgroundId = useMemo(() => {
+    const currentScene = scenes[currentIndex];
+    if (!currentScene) return null;
+
+    // Only return background if explicitly defined and not empty
+    // If no background is specified, return null (no background change)
+    if ('background' in currentScene &&
+        currentScene.background &&
+        currentScene.background.trim() !== '') {
+      console.log(`[NavigationContext] Scene ${currentIndex} (${currentScene.type}) background: "${currentScene.background}"`);
+      return currentScene.background;
+    }
+
+    console.log(`[NavigationContext] Scene ${currentIndex} (${currentScene.type}) has no background`);
+    return null;
+  }, [scenes, currentIndex]);
   const snapApiRef = useRef<{ scrollTo: (index: number, opts?: ScrollToOptions) => void } | null>(null);
   const onceKeysRef = useRef<Set<string>>(new Set());
 
@@ -88,6 +109,23 @@ export function NavigationProvider({ children, initialIndex = 0 }: NavigationPro
     onceKeysRef.current.delete(key);
   }, []);
 
+  const insertScene = useCallback((scene: Scene, index: number) => {
+    setScenes(prevScenes => {
+      const newScenes = [...prevScenes];
+      newScenes.splice(index, 0, scene);
+      console.log(`[NavigationProvider] Inserted scene at index ${index}. Total scenes: ${newScenes.length}`);
+      return newScenes;
+    });
+  }, []);
+
+  const addScene = useCallback((scene: Scene) => {
+    setScenes(prevScenes => {
+      const newScenes = [...prevScenes, scene];
+      console.log(`[NavigationProvider] Added scene. Total scenes: ${newScenes.length}`);
+      return newScenes;
+    });
+  }, []);
+
   const goToNext = useCallback(() => {
     goToIndex(currentIndex + 1);
   }, [currentIndex, goToIndex]);
@@ -105,6 +143,8 @@ export function NavigationProvider({ children, initialIndex = 0 }: NavigationPro
     setCurrentIndex,
     scenes,
     setScenes,
+    addScene,
+    insertScene,
     goToNext,
     goToPrevious,
     goToIndex,
@@ -116,11 +156,14 @@ export function NavigationProvider({ children, initialIndex = 0 }: NavigationPro
     goToTypeOnce,
     resetOnce,
     registerSnapApi,
+    currentBackgroundId,
   }), [
     currentIndex,
     setCurrentIndex,
     scenes,
     setScenes,
+    addScene,
+    insertScene,
     goToNext,
     goToPrevious,
     goToIndex,
@@ -132,6 +175,7 @@ export function NavigationProvider({ children, initialIndex = 0 }: NavigationPro
     goToTypeOnce,
     resetOnce,
     registerSnapApi,
+    currentBackgroundId,
   ]);
 
   

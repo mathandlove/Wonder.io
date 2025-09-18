@@ -5,13 +5,22 @@
 import React, { useState } from "react";
 import type { SceneProps } from "../registry";
 import type { InputScene } from "../../types/scene";
+import { useDialogue } from "../../context/DialogueContext";
 
 export default function InputScene({ scene, onComplete }: SceneProps<InputScene>) {
   const [input, setInput] = useState("Hi, this input text is working hopefully.");
+  const { submitUserMessage } = useDialogue();
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (input.trim()) {
+      // Submit the user message to dialogue context
+      submitUserMessage(input);
+
+      // Clear the input
+      setInput("");
+
+      // Call onComplete if provided
       onComplete?.();
     }
   };
@@ -22,9 +31,6 @@ export default function InputScene({ scene, onComplete }: SceneProps<InputScene>
       display: 'flex',
       alignItems: 'center',
       justifyContent: 'center',
-      background: scene.background ? `url(/stories/gingerbread.bundle/images/backgrounds/${scene.background})` : '#f0f0f0',
-      backgroundSize: 'cover',
-      backgroundPosition: 'center',
       padding: '2rem'
     }}>
       <div style={{

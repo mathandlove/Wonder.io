@@ -35,11 +35,32 @@ export type ImageScene = {
   background?: string;
 };
 
+export type CharacterFlowScene = {
+  type: "character-flow";
+  background?: string;
+  "left-character"?: string;
+  "right-character"?: string;
+  flow: Array<{
+    side?: "left" | "right";
+    text?: string;
+    quest?: string;
+    input?: string;
+  }>;
+};
+
+export type FullScene = {
+  type: "full";
+  text: string;
+  background?: string;
+};
+
 export type Scene =
   | CharacterScene
   | QuestScene
   | InputScene
-  | ImageScene;
+  | ImageScene
+  | CharacterFlowScene
+  | FullScene;
 
 export type Story = {
   scenes: Scene[];

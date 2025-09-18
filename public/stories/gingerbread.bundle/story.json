@@ -49,7 +49,7 @@
     },
     {
       "type": "character-flow",
-      "background":"square.png",
+      "background":"assets.core/images/backgrounds/square.png",
       "left-character": "leo",
       "flow": [
         {
@@ -60,17 +60,17 @@
     },
         {
       "type":"image",
-      "image":"dragonFeet.png",
+      "image":"story/dragonFeet.png",
       "text":"I protect my city by searching for clues."
     },
     {
       "type":"image",
-      "image":"dragonFight.png",
+      "image":"story/dragonFight.png",
       "text":"Sometimes I have to fight the monsters."
     },
         {
       "type":"image",
-      "image":"cheers.png",
+      "image":"story/cheers.png",
       "text":"It is worth it because I am protecting all my friends."
     },
     {

@@ -36,14 +36,7 @@ function flattenScenes(rawScenes: RawScene[]): Scene[] {
   rawScenes.forEach((scene) => {
     if (scene.type === "character-flow" && scene.flow) {
       scene.flow.forEach((f) => {
-        if (f.waiting) {
-          out.push({
-            type: "waiting",
-            background: scene.background,
-            "left-character": scene["left-character"],
-            "right-character": scene["right-character"],
-          });
-        } else if (f.quest) {
+        if (f.quest) {
           out.push({
             type: "quest",
             text: f.quest,

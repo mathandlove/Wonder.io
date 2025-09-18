@@ -13,9 +13,6 @@ export default function QuestScene({ scene, onComplete }: SceneProps<QuestScene>
       display: 'flex',
       alignItems: 'center',
       justifyContent: 'center',
-      background: scene.background ? `url(/stories/gingerbread.bundle/images/backgrounds/${scene.background})` : '#f0f0f0',
-      backgroundSize: 'cover',
-      backgroundPosition: 'center',
       padding: '2rem'
     }}>
       <div style={{

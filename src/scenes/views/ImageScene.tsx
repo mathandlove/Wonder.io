@@ -5,6 +5,7 @@
 import React from "react";
 import type { SceneProps } from "../registry";
 import type { ImageScene } from "../../types/scene";
+import { resolveStoryImage } from "../../utils/imageResolver";
 
 export default function ImageScene({ scene }: SceneProps<ImageScene>) {
   return (
@@ -13,9 +14,6 @@ export default function ImageScene({ scene }: SceneProps<ImageScene>) {
       display: 'flex',
       alignItems: 'center',
       justifyContent: 'center',
-      background: scene.background ? `url(/stories/gingerbread.bundle/images/backgrounds/${scene.background})` : '#000',
-      backgroundSize: 'cover',
-      backgroundPosition: 'center',
       padding: '2rem',
       position: 'relative'
     }}>
@@ -25,7 +23,7 @@ export default function ImageScene({ scene }: SceneProps<ImageScene>) {
         width: '100%'
       }}>
         <img
-          src={`/stories/gingerbread.bundle/images/${scene.image}`}
+          src={resolveStoryImage(scene.image)}
           alt={scene.caption || "Story image"}
           style={{
             maxWidth: '100%',
