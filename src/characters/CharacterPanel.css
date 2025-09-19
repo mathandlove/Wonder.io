@@ -1,0 +1,158 @@
+/* Character panel styles */
+.story-character-panel {
+  position: absolute;
+  top: 0;
+  width: 100%;
+  height: 100vh;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  pointer-events: none;
+  background: rgba(255, 0, 0, 0.3); /* Red background for debugging */
+}
+
+.story-character-content {
+  position: relative;
+  width: 280px;
+  height: 400px;
+  padding: 0;
+  margin: 0;
+}
+
+.story-character-cardboard {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  transform-style: preserve-3d;
+  transition: transform 0.3s ease;
+}
+
+.story-character-image {
+  max-width: 300px;
+  width: 100%;
+  height: auto;
+  display: block;
+  transform: rotate(-5deg);
+  transition: transform 0.3s ease;
+  position: relative;
+  z-index: 2;
+  filter: drop-shadow(0 10px 20px rgba(0,0,0,0.3));
+}
+
+.story-character-image:hover {
+  transform: rotate(-3deg) scale(1.05);
+}
+
+.story-wooden-dowel {
+  position: absolute;
+  top: calc(100% - 50px);
+  left: 50%;
+  transform: translateX(-50%);
+  width: 20px;
+  height: calc(150vh + 50px);
+  background-image: url('/VisualAssets/pole.webp');
+  background-size: 20px 100%;
+  background-repeat: repeat-y;
+  z-index: 1;
+}
+
+.story-character-inner {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  transform-origin: center 200%;
+}
+
+.story-bounce-arrival {
+  animation: cardboard-wavy-settle 1.2s ease-in-out;
+}
+
+.story-bounce-arrival-right {
+  animation: cardboard-wavy-settle-right 1.2s ease-in-out;
+}
+
+.story-character-speaking {
+  animation: character-shake 1s ease-in-out 1;
+}
+
+.story-character-speaking-right {
+  animation: character-shake-right 1s ease-in-out 1;
+}
+
+@keyframes character-shake {
+  0%, 100% {
+    transform: translateX(0) rotate(0deg);
+  }
+  50% {
+    transform: translateX(-0.5px) rotate(-5deg);
+  }
+}
+
+@keyframes character-shake-right {
+  0%, 100% {
+    transform: translateX(0) rotate(0deg);
+  }
+  50% {
+    transform: translateX(0.5px) rotate(5deg);
+  }
+}
+
+@keyframes cardboard-wavy-settle {
+  0% {
+    transform: rotate(0deg);
+  }
+  20% {
+    transform: rotate(15deg);
+  }
+  40% {
+    transform: rotate(-15deg);
+  }
+  55% {
+    transform: rotate(8deg);
+  }
+  70% {
+    transform: rotate(-8deg);
+  }
+  80% {
+    transform: rotate(4deg);
+  }
+  88% {
+    transform: rotate(-2deg);
+  }
+  94% {
+    transform: rotate(1deg);
+  }
+  100% {
+    transform: rotate(0deg);
+  }
+}
+
+@keyframes cardboard-wavy-settle-right {
+  0% {
+    transform: rotate(0deg);
+  }
+  15% {
+    transform: rotate(-12deg);
+  }
+  35% {
+    transform: rotate(18deg);
+  }
+  50% {
+    transform: rotate(-10deg);
+  }
+  65% {
+    transform: rotate(6deg);
+  }
+  75% {
+    transform: rotate(-5deg);
+  }
+  85% {
+    transform: rotate(3deg);
+  }
+  92% {
+    transform: rotate(-1deg);
+  }
+  100% {
+    transform: rotate(0deg);
+  }
+}

@@ -26,16 +26,5 @@ export function resolveBackgroundUrl(background: string, isImage: boolean = fals
 
   const result = `url('${storyPath}'), url('${corePath}')`;
 
-  // Debug square.png URL resolution
-  if (background.includes('square.png')) {
-    console.log(`🔧 SQUARE.PNG URL DEBUG:`);
-    console.log(`   Input background: ${background}`);
-    console.log(`   IsFullPath: ${isFullPath}`);
-    console.log(`   StoryId: ${storyId}`);
-    console.log(`   Story path: ${storyPath}`);
-    console.log(`   Core path: ${corePath}`);
-    console.log(`   Final result: ${result}`);
-  }
-
   return result;
 }

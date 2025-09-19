@@ -79,7 +79,6 @@ export function NavigationProvider({ children, initialIndex = 0 }: NavigationPro
       const timer = setTimeout(() => {
         const clampedIndex = Math.max(0, Math.min(initialIndex, scenes.length - 1));
         snapApiRef.current?.scrollTo(clampedIndex, { behavior: "auto" }); // Use "auto" for instant jump
-        console.log(`🎯 Auto-scrolled to initial scene ${clampedIndex}`);
       }, 100);
       return () => clearTimeout(timer);
     }

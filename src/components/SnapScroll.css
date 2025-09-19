@@ -1,3 +1,16 @@
+/* Character panel CSS variables */
+:root {
+  --character-gutter-left: 0px;
+  --character-gutter-right: 0px;
+}
+
+@media (max-width: 768px) {
+  :root {
+    --character-gutter-left: 0px;
+    --character-gutter-right: 0px;
+  }
+}
+
 /* Original snap scroll container */
 .snap-scroll-container {
   height: 100vh;
@@ -17,6 +30,7 @@ body {
   overflow-y: scroll;
   overflow-x: hidden;
 }
+
 
 /* More specific root container scroll snap */
 #root {

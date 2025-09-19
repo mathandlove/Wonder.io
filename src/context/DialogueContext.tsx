@@ -61,8 +61,6 @@ export function DialogueProvider({ children }: { children: React.ReactNode }) {
   }, [turnId, resetForNewTurn]);
 
   const submitUserMessage = useCallback((message: string) => {
-    console.log(`[DialogueContext] User message submitted: "${message}"`);
-
     // Clear any previous assistant text first
     setAssistantText("");
 
@@ -71,13 +69,11 @@ export function DialogueProvider({ children }: { children: React.ReactNode }) {
 
     // Simulate AI processing after user scene is created
     setTimeout(() => {
-      console.log(`[DialogueContext] Simulating AI request for: "${message}"`);
       setIsWaitingPending(true);
 
       // Simulate AI response after delay
       setTimeout(() => {
         const aiResponse = `AI response to: "${message}"`;
-        console.log(`[DialogueContext] Setting AI response: "${aiResponse}"`);
         setAssistantText(aiResponse);
         setIsWaitingPending(false);
       }, 500);

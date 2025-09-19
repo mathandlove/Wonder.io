@@ -60,13 +60,6 @@ export function BackgroundOrchestrator({ storyId, storyContent }: BackgroundOrch
     return ranges;
   }, [backgroundRanges, activeRangeIndex, scrollOffset]);
 
-  // Debug when reaching scene 7+ (square.png territory)
-  if (scrollOffset >= 6.5) {
-    console.log(`📍 SCENE 7+ DEBUG: scrollOffset=${scrollOffset.toFixed(3)}, activeRangeIndex=${activeRangeIndex}`);
-    console.log(`   Available ranges:`, backgroundRanges.map(r => `${r.startIndex}-${r.endIndex}(${r.background})`));
-    console.log(`   Rendering ranges:`, rangesToRender.map(r => `${r.startIndex}-${r.endIndex}(${r.background})`));
-  }
-
   return (
     <div className="story-background-layer" style={{
       position: 'fixed',
@@ -81,17 +74,6 @@ export function BackgroundOrchestrator({ storyId, storyContent }: BackgroundOrch
         const globalRangeIndex = backgroundRanges.indexOf(range);
         const transform = translateForRange(range, scrollOffset);
         const backgroundImage = resolveBackgroundUrl(range.background, range.isImage, storyId);
-
-        // Debug square.png specifically (scene 7)
-        if (range.background.includes('square.png')) {
-          console.log(`🔍 SQUARE.PNG DEBUG:`);
-          console.log(`   Range: ${range.startIndex}-${range.endIndex}`);
-          console.log(`   ScrollOffset: ${scrollOffset.toFixed(3)}`);
-          console.log(`   Transform: ${transform}`);
-          console.log(`   BackgroundImage: ${backgroundImage}`);
-          console.log(`   ActiveRangeIndex: ${activeRangeIndex}, GlobalRangeIndex: ${globalRangeIndex}`);
-          console.log(`   Is being rendered: ${rangesToRender.includes(range)}`);
-        }
 
         return (
           <div

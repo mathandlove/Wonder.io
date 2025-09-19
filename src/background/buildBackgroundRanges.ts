@@ -8,9 +8,6 @@ export function buildBackgroundRanges(storyContent: SceneContent[]): BackgroundR
   let currentBg: string | null = null;
   let rangeStart = 0;
 
-  // Log scene processing for debugging
-  console.log(`[BUILD RANGES] Processing ${storyContent.length} scenes`);
-
   storyContent.forEach((content, index) => {
     // Check if this scene introduces a new background
     let newBg: string | null = null;

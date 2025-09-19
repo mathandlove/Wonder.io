@@ -10,6 +10,8 @@ import { SceneRenderer } from "./components/SceneRenderer";
 import { PageFactoryProvider } from "./components/PageFactory";
 import { useNavigation } from "./context/NavigationContext";
 import { BackgroundOrchestrator } from "./background/BackgroundOrchestrator";
+import { CharacterOrchestrator } from "./characters/CharacterOrchestrator";
+import { injectPanelMetaFromFlows } from "./characters/adapters/injectPanelMetaFromFlows";
 import { useSceneNavigation } from "./hooks/useSceneNavigation";
 import { useScrollManager } from "./hooks/useScrollManager";
 import type { Scene } from "./types/scene";
@@ -46,14 +48,23 @@ const StoryContent: React.FC = () => {
   // Derive a stable array of scenes from the loaded story
   const initialScenes = useMemo(() => story?.scenes || [], [story?.scenes]);
 
+  // Inject panel metadata from flow-based authoring
+  const scenesWithPanelMeta = useMemo(
+    () => injectPanelMetaFromFlows(initialScenes),
+    [initialScenes]
+  );
+
   // Handle scene navigation updates
-  useSceneNavigation({ initialScenes, setScenes });
+  useSceneNavigation({ initialScenes: scenesWithPanelMeta, setScenes });
 
   // Handle scroll management
   const { railRef, index, setIsProgrammatic, targetIndex } = useScrollManager({ setCurrentIndex });
 
-  // Use navigation scenes (includes dynamically added scenes)
-  const scenes = navigationScenes;
+  // Use navigation scenes (includes dynamically added scenes with panel meta)
+  const scenes = useMemo(
+    () => injectPanelMetaFromFlows(navigationScenes),
+    [navigationScenes]
+  );
 
   // RENDER PATH #1: still loading the story → show a friendly centered message
   if (loading) {
@@ -82,11 +93,14 @@ const StoryContent: React.FC = () => {
         {/* Layer 1: Hybrid background system */}
         <BackgroundOrchestrator storyId="gingerbread" storyContent={scenes} />
 
+        {/* Layer 1.5: Character panels (fixed, independent of scroll flow) */}
+        <CharacterOrchestrator storyId="gingerbread" scenes={scenes} />
+
         {/* Layer 2: Document flow content with scroll snap targets */}
         <div style={{ position: "relative" }}>
           {scenes.map((scene: Scene, i: number) => (
             <div key={i} className="story-scene-container">
-              <FlowLayout keyId={i.toString()}>
+              <FlowLayout keyId={i.toString()} allowFullBleed={!!(scene as any)?.meta?.allowFullBleed}>
                 <SceneContentWithNavigation scene={scene} />
               </FlowLayout>
             </div>

@@ -1,12 +1,19 @@
 /**
  * Wrapper component that adds "enter from bottom" animation to its children.
  * Provides consistent entrance animation for all scene content.
+ * Now supports character panel gutters via CSS variables.
  */
-// src/components/FlowLayout.tsx
 import React from "react";
 
-export function FlowLayout({ children, keyId }: { children: React.ReactNode; keyId: string }) {
-  // Keep animation simple for now (CSS). Hook up framer-motion later if desired.
+export function FlowLayout({
+  children,
+  keyId,
+  allowFullBleed
+}: {
+  children: React.ReactNode;
+  keyId: string;
+  allowFullBleed?: boolean;
+}) {
   return (
     <div
       data-flow-key={keyId}
@@ -14,6 +21,9 @@ export function FlowLayout({ children, keyId }: { children: React.ReactNode; key
         transform: "translateY(80px)",
         opacity: 0,
         animation: "flowIn 350ms ease-out forwards",
+        paddingLeft: allowFullBleed ? 0 : "var(--character-gutter-left, 0px)",
+        paddingRight: allowFullBleed ? 0 : "var(--character-gutter-right, 0px)",
+        transition: "padding 220ms ease",
       }}
     >
       {children}
