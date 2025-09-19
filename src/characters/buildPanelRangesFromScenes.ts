@@ -55,7 +55,7 @@ export function buildPanelRangesFromScenes(scenes: Scene[]): PanelRange[] {
       ? {
           visible: true,
           character: s.meta.panelLeft.character ?? NOCHARACTER,
-          speaking: s.meta.panelLeft.speaking ?? (speaker === 'left')
+          speaking: s.meta.panelLeft.speaking !== undefined ? s.meta.panelLeft.speaking : (speaker === 'left')
         }
       : hasLeftCharacter
       ? {
@@ -73,7 +73,7 @@ export function buildPanelRangesFromScenes(scenes: Scene[]): PanelRange[] {
       ? {
           visible: true,
           character: s.meta.panelRight.character ?? NOCHARACTER,
-          speaking: s.meta.panelRight.speaking ?? (speaker === 'right')
+          speaking: s.meta.panelRight.speaking !== undefined ? s.meta.panelRight.speaking : (speaker === 'right')
         }
       : hasRightCharacter
       ? {

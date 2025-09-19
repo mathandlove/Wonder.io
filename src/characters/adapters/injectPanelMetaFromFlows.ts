@@ -31,6 +31,9 @@ export function injectPanelMetaFromFlows(scenes: Scene[]): Scene[] {
         (sceneRight !== currentRight && !!sceneRight)     // Different right character
       );
 
+      // Store previous character state to determine who was already present
+      const previousLeft = currentLeft;
+      const previousRight = currentRight;
 
       // Update current character state
       if (isNewFlow) {
@@ -43,6 +46,33 @@ export function injectPanelMetaFromFlows(scenes: Scene[]): Scene[] {
         currentRight = sceneRight ?? currentRight;
       }
       inFlow = true;
+
+      // For character scenes, determine speaking state based on speaker and whether character was already present
+      if (s.type === "character") {
+        const speaker = (s as any).speaker;
+        const meta = { ...(s as any).meta };
+
+        // Set character data with speaking state
+        if (currentLeft) {
+          const wasAlreadyPresent = previousLeft === currentLeft;
+          const isSpeaking = speaker === 'left' && wasAlreadyPresent;
+          meta.panelLeft = { character: currentLeft, speaking: isSpeaking };
+        }
+
+        if (currentRight) {
+          const wasAlreadyPresent = previousRight === currentRight;
+          const isSpeaking = speaker === 'right' && wasAlreadyPresent;
+          meta.panelRight = { character: currentRight, speaking: isSpeaking };
+        }
+
+        // Mark as new flow if this scene starts a new character flow
+        const sceneData = { ...s, meta } as any;
+        if (isNewFlow) {
+          sceneData.newFlow = true;
+        }
+
+        return sceneData as Scene;
+      }
     }
 
     // Check if we're leaving a character flow (non-character scene)
@@ -59,10 +89,9 @@ export function injectPanelMetaFromFlows(scenes: Scene[]): Scene[] {
     // For any scene in a character context, inject meta.panelLeft/Right
     if (inFlow || hasCharacters) {
       const meta = { ...(s as any).meta };
-      // Only characters, no poses/speaking
+      // Only characters, no poses/speaking for non-character scenes
       if (currentLeft)  meta.panelLeft  = { character: currentLeft };
       if (currentRight) meta.panelRight = { character: currentRight };
-
 
       // Mark as new flow if this scene starts a new character flow
       const sceneData = { ...s, meta } as any;
@@ -75,5 +104,6 @@ export function injectPanelMetaFromFlows(scenes: Scene[]): Scene[] {
 
     return s;
   });
+  console.log(out);
   return out;
 }
