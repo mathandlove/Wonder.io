@@ -6,11 +6,12 @@ import type { Scene } from "../../types/scene";
 export function injectPanelMetaFromFlows(scenes: Scene[]): Scene[] {
   if (!Array.isArray(scenes) || scenes.length === 0) return scenes;
 
+
   let inFlow = false;
   let currentLeft: string | null = null;
   let currentRight: string | null = null;
 
-  const out = scenes.map((s) => {
+  const out = scenes.map((s, i) => {
     // Check if this is a character scene that starts or continues a flow
     // Character scenes have left-character and/or right-character properties
     const hasCharacters = (s as any)["left-character"] || (s as any)["right-character"];
@@ -22,9 +23,14 @@ export function injectPanelMetaFromFlows(scenes: Scene[]): Scene[] {
       const sceneRight = (s as any)["right-character"];
 
       // Check if this scene explicitly resets characters (new flow detected)
-      isNewFlow = (sceneLeft && !sceneRight && currentRight) || // Only left char when we had right
-                  (sceneLeft !== currentLeft && sceneLeft) ||     // Different left character
-                  (sceneRight !== currentRight && sceneRight);    // Different right character
+      // Don't treat the very first character scene as a new flow
+      const hasExistingFlow = currentLeft !== null || currentRight !== null;
+      isNewFlow = hasExistingFlow && (
+        (sceneLeft && !sceneRight && currentRight) || // Only left char when we had right
+        (sceneLeft !== currentLeft && !!sceneLeft) ||     // Different left character
+        (sceneRight !== currentRight && !!sceneRight)     // Different right character
+      );
+
 
       // Update current character state
       if (isNewFlow) {
@@ -57,6 +63,7 @@ export function injectPanelMetaFromFlows(scenes: Scene[]): Scene[] {
       if (currentLeft)  meta.panelLeft  = { character: currentLeft };
       if (currentRight) meta.panelRight = { character: currentRight };
 
+
       // Mark as new flow if this scene starts a new character flow
       const sceneData = { ...s, meta } as any;
       if (isNewFlow) {
@@ -68,6 +75,5 @@ export function injectPanelMetaFromFlows(scenes: Scene[]): Scene[] {
 
     return s;
   });
-
   return out;
 }

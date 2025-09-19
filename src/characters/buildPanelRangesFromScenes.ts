@@ -72,13 +72,13 @@ export function buildPanelRangesFromScenes(scenes: Scene[]): PanelRange[] {
     const right = s?.meta?.panelRight
       ? {
           visible: true,
-          character: isNewFlow ? NOCHARACTER : (s.meta.panelRight.character ?? NOCHARACTER),
+          character: s.meta.panelRight.character ?? NOCHARACTER,
           speaking: s.meta.panelRight.speaking ?? (speaker === 'right')
         }
       : hasRightCharacter
       ? {
           visible: true,
-          character: isNewFlow ? NOCHARACTER : s['right-character'],
+          character: s['right-character'],
           speaking: speaker === 'right'
         }
       : {
