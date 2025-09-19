@@ -9,7 +9,15 @@ interface CharacterPanelProps {
   characterName: string | null;
   pose?: string | null;
   storyId: string;
+  direction?: 'up' | 'down' | 'none';
+  changeKey?: string;
+  exiting?: boolean;
 }
+
+type Phase = 'hidden' | 'entering' | 'idle' | 'speaking' | 'exiting';
+
+const ENTER_MS = 1200;
+const EXIT_MS = 300;
 
 export const CharacterPanel: React.FC<CharacterPanelProps> = ({
   side,
@@ -17,94 +25,128 @@ export const CharacterPanel: React.FC<CharacterPanelProps> = ({
   isSpeaking,
   characterName,
   pose,
-  storyId
+  storyId,
+  direction = 'none',
+  changeKey = '',
+  exiting = false
 }) => {
-  const [animationState, setAnimationState] = useState<'hidden' | 'entering' | 'visible' | 'exiting'>('hidden');
-  const [progress, setProgress] = useState(0);
-  const [bounceComplete, setBounceComplete] = useState(false);
+  const [phase, setPhase] = useState<Phase>('hidden');
   const [version] = useState(`v${Date.now()}`);
-  const animationRef = useRef<NodeJS.Timeout | null>(null);
+  const prevChangeKeyRef = useRef('');
+  const prevVisibleRef = useRef(false);
 
-  // Handle visibility changes
+
   useEffect(() => {
-    if (visible && characterName && animationState === 'hidden') {
-      setAnimationState('entering');
-      setProgress(0);
-      setBounceComplete(false);
-
-      // Start entrance animation
-      let currentProgress = 0;
-      animationRef.current = setInterval(() => {
-        currentProgress += 10;
-        setProgress(currentProgress);
-        if (currentProgress >= 100) {
-          if (animationRef.current) {
-            clearInterval(animationRef.current);
-          }
-          setAnimationState('visible');
-
-          // Start bounce after a short delay
-          setTimeout(() => {
-            setBounceComplete(true);
-          }, 1200);
-        }
-      }, 25);
-    } else if (!visible && animationState === 'visible') {
-      setAnimationState('exiting');
-      setTimeout(() => {
-        setAnimationState('hidden');
-        setProgress(0);
-        setBounceComplete(false);
-      }, 300);
+    // Handle exiting flag first
+    if (exiting && visible && characterName) {
+      setPhase('exiting');
+      return;
     }
 
-    return () => {
-      if (animationRef.current) {
-        clearInterval(animationRef.current);
-      }
-    };
-  }, [visible, characterName, animationState]);
+    // Only update refs and trigger animations if there are actual changes
+    const hasCharacterChanged = changeKey !== prevChangeKeyRef.current;
+    const hasVisibilityChanged = visible !== prevVisibleRef.current;
 
-  // Don't render if hidden
-  if (animationState === 'hidden' || !characterName) {
+    if (hasCharacterChanged || hasVisibilityChanged) {
+      if (hasCharacterChanged && visible && characterName) {
+        // Character change - animate entrance if visible
+        if (direction === 'up') {
+          setPhase(isSpeaking ? 'speaking' : 'idle');
+        } else {
+          setPhase('entering');
+          const timer = setTimeout(() => {
+            setPhase(isSpeaking ? 'speaking' : 'idle');
+          }, ENTER_MS);
+          return () => clearTimeout(timer);
+        }
+      } else if (hasVisibilityChanged && !hasCharacterChanged) {
+        // Visibility change only (no character change)
+        if (visible && characterName) {
+          // Becoming visible
+          if (phase === 'hidden') {
+            if (direction === 'up') {
+              setPhase(isSpeaking ? 'speaking' : 'idle');
+            } else {
+              setPhase('entering');
+              const timer = setTimeout(() => {
+                setPhase(isSpeaking ? 'speaking' : 'idle');
+              }, ENTER_MS);
+              return () => clearTimeout(timer);
+            }
+          }
+        } else {
+          // Becoming hidden
+          if (phase !== 'hidden') {
+            if (direction === 'up') {
+              setPhase('hidden');
+            } else {
+              setPhase('exiting');
+              const timer = setTimeout(() => {
+                setPhase('hidden');
+              }, EXIT_MS);
+              return () => clearTimeout(timer);
+            }
+          }
+        }
+      }
+    }
+
+    // Always update refs after processing (whether there were changes or not)
+    prevChangeKeyRef.current = changeKey;
+    prevVisibleRef.current = visible;
+  }, [changeKey, visible, characterName, direction, isSpeaking, exiting]);
+
+  // Additional effect to ensure refs are always updated
+  useEffect(() => {
+    prevChangeKeyRef.current = changeKey;
+    prevVisibleRef.current = visible;
+  });
+
+
+  // Handle speaking state changes (only when idle)
+  useEffect(() => {
+    if (visible && phase === 'idle') {
+      setPhase(isSpeaking ? 'speaking' : 'idle');
+    } else if (visible && phase === 'speaking' && !isSpeaking) {
+      setPhase('idle');
+    }
+  }, [isSpeaking, visible, phase]);
+
+
+
+  // Don't render if hidden or no character
+  if (phase === 'hidden' || !characterName) {
     return null;
   }
 
-  const getTransform = () => {
-    if (animationState === 'entering' && progress < 100) {
-      if (side === 'left') {
-        return `translateY(${100 - progress}vh) translateX(${-100 + progress}%) rotate(${-45 + (progress * 0.45)}deg)`;
-      } else {
-        return `translateY(${100 - progress}vh) translateX(${100 - progress}%) rotate(${45 - (progress * 0.45)}deg)`;
-      }
-    }
-    return 'translateY(0vh) translateX(0%) rotate(0deg)';
+
+  // CSS class for current phase and side
+  const getCardClasses = () => {
+    const baseClass = 'story-character-cardboard';
+    const phaseClass =
+      phase === 'entering' ? `entering-${side}` :
+      phase === 'exiting' ? `exiting-${side}` :
+      'idle';
+    return `${baseClass} ${phaseClass}`;
   };
 
-  const getCharacterClass = () => {
-    if (animationState === 'visible' && progress >= 100 && !bounceComplete) {
-      return side === 'left' ? 'story-bounce-arrival' : 'story-bounce-arrival-right';
-    }
-    if (isSpeaking && bounceComplete) {
-      return side === 'left' ? 'story-character-speaking' : 'story-character-speaking-right';
-    }
-    return '';
+  const cardStyle = {
+    transition: 'transform 1200ms cubic-bezier(.2,.8,.2,1)',
+    opacity: 1, // Always fully opaque
+    animation: phase === 'speaking' ? 'cp-speaking-bounce 250ms ease-in-out infinite' : undefined,
   };
 
   const characterSrc = `/stories/${storyId}.bundle/images/characters/${characterName}${pose ? `.${pose}` : ''}.sticker-cardboard-3d.webp?${version}`;
   const fallbackSrc = `/assets.core/images/characters/${characterName}${pose ? `.${pose}` : ''}.sticker-cardboard-3d.webp?${version}`;
 
   return (
-    <div className={`story-character-panel story-character-${side} story-character-${animationState}`}>
+    <div className={`story-character-panel story-character-${side} story-character-${phase}`}>
       <div className="story-character-content">
         <div
-          className="story-character-cardboard"
-          style={{
-            transform: getTransform(),
-            transition: progress >= 100 ? 'none' : 'transform 0.1s ease-out'
-          }}
+          className={getCardClasses()}
+          style={cardStyle}
         >
-          <div className={`story-character-inner ${getCharacterClass()}`}>
+          <div className="story-character-inner">
             <div className="story-wooden-dowel"></div>
             <img
               src={characterSrc}

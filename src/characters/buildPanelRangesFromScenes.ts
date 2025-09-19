@@ -28,19 +28,19 @@ export function buildPanelRangesFromScenes(scenes: Scene[]): PanelRange[] {
       ? { visible: true, character: s.meta.panelRight.character ?? null }
       : { visible: false, character: null };
 
-    // Enforce "both or none"
-    const anyVisible = left.visible || right.visible;
-    const normLeft  = anyVisible ? { visible: true,  character: left.character  } : { visible: false, character: null };
-    const normRight = anyVisible ? { visible: true,  character: right.character } : { visible: false, character: null };
+    // Keep each side independent
+    const normLeft = left;
+    const normRight = right;
 
     const allowFullBleed = !!s?.meta?.allowFullBleed;
 
-    if (
-      current &&
+    const shouldContinueRange = current &&
       sameSide(current.left, normLeft) &&
       sameSide(current.right, normRight) &&
-      !!current.allowFullBleed === allowFullBleed
-    ) {
+      !!current.allowFullBleed === allowFullBleed;
+
+
+    if (shouldContinueRange) {
       current.endIndex = i;
     } else {
       if (current) ranges.push(current);
