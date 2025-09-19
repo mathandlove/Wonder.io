@@ -54,6 +54,7 @@ function flattenScenes(rawScenes: RawScene[]): Scene[] {
         let flattened: Partial<Scene> = {
           flowSequence: true,
           isFirstInFlow: flowIndex === 0,
+          panelRestricted: true,
           background: scene.background,
           "left-character": currentLeftCharacter,
           "right-character": currentRightCharacter,
@@ -90,6 +91,7 @@ function flattenScenes(rawScenes: RawScene[]): Scene[] {
         background: scene.background,
         flowSequence: false,
         isFirstInFlow: false,
+        panelRestricted: false,
       });
     } else {
       // Pass-through for any already-flat scene types you might have
@@ -98,6 +100,7 @@ function flattenScenes(rawScenes: RawScene[]): Scene[] {
         ...scene,
         flowSequence: false,
         isFirstInFlow: false,
+        panelRestricted: false,
       } as Scene);
     }
   });

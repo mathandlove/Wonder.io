@@ -12,5 +12,4 @@ export interface PanelRange {
   endIndex: number; // inclusive
   left?: PanelStateLite;
   right?: PanelStateLite;
-  allowFullBleed?: boolean; // scenes in this range can opt out of gutters
 }

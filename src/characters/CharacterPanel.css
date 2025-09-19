@@ -1,3 +1,20 @@
+/* Character panel wrapper styles */
+.character-panel {
+  position: fixed;
+  top: 0;
+  bottom: 0;
+  z-index: 20;
+  pointer-events: none;
+}
+
+.character-panel--left {
+  left: 0;
+}
+
+.character-panel--right {
+  right: 0;
+}
+
 /* Character panel styles */
 .story-character-panel {
   position: absolute;
@@ -8,7 +25,7 @@
   align-items: flex-end;
   justify-content: center;
   pointer-events: none;
-  /* background: rgba(255, 0, 0, 0.3); /* Red background for debugging */
+  background: rgba(255, 0, 0, 0.3); /* Red background for debugging */
 }
 
 .story-character-content {

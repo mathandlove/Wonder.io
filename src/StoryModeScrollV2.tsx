@@ -100,7 +100,10 @@ const StoryContent: React.FC = () => {
         <div style={{ position: "relative" }}>
           {scenes.map((scene: Scene, i: number) => (
             <div key={i} className="story-scene-container">
-              <FlowLayout keyId={i.toString()} allowFullBleed={!!(scene as any)?.meta?.allowFullBleed}>
+              <FlowLayout
+                keyId={i.toString()}
+                panelRestricted={(scene as any)?.panelRestricted ?? false}
+              >
                 <SceneContentWithNavigation scene={scene} />
               </FlowLayout>
             </div>

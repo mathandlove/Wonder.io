@@ -35,10 +35,19 @@ export const CharacterPanel: React.FC<CharacterPanelProps> = ({
   const prevChangeKeyRef = useRef('');
   const prevVisibleRef = useRef(false);
 
-
   useEffect(() => {
+    if (!visible) {
+      setPhase('hidden');
+      return;
+    }
+
+    if (!characterName) {
+      setPhase('idle'); // Panel is visible but empty
+      return;
+    }
+
     // Handle exiting flag first
-    if (exiting && visible && characterName) {
+    if (exiting) {
       setPhase('exiting');
       return;
     }
@@ -48,7 +57,7 @@ export const CharacterPanel: React.FC<CharacterPanelProps> = ({
     const hasVisibilityChanged = visible !== prevVisibleRef.current;
 
     if (hasCharacterChanged || hasVisibilityChanged) {
-      if (hasCharacterChanged && visible && characterName) {
+      if (hasCharacterChanged && characterName) {
         // Character change - always animate entrance when visible
         setPhase('entering');
         const timer = setTimeout(() => {
@@ -57,22 +66,13 @@ export const CharacterPanel: React.FC<CharacterPanelProps> = ({
         return () => clearTimeout(timer);
       } else if (hasVisibilityChanged && !hasCharacterChanged) {
         // Visibility change only (no character change)
-        if (visible && characterName) {
+        if (characterName) {
           // Becoming visible - always animate entrance
           if (phase === 'hidden') {
             setPhase('entering');
             const timer = setTimeout(() => {
               setPhase(isSpeaking ? 'speaking' : 'idle');
             }, ENTER_MS);
-            return () => clearTimeout(timer);
-          }
-        } else {
-          // Becoming hidden - always animate exit
-          if (phase !== 'hidden') {
-            setPhase('exiting');
-            const timer = setTimeout(() => {
-              setPhase('hidden');
-            }, EXIT_MS);
             return () => clearTimeout(timer);
           }
         }
@@ -84,28 +84,16 @@ export const CharacterPanel: React.FC<CharacterPanelProps> = ({
     prevVisibleRef.current = visible;
   }, [changeKey, visible, characterName, direction, isSpeaking, exiting]);
 
-  // Additional effect to ensure refs are always updated
-  useEffect(() => {
-    prevChangeKeyRef.current = changeKey;
-    prevVisibleRef.current = visible;
-  });
-
-
   // Handle speaking state changes (only when idle)
   useEffect(() => {
-    if (visible && phase === 'idle') {
+    if (visible && characterName && phase === 'idle') {
       setPhase(isSpeaking ? 'speaking' : 'idle');
-    } else if (visible && phase === 'speaking' && !isSpeaking) {
+    } else if (visible && characterName && phase === 'speaking' && !isSpeaking) {
       setPhase('idle');
     }
-  }, [isSpeaking, visible, phase]);
+  }, [isSpeaking, visible, phase, characterName]);
 
-
-
-  // Don't render if hidden or no character
-  if (phase === 'hidden' || !characterName) {
-    return null;
-  }
+  // Panel container always renders as independent layer
 
 
   // CSS class for current phase and side
@@ -131,32 +119,31 @@ export const CharacterPanel: React.FC<CharacterPanelProps> = ({
     return '';
   };
 
-  const characterSrc = `/stories/${storyId}.bundle/images/characters/${characterName}${pose ? `.${pose}` : ''}.sticker-cardboard-3d.webp?${version}`;
-  const fallbackSrc = `/assets.core/images/characters/${characterName}${pose ? `.${pose}` : ''}.sticker-cardboard-3d.webp?${version}`;
-
   return (
-    <div className={`story-character-panel story-character-${side} story-character-${phase}`}>
-      <div className="story-character-content">
-        <div
-          className={getCardClasses()}
-          style={cardStyle}
-        >
-          <div className={`story-character-inner ${getInnerClasses()}`}>
-            <div className="story-wooden-dowel"></div>
-            <img
-              src={characterSrc}
-              alt={`${characterName} Character`}
-              className="story-character-image"
-              onError={(e) => {
-                const target = e.target as HTMLImageElement;
-                if (target.src.includes(`${storyId}.bundle`)) {
-                  target.src = fallbackSrc;
-                }
-              }}
-            />
+    <div className={`story-character-panel story-character-${side}`}>
+      {characterName ? (
+        <div className="story-character-content">
+          <div
+            className={getCardClasses()}
+            style={cardStyle}
+          >
+            <div className={`story-character-inner ${getInnerClasses()}`}>
+              <div className="story-wooden-dowel"></div>
+              <img
+                src={`/stories/${storyId}.bundle/images/characters/${characterName}${pose ? `.${pose}` : ''}.sticker-cardboard-3d.webp?${version}`}
+                alt={`${characterName} Character`}
+                className="story-character-image"
+                onError={(e) => {
+                  const target = e.target as HTMLImageElement;
+                  if (target.src.includes(`${storyId}.bundle`)) {
+                    target.src = `/assets.core/images/characters/${characterName}${pose ? `.${pose}` : ''}.sticker-cardboard-3d.webp?${version}`;
+                  }
+                }}
+              />
+            </div>
           </div>
         </div>
-      </div>
+      ) : null}
     </div>
   );
 };

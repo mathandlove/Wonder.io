@@ -10,7 +10,6 @@ export const NOCHARACTER = "NOCHARACTER";
  * For now: look for optional metadata on scenes:
  *   scene.meta?.panelLeft  = { character, pose, speaking?: boolean }
  *   scene.meta?.panelRight = { character, pose, speaking?: boolean }
- *   scene.meta?.allowFullBleed = boolean
  */
 export function buildPanelRangesFromScenes(scenes: Scene[]): PanelRange[] {
   if (!scenes?.length) return [];
@@ -37,17 +36,20 @@ export function buildPanelRangesFromScenes(scenes: Scene[]): PanelRange[] {
   for (let i = 0; i < scenes.length; i++) {
     const s: any = scenes[i];
 
-    // Check if this is a character scene with speaking dialog
-    const isCharacterScene = s?.type === 'character';
-    const speaker = isCharacterScene ? s?.speaker : null;
+    // Determine if this scene type should show panels
+    const characterSceneTypes = ['character', 'quest', 'input'];
+    const isCharacterTypeScene = characterSceneTypes.includes(s?.type) || s?.flowSequence === true;
+    const speaker = s?.speaker || null;
 
     // Check if this is a NEW flow (should reset character state)
     const isNewFlow = s?.newFlow === true;
 
+    // If this is not a character-type scene, skip panel creation entirely
+    if (!isCharacterTypeScene) {
+      continue;
+    }
 
-
-
-    // Determine character visibility and speaking state
+    // For character-type scenes, determine character visibility and speaking state
     const hasLeftCharacter = s?.meta?.panelLeft?.character || s['left-character'];
     const hasRightCharacter = s?.meta?.panelRight?.character || s['right-character'];
 
@@ -64,7 +66,7 @@ export function buildPanelRangesFromScenes(scenes: Scene[]): PanelRange[] {
           speaking: speaker === 'left'
         }
       : {
-          visible: true, // Always visible to trigger transitions
+          visible: true, // Always visible for character scenes to maintain symmetry
           character: NOCHARACTER,
           speaking: false
         };
@@ -82,23 +84,18 @@ export function buildPanelRangesFromScenes(scenes: Scene[]): PanelRange[] {
           speaking: speaker === 'right'
         }
       : {
-          visible: true, // Always visible to trigger transitions
+          visible: true, // Always visible for character scenes to maintain symmetry
           character: NOCHARACTER,
           speaking: false
         };
-
 
     // Keep each side independent
     const normLeft = left;
     const normRight = right;
 
-
-    const allowFullBleed = !!s?.meta?.allowFullBleed;
-
     const shouldContinueRange = current &&
       sameSide(current.left, normLeft) &&
-      sameSide(current.right, normRight) &&
-      !!current.allowFullBleed === allowFullBleed;
+      sameSide(current.right, normRight);
 
 
 
@@ -114,7 +111,6 @@ export function buildPanelRangesFromScenes(scenes: Scene[]): PanelRange[] {
         endIndex: i,
         left: normLeft,
         right: normRight,
-        allowFullBleed,
       };
     }
   }

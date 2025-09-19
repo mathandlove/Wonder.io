@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState, useRef } from "react";
+import React, { useEffect, useMemo, useState, useRef, useLayoutEffect } from "react";
 import { useScrollManager } from "../hooks/useScrollManager";
 import type { Scene } from "../types/scene";
 import type { PanelRange } from "./types";
@@ -21,10 +21,28 @@ type Props = { storyId: string; scenes: Scene[] };
 
 export const CharacterOrchestrator: React.FC<Props> = ({ storyId, scenes }) => {
   const { index: scrollOffset } = useScrollManager({ setCurrentIndex: () => {} }); // continuous float in "scene units"
-  const ranges = useMemo<PanelRange[]>(
-    () => buildPanelRangesFromScenes(scenes),
-    [scenes]
-  );
+  const ranges = useMemo<PanelRange[]>(() => {
+    const builtRanges = buildPanelRangesFromScenes(scenes);
+
+    // DEBUG: Log all built ranges
+    console.log('🎭 Panel Ranges Built:', {
+      totalScenes: scenes.length,
+      totalRanges: builtRanges.length,
+      ranges: builtRanges.map((r, idx) => ({
+        rangeIndex: idx,
+        sceneIndices: `${r.startIndex}-${r.endIndex}`,
+        leftCharacter: r.left?.character || 'none',
+        rightCharacter: r.right?.character || 'none',
+        scenesInRange: scenes.slice(r.startIndex, r.endIndex + 1).map((s: any) => ({
+          type: s.type,
+          panelRestricted: s.panelRestricted,
+          text: s.text?.substring(0, 30) + '...'
+        }))
+      }))
+    });
+
+    return builtRanges;
+  }, [scenes]);
 
   // State for managing transitions
   const [leftPanel, setLeftPanel] = useState<PanelState>({
@@ -44,6 +62,22 @@ export const CharacterOrchestrator: React.FC<Props> = ({ storyId, scenes }) => {
     const i = Math.max(0, Math.min(scenes.length - 1, Math.round(scrollOffset)));
     const activeRange = ranges.find(r => i >= r.startIndex && i <= r.endIndex) ?? null;
 
+    // DEBUG: Log what's being processed
+    console.log('🎭 CharacterOrchestrator Debug:', {
+      sceneIndex: i,
+      currentScene: scenes[i],
+      panelRestricted: (scenes[i] as any)?.panelRestricted,
+      activeRange: activeRange ? {
+        startIndex: activeRange.startIndex,
+        endIndex: activeRange.endIndex,
+        leftCharacter: activeRange.left?.character,
+        rightCharacter: activeRange.right?.character,
+        leftSpeaking: activeRange.left?.speaking,
+        rightSpeaking: activeRange.right?.speaking,
+      } : null,
+      totalRanges: ranges.length,
+      scrollOffset: scrollOffset.toFixed(2),
+    });
 
     return activeRange;
   }, [scrollOffset, ranges, scenes.length]);
@@ -113,16 +147,17 @@ export const CharacterOrchestrator: React.FC<Props> = ({ storyId, scenes }) => {
   // Handle active range changes
   useEffect(() => {
     if (active) {
+      // Character-type scene - panels are always visible
       transitionCharacter(
         'left',
         active.left?.character ?? null,
-        !!active.left?.visible,
+        true, // Always visible for character scenes
         !!active.left?.speaking
       );
       transitionCharacter(
         'right',
         active.right?.character ?? null,
-        !!active.right?.visible,
+        true, // Always visible for character scenes
         !!active.right?.speaking
       );
     } else {
@@ -138,15 +173,19 @@ export const CharacterOrchestrator: React.FC<Props> = ({ storyId, scenes }) => {
     rightKey: `${rightPanel.character ?? 'none'}-default`
   }), [leftPanel.character, rightPanel.character]);
 
-  // set gutters via CSS vars (don't reflow via DOM)
-  useEffect(() => {
-    const root = document.documentElement;
-    const left = leftPanel.visible ? DEFAULT_GUTTER : 0;
-    const right = rightPanel.visible ? DEFAULT_GUTTER : 0;
-    root.style.setProperty("--character-gutter-left", `${left}px`);
-    root.style.setProperty("--character-gutter-right", `${right}px`);
-  }, [leftPanel.visible, rightPanel.visible]);
+  // Publish panel widths as CSS variables based on current scene's panelRestricted value
+  useLayoutEffect(() => {
+    const currentSceneIndex = Math.max(0, Math.min(scenes.length - 1, Math.round(scrollOffset)));
+    const currentScene = scenes[currentSceneIndex] as any;
+    const shouldShowPanels = currentScene?.panelRestricted ?? false;
 
+    // Set CSS variables based on whether the current scene should be panel-restricted
+    const leftWidth = shouldShowPanels ? "280px" : "0px";
+    const rightWidth = shouldShowPanels ? "280px" : "0px";
+
+    document.documentElement.style.setProperty("--panel-left-width", leftWidth);
+    document.documentElement.style.setProperty("--panel-right-width", rightWidth);
+  }, [scrollOffset, scenes]);
 
   // Cleanup timeout on unmount
   useEffect(() => {
@@ -162,10 +201,10 @@ export const CharacterOrchestrator: React.FC<Props> = ({ storyId, scenes }) => {
   return (
     <div style={{ position: "fixed", inset: 0, pointerEvents: "none", zIndex: 60 }}>
       {/* Left gutter column */}
-      <div style={{ position: "absolute", left: 0, top: 0, bottom: 0, width: "var(--character-gutter-left,0px)", pointerEvents: "auto" }}>
+      <div className="character-panel--left" style={{ position: "absolute", left: 0, top: 0, bottom: 0, width: "280px", pointerEvents: "auto" }}>
         <CharacterPanel
           side="left"
-          visible={leftPanel.visible}
+          visible={true}
           isSpeaking={!!leftPanel.speaking}
           characterName={leftPanel.character}
           pose={leftPanel.pose ?? null}
@@ -177,10 +216,10 @@ export const CharacterOrchestrator: React.FC<Props> = ({ storyId, scenes }) => {
       </div>
 
       {/* Right gutter column */}
-      <div style={{ position: "absolute", right: 0, top: 0, bottom: 0, width: "var(--character-gutter-right,0px)", pointerEvents: "auto" }}>
+      <div className="character-panel--right" style={{ position: "absolute", right: 0, top: 0, bottom: 0, width: "280px", pointerEvents: "auto" }}>
         <CharacterPanel
           side="right"
-          visible={rightPanel.visible}
+          visible={true}
           isSpeaking={!!rightPanel.speaking}
           characterName={rightPanel.character}
           pose={rightPanel.pose ?? null}
