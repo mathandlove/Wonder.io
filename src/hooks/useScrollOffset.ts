@@ -15,7 +15,7 @@ export type ScrollOffsetState = {
   setIsProgrammatic: (v: boolean) => void;
 };
 
-export function useScrollOffset(railRef: React.RefObject<HTMLElement>): ScrollOffsetState {
+export function useScrollOffset(railRef: React.RefObject<HTMLDivElement | null>): ScrollOffsetState {
   const [offset, setOffset] = useState(0);
   const [index, setIndex] = useState(0);
   const [isProgrammatic, setIsProgrammatic] = useState(false);

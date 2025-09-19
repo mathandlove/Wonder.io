@@ -24,7 +24,7 @@ export function useSnapApi(): SnapApi {
 
 type SnapLayerProps = {
   children: React.ReactNode;
-  railRef: React.RefObject<HTMLElement>;
+  railRef: React.RefObject<HTMLDivElement | null>;
   targetIndex?: number;
   setIsProgrammatic: (v: boolean) => void;
   currentIndex: number;

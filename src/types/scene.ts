@@ -10,6 +10,8 @@ export type CharacterScene = {
   background?: string;
   "left-character"?: string;
   "right-character"?: string;
+  flowSequence?: boolean;
+  isFirstInFlow?: boolean;
 };
 
 export type QuestScene = {
@@ -18,6 +20,8 @@ export type QuestScene = {
   background?: string;
   "left-character"?: string;
   "right-character"?: string;
+  flowSequence?: boolean;
+  isFirstInFlow?: boolean;
 };
 
 export type InputScene = {
@@ -26,6 +30,8 @@ export type InputScene = {
   background?: string;
   "left-character"?: string;
   "right-character"?: string;
+  flowSequence?: boolean;
+  isFirstInFlow?: boolean;
 };
 
 export type ImageScene = {
@@ -33,6 +39,8 @@ export type ImageScene = {
   image: string;
   caption?: string;
   background?: string;
+  flowSequence?: boolean;
+  isFirstInFlow?: boolean;
 };
 
 export type CharacterFlowScene = {
@@ -52,6 +60,8 @@ export type FullScene = {
   type: "full";
   text: string;
   background?: string;
+  flowSequence?: boolean;
+  isFirstInFlow?: boolean;
 };
 
 export type Scene =

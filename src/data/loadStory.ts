@@ -35,33 +35,37 @@ function flattenScenes(rawScenes: RawScene[]): Scene[] {
 
   rawScenes.forEach((scene) => {
     if (scene.type === "character-flow" && scene.flow) {
-      scene.flow.forEach((f) => {
+      scene.flow.forEach((f, flowIndex) => {
+        let flattened: Partial<Scene> = {
+          flowSequence: true,
+          isFirstInFlow: flowIndex === 0,
+          background: scene.background,
+          "left-character": scene["left-character"],
+          "right-character": scene["right-character"],
+        };
+
         if (f.quest) {
-          out.push({
+          flattened = {
+            ...flattened,
             type: "quest",
             text: f.quest,
-            background: scene.background,
-            "left-character": scene["left-character"],
-            "right-character": scene["right-character"],
-          });
+          };
         } else if (f.input) {
-          out.push({
+          flattened = {
+            ...flattened,
             type: "input",
             text: f.input,
-            background: scene.background,
-            "left-character": scene["left-character"],
-            "right-character": scene["right-character"],
-          });
+          };
         } else if (f.text) {
-          out.push({
+          flattened = {
+            ...flattened,
             type: "character",
             text: f.text,
             speaker: f.side,
-            background: scene.background,
-            "left-character": scene["left-character"],
-            "right-character": scene["right-character"],
-          });
+          };
         }
+
+        out.push(flattened as Scene);
       });
     } else if (scene.type === "image" && scene.image) {
       out.push({
@@ -69,10 +73,17 @@ function flattenScenes(rawScenes: RawScene[]): Scene[] {
         image: scene.image,
         caption: scene.text,
         background: scene.background,
+        flowSequence: false,
+        isFirstInFlow: false,
       });
     } else {
       // Pass-through for any already-flat scene types you might have
-      // (If needed, map them explicitly later.)
+      // Add flowSequence and isFirstInFlow properties for background system compatibility
+      out.push({
+        ...scene,
+        flowSequence: false,
+        isFirstInFlow: false,
+      } as Scene);
     }
   });
 

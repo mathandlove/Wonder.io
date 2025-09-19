@@ -5,18 +5,17 @@
  */
 // React imports and custom hooks/components used by this screen
 import React, { useMemo, useEffect, useRef } from "react";
-import { LayoutGroup } from "framer-motion";
 import { useStory } from "./hooks/useStory";
-import { SnapLayer, SnapSlot } from "./components/SnapLayer";
-import { ScrollRail } from "./components/ScrollRail";
+import { SnapLayer } from "./components/SnapLayer";
 import { FlowLayout } from "./components/FlowLayout";
 import { SceneRenderer } from "./components/SceneRenderer";
 import { PageFactoryProvider } from "./components/PageFactory";
 import { useNavigation } from "./context/NavigationContext";
-import { BackgroundLayer } from "./components/BackgroundLayer";
+import { BackgroundOrchestrator } from "./background/BackgroundOrchestrator";
 import { useScrollOffset } from "./hooks/useScrollOffset";
-import { useMagneticScroller } from "./hooks/useMagneticScroller";
+// import { useMagneticScroller } from "./hooks/useMagneticScroller";
 import type { Scene } from "./types/scene";
+import "./components/SnapScroll.css";
 
 // Path to the story JSON bundle we want to load. In demo mode we keep this fixed
 // so the experience is deterministic for the presentation.
@@ -46,8 +45,10 @@ const StoryContent: React.FC = () => {
 
   // Multi-layered scroll architecture
   const railRef = useRef<HTMLDivElement>(null);
-  const { offset, index, isProgrammatic, setIsProgrammatic } = useScrollOffset(railRef);
-  const { targetIndex } = useMagneticScroller({ railRef, index, offset, isProgrammatic });
+  const { index, setIsProgrammatic } = useScrollOffset(railRef);
+  // Temporarily disable magnetic scroller to test pure CSS snap
+  // const { targetIndex } = useMagneticScroller({ railRef, index, offset, isProgrammatic });
+  const targetIndex = undefined;
 
   // Derive a stable array of scenes from the loaded story. useMemo avoids re-computing unless story.scenes changes
   // Move useMemo BEFORE any conditional returns to satisfy Rules of Hooks
@@ -65,7 +66,6 @@ const StoryContent: React.FC = () => {
 
   // Use navigation scenes instead of story scenes (this includes dynamically added scenes)
   const scenes = navigationScenes;
-
 
   // RENDER PATH #1: still loading the story → show a friendly centered message
   if (loading) {
@@ -91,22 +91,13 @@ const StoryContent: React.FC = () => {
         setIsProgrammatic={setIsProgrammatic}
         currentIndex={index}
       >
-        {/* Layer 1: Fixed background */}
-        <BackgroundLayer scrollOffset={offset} scenes={scenes} />
+        {/* Layer 1: Hybrid background system */}
+        <BackgroundOrchestrator storyId="gingerbread" storyContent={scenes} />
 
         {/* Layer 2: Document flow content with scroll snap targets */}
         <div style={{ position: "relative" }}>
           {scenes.map((scene: Scene, i: number) => (
-            <div key={i} style={{
-              height: "100vh",
-              scrollSnapAlign: "start",
-              scrollSnapStop: "always",
-              position: "relative",
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              border: `2px solid ${i % 2 === 0 ? 'red' : 'blue'}`
-            }}>
+            <div key={i} className="story-scene-container">
               <FlowLayout keyId={i.toString()}>
                 <SceneContentWithNavigation scene={scene} />
               </FlowLayout>

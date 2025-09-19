@@ -2,7 +2,7 @@
  * NavigationProvider owns navigation state/APIs and syncs with SnapLayer.
  * Keeps scenes dumb while preserving existing assistantText auto-advance logic.
  */
-import React, { createContext, useCallback, useContext, useMemo, useRef, useState } from "react";
+import React, { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState } from "react";
 import type { Scene } from "../types/scene";
 
 export interface NavigationContextType {
@@ -71,6 +71,19 @@ export function NavigationProvider({ children, initialIndex = 0 }: NavigationPro
     // Don't auto-scroll on registration to prevent infinite loops
     // The scroll position will be handled by user interactions or explicit navigation calls
   }, []);
+
+  // Auto-scroll to initial index when scenes are loaded and snap API is ready
+  useEffect(() => {
+    if (snapApiRef.current && scenes.length > 0 && initialIndex > 0) {
+      // Small delay to ensure DOM is ready
+      const timer = setTimeout(() => {
+        const clampedIndex = Math.max(0, Math.min(initialIndex, scenes.length - 1));
+        snapApiRef.current?.scrollTo(clampedIndex, { behavior: "auto" }); // Use "auto" for instant jump
+        console.log(`🎯 Auto-scrolled to initial scene ${clampedIndex}`);
+      }, 100);
+      return () => clearTimeout(timer);
+    }
+  }, [scenes.length, initialIndex]); // Only run when scenes load or initialIndex changes
 
   const goToIndex = useCallback((index: number) => {
     const clampedIndex = Math.max(0, Math.min(index, scenes.length - 1));

@@ -10,6 +10,7 @@ import CharacterScene from "./views/CharacterScene";
 import QuestScene from "./views/QuestScene";
 import InputScene from "./views/InputScene";
 import ImageScene from "./views/ImageScene";
+import FullScene from "./views/FullScene";
 
 export type SceneProps<T extends Scene = Scene> = {
   scene: T;
@@ -21,4 +22,5 @@ export const sceneRegistry: Record<Scene["type"], ComponentType<SceneProps>> = {
   quest: QuestScene,
   input: InputScene,
   image: ImageScene,
+  full: FullScene,
 };

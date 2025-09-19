@@ -17,7 +17,7 @@ export type MagneticConfig = {
 };
 
 type Params = {
-  railRef: React.RefObject<HTMLElement>;
+  railRef: React.RefObject<HTMLDivElement | null>;
   index: number;
   offset: number;
   isProgrammatic: boolean;

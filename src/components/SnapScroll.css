@@ -8,8 +8,19 @@
 
 /* NEW: Apply scroll snap to the body/root */
 body, html {
-  scroll-snap-type: y mandatory;
+  scroll-snap-type: y mandatory !important;
   scroll-behavior: smooth;
+}
+
+/* Ensure scroll container behavior */
+body {
+  overflow-y: scroll;
+  overflow-x: hidden;
+}
+
+/* More specific root container scroll snap */
+#root {
+  scroll-snap-type: y mandatory;
 }
 
 /* Invisible scroll rail - now just creates the snap targets in document flow */
@@ -31,6 +42,20 @@ body, html {
   scroll-snap-stop: always;
   background: transparent; /* completely invisible */
   pointer-events: none; /* let events pass through */
+}
+
+/* Scene containers with snap behavior */
+.story-scene-container {
+  height: 100vh !important;
+  scroll-snap-align: start !important;
+  scroll-snap-stop: always !important;
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-sizing: border-box;
+  min-height: 100vh;
+  max-height: 100vh;
 }
 
 
@@ -87,4 +112,20 @@ body, html {
 
 .waiting-state p {
   margin: 0.5rem 0;
+}
+
+/* Reduced motion accessibility overrides */
+@media (prefers-reduced-motion: reduce) {
+  body, html {
+    scroll-behavior: auto;
+  }
+
+  .story-background-image {
+    transition: none !important;
+  }
+
+  * {
+    transition: none !important;
+    animation: none !important;
+  }
 }
