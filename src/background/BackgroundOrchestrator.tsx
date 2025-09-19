@@ -31,17 +31,26 @@ export function BackgroundOrchestrator({ storyId, storyContent }: BackgroundOrch
   }, [backgroundRanges, scrollOffset]);
 
   const rangesToRender = useMemo(() => {
-    // Only render current range and the immediately next one if we're near the transition
     const ranges: typeof backgroundRanges = [];
 
     if (activeRangeIndex >= 0) {
-      // Always render the current active range
-      ranges.push(backgroundRanges[activeRangeIndex]);
-
-      // Only render the next range if we're within 0.5 scenes of the transition
       const activeRange = backgroundRanges[activeRangeIndex];
-      const nextRangeIndex = activeRangeIndex + 1;
 
+      // Always render the current active range
+      ranges.push(activeRange);
+
+      // Render the previous range if we're just past a transition (for smooth exit)
+      const prevRangeIndex = activeRangeIndex - 1;
+      if (prevRangeIndex >= 0) {
+        const prevRange = backgroundRanges[prevRangeIndex];
+        // Keep previous range visible during transition (up to 1 scene past its end)
+        if (scrollOffset <= prevRange.endIndex + 1.5) {
+          ranges.unshift(prevRange); // Add to beginning so it renders behind
+        }
+      }
+
+      // Render the next range if we're approaching a transition
+      const nextRangeIndex = activeRangeIndex + 1;
       if (nextRangeIndex < backgroundRanges.length &&
           scrollOffset > activeRange.endIndex - 0.5) {
         ranges.push(backgroundRanges[nextRangeIndex]);
@@ -91,6 +100,7 @@ export function BackgroundOrchestrator({ storyId, storyContent }: BackgroundOrch
             style={{
               backgroundImage,
               transform,
+              transition: 'transform 0.6s ease-out',
               width: '100%',
               height: '100%',
               position: 'absolute',
