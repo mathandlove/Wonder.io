@@ -11,6 +11,8 @@ type RawFlowItem = {
   waiting?: boolean;
   quest?: string;
   input?: string;
+  "left-character"?: string;
+  "right-character"?: string;
 };
 
 type RawScene = {
@@ -35,13 +37,26 @@ function flattenScenes(rawScenes: RawScene[]): Scene[] {
 
   rawScenes.forEach((scene) => {
     if (scene.type === "character-flow" && scene.flow) {
+      // Track current characters throughout the flow
+      let currentLeftCharacter = scene["left-character"];
+      let currentRightCharacter = scene["right-character"];
+
       scene.flow.forEach((f, flowIndex) => {
+        // Update characters if specified in this flow item
+        if (f["left-character"]) {
+          currentLeftCharacter = f["left-character"];
+        }
+        if (f["right-character"]) {
+          currentRightCharacter = f["right-character"];
+        }
+
+        // Use the current character state
         let flattened: Partial<Scene> = {
           flowSequence: true,
           isFirstInFlow: flowIndex === 0,
           background: scene.background,
-          "left-character": scene["left-character"],
-          "right-character": scene["right-character"],
+          "left-character": currentLeftCharacter,
+          "right-character": currentRightCharacter,
         };
 
         if (f.quest) {

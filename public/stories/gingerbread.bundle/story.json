@@ -16,7 +16,8 @@
         },
         {
           "side": "right",
-          "text": "Somebody please help me!"
+          "text": "Somebody please help me!",
+          "right-character": "fox"
         },
         {
         

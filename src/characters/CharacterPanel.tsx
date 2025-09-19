@@ -49,43 +49,31 @@ export const CharacterPanel: React.FC<CharacterPanelProps> = ({
 
     if (hasCharacterChanged || hasVisibilityChanged) {
       if (hasCharacterChanged && visible && characterName) {
-        // Character change - animate entrance if visible
-        if (direction === 'up') {
+        // Character change - always animate entrance when visible
+        setPhase('entering');
+        const timer = setTimeout(() => {
           setPhase(isSpeaking ? 'speaking' : 'idle');
-        } else {
-          setPhase('entering');
-          const timer = setTimeout(() => {
-            setPhase(isSpeaking ? 'speaking' : 'idle');
-          }, ENTER_MS);
-          return () => clearTimeout(timer);
-        }
+        }, ENTER_MS);
+        return () => clearTimeout(timer);
       } else if (hasVisibilityChanged && !hasCharacterChanged) {
         // Visibility change only (no character change)
         if (visible && characterName) {
-          // Becoming visible
+          // Becoming visible - always animate entrance
           if (phase === 'hidden') {
-            if (direction === 'up') {
+            setPhase('entering');
+            const timer = setTimeout(() => {
               setPhase(isSpeaking ? 'speaking' : 'idle');
-            } else {
-              setPhase('entering');
-              const timer = setTimeout(() => {
-                setPhase(isSpeaking ? 'speaking' : 'idle');
-              }, ENTER_MS);
-              return () => clearTimeout(timer);
-            }
+            }, ENTER_MS);
+            return () => clearTimeout(timer);
           }
         } else {
-          // Becoming hidden
+          // Becoming hidden - always animate exit
           if (phase !== 'hidden') {
-            if (direction === 'up') {
+            setPhase('exiting');
+            const timer = setTimeout(() => {
               setPhase('hidden');
-            } else {
-              setPhase('exiting');
-              const timer = setTimeout(() => {
-                setPhase('hidden');
-              }, EXIT_MS);
-              return () => clearTimeout(timer);
-            }
+            }, EXIT_MS);
+            return () => clearTimeout(timer);
           }
         }
       }
@@ -133,7 +121,14 @@ export const CharacterPanel: React.FC<CharacterPanelProps> = ({
   const cardStyle = {
     transition: 'transform 1200ms cubic-bezier(.2,.8,.2,1)',
     opacity: 1, // Always fully opaque
-    animation: phase === 'speaking' ? 'cp-speaking-bounce 250ms ease-in-out infinite' : undefined,
+  };
+
+  // Get speaking animation class for character inner div
+  const getInnerClasses = () => {
+    if (phase === 'speaking') {
+      return side === 'left' ? 'story-character-speaking' : 'story-character-speaking-right';
+    }
+    return '';
   };
 
   const characterSrc = `/stories/${storyId}.bundle/images/characters/${characterName}${pose ? `.${pose}` : ''}.sticker-cardboard-3d.webp?${version}`;
@@ -146,7 +141,7 @@ export const CharacterPanel: React.FC<CharacterPanelProps> = ({
           className={getCardClasses()}
           style={cardStyle}
         >
-          <div className="story-character-inner">
+          <div className={`story-character-inner ${getInnerClasses()}`}>
             <div className="story-wooden-dowel"></div>
             <img
               src={characterSrc}

@@ -60,13 +60,30 @@
 }
 
 
-/* Modern speaking bounce animation */
-@keyframes cp-speaking-bounce {
+/* Speaking jiggle animations - based on main-reference */
+.story-character-speaking {
+  animation: character-shake 1s ease-in-out 1;
+}
+
+.story-character-speaking-right {
+  animation: character-shake-right 1s ease-in-out 1;
+}
+
+@keyframes character-shake {
   0%, 100% {
-    transform: translateY(0) scale(1);
+    transform: translateX(0) rotate(0deg);
   }
   50% {
-    transform: translateY(-2px) scale(1.02);
+    transform: translateX(-0.5px) rotate(-5deg);
+  }
+}
+
+@keyframes character-shake-right {
+  0%, 100% {
+    transform: translateX(0) rotate(0deg);
+  }
+  50% {
+    transform: translateX(0.5px) rotate(5deg);
   }
 }
 

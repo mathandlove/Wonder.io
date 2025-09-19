@@ -22,7 +22,7 @@ type PageFactoryProviderProps = {
 
 export function PageFactoryProvider({ children, onSceneAdded }: PageFactoryProviderProps) {
   const { assistantText, userText, turnId } = useDialogue();
-  const { insertScene, currentIndex, goToIndex } = useNavigation();
+  const { insertScene, currentIndex, goToIndex, scenes } = useNavigation();
   const [processedUserText, setProcessedUserText] = useState<string>("");
   const [processedAssistantText, setProcessedAssistantText] = useState<string>("");
   const [lastTurnId, setLastTurnId] = useState<number>(turnId);
@@ -48,16 +48,41 @@ export function PageFactoryProvider({ children, onSceneAdded }: PageFactoryProvi
 
   // Create a new character scene with the provided text
   const createCharacterPage = useCallback((text: string, speaker: "left" | "right" = "right"): CharacterScene => {
+    // Get current scene to copy characters from
+    const currentScene = scenes[currentIndex];
+
+    // Extract characters from current scene, with fallbacks
+    let leftCharacter = "leo";  // fallback
+    let rightCharacter = "bakerMom";  // fallback
+
+    if (currentScene) {
+      // Check for character scene properties
+      if ('left-character' in currentScene && currentScene['left-character']) {
+        leftCharacter = currentScene['left-character'] as string;
+      }
+      if ('right-character' in currentScene && currentScene['right-character']) {
+        rightCharacter = currentScene['right-character'] as string;
+      }
+
+      // Also check meta.panelLeft/panelRight for character data
+      if (currentScene.meta?.panelLeft?.character) {
+        leftCharacter = currentScene.meta.panelLeft.character;
+      }
+      if (currentScene.meta?.panelRight?.character) {
+        rightCharacter = currentScene.meta.panelRight.character;
+      }
+    }
+
     return {
       type: "character",
       text,
       speaker,
-      // Default characters - could be made configurable
-      "left-character": "leo",
-      "right-character": "bakerMom",
+      // Copy characters from current scene
+      "left-character": leftCharacter,
+      "right-character": rightCharacter,
       // No default background - inherit from current context
     };
-  }, []);
+  }, [scenes, currentIndex]);
 
   // Insert a scene to the story at the next position using NavigationContext
   const addSceneToStory = useCallback((scene: Scene) => {

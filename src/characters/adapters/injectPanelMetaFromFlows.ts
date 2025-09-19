@@ -14,11 +14,28 @@ export function injectPanelMetaFromFlows(scenes: Scene[]): Scene[] {
     // Check if this is a character scene that starts or continues a flow
     // Character scenes have left-character and/or right-character properties
     const hasCharacters = (s as any)["left-character"] || (s as any)["right-character"];
+    let isNewFlow = false;
 
     if (s.type === "character" && hasCharacters) {
+      // Detect if this is a new flow (explicit character change or new character introduction)
+      const sceneLeft = (s as any)["left-character"];
+      const sceneRight = (s as any)["right-character"];
+
+      // Check if this scene explicitly resets characters (new flow detected)
+      isNewFlow = (sceneLeft && !sceneRight && currentRight) || // Only left char when we had right
+                  (sceneLeft !== currentLeft && sceneLeft) ||     // Different left character
+                  (sceneRight !== currentRight && sceneRight);    // Different right character
+
       // Update current character state
-      currentLeft = (s as any)["left-character"] ?? currentLeft;
-      currentRight = (s as any)["right-character"] ?? currentRight;
+      if (isNewFlow) {
+        // Reset to only what this scene explicitly defines
+        currentLeft = sceneLeft || null;
+        currentRight = sceneRight || null;
+      } else {
+        // Continue previous flow
+        currentLeft = sceneLeft ?? currentLeft;
+        currentRight = sceneRight ?? currentRight;
+      }
       inFlow = true;
     }
 
@@ -39,7 +56,14 @@ export function injectPanelMetaFromFlows(scenes: Scene[]): Scene[] {
       // Only characters, no poses/speaking
       if (currentLeft)  meta.panelLeft  = { character: currentLeft };
       if (currentRight) meta.panelRight = { character: currentRight };
-      return { ...s, meta } as Scene;
+
+      // Mark as new flow if this scene starts a new character flow
+      const sceneData = { ...s, meta } as any;
+      if (isNewFlow) {
+        sceneData.newFlow = true;
+      }
+
+      return sceneData as Scene;
     }
 
     return s;

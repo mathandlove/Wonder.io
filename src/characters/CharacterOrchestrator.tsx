@@ -2,7 +2,7 @@ import React, { useEffect, useMemo, useState, useRef } from "react";
 import { useScrollManager } from "../hooks/useScrollManager";
 import type { Scene } from "../types/scene";
 import type { PanelRange } from "./types";
-import { buildPanelRangesFromScenes } from "./buildPanelRangesFromScenes";
+import { buildPanelRangesFromScenes, NOCHARACTER } from "./buildPanelRangesFromScenes";
 import { CharacterPanel } from "./CharacterPanel";
 
 const DEFAULT_GUTTER = 280; // px; tune for your design
@@ -42,7 +42,10 @@ export const CharacterOrchestrator: React.FC<Props> = ({ storyId, scenes }) => {
   const active = useMemo(() => {
     if (!ranges.length) return null;
     const i = Math.max(0, Math.min(scenes.length - 1, Math.round(scrollOffset)));
-    return ranges.find(r => i >= r.startIndex && i <= r.endIndex) ?? null;
+    const activeRange = ranges.find(r => i >= r.startIndex && i <= r.endIndex) ?? null;
+
+
+    return activeRange;
   }, [scrollOffset, ranges, scenes.length]);
 
   // Compute scroll direction
@@ -61,31 +64,46 @@ export const CharacterOrchestrator: React.FC<Props> = ({ storyId, scenes }) => {
     const currentPanel = side === 'left' ? leftPanel : rightPanel;
     const setPanel = side === 'left' ? setLeftPanel : setRightPanel;
 
-    const targetKey = `${targetCharacter ?? 'none'}-default`;
+    // Handle NOCHARACTER as a request to hide the panel
+    const isTargetNoCharacter = targetCharacter === NOCHARACTER;
+    const effectiveTargetVisible = targetVisible && !isTargetNoCharacter;
+    const effectiveTargetCharacter = isTargetNoCharacter ? null : targetCharacter;
+
+
+    const targetKey = `${effectiveTargetCharacter ?? 'none'}-default`;
     const currentKey = `${currentPanel.character ?? 'none'}-default`;
 
-    // If character identity is changing and we currently have a visible character
-    if (targetKey !== currentKey && currentPanel.visible && currentPanel.character) {
+    // Determine if we need a transition animation
+    const needsTransition = (
+      // Character identity is changing
+      (targetKey !== currentKey) &&
+      // We currently have a visible character that needs to exit
+      (currentPanel.visible && currentPanel.character) &&
+      // We're not already in a transition
+      !currentPanel.transitioning
+    );
+
+    if (needsTransition) {
       // Step 1: Keep current character visible but mark as exiting
       setPanel(prev => ({ ...prev, visible: true, exiting: true, transitioning: true }));
 
-      // Step 2: After exit completes, switch to new character
+      // Step 2: After exit completes, switch to new character/state
       if (transitionTimeoutRef.current) clearTimeout(transitionTimeoutRef.current);
       transitionTimeoutRef.current = setTimeout(() => {
         setPanel({
-          visible: targetVisible,
-          character: targetCharacter,
-          speaking: targetSpeaking,
+          visible: effectiveTargetVisible,
+          character: effectiveTargetCharacter,
+          speaking: effectiveTargetVisible ? targetSpeaking : false,
           transitioning: false,
           exiting: false
         });
       }, EXIT_MS);
     } else {
-      // No character change or no current character - set directly
+      // No transition needed - set directly
       setPanel({
-        visible: targetVisible,
-        character: targetCharacter,
-        speaking: targetSpeaking,
+        visible: effectiveTargetVisible,
+        character: effectiveTargetCharacter,
+        speaking: effectiveTargetVisible ? targetSpeaking : false,
         transitioning: false,
         exiting: false
       });
