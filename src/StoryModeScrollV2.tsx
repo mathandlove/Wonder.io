@@ -4,15 +4,18 @@
  * Each scene gets its own 100vh section with snap-scroll behavior.
  */
 // React imports and custom hooks/components used by this screen
-import React, { useMemo, useEffect } from "react";
+import React, { useMemo, useEffect, useRef } from "react";
 import { LayoutGroup } from "framer-motion";
 import { useStory } from "./hooks/useStory";
 import { SnapLayer, SnapSlot } from "./components/SnapLayer";
+import { ScrollRail } from "./components/ScrollRail";
 import { FlowLayout } from "./components/FlowLayout";
 import { SceneRenderer } from "./components/SceneRenderer";
 import { PageFactoryProvider } from "./components/PageFactory";
 import { useNavigation } from "./context/NavigationContext";
 import { BackgroundLayer } from "./components/BackgroundLayer";
+import { useScrollOffset } from "./hooks/useScrollOffset";
+import { useMagneticScroller } from "./hooks/useMagneticScroller";
 import type { Scene } from "./types/scene";
 
 // Path to the story JSON bundle we want to load. In demo mode we keep this fixed
@@ -39,7 +42,12 @@ const StoryModeScrollV2: React.FC = () => {
 const StoryContent: React.FC = () => {
   // useStory() is our data hook: it fetches the story JSON and exposes loading/error states
   const { story, loading, error } = useStory(STORY_URL);
-  const { scenes: navigationScenes, setScenes, setCurrentIndex, currentBackgroundId } = useNavigation();
+  const { scenes: navigationScenes, setScenes, setCurrentIndex } = useNavigation();
+
+  // Multi-layered scroll architecture
+  const railRef = useRef<HTMLDivElement>(null);
+  const { offset, index, isProgrammatic, setIsProgrammatic } = useScrollOffset(railRef);
+  const { targetIndex } = useMagneticScroller({ railRef, index, offset, isProgrammatic });
 
   // Derive a stable array of scenes from the loaded story. useMemo avoids re-computing unless story.scenes changes
   // Move useMemo BEFORE any conditional returns to satisfy Rules of Hooks
@@ -50,13 +58,14 @@ const StoryContent: React.FC = () => {
     setScenes(initialScenes);
   }, [initialScenes, setScenes]);
 
+  // Keep NavigationContext up-to-date with rail scroll index
+  useEffect(() => {
+    setCurrentIndex(index);
+  }, [index, setCurrentIndex]);
+
   // Use navigation scenes instead of story scenes (this includes dynamically added scenes)
   const scenes = navigationScenes;
 
-  // Debug logging
-  console.log(`[StoryModeScrollV2] navigationScenes length: ${navigationScenes.length}`);
-  console.log(`[StoryModeScrollV2] initialScenes length: ${initialScenes.length}`);
-  console.log(`[StoryModeScrollV2] scenes (using navigationScenes): ${scenes.length}`);
 
   // RENDER PATH #1: still loading the story → show a friendly centered message
   if (loading) {
@@ -73,31 +82,45 @@ const StoryContent: React.FC = () => {
   }
 
   // RENDER PATH #3: story loaded → render each scene in a vertical, snap-scrolling layout
-  console.log(`[StoryModeScrollV2] Rendering ${scenes.length} scenes:`, scenes.map((s, i) => `${i}: ${s.type}`));
 
   return (
     <PageFactoryProvider>
-      {/* Fixed background layer behind all content */}
-      <BackgroundLayer backgroundId={currentBackgroundId} />
+      <SnapLayer
+        railRef={railRef}
+        targetIndex={targetIndex}
+        setIsProgrammatic={setIsProgrammatic}
+        currentIndex={index}
+      >
+        {/* Layer 1: Fixed background */}
+        <BackgroundLayer scrollOffset={offset} scenes={scenes} />
 
-      {/* Foreground content layer */}
-      <div style={{ position: "relative", zIndex: 10 }}>
-        <LayoutGroup id="story-shared-layout">
-          <SnapLayer // SnapLayer manages the scroll container and reports snap changes
-          onSnapChange={(index) => {
-            setCurrentIndex(index);
-          }} // update our state when the user scrolls to a new snap
-        >
-          {scenes.map((scene: Scene, i: number) => ( // map each scene into a full-height snap slot
-            <SnapSlot key={i} index={i}> {/* one 100vh section that can snap into place */}
-              <FlowLayout keyId={i.toString()}> {/* handles consistent padding/centering for scene content */}
-                <SceneContentWithNavigation scene={scene} /> {/* renders the scene and knows how to advance to the next one */}
+        {/* Layer 2: Document flow content with scroll snap targets */}
+        <div style={{ position: "relative" }}>
+          {scenes.map((scene: Scene, i: number) => (
+            <div key={i} style={{
+              height: "100vh",
+              scrollSnapAlign: "start",
+              scrollSnapStop: "always",
+              position: "relative",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              border: `2px solid ${i % 2 === 0 ? 'red' : 'blue'}`
+            }}>
+              <FlowLayout keyId={i.toString()}>
+                <SceneContentWithNavigation scene={scene} />
               </FlowLayout>
-            </SnapSlot>
+            </div>
           ))}
-          </SnapLayer>
-        </LayoutGroup>
-      </div>
+        </div>
+
+        {/* Layer 3: Programmatic scroll control (hidden) */}
+        <div ref={railRef} style={{ display: "none" }}>
+          {scenes.map((_, i) => (
+            <div key={i} data-rail-index={i} />
+          ))}
+        </div>
+      </SnapLayer>
     </PageFactoryProvider>
   );
 };

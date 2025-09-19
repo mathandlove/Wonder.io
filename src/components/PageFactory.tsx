@@ -33,7 +33,6 @@ export function PageFactoryProvider({ children, onSceneAdded }: PageFactoryProvi
   // Reset processed text tracking when turn changes or when text is cleared
   useEffect(() => {
     if (turnId !== lastTurnId) {
-      console.log(`[PageFactory] Turn changed from ${lastTurnId} to ${turnId}, resetting processed text`);
       setProcessedUserText("");
       setProcessedAssistantText("");
       setLastTurnId(turnId);
@@ -43,7 +42,6 @@ export function PageFactoryProvider({ children, onSceneAdded }: PageFactoryProvi
   // Reset processed assistant text when assistantText is cleared
   useEffect(() => {
     if (!assistantText || assistantText.trim() === "") {
-      console.log(`[PageFactory] Assistant text cleared, resetting processed assistant text`);
       setProcessedAssistantText("");
     }
   }, [assistantText]);
@@ -64,7 +62,6 @@ export function PageFactoryProvider({ children, onSceneAdded }: PageFactoryProvi
   // Insert a scene to the story at the next position using NavigationContext
   const addSceneToStory = useCallback((scene: Scene) => {
     const insertIndex = currentIndex + 1;
-    console.log(`[PageFactory] Inserting scene at index ${insertIndex}:`, scene);
     insertScene(scene, insertIndex);
 
     // Auto-navigate to the newly inserted scene
@@ -78,7 +75,6 @@ export function PageFactoryProvider({ children, onSceneAdded }: PageFactoryProvi
   // Auto-create and add scene when new user text arrives
   useEffect(() => {
     if (userText && userText.trim() && userText !== processedUserText) {
-      console.log(`[PageFactory] Creating user scene for turn ${turnId}: "${userText}"`);
 
       // Create new character scene with user message (left speaker = user)
       const newScene = createCharacterPage(userText, "left");
@@ -94,11 +90,9 @@ export function PageFactoryProvider({ children, onSceneAdded }: PageFactoryProvi
   // Auto-create and add scene when new assistant text arrives
   useEffect(() => {
     if (assistantText && assistantText.trim() && assistantText !== processedAssistantText) {
-      console.log(`[PageFactory] Creating assistant scene for turn ${turnId}: "${assistantText}"`);
 
       // Create new character scene with assistant response (right speaker = AI)
       const newScene = createCharacterPage(assistantText, "right");
-      console.log(`[PageFactory] Created AI scene:`, newScene);
 
       // Add to story
       addSceneToStory(newScene);

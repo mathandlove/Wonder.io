@@ -1,101 +1,65 @@
 /**
- * BackgroundLayer - Fixed background layer that sits behind all story content.
- * Owns background state and handles transitions. Mounted once at story root level.
+ * BackgroundLayer - Transform-controlled background layer driven by scroll offset
+ * Drives background transitions purely from continuous scrollOffset
  */
 import React, { useState, useEffect, useCallback, useRef } from "react";
 import { resolveBackgroundImage } from "../utils/imageResolver";
+import type { Scene } from "../types/scene";
 
 interface BackgroundLayerProps {
-  backgroundId: string | null;
+  scrollOffset: number;
+  scenes: Scene[];
   transitionDuration?: number;
 }
 
 export function BackgroundLayer({
-  backgroundId,
+  scrollOffset,
+  scenes,
   transitionDuration = 300
 }: BackgroundLayerProps) {
-  const [currentBackground, setCurrentBackground] = useState<string | null>(null);
-  const [nextBackground, setNextBackground] = useState<string | null>(null);
-  const [isTransitioning, setIsTransitioning] = useState(false);
-  const preloadedImages = useRef<Set<string>>(new Set());
-  const isInitialized = useRef(false);
+  const [preloadedImages] = useState(() => new Set<string>());
 
   // Preload background image
   const preloadBackground = useCallback((bgId: string) => {
-    if (preloadedImages.current.has(bgId)) return;
+    if (preloadedImages.has(bgId)) return;
 
     const img = new Image();
     const imagePath = resolveBackgroundImage(bgId);
     img.src = imagePath;
     img.onload = () => {
-      preloadedImages.current.add(bgId);
-      console.log(`[BackgroundLayer] Preloaded: ${bgId}`);
+      preloadedImages.add(bgId);
     };
     img.onerror = () => {
-      console.warn(`[BackgroundLayer] Failed to preload: ${bgId}`);
     };
-  }, []);
+  }, [preloadedImages]);
 
-  // Handle background changes with diff checking
+  // Get current and next background based on scroll offset
+  const currentIndex = Math.floor(scrollOffset);
+  const nextIndex = currentIndex + 1;
+  const progress = scrollOffset - currentIndex;
+
+  const currentScene = scenes[currentIndex];
+  const nextScene = scenes[nextIndex];
+
+  const currentBackgroundId = currentScene?.backgroundId;
+  const nextBackgroundId = nextScene?.backgroundId;
+
+  // Preload backgrounds as needed
   useEffect(() => {
-    // If no change, do nothing (key optimization)
-    if (backgroundId === currentBackground) {
-      return;
-    }
+    if (currentBackgroundId) preloadBackground(currentBackgroundId);
+    if (nextBackgroundId) preloadBackground(nextBackgroundId);
+  }, [currentBackgroundId, nextBackgroundId, preloadBackground]);
 
-    console.log(`[BackgroundLayer] Background request: ${currentBackground} → ${backgroundId}`);
-
-    // Only change background if we have a specific background requested
-    // If backgroundId is null, maintain current background (no change)
-    if (backgroundId && backgroundId.trim() !== '') {
-      preloadBackground(backgroundId);
-
-      // If this is the first background (no current background), set it immediately without transition
-      if (!isInitialized.current || !currentBackground) {
-        console.log(`[BackgroundLayer] Setting initial background: ${backgroundId}`);
-        setCurrentBackground(backgroundId);
-        isInitialized.current = true;
-        return;
-      }
-
-      // Normal transition between backgrounds
-      console.log(`[BackgroundLayer] Transitioning from ${currentBackground} to ${backgroundId}`);
-      setNextBackground(backgroundId);
-      setIsTransitioning(true);
-
-      // Complete transition after duration
-      const timer = setTimeout(() => {
-        setCurrentBackground(backgroundId);
-        setNextBackground(null);
-        setIsTransitioning(false);
-      }, transitionDuration);
-
-      return () => clearTimeout(timer);
-    }
-
-    // If backgroundId is null/empty, keep current background - no transition
-    console.log(`[BackgroundLayer] No background specified, maintaining current: ${currentBackground}`);
-  }, [backgroundId, currentBackground, transitionDuration, preloadBackground]);
-
-  // Preload current background on mount
-  useEffect(() => {
-    if (backgroundId) {
-      preloadBackground(backgroundId);
-    }
-  }, [backgroundId, preloadBackground]);
-
-  const currentBackgroundUrl = currentBackground
-    ? `url(${resolveBackgroundImage(currentBackground)})`
+  const currentBackgroundUrl = currentBackgroundId
+    ? `url(${resolveBackgroundImage(currentBackgroundId)})`
     : undefined;
 
-  const nextBackgroundUrl = nextBackground
-    ? `url(${resolveBackgroundImage(nextBackground)})`
+  const nextBackgroundUrl = nextBackgroundId
+    ? `url(${resolveBackgroundImage(nextBackgroundId)})`
     : undefined;
 
-  // Debug logging
-  if (currentBackground) {
-    console.log(`[BackgroundLayer] Current background: "${currentBackground}" → URL: ${currentBackgroundUrl}`);
-  }
+  // Only show transition if we have different backgrounds and are mid-scroll
+  const showTransition = nextBackgroundId && currentBackgroundId !== nextBackgroundId && progress > 0;
 
   return (
     <>
@@ -111,14 +75,13 @@ export function BackgroundLayer({
           backgroundSize: "cover",
           backgroundPosition: "center",
           backgroundColor: "#f0f0f0",
-          transform: isTransitioning ? "translateY(-100%)" : "translateY(0)",
-          transition: `transform ${transitionDuration}ms ease-in-out`,
+          transform: showTransition ? `translateY(-${progress * 100}%)` : "translateY(0)",
           zIndex: 0
         }}
       />
 
       {/* Next Background Layer (scrolls up from bottom) */}
-      {nextBackground && (
+      {showTransition && (
         <div
           style={{
             position: "fixed",
@@ -129,8 +92,7 @@ export function BackgroundLayer({
             backgroundImage: nextBackgroundUrl,
             backgroundSize: "cover",
             backgroundPosition: "center",
-            transform: isTransitioning ? "translateY(0)" : "translateY(100%)",
-            transition: `transform ${transitionDuration}ms ease-in-out`,
+            transform: `translateY(${(1 - progress) * 100}%)`,
             zIndex: 1
           }}
         />

@@ -1,9 +1,38 @@
+/* Original snap scroll container */
 .snap-scroll-container {
   height: 100vh;
   overflow-y: scroll;
   scroll-snap-type: y mandatory;
   scroll-behavior: smooth;
 }
+
+/* NEW: Apply scroll snap to the body/root */
+body, html {
+  scroll-snap-type: y mandatory;
+  scroll-behavior: smooth;
+}
+
+/* Invisible scroll rail - now just creates the snap targets in document flow */
+.story-scroll-targets {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  background: transparent; /* invisible capture layer */
+  pointer-events: none;    /* let events pass through to content */
+  z-index: 999;          /* below content but above background */
+}
+
+/* Individual snap targets - one per scene */
+.story-scroll-target {
+  height: 100vh;
+  width: 100%;
+  scroll-snap-align: start;
+  scroll-snap-stop: always;
+  background: transparent; /* completely invisible */
+  pointer-events: none; /* let events pass through */
+}
+
 
 .snap-scroll-section {
   height: 100vh;

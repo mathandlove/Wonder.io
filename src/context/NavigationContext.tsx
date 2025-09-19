@@ -46,7 +46,6 @@ export function NavigationProvider({ children, initialIndex = 0 }: NavigationPro
   const [currentIndex, setCurrentIndex] = useState(initialIndex);
   const [scenes, setScenes] = useState<Scene[]>([]);
 
-  console.log(`[NavigationProvider] Render - currentIndex: ${currentIndex}, initialIndex: ${initialIndex}`);
 
   // Compute current background from current scene
   const currentBackgroundId = useMemo(() => {
@@ -58,11 +57,9 @@ export function NavigationProvider({ children, initialIndex = 0 }: NavigationPro
     if ('background' in currentScene &&
         currentScene.background &&
         currentScene.background.trim() !== '') {
-      console.log(`[NavigationContext] Scene ${currentIndex} (${currentScene.type}) background: "${currentScene.background}"`);
       return currentScene.background;
     }
 
-    console.log(`[NavigationContext] Scene ${currentIndex} (${currentScene.type}) has no background`);
     return null;
   }, [scenes, currentIndex]);
   const snapApiRef = useRef<{ scrollTo: (index: number, opts?: ScrollToOptions) => void } | null>(null);
@@ -71,11 +68,9 @@ export function NavigationProvider({ children, initialIndex = 0 }: NavigationPro
   // Register SnapLayer's API for programmatic control
   const registerSnapApi = useCallback((api: { scrollTo: (index: number, opts?: ScrollToOptions) => void }) => {
     snapApiRef.current = api;
-    // Sync the visual position to the current index as soon as the API is available
-    requestAnimationFrame(() => {
-      api.scrollTo(currentIndex, { behavior: "auto" });
-    });
-  }, [currentIndex]);
+    // Don't auto-scroll on registration to prevent infinite loops
+    // The scroll position will be handled by user interactions or explicit navigation calls
+  }, []);
 
   const goToIndex = useCallback((index: number) => {
     const clampedIndex = Math.max(0, Math.min(index, scenes.length - 1));
@@ -113,7 +108,6 @@ export function NavigationProvider({ children, initialIndex = 0 }: NavigationPro
     setScenes(prevScenes => {
       const newScenes = [...prevScenes];
       newScenes.splice(index, 0, scene);
-      console.log(`[NavigationProvider] Inserted scene at index ${index}. Total scenes: ${newScenes.length}`);
       return newScenes;
     });
   }, []);
@@ -121,7 +115,6 @@ export function NavigationProvider({ children, initialIndex = 0 }: NavigationPro
   const addScene = useCallback((scene: Scene) => {
     setScenes(prevScenes => {
       const newScenes = [...prevScenes, scene];
-      console.log(`[NavigationProvider] Added scene. Total scenes: ${newScenes.length}`);
       return newScenes;
     });
   }, []);
