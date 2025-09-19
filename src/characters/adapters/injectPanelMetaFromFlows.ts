@@ -1,4 +1,5 @@
 import type { Scene } from "../../types/scene";
+import { NOCHARACTER } from "../buildPanelRangesFromScenes";
 
 // Input: flattened scenes
 // Output: new scenes array where any scene inside a character-flow
@@ -55,14 +56,20 @@ export function injectPanelMetaFromFlows(scenes: Scene[]): Scene[] {
         // Set character data with speaking state
         if (currentLeft) {
           const wasAlreadyPresent = previousLeft === currentLeft;
-          const isSpeaking = speaker === 'left' && wasAlreadyPresent;
-          meta.panelLeft = { character: currentLeft, speaking: isSpeaking };
+          // For PageFactory scenes (input responses), allow speaking even for "new" characters
+          // since they're continuing an existing conversation
+          const isPageFactoryScene = !s.flowSequence && s.type === "character";
+          const shouldSpeak = speaker === 'left' && (wasAlreadyPresent || isPageFactoryScene);
+          meta.panelLeft = { character: currentLeft, speaking: shouldSpeak };
         }
 
         if (currentRight) {
           const wasAlreadyPresent = previousRight === currentRight;
-          const isSpeaking = speaker === 'right' && wasAlreadyPresent;
-          meta.panelRight = { character: currentRight, speaking: isSpeaking };
+          // For PageFactory scenes (input responses), allow speaking even for "new" characters
+          // since they're continuing an existing conversation
+          const isPageFactoryScene = !s.flowSequence && s.type === "character";
+          const shouldSpeak = speaker === 'right' && (wasAlreadyPresent || isPageFactoryScene);
+          meta.panelRight = { character: currentRight, speaking: shouldSpeak };
         }
 
         // Mark as new flow if this scene starts a new character flow
@@ -82,7 +89,13 @@ export function injectPanelMetaFromFlows(scenes: Scene[]): Scene[] {
         inFlow = false;
         currentLeft = null;
         currentRight = null;
-        return s;
+
+        // For scenes not in character flows, inject NOCHARACTER
+        const meta = { ...(s as any).meta };
+        meta.panelLeft = { character: NOCHARACTER };
+        meta.panelRight = { character: NOCHARACTER };
+
+        return { ...s, meta } as Scene;
       }
     }
 
@@ -102,8 +115,12 @@ export function injectPanelMetaFromFlows(scenes: Scene[]): Scene[] {
       return sceneData as Scene;
     }
 
-    return s;
+    // Fallback: if scene doesn't match any condition above, still inject NOCHARACTER
+    const meta = { ...(s as any).meta };
+    meta.panelLeft = { character: NOCHARACTER };
+    meta.panelRight = { character: NOCHARACTER };
+
+    return { ...s, meta } as Scene;
   });
-  console.log(out);
   return out;
 }

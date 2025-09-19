@@ -13,6 +13,7 @@ export default function InputScene({ scene, onComplete }: SceneProps<InputScene>
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+
     if (input.trim()) {
       // Submit the user message to dialogue context
       submitUserMessage(input);
@@ -20,8 +21,8 @@ export default function InputScene({ scene, onComplete }: SceneProps<InputScene>
       // Clear the input
       setInput("");
 
-      // Call onComplete if provided
-      onComplete?.();
+      // Note: onComplete is not called here because PageFactory handles navigation automatically
+      // when it detects new user text from submitUserMessage
     }
   };
 

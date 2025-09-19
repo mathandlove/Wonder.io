@@ -1,6 +1,6 @@
 /**
- * Displays story images with optional captions.
- * Centers images with a shadow effect and shows captions below.
+ * Displays story images covering the full viewport space.
+ * Images use background-size: cover for full-space coverage.
  */
 import React from "react";
 import type { SceneProps } from "../registry";
@@ -10,42 +10,25 @@ import { resolveStoryImage } from "../../utils/imageResolver";
 export default function ImageScene({ scene }: SceneProps<ImageScene>) {
   return (
     <div style={{
+      position: 'fixed',
+      top: 0,
+      left: 0,
+      width: '100vw',
       height: '100vh',
       display: 'flex',
       alignItems: 'center',
       justifyContent: 'center',
-      padding: '2rem',
-      position: 'relative'
+      zIndex: -1
     }}>
-      <div style={{
-        textAlign: 'center',
-        maxWidth: '800px',
-        width: '100%'
-      }}>
-        <img
-          src={resolveStoryImage(scene.image)}
-          alt={scene.caption || "Story image"}
-          style={{
-            maxWidth: '100%',
-            maxHeight: '70vh',
-            borderRadius: '12px',
-            boxShadow: '0 8px 32px rgba(0,0,0,0.3)'
-          }}
-        />
-        {scene.caption && (
-          <div style={{
-            marginTop: '2rem',
-            background: 'rgba(255, 255, 255, 0.9)',
-            padding: '1.5rem',
-            borderRadius: '12px',
-            fontSize: '1.2rem',
-            color: '#333',
-            lineHeight: '1.6'
-          }}>
-            {scene.caption}
-          </div>
-        )}
-      </div>
+      <img
+        src={resolveStoryImage(scene.image)}
+        alt={scene.caption || "Story image"}
+        style={{
+          maxWidth: '100%',
+          maxHeight: '100%',
+          objectFit: 'contain'
+        }}
+      />
     </div>
   );
 }

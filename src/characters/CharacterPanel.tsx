@@ -36,6 +36,15 @@ export const CharacterPanel: React.FC<CharacterPanelProps> = ({
   const prevVisibleRef = useRef(false);
 
   useEffect(() => {
+    // ALWAYS update refs first to prevent false change detections
+    const hasCharacterChanged = changeKey !== prevChangeKeyRef.current;
+    const hasVisibilityChanged = visible !== prevVisibleRef.current;
+
+    // Update refs immediately to maintain state
+    prevChangeKeyRef.current = changeKey;
+    prevVisibleRef.current = visible;
+
+
     if (!visible) {
       setPhase('hidden');
       return;
@@ -52,36 +61,26 @@ export const CharacterPanel: React.FC<CharacterPanelProps> = ({
       return;
     }
 
-    // Only update refs and trigger animations if there are actual changes
-    const hasCharacterChanged = changeKey !== prevChangeKeyRef.current;
-    const hasVisibilityChanged = visible !== prevVisibleRef.current;
-
+    // Only trigger animations for actual meaningful changes
     if (hasCharacterChanged || hasVisibilityChanged) {
-      if (hasCharacterChanged && characterName) {
-        // Character change - always animate entrance when visible
+      if (hasCharacterChanged && characterName && visible) {
+        // Character change - only animate if character actually changed and is visible
         setPhase('entering');
         const timer = setTimeout(() => {
           setPhase(isSpeaking ? 'speaking' : 'idle');
         }, ENTER_MS);
         return () => clearTimeout(timer);
-      } else if (hasVisibilityChanged && !hasCharacterChanged) {
-        // Visibility change only (no character change)
-        if (characterName) {
-          // Becoming visible - always animate entrance
-          if (phase === 'hidden') {
-            setPhase('entering');
-            const timer = setTimeout(() => {
-              setPhase(isSpeaking ? 'speaking' : 'idle');
-            }, ENTER_MS);
-            return () => clearTimeout(timer);
-          }
+      } else if (hasVisibilityChanged && !hasCharacterChanged && characterName && visible) {
+        // Visibility change only (no character change) - only animate if becoming visible
+        if (phase === 'hidden') {
+          setPhase('entering');
+          const timer = setTimeout(() => {
+            setPhase(isSpeaking ? 'speaking' : 'idle');
+          }, ENTER_MS);
+          return () => clearTimeout(timer);
         }
       }
     }
-
-    // Always update refs after processing (whether there were changes or not)
-    prevChangeKeyRef.current = changeKey;
-    prevVisibleRef.current = visible;
   }, [changeKey, visible, characterName, direction, isSpeaking, exiting]);
 
   // Handle speaking state changes (only when idle)

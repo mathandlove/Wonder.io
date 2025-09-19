@@ -73,16 +73,18 @@ export function NavigationProvider({ children, initialIndex = 0 }: NavigationPro
   }, []);
 
   // Auto-scroll to initial index when scenes are loaded and snap API is ready
+  const [hasInitialScrolled, setHasInitialScrolled] = useState(false);
   useEffect(() => {
-    if (snapApiRef.current && scenes.length > 0 && initialIndex > 0) {
+    if (snapApiRef.current && scenes.length > 0 && initialIndex > 0 && !hasInitialScrolled) {
       // Small delay to ensure DOM is ready
       const timer = setTimeout(() => {
         const clampedIndex = Math.max(0, Math.min(initialIndex, scenes.length - 1));
         snapApiRef.current?.scrollTo(clampedIndex, { behavior: "auto" }); // Use "auto" for instant jump
+        setHasInitialScrolled(true);
       }, 100);
       return () => clearTimeout(timer);
     }
-  }, [scenes.length, initialIndex]); // Only run when scenes load or initialIndex changes
+  }, [scenes.length, initialIndex, hasInitialScrolled]); // Only run when scenes load or initialIndex changes
 
   const goToIndex = useCallback((index: number) => {
     const clampedIndex = Math.max(0, Math.min(index, scenes.length - 1));

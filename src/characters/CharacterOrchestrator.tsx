@@ -24,22 +24,6 @@ export const CharacterOrchestrator: React.FC<Props> = ({ storyId, scenes }) => {
   const ranges = useMemo<PanelRange[]>(() => {
     const builtRanges = buildPanelRangesFromScenes(scenes);
 
-    // DEBUG: Log all built ranges
-    console.log('🎭 Panel Ranges Built:', {
-      totalScenes: scenes.length,
-      totalRanges: builtRanges.length,
-      ranges: builtRanges.map((r, idx) => ({
-        rangeIndex: idx,
-        sceneIndices: `${r.startIndex}-${r.endIndex}`,
-        leftCharacter: r.left?.character || 'none',
-        rightCharacter: r.right?.character || 'none',
-        scenesInRange: scenes.slice(r.startIndex, r.endIndex + 1).map((s: any) => ({
-          type: s.type,
-          panelRestricted: s.panelRestricted,
-          text: s.text?.substring(0, 30) + '...'
-        }))
-      }))
-    });
 
     return builtRanges;
   }, [scenes]);
@@ -62,22 +46,6 @@ export const CharacterOrchestrator: React.FC<Props> = ({ storyId, scenes }) => {
     const i = Math.max(0, Math.min(scenes.length - 1, Math.round(scrollOffset)));
     const activeRange = ranges.find(r => i >= r.startIndex && i <= r.endIndex) ?? null;
 
-    // DEBUG: Log what's being processed
-    console.log('🎭 CharacterOrchestrator Debug:', {
-      sceneIndex: i,
-      currentScene: scenes[i],
-      panelRestricted: (scenes[i] as any)?.panelRestricted,
-      activeRange: activeRange ? {
-        startIndex: activeRange.startIndex,
-        endIndex: activeRange.endIndex,
-        leftCharacter: activeRange.left?.character,
-        rightCharacter: activeRange.right?.character,
-        leftSpeaking: activeRange.left?.speaking,
-        rightSpeaking: activeRange.right?.speaking,
-      } : null,
-      totalRanges: ranges.length,
-      scrollOffset: scrollOffset.toFixed(2),
-    });
 
     return activeRange;
   }, [scrollOffset, ranges, scenes.length]);
@@ -103,7 +71,6 @@ export const CharacterOrchestrator: React.FC<Props> = ({ storyId, scenes }) => {
     const effectiveTargetVisible = targetVisible && !isTargetNoCharacter;
     const effectiveTargetCharacter = isTargetNoCharacter ? null : targetCharacter;
 
-
     const targetKey = `${effectiveTargetCharacter ?? 'none'}-default`;
     const currentKey = `${currentPanel.character ?? 'none'}-default`;
 
@@ -116,6 +83,7 @@ export const CharacterOrchestrator: React.FC<Props> = ({ storyId, scenes }) => {
       // We're not already in a transition
       !currentPanel.transitioning
     );
+
 
     if (needsTransition) {
       // Step 1: Keep current character visible but mark as exiting
@@ -161,9 +129,9 @@ export const CharacterOrchestrator: React.FC<Props> = ({ storyId, scenes }) => {
         !!active.right?.speaking
       );
     } else {
-      // No active range - hide both panels
-      transitionCharacter('left', null, false);
-      transitionCharacter('right', null, false);
+      // No active range - keep current characters but hide panels
+      transitionCharacter('left', leftPanel.character, false);
+      transitionCharacter('right', rightPanel.character, false);
     }
   }, [active]);
 

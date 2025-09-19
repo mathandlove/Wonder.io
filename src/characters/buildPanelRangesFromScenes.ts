@@ -39,52 +39,53 @@ export function buildPanelRangesFromScenes(scenes: Scene[]): PanelRange[] {
     // Determine if this scene type should show panels
     const characterSceneTypes = ['character', 'quest', 'input'];
     const isCharacterTypeScene = characterSceneTypes.includes(s?.type) || s?.flowSequence === true;
+    const hasNoCharacterMeta = s?.meta?.panelLeft?.character === NOCHARACTER || s?.meta?.panelRight?.character === NOCHARACTER;
     const speaker = s?.speaker || null;
 
     // Check if this is a NEW flow (should reset character state)
     const isNewFlow = s?.newFlow === true;
 
-    // If this is not a character-type scene, skip panel creation entirely
-    if (!isCharacterTypeScene) {
+    // If this is not a character-type scene AND doesn't have NOCHARACTER metadata, skip panel creation entirely
+    if (!isCharacterTypeScene && !hasNoCharacterMeta) {
       continue;
     }
 
-    // For character-type scenes, determine character visibility and speaking state
-    const hasLeftCharacter = s?.meta?.panelLeft?.character || s['left-character'];
-    const hasRightCharacter = s?.meta?.panelRight?.character || s['right-character'];
+    // For character-type scenes or NOCHARACTER scenes, determine character visibility and speaking state
+    const hasLeftCharacter = s?.meta?.panelLeft?.character && s.meta.panelLeft.character !== NOCHARACTER ? s.meta.panelLeft.character : s['left-character'];
+    const hasRightCharacter = s?.meta?.panelRight?.character && s.meta.panelRight.character !== NOCHARACTER ? s.meta.panelRight.character : s['right-character'];
 
     const left = s?.meta?.panelLeft
       ? {
-          visible: true,
+          visible: isCharacterTypeScene, // Only visible for character-type scenes
           character: s.meta.panelLeft.character ?? NOCHARACTER,
           speaking: s.meta.panelLeft.speaking !== undefined ? s.meta.panelLeft.speaking : (speaker === 'left')
         }
       : hasLeftCharacter
       ? {
-          visible: true,
+          visible: isCharacterTypeScene,
           character: s['left-character'],
           speaking: speaker === 'left'
         }
       : {
-          visible: true, // Always visible for character scenes to maintain symmetry
+          visible: isCharacterTypeScene, // Only visible for character-type scenes
           character: NOCHARACTER,
           speaking: false
         };
 
     const right = s?.meta?.panelRight
       ? {
-          visible: true,
+          visible: isCharacterTypeScene, // Only visible for character-type scenes
           character: s.meta.panelRight.character ?? NOCHARACTER,
           speaking: s.meta.panelRight.speaking !== undefined ? s.meta.panelRight.speaking : (speaker === 'right')
         }
       : hasRightCharacter
       ? {
-          visible: true,
+          visible: isCharacterTypeScene,
           character: s['right-character'],
           speaking: speaker === 'right'
         }
       : {
-          visible: true, // Always visible for character scenes to maintain symmetry
+          visible: isCharacterTypeScene, // Only visible for character-type scenes
           character: NOCHARACTER,
           speaking: false
         };

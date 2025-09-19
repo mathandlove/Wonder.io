@@ -96,6 +96,9 @@ const StoryContent: React.FC = () => {
         {/* Layer 1.5: Character panels (fixed, independent of scroll flow) */}
         <CharacterOrchestrator storyId="gingerbread" scenes={scenes} />
 
+        {/* Layer 1.6: Image scenes (fixed, independent of scroll flow) */}
+        <ImageSceneOrchestrator scenes={scenes} index={index} />
+
         {/* Layer 2: Document flow content with scroll snap targets */}
         <div style={{ position: "relative" }}>
           {scenes.map((scene: Scene, i: number) => (
@@ -121,8 +124,66 @@ const StoryContent: React.FC = () => {
   );
 };
 
+// ImageSceneOrchestrator: Renders image scenes outside the scroll flow with background-like transforms
+const ImageSceneOrchestrator = React.memo(function ImageSceneOrchestrator({ scenes, index }: { scenes: Scene[]; index: number }) {
+  // Find all image scenes and render them with transforms like backgrounds
+  const imageScenes = scenes
+    .map((scene, i) => ({ scene, index: i }))
+    .filter(({ scene }) => scene.type === 'image');
+
+  return (
+    <div style={{
+      position: 'fixed',
+      top: 0,
+      left: 0,
+      width: '100vw',
+      height: '100vh',
+      zIndex: -5 // Between background (-10) and content
+    }}>
+      {imageScenes.map(({ scene, index: sceneIndex }) => {
+        // Calculate transform using same logic as background system
+        const tolerance = 0.1;
+        let transform: string;
+
+        if (index < sceneIndex - tolerance) {
+          // Image is waiting below (not reached yet)
+          transform = `translateY(${(sceneIndex - index) * 100}vh)`;
+        } else if (index > sceneIndex + 1 + tolerance) {
+          // Image has scrolled up and away
+          transform = `translateY(${(sceneIndex + 1 - index) * 100}vh)`;
+        } else {
+          // Image is visible and fixed in place
+          transform = 'translateY(0)';
+        }
+
+        return (
+          <div
+            key={`image-scene-${sceneIndex}`}
+            style={{
+              position: 'absolute',
+              top: 0,
+              left: 0,
+              width: '100%',
+              height: '100%',
+              transform,
+              transition: 'transform 0.6s ease-out'
+            }}
+          >
+            <SceneRenderer scene={scene} />
+          </div>
+        );
+      })}
+    </div>
+  );
+});
+
 // SceneContentWithNavigation: thin wrapper to render a scene and navigate to the next scene when it completes
 const SceneContentWithNavigation = React.memo(function SceneContentWithNavigation({ scene }: { scene: Scene }) {
+  // Skip rendering image scenes here since they're handled by ImageSceneOrchestrator
+  if (scene.type === 'image') {
+    return null;
+  }
+
   // Use navigation context instead of direct snap API
   // const { goToNext } = useNavigation();
 
