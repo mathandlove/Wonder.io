@@ -98,23 +98,55 @@ export const CaptionComponent: React.FC<CaptionComponentProps> = ({ scenes, inde
             key={`caption-${range.startIndex}-${range.endIndex}`}
             style={{
               position: 'absolute',
-              bottom: '20vh',
-              left: '50%',
-              transform: `translateX(-50%) ${transform}`,
+              bottom: 0,
+              left: 0,
+              right: 0,
+              width: '100%',
+              height: '35vh',
+              overflow: 'visible',
+              transform,
               opacity,
-              transition: 'transform 0.6s ease-out, opacity 0.6s ease-out',
-              background: 'rgba(0, 0, 0, 0.8)',
-              color: 'white',
-              padding: '20px 40px',
-              borderRadius: '12px',
-              fontSize: '18px',
-              fontWeight: '500',
-              textAlign: 'center',
-              maxWidth: '80vw',
-              boxShadow: '0 4px 20px rgba(0, 0, 0, 0.3)'
+              transition: 'transform 0.6s ease-out, opacity 0.6s ease-out'
             }}
           >
-            {range.caption}
+            {/* Cardboard edge background with shadow */}
+            <div
+              style={{
+                position: 'absolute',
+                bottom: 0,
+                left: 0,
+                width: '100%',
+                height: '35vh',
+                backgroundImage: "url('/VisualAssets/constructionEdge.png')",
+                backgroundSize: '100% auto',
+                backgroundPosition: 'top',
+                backgroundRepeat: 'no-repeat',
+                filter: 'drop-shadow(0 -8px 16px rgba(0, 0, 0, 0.3)) drop-shadow(0 -4px 8px rgba(0, 0, 0, 0.2))'
+              }}
+            />
+
+            {/* Left-justified text without background */}
+            <div
+              style={{
+                padding: '24px 36px',
+                position: 'absolute',
+                bottom: '10px',
+                left: '30px',
+                width: 'calc(100vw - 60px)',
+                maxWidth: '80vw',
+                textAlign: 'left',
+                fontSize: 'calc(1.4rem + 10px)',
+                fontWeight: 'bold',
+                color: 'white',
+                lineHeight: '1.25',
+                letterSpacing: '0.02em',
+                zIndex: 10,
+                fontFamily: "'Nunito', sans-serif",
+                boxSizing: 'border-box'
+              }}
+            >
+              {range.caption}
+            </div>
           </div>
         );
       })}

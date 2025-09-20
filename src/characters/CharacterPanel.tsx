@@ -129,7 +129,27 @@ export const CharacterPanel: React.FC<CharacterPanelProps> = ({
             style={cardStyle}
           >
             <div className={`story-character-inner ${getInnerClasses()}`}>
-              {characterName !== 'NOCHARACTER' && <div className="story-wooden-dowel"></div>}
+              {/* Dowel visibility logic */}
+              {phase === 'entering' ? (
+                <>
+                  {/* First half dowel (hidden) */}
+                  <div className="story-wooden-dowel" style={{
+                    animation: 'first-half-visibility 1600ms ease-in-out forwards',
+                    display: (scrollDirection === 'forward' && previousCharacter === 'NOCHARACTER') ||
+                             (scrollDirection === 'backward' && nextCharacter === 'NOCHARACTER') ? 'none' : 'block'
+                  }}></div>
+
+                  {/* Second half dowel (visible) */}
+                  {characterName !== 'NOCHARACTER' && (
+                    <div className="story-wooden-dowel" style={{
+                      animation: 'second-half-visibility 1600ms ease-in-out forwards'
+                    }}></div>
+                  )}
+                </>
+              ) : (
+                /* Normal dowel for non-entering phases */
+                characterName !== 'NOCHARACTER' && <div className="story-wooden-dowel"></div>
+              )}
 
               {/* First half character (visible during exit phase) */}
               {phase === 'entering' && displayCharacter && displayCharacter !== 'NOCHARACTER' && (
