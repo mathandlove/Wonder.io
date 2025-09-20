@@ -158,14 +158,35 @@ export function injectPanelMetaFromFlows(scenes: Scene[]): Scene[] {
     if (s.type !== "character" && !hasCharacters) {
       // Only reset if we're not in a flow sequence
       if (!(s as any).flowSequence) {
+        // Save the characters before resetting
+        const prevLeftCharacter = currentLeft;
+        const prevRightCharacter = currentRight;
+
         inFlow = false;
         currentLeft = null;
         currentRight = null;
 
-        // For scenes not in character flows, inject NOCHARACTER
+        // For scenes not in character flows, inject NOCHARACTER with proper animation states
         const meta = { ...(s as any).meta };
-        meta.panelLeft = { character: NOCHARACTER };
-        meta.panelRight = { character: NOCHARACTER };
+
+        // Check if we had characters before this scene (should animate entering)
+        const hadLeftCharacter = prevLeftCharacter && prevLeftCharacter !== NOCHARACTER;
+        const hadRightCharacter = prevRightCharacter && prevRightCharacter !== NOCHARACTER;
+
+        meta.panelLeft = {
+          character: NOCHARACTER,
+          previousCharacter: prevLeftCharacter || NOCHARACTER,
+          nextCharacter: NOCHARACTER,
+          animationState: hadLeftCharacter ? "entering" : "idle",
+          aboutToSwap: false
+        };
+        meta.panelRight = {
+          character: NOCHARACTER,
+          previousCharacter: prevRightCharacter || NOCHARACTER,
+          nextCharacter: NOCHARACTER,
+          animationState: hadRightCharacter ? "entering" : "idle",
+          aboutToSwap: false
+        };
 
         return { ...s, meta } as Scene;
       }
@@ -194,6 +215,5 @@ export function injectPanelMetaFromFlows(scenes: Scene[]): Scene[] {
 
     return { ...s, meta } as Scene;
   });
-  console.log(out)
   return out;
 }

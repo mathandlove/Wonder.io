@@ -83,7 +83,7 @@ export const CharacterOrchestrator: React.FC<Props> = ({ storyId, scenes }) => {
       <div className="character-panel--left" style={{ position: "absolute", left: 0, top: 0, bottom: 0, width: "280px", pointerEvents: "auto" }}>
         <CharacterPanel
           side="left"
-          visible={!!leftPanel?.character && leftPanel?.character !== 'NOCHARACTER'}
+          visible={!!leftPanel?.character && (leftPanel?.character !== 'NOCHARACTER' || leftPanel?.animationState === 'entering')}
           characterName={leftPanel?.character || null}
           previousCharacter={leftPanel?.previousCharacter || null}
           nextCharacter={leftPanel?.nextCharacter || null}
@@ -99,7 +99,7 @@ export const CharacterOrchestrator: React.FC<Props> = ({ storyId, scenes }) => {
       <div className="character-panel--right" style={{ position: "absolute", right: 0, top: 0, bottom: 0, width: "280px", pointerEvents: "auto" }}>
         <CharacterPanel
           side="right"
-          visible={!!rightPanel?.character && rightPanel?.character !== 'NOCHARACTER'}
+          visible={!!rightPanel?.character && (rightPanel?.character !== 'NOCHARACTER' || rightPanel?.animationState === 'entering')}
           characterName={rightPanel?.character || null}
           previousCharacter={rightPanel?.previousCharacter || null}
           nextCharacter={rightPanel?.nextCharacter || null}

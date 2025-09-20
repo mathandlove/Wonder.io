@@ -73,11 +73,7 @@ export const CharacterPanel: React.FC<CharacterPanelProps> = ({
     return `${baseClass} ${phaseClass} ${swapClass}`.trim();
   };
 
-  const cardStyle = {
-    opacity: characterName === 'NOCHARACTER' ? 0.5 : 1, // 50% alpha for NOCHARACTER debugging
-    // Debug: Green outline for NOCHARACTER
-    outline: characterName === 'NOCHARACTER' ? '2px solid lime' : 'none',
-  };
+  const cardStyle = {};
 
   // Get speaking animation class for character inner div
   const getInnerClasses = () => {
@@ -111,17 +107,13 @@ export const CharacterPanel: React.FC<CharacterPanelProps> = ({
   };
 
   const getDisplayImage = (char: string | null) => {
-    if (!char) return '';
-    // Debug: Use farmer.png for NOCHARACTER
-    const debugChar = char === 'NOCHARACTER' ? 'farmer' : char;
-    return `/stories/${storyId}.bundle/images/characters/${debugChar}${pose ? `.${pose}` : ''}.sticker-cardboard-3d.webp?${version}`;
+    if (!char || char === 'NOCHARACTER') return '';
+    return `/stories/${storyId}.bundle/images/characters/${char}${pose ? `.${pose}` : ''}.sticker-cardboard-3d.webp?${version}`;
   };
 
   const getFallbackImage = (char: string | null) => {
-    if (!char) return '';
-    // Debug: Use farmer.png for NOCHARACTER
-    const debugChar = char === 'NOCHARACTER' ? 'farmer' : char;
-    return `/assets.core/images/characters/${debugChar}${pose ? `.${pose}` : ''}.sticker-cardboard-3d.webp?${version}`;
+    if (!char || char === 'NOCHARACTER') return '';
+    return `/assets.core/images/characters/${char}${pose ? `.${pose}` : ''}.sticker-cardboard-3d.webp?${version}`;
   };
 
 
@@ -131,33 +123,16 @@ export const CharacterPanel: React.FC<CharacterPanelProps> = ({
     <div className={`story-character-panel story-character-${side}`}>
       {displayCharacter ? (
         <div className="story-character-content">
-          {/* Debug overlay showing animation state */}
-          <div style={{
-            position: 'absolute',
-            top: '-30px',
-            left: '50%',
-            transform: 'translateX(-50%)',
-            background: 'rgba(0, 0, 0, 0.8)',
-            color: 'white',
-            padding: '4px 8px',
-            borderRadius: '4px',
-            fontSize: '12px',
-            fontWeight: 'bold',
-            zIndex: 100,
-            whiteSpace: 'nowrap'
-          }}>
-            {animationState || 'none'} / {phase}
-          </div>
           <div
             key={`${characterName}-${animNonce}`} // Key changes to force re-render and restart animation
             className={getCardClasses()}
             style={cardStyle}
           >
             <div className={`story-character-inner ${getInnerClasses()}`}>
-              <div className="story-wooden-dowel"></div>
+              {characterName !== 'NOCHARACTER' && <div className="story-wooden-dowel"></div>}
 
               {/* First half character (visible during exit phase) */}
-              {phase === 'entering' && (
+              {phase === 'entering' && displayCharacter && displayCharacter !== 'NOCHARACTER' && (
                 <img
                   src={getDisplayImage(displayCharacter)}
                   alt={`${displayCharacter} Character`}
@@ -172,18 +147,20 @@ export const CharacterPanel: React.FC<CharacterPanelProps> = ({
               )}
 
               {/* Second half character (visible during enter phase) */}
-              <img
-                src={getDisplayImage(phase === 'entering' ? getSecondHalfCharacter() : displayCharacter)}
-                alt={`${phase === 'entering' ? getSecondHalfCharacter() : displayCharacter} Character`}
-                className={`story-character-image ${phase === 'entering' ? 'story-character-second-half' : ''}`}
-                onError={(e) => {
-                  const target = e.target as HTMLImageElement;
-                  const char = phase === 'entering' ? getSecondHalfCharacter() : displayCharacter;
-                  if (target.src.includes(`${storyId}.bundle`)) {
-                    target.src = getFallbackImage(char);
-                  }
-                }}
-              />
+              {((phase === 'entering' ? getSecondHalfCharacter() : displayCharacter) !== 'NOCHARACTER') && (
+                <img
+                  src={getDisplayImage(phase === 'entering' ? getSecondHalfCharacter() : displayCharacter)}
+                  alt={`${phase === 'entering' ? getSecondHalfCharacter() : displayCharacter} Character`}
+                  className={`story-character-image ${phase === 'entering' ? 'story-character-second-half' : ''}`}
+                  onError={(e) => {
+                    const target = e.target as HTMLImageElement;
+                    const char = phase === 'entering' ? getSecondHalfCharacter() : displayCharacter;
+                    if (target.src.includes(`${storyId}.bundle`)) {
+                      target.src = getFallbackImage(char);
+                    }
+                  }}
+                />
+              )}
             </div>
           </div>
         </div>

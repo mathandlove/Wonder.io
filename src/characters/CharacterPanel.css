@@ -18,11 +18,11 @@
 /* Character panel styles */
 .story-character-panel {
   position: absolute;
-  top: 0;
+  top: 30vh;
   width: 100%;
   height: 100vh;
   display: flex;
-  align-items: flex-end;
+  align-items: flex-start;
   justify-content: center;
   pointer-events: none;
   /*background: rgba(255, 0, 0, 0.3);  Red background for debugging */
