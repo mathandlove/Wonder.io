@@ -11,7 +11,10 @@ export function translateForRange(range: BackgroundRange, scrollOffset: number):
 
   if (scrollOffset < range.startIndex - tolerance) {
     // Background is waiting below (not reached yet)
-    return `translateY(${(range.startIndex - scrollOffset) * 100}vh)`;
+    const distance = range.startIndex - scrollOffset;
+    // Snap to 100vh if distance is very close to 1
+    const translateY = Math.abs(distance - 1) < 0.02 ? 100 : distance * 100;
+    return `translateY(${translateY}vh)`;
   } else if (scrollOffset > range.endIndex + 1 + tolerance) {
     // Background has scrolled up and away
     return `translateY(${(range.endIndex + 1 - scrollOffset) * 100}vh)`;

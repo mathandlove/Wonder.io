@@ -14,6 +14,8 @@ export const CharacterOrchestrator: React.FC<Props> = ({ storyId, scenes }) => {
   const [leftEnterNonce, setLeftEnterNonce] = useState(0);
   const [rightEnterNonce, setRightEnterNonce] = useState(0);
   const [prevSceneIndex, setPrevSceneIndex] = useState(0);
+  const [prevScrollOffset, setPrevScrollOffset] = useState(0);
+  const [scrollDirection, setScrollDirection] = useState<'forward' | 'backward'>('forward');
 
   // Get current scene meta for direct access to animation states
   const currentMeta = useMemo(() => {
@@ -39,6 +41,14 @@ export const CharacterOrchestrator: React.FC<Props> = ({ storyId, scenes }) => {
   const leftPanel = currentMeta?.panelLeft;
   const rightPanel = currentMeta?.panelRight;
 
+  // Detect scroll direction
+  useEffect(() => {
+    if (scrollOffset !== prevScrollOffset) {
+      setScrollDirection(scrollOffset > prevScrollOffset ? 'forward' : 'backward');
+      setPrevScrollOffset(scrollOffset);
+    }
+  }, [scrollOffset, prevScrollOffset]);
+
   // Track when we've scrolled to a new scene and trigger animation restart
   useEffect(() => {
     const currentSceneIndex = Math.round(scrollOffset);
@@ -47,17 +57,25 @@ export const CharacterOrchestrator: React.FC<Props> = ({ storyId, scenes }) => {
     if (currentSceneIndex !== prevSceneIndex) {
       setPrevSceneIndex(currentSceneIndex);
 
-      // Check if left character should animate (entering state)
-      if (leftPanel?.animationState === 'entering') {
-        setLeftEnterNonce(n => n + 1);
-      }
-
-      // Check if right character should animate (entering state)
-      if (rightPanel?.animationState === 'entering') {
-        setRightEnterNonce(n => n + 1);
+      if (scrollDirection === 'forward') {
+        // Forward scrolling: animate on entering state
+        if (leftPanel?.animationState === 'entering') {
+          setLeftEnterNonce(n => n + 1);
+        }
+        if (rightPanel?.animationState === 'entering') {
+          setRightEnterNonce(n => n + 1);
+        }
+      } else {
+        // Backward scrolling: animate on aboutToSwap
+        if (leftPanel?.aboutToSwap) {
+          setLeftEnterNonce(n => n + 1);
+        }
+        if (rightPanel?.aboutToSwap) {
+          setRightEnterNonce(n => n + 1);
+        }
       }
     }
-  }, [scrollOffset, leftPanel?.animationState, rightPanel?.animationState, prevSceneIndex]);
+  }, [scrollOffset, leftPanel?.animationState, rightPanel?.animationState, leftPanel?.aboutToSwap, rightPanel?.aboutToSwap, prevSceneIndex, scrollDirection]);
 
   return (
     <div style={{ position: "fixed", inset: 0, pointerEvents: "none", zIndex: 60 }}>
@@ -68,8 +86,10 @@ export const CharacterOrchestrator: React.FC<Props> = ({ storyId, scenes }) => {
           visible={!!leftPanel?.character && leftPanel?.character !== 'NOCHARACTER'}
           characterName={leftPanel?.character || null}
           previousCharacter={leftPanel?.previousCharacter || null}
+          nextCharacter={leftPanel?.nextCharacter || null}
           animationState={leftPanel?.animationState}
           aboutToSwap={leftPanel?.aboutToSwap}
+          scrollDirection={scrollDirection}
           storyId={storyId}
           animNonce={leftEnterNonce}
         />
@@ -82,8 +102,10 @@ export const CharacterOrchestrator: React.FC<Props> = ({ storyId, scenes }) => {
           visible={!!rightPanel?.character && rightPanel?.character !== 'NOCHARACTER'}
           characterName={rightPanel?.character || null}
           previousCharacter={rightPanel?.previousCharacter || null}
+          nextCharacter={rightPanel?.nextCharacter || null}
           animationState={rightPanel?.animationState}
           aboutToSwap={rightPanel?.aboutToSwap}
+          scrollDirection={scrollDirection}
           storyId={storyId}
           animNonce={rightEnterNonce}
         />

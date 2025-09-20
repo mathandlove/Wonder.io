@@ -62,16 +62,20 @@ export function injectPanelMetaFromFlows(scenes: Scene[]): Scene[] {
           const nextCharacter = nextScene?.type === "character" ?
             (nextScene as any)["left-character"] ||
             nextScene?.meta?.panelLeft?.character :
-            null;
+            // For quest scenes, assume character continues; for image scenes, character disappears
+            nextScene?.type === "quest" ? currentCharacter : NOCHARACTER;
 
           const isSpeaking = speaker === 'left';
           const isPageFactoryScene = !s.flowSequence && s.type === "character";
 
           // Determine main animation state
           let animationState: string;
-          if (isPageFactoryScene) {
-            // PageFactory scenes are always speaking
+          if (isPageFactoryScene && isSpeaking) {
+            // PageFactory scenes - character speaks if they are the speaker
             animationState = "speaking";
+          } else if (isPageFactoryScene && !isSpeaking) {
+            // PageFactory scenes - non-speaking character is idle
+            animationState = "idle";
           } else if (previousCharacter !== currentCharacter) {
             // Character changed - play combined exit→enter animation
             animationState = "entering";
@@ -103,16 +107,20 @@ export function injectPanelMetaFromFlows(scenes: Scene[]): Scene[] {
           const nextCharacter = nextScene?.type === "character" ?
             (nextScene as any)["right-character"] ||
             nextScene?.meta?.panelRight?.character :
-            null;
+            // For quest scenes, assume character continues; for image scenes, character disappears
+            nextScene?.type === "quest" ? currentCharacter : NOCHARACTER;
 
           const isSpeaking = speaker === 'right';
           const isPageFactoryScene = !s.flowSequence && s.type === "character";
 
           // Determine main animation state
           let animationState: string;
-          if (isPageFactoryScene) {
-            // PageFactory scenes are always speaking
+          if (isPageFactoryScene && isSpeaking) {
+            // PageFactory scenes - character speaks if they are the speaker
             animationState = "speaking";
+          } else if (isPageFactoryScene && !isSpeaking) {
+            // PageFactory scenes - non-speaking character is idle
+            animationState = "idle";
           } else if (previousCharacter !== currentCharacter) {
             // Character changed - play combined exit→enter animation
             animationState = "entering";
@@ -166,9 +174,9 @@ export function injectPanelMetaFromFlows(scenes: Scene[]): Scene[] {
     // For any scene in a character context, inject meta.panelLeft/Right
     if (inFlow || hasCharacters) {
       const meta = { ...(s as any).meta };
-      // Only characters, no poses/speaking for non-character scenes
-      if (currentLeft)  meta.panelLeft  = { character: currentLeft };
-      if (currentRight) meta.panelRight = { character: currentRight };
+      // Always set both panels - use current character or NOCHARACTER
+      meta.panelLeft = currentLeft ? { character: currentLeft } : { character: NOCHARACTER };
+      meta.panelRight = currentRight ? { character: currentRight } : { character: NOCHARACTER };
 
       // Mark as new flow if this scene starts a new character flow
       const sceneData = { ...s, meta } as any;
@@ -186,5 +194,6 @@ export function injectPanelMetaFromFlows(scenes: Scene[]): Scene[] {
 
     return { ...s, meta } as Scene;
   });
+  console.log(out)
   return out;
 }

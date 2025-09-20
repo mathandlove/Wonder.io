@@ -4,6 +4,11 @@
   "scenes": [
 
  
+            {
+      "type":"image",
+      "image":"story/dragonFeet.png",
+      "text":"I protect my city by searching for clues."
+    },
     {
       "type": "character-flow",
       "background":"bakery.png",

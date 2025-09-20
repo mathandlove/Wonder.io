@@ -161,6 +161,30 @@
   transform-origin: center calc(100% + 300px);
 }
 
+/* Character image visibility during animation phases */
+.story-character-first-half {
+  position: absolute;
+  animation: first-half-visibility 1600ms ease-in-out forwards;
+}
+
+.story-character-second-half {
+  position: absolute;
+  animation: second-half-visibility 1600ms ease-in-out forwards;
+}
+
+@keyframes first-half-visibility {
+  0% { opacity: 1; }
+  30% { opacity: 0; }
+  100% { opacity: 0; }
+}
+
+@keyframes second-half-visibility {
+  0% { opacity: 0; }
+  30% { opacity: 0; }
+  50% { opacity: 1; }
+  100% { opacity: 1; }
+}
+
 /* Complex entrance animations with exit-switch-enter sequence */
 @keyframes character-entrance-settle-left {
   /* Exit phase - character moves out */
