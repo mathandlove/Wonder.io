@@ -12,6 +12,10 @@ export type CharacterScene = {
   "right-character"?: string;
   flowSequence?: boolean;
   isFirstInFlow?: boolean;
+  meta?: {
+    panelLeft?: { character: string; previousCharacter?: string; nextCharacter?: string; animationState?: string; aboutToSwap?: boolean };
+    panelRight?: { character: string; previousCharacter?: string; nextCharacter?: string; animationState?: string; aboutToSwap?: boolean };
+  };
 };
 
 export type QuestScene = {
@@ -22,6 +26,10 @@ export type QuestScene = {
   "right-character"?: string;
   flowSequence?: boolean;
   isFirstInFlow?: boolean;
+  meta?: {
+    panelLeft?: { character: string; previousCharacter?: string; nextCharacter?: string; animationState?: string; aboutToSwap?: boolean };
+    panelRight?: { character: string; previousCharacter?: string; nextCharacter?: string; animationState?: string; aboutToSwap?: boolean };
+  };
 };
 
 export type InputScene = {
@@ -32,6 +40,10 @@ export type InputScene = {
   "right-character"?: string;
   flowSequence?: boolean;
   isFirstInFlow?: boolean;
+  meta?: {
+    panelLeft?: { character: string; previousCharacter?: string; nextCharacter?: string; animationState?: string; aboutToSwap?: boolean };
+    panelRight?: { character: string; previousCharacter?: string; nextCharacter?: string; animationState?: string; aboutToSwap?: boolean };
+  };
 };
 
 export type ImageScene = {
@@ -41,6 +53,10 @@ export type ImageScene = {
   background?: string;
   flowSequence?: boolean;
   isFirstInFlow?: boolean;
+  meta?: {
+    panelLeft?: { character: string; previousCharacter?: string; nextCharacter?: string; animationState?: string; aboutToSwap?: boolean };
+    panelRight?: { character: string; previousCharacter?: string; nextCharacter?: string; animationState?: string; aboutToSwap?: boolean };
+  };
 };
 
 export type CharacterFlowScene = {
@@ -62,6 +78,10 @@ export type FullScene = {
   background?: string;
   flowSequence?: boolean;
   isFirstInFlow?: boolean;
+  meta?: {
+    panelLeft?: { character: string; previousCharacter?: string; nextCharacter?: string; animationState?: string; aboutToSwap?: boolean };
+    panelRight?: { character: string; previousCharacter?: string; nextCharacter?: string; animationState?: string; aboutToSwap?: boolean };
+  };
 };
 
 export type Scene =

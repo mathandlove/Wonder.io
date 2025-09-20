@@ -53,23 +53,87 @@ export function injectPanelMetaFromFlows(scenes: Scene[]): Scene[] {
         const speaker = (s as any).speaker;
         const meta = { ...(s as any).meta };
 
-        // Set character data with speaking state
+        // Set character data with animation state
         if (currentLeft) {
-          const wasAlreadyPresent = previousLeft === currentLeft;
-          // For PageFactory scenes (input responses), allow speaking even for "new" characters
-          // since they're continuing an existing conversation
+          const previousCharacter = previousLeft;
+          const currentCharacter = currentLeft;
+          // Look ahead to next scene for aboutToSwap detection
+          const nextScene = scenes[i + 1];
+          const nextCharacter = nextScene?.type === "character" ?
+            (nextScene as any)["left-character"] ||
+            nextScene?.meta?.panelLeft?.character :
+            null;
+
+          const isSpeaking = speaker === 'left';
           const isPageFactoryScene = !s.flowSequence && s.type === "character";
-          const shouldSpeak = speaker === 'left' && (wasAlreadyPresent || isPageFactoryScene);
-          meta.panelLeft = { character: currentLeft, speaking: shouldSpeak };
+
+          // Determine main animation state
+          let animationState: string;
+          if (isPageFactoryScene) {
+            // PageFactory scenes are always speaking
+            animationState = "speaking";
+          } else if (previousCharacter !== currentCharacter) {
+            // Character changed - play combined exit→enter animation
+            animationState = "entering";
+          } else if (isSpeaking) {
+            // Character present and speaking
+            animationState = "speaking";
+          } else {
+            // Character present but idle
+            animationState = "idle";
+          }
+
+          // Check if character will exit in next scene
+          const aboutToSwap = nextCharacter !== currentCharacter;
+
+          meta.panelLeft = {
+            character: currentLeft,
+            previousCharacter: previousCharacter || NOCHARACTER,
+            nextCharacter: nextCharacter || NOCHARACTER,
+            animationState,
+            aboutToSwap
+          };
         }
 
         if (currentRight) {
-          const wasAlreadyPresent = previousRight === currentRight;
-          // For PageFactory scenes (input responses), allow speaking even for "new" characters
-          // since they're continuing an existing conversation
+          const previousCharacter = previousRight;
+          const currentCharacter = currentRight;
+          // Look ahead to next scene for aboutToSwap detection
+          const nextScene = scenes[i + 1];
+          const nextCharacter = nextScene?.type === "character" ?
+            (nextScene as any)["right-character"] ||
+            nextScene?.meta?.panelRight?.character :
+            null;
+
+          const isSpeaking = speaker === 'right';
           const isPageFactoryScene = !s.flowSequence && s.type === "character";
-          const shouldSpeak = speaker === 'right' && (wasAlreadyPresent || isPageFactoryScene);
-          meta.panelRight = { character: currentRight, speaking: shouldSpeak };
+
+          // Determine main animation state
+          let animationState: string;
+          if (isPageFactoryScene) {
+            // PageFactory scenes are always speaking
+            animationState = "speaking";
+          } else if (previousCharacter !== currentCharacter) {
+            // Character changed - play combined exit→enter animation
+            animationState = "entering";
+          } else if (isSpeaking) {
+            // Character present and speaking
+            animationState = "speaking";
+          } else {
+            // Character present but idle
+            animationState = "idle";
+          }
+
+          // Check if character will exit in next scene
+          const aboutToSwap = nextCharacter !== currentCharacter;
+
+          meta.panelRight = {
+            character: currentRight,
+            previousCharacter: previousCharacter || NOCHARACTER,
+            nextCharacter: nextCharacter || NOCHARACTER,
+            animationState,
+            aboutToSwap
+          };
         }
 
         // Mark as new flow if this scene starts a new character flow

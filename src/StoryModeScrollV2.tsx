@@ -10,7 +10,7 @@ import { SceneRenderer } from "./components/SceneRenderer";
 import { PageFactoryProvider } from "./components/PageFactory";
 import { useNavigation } from "./context/NavigationContext";
 import { BackgroundOrchestrator } from "./background/BackgroundOrchestrator";
-import { CharacterOrchestrator } from "./characters/CharacterOrchestrator";
+import { CharacterOrchestrator } from "./characters/CharacterOrchestratorNew";
 import { injectPanelMetaFromFlows } from "./characters/adapters/injectPanelMetaFromFlows";
 import { useSceneNavigation } from "./hooks/useSceneNavigation";
 import { useScrollManager } from "./hooks/useScrollManager";
