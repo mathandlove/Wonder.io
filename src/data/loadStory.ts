@@ -84,10 +84,22 @@ function flattenScenes(rawScenes: RawScene[]): Scene[] {
         out.push(flattened as Scene);
       });
     } else if (scene.type === "image" && scene.image) {
+      // Create first image scene
       out.push({
         type: "image",
         image: scene.image,
         caption: scene.text,
+        background: scene.background,
+        flowSequence: false,
+        isFirstInFlow: false,
+        panelRestricted: false,
+      });
+
+      // Create second image scene (empty for now, image will stay)
+      out.push({
+        type: "image",
+        image: scene.image,
+        caption: undefined, // No caption on second scene
         background: scene.background,
         flowSequence: false,
         isFirstInFlow: false,

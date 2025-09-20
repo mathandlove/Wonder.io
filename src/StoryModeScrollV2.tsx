@@ -11,6 +11,7 @@ import { PageFactoryProvider } from "./components/PageFactory";
 import { useNavigation } from "./context/NavigationContext";
 import { BackgroundOrchestrator } from "./background/BackgroundOrchestrator";
 import { CharacterOrchestrator } from "./characters/CharacterOrchestratorNew";
+import { CaptionComponent } from "./components/CaptionComponent";
 import { injectPanelMetaFromFlows } from "./characters/adapters/injectPanelMetaFromFlows";
 import { useSceneNavigation } from "./hooks/useSceneNavigation";
 import { useScrollManager } from "./hooks/useScrollManager";
@@ -99,6 +100,9 @@ const StoryContent: React.FC = () => {
         {/* Layer 1.6: Image scenes (fixed, independent of scroll flow) */}
         <ImageSceneOrchestrator scenes={scenes} index={index} />
 
+        {/* Layer 1.7: Image captions (appear on second scene of each image pair) */}
+        <CaptionComponent scenes={scenes} index={index} />
+
         {/* Layer 2: Document flow content with scroll snap targets */}
         <div style={{ position: "relative" }}>
           {scenes.map((scene: Scene, i: number) => (
@@ -126,10 +130,58 @@ const StoryContent: React.FC = () => {
 
 // ImageSceneOrchestrator: Renders image scenes outside the scroll flow with background-like transforms
 const ImageSceneOrchestrator = React.memo(function ImageSceneOrchestrator({ scenes, index }: { scenes: Scene[]; index: number }) {
-  // Find all image scenes and render them with transforms like backgrounds
-  const imageScenes = scenes
-    .map((scene, i) => ({ scene, index: i }))
-    .filter(({ scene }) => scene.type === 'image');
+  // Build image ranges - group consecutive scenes with the same image
+  const imageRanges = React.useMemo(() => {
+    const ranges: Array<{ startIndex: number; endIndex: number; image: string; scene: Scene }> = [];
+    let currentImage: string | null = null;
+    let rangeStart = -1;
+    let currentScene: Scene | null = null;
+
+    scenes.forEach((scene, i) => {
+      if (scene.type === 'image') {
+        if (scene.image !== currentImage) {
+          // Finish previous range if exists
+          if (currentImage && currentScene) {
+            ranges.push({
+              startIndex: rangeStart,
+              endIndex: i - 1,
+              image: currentImage,
+              scene: currentScene
+            });
+          }
+          // Start new range
+          currentImage = scene.image;
+          rangeStart = i;
+          currentScene = scene;
+        }
+        // Continue current range (same image)
+      } else {
+        // Non-image scene, finish current range if exists
+        if (currentImage && currentScene) {
+          ranges.push({
+            startIndex: rangeStart,
+            endIndex: i - 1,
+            image: currentImage,
+            scene: currentScene
+          });
+          currentImage = null;
+          currentScene = null;
+        }
+      }
+    });
+
+    // Finish final range if exists
+    if (currentImage && currentScene) {
+      ranges.push({
+        startIndex: rangeStart,
+        endIndex: scenes.length - 1,
+        image: currentImage,
+        scene: currentScene
+      });
+    }
+
+    return ranges;
+  }, [scenes]);
 
   return (
     <div style={{
@@ -140,25 +192,25 @@ const ImageSceneOrchestrator = React.memo(function ImageSceneOrchestrator({ scen
       height: '100vh',
       zIndex: -5 // Between background (-10) and content
     }}>
-      {imageScenes.map(({ scene, index: sceneIndex }) => {
-        // Calculate transform using same logic as background system
+      {imageRanges.map((range) => {
+        // Calculate transform based on range, not individual scene
         const tolerance = 0.1;
         let transform: string;
 
-        if (index < sceneIndex - tolerance) {
-          // Image is waiting below (not reached yet)
-          transform = `translateY(${(sceneIndex - index) * 100}vh)`;
-        } else if (index > sceneIndex + 1 + tolerance) {
-          // Image has scrolled up and away
-          transform = `translateY(${(sceneIndex + 1 - index) * 100}vh)`;
+        if (index < range.startIndex - tolerance) {
+          // Image range is waiting below (not reached yet)
+          transform = `translateY(${(range.startIndex - index) * 100}vh)`;
+        } else if (index > range.endIndex + tolerance) {
+          // Image range has scrolled up and away
+          transform = `translateY(${(range.endIndex - index) * 100}vh)`;
         } else {
-          // Image is visible and fixed in place
+          // Image range is visible and fixed in place
           transform = 'translateY(0)';
         }
 
         return (
           <div
-            key={`image-scene-${sceneIndex}`}
+            key={`image-range-${range.startIndex}-${range.endIndex}`}
             style={{
               position: 'absolute',
               top: 0,
@@ -169,7 +221,7 @@ const ImageSceneOrchestrator = React.memo(function ImageSceneOrchestrator({ scen
               transition: 'transform 0.6s ease-out'
             }}
           >
-            <SceneRenderer scene={scene} />
+            <SceneRenderer scene={range.scene} />
           </div>
         );
       })}
