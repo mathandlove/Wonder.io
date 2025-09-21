@@ -170,6 +170,8 @@
 
 /* Delayed bubble animates in when ready */
 .cardboard-bubble.cardboard-bubble-delayed.cardboard-bubble-show {
+  opacity: 1;
+  transform: scale(1);
   animation: bubble-pop-in 0.25s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards;
 }
 

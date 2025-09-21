@@ -86,6 +86,9 @@ export const CardboardBubble: React.FC<CardboardBubbleProps> = ({
 
   const finalClassName = `cardboard-bubble ${delayedClasses} ${bubbleClass}`.trim();
 
+  // Debug logging for bubble class state
+  console.log(`🎈 Bubble class debug: isDelayed=${isDelayed}, shouldAnimate=${shouldAnimate}, classes="${finalClassName}"`);
+
   // Position bubble at bottom when delayed, center when ready
   const wrapperStyle = isDelayed ? {
     position: 'absolute',
