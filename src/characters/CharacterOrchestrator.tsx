@@ -19,7 +19,21 @@ export const CharacterOrchestrator: React.FC<Props> = ({ storyId, scenes }) => {
   const currentMeta = useMemo(() => {
     const i = Math.max(0, Math.min(scenes.length - 1, Math.round(scrollOffset)));
     const currentScene = scenes[i];
-    return (currentScene as any)?.meta || null;
+    const meta = (currentScene as any)?.meta || null;
+
+    // Debug panel meta for new scenes
+    if (meta) {
+      console.log(`🎭 CharacterOrchestrator scene ${i} meta:`, {
+        type: (currentScene as any)?.type,
+        speaker: (currentScene as any)?.speaker,
+        leftChar: (currentScene as any)?.['left-character'],
+        rightChar: (currentScene as any)?.['right-character'],
+        panelLeft: meta.panelLeft,
+        panelRight: meta.panelRight
+      });
+    }
+
+    return meta;
   }, [scrollOffset, scenes]);
 
 

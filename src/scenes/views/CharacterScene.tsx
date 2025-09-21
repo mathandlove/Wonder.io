@@ -24,8 +24,9 @@ export default function CharacterScene({ scene, sceneIndex }: SceneProps<Charact
       : "Narrator";
 
   // Determine if bubble should be delayed and if it's ready
-  const shouldDelay = scene.speaker === 'left' || scene.speaker === 'right';
-  const isReady = shouldDelay ? bubbleReady : true;
+  // const shouldDelay = scene.speaker === 'left' || scene.speaker === 'right';
+  const shouldDelay = false; // Temporarily disabled - always show bubbles immediately
+  const isReady = true; // Always ready when entrance trigger is disabled
 
   // Callback for when character entrance completes
   const handleEntranceComplete = () => {

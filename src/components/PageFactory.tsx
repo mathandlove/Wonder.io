@@ -79,7 +79,7 @@ export function PageFactoryProvider({ children, onSceneAdded }: PageFactoryProvi
       textLength: text.length
     });
 
-    return {
+    const newScene = {
       type: "character",
       text,
       speaker,
@@ -87,7 +87,12 @@ export function PageFactoryProvider({ children, onSceneAdded }: PageFactoryProvi
       "left-character": leftCharacter,
       "right-character": rightCharacter,
       // No default background - inherit from current context
+      // Add panel restriction for proper margins
+      panelRestricted: true,
     };
+
+    console.log('🏗️ PageFactory created scene:', newScene);
+    return newScene;
   }, [scenes, currentIndex]);
 
   // Legacy addSceneToStory - keeping for external API compatibility but not used internally
