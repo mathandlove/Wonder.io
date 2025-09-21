@@ -1,116 +1,44 @@
-import React, { useEffect, useMemo, useState, useLayoutEffect, useCallback } from "react";
+import React, { useEffect, useMemo, useState, useLayoutEffect } from "react";
 import { useScrollManager } from "../hooks/useScrollManager";
 import type { Scene } from "../types/scene";
-import type { PanelRange } from "./types";
-import { buildPanelRangesFromScenes, NOCHARACTER } from "./buildPanelRangesFromScenes";
 import { CharacterPanel } from "./CharacterPanel";
 
 
-type PanelState = {
-  visible: boolean;
-  character: string | null;
-  pose?: string | null;
-  speaking?: boolean;
-  transitioning?: boolean;
-  exiting?: boolean; // Flag to indicate character should exit
-};
 
 type Props = { storyId: string; scenes: Scene[] };
 
 export const CharacterOrchestrator: React.FC<Props> = ({ storyId, scenes }) => {
   const { index: scrollOffset } = useScrollManager({ setCurrentIndex: () => {} }); // continuous float in "scene units"
-  const ranges = useMemo<PanelRange[]>(() => {
-    const builtRanges = buildPanelRangesFromScenes(scenes);
 
+  // Get current scene meta for direct access to animation states
+  const currentMeta = useMemo(() => {
+    const i = Math.max(0, Math.min(scenes.length - 1, Math.round(scrollOffset)));
+    const currentScene = scenes[i];
+    return (currentScene as any)?.meta || null;
+  }, [scrollOffset, scenes]);
 
-    return builtRanges;
-  }, [scenes]);
-
-  // State for managing transitions
-  const [leftPanel, setLeftPanel] = useState<PanelState>({
-    visible: false,
-    character: null
-  });
-  const [rightPanel, setRightPanel] = useState<PanelState>({
-    visible: false,
-    character: null
-  });
 
   // AnimNonce state for forcing animation restarts
   const [leftEnterNonce, setLeftEnterNonce] = useState(0);
   const [rightEnterNonce, setRightEnterNonce] = useState(0);
   const [prevSceneIndex, setPrevSceneIndex] = useState(0);
 
-
-  // pick active range using rounded scene index (stable with snaps)
-  const active = useMemo(() => {
-    if (!ranges.length) return null;
-    const i = Math.max(0, Math.min(scenes.length - 1, Math.round(scrollOffset)));
-    const activeRange = ranges.find(r => i >= r.startIndex && i <= r.endIndex) ?? null;
+  // Extract panel data from meta
+  const leftPanel = currentMeta?.panelLeft;
+  const rightPanel = currentMeta?.panelRight;
 
 
-    return activeRange;
-  }, [scrollOffset, ranges, scenes.length]);
 
-  // Compute scroll direction
-  const rounded = useMemo(() => Math.max(0, Math.min(scenes.length - 1, Math.round(scrollOffset))), [scrollOffset, scenes.length]);
-  const lastRoundedRef = React.useRef(rounded);
-  const direction = rounded > lastRoundedRef.current ? 'down' : rounded < lastRoundedRef.current ? 'up' : 'none';
-  React.useEffect(() => { lastRoundedRef.current = rounded; }, [rounded]);
+  // Compute scroll direction based on actual scrollOffset changes
+  const lastScrollOffsetRef = React.useRef(scrollOffset);
+  const direction = useMemo(() => {
+    const diff = scrollOffset - lastScrollOffsetRef.current;
+    if (Math.abs(diff) < 0.01) return 'none'; // Small threshold to avoid jitter
+    return diff > 0 ? 'down' : 'up';
+  }, [scrollOffset]);
+  React.useEffect(() => { lastScrollOffsetRef.current = scrollOffset; }, [scrollOffset]);
 
-  // Helper function to handle character transitions
-  const transitionCharacter = useCallback((
-    side: 'left' | 'right',
-    targetCharacter: string | null,
-    targetVisible: boolean,
-    targetSpeaking?: boolean
-  ) => {
-    const currentPanel = side === 'left' ? leftPanel : rightPanel;
-    const setPanel = side === 'left' ? setLeftPanel : setRightPanel;
 
-    // Handle NOCHARACTER as a request to hide the panel
-    const isTargetNoCharacter = targetCharacter === NOCHARACTER;
-    const effectiveTargetVisible = targetVisible && !isTargetNoCharacter;
-    const effectiveTargetCharacter = isTargetNoCharacter ? null : targetCharacter;
-
-    const targetKey = `${effectiveTargetCharacter ?? 'none'}-default`;
-    const currentKey = `${currentPanel.character ?? 'none'}-default`;
-
-    // Determine if character is changing
-    const isCharacterChanging = (targetKey !== currentKey);
-
-    // Set panel state immediately - let CSS animations handle timing
-    setPanel({
-      visible: effectiveTargetVisible,
-      character: effectiveTargetCharacter,
-      speaking: effectiveTargetVisible ? targetSpeaking : false,
-      transitioning: isCharacterChanging,
-      exiting: false
-    });
-  }, [leftPanel, rightPanel]);
-
-  // Handle active range changes
-  useEffect(() => {
-    if (active) {
-      // Character-type scene - panels are always visible
-      transitionCharacter(
-        'left',
-        active.left?.character ?? null,
-        true, // Always visible for character scenes
-        !!active.left?.speaking
-      );
-      transitionCharacter(
-        'right',
-        active.right?.character ?? null,
-        true, // Always visible for character scenes
-        !!active.right?.speaking
-      );
-    } else {
-      // No active range - hide panels
-      transitionCharacter('left', null, false);
-      transitionCharacter('right', null, false);
-    }
-  }, [active, transitionCharacter]);
 
   // Track when we've scrolled to a new scene and trigger animation restart
   useEffect(() => {
@@ -120,25 +48,16 @@ export const CharacterOrchestrator: React.FC<Props> = ({ storyId, scenes }) => {
     if (currentSceneIndex !== prevSceneIndex) {
       setPrevSceneIndex(currentSceneIndex);
 
-      // Forward scrolling: animate on entering state (transitioning)
-      if (direction === 'down') {
-        if (leftPanel.transitioning) {
-          setLeftEnterNonce(n => n + 1);
-        }
-        if (rightPanel.transitioning) {
-          setRightEnterNonce(n => n + 1);
-        }
-      } else if (direction === 'up') {
-        // Backward scrolling: animate on transitioning as well
-        if (leftPanel.transitioning) {
-          setLeftEnterNonce(n => n + 1);
-        }
-        if (rightPanel.transitioning) {
-          setRightEnterNonce(n => n + 1);
-        }
+      // Increment animNonce when scene changes to force animation restart
+      // Only trigger animation restart when character is entering (different from previous)
+      if (leftPanel?.animationState === 'entering') {
+        setLeftEnterNonce(n => n + 1);
+      }
+      if (rightPanel?.animationState === 'entering') {
+        setRightEnterNonce(n => n + 1);
       }
     }
-  }, [scrollOffset, leftPanel.transitioning, rightPanel.transitioning, prevSceneIndex, direction]);
+  }, [scrollOffset, prevSceneIndex, leftPanel?.animationState, rightPanel?.animationState]);
 
 
   // Publish panel widths as CSS variables to constrain main content
@@ -174,13 +93,15 @@ export const CharacterOrchestrator: React.FC<Props> = ({ storyId, scenes }) => {
         <CharacterPanel
           side="left"
           visible={true}
-          characterName={leftPanel.character}
-          pose={leftPanel.pose ?? null}
+          characterName={leftPanel?.character ?? null}
+          previousCharacter={leftPanel?.previousCharacter ?? null}
+          nextCharacter={leftPanel?.nextCharacter ?? null}
+          pose={leftPanel?.pose ?? null}
           storyId={storyId}
-          animationState={leftPanel.transitioning ? 'entering' : (leftPanel.speaking ? 'speaking' : 'idle')}
-          aboutToSwap={!!leftPanel.transitioning}
+          animationState={leftPanel?.animationState ?? 'idle'}
+          aboutToSwap={leftPanel?.aboutToSwap ?? false}
           animNonce={leftEnterNonce}
-          {...({ scrollDirection: direction === 'down' ? 'forward' : 'backward' } as any)}
+          scrollDirection={direction === 'down' ? 'forward' : direction === 'up' ? 'backward' : 'forward'}
         />
       </div>
 
@@ -189,13 +110,15 @@ export const CharacterOrchestrator: React.FC<Props> = ({ storyId, scenes }) => {
         <CharacterPanel
           side="right"
           visible={true}
-          characterName={rightPanel.character}
-          pose={rightPanel.pose ?? null}
+          characterName={rightPanel?.character ?? null}
+          previousCharacter={rightPanel?.previousCharacter ?? null}
+          nextCharacter={rightPanel?.nextCharacter ?? null}
+          pose={rightPanel?.pose ?? null}
           storyId={storyId}
-          animationState={rightPanel.transitioning ? 'entering' : (rightPanel.speaking ? 'speaking' : 'idle')}
-          aboutToSwap={!!rightPanel.transitioning}
+          animationState={rightPanel?.animationState ?? 'idle'}
+          aboutToSwap={rightPanel?.aboutToSwap ?? false}
           animNonce={rightEnterNonce}
-          {...({ scrollDirection: direction === 'down' ? 'forward' : 'backward' } as any)}
+          scrollDirection={direction === 'down' ? 'forward' : direction === 'up' ? 'backward' : 'forward'}
         />
       </div>
     </div>
