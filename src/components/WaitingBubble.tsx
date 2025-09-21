@@ -1,31 +1,49 @@
 
+import React from 'react';
+import { CardboardBubble } from './CardboardBubble';
+import './WaitingBubble.css';
 
-function TypingDots() {
+interface ThinkingDotsProps {
+  className?: string;
+}
+
+function ThinkingDots({ className = '' }: ThinkingDotsProps) {
   return (
-    <span aria-hidden="true" style={{ display: "inline-block", width: 40, textAlign: "left" }}>
-      <span>•</span><span style={{ opacity: 0.6 }}>•</span><span style={{ opacity: 0.3 }}>•</span>
+    <span className={`story-thinking-dots ${className}`}>
+      <span className="dot">.</span>
+      <span className="dot">.</span>
+      <span className="dot">.</span>
     </span>
   );
 }
 
-export function WaitingBubble() {
+interface WaitingBubbleProps {
+  side?: 'left' | 'right' | 'center';
+  speakerLabel?: string;
+  isDelayed?: boolean;
+  isReady?: boolean;
+  onViewportExit?: () => void;
+  onViewportEnter?: () => void;
+}
 
+export function WaitingBubble({
+  side = 'right',
+  speakerLabel,
+  isDelayed = false,
+  isReady = true,
+  onViewportExit,
+  onViewportEnter
+}: WaitingBubbleProps) {
   return (
-
-      <div
-        style={{
-          background: "rgba(255,255,255,0.98)",
-          padding: "24px 28px",
-          borderRadius: 16,
-          boxShadow: "0 8px 24px rgba(0,0,0,0.12)",
-          border: "2px solid #e0e0e0",
-          maxWidth: 520,
-          lineHeight: 1.35,
-          fontSize: "1.125rem",
-        }}
-      >
-        <TypingDots />
-      </div>
-
+    <CardboardBubble
+      side={side}
+      speakerLabel={speakerLabel}
+      isDelayed={isDelayed}
+      isReady={isReady}
+      onViewportExit={onViewportExit}
+      onViewportEnter={onViewportEnter}
+    >
+      <ThinkingDots />
+    </CardboardBubble>
   );
 }

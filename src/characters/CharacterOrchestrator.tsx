@@ -23,14 +23,14 @@ export const CharacterOrchestrator: React.FC<Props> = ({ storyId, scenes }) => {
 
     // Debug panel meta for new scenes
     if (meta) {
-      console.log(`🎭 CharacterOrchestrator scene ${i} meta:`, {
-        type: (currentScene as any)?.type,
-        speaker: (currentScene as any)?.speaker,
-        leftChar: (currentScene as any)?.['left-character'],
-        rightChar: (currentScene as any)?.['right-character'],
-        panelLeft: meta.panelLeft,
-        panelRight: meta.panelRight
-      });
+      // console.log(`🎭 CharacterOrchestrator scene ${i} meta:`, {
+      //   type: (currentScene as any)?.type,
+      //   speaker: (currentScene as any)?.speaker,
+      //   leftChar: (currentScene as any)?.['left-character'],
+      //   rightChar: (currentScene as any)?.['right-character'],
+      //   panelLeft: meta.panelLeft,
+      //   panelRight: meta.panelRight
+      // });
     }
 
     return meta;

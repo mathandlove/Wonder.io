@@ -1,0 +1,51 @@
+/* Animated thinking dots */
+.story-thinking-dots {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.story-thinking-dots .dot {
+  font-size: 32px;
+  line-height: 1;
+  animation: thinkingBounce 1.4s infinite;
+}
+
+.story-thinking-dots .dot:nth-child(1) {
+  animation-delay: 0s;
+}
+
+.story-thinking-dots .dot:nth-child(2) {
+  animation-delay: 0.2s;
+}
+
+.story-thinking-dots .dot:nth-child(3) {
+  animation-delay: 0.4s;
+}
+
+@keyframes thinkingBounce {
+  0%, 60%, 100% {
+    opacity: 0.3;
+    transform: translateY(0);
+  }
+  30% {
+    opacity: 1;
+    transform: translateY(-10px);
+  }
+}
+
+/* Waiting bubble entrance animation */
+.waiting-bubble-entrance {
+  animation: waitingBubbleSlideUp 0.5s ease-out forwards;
+}
+
+@keyframes waitingBubbleSlideUp {
+  0% {
+    opacity: 0;
+    transform: translateY(300px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}

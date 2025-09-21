@@ -63,15 +63,15 @@ export function PageFactoryProvider({ children, onSceneAdded }: PageFactoryProvi
       }
     }
 
-    console.log('🏗️ Building character page from current scene:', {
-      currentIndex,
-      currentSceneType: currentScene?.type,
-      extractedLeftChar: leftCharacter,
-      extractedRightChar: rightCharacter,
-      newSpeaker: speaker,
-      textLength: text.length,
-      scenesLength: scenes.length
-    });
+    // console.log('🏗️ Building character page from current scene:', {
+    //   currentIndex,
+    //   currentSceneType: currentScene?.type,
+    //   extractedLeftChar: leftCharacter,
+    //   extractedRightChar: rightCharacter,
+    //   newSpeaker: speaker,
+    //   textLength: text.length,
+    //   scenesLength: scenes.length
+    // });
 
     const newScene = {
       type: "character",
@@ -88,7 +88,7 @@ export function PageFactoryProvider({ children, onSceneAdded }: PageFactoryProvi
       // Meta will be added by injectPanelMetaFromFlows
     };
 
-    console.log('🏗️ PageFactory created scene:', newScene);
+    // console.log('🏗️ PageFactory created scene:', newScene);
     return newScene;
   };
 
@@ -116,14 +116,14 @@ export function PageFactoryProvider({ children, onSceneAdded }: PageFactoryProvi
       // Insert relative to current position (where input button was pressed)
       const userInsertIndex = currentIndex + 1;
 
-      console.log('📝 Creating USER scene (Leo speaking):', {
-        type: userScene.type,
-        text: userScene.text,
-        speaker: userScene.speaker,
-        leftCharacter: userScene['left-character'],
-        rightCharacter: userScene['right-character'],
-        insertIndex: userInsertIndex
-      });
+      // console.log('📝 Creating USER scene (Leo speaking):', {
+      //   type: userScene.type,
+      //   text: userScene.text,
+      //   speaker: userScene.speaker,
+      //   leftCharacter: userScene['left-character'],
+      //   rightCharacter: userScene['right-character'],
+      //   insertIndex: userInsertIndex
+      // });
 
       insertScene(userScene, userInsertIndex);
 
@@ -132,20 +132,20 @@ export function PageFactoryProvider({ children, onSceneAdded }: PageFactoryProvi
         goToIndex(userInsertIndex);
       }, 100);
 
-      // Create AI response scene after 3 seconds
+      // Create AI response scene after 2 minutes (for debugging)
       setTimeout(() => {
         const aiResponseText = `AI response to: ${userText}`;
         const aiScene = createCharacterPage(aiResponseText, "right");
         const aiInsertIndex = userInsertIndex + 1;
 
-        console.log('🤖 Creating AI response scene:', {
-          type: aiScene.type,
-          text: aiScene.text,
-          speaker: aiScene.speaker,
-          leftCharacter: aiScene['left-character'],
-          rightCharacter: aiScene['right-character'],
-          insertIndex: aiInsertIndex
-        });
+        // console.log('🤖 Creating AI response scene:', {
+        //   type: aiScene.type,
+        //   text: aiScene.text,
+        //   speaker: aiScene.speaker,
+        //   leftCharacter: aiScene['left-character'],
+        //   rightCharacter: aiScene['right-character'],
+        //   insertIndex: aiInsertIndex
+        // });
 
         insertScene(aiScene, aiInsertIndex);
 
@@ -155,7 +155,7 @@ export function PageFactoryProvider({ children, onSceneAdded }: PageFactoryProvi
         }, 100);
 
         onSceneAdded?.(aiScene);
-      }, 3000);
+      }, 120000); // 2 minutes = 120,000ms
 
       onSceneAdded?.(userScene);
     }
