@@ -127,29 +127,37 @@ export function PageFactoryProvider({ children, onSceneAdded }: PageFactoryProvi
 
       insertScene(userScene, userInsertIndex);
 
-      // Create AI response scene immediately after user scene
-      const aiResponseText = `AI response to: ${userText}`;
-      const aiScene = createCharacterPage(aiResponseText, "right");
-      const aiInsertIndex = userInsertIndex + 1;
-
-      console.log('🤖 Creating AI response scene:', {
-        type: aiScene.type,
-        text: aiScene.text,
-        speaker: aiScene.speaker,
-        leftCharacter: aiScene['left-character'],
-        rightCharacter: aiScene['right-character'],
-        insertIndex: aiInsertIndex
-      });
-
-      insertScene(aiScene, aiInsertIndex);
-
-      // Auto-navigate to the AI scene after 3 seconds
+      // Auto-navigate to the user scene immediately
       setTimeout(() => {
-        goToIndex(aiInsertIndex);
+        goToIndex(userInsertIndex);
+      }, 100);
+
+      // Create AI response scene after 3 seconds
+      setTimeout(() => {
+        const aiResponseText = `AI response to: ${userText}`;
+        const aiScene = createCharacterPage(aiResponseText, "right");
+        const aiInsertIndex = userInsertIndex + 1;
+
+        console.log('🤖 Creating AI response scene:', {
+          type: aiScene.type,
+          text: aiScene.text,
+          speaker: aiScene.speaker,
+          leftCharacter: aiScene['left-character'],
+          rightCharacter: aiScene['right-character'],
+          insertIndex: aiInsertIndex
+        });
+
+        insertScene(aiScene, aiInsertIndex);
+
+        // Navigate to AI scene immediately after creation
+        setTimeout(() => {
+          goToIndex(aiInsertIndex);
+        }, 100);
+
+        onSceneAdded?.(aiScene);
       }, 3000);
 
       onSceneAdded?.(userScene);
-      onSceneAdded?.(aiScene);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [userText, turnId, processedUserText]);
