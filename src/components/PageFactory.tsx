@@ -21,12 +21,10 @@ type PageFactoryProviderProps = {
 };
 
 export function PageFactoryProvider({ children, onSceneAdded }: PageFactoryProviderProps) {
-  const { assistantText, userText, turnId } = useDialogue();
+  const { userText, turnId } = useDialogue();
   const { insertScene, currentIndex, goToIndex, scenes, setScenes } = useNavigation();
   const [processedUserText, setProcessedUserText] = useState<string>("");
-  const [processedAssistantText, setProcessedAssistantText] = useState<string>("");
   const [lastTurnId, setLastTurnId] = useState<number>(turnId);
-  const [userSceneInsertIndex, setUserSceneInsertIndex] = useState<number | null>(null);
 
 
 
@@ -34,18 +32,9 @@ export function PageFactoryProvider({ children, onSceneAdded }: PageFactoryProvi
   useEffect(() => {
     if (turnId !== lastTurnId) {
       setProcessedUserText("");
-      setProcessedAssistantText("");
-      setUserSceneInsertIndex(null);
       setLastTurnId(turnId);
     }
   }, [turnId, lastTurnId]);
-
-  // Reset processed assistant text when assistantText is cleared
-  useEffect(() => {
-    if (!assistantText || assistantText.trim() === "") {
-      setProcessedAssistantText("");
-    }
-  }, [assistantText]);
 
   // Create a new character scene with the provided text
   const createCharacterPage = (text: string, speaker: "left" | "right" = "right"): CharacterScene => {
@@ -125,7 +114,6 @@ export function PageFactoryProvider({ children, onSceneAdded }: PageFactoryProvi
 
       // Insert relative to current position (where input button was pressed)
       const userInsertIndex = currentIndex + 1;
-      setUserSceneInsertIndex(userInsertIndex); // Track for AI response
 
       console.log('📝 Creating USER scene (Leo speaking):', {
         type: userScene.type,
@@ -148,48 +136,7 @@ export function PageFactoryProvider({ children, onSceneAdded }: PageFactoryProvi
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [userText, turnId, processedUserText]);
 
-  // Create assistant scene when new assistant text arrives
-  useEffect(() => {
-    if (assistantText && assistantText.trim() && assistantText !== processedAssistantText) {
-      // Mark as processed IMMEDIATELY
-      setProcessedAssistantText(assistantText);
-
-      // Capture values at the time of effect running
-      const capturedUserSceneIndex = userSceneInsertIndex;
-      const capturedCurrentIndex = currentIndex;
-
-      // Delay AI response by 500ms after user scene
-      const timeoutId = setTimeout(() => {
-        // Create assistant scene (right speaker = AI)
-        const assistantScene = createCharacterPage(assistantText, "right");
-
-        // Insert sequentially after user scene (userSceneInsertIndex + 1)
-        const assistantInsertIndex = capturedUserSceneIndex !== null ? capturedUserSceneIndex + 1 : capturedCurrentIndex + 2;
-
-        console.log('🤖 Creating ASSISTANT scene:', {
-          type: assistantScene.type,
-          text: assistantScene.text,
-          speaker: assistantScene.speaker,
-          leftCharacter: assistantScene['left-character'],
-          rightCharacter: assistantScene['right-character'],
-          insertIndex: assistantInsertIndex,
-          userSceneWasAt: capturedUserSceneIndex
-        });
-
-        insertScene(assistantScene, assistantInsertIndex);
-
-        // Navigate to the assistant scene
-        setTimeout(() => {
-          goToIndex(assistantInsertIndex);
-        }, 100);
-
-        onSceneAdded?.(assistantScene);
-      }, 500); // 500ms delay after user scene
-
-      return () => clearTimeout(timeoutId);
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [assistantText, turnId, processedAssistantText]);
+  // AI page creation removed - only create user pages on submit
 
   const contextValue: PageFactoryContextType = {
     createCharacterPage,
