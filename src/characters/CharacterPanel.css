@@ -135,13 +135,13 @@
   }
 }
 
-/* Character transition animations */
-.story-character-cardboard.entering-left {
+/* Character transition animations - moved to panel level for coordinated movement */
+.story-character-panel.story-character-left.entering {
   transform-origin: center calc(100% + 300px);
   animation: character-entrance-settle-left 1600ms ease-in-out forwards;
 }
 
-.story-character-cardboard.entering-right {
+.story-character-panel.story-character-right.entering {
   transform-origin: center calc(100% + 300px);
   animation: character-entrance-settle-right 1600ms ease-in-out forwards;
 }

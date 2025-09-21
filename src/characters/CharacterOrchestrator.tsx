@@ -6,7 +6,6 @@ import { buildPanelRangesFromScenes, NOCHARACTER } from "./buildPanelRangesFromS
 import { CharacterPanel } from "./CharacterPanel";
 
 const DEFAULT_GUTTER = 280; // px; tune for your design
-const EXIT_MS = 300; // Match CharacterPanel exit time
 
 type PanelState = {
   visible: boolean;
@@ -38,7 +37,6 @@ export const CharacterOrchestrator: React.FC<Props> = ({ storyId, scenes }) => {
     character: null
   });
 
-  const transitionTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   // pick active range using rounded scene index (stable with snaps)
   const active = useMemo(() => {
@@ -74,42 +72,17 @@ export const CharacterOrchestrator: React.FC<Props> = ({ storyId, scenes }) => {
     const targetKey = `${effectiveTargetCharacter ?? 'none'}-default`;
     const currentKey = `${currentPanel.character ?? 'none'}-default`;
 
-    // Determine if we need a transition animation
-    const needsTransition = (
-      // Character identity is changing
-      (targetKey !== currentKey) &&
-      // We currently have a visible character that needs to exit
-      (currentPanel.visible && currentPanel.character) &&
-      // We're not already in a transition
-      !currentPanel.transitioning
-    );
+    // Determine if character is changing
+    const isCharacterChanging = (targetKey !== currentKey);
 
-
-    if (needsTransition) {
-      // Step 1: Keep current character visible but mark as exiting
-      setPanel(prev => ({ ...prev, visible: true, exiting: true, transitioning: true }));
-
-      // Step 2: After exit completes, switch to new character/state
-      if (transitionTimeoutRef.current) clearTimeout(transitionTimeoutRef.current);
-      transitionTimeoutRef.current = setTimeout(() => {
-        setPanel({
-          visible: effectiveTargetVisible,
-          character: effectiveTargetCharacter,
-          speaking: effectiveTargetVisible ? targetSpeaking : false,
-          transitioning: false,
-          exiting: false
-        });
-      }, EXIT_MS);
-    } else {
-      // No transition needed - set directly
-      setPanel({
-        visible: effectiveTargetVisible,
-        character: effectiveTargetCharacter,
-        speaking: effectiveTargetVisible ? targetSpeaking : false,
-        transitioning: false,
-        exiting: false
-      });
-    }
+    // Set panel state immediately - let CSS animations handle timing
+    setPanel({
+      visible: effectiveTargetVisible,
+      character: effectiveTargetCharacter,
+      speaking: effectiveTargetVisible ? targetSpeaking : false,
+      transitioning: isCharacterChanging,
+      exiting: false
+    });
   };
 
   // Handle active range changes
@@ -173,13 +146,13 @@ export const CharacterOrchestrator: React.FC<Props> = ({ storyId, scenes }) => {
         <CharacterPanel
           side="left"
           visible={true}
-          isSpeaking={!!leftPanel.speaking}
           characterName={leftPanel.character}
           pose={leftPanel.pose ?? null}
           storyId={storyId}
-          direction={direction}
-          changeKey={changeKeys.leftKey}
-          exiting={!!leftPanel.exiting}
+          animationState={leftPanel.transitioning ? 'entering' : (leftPanel.speaking ? 'speaking' : 'idle')}
+          aboutToSwap={!!leftPanel.transitioning}
+          scrollDirection={direction === 'forward' ? 'forward' : 'backward'}
+          animNonce={changeKeys.leftKey}
         />
       </div>
 
@@ -188,13 +161,13 @@ export const CharacterOrchestrator: React.FC<Props> = ({ storyId, scenes }) => {
         <CharacterPanel
           side="right"
           visible={true}
-          isSpeaking={!!rightPanel.speaking}
           characterName={rightPanel.character}
           pose={rightPanel.pose ?? null}
           storyId={storyId}
-          direction={direction}
-          changeKey={changeKeys.rightKey}
-          exiting={!!rightPanel.exiting}
+          animationState={rightPanel.transitioning ? 'entering' : (rightPanel.speaking ? 'speaking' : 'idle')}
+          aboutToSwap={!!rightPanel.transitioning}
+          scrollDirection={direction === 'forward' ? 'forward' : 'backward'}
+          animNonce={changeKeys.rightKey}
         />
       </div>
     </div>

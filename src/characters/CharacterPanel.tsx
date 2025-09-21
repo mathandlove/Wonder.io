@@ -37,12 +37,13 @@ export const CharacterPanel: React.FC<CharacterPanelProps> = ({
   const getCurrentPhase = (): Phase => {
     if (!visible || !characterName) return 'hidden';
 
-    // Forward scroll: trigger entering animation on 'entering' state
-    if (scrollDirection === 'forward' && animationState === 'entering') {
+    // Always show entering animation when animationState is 'entering'
+    // This ensures both characters animate during swaps
+    if (animationState === 'entering') {
       return 'entering';
     }
 
-    // Backward scroll: trigger entering animation on 'aboutToSwap'
+    // Backward scroll: also trigger entering animation on 'aboutToSwap'
     if (scrollDirection === 'backward' && aboutToSwap) {
       return 'entering';
     }
@@ -51,7 +52,6 @@ export const CharacterPanel: React.FC<CharacterPanelProps> = ({
       case 'speaking':
         return 'speaking';
       case 'idle':
-      case 'entering': // Treat entering as idle when scrolling backward without aboutToSwap
       default:
         return 'idle';
     }
@@ -66,9 +66,7 @@ export const CharacterPanel: React.FC<CharacterPanelProps> = ({
   // CSS class for current phase and side
   const getCardClasses = () => {
     const baseClass = 'story-character-cardboard';
-    const phaseClass =
-      phase === 'entering' ? `entering-${side}` :
-      'idle';
+    const phaseClass = phase === 'entering' ? `entering-${side}` : 'idle';
     const swapClass = aboutToSwap ? 'about-to-swap' : '';
     return `${baseClass} ${phaseClass} ${swapClass}`.trim();
   };
@@ -120,7 +118,26 @@ export const CharacterPanel: React.FC<CharacterPanelProps> = ({
   const displayCharacter = getDisplayCharacter();
 
   return (
-    <div className={`story-character-panel story-character-${side}`}>
+    <div
+      key={`panel-${characterName}-${animNonce}`}
+      className={`story-character-panel story-character-${side} ${phase === 'entering' ? 'entering' : ''}`}>
+      {/* Debug text */}
+      <div style={{
+        position: 'absolute',
+        top: '-40px',
+        left: '50%',
+        transform: 'translateX(-50%)',
+        backgroundColor: 'rgba(0, 0, 0, 0.8)',
+        color: 'white',
+        padding: '4px 8px',
+        borderRadius: '4px',
+        fontSize: '12px',
+        zIndex: 1000,
+        whiteSpace: 'nowrap'
+      }}>
+        {side.toUpperCase()}: {phase} | {animationState} | {aboutToSwap ? 'SWAP' : 'NO-SWAP'} | {characterName}
+      </div>
+
       {displayCharacter ? (
         <div className="story-character-content">
           <div
