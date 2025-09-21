@@ -48,7 +48,7 @@ export function PageFactoryProvider({ children, onSceneAdded }: PageFactoryProvi
   }, [assistantText]);
 
   // Create a new character scene with the provided text
-  const createCharacterPage = useCallback((text: string, speaker: "left" | "right" = "right"): CharacterScene => {
+  const createCharacterPage = (text: string, speaker: "left" | "right" = "right"): CharacterScene => {
     // Get current scene to copy characters from
     const currentScene = scenes[currentIndex];
 
@@ -74,31 +74,31 @@ export function PageFactoryProvider({ children, onSceneAdded }: PageFactoryProvi
       }
     }
 
-    // Commented out to reduce noise - uncomment if needed
-    // console.log('🏗️ Building character page from current scene:', {
-    //   currentSceneType: currentScene?.type,
-    //   extractedLeftChar: leftCharacter,
-    //   extractedRightChar: rightCharacter,
-    //   newSpeaker: speaker,
-    //   textLength: text.length
-    // });
+    console.log('🏗️ Building character page from current scene:', {
+      currentIndex,
+      currentSceneType: currentScene?.type,
+      extractedLeftChar: leftCharacter,
+      extractedRightChar: rightCharacter,
+      newSpeaker: speaker,
+      textLength: text.length,
+      scenesLength: scenes.length
+    });
 
     const newScene = {
       type: "character",
       text,
       speaker,
-      // Copy characters from current scene
-      "left-character": leftCharacter,
-      "right-character": rightCharacter,
+      // Copy characters from current scene - ensure they're never undefined
+      "left-character": leftCharacter || "leo",
+      "right-character": rightCharacter || "bakerMom",
       // No default background - inherit from current context
       // Add panel restriction for proper margins
       panelRestricted: true,
     };
 
-    // console.log('🏗️ PageFactory created scene:', newScene);
+    console.log('🏗️ PageFactory created scene:', newScene);
     return newScene;
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  };
 
   // Legacy addSceneToStory - keeping for external API compatibility but not used internally
   const addSceneToStory = useCallback((scene: Scene) => {
