@@ -148,13 +148,17 @@ export function PageFactoryProvider({ children, onSceneAdded }: PageFactoryProvi
       // Mark as processed IMMEDIATELY
       setProcessedAssistantText(assistantText);
 
+      // Capture values at the time of effect running
+      const capturedUserSceneIndex = userSceneInsertIndex;
+      const capturedCurrentIndex = currentIndex;
+
       // Delay AI response by 500ms after user scene
-      setTimeout(() => {
+      const timeoutId = setTimeout(() => {
         // Create assistant scene (right speaker = AI)
         const assistantScene = createCharacterPage(assistantText, "right");
 
         // Insert sequentially after user scene (userSceneInsertIndex + 1)
-        const assistantInsertIndex = userSceneInsertIndex !== null ? userSceneInsertIndex + 1 : currentIndex + 2;
+        const assistantInsertIndex = capturedUserSceneIndex !== null ? capturedUserSceneIndex + 1 : capturedCurrentIndex + 2;
 
         console.log('🤖 Creating ASSISTANT scene:', {
           type: assistantScene.type,
@@ -163,7 +167,7 @@ export function PageFactoryProvider({ children, onSceneAdded }: PageFactoryProvi
           leftCharacter: assistantScene['left-character'],
           rightCharacter: assistantScene['right-character'],
           insertIndex: assistantInsertIndex,
-          userSceneWasAt: userSceneInsertIndex
+          userSceneWasAt: capturedUserSceneIndex
         });
 
         insertScene(assistantScene, assistantInsertIndex);
@@ -175,8 +179,10 @@ export function PageFactoryProvider({ children, onSceneAdded }: PageFactoryProvi
 
         onSceneAdded?.(assistantScene);
       }, 500); // 500ms delay after user scene
+
+      return () => clearTimeout(timeoutId);
     }
-  }, [assistantText, turnId, processedAssistantText, userSceneInsertIndex, currentIndex]);
+  }, [assistantText, turnId, processedAssistantText, userSceneInsertIndex, currentIndex, createCharacterPage, insertScene, goToIndex, onSceneAdded]);
 
   const contextValue: PageFactoryContextType = {
     createCharacterPage,
