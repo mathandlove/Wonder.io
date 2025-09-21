@@ -95,7 +95,8 @@ export function PageFactoryProvider({ children, onSceneAdded }: PageFactoryProvi
 
     console.log('🏗️ PageFactory created scene:', newScene);
     return newScene;
-  }, [scenes, currentIndex]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   // Legacy addSceneToStory - keeping for external API compatibility but not used internally
   const addSceneToStory = useCallback((scene: Scene) => {
@@ -140,7 +141,8 @@ export function PageFactoryProvider({ children, onSceneAdded }: PageFactoryProvi
 
       onSceneAdded?.(userScene);
     }
-  }, [userText, turnId, processedUserText, currentIndex]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [userText, turnId, processedUserText]);
 
   // Create assistant scene when new assistant text arrives
   useEffect(() => {
@@ -182,7 +184,8 @@ export function PageFactoryProvider({ children, onSceneAdded }: PageFactoryProvi
 
       return () => clearTimeout(timeoutId);
     }
-  }, [assistantText, turnId, processedAssistantText, userSceneInsertIndex, currentIndex, createCharacterPage, insertScene, goToIndex, onSceneAdded]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [assistantText, turnId, processedAssistantText]);
 
   const contextValue: PageFactoryContextType = {
     createCharacterPage,
