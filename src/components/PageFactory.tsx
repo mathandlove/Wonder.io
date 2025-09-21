@@ -148,30 +148,33 @@ export function PageFactoryProvider({ children, onSceneAdded }: PageFactoryProvi
       // Mark as processed IMMEDIATELY
       setProcessedAssistantText(assistantText);
 
-      // Create assistant scene (right speaker = AI)
-      const assistantScene = createCharacterPage(assistantText, "right");
-
-      // Insert sequentially after user scene (userSceneInsertIndex + 1)
-      const assistantInsertIndex = userSceneInsertIndex !== null ? userSceneInsertIndex + 1 : currentIndex + 2;
-
-      console.log('🤖 Creating ASSISTANT scene:', {
-        type: assistantScene.type,
-        text: assistantScene.text,
-        speaker: assistantScene.speaker,
-        leftCharacter: assistantScene['left-character'],
-        rightCharacter: assistantScene['right-character'],
-        insertIndex: assistantInsertIndex,
-        userSceneWasAt: userSceneInsertIndex
-      });
-
-      insertScene(assistantScene, assistantInsertIndex);
-
-      // Navigate to the assistant scene
+      // Delay AI response by 500ms after user scene
       setTimeout(() => {
-        goToIndex(assistantInsertIndex);
-      }, 100);
+        // Create assistant scene (right speaker = AI)
+        const assistantScene = createCharacterPage(assistantText, "right");
 
-      onSceneAdded?.(assistantScene);
+        // Insert sequentially after user scene (userSceneInsertIndex + 1)
+        const assistantInsertIndex = userSceneInsertIndex !== null ? userSceneInsertIndex + 1 : currentIndex + 2;
+
+        console.log('🤖 Creating ASSISTANT scene:', {
+          type: assistantScene.type,
+          text: assistantScene.text,
+          speaker: assistantScene.speaker,
+          leftCharacter: assistantScene['left-character'],
+          rightCharacter: assistantScene['right-character'],
+          insertIndex: assistantInsertIndex,
+          userSceneWasAt: userSceneInsertIndex
+        });
+
+        insertScene(assistantScene, assistantInsertIndex);
+
+        // Navigate to the assistant scene
+        setTimeout(() => {
+          goToIndex(assistantInsertIndex);
+        }, 100);
+
+        onSceneAdded?.(assistantScene);
+      }, 500); // 500ms delay after user scene
     }
   }, [assistantText, turnId, processedAssistantText, userSceneInsertIndex, currentIndex]);
 
