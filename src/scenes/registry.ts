@@ -14,6 +14,7 @@ import FullScene from "./views/FullScene";
 
 export type SceneProps<T extends Scene = Scene> = {
   scene: T;
+  sceneIndex?: number;
   onComplete?: () => void;
 };
 

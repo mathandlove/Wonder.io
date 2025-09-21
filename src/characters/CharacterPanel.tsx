@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import type { PanelSide } from './types';
 import './CharacterPanel.css';
 
@@ -14,6 +14,7 @@ interface CharacterPanelProps {
   pose?: string | null;
   storyId: string;
   animNonce?: number; // Forces animation restart when incremented
+  onEntranceComplete?: () => void; // Callback when entrance animation completes
 }
 
 type Phase = 'hidden' | 'entering' | 'idle' | 'speaking';
@@ -29,7 +30,8 @@ export const CharacterPanel: React.FC<CharacterPanelProps> = ({
   scrollDirection = 'forward',
   pose,
   storyId,
-  animNonce = 0
+  animNonce = 0,
+  onEntranceComplete
 }) => {
   const [version] = useState(`v${Date.now()}`);
 
@@ -59,6 +61,39 @@ export const CharacterPanel: React.FC<CharacterPanelProps> = ({
 
   const phase = getCurrentPhase();
 
+  // Ref for animation event detection
+  const panelRef = useRef<HTMLDivElement>(null);
+
+  // Animation event detection
+  useEffect(() => {
+    const panelElement = panelRef.current;
+    if (!panelElement) return;
+
+    const handleAnimationEnd = (event: AnimationEvent) => {
+      // Only log the main entrance animation completion (not sub-animations like visibility)
+      if (event.animationName.includes('character-entrance-settle')) {
+        console.log(`🎬 Entering Animation End Detected:`, {
+          side: side.toUpperCase(),
+          character: characterName,
+          animationName: event.animationName,
+          phase: phase,
+          animationState: animationState,
+          aboutToSwap: aboutToSwap,
+          scrollDirection: scrollDirection,
+          animNonce: animNonce
+        });
+
+        // Call the entrance completion callback
+        onEntranceComplete?.();
+      }
+    };
+
+    panelElement.addEventListener('animationend', handleAnimationEnd);
+
+    return () => {
+      panelElement.removeEventListener('animationend', handleAnimationEnd);
+    };
+  }, [side, characterName, phase, animationState, aboutToSwap, scrollDirection, animNonce, onEntranceComplete]);
 
   // Panel container always renders as independent layer
 
@@ -119,6 +154,7 @@ export const CharacterPanel: React.FC<CharacterPanelProps> = ({
 
   return (
     <div
+      ref={panelRef}
       key={`panel-${characterName}-${animNonce}`}
       className={`story-character-panel story-character-${side} ${phase === 'entering' ? 'entering' : ''}`}>
 

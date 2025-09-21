@@ -1,14 +1,19 @@
 import React, { useEffect, useMemo, useState, useLayoutEffect } from "react";
 import { useScrollManager } from "../hooks/useScrollManager";
+import { useCharacterAnimation } from "../context/CharacterAnimationContext";
 import type { Scene } from "../types/scene";
 import { CharacterPanel } from "./CharacterPanel";
 
 
 
-type Props = { storyId: string; scenes: Scene[] };
+type Props = {
+  storyId: string;
+  scenes: Scene[];
+};
 
 export const CharacterOrchestrator: React.FC<Props> = ({ storyId, scenes }) => {
   const { index: scrollOffset } = useScrollManager({ setCurrentIndex: () => {} }); // continuous float in "scene units"
+  const { notifyEntranceComplete } = useCharacterAnimation();
 
   // Get current scene meta for direct access to animation states
   const currentMeta = useMemo(() => {
@@ -26,6 +31,18 @@ export const CharacterOrchestrator: React.FC<Props> = ({ storyId, scenes }) => {
   // Extract panel data from meta
   const leftPanel = currentMeta?.panelLeft;
   const rightPanel = currentMeta?.panelRight;
+
+  // Get current scene index for callback coordination
+  const currentSceneIndex = Math.max(0, Math.min(scenes.length - 1, Math.round(scrollOffset)));
+
+  // Create callbacks to notify when entrance completes
+  const handleLeftEntranceComplete = () => {
+    notifyEntranceComplete(currentSceneIndex, 'left');
+  };
+
+  const handleRightEntranceComplete = () => {
+    notifyEntranceComplete(currentSceneIndex, 'right');
+  };
 
 
 
@@ -99,6 +116,7 @@ export const CharacterOrchestrator: React.FC<Props> = ({ storyId, scenes }) => {
           aboutToSwap={leftPanel?.aboutToSwap ?? false}
           animNonce={leftEnterNonce}
           scrollDirection={direction === 'down' ? 'forward' : direction === 'up' ? 'backward' : 'forward'}
+          onEntranceComplete={handleLeftEntranceComplete}
         />
       </div>
 
@@ -116,6 +134,7 @@ export const CharacterOrchestrator: React.FC<Props> = ({ storyId, scenes }) => {
           aboutToSwap={rightPanel?.aboutToSwap ?? false}
           animNonce={rightEnterNonce}
           scrollDirection={direction === 'down' ? 'forward' : direction === 'up' ? 'backward' : 'forward'}
+          onEntranceComplete={handleRightEntranceComplete}
         />
       </div>
     </div>

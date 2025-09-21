@@ -15,6 +15,7 @@ import { CaptionComponent } from "./components/CaptionComponent";
 import { injectPanelMetaFromFlows } from "./characters/adapters/injectPanelMetaFromFlows";
 import { useSceneNavigation } from "./hooks/useSceneNavigation";
 import { useScrollManager } from "./hooks/useScrollManager";
+import { CharacterAnimationProvider } from "./context/CharacterAnimationContext";
 import type { Scene } from "./types/scene";
 import "./components/SnapScroll.css";
 
@@ -85,12 +86,13 @@ const StoryContent: React.FC = () => {
 
   return (
     <PageFactoryProvider>
-      <SnapLayer
-        railRef={railRef}
-        targetIndex={targetIndex}
-        setIsProgrammatic={setIsProgrammatic}
-        currentIndex={index}
-      >
+      <CharacterAnimationProvider>
+        <SnapLayer
+          railRef={railRef}
+          targetIndex={targetIndex}
+          setIsProgrammatic={setIsProgrammatic}
+          currentIndex={index}
+        >
         {/* Layer 1: Hybrid background system */}
         <BackgroundOrchestrator storyId="gingerbread" storyContent={scenes} />
 
@@ -111,7 +113,7 @@ const StoryContent: React.FC = () => {
                 keyId={i.toString()}
                 panelRestricted={(scene as any)?.panelRestricted ?? false}
               >
-                <SceneContentWithNavigation scene={scene} />
+                <SceneContentWithNavigation scene={scene} sceneIndex={i} />
               </FlowLayout>
             </div>
           ))}
@@ -123,7 +125,8 @@ const StoryContent: React.FC = () => {
             <div key={i} data-rail-index={i} />
           ))}
         </div>
-      </SnapLayer>
+        </SnapLayer>
+      </CharacterAnimationProvider>
     </PageFactoryProvider>
   );
 };
@@ -230,7 +233,7 @@ const ImageSceneOrchestrator = React.memo(function ImageSceneOrchestrator({ scen
 });
 
 // SceneContentWithNavigation: thin wrapper to render a scene and navigate to the next scene when it completes
-const SceneContentWithNavigation = React.memo(function SceneContentWithNavigation({ scene }: { scene: Scene }) {
+const SceneContentWithNavigation = React.memo(function SceneContentWithNavigation({ scene, sceneIndex }: { scene: Scene; sceneIndex: number }) {
   // Skip rendering image scenes here since they're handled by ImageSceneOrchestrator
   if (scene.type === 'image') {
     return null;
@@ -248,6 +251,7 @@ const SceneContentWithNavigation = React.memo(function SceneContentWithNavigatio
   return (
     <SceneRenderer
       scene={scene}
+      sceneIndex={sceneIndex}
       // onComplete={handleComplete} // callback the scene triggers when it's done (e.g., after a button pressed)
     />
   );

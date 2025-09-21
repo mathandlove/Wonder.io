@@ -3,14 +3,21 @@
  * Shows text in a speech bubble with character name and background.
  * Also shows a sticky "waiting" peek bubble at the bottom when an AI reply is pending.
  */
+import React, { useState, useEffect } from "react";
 import type { SceneProps } from "../registry";
 import type { CharacterScene as CharacterSceneType } from "../../types/scene";
 import { WaitingBubble } from "../../components/WaitingBubble";
 import { useDialogue } from "../../context/DialogueContext";
 import { CardboardBubble } from "../../components/CardboardBubble";
+import { useCharacterAnimation } from "../../context/CharacterAnimationContext";
 
-export default function CharacterScene({ scene }: SceneProps<CharacterSceneType>) {
+export default function CharacterScene({ scene, sceneIndex }: SceneProps<CharacterSceneType>) {
   const { isWaitingPending } = useDialogue();
+  const { registerEntranceCallback } = useCharacterAnimation();
+
+  // Each scene manages its own bubble ready state
+  const [bubbleReady, setBubbleReady] = useState(false);
+
   // Resolve display name from scene metadata
   const speakerLabel =
     scene.speaker === "left"
@@ -18,6 +25,23 @@ export default function CharacterScene({ scene }: SceneProps<CharacterSceneType>
       : scene.speaker === "right"
       ? scene["right-character"] || "Right"
       : "Narrator";
+
+  // Determine if bubble should be delayed and if it's ready
+  const shouldDelay = scene.speaker === 'left' || scene.speaker === 'right';
+  const isReady = shouldDelay ? bubbleReady : true;
+
+  // Callback for when character entrance completes
+  const handleEntranceComplete = () => {
+    console.log(`🎯 Character entrance completed for ${scene.speaker?.toUpperCase()} speaker, enabling bubble`);
+    setBubbleReady(true);
+  };
+
+  // Register callback when component mounts or dependencies change
+  useEffect(() => {
+    if (shouldDelay && sceneIndex !== undefined) {
+      registerEntranceCallback(sceneIndex, scene.speaker as 'left' | 'right', handleEntranceComplete);
+    }
+  }, [shouldDelay, sceneIndex, scene.speaker, registerEntranceCallback]);
 
   return (
     <div
@@ -33,6 +57,8 @@ export default function CharacterScene({ scene }: SceneProps<CharacterSceneType>
       <CardboardBubble
         side={scene.speaker === 'left' ? 'left' : scene.speaker === 'right' ? 'right' : 'center'}
         speakerLabel={speakerLabel}
+        isDelayed={shouldDelay}
+        isReady={isReady}
       >
         {scene.text}
       </CardboardBubble>
