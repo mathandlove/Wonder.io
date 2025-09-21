@@ -8,6 +8,7 @@ interface CardboardBubbleProps {
   isDelayed?: boolean;
   isReady?: boolean;
   onViewportExit?: () => void; // Callback when bubble leaves viewport
+  onViewportEnter?: () => void; // Callback when bubble enters viewport
 }
 
 export const CardboardBubble: React.FC<CardboardBubbleProps> = ({
@@ -16,7 +17,8 @@ export const CardboardBubble: React.FC<CardboardBubbleProps> = ({
   speakerLabel,
   isDelayed = false,
   isReady = true,
-  onViewportExit
+  onViewportExit,
+  onViewportEnter
 }) => {
   const bubbleRef = useRef<HTMLDivElement>(null);
   const [hasBeenVisible, setHasBeenVisible] = useState(false);
@@ -32,20 +34,27 @@ export const CardboardBubble: React.FC<CardboardBubbleProps> = ({
         const entry = entries[0];
         if (entry.isIntersecting) {
           // Entering viewport
+          console.log(`🔍 CardboardBubble entering viewport - isDelayed: ${isDelayed}, isReady: ${isReady}, hasBeenVisible: ${hasBeenVisible}`);
+          onViewportEnter?.(); // Notify parent that bubble has entered viewport
           if (hasBeenVisible) {
             // Re-entering - reset and wait for entrance coordination if delayed
             console.log('CardboardBubble reset - re-entering viewport');
             if (!isDelayed || isReady) {
+              console.log(`✅ Setting shouldAnimate to true - non-delayed or ready`);
               setShouldAnimate(true);
             } else {
+              console.log(`⏳ Setting shouldAnimate to false - waiting for character entrance`);
               setShouldAnimate(false); // Wait for character entrance to complete
             }
           } else {
             // First time visible
+            console.log('CardboardBubble first time visible');
             setHasBeenVisible(true);
             if (!isDelayed || isReady) {
+              console.log(`✅ Setting shouldAnimate to true - non-delayed or ready (first time)`);
               setShouldAnimate(true);
             } else {
+              console.log(`⏳ Setting shouldAnimate to false - waiting for character entrance (first time)`);
               setShouldAnimate(false); // Wait for character entrance to complete
             }
           }
@@ -64,7 +73,7 @@ export const CardboardBubble: React.FC<CardboardBubbleProps> = ({
     return () => {
       observer.disconnect();
     };
-  }, [hasBeenVisible, isDelayed, isReady, onViewportExit]);
+  }, [hasBeenVisible, isDelayed, isReady, onViewportExit, onViewportEnter]);
 
   // Update animation state when isReady changes (character entrance completes)
   useEffect(() => {

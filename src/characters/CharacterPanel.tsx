@@ -70,17 +70,34 @@ export const CharacterPanel: React.FC<CharacterPanelProps> = ({
     if (!panelElement) return;
 
     const handleAnimationEnd = (event: AnimationEvent) => {
-      // Only trigger callback for the main entrance animation completion (not sub-animations like visibility)
-      if (event.animationName.includes('character-entrance-settle')) {
+      console.log(`🎬 CharacterPanel animation end - animationName: ${event.animationName}, side: ${side}, character: ${characterName}`);
+      // Trigger callback for entrance animations that need to complete
+      if (event.animationName.includes('character-entrance-settle') ||
+          event.animationName.includes('character-bounce') ||
+          event.animationName.includes('character-wiggle')) {
+        console.log(`🎯 Character animation completed - side: ${side}, calling onEntranceComplete`);
         // Call the entrance completion callback
         onEntranceComplete?.();
       }
     };
 
+    const handleAnimationStart = (event: AnimationEvent) => {
+      console.log(`🚀 CharacterPanel animation start - animationName: ${event.animationName}, side: ${side}, character: ${characterName}`);
+      // Trigger callback when speaking or shake animations start (character is ready)
+      if (event.animationName.includes('character-speak') ||
+          event.animationName.includes('character-shake')) {
+        console.log(`💬 Character ready animation started - side: ${side}, calling onEntranceComplete`);
+        // Call the entrance completion callback since character is ready
+        onEntranceComplete?.();
+      }
+    };
+
     panelElement.addEventListener('animationend', handleAnimationEnd);
+    panelElement.addEventListener('animationstart', handleAnimationStart);
 
     return () => {
       panelElement.removeEventListener('animationend', handleAnimationEnd);
+      panelElement.removeEventListener('animationstart', handleAnimationStart);
     };
   }, [side, characterName, phase, animationState, aboutToSwap, scrollDirection, animNonce, onEntranceComplete]);
 

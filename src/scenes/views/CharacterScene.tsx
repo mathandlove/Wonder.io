@@ -32,20 +32,36 @@ export default function CharacterScene({ scene, sceneIndex }: SceneProps<Charact
 
   // Callback for when character entrance completes
   const handleEntranceComplete = () => {
+    console.log(`🎯 Character entrance completed - speaker: ${scene.speaker}, setting bubbleReady to true`);
     setBubbleReady(true);
   };
 
   // Callback for when bubble leaves viewport - reset to wait for entrance again
   const handleBubbleViewportExit = () => {
-    if (shouldDelay) {
-      setBubbleReady(false);
+    console.log(`🔄 Bubble viewport exit - speaker: ${scene.speaker}, setting bubbleReady to false`);
+    setBubbleReady(false); // Reset for all bubbles, will be set back to true appropriately
+  };
+
+  // Callback for when bubble enters viewport - set ready immediately for non-delayed bubbles
+  const handleBubbleViewportEnter = () => {
+    console.log(`📍 Bubble viewport enter - speaker: ${scene.speaker}, shouldDelay: ${shouldDelay}`);
+    if (!shouldDelay) {
+      // For non-delayed bubbles (center/narrator), set ready immediately as if entrance completed
+      console.log(`⚡ Non-delayed bubble - setting bubbleReady to true immediately`);
+      setBubbleReady(true);
     }
   };
 
   // Register callback when component mounts or dependencies change
   useEffect(() => {
+    console.log(`🔧 CharacterScene useEffect - speaker: ${scene.speaker}, shouldDelay: ${shouldDelay}, sceneIndex: ${sceneIndex}`);
     if (shouldDelay && sceneIndex !== undefined) {
+      console.log(`📝 Registering entrance callback for delayed bubble`);
       registerEntranceCallback(sceneIndex, scene.speaker as 'left' | 'right', handleEntranceComplete);
+    } else if (!shouldDelay) {
+      // For non-delayed bubbles (center/narrator), set ready immediately
+      console.log(`⚡ Setting bubbleReady to true for non-delayed bubble`);
+      setBubbleReady(true);
     }
   }, [shouldDelay, sceneIndex, scene.speaker, registerEntranceCallback]);
 
@@ -66,6 +82,7 @@ export default function CharacterScene({ scene, sceneIndex }: SceneProps<Charact
         isDelayed={shouldDelay}
         isReady={isReady}
         onViewportExit={handleBubbleViewportExit}
+        onViewportEnter={handleBubbleViewportEnter}
       >
         {scene.text}
       </CardboardBubble>
