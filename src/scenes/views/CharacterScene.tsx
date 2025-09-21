@@ -27,7 +27,8 @@ export default function CharacterScene({ scene, sceneIndex }: SceneProps<Charact
 
   // Determine if bubble should be delayed and if it's ready
   const shouldDelay = scene.speaker === 'left' || scene.speaker === 'right';
-  const isReady = shouldDelay ? bubbleReady : true;
+  const shouldAnimateImmediately = (scene as any).meta?.bubbleAnimateImmediately || false;
+  const isReady = shouldDelay ? (shouldAnimateImmediately || bubbleReady) : true;
 
   // Callback for when character entrance completes
   const handleEntranceComplete = () => {
@@ -50,40 +51,21 @@ export default function CharacterScene({ scene, sceneIndex }: SceneProps<Charact
 
   // Register callback when component mounts or dependencies change
   useEffect(() => {
-    if (shouldDelay && sceneIndex !== undefined) {
-      // Small delay to ensure callback is registered after component fully mounts
+    if (shouldDelay && !shouldAnimateImmediately && sceneIndex !== undefined) {
+      // Only register entrance callbacks for scenes that need to wait for character entrance
       const timeoutId = setTimeout(() => {
         console.log(`✅ Registering entrance callback for scene ${sceneIndex}, speaker: ${scene.speaker}, text: "${scene.text.substring(0, 20)}..."`);
         registerEntranceCallback(sceneIndex, scene.speaker as 'left' | 'right', handleEntranceComplete);
       }, 10);
 
-      // Auto-trigger fallback: if character is NOT in entering state, show bubble immediately
-      const fallbackTimeoutId = setTimeout(() => {
-        if (!bubbleReady) {
-          // Check if this scene's character panel has entering state
-          const currentScene = scenes[sceneIndex] as any;
-          const panelSide = scene.speaker === 'left' ? 'panelLeft' : 'panelRight';
-          const panelMeta = currentScene?.meta?.[panelSide];
-          const isEntering = panelMeta?.animationState === 'entering';
-
-          if (!isEntering) {
-            console.log(`⏰ FALLBACK: Character not entering for scene ${sceneIndex}, showing bubble immediately`);
-            setBubbleReady(true);
-          } else {
-            console.log(`🎭 WAITING: Character is entering for scene ${sceneIndex}, waiting for entrance animation`);
-          }
-        }
-      }, 100); // Quick check to see if character is entering
-
       return () => {
         clearTimeout(timeoutId);
-        clearTimeout(fallbackTimeoutId);
       };
-    } else if (!shouldDelay) {
-      // For non-delayed bubbles (center/narrator), set ready immediately
+    } else if (!shouldDelay || shouldAnimateImmediately) {
+      // For non-delayed bubbles (center/narrator) or scenes that should animate immediately
       setBubbleReady(true);
     }
-  }, [shouldDelay, sceneIndex, scene.speaker, scene.text, registerEntranceCallback]); // Removed bubbleReady to prevent infinite loop
+  }, [shouldDelay, shouldAnimateImmediately, sceneIndex, scene.speaker, scene.text, registerEntranceCallback]);
 
   return (
     <div
