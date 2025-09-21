@@ -34,33 +34,25 @@ export const CardboardBubble: React.FC<CardboardBubbleProps> = ({
         const entry = entries[0];
         if (entry.isIntersecting) {
           // Entering viewport
-          console.log(`🔍 CardboardBubble entering viewport - isDelayed: ${isDelayed}, isReady: ${isReady}, hasBeenVisible: ${hasBeenVisible}`);
           onViewportEnter?.(); // Notify parent that bubble has entered viewport
           if (hasBeenVisible) {
             // Re-entering - reset and wait for entrance coordination if delayed
-            console.log('CardboardBubble reset - re-entering viewport');
             if (!isDelayed || isReady) {
-              console.log(`✅ Setting shouldAnimate to true - non-delayed or ready`);
               setShouldAnimate(true);
             } else {
-              console.log(`⏳ Setting shouldAnimate to false - waiting for character entrance`);
               setShouldAnimate(false); // Wait for character entrance to complete
             }
           } else {
             // First time visible
-            console.log('CardboardBubble first time visible');
             setHasBeenVisible(true);
             if (!isDelayed || isReady) {
-              console.log(`✅ Setting shouldAnimate to true - non-delayed or ready (first time)`);
               setShouldAnimate(true);
             } else {
-              console.log(`⏳ Setting shouldAnimate to false - waiting for character entrance (first time)`);
               setShouldAnimate(false); // Wait for character entrance to complete
             }
           }
         } else {
           // Leaving viewport
-          console.log('CardboardBubble reset - leaving viewport');
           setShouldAnimate(false);
           onViewportExit?.(); // Notify parent that bubble has left viewport
         }
@@ -98,12 +90,14 @@ export const CardboardBubble: React.FC<CardboardBubbleProps> = ({
   const wrapperStyle = isDelayed ? {
     position: 'absolute',
     bottom: '20px',
-    left: '50%',
-    transform: 'translateX(-50%)',
-    transition: shouldAnimate ? 'all 0.8s ease-out' : 'none',
+    left: 0,
+    right: 0,
+    display: 'flex',
+    justifyContent: side === 'left' ? 'flex-start' : side === 'right' ? 'flex-end' : 'center',
+    transition: shouldAnimate ? 'all 0.4s ease-out' : 'none',
     ...(shouldAnimate ? {
       bottom: '50%',
-      transform: 'translate(-50%, 50%)'
+      transform: 'translateY(50%)'
     } : {})
   } : {};
 
@@ -116,9 +110,6 @@ export const CardboardBubble: React.FC<CardboardBubbleProps> = ({
             <div className={`cardboard-bubble-tail-${side}`}></div>
           )}
           <div className="cardboard-bubble-inner">
-            {speakerLabel && (
-              <h3 className="cardboard-bubble-speaker">{speakerLabel}</h3>
-            )}
             <p className="cardboard-bubble-text">{children}</p>
           </div>
         </div>

@@ -67,17 +67,7 @@ export function DialogueProvider({ children }: { children: React.ReactNode }) {
     // Set user text which will trigger PageFactory to create left-speaker scene
     setUserText(message);
 
-    // Simulate AI processing after user scene is created
-    setTimeout(() => {
-      setIsWaitingPending(true);
-
-      // Simulate AI response after delay
-      setTimeout(() => {
-        const aiResponse = `AI response to: "${message}"`;
-        setAssistantText(aiResponse);
-        setIsWaitingPending(false);
-      }, 500);
-    }, 200);
+    // Don't auto-generate AI response for now
   }, []);
 
   const startAssistantRequest = useCallback(async (prompt: string) => {

@@ -1,9 +1,15 @@
+/* Container for bubble positioning */
+.cardboard-bubble-container {
+  width: fit-content;
+  max-width: 90%; /* Prevent overflow off screen */
+}
+
 /* Cardboard Bubble Base Styles */
 .cardboard-bubble {
   position: relative;
-  width: auto;
+  width: fit-content;
   height: fit-content;
-  min-height: 100px; /* Ensure minimum height for background visibility */
+  min-height: 80px; /* Reduced minimum height */
   overflow: visible;
   padding: 15px;
   background-image: url('/VisualAssets/cardboard.png');
@@ -39,12 +45,12 @@
 /* Inner white/cream text box */
 .cardboard-bubble-inner {
   background: #fdf8e4;
-  padding: 28px;
+  padding: 24px 32px; /* Adjusted padding for better text layout */
   margin: 0;
   border-radius: 15px;
   box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
   position: relative;
-  text-align: center;
+  text-align: left; /* Changed from center to left */
 }
 
 /* Speaker label */
@@ -65,6 +71,7 @@
   color: #333;
   line-height: 1.5;
   text-align: left;
+  white-space: normal; /* Allow natural text wrapping */
 }
 
 /* Speech tail - Left side */
@@ -151,7 +158,7 @@
 
 /* Default animation for immediate bubbles */
 .cardboard-bubble:not(.cardboard-bubble-delayed) {
-  animation: bubble-pop-in 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards;
+  animation: bubble-pop-in 0.25s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards;
 }
 
 /* Delayed bubble starts hidden but keeps all base styles */
@@ -163,7 +170,7 @@
 
 /* Delayed bubble animates in when ready */
 .cardboard-bubble.cardboard-bubble-delayed.cardboard-bubble-show {
-  animation: bubble-pop-in 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards;
+  animation: bubble-pop-in 0.25s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards;
 }
 
 @keyframes bubble-pop-in {
@@ -180,14 +187,10 @@
 /* Responsive adjustments */
 @media (max-width: 768px) {
   .cardboard-bubble {
-    max-width: 90%;
+    max-width: 85%; /* Slightly smaller on mobile */
   }
 
   .cardboard-bubble-text {
     font-size: 18px;
-  }
-
-  .cardboard-bubble-speaker {
-    font-size: 16px;
   }
 }

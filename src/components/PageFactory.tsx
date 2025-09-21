@@ -71,6 +71,14 @@ export function PageFactoryProvider({ children, onSceneAdded }: PageFactoryProvi
       }
     }
 
+    console.log('🏗️ Building character page from current scene:', {
+      currentSceneType: currentScene?.type,
+      extractedLeftChar: leftCharacter,
+      extractedRightChar: rightCharacter,
+      newSpeaker: speaker,
+      textLength: text.length
+    });
+
     return {
       type: "character",
       text,
@@ -100,18 +108,20 @@ export function PageFactoryProvider({ children, onSceneAdded }: PageFactoryProvi
       // Mark as processed IMMEDIATELY to prevent multiple insertions
       setProcessedUserText(userText);
 
-      // Create user scene (left speaker = user)
+      // Create user scene (left speaker = Leo speaking user's text)
       const userScene = createCharacterPage(userText, "left");
+      console.log('📝 Creating USER scene (Leo speaking):', {
+        type: userScene.type,
+        text: userScene.text,
+        speaker: userScene.speaker,
+        leftCharacter: userScene['left-character'],
+        rightCharacter: userScene['right-character'],
+        insertIndex: currentIndex + 1
+      });
 
-      // Create placeholder assistant scene (right speaker = AI) with temporary text
-      const assistantScene = createCharacterPage("...", "right");
-
-      // Insert both scenes at determined positions
+      // Insert ONLY the user scene (no placeholder for assistant)
       const userInsertIndex = currentIndex + 1;
-      const assistantInsertIndex = currentIndex + 2;
-
       insertScene(userScene, userInsertIndex);
-      insertScene(assistantScene, assistantInsertIndex);
 
       // Auto-navigate to the user scene
       setTimeout(() => {
@@ -119,39 +129,36 @@ export function PageFactoryProvider({ children, onSceneAdded }: PageFactoryProvi
       }, 100);
 
       onSceneAdded?.(userScene);
-      onSceneAdded?.(assistantScene);
     }
   }, [userText, turnId, processedUserText]);
 
-  // Update placeholder assistant scene when new assistant text arrives
+  // Create assistant scene when new assistant text arrives
   useEffect(() => {
     if (assistantText && assistantText.trim() && assistantText !== processedAssistantText) {
       // Mark as processed IMMEDIATELY
       setProcessedAssistantText(assistantText);
 
-      // Find the placeholder assistant scene (most recent scene with "..." text and right speaker)
-      const placeholderIndex = scenes.findIndex((scene, index) =>
-        scene.type === 'character' &&
-        scene.text === '...' &&
-        (scene as any).speaker === 'right'
-      );
+      // Create assistant scene (right speaker = AI)
+      const assistantScene = createCharacterPage(assistantText, "right");
+      console.log('🤖 Creating ASSISTANT scene:', {
+        type: assistantScene.type,
+        text: assistantScene.text,
+        speaker: assistantScene.speaker,
+        leftCharacter: assistantScene['left-character'],
+        rightCharacter: assistantScene['right-character'],
+        insertIndex: currentIndex + 1
+      });
 
-      if (placeholderIndex >= 0) {
-        // Create the updated scene with actual assistant text
-        const updatedScene = createCharacterPage(assistantText, "right");
+      // Insert assistant scene after current position
+      const assistantInsertIndex = currentIndex + 1;
+      insertScene(assistantScene, assistantInsertIndex);
 
-        // Replace the placeholder scene
-        setScenes(prevScenes => {
-          const newScenes = [...prevScenes];
-          newScenes[placeholderIndex] = updatedScene;
-          return newScenes;
-        });
+      // Navigate to the assistant scene
+      setTimeout(() => {
+        goToIndex(assistantInsertIndex);
+      }, 100);
 
-        // Navigate to the assistant scene
-        setTimeout(() => {
-          goToIndex(placeholderIndex);
-        }, 100);
-      }
+      onSceneAdded?.(assistantScene);
     }
   }, [assistantText, turnId, processedAssistantText]);
 

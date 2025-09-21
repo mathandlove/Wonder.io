@@ -6,13 +6,10 @@
 import React, { useState, useEffect } from "react";
 import type { SceneProps } from "../registry";
 import type { CharacterScene as CharacterSceneType } from "../../types/scene";
-import { WaitingBubble } from "../../components/WaitingBubble";
-import { useDialogue } from "../../context/DialogueContext";
 import { CardboardBubble } from "../../components/CardboardBubble";
 import { useCharacterAnimation } from "../../context/CharacterAnimationContext";
 
 export default function CharacterScene({ scene, sceneIndex }: SceneProps<CharacterSceneType>) {
-  const { isWaitingPending } = useDialogue();
   const { registerEntranceCallback } = useCharacterAnimation();
 
   // Each scene manages its own bubble ready state
@@ -32,38 +29,37 @@ export default function CharacterScene({ scene, sceneIndex }: SceneProps<Charact
 
   // Callback for when character entrance completes
   const handleEntranceComplete = () => {
-    console.log(`🎯 Character entrance completed - speaker: ${scene.speaker}, setting bubbleReady to true`);
+    console.log(`🎯 handleEntranceComplete called for scene ${sceneIndex}, speaker: ${scene.speaker} - setting bubbleReady to TRUE`);
     setBubbleReady(true);
   };
 
   // Callback for when bubble leaves viewport - reset to wait for entrance again
   const handleBubbleViewportExit = () => {
-    console.log(`🔄 Bubble viewport exit - speaker: ${scene.speaker}, setting bubbleReady to false`);
     setBubbleReady(false); // Reset for all bubbles, will be set back to true appropriately
   };
 
   // Callback for when bubble enters viewport - set ready immediately for non-delayed bubbles
   const handleBubbleViewportEnter = () => {
-    console.log(`📍 Bubble viewport enter - speaker: ${scene.speaker}, shouldDelay: ${shouldDelay}`);
     if (!shouldDelay) {
       // For non-delayed bubbles (center/narrator), set ready immediately as if entrance completed
-      console.log(`⚡ Non-delayed bubble - setting bubbleReady to true immediately`);
       setBubbleReady(true);
     }
   };
 
   // Register callback when component mounts or dependencies change
   useEffect(() => {
-    console.log(`🔧 CharacterScene useEffect - speaker: ${scene.speaker}, shouldDelay: ${shouldDelay}, sceneIndex: ${sceneIndex}`);
     if (shouldDelay && sceneIndex !== undefined) {
-      console.log(`📝 Registering entrance callback for delayed bubble`);
-      registerEntranceCallback(sceneIndex, scene.speaker as 'left' | 'right', handleEntranceComplete);
+      // Small delay to ensure callback is registered after component fully mounts
+      const timeoutId = setTimeout(() => {
+        console.log(`✅ Registering entrance callback for scene ${sceneIndex}, speaker: ${scene.speaker}, text: "${scene.text.substring(0, 20)}..."`);
+        registerEntranceCallback(sceneIndex, scene.speaker as 'left' | 'right', handleEntranceComplete);
+      }, 10);
+      return () => clearTimeout(timeoutId);
     } else if (!shouldDelay) {
       // For non-delayed bubbles (center/narrator), set ready immediately
-      console.log(`⚡ Setting bubbleReady to true for non-delayed bubble`);
       setBubbleReady(true);
     }
-  }, [shouldDelay, sceneIndex, scene.speaker, registerEntranceCallback]);
+  }, [shouldDelay, sceneIndex, scene.speaker, scene.text, registerEntranceCallback]); // Added scene.text to dependencies
 
   return (
     <div
@@ -86,21 +82,6 @@ export default function CharacterScene({ scene, sceneIndex }: SceneProps<Charact
       >
         {scene.text}
       </CardboardBubble>
-
-      {/* Waiting bubble near the bottom while we're waiting for AI */}
-      {isWaitingPending && (
-        <div
-          style={{
-            position: "absolute",
-            bottom: 80,
-            left: "50%",
-            transform: "translateX(-50%)",
-            pointerEvents: "none", // so it does not intercept clicks
-          }}
-        >
-          <WaitingBubble />
-        </div>
-      )}
     </div>
   );
 }

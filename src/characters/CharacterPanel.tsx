@@ -39,24 +39,32 @@ export const CharacterPanel: React.FC<CharacterPanelProps> = ({
   const getCurrentPhase = (): Phase => {
     if (!visible || !characterName) return 'hidden';
 
-    // Always show entering animation when animationState is 'entering'
-    // This ensures both characters animate during swaps
+    // Check for speaking state first (takes priority)
+    if (animationState === 'speaking') {
+      return 'speaking';
+    }
+
+    // Backward scroll: special handling
+    if (scrollDirection === 'backward') {
+      if (aboutToSwap) {
+        return 'entering';
+      }
+      // When scrolling backward with entering state but no swap,
+      // the character is already present and should be speaking if they were entering
+      if (animationState === 'entering') {
+        // Character was "entering" but since we're going backward,
+        // they're already there and should be speaking
+        return 'speaking';
+      }
+    }
+
+    // Forward scroll: use animationState normally
     if (animationState === 'entering') {
       return 'entering';
     }
 
-    // Backward scroll: also trigger entering animation on 'aboutToSwap'
-    if (scrollDirection === 'backward' && aboutToSwap) {
-      return 'entering';
-    }
-
-    switch (animationState) {
-      case 'speaking':
-        return 'speaking';
-      case 'idle':
-      default:
-        return 'idle';
-    }
+    // Default to idle
+    return 'idle';
   };
 
   const phase = getCurrentPhase();
@@ -70,25 +78,27 @@ export const CharacterPanel: React.FC<CharacterPanelProps> = ({
     if (!panelElement) return;
 
     const handleAnimationEnd = (event: AnimationEvent) => {
-      console.log(`🎬 CharacterPanel animation end - animationName: ${event.animationName}, side: ${side}, character: ${characterName}`);
       // Trigger callback for entrance animations that need to complete
       if (event.animationName.includes('character-entrance-settle') ||
           event.animationName.includes('character-bounce') ||
           event.animationName.includes('character-wiggle')) {
-        console.log(`🎯 Character animation completed - side: ${side}, calling onEntranceComplete`);
         // Call the entrance completion callback
         onEntranceComplete?.();
       }
     };
 
     const handleAnimationStart = (event: AnimationEvent) => {
-      console.log(`🚀 CharacterPanel animation start - animationName: ${event.animationName}, side: ${side}, character: ${characterName}`);
-      // Trigger callback when speaking or shake animations start (character is ready)
-      if (event.animationName.includes('character-speak') ||
-          event.animationName.includes('character-shake')) {
-        console.log(`💬 Character ready animation started - side: ${side}, calling onEntranceComplete`);
+      // For speak animations, trigger immediately
+      if (event.animationName.includes('character-speak')) {
         // Call the entrance completion callback since character is ready
         onEntranceComplete?.();
+      }
+      // For shake animations, add a small delay to ensure bubble is ready
+      if (event.animationName.includes('character-shake')) {
+        // Small delay to avoid race condition with bubble initialization
+        setTimeout(() => {
+          onEntranceComplete?.();
+        }, 50); // 50ms delay to ensure bubble component is mounted and ready
       }
     };
 
@@ -99,7 +109,7 @@ export const CharacterPanel: React.FC<CharacterPanelProps> = ({
       panelElement.removeEventListener('animationend', handleAnimationEnd);
       panelElement.removeEventListener('animationstart', handleAnimationStart);
     };
-  }, [side, characterName, phase, animationState, aboutToSwap, scrollDirection, animNonce, onEntranceComplete]);
+  }, [side, characterName, onEntranceComplete]); // Only re-setup when essential props change
 
   // Panel container always renders as independent layer
 
@@ -166,6 +176,30 @@ export const CharacterPanel: React.FC<CharacterPanelProps> = ({
 
       {displayCharacter ? (
         <div className="story-character-content">
+          {/* Debug text above character - DISABLED */}
+          {false && (
+            <div style={{
+              position: 'absolute',
+              top: '20px',
+              left: '50%',
+              transform: 'translateX(-50%)',
+              background: 'rgba(0, 0, 0, 0.8)',
+              color: '#0ff',
+              padding: '8px 12px',
+              borderRadius: '4px',
+              fontSize: '12px',
+              fontFamily: 'monospace',
+              whiteSpace: 'pre',
+              zIndex: 1000,
+              pointerEvents: 'none'
+            }}>
+              {`State: ${animationState}\nPhase: ${phase}\nChar: ${characterName}\nSwap: ${aboutToSwap}\nDir: ${scrollDirection}\nTrigger: ${
+                scrollDirection === 'backward'
+                  ? (aboutToSwap ? 'swap→entering' : 'none (backward)')
+                  : (animationState === 'entering' ? 'entering' : 'none')
+              }`}
+            </div>
+          )}
           <div
             key={`${characterName}-${animNonce}`} // Key changes to force re-render and restart animation
             className={getCardClasses()}
