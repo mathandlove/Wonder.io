@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import './CardboardBubble.css';
 
 interface CardboardBubbleProps {
@@ -7,6 +7,7 @@ interface CardboardBubbleProps {
   speakerLabel?: string;
   isDelayed?: boolean;
   isReady?: boolean;
+  onViewportExit?: () => void; // Callback when bubble leaves viewport
 }
 
 export const CardboardBubble: React.FC<CardboardBubbleProps> = ({
@@ -14,17 +15,72 @@ export const CardboardBubble: React.FC<CardboardBubbleProps> = ({
   children,
   speakerLabel,
   isDelayed = false,
-  isReady = true
+  isReady = true,
+  onViewportExit
 }) => {
+  const bubbleRef = useRef<HTMLDivElement>(null);
+  const [hasBeenVisible, setHasBeenVisible] = useState(false);
+  const [shouldAnimate, setShouldAnimate] = useState(!isDelayed || isReady);
+
+  // Viewport detection for reset and animation control
+  useEffect(() => {
+    const bubbleElement = bubbleRef.current;
+    if (!bubbleElement) return;
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        const entry = entries[0];
+        if (entry.isIntersecting) {
+          // Entering viewport
+          if (hasBeenVisible) {
+            // Re-entering - reset and wait for entrance coordination if delayed
+            console.log('CardboardBubble reset - re-entering viewport');
+            if (!isDelayed || isReady) {
+              setShouldAnimate(true);
+            } else {
+              setShouldAnimate(false); // Wait for character entrance to complete
+            }
+          } else {
+            // First time visible
+            setHasBeenVisible(true);
+            if (!isDelayed || isReady) {
+              setShouldAnimate(true);
+            } else {
+              setShouldAnimate(false); // Wait for character entrance to complete
+            }
+          }
+        } else {
+          // Leaving viewport
+          console.log('CardboardBubble reset - leaving viewport');
+          setShouldAnimate(false);
+          onViewportExit?.(); // Notify parent that bubble has left viewport
+        }
+      },
+      { threshold: 0.1 }
+    );
+
+    observer.observe(bubbleElement);
+
+    return () => {
+      observer.disconnect();
+    };
+  }, [hasBeenVisible, isDelayed, isReady, onViewportExit]);
+
+  // Update animation state when isReady changes (character entrance completes)
+  useEffect(() => {
+    if (isDelayed && isReady) {
+      setShouldAnimate(true);
+    }
+  }, [isReady, isDelayed]);
   const bubbleClass = side === 'center'
     ? 'cardboard-bubble-center'
     : `cardboard-bubble-${side}`;
 
   const showTail = side === 'left' || side === 'right';
 
-  // Build class names
+  // Build class names with viewport-driven animation control
   const delayedClasses = isDelayed
-    ? `cardboard-bubble-delayed ${isReady ? 'cardboard-bubble-show' : ''}`
+    ? `cardboard-bubble-delayed ${shouldAnimate ? 'cardboard-bubble-show' : ''}`
     : '';
 
   const finalClassName = `cardboard-bubble ${delayedClasses} ${bubbleClass}`.trim();
@@ -35,8 +91,8 @@ export const CardboardBubble: React.FC<CardboardBubbleProps> = ({
     bottom: '20px',
     left: '50%',
     transform: 'translateX(-50%)',
-    transition: isReady ? 'all 0.8s ease-out' : 'none',
-    ...(isReady ? {
+    transition: shouldAnimate ? 'all 0.8s ease-out' : 'none',
+    ...(shouldAnimate ? {
       bottom: '50%',
       transform: 'translate(-50%, 50%)'
     } : {})
@@ -44,7 +100,7 @@ export const CardboardBubble: React.FC<CardboardBubbleProps> = ({
 
 
   return (
-    <div style={wrapperStyle}>
+    <div ref={bubbleRef} style={wrapperStyle}>
       <div className="cardboard-bubble-container">
         <div className={finalClassName}>
           {showTail && (

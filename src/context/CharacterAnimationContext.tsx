@@ -12,7 +12,6 @@ export const CharacterAnimationProvider: React.FC<{ children: React.ReactNode }>
   const [callbacks, setCallbacks] = useState<Record<number, Record<string, () => void>>>({});
 
   const registerEntranceCallback = useCallback((sceneIndex: number, side: 'left' | 'right', callback: () => void) => {
-    console.log(`📝 Registering entrance callback for scene ${sceneIndex}, ${side.toUpperCase()} side`);
     setCallbacks(prev => ({
       ...prev,
       [sceneIndex]: {
@@ -23,7 +22,6 @@ export const CharacterAnimationProvider: React.FC<{ children: React.ReactNode }>
   }, []);
 
   const notifyEntranceComplete = useCallback((sceneIndex: number, side: 'left' | 'right') => {
-    console.log(`🎯 Notifying entrance complete for scene ${sceneIndex}, ${side.toUpperCase()} side`);
     const callback = callbacks[sceneIndex]?.[side];
     if (callback) {
       callback();

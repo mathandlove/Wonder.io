@@ -70,19 +70,8 @@ export const CharacterPanel: React.FC<CharacterPanelProps> = ({
     if (!panelElement) return;
 
     const handleAnimationEnd = (event: AnimationEvent) => {
-      // Only log the main entrance animation completion (not sub-animations like visibility)
+      // Only trigger callback for the main entrance animation completion (not sub-animations like visibility)
       if (event.animationName.includes('character-entrance-settle')) {
-        console.log(`🎬 Entering Animation End Detected:`, {
-          side: side.toUpperCase(),
-          character: characterName,
-          animationName: event.animationName,
-          phase: phase,
-          animationState: animationState,
-          aboutToSwap: aboutToSwap,
-          scrollDirection: scrollDirection,
-          animNonce: animNonce
-        });
-
         // Call the entrance completion callback
         onEntranceComplete?.();
       }

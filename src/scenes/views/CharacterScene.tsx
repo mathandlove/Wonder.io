@@ -32,8 +32,14 @@ export default function CharacterScene({ scene, sceneIndex }: SceneProps<Charact
 
   // Callback for when character entrance completes
   const handleEntranceComplete = () => {
-    console.log(`🎯 Character entrance completed for ${scene.speaker?.toUpperCase()} speaker, enabling bubble`);
     setBubbleReady(true);
+  };
+
+  // Callback for when bubble leaves viewport - reset to wait for entrance again
+  const handleBubbleViewportExit = () => {
+    if (shouldDelay) {
+      setBubbleReady(false);
+    }
   };
 
   // Register callback when component mounts or dependencies change
@@ -59,6 +65,7 @@ export default function CharacterScene({ scene, sceneIndex }: SceneProps<Charact
         speakerLabel={speakerLabel}
         isDelayed={shouldDelay}
         isReady={isReady}
+        onViewportExit={handleBubbleViewportExit}
       >
         {scene.text}
       </CardboardBubble>
