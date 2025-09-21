@@ -1,0 +1,191 @@
+/* Cardboard Bubble Base Styles */
+.cardboard-bubble {
+  position: relative;
+  width: auto;
+  height: fit-content;
+  max-width: 500px;
+  overflow: visible;
+  padding: 15px;
+  background-image: url('/VisualAssets/cardboard.png');
+  background-size: cover;
+  background-repeat: no-repeat;
+  background-position: center;
+  border-radius: 25px;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+  transform-origin: center center;
+}
+
+/* Center positioning (default for character scenes) */
+.cardboard-bubble-center {
+  margin: 0 auto;
+}
+
+/* Left side positioning */
+.cardboard-bubble-left {
+  align-self: flex-start;
+  margin-left: 18px;
+  margin-right: auto;
+}
+
+/* Right side positioning */
+.cardboard-bubble-right {
+  align-self: flex-end;
+  margin-left: auto;
+  margin-right: 18px;
+}
+
+/* Inner white/cream text box */
+.cardboard-bubble-inner {
+  background: #fdf8e4;
+  padding: 28px;
+  margin: 0;
+  border-radius: 15px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+  position: relative;
+  text-align: center;
+}
+
+/* Speaker label */
+.cardboard-bubble-speaker {
+  margin: 0;
+  margin-bottom: 0.75rem;
+  color: #333;
+  font-family: 'Nunito', sans-serif;
+  font-size: 18px;
+  font-weight: bold;
+}
+
+/* Text content */
+.cardboard-bubble-text {
+  margin: 0;
+  font-size: 22px;
+  font-family: 'Nunito', sans-serif;
+  color: #333;
+  line-height: 1.5;
+  text-align: left;
+}
+
+/* Speech tail - Left side */
+.cardboard-bubble-tail-left {
+  position: absolute;
+  left: -20px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 0;
+  height: 0;
+}
+
+/* Speech tail - Right side */
+.cardboard-bubble-tail-right {
+  position: absolute;
+  right: -20px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 0;
+  height: 0;
+}
+
+/* Cardboard backing triangle - Left side */
+.cardboard-bubble-tail-left::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: -15px;
+  width: 28px;
+  height: 30px;
+  background-image: url('/VisualAssets/cardboard.png');
+  background-size: cover;
+  background-repeat: no-repeat;
+  background-position: center;
+  clip-path: polygon(100% 0, 100% 100%, 0 50%);
+  z-index: 1;
+}
+
+/* Cardboard backing triangle - Right side */
+.cardboard-bubble-tail-right::before {
+  content: '';
+  position: absolute;
+  right: 0;
+  top: -15px;
+  width: 28px;
+  height: 30px;
+  background-image: url('/VisualAssets/cardboard.png');
+  background-size: cover;
+  background-repeat: no-repeat;
+  background-position: center;
+  clip-path: polygon(0 0, 0 100%, 100% 50%);
+  z-index: 1;
+}
+
+/* White triangle pointer for left bubbles */
+.cardboard-bubble-left .cardboard-bubble-inner::after {
+  content: '';
+  position: absolute;
+  left: -20px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 0;
+  height: 0;
+  border-style: solid;
+  border-width: 15px 28px 15px 0;
+  border-color: transparent #fdf8e4 transparent transparent;
+  z-index: 2;
+}
+
+/* White triangle pointer for right bubbles */
+.cardboard-bubble-right .cardboard-bubble-inner::after {
+  content: '';
+  position: absolute;
+  right: -20px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 0;
+  height: 0;
+  border-style: solid;
+  border-width: 15px 0 15px 28px;
+  border-color: transparent transparent transparent #fdf8e4;
+  z-index: 2;
+}
+
+/* Default animation for immediate bubbles */
+.cardboard-bubble:not(.cardboard-bubble-delayed) {
+  animation: bubble-pop-in 0.5s cubic-bezier(0.68, -0.55, 0.265, 1.55) forwards;
+}
+
+/* Delayed bubble starts hidden but keeps all base styles */
+.cardboard-bubble.cardboard-bubble-delayed {
+  opacity: 0;
+  transform: scale(0.8);
+  animation: none; /* Override default animation */
+}
+
+/* Delayed bubble animates in when ready */
+.cardboard-bubble.cardboard-bubble-delayed.cardboard-bubble-show {
+  animation: bubble-pop-in 0.5s cubic-bezier(0.68, -0.55, 0.265, 1.55) forwards;
+}
+
+@keyframes bubble-pop-in {
+  0% {
+    opacity: 0;
+    transform: scale(0.8);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .cardboard-bubble {
+    max-width: 90%;
+  }
+
+  .cardboard-bubble-text {
+    font-size: 18px;
+  }
+
+  .cardboard-bubble-speaker {
+    font-size: 16px;
+  }
+}

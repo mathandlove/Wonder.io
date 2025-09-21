@@ -1,11 +1,10 @@
-import React, { useEffect, useMemo, useState, useRef, useLayoutEffect } from "react";
+import React, { useEffect, useMemo, useState, useLayoutEffect, useCallback } from "react";
 import { useScrollManager } from "../hooks/useScrollManager";
 import type { Scene } from "../types/scene";
 import type { PanelRange } from "./types";
 import { buildPanelRangesFromScenes, NOCHARACTER } from "./buildPanelRangesFromScenes";
 import { CharacterPanel } from "./CharacterPanel";
 
-const DEFAULT_GUTTER = 280; // px; tune for your design
 
 type PanelState = {
   visible: boolean;
@@ -60,7 +59,7 @@ export const CharacterOrchestrator: React.FC<Props> = ({ storyId, scenes }) => {
   React.useEffect(() => { lastRoundedRef.current = rounded; }, [rounded]);
 
   // Helper function to handle character transitions
-  const transitionCharacter = (
+  const transitionCharacter = useCallback((
     side: 'left' | 'right',
     targetCharacter: string | null,
     targetVisible: boolean,
@@ -88,7 +87,7 @@ export const CharacterOrchestrator: React.FC<Props> = ({ storyId, scenes }) => {
       transitioning: isCharacterChanging,
       exiting: false
     });
-  };
+  }, [leftPanel, rightPanel]);
 
   // Handle active range changes
   useEffect(() => {
@@ -107,11 +106,11 @@ export const CharacterOrchestrator: React.FC<Props> = ({ storyId, scenes }) => {
         !!active.right?.speaking
       );
     } else {
-      // No active range - keep current characters but hide panels
-      transitionCharacter('left', leftPanel.character, false);
-      transitionCharacter('right', rightPanel.character, false);
+      // No active range - hide panels
+      transitionCharacter('left', null, false);
+      transitionCharacter('right', null, false);
     }
-  }, [active]);
+  }, [active, transitionCharacter]);
 
   // Track when we've scrolled to a new scene and trigger animation restart
   useEffect(() => {
@@ -141,17 +140,12 @@ export const CharacterOrchestrator: React.FC<Props> = ({ storyId, scenes }) => {
     }
   }, [scrollOffset, leftPanel.transitioning, rightPanel.transitioning, prevSceneIndex, direction]);
 
-  // Generate change keys for character/pose changes
-  const changeKeys = useMemo(() => ({
-    leftKey: `${leftPanel.character ?? 'none'}-default`,
-    rightKey: `${rightPanel.character ?? 'none'}-default`
-  }), [leftPanel.character, rightPanel.character]);
 
   // Publish panel widths as CSS variables to constrain main content
   useLayoutEffect(() => {
     const updatePanelWidths = () => {
       const currentSceneIndex = Math.max(0, Math.min(scenes.length - 1, Math.round(scrollOffset)));
-      const currentScene = scenes[currentSceneIndex] as any;
+      const currentScene = scenes[currentSceneIndex] as Scene & { panelRestricted?: boolean };
       const shouldShowPanels = currentScene?.panelRestricted ?? false;
 
       // Always calculate panel widths to constrain center to 600px
@@ -185,8 +179,8 @@ export const CharacterOrchestrator: React.FC<Props> = ({ storyId, scenes }) => {
           storyId={storyId}
           animationState={leftPanel.transitioning ? 'entering' : (leftPanel.speaking ? 'speaking' : 'idle')}
           aboutToSwap={!!leftPanel.transitioning}
-          scrollDirection={direction === 'down' ? 'forward' : 'backward'}
           animNonce={leftEnterNonce}
+          {...({ scrollDirection: direction === 'down' ? 'forward' : 'backward' } as any)}
         />
       </div>
 
@@ -200,8 +194,8 @@ export const CharacterOrchestrator: React.FC<Props> = ({ storyId, scenes }) => {
           storyId={storyId}
           animationState={rightPanel.transitioning ? 'entering' : (rightPanel.speaking ? 'speaking' : 'idle')}
           aboutToSwap={!!rightPanel.transitioning}
-          scrollDirection={direction === 'down' ? 'forward' : 'backward'}
           animNonce={rightEnterNonce}
+          {...({ scrollDirection: direction === 'down' ? 'forward' : 'backward' } as any)}
         />
       </div>
     </div>

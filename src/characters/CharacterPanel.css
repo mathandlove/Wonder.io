@@ -24,7 +24,6 @@
   display: flex;
   align-items: flex-start;
   pointer-events: none;
-  /*background: rgba(255, 0, 0, 0.3);  Red background for debugging */
 }
 
 /* Left panel: push characters to the right edge */
@@ -44,8 +43,6 @@
   padding: 0;
   margin: 0;
 }
-
-/* Single character element positioning */
 
 .story-character-cardboard {
   position: relative;
@@ -86,61 +83,24 @@
   transform-origin: center 150vh;
 }
 
-
-/* Speaking jiggle animations - based on main-reference */
+/* Speaking jiggle animations */
 .story-character-speaking {
   animation: character-shake 1s ease-in-out 1;
 }
 
 .story-character-speaking-right {
-  animation: character-shake-right 1s ease-in-out 1;
+  animation: character-shake 1s ease-in-out 1;
 }
 
 @keyframes character-shake {
-  0% {
+  0%, 33.33%, 66.67%, 100% {
     transform: rotate(0deg);
   }
-  16.67% {
+  16.67%, 83.33% {
     transform: rotate(-5deg);
-  }
-  33.33% {
-    transform: rotate(0deg);
   }
   50% {
     transform: rotate(5deg);
-  }
-  66.67% {
-    transform: rotate(0deg);
-  }
-  83.33% {
-    transform: rotate(-5deg);
-  }
-  100% {
-    transform: rotate(0deg);
-  }
-}
-
-@keyframes character-shake-right {
-  0% {
-    transform: rotate(0deg);
-  }
-  16.67% {
-    transform: rotate(-5deg);
-  }
-  33.33% {
-    transform: rotate(0deg);
-  }
-  50% {
-    transform: rotate(5deg);
-  }
-  66.67% {
-    transform: rotate(0deg);
-  }
-  83.33% {
-    transform: rotate(-5deg);
-  }
-  100% {
-    transform: rotate(0deg);
   }
 }
 
@@ -153,16 +113,6 @@
 .story-character-panel.story-character-right.entering {
   transform-origin: center calc(100% + 300px);
   animation: character-entrance-settle-right 1600ms ease-in-out forwards;
-}
-
-.story-character-cardboard.exiting-left {
-  transform-origin: center calc(100% + 300px);
-  animation: character-exit-left 400ms ease-in forwards;
-}
-
-.story-character-cardboard.exiting-right {
-  transform-origin: center calc(100% + 300px);
-  animation: character-exit-right 400ms ease-in forwards;
 }
 
 .story-character-cardboard.idle {
@@ -183,15 +133,12 @@
 
 @keyframes first-half-visibility {
   0% { opacity: 1; }
-  30% { opacity: 0; }
-  100% { opacity: 0; }
+  30%, 100% { opacity: 0; }
 }
 
 @keyframes second-half-visibility {
-  0% { opacity: 0; }
-  30% { opacity: 0; }
-  50% { opacity: 1; }
-  100% { opacity: 1; }
+  0%, 30% { opacity: 0; }
+  50%, 100% { opacity: 1; }
 }
 
 /* Complex entrance animations with exit-switch-enter sequence */
@@ -276,28 +223,5 @@
   }
   100% {
     transform: translateY(0) translateX(0) rotate(0deg) scale(1);
-  }
-}
-
-/* Exit animations - character sliding out */
-@keyframes character-exit-left {
-  0% {
-    transform: translateY(0) translateX(0) rotate(0deg) scale(1);
-    opacity: 1;
-  }
-  100% {
-    transform: translateY(20vh) translateX(-40vw) rotate(-15deg) scale(0.9);
-    opacity: 0;
-  }
-}
-
-@keyframes character-exit-right {
-  0% {
-    transform: translateY(0) translateX(0) rotate(0deg) scale(1);
-    opacity: 1;
-  }
-  100% {
-    transform: translateY(20vh) translateX(40vw) rotate(15deg) scale(0.9);
-    opacity: 0;
   }
 }
