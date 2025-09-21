@@ -121,22 +121,6 @@ export const CharacterPanel: React.FC<CharacterPanelProps> = ({
     <div
       key={`panel-${characterName}-${animNonce}`}
       className={`story-character-panel story-character-${side} ${phase === 'entering' ? 'entering' : ''}`}>
-      {/* Debug text */}
-      <div style={{
-        position: 'absolute',
-        top: '-40px',
-        left: '50%',
-        transform: 'translateX(-50%)',
-        backgroundColor: 'rgba(0, 0, 0, 0.8)',
-        color: 'white',
-        padding: '4px 8px',
-        borderRadius: '4px',
-        fontSize: '12px',
-        zIndex: 1000,
-        whiteSpace: 'nowrap'
-      }}>
-        {side.toUpperCase()}: {phase} | {animationState} | {aboutToSwap ? 'SWAP' : 'NO-SWAP'} | {scrollDirection?.toUpperCase()} | {characterName}
-      </div>
 
       {displayCharacter ? (
         <div className="story-character-content">

@@ -3,16 +3,18 @@
   position: relative;
   width: auto;
   height: fit-content;
-  max-width: 500px;
+  min-height: 100px; /* Ensure minimum height for background visibility */
   overflow: visible;
   padding: 15px;
   background-image: url('/VisualAssets/cardboard.png');
   background-size: cover;
   background-repeat: no-repeat;
   background-position: center;
+  background-color: #d4b896; /* Fallback color if image doesn't load */
   border-radius: 25px;
   box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
   transform-origin: center center;
+  box-sizing: border-box; /* Include padding in width calculation */
 }
 
 /* Center positioning (default for character scenes) */
@@ -23,15 +25,15 @@
 /* Left side positioning */
 .cardboard-bubble-left {
   align-self: flex-start;
-  margin-left: 18px;
-  margin-right: auto;
+  margin-left: 30px; /* Account for speech tail */
+  margin-right: 10px;
 }
 
 /* Right side positioning */
 .cardboard-bubble-right {
   align-self: flex-end;
-  margin-left: auto;
-  margin-right: 18px;
+  margin-left: 10px;
+  margin-right: 30px; /* Account for speech tail */
 }
 
 /* Inner white/cream text box */
@@ -149,7 +151,7 @@
 
 /* Default animation for immediate bubbles */
 .cardboard-bubble:not(.cardboard-bubble-delayed) {
-  animation: bubble-pop-in 0.5s cubic-bezier(0.68, -0.55, 0.265, 1.55) forwards;
+  animation: bubble-pop-in 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards;
 }
 
 /* Delayed bubble starts hidden but keeps all base styles */
@@ -161,7 +163,7 @@
 
 /* Delayed bubble animates in when ready */
 .cardboard-bubble.cardboard-bubble-delayed.cardboard-bubble-show {
-  animation: bubble-pop-in 0.5s cubic-bezier(0.68, -0.55, 0.265, 1.55) forwards;
+  animation: bubble-pop-in 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards;
 }
 
 @keyframes bubble-pop-in {

@@ -7,6 +7,7 @@ import type { SceneProps } from "../registry";
 import type { CharacterScene as CharacterSceneType } from "../../types/scene";
 import { WaitingBubble } from "../../components/WaitingBubble";
 import { useDialogue } from "../../context/DialogueContext";
+import { CardboardBubble } from "../../components/CardboardBubble";
 
 export default function CharacterScene({ scene }: SceneProps<CharacterSceneType>) {
   const { isWaitingPending } = useDialogue();
@@ -24,25 +25,17 @@ export default function CharacterScene({ scene }: SceneProps<CharacterSceneType>
         height: "100vh",
         display: "flex",
         alignItems: "center",
-        justifyContent: "center",
-        padding: "2rem",
+        justifyContent: scene.speaker === 'left' ? 'flex-start' : scene.speaker === 'right' ? 'flex-end' : 'center',
         position: "relative",
       }}
     >
       {/* Main character speech bubble */}
-      <div
-        style={{
-          background: "rgba(255, 255, 255, 0.95)",
-          padding: "1.5rem 2rem",
-          borderRadius: 16,
-          textAlign: "center",
-          border: "2px solid #e6e6e6",
-          boxShadow: "0 10px 30px rgba(0,0,0,0.12)",
-        }}
+      <CardboardBubble
+        side={scene.speaker === 'left' ? 'left' : scene.speaker === 'right' ? 'right' : 'center'}
+        speakerLabel={speakerLabel}
       >
-        <h3 style={{ margin: 0, marginBottom: "0.75rem", color: "#333" }}>{speakerLabel}</h3>
-        <p style={{ fontSize: "1.125rem", lineHeight: 1.5, color: "#444", margin: 0 }}>{scene.text}</p>
-      </div>
+        {scene.text}
+      </CardboardBubble>
 
       {/* Waiting bubble near the bottom while we're waiting for AI */}
       {isWaitingPending && (

@@ -45,6 +45,7 @@ export const CardboardBubble: React.FC<CardboardBubbleProps> = ({
 
   return (
     <div style={wrapperStyle}>
+      <div className="cardboard-bubble-container">
         <div className={finalClassName}>
           {showTail && (
             <div className={`cardboard-bubble-tail-${side}`}></div>
@@ -57,5 +58,6 @@ export const CardboardBubble: React.FC<CardboardBubbleProps> = ({
           </div>
         </div>
       </div>
-    );
+    </div>
+  );
   };

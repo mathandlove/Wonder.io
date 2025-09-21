@@ -63,14 +63,11 @@ export const CharacterOrchestrator: React.FC<Props> = ({ storyId, scenes }) => {
   // Publish panel widths as CSS variables to constrain main content
   useLayoutEffect(() => {
     const updatePanelWidths = () => {
-      const currentSceneIndex = Math.max(0, Math.min(scenes.length - 1, Math.round(scrollOffset)));
-      const currentScene = scenes[currentSceneIndex] as Scene & { panelRestricted?: boolean };
-      const shouldShowPanels = currentScene?.panelRestricted ?? false;
 
       // Always calculate panel widths to constrain center to 600px
       const panelWidth = Math.max(280, (window.innerWidth - 600) / 2);
-      const leftWidth = shouldShowPanels ? `${panelWidth}px` : "0px";
-      const rightWidth = shouldShowPanels ? `${panelWidth}px` : "0px";
+      const leftWidth = `${panelWidth}px`; // Always apply panel width for consistent speech bubble sizing
+      const rightWidth = `${panelWidth}px`; // Always apply panel width for consistent speech bubble sizing
 
       document.documentElement.style.setProperty("--panel-left-width", leftWidth);
       document.documentElement.style.setProperty("--panel-right-width", rightWidth);
