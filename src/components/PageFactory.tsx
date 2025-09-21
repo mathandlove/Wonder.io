@@ -121,11 +121,11 @@ export function PageFactoryProvider({ children, onSceneAdded }: PageFactoryProvi
         speaker: userScene.speaker,
         leftCharacter: userScene['left-character'],
         rightCharacter: userScene['right-character'],
-        insertIndex: currentIndex + 1
+        insertIndex: scenes.length
       });
 
-      // Insert ONLY the user scene (no placeholder for assistant)
-      const userInsertIndex = currentIndex + 1;
+      // Insert at END of story (sequential like main-reference)
+      const userInsertIndex = scenes.length;
       insertScene(userScene, userInsertIndex);
 
       // Auto-navigate to the user scene
@@ -135,7 +135,7 @@ export function PageFactoryProvider({ children, onSceneAdded }: PageFactoryProvi
 
       onSceneAdded?.(userScene);
     }
-  }, [userText, turnId, processedUserText]);
+  }, [userText, turnId, processedUserText, scenes.length]);
 
   // Create assistant scene when new assistant text arrives
   useEffect(() => {
@@ -151,11 +151,11 @@ export function PageFactoryProvider({ children, onSceneAdded }: PageFactoryProvi
         speaker: assistantScene.speaker,
         leftCharacter: assistantScene['left-character'],
         rightCharacter: assistantScene['right-character'],
-        insertIndex: currentIndex + 1
+        insertIndex: scenes.length
       });
 
-      // Insert assistant scene after current position
-      const assistantInsertIndex = currentIndex + 1;
+      // Insert at END of story (sequential after user scene)
+      const assistantInsertIndex = scenes.length;
       insertScene(assistantScene, assistantInsertIndex);
 
       // Navigate to the assistant scene
@@ -165,7 +165,7 @@ export function PageFactoryProvider({ children, onSceneAdded }: PageFactoryProvi
 
       onSceneAdded?.(assistantScene);
     }
-  }, [assistantText, turnId, processedAssistantText]);
+  }, [assistantText, turnId, processedAssistantText, scenes.length]);
 
   const contextValue: PageFactoryContextType = {
     createCharacterPage,
