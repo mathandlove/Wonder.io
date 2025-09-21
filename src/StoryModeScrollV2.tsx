@@ -107,8 +107,11 @@ const StoryContent: React.FC = () => {
 
         {/* Layer 2: Document flow content with scroll snap targets */}
         <div style={{ position: "relative" }}>
-          {scenes.map((scene: Scene, i: number) => (
-            <div key={i} className="story-scene-container">
+          {scenes.map((scene: Scene, i: number) => {
+            // Use stable ID if available, fallback to index for original scenes
+            const stableKey = (scene as any).sceneId || `original-${i}`;
+            return (
+            <div key={stableKey} className="story-scene-container">
               <FlowLayout
                 keyId={i.toString()}
                 panelRestricted={(scene as any)?.panelRestricted ?? false}
@@ -116,7 +119,8 @@ const StoryContent: React.FC = () => {
                 <SceneContentWithNavigation scene={scene} sceneIndex={i} />
               </FlowLayout>
             </div>
-          ))}
+            );
+          })}
         </div>
 
         {/* Layer 3: Programmatic scroll control (hidden) */}

@@ -94,6 +94,8 @@ export function PageFactoryProvider({ children, onSceneAdded }: PageFactoryProvi
       // No default background - inherit from current context
       // Add panel restriction for proper margins
       panelRestricted: true,
+      // Add stable ID for React keys
+      sceneId: `created-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
     };
 
     console.log('🏗️ PageFactory created scene:', newScene);
