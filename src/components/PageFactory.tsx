@@ -143,10 +143,10 @@ export function PageFactoryProvider({ children, onSceneAdded }: PageFactoryProvi
 
       insertScene(aiScene, aiInsertIndex);
 
-      // Auto-navigate to the AI scene
+      // Auto-navigate to the AI scene after 3 seconds
       setTimeout(() => {
         goToIndex(aiInsertIndex);
-      }, 100);
+      }, 3000);
 
       onSceneAdded?.(userScene);
       onSceneAdded?.(aiScene);
