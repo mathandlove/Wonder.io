@@ -144,6 +144,18 @@ export function injectPanelMetaFromFlows(scenes: Scene[]): Scene[] {
           };
         }
 
+        // Determine if bubble should animate immediately (not wait for entrance)
+        const leftIsEntering = meta.panelLeft?.animationState === 'entering';
+        const rightIsEntering = meta.panelRight?.animationState === 'entering';
+        const speakerSide = (s as any).speaker;
+
+        // Bubble animates immediately if the speaking character is not entering
+        const bubbleAnimateImmediately = speakerSide === 'left' ? !leftIsEntering :
+                                        speakerSide === 'right' ? !rightIsEntering :
+                                        true; // Center speakers always animate immediately
+
+        meta.bubbleAnimateImmediately = bubbleAnimateImmediately;
+
         // Mark as new flow if this scene starts a new character flow
         const sceneData = { ...s, meta } as any;
         if (isNewFlow) {
@@ -188,6 +200,9 @@ export function injectPanelMetaFromFlows(scenes: Scene[]): Scene[] {
           aboutToSwap: false
         };
 
+        // Non-character scenes always animate immediately
+        meta.bubbleAnimateImmediately = true;
+
         return { ...s, meta } as Scene;
       }
     }
@@ -212,6 +227,7 @@ export function injectPanelMetaFromFlows(scenes: Scene[]): Scene[] {
     const meta = { ...(s as any).meta };
     meta.panelLeft = { character: NOCHARACTER };
     meta.panelRight = { character: NOCHARACTER };
+    meta.bubbleAnimateImmediately = true; // Fallback scenes animate immediately
 
     return { ...s, meta } as Scene;
   });

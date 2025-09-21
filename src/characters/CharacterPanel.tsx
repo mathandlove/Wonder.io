@@ -93,11 +93,7 @@ export const CharacterPanel: React.FC<CharacterPanelProps> = ({
         // Call the entrance completion callback since character is ready
         onEntranceComplete?.();
       }
-      // For shake animations, trigger immediately without timeout
-      if (event.animationName.includes('character-shake')) {
-        // Call the entrance completion callback immediately
-        onEntranceComplete?.();
-      }
+      // Removed shake animation listener - using meta-driven approach
     };
 
     panelElement.addEventListener('animationend', handleAnimationEnd);

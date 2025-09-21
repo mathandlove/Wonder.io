@@ -85,10 +85,7 @@ export function PageFactoryProvider({ children, onSceneAdded }: PageFactoryProvi
       panelRestricted: true,
       // Add stable ID for React keys
       sceneId: `created-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
-      // Meta data for bubble animation behavior
-      meta: {
-        bubbleAnimateImmediately: true, // Created scenes should animate immediately, not wait for entrance
-      },
+      // Meta will be added by injectPanelMetaFromFlows
     };
 
     console.log('🏗️ PageFactory created scene:', newScene);
