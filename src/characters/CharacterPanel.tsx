@@ -93,12 +93,10 @@ export const CharacterPanel: React.FC<CharacterPanelProps> = ({
         // Call the entrance completion callback since character is ready
         onEntranceComplete?.();
       }
-      // For shake animations, add a small delay to ensure bubble is ready
+      // For shake animations, trigger immediately without timeout
       if (event.animationName.includes('character-shake')) {
-        // Small delay to avoid race condition with bubble initialization
-        setTimeout(() => {
-          onEntranceComplete?.();
-        }, 50); // 50ms delay to ensure bubble component is mounted and ready
+        // Call the entrance completion callback immediately
+        onEntranceComplete?.();
       }
     };
 
