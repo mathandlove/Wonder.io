@@ -127,12 +127,29 @@ export function PageFactoryProvider({ children, onSceneAdded }: PageFactoryProvi
 
       insertScene(userScene, userInsertIndex);
 
-      // Auto-navigate to the user scene
+      // Create AI response scene immediately after user scene
+      const aiResponseText = `AI response to: ${userText}`;
+      const aiScene = createCharacterPage(aiResponseText, "right");
+      const aiInsertIndex = userInsertIndex + 1;
+
+      console.log('🤖 Creating AI response scene:', {
+        type: aiScene.type,
+        text: aiScene.text,
+        speaker: aiScene.speaker,
+        leftCharacter: aiScene['left-character'],
+        rightCharacter: aiScene['right-character'],
+        insertIndex: aiInsertIndex
+      });
+
+      insertScene(aiScene, aiInsertIndex);
+
+      // Auto-navigate to the AI scene
       setTimeout(() => {
-        goToIndex(userInsertIndex);
+        goToIndex(aiInsertIndex);
       }, 100);
 
       onSceneAdded?.(userScene);
+      onSceneAdded?.(aiScene);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [userText, turnId, processedUserText]);
