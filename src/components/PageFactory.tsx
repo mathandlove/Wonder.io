@@ -26,6 +26,7 @@ export function PageFactoryProvider({ children, onSceneAdded }: PageFactoryProvi
   const [processedUserText, setProcessedUserText] = useState<string>("");
   const [processedAssistantText, setProcessedAssistantText] = useState<string>("");
   const [lastTurnId, setLastTurnId] = useState<number>(turnId);
+  const [userSceneInsertIndex, setUserSceneInsertIndex] = useState<number | null>(null);
 
 
   // Reset processed text tracking when turn changes or when text is cleared
@@ -33,6 +34,7 @@ export function PageFactoryProvider({ children, onSceneAdded }: PageFactoryProvi
     if (turnId !== lastTurnId) {
       setProcessedUserText("");
       setProcessedAssistantText("");
+      setUserSceneInsertIndex(null);
       setLastTurnId(turnId);
     }
   }, [turnId, lastTurnId]);
@@ -115,17 +117,20 @@ export function PageFactoryProvider({ children, onSceneAdded }: PageFactoryProvi
 
       // Create user scene (left speaker = Leo speaking user's text)
       const userScene = createCharacterPage(userText, "left");
+
+      // Insert relative to current position (where input button was pressed)
+      const userInsertIndex = currentIndex + 1;
+      setUserSceneInsertIndex(userInsertIndex); // Track for AI response
+
       console.log('📝 Creating USER scene (Leo speaking):', {
         type: userScene.type,
         text: userScene.text,
         speaker: userScene.speaker,
         leftCharacter: userScene['left-character'],
         rightCharacter: userScene['right-character'],
-        insertIndex: scenes.length
+        insertIndex: userInsertIndex
       });
 
-      // Insert at END of story (sequential like main-reference)
-      const userInsertIndex = scenes.length;
       insertScene(userScene, userInsertIndex);
 
       // Auto-navigate to the user scene
@@ -135,7 +140,7 @@ export function PageFactoryProvider({ children, onSceneAdded }: PageFactoryProvi
 
       onSceneAdded?.(userScene);
     }
-  }, [userText, turnId, processedUserText, scenes.length]);
+  }, [userText, turnId, processedUserText, currentIndex]);
 
   // Create assistant scene when new assistant text arrives
   useEffect(() => {
@@ -145,17 +150,20 @@ export function PageFactoryProvider({ children, onSceneAdded }: PageFactoryProvi
 
       // Create assistant scene (right speaker = AI)
       const assistantScene = createCharacterPage(assistantText, "right");
+
+      // Insert sequentially after user scene (userSceneInsertIndex + 1)
+      const assistantInsertIndex = userSceneInsertIndex !== null ? userSceneInsertIndex + 1 : currentIndex + 2;
+
       console.log('🤖 Creating ASSISTANT scene:', {
         type: assistantScene.type,
         text: assistantScene.text,
         speaker: assistantScene.speaker,
         leftCharacter: assistantScene['left-character'],
         rightCharacter: assistantScene['right-character'],
-        insertIndex: scenes.length
+        insertIndex: assistantInsertIndex,
+        userSceneWasAt: userSceneInsertIndex
       });
 
-      // Insert at END of story (sequential after user scene)
-      const assistantInsertIndex = scenes.length;
       insertScene(assistantScene, assistantInsertIndex);
 
       // Navigate to the assistant scene
@@ -165,7 +173,7 @@ export function PageFactoryProvider({ children, onSceneAdded }: PageFactoryProvi
 
       onSceneAdded?.(assistantScene);
     }
-  }, [assistantText, turnId, processedAssistantText, scenes.length]);
+  }, [assistantText, turnId, processedAssistantText, userSceneInsertIndex, currentIndex]);
 
   const contextValue: PageFactoryContextType = {
     createCharacterPage,
