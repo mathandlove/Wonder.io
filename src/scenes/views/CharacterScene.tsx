@@ -76,8 +76,8 @@ export default function CharacterScene({ scene, sceneIndex }: SceneProps<Charact
     const isUserScene = scene.speaker === "left";
     const hasSceneId = !!(scene as any).sceneId; // PageFactory adds sceneId
 
-    // Show waiting bubble for ALL PageFactory user scenes, but only after main bubble is ready
-    const shouldShowWaiting = isPageFactoryScene && isUserScene && hasSceneId && isReady;
+    // Show waiting bubble for ALL PageFactory user scenes
+    const shouldShowWaiting = isPageFactoryScene && isUserScene && hasSceneId;
 
     console.log(`🔍 WaitingBubble Debug for scene ${sceneIndex}:`, {
       isPageFactoryScene,
@@ -108,7 +108,7 @@ export default function CharacterScene({ scene, sceneIndex }: SceneProps<Charact
     } else {
       setShowWaitingBubble(false);
     }
-  }, [scene, sceneIndex, isReady]);
+  }, [scene, sceneIndex]);
 
   return (
     <div
@@ -125,8 +125,8 @@ export default function CharacterScene({ scene, sceneIndex }: SceneProps<Charact
       <CardboardBubble
         side={scene.speaker === 'left' ? 'left' : scene.speaker === 'right' ? 'right' : 'center'}
         speakerLabel={speakerLabel}
-        isDelayed={shouldDelay}
-        isReady={isReady}
+        isDelayed={false}
+        isReady={true}
         onViewportExit={handleBubbleViewportExit}
         onViewportEnter={handleBubbleViewportEnter}
       >
