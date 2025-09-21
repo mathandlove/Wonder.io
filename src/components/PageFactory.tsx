@@ -28,6 +28,11 @@ export function PageFactoryProvider({ children, onSceneAdded }: PageFactoryProvi
   const [lastTurnId, setLastTurnId] = useState<number>(turnId);
   const [userSceneInsertIndex, setUserSceneInsertIndex] = useState<number | null>(null);
 
+  // Debug render count
+  const renderCount = React.useRef(0);
+  renderCount.current++;
+  console.log(`🎨 PageFactory render #${renderCount.current}`);
+
 
   // Reset processed text tracking when turn changes or when text is cleared
   useEffect(() => {
@@ -73,13 +78,14 @@ export function PageFactoryProvider({ children, onSceneAdded }: PageFactoryProvi
       }
     }
 
-    console.log('🏗️ Building character page from current scene:', {
-      currentSceneType: currentScene?.type,
-      extractedLeftChar: leftCharacter,
-      extractedRightChar: rightCharacter,
-      newSpeaker: speaker,
-      textLength: text.length
-    });
+    // Commented out to reduce noise - uncomment if needed
+    // console.log('🏗️ Building character page from current scene:', {
+    //   currentSceneType: currentScene?.type,
+    //   extractedLeftChar: leftCharacter,
+    //   extractedRightChar: rightCharacter,
+    //   newSpeaker: speaker,
+    //   textLength: text.length
+    // });
 
     const newScene = {
       type: "character",
@@ -93,7 +99,7 @@ export function PageFactoryProvider({ children, onSceneAdded }: PageFactoryProvi
       panelRestricted: true,
     };
 
-    console.log('🏗️ PageFactory created scene:', newScene);
+    // console.log('🏗️ PageFactory created scene:', newScene);
     return newScene;
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
@@ -112,6 +118,12 @@ export function PageFactoryProvider({ children, onSceneAdded }: PageFactoryProvi
 
   // Auto-create and add scenes when new user text arrives
   useEffect(() => {
+    console.log('🔍 USER EFFECT CHECK:', {
+      userText: userText?.substring(0, 20),
+      processedUserText: processedUserText?.substring(0, 20),
+      turnId,
+      willRun: userText && userText.trim() && userText !== processedUserText
+    });
     if (userText && userText.trim() && userText !== processedUserText) {
       // Mark as processed IMMEDIATELY to prevent multiple insertions
       setProcessedUserText(userText);
@@ -146,6 +158,12 @@ export function PageFactoryProvider({ children, onSceneAdded }: PageFactoryProvi
 
   // Create assistant scene when new assistant text arrives
   useEffect(() => {
+    console.log('🔍 ASSISTANT EFFECT CHECK:', {
+      assistantText: assistantText?.substring(0, 20),
+      processedAssistantText: processedAssistantText?.substring(0, 20),
+      turnId,
+      willRun: assistantText && assistantText.trim() && assistantText !== processedAssistantText
+    });
     if (assistantText && assistantText.trim() && assistantText !== processedAssistantText) {
       // Mark as processed IMMEDIATELY
       setProcessedAssistantText(assistantText);
