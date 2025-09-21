@@ -83,7 +83,7 @@ export default function CharacterScene({ scene, sceneIndex }: SceneProps<Charact
       // For non-delayed bubbles (center/narrator), set ready immediately
       setBubbleReady(true);
     }
-  }, [shouldDelay, sceneIndex, scene.speaker, scene.text, registerEntranceCallback, bubbleReady]); // Added bubbleReady to dependencies
+  }, [shouldDelay, sceneIndex, scene.speaker, scene.text, registerEntranceCallback]); // Removed bubbleReady to prevent infinite loop
 
   return (
     <div
