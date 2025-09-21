@@ -37,6 +37,11 @@ export const CharacterOrchestrator: React.FC<Props> = ({ storyId, scenes }) => {
     character: null
   });
 
+  // AnimNonce state for forcing animation restarts
+  const [leftEnterNonce, setLeftEnterNonce] = useState(0);
+  const [rightEnterNonce, setRightEnterNonce] = useState(0);
+  const [prevSceneIndex, setPrevSceneIndex] = useState(0);
+
 
   // pick active range using rounded scene index (stable with snaps)
   const active = useMemo(() => {
@@ -108,41 +113,70 @@ export const CharacterOrchestrator: React.FC<Props> = ({ storyId, scenes }) => {
     }
   }, [active]);
 
+  // Track when we've scrolled to a new scene and trigger animation restart
+  useEffect(() => {
+    const currentSceneIndex = Math.round(scrollOffset);
+
+    // Check if we've moved to a different scene
+    if (currentSceneIndex !== prevSceneIndex) {
+      setPrevSceneIndex(currentSceneIndex);
+
+      // Forward scrolling: animate on entering state (transitioning)
+      if (direction === 'down') {
+        if (leftPanel.transitioning) {
+          setLeftEnterNonce(n => n + 1);
+        }
+        if (rightPanel.transitioning) {
+          setRightEnterNonce(n => n + 1);
+        }
+      } else if (direction === 'up') {
+        // Backward scrolling: animate on transitioning as well
+        if (leftPanel.transitioning) {
+          setLeftEnterNonce(n => n + 1);
+        }
+        if (rightPanel.transitioning) {
+          setRightEnterNonce(n => n + 1);
+        }
+      }
+    }
+  }, [scrollOffset, leftPanel.transitioning, rightPanel.transitioning, prevSceneIndex, direction]);
+
   // Generate change keys for character/pose changes
   const changeKeys = useMemo(() => ({
     leftKey: `${leftPanel.character ?? 'none'}-default`,
     rightKey: `${rightPanel.character ?? 'none'}-default`
   }), [leftPanel.character, rightPanel.character]);
 
-  // Publish panel widths as CSS variables based on current scene's panelRestricted value
+  // Publish panel widths as CSS variables to constrain main content
   useLayoutEffect(() => {
-    const currentSceneIndex = Math.max(0, Math.min(scenes.length - 1, Math.round(scrollOffset)));
-    const currentScene = scenes[currentSceneIndex] as any;
-    const shouldShowPanels = currentScene?.panelRestricted ?? false;
+    const updatePanelWidths = () => {
+      const currentSceneIndex = Math.max(0, Math.min(scenes.length - 1, Math.round(scrollOffset)));
+      const currentScene = scenes[currentSceneIndex] as any;
+      const shouldShowPanels = currentScene?.panelRestricted ?? false;
 
-    // Set CSS variables based on whether the current scene should be panel-restricted
-    const leftWidth = shouldShowPanels ? "280px" : "0px";
-    const rightWidth = shouldShowPanels ? "280px" : "0px";
+      // Always calculate panel widths to constrain center to 600px
+      const panelWidth = Math.max(280, (window.innerWidth - 600) / 2);
+      const leftWidth = shouldShowPanels ? `${panelWidth}px` : "0px";
+      const rightWidth = shouldShowPanels ? `${panelWidth}px` : "0px";
 
-    document.documentElement.style.setProperty("--panel-left-width", leftWidth);
-    document.documentElement.style.setProperty("--panel-right-width", rightWidth);
+      document.documentElement.style.setProperty("--panel-left-width", leftWidth);
+      document.documentElement.style.setProperty("--panel-right-width", rightWidth);
+    };
+
+    updatePanelWidths();
+
+    // Update on resize
+    window.addEventListener('resize', updatePanelWidths);
+    return () => window.removeEventListener('resize', updatePanelWidths);
   }, [scrollOffset, scenes]);
 
-  // Cleanup timeout on unmount
-  useEffect(() => {
-    return () => {
-      if (transitionTimeoutRef.current) {
-        clearTimeout(transitionTimeoutRef.current);
-      }
-    };
-  }, []);
 
 
   // Fixed overlay container
   return (
     <div style={{ position: "fixed", inset: 0, pointerEvents: "none", zIndex: 60 }}>
-      {/* Left gutter column */}
-      <div className="character-panel--left" style={{ position: "absolute", left: 0, top: 0, bottom: 0, width: "280px", pointerEvents: "auto" }}>
+      {/* Left gutter column - expands to take available space */}
+      <div className="character-panel--left" style={{ position: "absolute", left: 0, top: 0, bottom: 0, width: "calc((100vw - 600px) / 2)", minWidth: "280px", pointerEvents: "auto" }}>
         <CharacterPanel
           side="left"
           visible={true}
@@ -151,13 +185,13 @@ export const CharacterOrchestrator: React.FC<Props> = ({ storyId, scenes }) => {
           storyId={storyId}
           animationState={leftPanel.transitioning ? 'entering' : (leftPanel.speaking ? 'speaking' : 'idle')}
           aboutToSwap={!!leftPanel.transitioning}
-          scrollDirection={direction === 'forward' ? 'forward' : 'backward'}
-          animNonce={changeKeys.leftKey}
+          scrollDirection={direction === 'down' ? 'forward' : 'backward'}
+          animNonce={leftEnterNonce}
         />
       </div>
 
-      {/* Right gutter column */}
-      <div className="character-panel--right" style={{ position: "absolute", right: 0, top: 0, bottom: 0, width: "280px", pointerEvents: "auto" }}>
+      {/* Right gutter column - expands to take available space */}
+      <div className="character-panel--right" style={{ position: "absolute", right: 0, top: 0, bottom: 0, width: "calc((100vw - 600px) / 2)", minWidth: "280px", pointerEvents: "auto" }}>
         <CharacterPanel
           side="right"
           visible={true}
@@ -166,8 +200,8 @@ export const CharacterOrchestrator: React.FC<Props> = ({ storyId, scenes }) => {
           storyId={storyId}
           animationState={rightPanel.transitioning ? 'entering' : (rightPanel.speaking ? 'speaking' : 'idle')}
           aboutToSwap={!!rightPanel.transitioning}
-          scrollDirection={direction === 'forward' ? 'forward' : 'backward'}
-          animNonce={changeKeys.rightKey}
+          scrollDirection={direction === 'down' ? 'forward' : 'backward'}
+          animNonce={rightEnterNonce}
         />
       </div>
     </div>

@@ -35,7 +35,6 @@ export default function CharacterScene({ scene }: SceneProps<CharacterSceneType>
           background: "rgba(255, 255, 255, 0.95)",
           padding: "1.5rem 2rem",
           borderRadius: 16,
-          maxWidth: 640,
           textAlign: "center",
           border: "2px solid #e6e6e6",
           boxShadow: "0 10px 30px rgba(0,0,0,0.12)",

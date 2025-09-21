@@ -23,9 +23,18 @@
   height: 100vh;
   display: flex;
   align-items: flex-start;
-  justify-content: center;
   pointer-events: none;
   /*background: rgba(255, 0, 0, 0.3);  Red background for debugging */
+}
+
+/* Left panel: push characters to the right edge */
+.story-character-panel.story-character-left {
+  justify-content: flex-end;
+}
+
+/* Right panel: push characters to the left edge */
+.story-character-panel.story-character-right {
+  justify-content: flex-start;
 }
 
 .story-character-content {
