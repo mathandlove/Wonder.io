@@ -1,7 +1,7 @@
 /* Container for bubble positioning */
 .cardboard-bubble-container {
-  width: fit-content;
-  max-width: 90%; /* Prevent overflow off screen */
+  width: 100%; /* Take full available width for proper flexbox alignment */
+  max-width: none; /* Remove width constraint - parent handles this */
 }
 
 /* Cardboard Bubble Base Styles */
@@ -39,7 +39,7 @@
 .cardboard-bubble-right {
   align-self: flex-end;
   margin-left: 10px;
-  margin-right: 30px; /* Account for speech tail */
+  margin-right: 40px; /* Add right margin for proper spacing */
 }
 
 /* Inner white/cream text box */

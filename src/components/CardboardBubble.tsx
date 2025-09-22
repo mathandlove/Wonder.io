@@ -55,10 +55,19 @@ export const CardboardBubble: React.FC<CardboardBubbleProps> = ({
   // Simple class name - no complex animation logic needed
   const finalClassName = `cardboard-bubble ${bubbleClass}`.trim();
 
+  // Container style for proper alignment
+  const containerStyle = {
+    display: 'flex',
+    justifyContent: side === 'left' ? 'flex-start' as const :
+                   side === 'right' ? 'flex-end' as const :
+                   'center' as const,
+    width: '100%'
+  };
+
 
   return (
     <div ref={bubbleRef} style={{ visibility: 'visible' }}>
-      <div className="cardboard-bubble-container">
+      <div className="cardboard-bubble-container" style={containerStyle}>
         <div className={finalClassName}>
           {showTail && (
             <div className={`cardboard-bubble-tail-${side}`}></div>

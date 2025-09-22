@@ -167,8 +167,8 @@ export const CharacterPanel: React.FC<CharacterPanelProps> = ({
 
       {displayCharacter ? (
         <div className="story-character-content">
-          {/* Debug text above character - ENABLED */}
-          {true && (
+          {/* Debug text above character - DISABLED */}
+          {false && (
             <div style={{
               position: 'absolute',
               top: '20px',

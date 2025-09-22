@@ -143,17 +143,30 @@ export function SpeechBubbleOrchestrator({ scenes }: SpeechBubbleOrchestratorPro
 
         const shouldShowWaitingBubble = isPageFactoryScene && isUserScene && hasSceneId && !nextSceneIsAI;
 
+        // Simple flexbox positioning based on speaker side
+        const justifyContent = scene.speaker === 'left' ? 'flex-start' :
+                             scene.speaker === 'right' ? 'flex-end' :
+                             'center';
+
+        const bubbleStyle = {
+          position: 'absolute' as const,
+          top: '50vh',
+          left: 'var(--panel-left-width)', // Start after left panel
+          right: 'var(--panel-right-width)', // End before right panel
+          width: 'auto', // Let it fill available space between panels
+          transform: `translateY(-50%) ${transform}`,
+          display: 'flex',
+          justifyContent,
+          alignItems: 'center',
+          transition,
+          pointerEvents: 'auto' as const,
+        };
+
+
         return (
           <div
             key={`bubble-${sceneIndex}`}
-            style={{
-              position: 'absolute',
-              top: '50vh', // Center vertically in viewport
-              left: '50%',
-              transform: `translate(-50%, -50%) ${transform}`, // Combine centering with scroll transform
-              transition,
-              pointerEvents: 'auto'
-            }}
+            style={bubbleStyle}
           >
             <CardboardBubble
               side={scene.speaker === 'left' ? 'left' : scene.speaker === 'right' ? 'right' : 'center'}
