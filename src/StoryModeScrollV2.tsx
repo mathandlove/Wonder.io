@@ -11,6 +11,7 @@ import { PageFactoryProvider } from "./components/PageFactory";
 import { useNavigation } from "./context/NavigationContext";
 import { BackgroundOrchestrator } from "./background/BackgroundOrchestrator";
 import { CharacterOrchestrator } from "./characters/CharacterOrchestrator";
+import { SpeechBubbleOrchestrator } from "./components/SpeechBubbleOrchestrator";
 import { CaptionComponent } from "./components/CaptionComponent";
 import { injectPanelMetaFromFlows } from "./characters/adapters/injectPanelMetaFromFlows";
 import { useSceneNavigation } from "./hooks/useSceneNavigation";
@@ -104,6 +105,9 @@ const StoryContent: React.FC = () => {
 
         {/* Layer 1.7: Image captions (appear on second scene of each image pair) */}
         <CaptionComponent scenes={scenes} index={index} />
+
+        {/* Layer 1.8: Speech bubbles (scroll-based with delayed transitions) */}
+        <SpeechBubbleOrchestrator scenes={scenes} currentIndex={index} />
 
         {/* Layer 2: Document flow content with scroll snap targets */}
         <div style={{ position: "relative" }}>

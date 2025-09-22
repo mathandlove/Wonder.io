@@ -5,17 +5,8 @@
 import React from "react";
 import type { SceneProps } from "../registry";
 import type { CharacterScene as CharacterSceneType } from "../../types/scene";
-import { CardboardBubble } from "../../components/CardboardBubble";
 
 export default function CharacterScene({ scene, sceneIndex }: SceneProps<CharacterSceneType>) {
-  // Resolve display name from scene metadata
-  const speakerLabel =
-    scene.speaker === "left"
-      ? scene["left-character"] || "Left"
-      : scene.speaker === "right"
-      ? scene["right-character"] || "Right"
-      : "Narrator";
-
   return (
     <div
       style={{
@@ -43,13 +34,7 @@ export default function CharacterScene({ scene, sceneIndex }: SceneProps<Charact
         Scene {sceneIndex}: {scene.speaker} - "{scene.text.substring(0, 30)}..."
       </div>
 
-      {/* Speech bubble - positioned in center like debug text */}
-      <CardboardBubble
-        side={scene.speaker === 'left' ? 'left' : scene.speaker === 'right' ? 'right' : 'center'}
-        speakerLabel={speakerLabel}
-      >
-        {scene.text}
-      </CardboardBubble>
+      {/* Empty scroll target - speech bubbles rendered by SpeechBubbleOrchestrator */}
     </div>
   );
 }
