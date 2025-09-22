@@ -132,7 +132,7 @@ export function PageFactoryProvider({ children, onSceneAdded }: PageFactoryProvi
         goToIndex(userInsertIndex);
       }, 100);
 
-      // Create AI response scene after 2 minutes (for debugging)
+      // Create AI response scene after 500ms
       setTimeout(() => {
         const aiResponseText = `AI response to: ${userText}`;
         const aiScene = createCharacterPage(aiResponseText, "right");
@@ -155,7 +155,7 @@ export function PageFactoryProvider({ children, onSceneAdded }: PageFactoryProvi
         }, 100);
 
         onSceneAdded?.(aiScene);
-      }, 120000); // 2 minutes = 120,000ms
+      }, 500); // 500ms
 
       onSceneAdded?.(userScene);
     }

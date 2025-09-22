@@ -75,15 +75,20 @@ export default function CharacterScene({ scene, sceneIndex }: SceneProps<Charact
     const isPageFactoryScene = !scene.flowSequence && scene.type === "character";
     const isUserScene = scene.speaker === "left";
     const hasSceneId = !!(scene as any).sceneId; // PageFactory adds sceneId
+    const nextScene = sceneIndex !== undefined ? scenes[sceneIndex + 1] : null;
+    const nextSceneIsAI = nextScene &&
+                         nextScene.type === "character" &&
+                         !(nextScene as any).flowSequence &&
+                         (nextScene as any).speaker === "right";
 
-    // Show waiting bubble for ALL PageFactory user scenes
-    const shouldShowWaiting = isPageFactoryScene && isUserScene && hasSceneId;
+    // Show waiting bubble for PageFactory user scenes ONLY if no AI response exists yet
+    const shouldShowWaiting = isPageFactoryScene && isUserScene && hasSceneId && !nextSceneIsAI;
 
     console.log(`🔍 WaitingBubble Debug for scene ${sceneIndex}:`, {
       isPageFactoryScene,
       isUserScene,
       hasSceneId,
-      isReady,
+      nextSceneIsAI,
       shouldShowWaiting,
       sceneType: scene.type,
       speaker: scene.speaker,
@@ -95,20 +100,11 @@ export default function CharacterScene({ scene, sceneIndex }: SceneProps<Charact
 
     if (shouldShowWaiting) {
       console.log(`✅ Showing waiting bubble for PageFactory scene ${sceneIndex}`);
-      // Show waiting bubble after main bubble is ready
       setShowWaitingBubble(true);
-
-      // Always hide after 2 minutes (matches AI response timing)
-      const timeout = setTimeout(() => {
-        console.log(`⏰ Hiding waiting bubble for scene ${sceneIndex} after 2 minutes`);
-        setShowWaitingBubble(false);
-      }, 120000); // 2 minutes = 120,000ms
-
-      return () => clearTimeout(timeout);
     } else {
       setShowWaitingBubble(false);
     }
-  }, [scene, sceneIndex]);
+  }, [scene, sceneIndex, scenes]);
 
   return (
     <div
