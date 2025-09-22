@@ -19,7 +19,8 @@ import { useScrollManager } from "./hooks/useScrollManager";
 import { CharacterAnimationProvider } from "./context/CharacterAnimationContext";
 import type { Scene } from "./types/scene";
 import "./components/SnapScroll.css";
-
+import { UIOverlayRoot } from "./components/UIOverlayRoot";
+import { QuestProvider } from "./quest/QuestManager"
 // Path to the story JSON bundle we want to load. In demo mode we keep this fixed
 // so the experience is deterministic for the presentation.
 
@@ -86,6 +87,7 @@ const StoryContent: React.FC = () => {
   // RENDER PATH #3: story loaded → render each scene in a vertical, snap-scrolling layout
 
   return (
+    <QuestProvider>
     <PageFactoryProvider>
       <CharacterAnimationProvider>
         <SnapLayer
@@ -134,8 +136,12 @@ const StoryContent: React.FC = () => {
           ))}
         </div>
         </SnapLayer>
+
+        {/* Layer 4: UI overlays (quests, dialogs, etc.) */}
+        <UIOverlayRoot />
       </CharacterAnimationProvider>
     </PageFactoryProvider>
+    </QuestProvider>
   );
 };
 

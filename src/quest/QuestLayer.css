@@ -1,0 +1,117 @@
+/* Guild Box Holder - minimum 500px width, maintains aspect ratio */
+.guild-box-holder {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  min-width: 500px;
+  width: clamp(500px, 90vw, 800px);
+  aspect-ratio: 2 / 1;
+  background-image: url('/VisualAssets/guildedgoal.png');
+  background-size: contain;
+  background-position: center;
+  background-repeat: no-repeat;
+  z-index: 300;
+  pointer-events: auto;
+  animation: questAppear 0.6s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  filter: drop-shadow(0 15px 50px rgba(255, 215, 0, 0.6)) drop-shadow(0 0 80px rgba(255, 215, 0, 0.5));
+}
+
+/* Quest Info - 60% width, 70% height of guild box */
+.quest-info {
+  width: 60%;
+  height: 70%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  text-align: center;
+}
+
+.quest-title {
+  font-size: 28px;
+  font-weight: 800;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  margin: 0;
+  color: #fdf8e4;
+  text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.7);
+  position: relative;
+  padding-bottom: 12px;
+}
+
+.quest-title::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 60px;
+  height: 2px;
+  background: linear-gradient(90deg, transparent, #4A2C17, transparent);
+  border-radius: 1px;
+}
+
+.quest-text {
+  font-size: 32px;
+  font-weight: 600;
+  line-height: 1.4;
+  font-family: 'Cinzel', 'Georgia', serif;
+  color: #fdf8e4;
+  text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.7);
+  margin: 0;
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.quest-accept-btn {
+  background: linear-gradient(145deg, #8B4513, #A0522D);
+  color: #fdf8e4;
+  border: 2px solid #654321;
+  padding: 12px 20px;
+  font-size: 20px;
+  font-weight: bold;
+  border-radius: 4px;
+  cursor: pointer;
+  text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.5);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+  transition: all 0.2s ease;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+.quest-accept-btn:hover {
+  background: linear-gradient(145deg, #A0522D, #8B4513);
+  transform: translateY(-1px);
+}
+
+/* Quest appearance animation */
+@keyframes questAppear {
+  0% {
+    transform: translate(-50%, -50%) scale(0.8) rotate(-10deg);
+    opacity: 0;
+  }
+  50% {
+    transform: translate(-50%, -50%) scale(1.05) rotate(2deg);
+    opacity: 1;
+  }
+  100% {
+    transform: translate(-50%, -50%) scale(1) rotate(0deg);
+    opacity: 1;
+  }
+}
+
+@keyframes questPulse {
+  0%, 100% {
+    filter: drop-shadow(0 10px 40px rgba(255, 215, 0, 0.4)) drop-shadow(0 0 60px rgba(255, 215, 0, 0.3));
+  }
+  50% {
+    filter: drop-shadow(0 15px 50px rgba(255, 215, 0, 0.6)) drop-shadow(0 0 80px rgba(255, 215, 0, 0.5));
+  }
+}
