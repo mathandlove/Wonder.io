@@ -53,108 +53,42 @@ export function injectPanelMetaFromFlows(scenes: Scene[]): Scene[] {
         const speaker = (s as any).speaker;
         const meta = { ...(s as any).meta };
 
-        // Set character data with animation state
-        if (currentLeft) {
-          const previousCharacter = previousLeft;
-          const currentCharacter = currentLeft;
-          // Look ahead to next scene for aboutToSwap detection
+        // Helper function to create panel state
+        const createPanelState = (side: 'left' | 'right', current: string | null, previous: string | null) => {
+          if (!current) return null;
+
           const nextScene = scenes[i + 1];
+          const nextCharacterKey = side === 'left' ? 'left-character' : 'right-character';
           const nextCharacter = nextScene?.type === "character" ?
-            (nextScene as any)["left-character"] ||
-            nextScene?.meta?.panelLeft?.character :
-            // For quest scenes, assume character continues; for image scenes, character disappears
-            nextScene?.type === "quest" ? currentCharacter : NOCHARACTER;
+            (nextScene as any)[nextCharacterKey] ||
+            nextScene?.meta?.[side === 'left' ? 'panelLeft' : 'panelRight']?.character :
+            nextScene?.type === "quest" ? current : NOCHARACTER;
 
-          const isSpeaking = speaker === 'left';
-          const isPageFactoryScene = !s.flowSequence && s.type === "character";
+          const aboutToSwap = nextCharacter !== current;
+          const newCharacter = previous !== current;
 
-          // Determine main animation state
-          let animationState: string;
-          if (isPageFactoryScene && isSpeaking) {
-            // PageFactory scenes - character speaks if they are the speaker
-            animationState = "speaking";
-          } else if (isPageFactoryScene && !isSpeaking) {
-            // PageFactory scenes - non-speaking character is idle
-            animationState = "idle";
-          } else if (previousCharacter !== currentCharacter) {
-            // Character changed - play combined exit→enter animation
-            animationState = "entering";
-          } else if (isSpeaking) {
-            // Character present and speaking
-            animationState = "speaking";
-          } else {
-            // Character present but idle
-            animationState = "idle";
-          }
-
-          // Check if character will exit in next scene
-          const aboutToSwap = nextCharacter !== currentCharacter;
-
-          meta.panelLeft = {
-            character: currentLeft,
-            previousCharacter: previousCharacter || NOCHARACTER,
+          return {
+            character: current,
+            previousCharacter: previous || NOCHARACTER,
             nextCharacter: nextCharacter || NOCHARACTER,
-            animationState,
+            newCharacter,
             aboutToSwap
           };
-        }
+        };
 
-        if (currentRight) {
-          const previousCharacter = previousRight;
-          const currentCharacter = currentRight;
-          // Look ahead to next scene for aboutToSwap detection
-          const nextScene = scenes[i + 1];
-          const nextCharacter = nextScene?.type === "character" ?
-            (nextScene as any)["right-character"] ||
-            nextScene?.meta?.panelRight?.character :
-            // For quest scenes, assume character continues; for image scenes, character disappears
-            nextScene?.type === "quest" ? currentCharacter : NOCHARACTER;
+        // Set panel states
+        const leftPanel = createPanelState('left', currentLeft, previousLeft);
+        const rightPanel = createPanelState('right', currentRight, previousRight);
 
-          const isSpeaking = speaker === 'right';
-          const isPageFactoryScene = !s.flowSequence && s.type === "character";
+        if (leftPanel) meta.panelLeft = leftPanel;
+        if (rightPanel) meta.panelRight = rightPanel;
 
-          // Determine main animation state
-          let animationState: string;
-          if (isPageFactoryScene && isSpeaking) {
-            // PageFactory scenes - character speaks if they are the speaker
-            animationState = "speaking";
-          } else if (isPageFactoryScene && !isSpeaking) {
-            // PageFactory scenes - non-speaking character is idle
-            animationState = "idle";
-          } else if (previousCharacter !== currentCharacter) {
-            // Character changed - play combined exit→enter animation
-            animationState = "entering";
-          } else if (isSpeaking) {
-            // Character present and speaking
-            animationState = "speaking";
-          } else {
-            // Character present but idle
-            animationState = "idle";
-          }
-
-          // Check if character will exit in next scene
-          const aboutToSwap = nextCharacter !== currentCharacter;
-
-          meta.panelRight = {
-            character: currentRight,
-            previousCharacter: previousCharacter || NOCHARACTER,
-            nextCharacter: nextCharacter || NOCHARACTER,
-            animationState,
-            aboutToSwap
-          };
-        }
-
-        // Determine if bubble should animate immediately (not wait for entrance)
-        const leftIsEntering = meta.panelLeft?.animationState === 'entering';
-        const rightIsEntering = meta.panelRight?.animationState === 'entering';
+        // Bubble animates immediately if the speaking character is not new
         const speakerSide = (s as any).speaker;
-
-        // Bubble animates immediately if the speaking character is not entering
-        const bubbleAnimateImmediately = speakerSide === 'left' ? !leftIsEntering :
-                                        speakerSide === 'right' ? !rightIsEntering :
-                                        true; // Center speakers always animate immediately
-
-        meta.bubbleAnimateImmediately = bubbleAnimateImmediately;
+        const speakingPanelNew = speakerSide === 'left' ? leftPanel?.newCharacter :
+                                speakerSide === 'right' ? rightPanel?.newCharacter :
+                                false;
+        meta.bubbleAnimateImmediately = !speakingPanelNew;
 
         // Mark as new flow if this scene starts a new character flow
         const sceneData = { ...s, meta } as any;
@@ -178,56 +112,47 @@ export function injectPanelMetaFromFlows(scenes: Scene[]): Scene[] {
         currentLeft = null;
         currentRight = null;
 
-        // For scenes not in character flows, inject NOCHARACTER with proper animation states
+        // For scenes ending character flows, animate character exit
         const meta = { ...(s as any).meta };
-
-        // Check if we had characters before this scene (should animate entering)
-        const hadLeftCharacter = prevLeftCharacter && prevLeftCharacter !== NOCHARACTER;
-        const hadRightCharacter = prevRightCharacter && prevRightCharacter !== NOCHARACTER;
+        const hadLeftChar = prevLeftCharacter && prevLeftCharacter !== NOCHARACTER;
+        const hadRightChar = prevRightCharacter && prevRightCharacter !== NOCHARACTER;
 
         meta.panelLeft = {
           character: NOCHARACTER,
           previousCharacter: prevLeftCharacter || NOCHARACTER,
           nextCharacter: NOCHARACTER,
-          animationState: hadLeftCharacter ? "entering" : "idle",
+          newCharacter: hadLeftChar,
           aboutToSwap: false
         };
         meta.panelRight = {
           character: NOCHARACTER,
           previousCharacter: prevRightCharacter || NOCHARACTER,
           nextCharacter: NOCHARACTER,
-          animationState: hadRightCharacter ? "entering" : "idle",
+          newCharacter: hadRightChar,
           aboutToSwap: false
         };
-
-        // Non-character scenes always animate immediately
         meta.bubbleAnimateImmediately = true;
 
         return { ...s, meta } as Scene;
       }
     }
 
-    // For any scene in a character context, inject meta.panelLeft/Right
+    // For any scene in a character context, inject basic panel metadata
     if (inFlow || hasCharacters) {
       const meta = { ...(s as any).meta };
-      // Always set both panels - use current character or NOCHARACTER
-      meta.panelLeft = currentLeft ? { character: currentLeft } : { character: NOCHARACTER };
-      meta.panelRight = currentRight ? { character: currentRight } : { character: NOCHARACTER };
+      meta.panelLeft = { character: currentLeft || NOCHARACTER };
+      meta.panelRight = { character: currentRight || NOCHARACTER };
 
-      // Mark as new flow if this scene starts a new character flow
       const sceneData = { ...s, meta } as any;
-      if (isNewFlow) {
-        sceneData.newFlow = true;
-      }
-
+      if (isNewFlow) sceneData.newFlow = true;
       return sceneData as Scene;
     }
 
-    // Fallback: if scene doesn't match any condition above, still inject NOCHARACTER
+    // Fallback: inject NOCHARACTER for scenes outside character flows
     const meta = { ...(s as any).meta };
     meta.panelLeft = { character: NOCHARACTER };
     meta.panelRight = { character: NOCHARACTER };
-    meta.bubbleAnimateImmediately = true; // Fallback scenes animate immediately
+    meta.bubbleAnimateImmediately = true;
 
     return { ...s, meta } as Scene;
   });

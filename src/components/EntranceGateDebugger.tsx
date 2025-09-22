@@ -20,10 +20,10 @@ export const EntranceGateDebugger: React.FC<EntranceGateDebuggerProps> = ({ scen
   // Calculate sides needed for current scene
   const sidesNeeded = React.useMemo(() => {
     const sides: ('left' | 'right')[] = [];
-    if (currentScene?.meta?.panelLeft?.animationState === 'entering') {
+    if (currentScene?.meta?.panelLeft?.newCharacter) {
       sides.push('left');
     }
-    if (currentScene?.meta?.panelRight?.animationState === 'entering') {
+    if (currentScene?.meta?.panelRight?.newCharacter) {
       sides.push('right');
     }
     return sides;
@@ -62,12 +62,12 @@ export const EntranceGateDebugger: React.FC<EntranceGateDebuggerProps> = ({ scen
         <br />
         Character: {currentScene?.meta?.panelLeft?.character || 'none'}
         <br />
-        Animation: {currentScene?.meta?.panelLeft?.animationState || 'none'}
+        NewCharacter: {currentScene?.meta?.panelLeft?.newCharacter ? 'yes' : 'no'}
         <br />
         AboutToSwap: {currentScene?.meta?.panelLeft?.aboutToSwap ? 'yes' : 'no'}
         <br />
         <span style={{ color: 'yellow' }}>
-          Visible: {(!!(currentScene?.meta?.panelLeft?.character && currentScene?.meta?.panelLeft?.character !== 'NOCHARACTER') || currentScene?.meta?.panelLeft?.animationState === 'entering') ? 'YES' : 'NO'}
+          Visible: {(!!(currentScene?.meta?.panelLeft?.character && currentScene?.meta?.panelLeft?.character !== 'NOCHARACTER') || currentScene?.meta?.panelLeft?.newCharacter) ? 'YES' : 'NO'}
         </span>
       </div>
 
@@ -76,12 +76,12 @@ export const EntranceGateDebugger: React.FC<EntranceGateDebuggerProps> = ({ scen
         <br />
         Character: {currentScene?.meta?.panelRight?.character || 'none'}
         <br />
-        Animation: {currentScene?.meta?.panelRight?.animationState || 'none'}
+        NewCharacter: {currentScene?.meta?.panelRight?.newCharacter ? 'yes' : 'no'}
         <br />
         AboutToSwap: {currentScene?.meta?.panelRight?.aboutToSwap ? 'yes' : 'no'}
         <br />
         <span style={{ color: 'yellow' }}>
-          Visible: {(!!(currentScene?.meta?.panelRight?.character && currentScene?.meta?.panelRight?.character !== 'NOCHARACTER') || currentScene?.meta?.panelRight?.animationState === 'entering') ? 'YES' : 'NO'}
+          Visible: {(!!(currentScene?.meta?.panelRight?.character && currentScene?.meta?.panelRight?.character !== 'NOCHARACTER') || currentScene?.meta?.panelRight?.newCharacter) ? 'YES' : 'NO'}
         </span>
       </div>
 

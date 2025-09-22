@@ -13,8 +13,8 @@ export type CharacterScene = {
   flowSequence?: boolean;
   isFirstInFlow?: boolean;
   meta?: {
-    panelLeft?: { character: string; previousCharacter?: string; nextCharacter?: string; animationState?: string; aboutToSwap?: boolean };
-    panelRight?: { character: string; previousCharacter?: string; nextCharacter?: string; animationState?: string; aboutToSwap?: boolean };
+    panelLeft?: { character: string; previousCharacter?: string; nextCharacter?: string; newCharacter?: boolean; aboutToSwap?: boolean };
+    panelRight?: { character: string; previousCharacter?: string; nextCharacter?: string; newCharacter?: boolean; aboutToSwap?: boolean };
   };
 };
 
@@ -27,8 +27,8 @@ export type QuestScene = {
   flowSequence?: boolean;
   isFirstInFlow?: boolean;
   meta?: {
-    panelLeft?: { character: string; previousCharacter?: string; nextCharacter?: string; animationState?: string; aboutToSwap?: boolean };
-    panelRight?: { character: string; previousCharacter?: string; nextCharacter?: string; animationState?: string; aboutToSwap?: boolean };
+    panelLeft?: { character: string; previousCharacter?: string; nextCharacter?: string; newCharacter?: boolean; aboutToSwap?: boolean };
+    panelRight?: { character: string; previousCharacter?: string; nextCharacter?: string; newCharacter?: boolean; aboutToSwap?: boolean };
   };
 };
 
@@ -41,8 +41,8 @@ export type InputScene = {
   flowSequence?: boolean;
   isFirstInFlow?: boolean;
   meta?: {
-    panelLeft?: { character: string; previousCharacter?: string; nextCharacter?: string; animationState?: string; aboutToSwap?: boolean };
-    panelRight?: { character: string; previousCharacter?: string; nextCharacter?: string; animationState?: string; aboutToSwap?: boolean };
+    panelLeft?: { character: string; previousCharacter?: string; nextCharacter?: string; newCharacter?: boolean; aboutToSwap?: boolean };
+    panelRight?: { character: string; previousCharacter?: string; nextCharacter?: string; newCharacter?: boolean; aboutToSwap?: boolean };
   };
 };
 
@@ -54,8 +54,8 @@ export type ImageScene = {
   flowSequence?: boolean;
   isFirstInFlow?: boolean;
   meta?: {
-    panelLeft?: { character: string; previousCharacter?: string; nextCharacter?: string; animationState?: string; aboutToSwap?: boolean };
-    panelRight?: { character: string; previousCharacter?: string; nextCharacter?: string; animationState?: string; aboutToSwap?: boolean };
+    panelLeft?: { character: string; previousCharacter?: string; nextCharacter?: string; newCharacter?: boolean; aboutToSwap?: boolean };
+    panelRight?: { character: string; previousCharacter?: string; nextCharacter?: string; newCharacter?: boolean; aboutToSwap?: boolean };
   };
 };
 
@@ -79,8 +79,8 @@ export type FullScene = {
   flowSequence?: boolean;
   isFirstInFlow?: boolean;
   meta?: {
-    panelLeft?: { character: string; previousCharacter?: string; nextCharacter?: string; animationState?: string; aboutToSwap?: boolean };
-    panelRight?: { character: string; previousCharacter?: string; nextCharacter?: string; animationState?: string; aboutToSwap?: boolean };
+    panelLeft?: { character: string; previousCharacter?: string; nextCharacter?: string; newCharacter?: boolean; aboutToSwap?: boolean };
+    panelRight?: { character: string; previousCharacter?: string; nextCharacter?: string; newCharacter?: boolean; aboutToSwap?: boolean };
   };
 };
 

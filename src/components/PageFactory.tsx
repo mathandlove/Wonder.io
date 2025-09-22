@@ -155,7 +155,7 @@ export function PageFactoryProvider({ children, onSceneAdded }: PageFactoryProvi
         }, 100);
 
         onSceneAdded?.(aiScene);
-      }, 500); // 500ms
+      }, 10000); // 10 seconds for debugging waiting bubble
 
       onSceneAdded?.(userScene);
     }

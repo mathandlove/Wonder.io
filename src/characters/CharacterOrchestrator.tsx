@@ -60,14 +60,19 @@ export const CharacterOrchestrator: React.FC<Props> = ({ storyId, scenes }) => {
 
 
 
-  // Compute scroll direction based on actual scrollOffset changes
-  const lastScrollOffsetRef = React.useRef(scrollOffset);
-  const direction = useMemo(() => {
-    const diff = scrollOffset - lastScrollOffsetRef.current;
-    if (Math.abs(diff) < 0.01) return 'none'; // Small threshold to avoid jitter
-    return diff > 0 ? 'down' : 'up';
+  // Track scroll direction with stable state
+  const [scrollDirection, setScrollDirection] = useState<'forward' | 'backward'>('forward');
+  const prevScrollOffsetRef = React.useRef(scrollOffset);
+
+  React.useEffect(() => {
+    const diff = scrollOffset - prevScrollOffsetRef.current;
+    if (Math.abs(diff) > 0.01) { // Small threshold to avoid jitter
+      const newDirection = diff > 0 ? 'forward' : 'backward';
+      console.log(`[CharacterOrchestrator] Scroll direction: ${newDirection} (diff: ${diff.toFixed(3)})`);
+      setScrollDirection(newDirection);
+    }
+    prevScrollOffsetRef.current = scrollOffset;
   }, [scrollOffset]);
-  React.useEffect(() => { lastScrollOffsetRef.current = scrollOffset; }, [scrollOffset]);
 
 
 
@@ -80,15 +85,15 @@ export const CharacterOrchestrator: React.FC<Props> = ({ storyId, scenes }) => {
       setPrevSceneIndex(currentSceneIndex);
 
       // Increment animNonce when scene changes to force animation restart
-      // Only trigger animation restart when character is entering (different from previous)
-      if (leftPanel?.animationState === 'entering') {
+      // Only trigger animation restart when character is new
+      if (leftPanel?.newCharacter) {
         setLeftEnterNonce(n => n + 1);
       }
-      if (rightPanel?.animationState === 'entering') {
+      if (rightPanel?.newCharacter) {
         setRightEnterNonce(n => n + 1);
       }
     }
-  }, [scrollOffset, prevSceneIndex, leftPanel?.animationState, rightPanel?.animationState]);
+  }, [scrollOffset, prevSceneIndex, leftPanel?.newCharacter, rightPanel?.newCharacter]);
 
 
   // Publish panel widths as CSS variables to constrain main content
@@ -126,10 +131,10 @@ export const CharacterOrchestrator: React.FC<Props> = ({ storyId, scenes }) => {
           nextCharacter={leftPanel?.nextCharacter ?? null}
           pose={leftPanel?.pose ?? null}
           storyId={storyId}
-          animationState={leftPanel?.animationState ?? 'idle'}
+          newCharacter={leftPanel?.newCharacter ?? false}
           aboutToSwap={leftPanel?.aboutToSwap ?? false}
           animNonce={leftEnterNonce}
-          scrollDirection={direction === 'down' ? 'forward' : direction === 'up' ? 'backward' : 'forward'}
+          scrollDirection={scrollDirection}
           onEntranceComplete={handleLeftEntranceComplete}
         />
       </div>
@@ -144,10 +149,10 @@ export const CharacterOrchestrator: React.FC<Props> = ({ storyId, scenes }) => {
           nextCharacter={rightPanel?.nextCharacter ?? null}
           pose={rightPanel?.pose ?? null}
           storyId={storyId}
-          animationState={rightPanel?.animationState ?? 'idle'}
+          newCharacter={rightPanel?.newCharacter ?? false}
           aboutToSwap={rightPanel?.aboutToSwap ?? false}
           animNonce={rightEnterNonce}
-          scrollDirection={direction === 'down' ? 'forward' : direction === 'up' ? 'backward' : 'forward'}
+          scrollDirection={scrollDirection}
           onEntranceComplete={handleRightEntranceComplete}
         />
       </div>

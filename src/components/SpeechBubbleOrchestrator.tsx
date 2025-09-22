@@ -128,8 +128,9 @@ export function SpeechBubbleOrchestrator({ scenes }: SpeechBubbleOrchestratorPro
         const nextLeftChar = nextScene && 'left-character' in nextScene ? nextScene["left-character"] : null;
         const nextRightChar = nextScene && 'right-character' in nextScene ? nextScene["right-character"] : null;
 
-        const leftCharSwapping = leftCharacter && leftCharacter !== nextLeftChar;
-        const rightCharSwapping = rightCharacter && rightCharacter !== nextRightChar;
+        // Character swapping includes when next scene has NOCHARACTER (character exits)
+        const leftCharSwapping = leftCharacter && (leftCharacter !== nextLeftChar || nextLeftChar === 'NOCHARACTER');
+        const rightCharSwapping = rightCharacter && (rightCharacter !== nextRightChar || nextRightChar === 'NOCHARACTER');
 
         const hasSwapAnimation = leftCharSwapping || rightCharSwapping;
 
@@ -167,7 +168,7 @@ export function SpeechBubbleOrchestrator({ scenes }: SpeechBubbleOrchestratorPro
               {scene.text}
             </CardboardBubble>
 
-            {/* Debug overlay for bubble state */}
+            {/* Debug overlay for bubble state - DISABLED
             <div style={{
               position: 'absolute',
               top: '-80px',
@@ -194,7 +195,7 @@ isEntering: ${isEntering}
 isExiting: ${isExiting}
 transform: ${transform}
 transition: ${transition}`}
-            </div>
+            </div> */}
           </div>
         );
       })}

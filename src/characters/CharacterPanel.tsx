@@ -8,7 +8,7 @@ interface CharacterPanelProps {
   characterName: string | null;
   previousCharacter?: string | null;
   nextCharacter?: string | null;
-  animationState?: string; // "entering", "speaking", "idle"
+  newCharacter?: boolean; // true if previousCharacter !== currentCharacter
   aboutToSwap?: boolean; // boolean modifier flag
   scrollDirection?: 'forward' | 'backward';
   pose?: string | null;
@@ -25,7 +25,7 @@ export const CharacterPanel: React.FC<CharacterPanelProps> = ({
   characterName,
   previousCharacter,
   nextCharacter,
-  animationState = 'idle',
+  newCharacter = false,
   aboutToSwap = false,
   scrollDirection = 'forward',
   pose,
@@ -35,35 +35,27 @@ export const CharacterPanel: React.FC<CharacterPanelProps> = ({
 }) => {
   const [version] = useState(`v${Date.now()}`);
 
-  // Pure renderer - no state management, just map animationState to CSS classes
+  // Pure renderer - determine phase based on scroll direction and character state
   const getCurrentPhase = (): Phase => {
     if (!visible || !characterName) return 'hidden';
 
-    // Check for speaking state first (takes priority)
-    if (animationState === 'speaking') {
-      return 'speaking';
-    }
-
-    // Backward scroll: special handling
-    if (scrollDirection === 'backward') {
+    if (scrollDirection === 'forward') {
+      // Forward scroll: character enters when new
+      if (newCharacter) {
+        return 'entering';
+      }
+    } else if (scrollDirection === 'backward') {
+      // Backward scroll: character enters when about to swap (exit animation)
       if (aboutToSwap) {
         return 'entering';
       }
-      // When scrolling backward with entering state but no swap,
-      // the character is already present and should be speaking if they were entering
-      if (animationState === 'entering') {
-        // Character was "entering" but since we're going backward,
-        // they're already there and should be speaking
+      // If character is new but not swapping, they're already present
+      if (newCharacter) {
         return 'speaking';
       }
     }
 
-    // Forward scroll: use animationState normally
-    if (animationState === 'entering') {
-      return 'entering';
-    }
-
-    // Default to idle
+    // Default to idle (no animation needed)
     return 'idle';
   };
 
@@ -170,8 +162,8 @@ export const CharacterPanel: React.FC<CharacterPanelProps> = ({
 
       {displayCharacter ? (
         <div className="story-character-content">
-          {/* Debug text above character - DISABLED */}
-          {false && (
+          {/* Debug text above character - ENABLED */}
+          {true && (
             <div style={{
               position: 'absolute',
               top: '20px',
@@ -187,11 +179,17 @@ export const CharacterPanel: React.FC<CharacterPanelProps> = ({
               zIndex: 1000,
               pointerEvents: 'none'
             }}>
-              {`State: ${animationState}\nPhase: ${phase}\nChar: ${characterName}\nSwap: ${aboutToSwap}\nDir: ${scrollDirection}\nTrigger: ${
-                scrollDirection === 'backward'
-                  ? (aboutToSwap ? 'swap→entering' : 'none (backward)')
-                  : (animationState === 'entering' ? 'entering' : 'none')
-              }`}
+              {`${side.toUpperCase()} PANEL
+Char: ${characterName}
+Prev: ${previousCharacter || 'none'}
+Next: ${nextCharacter || 'none'}
+Phase: ${phase}
+NewChar: ${newCharacter}
+AboutToSwap: ${aboutToSwap}
+Direction: ${scrollDirection}
+Display: ${displayCharacter}
+Entering: ${phase === 'entering'}
+Speaking: ${phase === 'speaking'}`}
             </div>
           )}
           <div
