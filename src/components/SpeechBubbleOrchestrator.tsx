@@ -5,7 +5,6 @@
 import React, { useMemo } from 'react';
 import { useScrollOffset } from '../hooks/useScrollOffset';
 import { CardboardBubble } from './CardboardBubble';
-import { WaitingBubble } from './WaitingBubble';
 import type { Scene, CharacterScene } from '../types/scene';
 
 interface SpeechBubbleOrchestratorProps {
@@ -67,23 +66,7 @@ export function SpeechBubbleOrchestrator({ scenes }: SpeechBubbleOrchestratorPro
     return bubbles;
   }, [scenes, scrollOffset]);
 
-  // Calculate waiting bubbles for PageFactory scenes
-  const waitingBubbles = useMemo(() => {
-    return characterBubbles
-      .filter(({ scene, sceneIndex }) => {
-        const isPageFactoryScene = !scene.flowSequence && scene.type === "character";
-        const isUserScene = scene.speaker === "left";
-        const hasSceneId = !!(scene as any).sceneId;
-        const nextScene = scenes[sceneIndex + 1];
-        const nextSceneIsAI = nextScene &&
-                             nextScene.type === "character" &&
-                             !(nextScene as any).flowSequence &&
-                             (nextScene as any).speaker === "right";
-
-        return isPageFactoryScene && isUserScene && hasSceneId && !nextSceneIsAI;
-      })
-      .map(({ sceneIndex, transform }) => ({ sceneIndex, transform }));
-  }, [characterBubbles, scenes]);
+  // Waiting bubbles are now integrated into each CardboardBubble
 
   return (
     <div className="speech-bubble-layer" style={{
@@ -103,10 +86,9 @@ export function SpeechBubbleOrchestrator({ scenes }: SpeechBubbleOrchestratorPro
           ? scene["right-character"] || "Right"
           : "Narrator";
 
-        // Detect if bubble is entering (visible) or exiting
+        // Detect if bubble is entering (visible)
         const isVisible = transform === 'translateY(0)';
         const isEntering = isVisible;
-        const isExiting = !isVisible && transform.includes('-');
 
         // Detect if this scene has character entrance animation
         // Check if any characters are entering (not just if speaker is left/right)
@@ -124,9 +106,9 @@ export function SpeechBubbleOrchestrator({ scenes }: SpeechBubbleOrchestratorPro
         const hasEnteringAnimation = leftCharEntering || rightCharEntering;
 
         // Check next scene to see if characters will change (indicating swap for backwards scroll)
-        const nextScene = sceneIndex < scenes.length - 1 ? scenes[sceneIndex + 1] : null;
-        const nextLeftChar = nextScene && 'left-character' in nextScene ? nextScene["left-character"] : null;
-        const nextRightChar = nextScene && 'right-character' in nextScene ? nextScene["right-character"] : null;
+        const nextSceneForSwap = sceneIndex < scenes.length - 1 ? scenes[sceneIndex + 1] : null;
+        const nextLeftChar = nextSceneForSwap && 'left-character' in nextSceneForSwap ? nextSceneForSwap["left-character"] : null;
+        const nextRightChar = nextSceneForSwap && 'right-character' in nextSceneForSwap ? nextSceneForSwap["right-character"] : null;
 
         // Character swapping includes when next scene has NOCHARACTER (character exits)
         const leftCharSwapping = leftCharacter && (leftCharacter !== nextLeftChar || nextLeftChar === 'NOCHARACTER');
@@ -137,17 +119,29 @@ export function SpeechBubbleOrchestrator({ scenes }: SpeechBubbleOrchestratorPro
         let transition;
         if (isEntering) {
           // Entering bubble - check scroll direction and animation needs
-          
+
             if ((hasEnteringAnimation && scrollDirection === 'forward') || (scrollDirection === 'backward' && hasSwapAnimation)) {
               transition = 'transform 0.4s ease-out 1.6s'; // Forward + character entrance: delay
             } else {
               transition = 'transform 0.4s ease-out 0s'; // Forward + no character entrance: immediate
             }
-          } 
+          }
          else {
 
           transition = 'transform 0.3s ease-out 0s'; // Default/waiting
         }
+
+        // Determine if this scene should show waiting bubble
+        const isPageFactoryScene = !scene.flowSequence && scene.type === "character";
+        const isUserScene = scene.speaker === "left";
+        const hasSceneId = !!(scene as any).sceneId;
+        const nextSceneForWaiting = scenes[sceneIndex + 1];
+        const nextSceneIsAI = nextSceneForWaiting &&
+                             nextSceneForWaiting.type === "character" &&
+                             !(nextSceneForWaiting as any).flowSequence &&
+                             (nextSceneForWaiting as any).speaker === "right";
+
+        const shouldShowWaitingBubble = isPageFactoryScene && isUserScene && hasSceneId && !nextSceneIsAI;
 
         return (
           <div
@@ -164,6 +158,7 @@ export function SpeechBubbleOrchestrator({ scenes }: SpeechBubbleOrchestratorPro
             <CardboardBubble
               side={scene.speaker === 'left' ? 'left' : scene.speaker === 'right' ? 'right' : 'center'}
               speakerLabel={speakerLabel}
+              showWaitingBubble={shouldShowWaitingBubble}
             >
               {scene.text}
             </CardboardBubble>
@@ -200,44 +195,7 @@ transition: ${transition}`}
         );
       })}
 
-      {/* Waiting bubbles with same scroll logic but different positioning */}
-      {waitingBubbles.map(({ sceneIndex, transform }) => {
-        // Detect waiting bubble state
-        const isVisible = transform.includes('translateY(0)');
-        const isExiting = !isVisible && transform.includes('-');
-
-        let waitingTransition;
-        if (isVisible) {
-          waitingTransition = 'transform 0.4s ease-out 0.4s'; // Entrance: longer delay than main bubbles
-        } else if (isExiting) {
-          waitingTransition = 'transform 0.2s ease-in 0s'; // Exit: fast, no delay
-        } else {
-          waitingTransition = 'transform 0.3s ease-out 0s'; // Default/waiting
-        }
-
-        return (
-          <div
-            key={`waiting-${sceneIndex}`}
-            style={{
-              position: 'absolute',
-              top: '50vh',
-              right: '10px',
-              transform: `translateY(-50%) ${transform}`,
-              transition: waitingTransition,
-              pointerEvents: 'auto'
-            }}
-          >
-            <div style={{ marginTop: '80px' }}> {/* Position below main bubble */}
-              <WaitingBubble
-                side="right"
-                speakerLabel="AI"
-                isDelayed={false}
-                isReady={true}
-              />
-            </div>
-          </div>
-        );
-      })}
+      {/* Waiting bubbles are now integrated into CardboardBubble components */}
     </div>
   );
 }

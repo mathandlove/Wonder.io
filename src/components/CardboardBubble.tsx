@@ -1,5 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react';
 import './CardboardBubble.css';
+import { WaitingBubble } from './WaitingBubble';
 
 interface CardboardBubbleProps {
   side?: 'left' | 'right' | 'center';
@@ -7,6 +8,7 @@ interface CardboardBubbleProps {
   speakerLabel?: string;
   onViewportExit?: () => void; // Callback when bubble leaves viewport
   onViewportEnter?: () => void; // Callback when bubble enters viewport
+  showWaitingBubble?: boolean; // Show waiting bubble 20px below main text
 }
 
 export const CardboardBubble: React.FC<CardboardBubbleProps> = ({
@@ -14,7 +16,8 @@ export const CardboardBubble: React.FC<CardboardBubbleProps> = ({
   children,
   speakerLabel,
   onViewportExit,
-  onViewportEnter
+  onViewportEnter,
+  showWaitingBubble = false
 }) => {
   const bubbleRef = useRef<HTMLDivElement>(null);
 
@@ -64,6 +67,18 @@ export const CardboardBubble: React.FC<CardboardBubbleProps> = ({
             <p className="cardboard-bubble-text">{children}</p>
           </div>
         </div>
+
+        {/* Waiting bubble positioned 20px below main bubble - always for right side (AI) */}
+        {showWaitingBubble && (
+          <div style={{ marginTop: '20px', display: 'flex', justifyContent: 'flex-end' }}>
+            <WaitingBubble
+              side="right"
+              speakerLabel="AI"
+              isDelayed={false}
+              isReady={true}
+            />
+          </div>
+        )}
       </div>
     </div>
   );
