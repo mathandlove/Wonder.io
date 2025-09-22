@@ -18,21 +18,23 @@ export default function CharacterScene({ scene, sceneIndex }: SceneProps<Charact
         position: "relative",
       }}
     >
-      {/* Debug info for scroll target */}
-      <div style={{
-        position: 'absolute',
-        top: '10px',
-        left: '10px',
-        background: 'rgba(0, 0, 0, 0.5)',
-        color: '#fff',
-        padding: '4px 8px',
-        borderRadius: '4px',
-        fontSize: '10px',
-        fontFamily: 'monospace',
-        pointerEvents: 'none'
-      }}>
-        Scene {sceneIndex}: {scene.speaker} - "{scene.text.substring(0, 30)}..."
-      </div>
+      {/* Debug info for scroll target - DISABLED */}
+      {false && (
+        <div style={{
+          position: 'absolute',
+          top: '10px',
+          left: '10px',
+          background: 'rgba(0, 0, 0, 0.5)',
+          color: '#fff',
+          padding: '4px 8px',
+          borderRadius: '4px',
+          fontSize: '10px',
+          fontFamily: 'monospace',
+          pointerEvents: 'none'
+        }}>
+          Scene {sceneIndex}: {scene.speaker} - "{scene.text.substring(0, 30)}..."
+        </div>
+      )}
 
       {/* Empty scroll target - speech bubbles rendered by SpeechBubbleOrchestrator */}
     </div>

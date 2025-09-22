@@ -84,13 +84,23 @@ export type FullScene = {
   };
 };
 
+export type TextScene = {
+  type: "text";
+  text: string;
+  character?: string;
+  background?: string;
+  flowSequence?: boolean;
+  isFirstInFlow?: boolean;
+};
+
 export type Scene =
   | CharacterScene
   | QuestScene
   | InputScene
   | ImageScene
   | CharacterFlowScene
-  | FullScene;
+  | FullScene
+  | TextScene;
 
 export type Story = {
   scenes: Scene[];

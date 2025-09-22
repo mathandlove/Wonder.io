@@ -20,7 +20,8 @@ export function buildBackgroundRanges(storyContent: SceneContent[]): BackgroundR
     } else if ((content.type === 'title' ||
                content.type === 'title2' ||
                content.type === 'full' ||
-               content.type === 'character') &&
+               content.type === 'character' ||
+               content.type === 'text') &&
                content.background &&
                (!content.flowSequence || content.isFirstInFlow)) {
       newBg = content.background;

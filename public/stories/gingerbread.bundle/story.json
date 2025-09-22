@@ -80,18 +80,18 @@
       "text":"It is worth it because I am protecting all my friends."
     },
     {
-      "type": "full",
+      "type": "text",
       "text": "Today, I was visiting the Drury Lane Bakery, for my daily Muffin.",
       "background": "bakery.png"
     },
         {
-      "type": "full",
+      "type": "text",
       "text": "When I heard a loud cry for help from Betsy the baker.",
       "background": "bakery.png"
     },
 
     {
-      "type": "full",
+      "type": "text",
       "background": "cobbler.png",
       "text": "Leo saved the day! The cookies are safe once again."
     }
