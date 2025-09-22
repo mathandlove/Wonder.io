@@ -15,6 +15,7 @@ interface CharacterPanelProps {
   storyId: string;
   animNonce?: number; // Forces animation restart when incremented
   onEntranceComplete?: () => void; // Callback when entrance animation completes
+  isSpeaking?: boolean; // true if this character is currently the speaker
 }
 
 type Phase = 'hidden' | 'entering' | 'idle' | 'speaking';
@@ -31,13 +32,17 @@ export const CharacterPanel: React.FC<CharacterPanelProps> = ({
   pose,
   storyId,
   animNonce = 0,
-  onEntranceComplete
+  onEntranceComplete,
+  isSpeaking = false
 }) => {
   const [version] = useState(`v${Date.now()}`);
 
   // Pure renderer - determine phase based on scroll direction and character state
   const getCurrentPhase = (): Phase => {
     if (!visible || !characterName) return 'hidden';
+
+    // Check if character is actively speaking first
+
 
     if (scrollDirection === 'forward') {
       // Forward scroll: character enters when new
@@ -49,10 +54,10 @@ export const CharacterPanel: React.FC<CharacterPanelProps> = ({
       if (aboutToSwap) {
         return 'entering';
       }
-      // If character is new but not swapping, they're already present
-      if (newCharacter) {
-        return 'speaking';
-      }
+    }
+
+        if (isSpeaking) {
+      return 'speaking';
     }
 
     // Default to idle (no animation needed)
@@ -187,6 +192,7 @@ Phase: ${phase}
 NewChar: ${newCharacter}
 AboutToSwap: ${aboutToSwap}
 Direction: ${scrollDirection}
+IsSpeaking: ${isSpeaking}
 Display: ${displayCharacter}
 Entering: ${phase === 'entering'}
 Speaking: ${phase === 'speaking'}`}

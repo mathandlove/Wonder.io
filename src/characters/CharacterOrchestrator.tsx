@@ -15,25 +15,14 @@ export const CharacterOrchestrator: React.FC<Props> = ({ storyId, scenes }) => {
   const { index: scrollOffset } = useScrollManager({ setCurrentIndex: () => {} }); // continuous float in "scene units"
   const { notifyEntranceComplete } = useCharacterAnimation();
 
-  // Get current scene meta for direct access to animation states
-  const currentMeta = useMemo(() => {
+  // Get current scene meta and speaker info
+  const { currentMeta, currentSpeaker } = useMemo(() => {
     const i = Math.max(0, Math.min(scenes.length - 1, Math.round(scrollOffset)));
     const currentScene = scenes[i];
     const meta = (currentScene as any)?.meta || null;
+    const speaker = (currentScene as any)?.speaker || null;
 
-    // Debug panel meta for new scenes
-    if (meta) {
-      // console.log(`🎭 CharacterOrchestrator scene ${i} meta:`, {
-      //   type: (currentScene as any)?.type,
-      //   speaker: (currentScene as any)?.speaker,
-      //   leftChar: (currentScene as any)?.['left-character'],
-      //   rightChar: (currentScene as any)?.['right-character'],
-      //   panelLeft: meta.panelLeft,
-      //   panelRight: meta.panelRight
-      // });
-    }
-
-    return meta;
+    return { currentMeta: meta, currentSpeaker: speaker };
   }, [scrollOffset, scenes]);
 
 
@@ -135,6 +124,7 @@ export const CharacterOrchestrator: React.FC<Props> = ({ storyId, scenes }) => {
           aboutToSwap={leftPanel?.aboutToSwap ?? false}
           animNonce={leftEnterNonce}
           scrollDirection={scrollDirection}
+          isSpeaking={currentSpeaker === 'left'}
           onEntranceComplete={handleLeftEntranceComplete}
         />
       </div>
@@ -153,6 +143,7 @@ export const CharacterOrchestrator: React.FC<Props> = ({ storyId, scenes }) => {
           aboutToSwap={rightPanel?.aboutToSwap ?? false}
           animNonce={rightEnterNonce}
           scrollDirection={scrollDirection}
+          isSpeaking={currentSpeaker === 'right'}
           onEntranceComplete={handleRightEntranceComplete}
         />
       </div>
