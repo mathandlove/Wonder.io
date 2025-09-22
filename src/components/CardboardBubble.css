@@ -161,18 +161,25 @@
   animation: bubble-pop-in 0.25s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards;
 }
 
-/* Delayed bubble starts hidden but keeps all base styles */
+/* Delayed bubble starts below viewport but visible */
 .cardboard-bubble.cardboard-bubble-delayed {
-  opacity: 0;
-  transform: scale(0.8);
+  opacity: 1;
+  transform: translateY(100vh);
   animation: none; /* Override default animation */
 }
 
-/* Delayed bubble animates in when ready */
+/* Delayed bubble slides up when ready */
 .cardboard-bubble.cardboard-bubble-delayed.cardboard-bubble-show {
   opacity: 1;
-  transform: scale(1);
-  animation: bubble-pop-in 0.25s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards;
+  transform: translateY(0);
+  animation: bubble-slide-up-from-bottom 0.5s ease-out forwards;
+}
+
+/* Delayed bubble slides up when exiting */
+.cardboard-bubble.cardboard-bubble-delayed.cardboard-bubble-exit {
+  opacity: 1;
+  transform: translateY(-100vh);
+  animation: bubble-slide-up-to-top 0.5s ease-in forwards;
 }
 
 @keyframes bubble-pop-in {
@@ -183,6 +190,28 @@
   100% {
     opacity: 1;
     transform: scale(1);
+  }
+}
+
+@keyframes bubble-slide-up-from-bottom {
+  0% {
+    opacity: 1;
+    transform: translateY(100vh);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes bubble-slide-up-to-top {
+  0% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(-100vh);
   }
 }
 

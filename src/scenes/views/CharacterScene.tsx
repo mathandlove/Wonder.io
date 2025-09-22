@@ -81,8 +81,9 @@ export default function CharacterScene({ scene, sceneIndex }: SceneProps<Charact
                          !(nextScene as any).flowSequence &&
                          (nextScene as any).speaker === "right";
 
-    // Show waiting bubble for PageFactory user scenes ONLY if no AI response exists yet
-    const shouldShowWaiting = isPageFactoryScene && isUserScene && hasSceneId && !nextSceneIsAI;
+    // Show waiting bubble for PageFactory user scenes ONLY if no AI response exists yet AND main bubble is ready
+    const mainBubbleReady = shouldAnimateImmediately ? true : isReady;
+    const shouldShowWaiting = isPageFactoryScene && isUserScene && hasSceneId && !nextSceneIsAI && mainBubbleReady;
 
     console.log(`🔍 WaitingBubble Debug for scene ${sceneIndex}:`, {
       isPageFactoryScene,
@@ -104,7 +105,7 @@ export default function CharacterScene({ scene, sceneIndex }: SceneProps<Charact
     } else {
       setShowWaitingBubble(false);
     }
-  }, [scene, sceneIndex, scenes]);
+  }, [scene, sceneIndex, scenes, isReady]);
 
   return (
     <div
@@ -118,16 +119,45 @@ export default function CharacterScene({ scene, sceneIndex }: SceneProps<Charact
       }}
     >
       {/* Main character speech bubble */}
-      <CardboardBubble
-        side={scene.speaker === 'left' ? 'left' : scene.speaker === 'right' ? 'right' : 'center'}
-        speakerLabel={speakerLabel}
-        isDelayed={false}
-        isReady={true}
-        onViewportExit={handleBubbleViewportExit}
-        onViewportEnter={handleBubbleViewportEnter}
-      >
-        {scene.text}
-      </CardboardBubble>
+      <div style={{ position: 'relative' }}>
+        <CardboardBubble
+          side={scene.speaker === 'left' ? 'left' : scene.speaker === 'right' ? 'right' : 'center'}
+          speakerLabel={speakerLabel}
+          shouldAnimateImmediately={shouldAnimateImmediately}
+          isReady={isReady}
+          onViewportExit={handleBubbleViewportExit}
+          onViewportEnter={handleBubbleViewportEnter}
+          onReady={handleEntranceComplete}
+        >
+          {scene.text}
+        </CardboardBubble>
+
+        {/* Debug overlay for main bubble */}
+        <div style={{
+          position: 'absolute',
+          top: '-50px',
+          left: '0',
+          background: 'rgba(0, 0, 0, 0.8)',
+          color: '#0ff',
+          padding: '4px 8px',
+          borderRadius: '4px',
+          fontSize: '10px',
+          fontFamily: 'monospace',
+          whiteSpace: 'pre-line',
+          zIndex: 1000,
+          pointerEvents: 'none',
+          maxWidth: '200px'
+        }}>
+          {`MAIN BUBBLE
+Scene: ${sceneIndex}
+Speaker: ${scene.speaker}
+Side: ${scene.speaker === 'left' ? 'left' : scene.speaker === 'right' ? 'right' : 'center'}
+shouldAnimateImmediately: ${shouldAnimateImmediately}
+bubbleReady: ${bubbleReady}
+isReady: ${isReady}
+mainBubbleReady: ${shouldAnimateImmediately ? true : isReady}`}
+        </div>
+      </div>
 
 
       {/* Waiting bubble - positioned absolutely below the main bubble */}
@@ -147,6 +177,48 @@ export default function CharacterScene({ scene, sceneIndex }: SceneProps<Charact
             isDelayed={false}
             isReady={true}
           />
+
+          {/* Debug overlay for waiting bubble */}
+          <div style={{
+            position: 'absolute',
+            top: '-60px',
+            right: '0',
+            background: 'rgba(255, 0, 0, 0.8)',
+            color: '#fff',
+            padding: '4px 8px',
+            borderRadius: '4px',
+            fontSize: '10px',
+            fontFamily: 'monospace',
+            whiteSpace: 'pre-line',
+            zIndex: 1001,
+            pointerEvents: 'none',
+            maxWidth: '200px'
+          }}>
+            {`WAITING BUBBLE
+Scene: ${sceneIndex}
+showWaitingBubble: ${showWaitingBubble}
+isPageFactoryScene: ${!scene.flowSequence && scene.type === "character"}
+isUserScene: ${scene.speaker === "left"}
+hasSceneId: ${!!(scene as any).sceneId}
+nextSceneIsAI: ${(() => {
+  const nextScene = sceneIndex !== undefined ? scenes[sceneIndex + 1] : null;
+  return !!(nextScene &&
+    nextScene.type === "character" &&
+    !(nextScene as any).flowSequence &&
+    (nextScene as any).speaker === "right");
+})()}
+shouldShowWaiting: ${(() => {
+  const isPageFactoryScene = !scene.flowSequence && scene.type === "character";
+  const isUserScene = scene.speaker === "left";
+  const hasSceneId = !!(scene as any).sceneId;
+  const nextScene = sceneIndex !== undefined ? scenes[sceneIndex + 1] : null;
+  const nextSceneIsAI = nextScene &&
+                       nextScene.type === "character" &&
+                       !(nextScene as any).flowSequence &&
+                       (nextScene as any).speaker === "right";
+  return isPageFactoryScene && isUserScene && hasSceneId && !nextSceneIsAI;
+})()}`}
+          </div>
         </div>
       )}
     </div>
