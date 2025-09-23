@@ -1,4 +1,5 @@
 import React, { createContext, useContext, useState, useCallback, ReactNode } from 'react';
+import { useDialogue as useOldDialogue } from '../context/DialogueContext';
 
 export interface Message {
   id: string;
@@ -19,6 +20,8 @@ interface DialogueContextType {
   submitPlayerUtterance: (text: string) => Promise<void>;
   setSuggestions: (suggestions: string[]) => void;
   setTurnBannerText: (text?: string) => void;
+  hideTurnBanner: () => void;
+  resetTurnBanner: () => void;
   markGoalMet: () => void;
   markGoalNotMet: () => void;
 }
@@ -46,6 +49,7 @@ interface DialogueProviderProps {
 }
 
 export const ChatDialogueProvider: React.FC<DialogueProviderProps> = ({ children }) => {
+  const oldDialogue = useOldDialogue();
   const [messages, setMessages] = useState<Message[]>([]);
   const [isPlayerTurn, setIsPlayerTurn] = useState(false);
   const [waiting, setWaiting] = useState(false);
@@ -53,14 +57,25 @@ export const ChatDialogueProvider: React.FC<DialogueProviderProps> = ({ children
   const [questState, setQuestState] = useState<'active' | 'complete' | 'failed'>('active');
   const [currentQuestId, setCurrentQuestId] = useState<string | undefined>();
   const [turnBannerText, setTurnBannerText] = useState<string | undefined>();
+  const [bannerHidden, setBannerHidden] = useState(() => {
+    // Initialize from localStorage if available
+    try {
+      const stored = localStorage.getItem('chat-banner-hidden');
+      return stored === 'true';
+    } catch {
+      return false;
+    }
+  });
 
   const grantPlayerTurn = useCallback((questId?: string) => {
+    console.log('[BANNER_DEBUG] grantPlayerTurn called for questId:', questId, 'bannerHidden:', bannerHidden);
     setCurrentQuestId(questId);
     setIsPlayerTurn(true);
     setQuestState('active');
     // Reset messages for new input scene
     setMessages([]);
-  }, []);
+    // Don't reset banner hidden state - let it persist across scenes
+  }, [bannerHidden]);
 
   const mockLLMCall = async (playerText: string): Promise<string> => {
     // Simulate network delay
@@ -87,6 +102,9 @@ export const ChatDialogueProvider: React.FC<DialogueProviderProps> = ({ children
       timestamp: new Date()
     };
     setMessages(prev => [...prev, playerMessage]);
+
+    // Submit to old dialogue system to create character page with LEO speaking
+    oldDialogue.submitUserMessage(text);
 
     try {
       // Call mock LLM
@@ -119,7 +137,7 @@ export const ChatDialogueProvider: React.FC<DialogueProviderProps> = ({ children
     } finally {
       setWaiting(false);
     }
-  }, [isPlayerTurn, waiting, currentQuestId]);
+  }, [isPlayerTurn, waiting, currentQuestId, oldDialogue]);
 
   const markGoalMet = useCallback(() => {
     setQuestState('complete');
@@ -131,18 +149,46 @@ export const ChatDialogueProvider: React.FC<DialogueProviderProps> = ({ children
     setIsPlayerTurn(true);
   }, []);
 
+  const hideTurnBanner = useCallback(() => {
+    console.log('[BANNER_DEBUG] hideTurnBanner called - setting bannerHidden to true');
+    setBannerHidden(true);
+    // Persist to localStorage
+    try {
+      localStorage.setItem('chat-banner-hidden', 'true');
+    } catch (error) {
+      console.warn('Failed to save banner state to localStorage:', error);
+    }
+  }, []);
+
+  const resetTurnBanner = useCallback(() => {
+    console.log('[BANNER_DEBUG] resetTurnBanner called - setting bannerHidden to false');
+    setBannerHidden(false);
+    // Remove from localStorage
+    try {
+      localStorage.removeItem('chat-banner-hidden');
+    } catch (error) {
+      console.warn('Failed to remove banner state from localStorage:', error);
+    }
+  }, []);
+
   const value: DialogueContextType = {
     messages,
     isPlayerTurn,
     waiting,
     suggestions,
     questState,
-    showTurnBanner: isPlayerTurn && !waiting,
+    showTurnBanner: (() => {
+      const shouldShow = isPlayerTurn && !waiting && !bannerHidden;
+      console.log('[BANNER_DEBUG] showTurnBanner computed:', shouldShow, 'isPlayerTurn:', isPlayerTurn, 'waiting:', waiting, 'bannerHidden:', bannerHidden);
+      return shouldShow;
+    })(),
     turnBannerText,
     grantPlayerTurn,
     submitPlayerUtterance,
     setSuggestions,
     setTurnBannerText,
+    hideTurnBanner,
+    resetTurnBanner,
     markGoalMet,
     markGoalNotMet
   };
