@@ -10,18 +10,9 @@ export interface NavigationContextType {
   setCurrentIndex: (index: number) => void;
   scenes: Scene[];
   setScenes: (scenes: Scene[]) => void;
-  addScene: (scene: Scene) => void;
   insertScene: (scene: Scene, index: number) => void;
   goToNext: () => void;
-  goToPrevious: () => void;
   goToIndex: (index: number) => void;
-  canGoNext: boolean;
-  canGoPrevious: boolean;
-  totalScenes: number;
-  goToType: (type: Scene["type"]) => void;
-  goToOnce: (key: string, index: number) => void;
-  goToTypeOnce: (key: string, type: Scene["type"]) => void;
-  resetOnce: (key: string) => void;
   registerSnapApi: (api: { scrollTo: (index: number, opts?: ScrollToOptions) => void }) => void;
   currentBackgroundId: string | null;
 }
@@ -63,7 +54,6 @@ export function NavigationProvider({ children, initialIndex = 0 }: NavigationPro
     return null;
   }, [scenes, currentIndex]);
   const snapApiRef = useRef<{ scrollTo: (index: number, opts?: ScrollToOptions) => void } | null>(null);
-  const onceKeysRef = useRef<Set<string>>(new Set());
 
   // Register SnapLayer's API for programmatic control
   const registerSnapApi = useCallback((api: { scrollTo: (index: number, opts?: ScrollToOptions) => void }) => {
@@ -92,32 +82,6 @@ export function NavigationProvider({ children, initialIndex = 0 }: NavigationPro
     snapApiRef.current?.scrollTo(clampedIndex, { behavior: "smooth" });
   }, [scenes.length]);
 
-  const goToType = useCallback((type: Scene["type"]) => {
-    const idx = scenes.findIndex(s => s.type === type);
-    if (idx >= 0) {
-      goToIndex(idx);
-    }
-  }, [scenes, goToIndex]);
-
-  const goToOnce = useCallback((key: string, index: number) => {
-    if (onceKeysRef.current.has(key)) return;
-    onceKeysRef.current.add(key);
-    goToIndex(index);
-  }, [goToIndex]);
-
-  const goToTypeOnce = useCallback((key: string, type: Scene["type"]) => {
-    if (onceKeysRef.current.has(key)) return;
-    const idx = scenes.findIndex(s => s.type === type);
-    if (idx >= 0) {
-      onceKeysRef.current.add(key);
-      goToIndex(idx);
-    }
-  }, [scenes, goToIndex]);
-
-  const resetOnce = useCallback((key: string) => {
-    onceKeysRef.current.delete(key);
-  }, []);
-
   const insertScene = useCallback((scene: Scene, index: number) => {
     setScenes(prevScenes => {
       const newScenes = [...prevScenes];
@@ -126,42 +90,18 @@ export function NavigationProvider({ children, initialIndex = 0 }: NavigationPro
     });
   }, []);
 
-  const addScene = useCallback((scene: Scene) => {
-    setScenes(prevScenes => {
-      const newScenes = [...prevScenes, scene];
-      return newScenes;
-    });
-  }, []);
-
   const goToNext = useCallback(() => {
     goToIndex(currentIndex + 1);
   }, [currentIndex, goToIndex]);
-
-  const goToPrevious = useCallback(() => {
-    goToIndex(currentIndex - 1);
-  }, [currentIndex, goToIndex]);
-
-  const canGoNext = currentIndex < scenes.length - 1;
-  const canGoPrevious = currentIndex > 0;
-  const totalScenes = scenes.length;
 
   const contextValue = useMemo((): NavigationContextType => ({
     currentIndex,
     setCurrentIndex,
     scenes,
     setScenes,
-    addScene,
     insertScene,
     goToNext,
-    goToPrevious,
     goToIndex,
-    canGoNext,
-    canGoPrevious,
-    totalScenes,
-    goToType,
-    goToOnce,
-    goToTypeOnce,
-    resetOnce,
     registerSnapApi,
     currentBackgroundId,
   }), [
@@ -169,23 +109,12 @@ export function NavigationProvider({ children, initialIndex = 0 }: NavigationPro
     setCurrentIndex,
     scenes,
     setScenes,
-    addScene,
     insertScene,
     goToNext,
-    goToPrevious,
     goToIndex,
-    canGoNext,
-    canGoPrevious,
-    totalScenes,
-    goToType,
-    goToOnce,
-    goToTypeOnce,
-    resetOnce,
     registerSnapApi,
     currentBackgroundId,
   ]);
-
-  
 
   return (
     <NavigationContext.Provider value={contextValue}>
