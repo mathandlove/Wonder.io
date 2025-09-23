@@ -8,9 +8,13 @@ import type { Scene } from "../types/scene";
 export interface NavigationContextType {
   currentIndex: number;
   setCurrentIndex: (index: number) => void;
-  scenes: Scene[];
+  allScenes: Scene[];
+  scenes: Scene[]; // Alias for visibleScenes (backward compatibility)
+  visibleScenes: Scene[];
   setScenes: (scenes: Scene[]) => void;
   insertScene: (scene: Scene, index: number) => void;
+  hideScene: (sceneId: string) => void;
+  showScene: (sceneId: string) => void;
   goToNext: () => void;
   goToIndex: (index: number) => void;
   registerSnapApi: (api: { scrollTo: (index: number, opts?: ScrollToOptions) => void }) => void;
@@ -35,12 +39,18 @@ interface NavigationProviderProps {
 
 export function NavigationProvider({ children, initialIndex = 0 }: NavigationProviderProps) {
   const [currentIndex, setCurrentIndex] = useState(initialIndex);
-  const [scenes, setScenes] = useState<Scene[]>([]);
+  const [allScenes, setAllScenes] = useState<Scene[]>([]);
+
+  // Filter out hidden scenes for navigation and rendering
+  const visibleScenes = useMemo(
+    () => allScenes.filter(scene => !scene.hidden),
+    [allScenes]
+  );
 
 
-  // Compute current background from current scene
+  // Compute current background from current scene (use visibleScenes)
   const currentBackgroundId = useMemo(() => {
-    const currentScene = scenes[currentIndex];
+    const currentScene = visibleScenes[currentIndex];
     if (!currentScene) return null;
 
     // Only return background if explicitly defined and not empty
@@ -52,7 +62,7 @@ export function NavigationProvider({ children, initialIndex = 0 }: NavigationPro
     }
 
     return null;
-  }, [scenes, currentIndex]);
+  }, [visibleScenes, currentIndex]);
   const snapApiRef = useRef<{ scrollTo: (index: number, opts?: ScrollToOptions) => void } | null>(null);
 
   // Register SnapLayer's API for programmatic control
@@ -65,29 +75,49 @@ export function NavigationProvider({ children, initialIndex = 0 }: NavigationPro
   // Auto-scroll to initial index when scenes are loaded and snap API is ready
   const [hasInitialScrolled, setHasInitialScrolled] = useState(false);
   useEffect(() => {
-    if (snapApiRef.current && scenes.length > 0 && initialIndex > 0 && !hasInitialScrolled) {
+    if (snapApiRef.current && visibleScenes.length > 0 && initialIndex > 0 && !hasInitialScrolled) {
       // Small delay to ensure DOM is ready
       const timer = setTimeout(() => {
-        const clampedIndex = Math.max(0, Math.min(initialIndex, scenes.length - 1));
+        const clampedIndex = Math.max(0, Math.min(initialIndex, visibleScenes.length - 1));
         snapApiRef.current?.scrollTo(clampedIndex, { behavior: "auto" }); // Use "auto" for instant jump
         setHasInitialScrolled(true);
       }, 100);
       return () => clearTimeout(timer);
     }
-  }, [scenes.length, initialIndex, hasInitialScrolled]); // Only run when scenes load or initialIndex changes
+  }, [visibleScenes.length, initialIndex, hasInitialScrolled]); // Only run when scenes load or initialIndex changes
 
   const goToIndex = useCallback((index: number) => {
-    const clampedIndex = Math.max(0, Math.min(index, scenes.length - 1));
+    const clampedIndex = Math.max(0, Math.min(index, visibleScenes.length - 1));
     setCurrentIndex(clampedIndex);
     snapApiRef.current?.scrollTo(clampedIndex, { behavior: "smooth" });
-  }, [scenes.length]);
+  }, [visibleScenes.length]);
 
   const insertScene = useCallback((scene: Scene, index: number) => {
-    setScenes(prevScenes => {
+    setAllScenes(prevScenes => {
       const newScenes = [...prevScenes];
       newScenes.splice(index, 0, scene);
       return newScenes;
     });
+  }, []);
+
+  const setScenes = useCallback((scenes: Scene[]) => {
+    setAllScenes(scenes);
+  }, []);
+
+  const hideScene = useCallback((sceneId: string) => {
+    setAllScenes(prevScenes =>
+      prevScenes.map(scene =>
+        (scene as any).id === sceneId ? { ...scene, hidden: true } : scene
+      )
+    );
+  }, []);
+
+  const showScene = useCallback((sceneId: string) => {
+    setAllScenes(prevScenes =>
+      prevScenes.map(scene =>
+        (scene as any).id === sceneId ? { ...scene, hidden: false } : scene
+      )
+    );
   }, []);
 
   const goToNext = useCallback(() => {
@@ -97,9 +127,13 @@ export function NavigationProvider({ children, initialIndex = 0 }: NavigationPro
   const contextValue = useMemo((): NavigationContextType => ({
     currentIndex,
     setCurrentIndex,
-    scenes,
+    allScenes,
+    scenes: visibleScenes, // Backward compatibility alias
+    visibleScenes,
     setScenes,
     insertScene,
+    hideScene,
+    showScene,
     goToNext,
     goToIndex,
     registerSnapApi,
@@ -107,9 +141,12 @@ export function NavigationProvider({ children, initialIndex = 0 }: NavigationPro
   }), [
     currentIndex,
     setCurrentIndex,
-    scenes,
+    allScenes,
+    visibleScenes,
     setScenes,
     insertScene,
+    hideScene,
+    showScene,
     goToNext,
     goToIndex,
     registerSnapApi,

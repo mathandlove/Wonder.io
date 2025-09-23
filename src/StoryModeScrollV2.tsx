@@ -66,7 +66,7 @@ const StoryContent: React.FC = () => {
   const { story, loading, error } = useStory(STORY_URL);
 
   // Navigation context
-  const { scenes: navigationScenes, setScenes, setCurrentIndex } = useNavigation();
+  const { scenes: navigationScenes, setScenes, setCurrentIndex, hideScene, showScene, allScenes } = useNavigation();
 
   // Derive a stable array of scenes from the loaded story
   const initialScenes = useMemo(() => story?.scenes || [], [story?.scenes]);
@@ -88,6 +88,16 @@ const StoryContent: React.FC = () => {
     () => injectPanelMetaFromFlows(navigationScenes),
     [navigationScenes]
   );
+
+  // Debug: Expose scene hiding functions globally for testing
+  React.useEffect(() => {
+    if (typeof window !== 'undefined') {
+      (window as any).__hideScene = hideScene;
+      (window as any).__showScene = showScene;
+      (window as any).__allScenes = allScenes;
+      (window as any).__visibleScenes = navigationScenes;
+    }
+  }, [hideScene, showScene, allScenes, navigationScenes]);
 
   // RENDER PATH #1: still loading the story → show a friendly centered message
   if (loading) {
@@ -135,11 +145,23 @@ const StoryContent: React.FC = () => {
           {scenes.map((scene: Scene, i: number) => {
             // Use stable ID if available, fallback to index for original scenes
             const stableKey = (scene as any).sceneId || `original-${i}`;
+
+            // Hidden scenes are already filtered out by NavigationContext,
+            // but add safety check and zero-height container if somehow present
+            if (scene.hidden) {
+              return (
+                <div
+                  key={stableKey}
+                  style={{ height: 0, overflow: 'hidden', visibility: 'hidden' }}
+                />
+              );
+            }
+
             return (
             <div key={stableKey} className="story-scene-container">
               <FlowLayout
                 keyId={i.toString()}
-                panelRestricted={(scene as any)?.panelRestricted ?? false}
+                panelRestricted={(scene as unknown as { panelRestricted?: boolean })?.panelRestricted ?? false}
               >
                 <SceneContentWithNavigation scene={scene} sceneIndex={i} />
               </FlowLayout>

@@ -12,6 +12,7 @@ export type CharacterScene = {
   "right-character"?: string;
   flowSequence?: boolean;
   isFirstInFlow?: boolean;
+  hidden?: boolean;
   meta?: {
     panelLeft?: { character: string; previousCharacter?: string; nextCharacter?: string; newCharacter?: boolean; aboutToSwap?: boolean };
     panelRight?: { character: string; previousCharacter?: string; nextCharacter?: string; newCharacter?: boolean; aboutToSwap?: boolean };
@@ -26,6 +27,7 @@ export type QuestScene = {
   "right-character"?: string;
   flowSequence?: boolean;
   isFirstInFlow?: boolean;
+  hidden?: boolean;
   meta?: {
     panelLeft?: { character: string; previousCharacter?: string; nextCharacter?: string; newCharacter?: boolean; aboutToSwap?: boolean };
     panelRight?: { character: string; previousCharacter?: string; nextCharacter?: string; newCharacter?: boolean; aboutToSwap?: boolean };
@@ -40,6 +42,7 @@ export type InputScene = {
   "right-character"?: string;
   flowSequence?: boolean;
   isFirstInFlow?: boolean;
+  hidden?: boolean;
   meta?: {
     panelLeft?: { character: string; previousCharacter?: string; nextCharacter?: string; newCharacter?: boolean; aboutToSwap?: boolean };
     panelRight?: { character: string; previousCharacter?: string; nextCharacter?: string; newCharacter?: boolean; aboutToSwap?: boolean };
@@ -53,6 +56,7 @@ export type ImageScene = {
   background?: string;
   flowSequence?: boolean;
   isFirstInFlow?: boolean;
+  hidden?: boolean;
   meta?: {
     panelLeft?: { character: string; previousCharacter?: string; nextCharacter?: string; newCharacter?: boolean; aboutToSwap?: boolean };
     panelRight?: { character: string; previousCharacter?: string; nextCharacter?: string; newCharacter?: boolean; aboutToSwap?: boolean };
@@ -64,6 +68,7 @@ export type CharacterFlowScene = {
   background?: string;
   "left-character"?: string;
   "right-character"?: string;
+  hidden?: boolean;
   flow: Array<{
     side?: "left" | "right";
     text?: string;
@@ -78,6 +83,7 @@ export type FullScene = {
   background?: string;
   flowSequence?: boolean;
   isFirstInFlow?: boolean;
+  hidden?: boolean;
   meta?: {
     panelLeft?: { character: string; previousCharacter?: string; nextCharacter?: string; newCharacter?: boolean; aboutToSwap?: boolean };
     panelRight?: { character: string; previousCharacter?: string; nextCharacter?: string; newCharacter?: boolean; aboutToSwap?: boolean };
@@ -91,6 +97,7 @@ export type TextScene = {
   background?: string;
   flowSequence?: boolean;
   isFirstInFlow?: boolean;
+  hidden?: boolean;
 };
 
 export type Scene =

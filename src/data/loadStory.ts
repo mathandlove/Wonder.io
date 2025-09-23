@@ -65,6 +65,7 @@ function flattenScenes(rawScenes: RawScene[]): Scene[] {
             ...flattened,
             type: "quest",
             text: f.text || f.quest, // Use f.text if available, fallback to f.quest
+            hidden: true, // Quest scenes are hidden by default (consumable)
           };
         } else if (f.input) {
           flattened = {
