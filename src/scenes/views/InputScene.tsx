@@ -1,97 +1,83 @@
 /**
- * Displays input prompts that require text entry from the user.
- * Shows a form with text input and submit button.
+ * Interactive input scene that triggers the chat dialogue system.
+ * Shows empty scene while chat UI handles interaction.
  */
-import React, { useState } from "react";
-import type { SceneProps } from "../registry";
-import type { InputScene } from "../../types/scene";
-import { useDialogue } from "../../context/DialogueContext";
+import React, { useEffect, useState } from 'react';
+import type { SceneProps } from '../registry';
+import type { InputScene } from '../../types/scene';
+import { useDialogue as useChatDialogue } from '../../chat/ChatDialogueContext';
+import { ChatLayer } from '../../chat/ChatLayer';
+import { useNavigation } from '../../context/NavigationContext';
 
-export default function InputScene({ scene, onComplete }: SceneProps<InputScene>) {
-  const [input, setInput] = useState("Hi, this input text is working hopefully.");
-  const { submitUserMessage } = useDialogue();
+export default function InputScene({ scene, onComplete, sceneIndex }: SceneProps<InputScene>) {
+  const { grantPlayerTurn, questState } = useChatDialogue();
+  const { currentIndex } = useNavigation();
+  const [chatVisible, setChatVisible] = useState(false);
+  const [hasGrantedTurn, setHasGrantedTurn] = useState(false);
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
+  // Check if this input scene is currently active
+  const isActiveScene = sceneIndex === currentIndex;
 
-    if (input.trim()) {
-      // Submit the user message to dialogue context
-      submitUserMessage(input);
-
-      // Clear the input
-      setInput("");
-
-      // Note: onComplete is not called here because PageFactory handles navigation automatically
-      // when it detects new user text from submitUserMessage
+  // Grant player turn when scene becomes active
+  useEffect(() => {
+    if (isActiveScene && !hasGrantedTurn) {
+      // Grant player turn with the input prompt
+      grantPlayerTurn(`input-${sceneIndex}`);
+      setChatVisible(true);
+      setHasGrantedTurn(true);
     }
+  }, [isActiveScene, hasGrantedTurn, grantPlayerTurn, sceneIndex]);
+
+  // Monitor quest completion
+  useEffect(() => {
+    if (questState === 'complete' && hasGrantedTurn) {
+      // Mark scene as complete when quest completes
+      onComplete?.();
+    }
+  }, [questState, hasGrantedTurn, onComplete]);
+
+  const handleChatHide = () => {
+    setChatVisible(false);
+    setHasGrantedTurn(false);
   };
 
   return (
-    <div style={{
-      height: '100vh',
-      display: 'flex',
-      flexDirection: 'column',
-      alignItems: 'center',
-      justifyContent: 'center',
-      position: 'relative'
-    }}>
-      {/* Input form overlay - positioned to not block characters */}
+    <>
+      {/* Empty scene - characters rendered by CharacterOrchestrator */}
       <div style={{
-        position: 'absolute',
-        bottom: '2rem',
-        left: '50%',
-        transform: 'translateX(-50%)',
-        background: 'rgba(255, 255, 255, 0.95)',
-        padding: '2rem',
-        borderRadius: '16px',
-        textAlign: 'center',
-        maxWidth: '500px',
-        width: '90%',
-        boxShadow: '0 4px 20px rgba(0, 0, 0, 0.1)',
-        zIndex: 10
+        height: '100vh',
+        width: '100%',
+        position: 'relative'
       }}>
-        <div style={{ fontSize: '2rem', marginBottom: '0.5rem' }}>💭</div>
-        {scene.text && (
-          <p style={{ fontSize: '1rem', color: '#555', marginBottom: '1.5rem', margin: '0 0 1.5rem 0' }}>
+        {/* Optional: Show the input prompt question in the scene */}
+        {scene.text && chatVisible && (
+          <div style={{
+            position: 'absolute',
+            top: '20%',
+            left: '50%',
+            transform: 'translate(-50%, -50%)',
+            fontSize: '24px',
+            color: '#333',
+            fontFamily: 'Comic Sans MS, cursive',
+            textAlign: 'center',
+            maxWidth: '600px',
+            padding: '20px',
+            background: 'rgba(255, 255, 255, 0.9)',
+            borderRadius: '16px',
+            border: '3px solid #8B4513',
+            boxShadow: '0 4px 12px rgba(0, 0, 0, 0.2)'
+          }}>
             {scene.text}
-          </p>
+          </div>
         )}
-        <form onSubmit={handleSubmit}>
-          <input
-            type="text"
-            value={input}
-            onChange={(e) => setInput(e.target.value)}
-            placeholder="Enter your response..."
-            style={{
-              width: '100%',
-              padding: '12px',
-              fontSize: '1rem',
-              border: '2px solid #ddd',
-              borderRadius: '8px',
-              marginBottom: '1rem',
-              outline: 'none',
-              boxSizing: 'border-box'
-            }}
-          />
-          <button
-            type="submit"
-            disabled={!input.trim()}
-            style={{
-              padding: '12px 24px',
-              background: input.trim() ? '#28a745' : '#ccc',
-              color: 'white',
-              border: 'none',
-              borderRadius: '8px',
-              fontSize: '1rem',
-              cursor: input.trim() ? 'pointer' : 'not-allowed'
-            }}
-          >
-            Submit
-          </button>
-        </form>
       </div>
 
-      {/* Empty scroll target - characters rendered by CharacterOrchestrator */}
-    </div>
+      {/* Chat UI Layer */}
+      <ChatLayer
+        visible={chatVisible}
+        sceneIndex={sceneIndex || currentIndex}
+        onHide={handleChatHide}
+      />
+    </>
   );
 }

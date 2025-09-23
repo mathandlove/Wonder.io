@@ -1,0 +1,358 @@
+/* Chat Container with Cardboard Border */
+.chat-composer-container {
+  position: fixed;
+  bottom: 40px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  z-index: 1000;
+  padding: 0;
+}
+
+/* Compact input box with cardboard background */
+.chat-composer-box {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 15px;
+  background-image: url('/VisualAssets/cardboard.png');
+  background-size: cover;
+  background-position: center;
+  border: 3px solid #8B4513;
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+  min-width: 350px;
+  transition: all 0.3s ease;
+}
+
+/* Parchment inner area */
+.chat-composer-box::after {
+  content: '';
+  position: absolute;
+  top: 3px;
+  left: 3px;
+  right: 3px;
+  bottom: 3px;
+  background: linear-gradient(135deg, rgba(245, 220, 180, 0.9), rgba(225, 195, 150, 0.9));
+  border-radius: 8px;
+  pointer-events: none;
+  z-index: 0;
+}
+
+/* Content positioned above pseudo-elements */
+.chat-composer-box > * {
+  position: relative;
+  z-index: 1;
+}
+
+.chat-composer-box input {
+  flex: 1;
+  padding: 8px 12px;
+  border: 2px solid transparent;
+  border-radius: 6px;
+  background: white;
+  font-family: 'Comic Sans MS', cursive;
+  font-size: 16px;
+  transition: all 0.3s ease;
+  outline: none;
+}
+
+.chat-composer-box input:focus {
+  border-color: #4CAF50;
+  box-shadow: 0 0 8px rgba(76, 175, 80, 0.3);
+}
+
+.chat-composer-box input:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+/* Send button styling */
+.chat-send-button {
+  height: 48px !important;
+  width: 60px !important;
+  border-radius: 8px !important;
+  padding: 12px 16px !important;
+  background-image: url('/VisualAssets/cardboard.png') !important;
+  background-size: cover !important;
+  background-position: center !important;
+  border: 3px solid #8B4513 !important;
+  cursor: pointer !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  transition: all 0.3s ease !important;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2) !important;
+}
+
+.chat-send-button:disabled {
+  cursor: not-allowed !important;
+  opacity: 0.5 !important;
+  border-color: #ccc !important;
+}
+
+.chat-send-button.has-text:hover:not(:disabled) {
+  background: #4CAF50 !important;
+  border-color: #4CAF50 !important;
+  transform: translateY(-2px) scale(1.05) !important;
+  box-shadow: 0 4px 12px rgba(76, 175, 80, 0.3) !important;
+}
+
+/* Record button styling */
+.chat-record-button {
+  width: 72px !important;
+  height: 72px !important;
+  border-radius: 50% !important;
+  padding: 0 !important;
+  background-image: url('/VisualAssets/cardboard.png') !important;
+  background-size: cover !important;
+  background-position: center !important;
+  border: 4px solid #8B4513 !important;
+  cursor: pointer !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2) !important;
+  position: relative !important;
+}
+
+.chat-record-button:hover:not(.recording) {
+  transform: translateY(-4px) scale(1.05) !important;
+  border-color: #45a049 !important;
+  box-shadow: 0 8px 20px rgba(76, 175, 80, 0.4) !important;
+  background-color: rgba(76, 175, 80, 0.1) !important;
+}
+
+.chat-record-button:hover:not(.recording) .record-icon-mask {
+  transform: scale(1.1) !important;
+}
+
+/* Recording state styling */
+.chat-record-button.recording {
+  border-color: #FF6B35 !important;
+  background-color: rgba(255, 107, 53, 0.2) !important;
+  animation: recordingPulse 1.5s ease-in-out infinite !important;
+}
+
+.chat-record-button.recording .record-icon-mask {
+  display: none !important;
+}
+
+.chat-record-button.recording::after {
+  content: "Tap to\AStop";
+  white-space: pre;
+  position: absolute;
+  color: white;
+  font-size: 8px;
+  font-weight: bold;
+  text-align: center;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  line-height: 1.2;
+  text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.5);
+}
+
+@keyframes recordingPulse {
+  0%, 100% {
+    box-shadow: 0 0 20px rgba(255, 107, 53, 0.6);
+  }
+  50% {
+    box-shadow: 0 0 40px rgba(255, 107, 53, 0.9);
+  }
+}
+
+/* Icon masks */
+.record-icon-mask {
+  width: 29px;
+  height: 29px;
+  background-color: white;
+  mask-image: url('/VisualAssets/recordIcon.svg');
+  -webkit-mask-image: url('/VisualAssets/recordIcon.svg');
+  mask-size: contain;
+  -webkit-mask-size: contain;
+  mask-repeat: no-repeat;
+  -webkit-mask-repeat: no-repeat;
+  mask-position: center;
+  -webkit-mask-position: center;
+  transition: transform 0.3s ease;
+}
+
+.send-icon-mask {
+  width: 24px;
+  height: 24px;
+  background-color: white;
+  mask-image: url('/VisualAssets/send.svg');
+  -webkit-mask-image: url('/VisualAssets/send.svg');
+  mask-size: contain;
+  -webkit-mask-size: contain;
+  mask-repeat: no-repeat;
+  -webkit-mask-repeat: no-repeat;
+  mask-position: center;
+  -webkit-mask-position: center;
+}
+
+/* Continue button styling (like quest accept button but green) */
+.chat-continue-button {
+  width: 100px !important;
+  height: 72px !important;
+  border-radius: 12px !important;
+  padding: 16px 20px !important;
+  background-image: url('/VisualAssets/cardboard.png') !important;
+  background-size: cover !important;
+  background-position: center !important;
+  border: 4px solid #2E7D32 !important;
+  cursor: pointer !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2) !important;
+  font-family: 'Comic Sans MS', cursive !important;
+  font-size: 16px !important;
+  font-weight: bold !important;
+  color: white !important;
+  text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5) !important;
+  position: relative !important;
+}
+
+.chat-continue-button.enabled {
+  background-color: rgba(76, 175, 80, 0.9) !important;
+  border-color: #4CAF50 !important;
+}
+
+.chat-continue-button.enabled:hover {
+  transform: translateY(-4px) scale(1.05) !important;
+  background-color: #4CAF50 !important;
+  border-color: #45a049 !important;
+  box-shadow: 0 8px 20px rgba(76, 175, 80, 0.4) !important;
+}
+
+.chat-continue-button.disabled {
+  background-color: rgba(150, 150, 150, 0.3) !important;
+  border-color: #999 !important;
+  opacity: 0.6 !important;
+  cursor: not-allowed !important;
+  color: #999 !important;
+}
+
+/* Suggestion button */
+.chat-suggestion-button {
+  width: 48px !important;
+  height: 48px !important;
+  border-radius: 50% !important;
+  padding: 0 !important;
+  background-image: url('/VisualAssets/cardboard.png') !important;
+  background-size: cover !important;
+  background-position: center !important;
+  border: 3px solid #FFC107 !important;
+  cursor: pointer !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  transition: all 0.3s ease !important;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2) !important;
+  font-size: 24px !important;
+  position: absolute !important;
+  bottom: -60px !important;
+  left: 50% !important;
+  transform: translateX(-50%) !important;
+}
+
+.chat-suggestion-button:hover {
+  transform: translateX(-50%) translateY(-2px) scale(1.1) !important;
+  border-color: #FFB300 !important;
+  box-shadow: 0 4px 12px rgba(255, 193, 7, 0.4) !important;
+}
+
+/* Suggestion popup */
+.chat-suggestion-popup {
+  position: absolute;
+  bottom: -120px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: white;
+  border: 3px solid #FFC107;
+  border-radius: 8px;
+  padding: 12px 16px;
+  font-family: 'Comic Sans MS', cursive;
+  font-size: 14px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+  z-index: 1001;
+  white-space: nowrap;
+}
+
+/* Turn cue styling */
+.turn-cue {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background: rgba(255, 255, 255, 0.95);
+  border: 4px solid #4CAF50;
+  border-radius: 16px;
+  padding: 20px 30px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
+  z-index: 999;
+  animation: turnCueBounce 0.5s ease-out;
+}
+
+.turn-cue-content {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.turn-cue-icon {
+  font-size: 32px;
+  animation: turnCueIconPulse 1s ease-in-out infinite;
+}
+
+.turn-cue-text {
+  font-family: 'Comic Sans MS', cursive;
+  font-size: 18px;
+  font-weight: bold;
+  color: #2E7D32;
+}
+
+@keyframes turnCueBounce {
+  0% {
+    transform: translate(-50%, -50%) scale(0.8);
+    opacity: 0;
+  }
+  50% {
+    transform: translate(-50%, -50%) scale(1.1);
+  }
+  100% {
+    transform: translate(-50%, -50%) scale(1);
+    opacity: 1;
+  }
+}
+
+@keyframes turnCueIconPulse {
+  0%, 100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.2);
+  }
+}
+
+/* Animation for container exit */
+.chat-composer-container.exit-bottom {
+  animation: chatExitBottom 0.6s cubic-bezier(0.4, 0, 0.6, 1) forwards;
+}
+
+@keyframes chatExitBottom {
+  from {
+    bottom: 40px;
+    opacity: 1;
+  }
+  to {
+    bottom: -200px;
+    opacity: 0;
+  }
+}
