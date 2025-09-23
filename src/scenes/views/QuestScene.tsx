@@ -10,16 +10,17 @@ import { useNavigation } from "../../context/NavigationContext";
 import { useDirectionalLock } from "../../hooks/useDirectionalLock";
 
 export default function QuestScene({ scene, onComplete, sceneIndex }: SceneProps<QuestScene>) {
-  const { offer, accept } = useQuest();
-  const { currentIndex } = useNavigation();
+  const { offer, accept, state } = useQuest();
+  const { currentIndex, goToNext } = useNavigation();
   const [hasOffered, setHasOffered] = React.useState(false);
+  const [isAccepted, setIsAccepted] = React.useState(false);
 
   // Check if this quest scene is currently active
   const isActiveScene = sceneIndex === currentIndex;
 
-  // Block all scrolling when quest is active and offered
+  // Block all scrolling when quest is active and offered (but not when accepted)
   useDirectionalLock({
-    active: isActiveScene && hasOffered,
+    active: isActiveScene && hasOffered && !isAccepted,
     forward: true,
     backward: true
   });
@@ -37,14 +38,27 @@ export default function QuestScene({ scene, onComplete, sceneIndex }: SceneProps
     }
   }, [currentIndex, sceneIndex, scene.text, offer, hasOffered]);
 
-  // Detect when user scrolls away from this scene
+  // Detect when quest is accepted (phase changes to 'minimized')
   useEffect(() => {
-    if (sceneIndex !== undefined && currentIndex !== sceneIndex && hasOffered) {
+    if (hasOffered && state.phase === 'minimized' && !isAccepted) {
+      console.log('[QuestScene] Quest accepted, removing scroll lock and advancing');
+      setIsAccepted(true);
+
+      // Small delay to ensure scroll lock is released before advancing
+      setTimeout(() => {
+        goToNext();
+        onComplete?.(); // Mark scene as complete if callback exists
+      }, 50);
+    }
+  }, [hasOffered, state.phase, isAccepted, goToNext, onComplete]);
+
+  // Detect when user scrolls away from this scene (fallback)
+  useEffect(() => {
+    if (sceneIndex !== undefined && currentIndex !== sceneIndex && hasOffered && !isAccepted) {
       console.log('[QuestScene] User scrolled away, accepting quest');
       accept();
-      onComplete?.(); // Mark scene as complete if callback exists
     }
-  }, [currentIndex, sceneIndex, hasOffered, accept, onComplete]);
+  }, [currentIndex, sceneIndex, hasOffered, isAccepted, accept]);
 
   // Don't render any visible UI - quest manager handles display
   return (
