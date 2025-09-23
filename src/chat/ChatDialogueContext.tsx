@@ -74,12 +74,18 @@ export const ChatDialogueProvider: React.FC<DialogueProviderProps> = ({ children
     setQuestState('active');
     // Reset messages for new input scene
     setMessages([]);
-    // Don't reset banner hidden state - let it persist across scenes
+    // Reset banner for input scenes to ensure users see the "Your turn" cue
+    setBannerHidden(false);
+    try {
+      localStorage.removeItem('chat-banner-hidden');
+    } catch (error) {
+      console.warn('Failed to reset banner state:', error);
+    }
   }, [bannerHidden]);
 
   const mockLLMCall = async (playerText: string): Promise<string> => {
     // Simulate network delay
-    await new Promise(resolve => setTimeout(resolve, 1000));
+    await new Promise(resolve => setTimeout(resolve, 5000));
     return `AI Response to: ${playerText}`;
   };
 

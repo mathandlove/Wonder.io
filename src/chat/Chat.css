@@ -1,3 +1,31 @@
+/* Chat Layer - controls overall visibility */
+.chat-layer {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  z-index: 999;
+  transition: opacity 0.2s ease-out, transform 0.2s ease-out;
+  pointer-events: none; /* Let clicks pass through the layer itself */
+}
+
+.chat-layer.hidden {
+  opacity: 0;
+  pointer-events: none;
+  transform: translateY(20px);
+}
+
+.chat-layer.visible {
+  opacity: 1;
+  pointer-events: none; /* Layer itself non-interactive, children will have pointer-events: auto */
+  transform: translateY(0);
+}
+
+.chat-layer.visible * {
+  pointer-events: auto; /* Enable interactions for all children */
+}
+
 /* Chat Container with Cardboard Border */
 .chat-composer-container {
   position: fixed;
@@ -374,6 +402,11 @@
   z-index: 1001; /* above composer, below toasts */
   animation: turnCueBannerEnter 220ms ease-out;
   border: 2px solid rgba(255,255,255,0.08) !important;
+  transition: opacity 0.3s ease-out;
+}
+
+.turn-cue-banner.fade-out {
+  opacity: 0;
 }
 
 .turn-cue-strong {

@@ -7,6 +7,9 @@ import { NOCHARACTER } from "../buildPanelRangesFromScenes";
 export function injectPanelMetaFromFlows(scenes: Scene[]): Scene[] {
   if (!Array.isArray(scenes) || scenes.length === 0) return scenes;
 
+  console.log(`[INJECT_DEBUG] Processing ${scenes.length} scenes, input scenes found:`,
+    scenes.map((s, i) => s.type === 'input' ? i : null).filter(x => x !== null));
+
 
   let inFlow = false;
   let currentLeft: string | null = null;
@@ -179,11 +182,16 @@ export function injectPanelMetaFromFlows(scenes: Scene[]): Scene[] {
     const hasCharacters = (scene as any)["left-character"] || (scene as any)["right-character"] ||
                          (scene.type === "character" || scene.type === "input");
 
-    if (!hasCharacters) return scene;
+    if (!hasCharacters) {
+      // Non-character scenes should never have lastInFlow
+      const sceneWithoutLastInFlow = { ...scene };
+      delete (sceneWithoutLastInFlow as any).lastInFlow;
+      return sceneWithoutLastInFlow;
+    }
 
     // Look ahead to see if the next scene starts a new flow or exits character flow
     const nextScene = out[i + 1];
-    const isLastInFlow = nextScene && ( // Must have a next scene (not end of story)
+    const isLastInFlow = !nextScene || ( // No next scene (end of story) OR
                         (nextScene as any).newFlow || // Next scene starts new flow
                         (!((nextScene as any)["left-character"] || (nextScene as any)["right-character"]) &&
                          nextScene.type !== "character" && nextScene.type !== "input")); // Next scene exits character flow
@@ -197,7 +205,10 @@ export function injectPanelMetaFromFlows(scenes: Scene[]): Scene[] {
       return { ...scene, lastInFlow: true } as any;
     }
 
-    return scene;
+    // Explicitly remove lastInFlow if this scene doesn't qualify
+    const sceneWithoutLastInFlow = { ...scene };
+    delete (sceneWithoutLastInFlow as any).lastInFlow;
+    return sceneWithoutLastInFlow;
   });
 
   return finalOut;

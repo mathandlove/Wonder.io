@@ -51,7 +51,7 @@ export const ChatLayer: React.FC<ChatLayerProps> = ({ visible, sceneIndex, onHid
         lockTokenRef.current = null;
       }
     };
-  }, [isPlayerTurn, questState, visible, scrollGuard, sceneIndex]);
+  }, [isPlayerTurn, questState, visible, sceneIndex]);
 
   const handleContinue = () => {
     setExitingChat(true);
@@ -74,10 +74,11 @@ export const ChatLayer: React.FC<ChatLayerProps> = ({ visible, sceneIndex, onHid
     console.log('Keep chatting not yet implemented');
   };
 
-  if (!visible) return null;
+  // Always render but control visibility with CSS to prevent flashing
+  console.log('[CHAT_LAYER] Rendering with visible:', visible, 'className:', `chat-layer ${visible ? 'visible' : 'hidden'}`);
 
   return (
-    <>
+    <div className={`chat-layer ${visible ? 'visible' : 'hidden'}`} style={{border: '2px solid red'}}>
       {/* Turn cue banner above composer */}
       <TurnCueBanner show={showTurnBanner} text={turnBannerText} />
 
@@ -94,6 +95,6 @@ export const ChatLayer: React.FC<ChatLayerProps> = ({ visible, sceneIndex, onHid
           onKeepChatting={handleKeepChatting}
         />
       </div>
-    </>
+    </div>
   );
 };

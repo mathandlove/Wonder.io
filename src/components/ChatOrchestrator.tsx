@@ -15,30 +15,41 @@ export const ChatOrchestrator: React.FC = () => {
   const [hasGrantedTurn, setHasGrantedTurn] = useState(false);
   const [lastProcessedIndex, setLastProcessedIndex] = useState(-1);
 
+  console.log('[CHAT_ORCHESTRATOR] Component mounted/rendered, scenes.length:', scenes.length, 'currentIndex:', currentIndex);
+
   // Get current scene
   const currentScene = scenes[currentIndex];
-  const shouldShowChat = (currentScene as any)?.lastInFlow || (currentScene as any)?.type === 'input';
+  const shouldShowChat = (currentScene as any)?.lastInFlow;
+
+  // Use the corrected shouldShowChat logic
+  const shouldShowChatFinal = shouldShowChat;
+
+  // Debug logging - only log when relevant
+  if (currentScene?.type === 'input' || shouldShowChat || chatVisible) {
+    console.log('[CHAT_DEBUG] Scene:', currentIndex, 'type:', currentScene?.type, 'lastInFlow:', shouldShowChat, 'chatVisible:', chatVisible);
+  }
 
   // Grant player turn when we navigate to a lastInFlow scene
   useEffect(() => {
-    // Reset when navigating to a different scene
+    // Only update if we're actually changing to a different scene
     if (currentIndex !== lastProcessedIndex) {
-      setHasGrantedTurn(false);
-      setChatVisible(false);
       setLastProcessedIndex(currentIndex);
-    }
 
-    if (shouldShowChat && !hasGrantedTurn) {
-      // Grant player turn for this scene
-      grantPlayerTurn(`flow-${currentIndex}`);
-      setChatVisible(true);
-      setHasGrantedTurn(true);
-    } else if (!shouldShowChat && hasGrantedTurn) {
-      // Hide chat if we're no longer on a lastInFlow scene
-      setChatVisible(false);
-      setHasGrantedTurn(false);
+      // Coordinate all state changes together to prevent flashing
+      if (shouldShowChatFinal) {
+        // New scene needs chat - grant turn if needed and show
+        if (!hasGrantedTurn) {
+          grantPlayerTurn(`flow-${currentIndex}`);
+          setHasGrantedTurn(true);
+        }
+        setChatVisible(true);
+      } else {
+        // New scene doesn't need chat - hide and reset
+        setChatVisible(false);
+        setHasGrantedTurn(false);
+      }
     }
-  }, [currentIndex, shouldShowChat, hasGrantedTurn, grantPlayerTurn, lastProcessedIndex]);
+  }, [currentIndex, shouldShowChatFinal, hasGrantedTurn, grantPlayerTurn, lastProcessedIndex]);
 
   // Monitor quest completion
   useEffect(() => {
@@ -54,9 +65,7 @@ export const ChatOrchestrator: React.FC = () => {
     setHasGrantedTurn(false);
   };
 
-  // Only render if we should show chat
-  if (!shouldShowChat) return null;
-
+  // Always render ChatLayer to prevent unmounting/remounting flashes
   return (
     <ChatLayer
       visible={chatVisible}
