@@ -41,7 +41,6 @@ const QuestDebugProbe: React.FC = () => {
   const quest = useQuest();
   React.useEffect(() => {
     // Log every state change
-    console.log('[Quest]', quest.state);
     // Expose quest controls in the console for manual testing
     (window as any).__quest = {
       state: quest.state,

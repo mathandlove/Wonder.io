@@ -67,7 +67,6 @@ const initialState: QuestState = {
 function questReducer(state: QuestState, action: QuestAction): QuestState {
   switch (action.type) {
     case 'OFFER':
-      console.log('[QuestReducer] OFFER payload:', action.payload);
 
       // Ensure we don't nest objects
       const cleanPayload = {
@@ -76,7 +75,6 @@ function questReducer(state: QuestState, action: QuestAction): QuestState {
         text: typeof action.payload.text === 'string' ? action.payload.text : undefined,
       };
 
-      console.log('[QuestReducer] Clean payload:', cleanPayload);
 
       return {
         ...state,
@@ -138,24 +136,15 @@ export function QuestProvider({ children }: QuestProviderProps) {
 
   // Debug logging
   useEffect(() => {
-    console.log('[Quest] State changed:', state);
     console.debug('[Quest]', state);
   }, [state]);
 
   // Initial mount log
   useEffect(() => {
-    console.log('[Quest] QuestProvider mounted');
   }, []);
 
   // Action creators
   const offer = useCallback((id: string | Quest, title?: string, text?: string) => {
-    console.log('[Quest] Action: offer called with:', {
-      id,
-      title: title,
-      titleType: typeof title,
-      text: text,
-      textType: typeof text
-    });
 
     // Handle both calling patterns: offer(id, title, text) or offer(questObject)
     let cleanId: string;
@@ -164,7 +153,6 @@ export function QuestProvider({ children }: QuestProviderProps) {
 
     if (typeof id === 'object' && id !== null) {
       // Called with quest object: offer({id: 'demo', title: 'Find Cookie', text: 'Help Betsy...'})
-      console.log('[Quest] Detected object parameter, extracting properties:', id);
       cleanId = String((id as Quest).id);
       cleanTitle = typeof (id as Quest).title === 'string' ? (id as Quest).title : undefined;
       cleanText = typeof (id as Quest).text === 'string' ? (id as Quest).text : undefined;
@@ -175,28 +163,23 @@ export function QuestProvider({ children }: QuestProviderProps) {
       cleanText = typeof text === 'string' ? text : undefined;
     }
 
-    console.log('[Quest] Clean parameters:', { cleanId, cleanTitle, cleanText });
 
     dispatch({ type: 'OFFER', payload: { id: cleanId, title: cleanTitle, text: cleanText } });
   }, []);
 
   const accept = useCallback(() => {
-    console.log('[Quest] Action: accept');
     dispatch({ type: 'ACCEPT' });
   }, []);
 
   const complete = useCallback(() => {
-    console.log('[Quest] Action: complete');
     dispatch({ type: 'COMPLETE' });
   }, []);
 
   const clear = useCallback(() => {
-    console.log('[Quest] Action: clear');
     dispatch({ type: 'CLEAR' });
   }, []);
 
   const reset = useCallback(() => {
-    console.log('[Quest] Action: reset');
     dispatch({ type: 'RESET' });
   }, []);
 

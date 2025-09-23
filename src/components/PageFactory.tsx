@@ -22,7 +22,7 @@ type PageFactoryProviderProps = {
 
 export function PageFactoryProvider({ children, onSceneAdded }: PageFactoryProviderProps) {
   const { userText, turnId } = useDialogue();
-  const { insertScene, currentIndex, goToIndex, scenes, setScenes } = useNavigation();
+  const { insertScene, currentIndex, goToIndex, scenes, allScenes, setScenes } = useNavigation();
   const [processedUserText, setProcessedUserText] = useState<string>("");
   const [lastTurnId, setLastTurnId] = useState<number>(turnId);
 
@@ -73,6 +73,7 @@ export function PageFactoryProvider({ children, onSceneAdded }: PageFactoryProvi
     //   scenesLength: scenes.length
     // });
 
+    const sceneId = `created-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
     const newScene = {
       type: "character",
       text,
@@ -84,25 +85,49 @@ export function PageFactoryProvider({ children, onSceneAdded }: PageFactoryProvi
       // Add panel restriction for proper margins
       panelRestricted: true,
       // Add stable ID for React keys
-      sceneId: `created-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+      sceneId,
       // Meta will be added by injectPanelMetaFromFlows
     };
 
-    // console.log('🏗️ PageFactory created scene:', newScene);
+    console.log(`[PAGE_CREATE] Created new scene with sceneId: ${sceneId}, type: ${newScene.type}, speaker: ${speaker}`);
     return newScene;
   };
 
   // Legacy addSceneToStory - keeping for external API compatibility but not used internally
   const addSceneToStory = useCallback((scene: Scene) => {
-    const insertIndex = currentIndex + 1;
-    insertScene(scene, insertIndex);
+    // Find the correct insertion index in allScenes array
+    // currentIndex is based on visibleScenes, but insertScene operates on allScenes
+    const currentVisibleScene = scenes[currentIndex];
+    let insertIndex = allScenes.length; // Default to end if not found
 
+    console.log(`[PageFactory] === BEFORE INSERTION ===`);
+    console.log(`[PageFactory] Current visible index: ${currentIndex}`);
+    console.log(`[PageFactory] Current visible scene:`, currentVisibleScene?.type, (currentVisibleScene as any)?.sceneId);
+    console.log(`[PageFactory] AllScenes length: ${allScenes.length}`);
+    console.log(`[PageFactory] VisibleScenes length: ${scenes.length}`);
+    console.log(`[PageFactory] AllScenes structure:`, allScenes.map((s, i) => `${i}: ${s.type}(${(s as any).sceneId})${s.hidden ? '[HIDDEN]' : ''}`));
+
+    if (currentVisibleScene) {
+      // Find where the current visible scene appears in allScenes
+      const currentSceneId = (currentVisibleScene as any).sceneId;
+      const allScenesIndex = allScenes.findIndex(s => (s as any).sceneId === currentSceneId);
+      if (allScenesIndex !== -1) {
+        insertIndex = allScenesIndex + 1; // Insert after the current scene
+      }
+      console.log(`[PageFactory] Found current scene at allScenes index ${allScenesIndex}, will insert at ${insertIndex}`);
+    }
+
+    insertScene(scene, insertIndex);
+    console.log(`[PAGE_INSERT] Inserted scene ${(scene as any).sceneId} at allScenes index ${insertIndex}`);
+    console.log(`[PageFactory] === AFTER INSERTION ===`);
+
+    // Navigate to the new scene (currentIndex + 1 in visible scenes)
     setTimeout(() => {
-      goToIndex(insertIndex);
+      goToIndex(currentIndex + 1);
     }, 100);
 
     onSceneAdded?.(scene);
-  }, [insertScene, currentIndex, goToIndex, onSceneAdded]);
+  }, [insertScene, currentIndex, goToIndex, onSceneAdded, scenes, allScenes]);
 
   // Auto-create and add scenes when new user text arrives
   useEffect(() => {
@@ -113,23 +138,31 @@ export function PageFactoryProvider({ children, onSceneAdded }: PageFactoryProvi
       // Create user scene (left speaker = Leo speaking user's text)
       const userScene = createCharacterPage(userText, "left");
 
-      // Insert relative to current position (where input button was pressed)
-      const userInsertIndex = currentIndex + 1;
+      // Find the correct insertion index in allScenes array
+      // currentIndex is based on visibleScenes, but insertScene operates on allScenes
+      const currentVisibleScene = scenes[currentIndex];
+      let userInsertIndex = allScenes.length; // Default to end if not found
 
-      // console.log('📝 Creating USER scene (Leo speaking):', {
-      //   type: userScene.type,
-      //   text: userScene.text,
-      //   speaker: userScene.speaker,
-      //   leftCharacter: userScene['left-character'],
-      //   rightCharacter: userScene['right-character'],
-      //   insertIndex: userInsertIndex
-      // });
+      console.log(`[AUTO_INSERT] === USER SCENE INSERTION ===`);
+      console.log(`[AUTO_INSERT] Current visible index: ${currentIndex}`);
+      console.log(`[AUTO_INSERT] Current visible scene:`, currentVisibleScene?.type, (currentVisibleScene as any)?.sceneId);
+
+      if (currentVisibleScene) {
+        // Find where the current visible scene appears in allScenes
+        const currentSceneId = (currentVisibleScene as any).sceneId;
+        const allScenesIndex = allScenes.findIndex(s => (s as any).sceneId === currentSceneId);
+        if (allScenesIndex !== -1) {
+          userInsertIndex = allScenesIndex + 1; // Insert after the current scene
+        }
+        console.log(`[AUTO_INSERT] Found current scene at allScenes index ${allScenesIndex}, will insert user scene at ${userInsertIndex}`);
+      }
 
       insertScene(userScene, userInsertIndex);
+      console.log(`[AUTO_INSERT] Inserted user scene ${(userScene as any).sceneId} at allScenes index ${userInsertIndex}`);
 
-      // Auto-navigate to the user scene immediately
+      // Auto-navigate to the user scene immediately (use visible scene index)
       setTimeout(() => {
-        goToIndex(userInsertIndex);
+        goToIndex(currentIndex + 1);
       }, 100);
 
       // Create AI response scene after 500ms
@@ -138,20 +171,15 @@ export function PageFactoryProvider({ children, onSceneAdded }: PageFactoryProvi
         const aiScene = createCharacterPage(aiResponseText, "right");
         const aiInsertIndex = userInsertIndex + 1;
 
-        // console.log('🤖 Creating AI response scene:', {
-        //   type: aiScene.type,
-        //   text: aiScene.text,
-        //   speaker: aiScene.speaker,
-        //   leftCharacter: aiScene['left-character'],
-        //   rightCharacter: aiScene['right-character'],
-        //   insertIndex: aiInsertIndex
-        // });
+        console.log(`[AUTO_INSERT] === AI SCENE INSERTION ===`);
+        console.log(`[AUTO_INSERT] Inserting AI scene at allScenes index ${aiInsertIndex} (after user scene)`);
 
         insertScene(aiScene, aiInsertIndex);
+        console.log(`[AUTO_INSERT] Inserted AI scene ${(aiScene as any).sceneId} at allScenes index ${aiInsertIndex}`);
 
-        // Navigate to AI scene immediately after creation
+        // Navigate to AI scene immediately after creation (use visible scene index)
         setTimeout(() => {
-          goToIndex(aiInsertIndex);
+          goToIndex(currentIndex + 2); // User scene at +1, AI scene at +2
         }, 100);
 
         onSceneAdded?.(aiScene);

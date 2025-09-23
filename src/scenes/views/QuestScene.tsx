@@ -28,7 +28,6 @@ export default function QuestScene({ scene, onComplete, sceneIndex }: SceneProps
   // Offer quest only when this scene becomes active
   useEffect(() => {
     if (sceneIndex === currentIndex && !hasOffered) {
-      console.log('[QuestScene] Scene is active, offering quest:', scene.text);
       offer({
         id: 'story-quest',
         title: 'Quest',
@@ -41,7 +40,6 @@ export default function QuestScene({ scene, onComplete, sceneIndex }: SceneProps
   // Detect when quest is accepted (phase changes to 'minimized')
   useEffect(() => {
     if (hasOffered && state.phase === 'minimized' && !isAccepted) {
-      console.log('[QuestScene] Quest accepted, using nextAndHide');
       setIsAccepted(true);
 
       // Small delay to ensure scroll lock is released before advancing
@@ -56,7 +54,6 @@ export default function QuestScene({ scene, onComplete, sceneIndex }: SceneProps
   // Detect when user scrolls away from this scene (fallback)
   useEffect(() => {
     if (sceneIndex !== undefined && currentIndex !== sceneIndex && hasOffered && !isAccepted) {
-      console.log('[QuestScene] User scrolled away, accepting quest');
       accept();
     }
   }, [currentIndex, sceneIndex, hasOffered, isAccepted, accept]);

@@ -104,7 +104,6 @@ export function QuestLayer() {
               // Hide video and trigger clear state after 2 seconds
               (e.target as HTMLVideoElement).style.display = 'none';
               setTimeout(() => {
-                console.log('[Quest] Auto-triggering clear state');
                 clear();
               }, 2000);
             }}

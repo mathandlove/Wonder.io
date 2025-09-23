@@ -48,14 +48,6 @@ export function NavigationProvider({ children, initialIndex = 0 }: NavigationPro
     [allScenes]
   );
 
-  // Debug: Log current scene when index changes
-  useEffect(() => {
-    const currentScene = visibleScenes[currentIndex];
-    if (currentScene) {
-      const sceneId = (currentScene as any)?.sceneId || 'no-id';
-      console.log(`[NavigationContext] Current scene: index ${currentIndex}, sceneId: ${sceneId}, type: ${currentScene.type}`);
-    }
-  }, [currentIndex, visibleScenes]);
 
 
   // Compute current background from current scene (use visibleScenes)
@@ -100,7 +92,7 @@ export function NavigationProvider({ children, initialIndex = 0 }: NavigationPro
     const clampedIndex = Math.max(0, Math.min(index, visibleScenes.length - 1));
     const targetScene = visibleScenes[clampedIndex];
     const sceneId = (targetScene as any)?.sceneId || 'no-id';
-    console.log(`[NavigationContext] Scrolling to index ${clampedIndex}, sceneId: ${sceneId}, type: ${targetScene?.type}`);
+    console.log(`[SCROLL] Going to visible index ${clampedIndex}, sceneId: ${sceneId}, type: ${targetScene?.type}`);
     setCurrentIndex(clampedIndex);
     snapApiRef.current?.scrollTo(clampedIndex, { behavior: "smooth" });
   }, [visibleScenes.length]);
@@ -118,25 +110,11 @@ export function NavigationProvider({ children, initialIndex = 0 }: NavigationPro
   }, []);
 
   const hideScene = useCallback((sceneId: string) => {
-    console.log(`[NavigationContext] Hiding scene with sceneId: ${sceneId}`);
-    setAllScenes(prevScenes => {
-      const updated = prevScenes.map(scene => {
-        if ((scene as any).sceneId === sceneId) {
-          console.log(`[NavigationContext] ✓ Found and hiding scene: ${sceneId}, type: ${scene.type}`);
-          return { ...scene, hidden: true };
-        }
-        return scene;
-      });
-
-      // Log which scenes are now hidden
-      const hiddenScenes = updated.filter(s => s.hidden).map(s => ({
-        id: (s as any).sceneId || 'no-id',
-        type: s.type
-      }));
-      console.log(`[NavigationContext] Currently hidden scenes:`, hiddenScenes);
-
-      return updated;
-    });
+    setAllScenes(prevScenes =>
+      prevScenes.map(scene =>
+        (scene as any).sceneId === sceneId ? { ...scene, hidden: true } : scene
+      )
+    );
   }, []);
 
   const showScene = useCallback((sceneId: string) => {
@@ -152,9 +130,6 @@ export function NavigationProvider({ children, initialIndex = 0 }: NavigationPro
   }, [currentIndex, goToIndex]);
 
   const nextAndHide = useCallback((sceneId: string) => {
-    console.log(`[NavigationContext] nextAndHide called for sceneId: ${sceneId} - hiding only (no auto-advance)`);
-
-    // Just hide the scene - no navigation
     hideScene(sceneId);
   }, [hideScene]);
 
