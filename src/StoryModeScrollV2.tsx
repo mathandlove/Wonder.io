@@ -36,21 +36,22 @@ function FullScreen({ children }: { children: React.ReactNode }) {
   );
 }
 
-// Temporary debug probe to verify QuestManager is wired
+// Debug probe to expose quest controls in console
 const QuestDebugProbe: React.FC = () => {
   const quest = useQuest();
   React.useEffect(() => {
     // Log every state change
     console.log('[Quest]', quest.state);
-    // Expose quick controls in the console
+    // Expose quest controls in the console for manual testing
     (window as any).__quest = {
       state: quest.state,
       offer: quest.offer,
       accept: quest.accept,
       complete: quest.complete,
+      clear: quest.clear,
       reset: quest.reset,
     };
-  }, [quest.state, quest.offer, quest.accept, quest.complete, quest.reset]);
+  }, [quest.state, quest.offer, quest.accept, quest.complete, quest.clear, quest.reset]);
   return null;
 };
 

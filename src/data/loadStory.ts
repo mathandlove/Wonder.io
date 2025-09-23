@@ -64,7 +64,7 @@ function flattenScenes(rawScenes: RawScene[]): Scene[] {
           flattened = {
             ...flattened,
             type: "quest",
-            text: f.quest,
+            text: f.text || f.quest, // Use f.text if available, fallback to f.quest
           };
         } else if (f.input) {
           flattened = {

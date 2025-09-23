@@ -6,13 +6,16 @@ import ReactDOM from 'react-dom/client'
 import StoryModeScrollV2 from './StoryModeScrollV2'
 import { DialogueProvider } from "./context/DialogueContext"
 import { NavigationProvider } from "./context/NavigationContext"
+import { ScrollGuardProvider } from "./context/ScrollGuardContext"
 
 
 ReactDOM.createRoot(document.getElementById('root')!).render(
   // <React.StrictMode>
-    <NavigationProvider initialIndex={0}>
+    <NavigationProvider initialIndex={3}>
       <DialogueProvider>
-        <StoryModeScrollV2 />
+        <ScrollGuardProvider>
+          <StoryModeScrollV2 />
+        </ScrollGuardProvider>
       </DialogueProvider>
     </NavigationProvider>
   // </React.StrictMode>,

@@ -142,32 +142,9 @@ export function QuestProvider({ children }: QuestProviderProps) {
     console.debug('[Quest]', state);
   }, [state]);
 
-  // Initial mount log and auto-create minimized quest for testing
+  // Initial mount log
   useEffect(() => {
     console.log('[Quest] QuestProvider mounted');
-
-    // AUTO-CREATE COMPLETE QUEST FOR TESTING
-    // Comment out or remove this block in production
-    const timer = setTimeout(() => {
-      console.log('[Quest] Auto-creating complete quest for testing');
-      // First set up the quest
-      dispatch({
-        type: 'OFFER',
-        payload: {
-          id: 'test-quest',
-          title: 'Find the Lost Cookie',
-          text: 'Help Betsy find her missing cookie'
-        }
-      });
-
-      // Immediately go to complete state for design testing
-      setTimeout(() => {
-        console.log('[Quest] Auto-completing quest for design testing');
-        dispatch({ type: 'COMPLETE' });
-      }, 100);
-    }, 500);
-
-    return () => clearTimeout(timer);
   }, []);
 
   // Action creators
