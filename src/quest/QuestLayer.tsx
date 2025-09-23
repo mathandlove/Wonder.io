@@ -10,7 +10,7 @@ export interface QuestLayerProps {
 
 export function QuestLayer() {
   const { phase, currentQuest } = useQuestStatus();
-  const { accept } = useQuest();
+  const { accept, clear } = useQuest();
 
   // Debug logging
   if (currentQuest && typeof currentQuest.text === 'object') {
@@ -65,7 +65,56 @@ export function QuestLayer() {
 
       {/* Complete: Guild box with completion info */}
       {phase === 'complete' && (
-        <div className="guild-box-holder quest-complete" data-quest-phase="complete">
+        <>
+          <div className="guild-box-holder quest-complete" data-quest-phase="complete">
+            <div className="quest-info">
+              <h2 className="quest-title">QUEST<br/>COMPLETE</h2>
+              <p className="quest-text">
+                {(() => {
+                  const text = currentQuest?.text || currentQuest?.title || currentQuest?.id || 'Quest Completed';
+                  if (typeof text === 'object') {
+                    console.error('Quest text is an object:', text);
+                    return 'Quest Completed';
+                  }
+                  return String(text);
+                })()}
+              </p>
+            </div>
+            <div className="quest-seal-stamp">
+              <img src="/VisualAssets/seal.png" alt="Complete Seal" className="quest-seal-image" />
+            </div>
+          </div>
+          <video
+            className="quest-hand-stamp-video"
+            src="/VisualAssets/hand-stamp.webm"
+            autoPlay
+            muted
+            playsInline
+            onTimeUpdate={(e) => {
+              const video = e.target as HTMLVideoElement;
+              // Show seal at halfway point
+              if (video.currentTime >= video.duration / 2) {
+                const seal = document.querySelector('.quest-seal-stamp') as HTMLElement;
+                if (seal && !seal.classList.contains('stamp-visible')) {
+                  seal.classList.add('stamp-visible');
+                }
+              }
+            }}
+            onEnded={(e) => {
+              // Hide video and trigger clear state after 2 seconds
+              (e.target as HTMLVideoElement).style.display = 'none';
+              setTimeout(() => {
+                console.log('[Quest] Auto-triggering clear state');
+                clear();
+              }, 2000);
+            }}
+          />
+        </>
+      )}
+
+      {/* Clear: Guild box and stamp floating away */}
+      {phase === 'clear' && (
+        <div className="guild-box-holder quest-clear" data-quest-phase="clear">
           <div className="quest-info">
             <h2 className="quest-title">QUEST<br/>COMPLETE</h2>
             <p className="quest-text">
@@ -78,6 +127,9 @@ export function QuestLayer() {
                 return String(text);
               })()}
             </p>
+          </div>
+          <div className="quest-seal-stamp stamp-visible">
+            <img src="/VisualAssets/seal.png" alt="Complete Seal" className="quest-seal-image" />
           </div>
         </div>
       )}

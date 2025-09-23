@@ -8,7 +8,7 @@ import type { ReactNode } from 'react';
 // Types
 // ============================================================================
 
-export type QuestPhase = 'idle' | 'offered' | 'minimized' | 'complete';
+export type QuestPhase = 'idle' | 'offered' | 'minimized' | 'complete' | 'clear';
 
 export interface Quest {
   id: string;
@@ -25,6 +25,7 @@ export type QuestAction =
   | { type: 'OFFER'; payload: { id: string; title?: string; text?: string } }
   | { type: 'ACCEPT' }
   | { type: 'COMPLETE' }
+  | { type: 'CLEAR' }
   | { type: 'RESET' };
 
 export interface QuestProviderProps {
@@ -46,6 +47,7 @@ export interface QuestHook {
   offer: (id: string | Quest, title?: string, text?: string) => void;
   accept: () => void;
   complete: () => void;
+  clear: () => void;
   reset: () => void;
 }
 
@@ -94,6 +96,12 @@ function questReducer(state: QuestState, action: QuestAction): QuestState {
         phase: 'complete',
       };
 
+    case 'CLEAR':
+      return {
+        ...state,
+        phase: 'clear',
+      };
+
     case 'RESET':
       return {
         ...state,
@@ -115,6 +123,7 @@ interface QuestContextValue {
   offer: (id: string | Quest, title?: string, text?: string) => void;
   accept: () => void;
   complete: () => void;
+  clear: () => void;
   reset: () => void;
 }
 
@@ -137,10 +146,11 @@ export function QuestProvider({ children }: QuestProviderProps) {
   useEffect(() => {
     console.log('[Quest] QuestProvider mounted');
 
-    // AUTO-CREATE MINIMIZED QUEST FOR TESTING
+    // AUTO-CREATE COMPLETE QUEST FOR TESTING
     // Comment out or remove this block in production
     const timer = setTimeout(() => {
-      console.log('[Quest] Auto-creating minimized quest for testing');
+      console.log('[Quest] Auto-creating complete quest for testing');
+      // First set up the quest
       dispatch({
         type: 'OFFER',
         payload: {
@@ -150,18 +160,12 @@ export function QuestProvider({ children }: QuestProviderProps) {
         }
       });
 
-      // Auto-accept after a short delay to show minimized state
+      // Immediately go to complete state for design testing
       setTimeout(() => {
-        console.log('[Quest] Auto-accepting quest to show minimized pill box');
-        dispatch({ type: 'ACCEPT' });
-
-        // Auto-complete after 3 seconds to test complete state
-        setTimeout(() => {
-          console.log('[Quest] Auto-completing quest to test complete state');
-          dispatch({ type: 'COMPLETE' });
-        }, 3000);
-      }, 500);
-    }, 1000);
+        console.log('[Quest] Auto-completing quest for design testing');
+        dispatch({ type: 'COMPLETE' });
+      }, 100);
+    }, 500);
 
     return () => clearTimeout(timer);
   }, []);
@@ -209,6 +213,11 @@ export function QuestProvider({ children }: QuestProviderProps) {
     dispatch({ type: 'COMPLETE' });
   }, []);
 
+  const clear = useCallback(() => {
+    console.log('[Quest] Action: clear');
+    dispatch({ type: 'CLEAR' });
+  }, []);
+
   const reset = useCallback(() => {
     console.log('[Quest] Action: reset');
     dispatch({ type: 'RESET' });
@@ -219,8 +228,9 @@ export function QuestProvider({ children }: QuestProviderProps) {
     offer,
     accept,
     complete,
+    clear,
     reset,
-  }), [state, offer, accept, complete, reset]);
+  }), [state, offer, accept, complete, clear, reset]);
 
   // Dev-only global helpers for quick console testing
   useEffect(() => {
@@ -229,6 +239,7 @@ export function QuestProvider({ children }: QuestProviderProps) {
       offer,
       accept,
       complete,
+      clear,
       reset,
     };
     return () => {
@@ -236,7 +247,7 @@ export function QuestProvider({ children }: QuestProviderProps) {
         delete (window as any).__quest;
       }
     };
-  }, [state, offer, accept, complete, reset]);
+  }, [state, offer, accept, complete, clear, reset]);
 
   return (
     <QuestContext.Provider value={contextValue}>
@@ -258,8 +269,8 @@ function useQuestContext(): QuestContextValue {
 }
 
 export function useQuest(): QuestHook {
-  const { state, offer, accept, complete, reset } = useQuestContext();
-  return { state, offer, accept, complete, reset };
+  const { state, offer, accept, complete, clear, reset } = useQuestContext();
+  return { state, offer, accept, complete, clear, reset };
 }
 
 export function useQuestStatus(): QuestStatus {
