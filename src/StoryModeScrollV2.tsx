@@ -19,8 +19,8 @@ import { useScrollManager } from "./hooks/useScrollManager";
 import { CharacterAnimationProvider } from "./context/CharacterAnimationContext";
 import type { Scene } from "./types/scene";
 import "./components/SnapScroll.css";
-import { UIOverlayRoot } from "./components/UIOverlayRoot";
-import { QuestProvider } from "./quest/QuestManager"
+import { QuestProvider, useQuest } from "./quest/QuestManager"
+import { UIOverlayRoot } from "./components/UIOverlayRoot"
 // Path to the story JSON bundle we want to load. In demo mode we keep this fixed
 // so the experience is deterministic for the presentation.
 
@@ -35,6 +35,24 @@ function FullScreen({ children }: { children: React.ReactNode }) {
     </div>
   );
 }
+
+// Temporary debug probe to verify QuestManager is wired
+const QuestDebugProbe: React.FC = () => {
+  const quest = useQuest();
+  React.useEffect(() => {
+    // Log every state change
+    console.log('[Quest]', quest.state);
+    // Expose quick controls in the console
+    (window as any).__quest = {
+      state: quest.state,
+      offer: quest.offer,
+      accept: quest.accept,
+      complete: quest.complete,
+      reset: quest.reset,
+    };
+  }, [quest.state, quest.offer, quest.accept, quest.complete, quest.reset]);
+  return null;
+};
 
 // StoryModeScrollV2 is the main screen that renders scenes as full-screen snap sections
 const StoryModeScrollV2: React.FC = () => {
@@ -136,11 +154,10 @@ const StoryContent: React.FC = () => {
           ))}
         </div>
         </SnapLayer>
-
-        {/* Layer 4: UI overlays (quests, dialogs, etc.) */}
-        <UIOverlayRoot />
       </CharacterAnimationProvider>
     </PageFactoryProvider>
+    <QuestDebugProbe />
+    <UIOverlayRoot />
     </QuestProvider>
   );
 };

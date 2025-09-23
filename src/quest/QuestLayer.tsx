@@ -17,7 +17,7 @@ export function QuestLayer() {
     console.error('[QuestLayer] Quest text is malformed object:', currentQuest);
   }
 
-  // Render nothing unless quest is offered or minimized
+  // Render nothing unless quest is active
   if (phase === 'idle' || !currentQuest) {
     return null;
   }
@@ -31,7 +31,7 @@ export function QuestLayer() {
     }}>
       {/* Offered: Guild box with quest info */}
       {phase === 'offered' && (
-        <div className="guild-box-holder">
+        <div className="guild-box-holder" data-quest-phase="offered">
           <div className="quest-info">
             <h2 className="quest-title">Quest</h2>
             <p className="quest-text">
@@ -51,39 +51,34 @@ export function QuestLayer() {
         </div>
       )}
 
-      {/* Minimized: Top right badge */}
+      {/* Minimized: Pill box at bottom */}
       {phase === 'minimized' && (
-        <div style={{
-          position: 'absolute',
-          top: '20px',
-          right: '20px',
-          background: 'rgba(76, 175, 80, 0.9)',
-          color: 'white',
-          padding: '8px 16px',
-          borderRadius: '20px',
-          fontSize: '14px',
-          fontWeight: 'bold',
-          backdropFilter: 'blur(5px)',
-          boxShadow: '0 2px 10px rgba(0, 0, 0, 0.2)',
-          pointerEvents: 'auto',
-          cursor: 'pointer',
-          transition: 'transform 0.2s ease',
-        }}
-        onMouseOver={(e) => {
-          e.currentTarget.style.transform = 'scale(1.05)';
-        }}
-        onMouseOut={(e) => {
-          e.currentTarget.style.transform = 'scale(1)';
-        }}
-        title={(() => {
-          const text = currentQuest?.text || 'Active quest';
-          return typeof text === 'object' ? 'Active quest' : String(text);
-        })()}
-        >
-          🎯 {(() => {
-            const text = currentQuest?.title || currentQuest?.id || 'Quest';
-            return typeof text === 'object' ? 'Quest' : String(text);
-          })()}
+        <div className={`quest-pill-box ${phase === 'minimized' ? 'quest-pill-enter' : ''}`}>
+          <div className="quest-pill-text">
+            {(() => {
+              const text = currentQuest?.text || currentQuest?.title || currentQuest?.id || 'Quest Active';
+              return typeof text === 'object' ? 'Quest Active' : String(text);
+            })()}
+          </div>
+        </div>
+      )}
+
+      {/* Complete: Guild box with completion info */}
+      {phase === 'complete' && (
+        <div className="guild-box-holder quest-complete" data-quest-phase="complete">
+          <div className="quest-info">
+            <h2 className="quest-title">QUEST<br/>COMPLETE</h2>
+            <p className="quest-text">
+              {(() => {
+                const text = currentQuest?.text || currentQuest?.title || currentQuest?.id || 'Quest Completed';
+                if (typeof text === 'object') {
+                  console.error('Quest text is an object:', text);
+                  return 'Quest Completed';
+                }
+                return String(text);
+              })()}
+            </p>
+          </div>
         </div>
       )}
     </div>

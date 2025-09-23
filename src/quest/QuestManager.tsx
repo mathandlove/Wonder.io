@@ -8,7 +8,7 @@ import type { ReactNode } from 'react';
 // Types
 // ============================================================================
 
-export type QuestPhase = 'idle' | 'offered' | 'minimized';
+export type QuestPhase = 'idle' | 'offered' | 'minimized' | 'complete';
 
 export interface Quest {
   id: string;
@@ -24,6 +24,7 @@ export interface QuestState {
 export type QuestAction =
   | { type: 'OFFER'; payload: { id: string; title?: string; text?: string } }
   | { type: 'ACCEPT' }
+  | { type: 'COMPLETE' }
   | { type: 'RESET' };
 
 export interface QuestProviderProps {
@@ -44,6 +45,7 @@ export interface QuestHook {
   state: QuestState;
   offer: (id: string | Quest, title?: string, text?: string) => void;
   accept: () => void;
+  complete: () => void;
   reset: () => void;
 }
 
@@ -86,6 +88,12 @@ function questReducer(state: QuestState, action: QuestAction): QuestState {
         phase: 'minimized',
       };
 
+    case 'COMPLETE':
+      return {
+        ...state,
+        phase: 'complete',
+      };
+
     case 'RESET':
       return {
         ...state,
@@ -106,6 +114,7 @@ interface QuestContextValue {
   state: QuestState;
   offer: (id: string | Quest, title?: string, text?: string) => void;
   accept: () => void;
+  complete: () => void;
   reset: () => void;
 }
 
@@ -124,9 +133,37 @@ export function QuestProvider({ children }: QuestProviderProps) {
     console.debug('[Quest]', state);
   }, [state]);
 
-  // Initial mount log
+  // Initial mount log and auto-create minimized quest for testing
   useEffect(() => {
     console.log('[Quest] QuestProvider mounted');
+
+    // AUTO-CREATE MINIMIZED QUEST FOR TESTING
+    // Comment out or remove this block in production
+    const timer = setTimeout(() => {
+      console.log('[Quest] Auto-creating minimized quest for testing');
+      dispatch({
+        type: 'OFFER',
+        payload: {
+          id: 'test-quest',
+          title: 'Find the Lost Cookie',
+          text: 'Help Betsy find her missing cookie'
+        }
+      });
+
+      // Auto-accept after a short delay to show minimized state
+      setTimeout(() => {
+        console.log('[Quest] Auto-accepting quest to show minimized pill box');
+        dispatch({ type: 'ACCEPT' });
+
+        // Auto-complete after 3 seconds to test complete state
+        setTimeout(() => {
+          console.log('[Quest] Auto-completing quest to test complete state');
+          dispatch({ type: 'COMPLETE' });
+        }, 3000);
+      }, 500);
+    }, 1000);
+
+    return () => clearTimeout(timer);
   }, []);
 
   // Action creators
@@ -167,6 +204,11 @@ export function QuestProvider({ children }: QuestProviderProps) {
     dispatch({ type: 'ACCEPT' });
   }, []);
 
+  const complete = useCallback(() => {
+    console.log('[Quest] Action: complete');
+    dispatch({ type: 'COMPLETE' });
+  }, []);
+
   const reset = useCallback(() => {
     console.log('[Quest] Action: reset');
     dispatch({ type: 'RESET' });
@@ -176,8 +218,9 @@ export function QuestProvider({ children }: QuestProviderProps) {
     state,
     offer,
     accept,
+    complete,
     reset,
-  }), [state, offer, accept, reset]);
+  }), [state, offer, accept, complete, reset]);
 
   // Dev-only global helpers for quick console testing
   useEffect(() => {
@@ -185,6 +228,7 @@ export function QuestProvider({ children }: QuestProviderProps) {
       state,
       offer,
       accept,
+      complete,
       reset,
     };
     return () => {
@@ -192,7 +236,7 @@ export function QuestProvider({ children }: QuestProviderProps) {
         delete (window as any).__quest;
       }
     };
-  }, [state, offer, accept, reset]);
+  }, [state, offer, accept, complete, reset]);
 
   return (
     <QuestContext.Provider value={contextValue}>
@@ -214,8 +258,8 @@ function useQuestContext(): QuestContextValue {
 }
 
 export function useQuest(): QuestHook {
-  const { state, offer, accept, reset } = useQuestContext();
-  return { state, offer, accept, reset };
+  const { state, offer, accept, complete, reset } = useQuestContext();
+  return { state, offer, accept, complete, reset };
 }
 
 export function useQuestStatus(): QuestStatus {
