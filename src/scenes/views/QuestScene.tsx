@@ -19,11 +19,12 @@ export default function QuestScene({ scene, onComplete, sceneIndex }: SceneProps
   const isActiveScene = sceneIndex === currentIndex;
 
   // Block all scrolling when quest is active and offered (but not when accepted)
-  useDirectionalLock({
-    active: isActiveScene && hasOffered && !isAccepted,
-    forward: true,
-    backward: true
-  });
+  // DISABLED FOR DEBUGGING
+  // useDirectionalLock({
+  //   active: isActiveScene && hasOffered && !isAccepted,
+  //   forward: true,
+  //   backward: true
+  // });
 
   // Offer quest only when this scene becomes active
   useEffect(() => {

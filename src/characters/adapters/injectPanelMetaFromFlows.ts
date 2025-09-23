@@ -23,12 +23,12 @@ export function injectPanelMetaFromFlows(scenes: Scene[]): Scene[] {
       const sceneLeft = (s as any)["left-character"];
       const sceneRight = (s as any)["right-character"];
 
-      // For non-character scenes, just update the tracking without meta injection
-      if (s.type !== "character") {
+      // For non-character scenes that need character rendering (like input), also inject meta
+      if (s.type !== "character" && s.type !== "input") {
         console.log(`[INJECT_DEBUG] Updating character tracking for ${s.type} scene: left=${sceneLeft}, right=${sceneRight}`);
         currentLeft = sceneLeft || currentLeft;
         currentRight = sceneRight || currentRight;
-        return s; // Return unchanged for non-character scenes
+        return s; // Return unchanged for non-character/non-input scenes
       }
 
       // Continue with character scene processing...
@@ -59,8 +59,8 @@ export function injectPanelMetaFromFlows(scenes: Scene[]): Scene[] {
       }
       inFlow = true;
 
-      // For character scenes, determine speaking state based on speaker and whether character was already present
-      if (s.type === "character") {
+      // For character and input scenes, determine speaking state based on speaker and whether character was already present
+      if (s.type === "character" || s.type === "input") {
         const speaker = (s as any).speaker;
         const meta = { ...(s as any).meta };
 

@@ -73,6 +73,7 @@ function flattenScenes(rawScenes: RawScene[]): Scene[] {
             ...flattened,
             type: "input",
             text: f.input,
+            panelRestricted: true, // Input scenes should show characters like other flow scenes
           };
         } else if (f.text) {
           flattened = {

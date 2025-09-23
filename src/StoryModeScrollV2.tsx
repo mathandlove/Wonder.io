@@ -71,10 +71,27 @@ const StoryContent: React.FC = () => {
   const initialScenes = useMemo(() => story?.scenes || [], [story?.scenes]);
 
   // Inject panel metadata from flow-based authoring
-  const scenesWithPanelMeta = useMemo(
-    () => injectPanelMetaFromFlows(initialScenes),
-    [initialScenes]
-  );
+  const scenesWithPanelMeta = useMemo(() => {
+    console.log(`[STORY_INIT] Processing ${initialScenes.length} initial scenes for meta injection`);
+    const processed = injectPanelMetaFromFlows(initialScenes);
+
+    // Log input scenes and their meta data
+    processed.forEach((scene, i) => {
+      if (scene.type === 'input') {
+        console.log(`[STORY_INIT] Input scene ${i}:`, {
+          sceneId: (scene as any).sceneId,
+          leftChar: (scene as any)['left-character'],
+          rightChar: (scene as any)['right-character'],
+          hasMetaLeft: !!scene.meta?.panelLeft,
+          hasMetaRight: !!scene.meta?.panelRight,
+          metaLeftChar: scene.meta?.panelLeft?.character,
+          metaRightChar: scene.meta?.panelRight?.character
+        });
+      }
+    });
+
+    return processed;
+  }, [initialScenes]);
 
   // Handle scene navigation updates
   useSceneNavigation({ initialScenes: scenesWithPanelMeta, setScenes });

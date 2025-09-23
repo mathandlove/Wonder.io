@@ -30,22 +30,29 @@ export default function InputScene({ scene, onComplete }: SceneProps<InputScene>
     <div style={{
       height: '100vh',
       display: 'flex',
+      flexDirection: 'column',
       alignItems: 'center',
       justifyContent: 'center',
-      padding: '2rem'
+      position: 'relative'
     }}>
+      {/* Input form overlay - positioned to not block characters */}
       <div style={{
+        position: 'absolute',
+        bottom: '2rem',
+        left: '50%',
+        transform: 'translateX(-50%)',
         background: 'rgba(255, 255, 255, 0.95)',
-        padding: '3rem',
+        padding: '2rem',
         borderRadius: '16px',
         textAlign: 'center',
-        maxWidth: '600px',
-        width: '100%'
+        maxWidth: '500px',
+        width: '90%',
+        boxShadow: '0 4px 20px rgba(0, 0, 0, 0.1)',
+        zIndex: 10
       }}>
-        <div style={{ fontSize: '3rem', marginBottom: '1rem' }}>💭</div>
-        <h3 style={{ marginBottom: '1rem', color: '#333' }}>Input Required</h3>
+        <div style={{ fontSize: '2rem', marginBottom: '0.5rem' }}>💭</div>
         {scene.text && (
-          <p style={{ fontSize: '1.1rem', color: '#666', marginBottom: '2rem' }}>
+          <p style={{ fontSize: '1rem', color: '#555', marginBottom: '1.5rem', margin: '0 0 1.5rem 0' }}>
             {scene.text}
           </p>
         )}
@@ -62,7 +69,8 @@ export default function InputScene({ scene, onComplete }: SceneProps<InputScene>
               border: '2px solid #ddd',
               borderRadius: '8px',
               marginBottom: '1rem',
-              outline: 'none'
+              outline: 'none',
+              boxSizing: 'border-box'
             }}
           />
           <button
@@ -82,6 +90,8 @@ export default function InputScene({ scene, onComplete }: SceneProps<InputScene>
           </button>
         </form>
       </div>
+
+      {/* Empty scroll target - characters rendered by CharacterOrchestrator */}
     </div>
   );
 }

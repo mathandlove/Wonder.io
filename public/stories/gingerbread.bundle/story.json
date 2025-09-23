@@ -30,40 +30,17 @@
       "text": "Tell me about your last adventure Ms. Baker. What happened? Look I added a sthirsa line here. HOpefully I can see it."
 
     },
-        {
-          "quest": "key",
-          "text": "Why does Betsy need help?"
+{
+  "quest":"key",
+  "text":"Ask Ms. Baker what happened"
 
-        },
+},
 
                 {
           "input": "What should Leo ask?"
 
-        },
-{
-        
-      "side": "left",
-      "text": "Tell me about your last adventure Ms. Baker. What happened? Look I added a sthirsa line here. HOpefully I can see it."
-
-    },
-    {
-      "side": "right",
-      "text": "Not waiting any more."
-    }
-
-      ]
-    },
-    {
-      "type": "character-flow",
-      "background":"assets.core/images/backgrounds/square.png",
-      "left-character": "leo",
-      "flow": [
-        {
-          "side": "left",
-          "text": "Hi! I'm Leo the Monster Hunter."
-        }
-      ]
-    },
+        }]
+      },
         {
       "type":"image",
       "image":"story/dragonFeet.png",
