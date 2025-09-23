@@ -7,6 +7,7 @@ import React, { createContext, useContext, useCallback, useEffect, useState } fr
 import type { CharacterScene, Scene } from "../types/scene";
 import { useDialogue } from "../context/DialogueContext";
 import { useNavigation } from "../context/NavigationContext";
+import { injectPanelMetaFromFlows } from "../characters/adapters/injectPanelMetaFromFlows";
 
 type PageFactoryContextType = {
   createCharacterPage: (text: string, speaker?: "left" | "right") => CharacterScene;
@@ -89,8 +90,32 @@ export function PageFactoryProvider({ children, onSceneAdded }: PageFactoryProvi
       // Meta will be added by injectPanelMetaFromFlows
     };
 
-    console.log(`[PAGE_CREATE] Created new scene with sceneId: ${sceneId}, type: ${newScene.type}, speaker: ${speaker}`);
-    return newScene;
+    // Inject panel metadata for character rendering with proper context
+    // Include the current scene as "previous" so transitions are calculated correctly
+    const scenesForMetaInjection = [currentScene, newScene].filter(Boolean);
+
+    console.log(`[PANEL_INJECT] Before injection:`, {
+      numScenes: scenesForMetaInjection.length,
+      currentSceneType: currentScene?.type,
+      currentLeftChar: (currentScene as any)?.['left-character'],
+      currentRightChar: (currentScene as any)?.['right-character'],
+      newSceneLeftChar: newScene['left-character'],
+      newSceneRightChar: newScene['right-character']
+    });
+
+    const scenesWithMeta = injectPanelMetaFromFlows(scenesForMetaInjection);
+    const sceneWithMeta = scenesWithMeta[scenesWithMeta.length - 1]; // Get the last one (our new scene)
+
+    console.log(`[PANEL_INJECT] After injection:`, {
+      leftNewCharacter: sceneWithMeta.meta?.panelLeft?.newCharacter,
+      rightNewCharacter: sceneWithMeta.meta?.panelRight?.newCharacter,
+      leftPrevChar: sceneWithMeta.meta?.panelLeft?.previousCharacter,
+      rightPrevChar: sceneWithMeta.meta?.panelRight?.previousCharacter,
+      leftCurrChar: sceneWithMeta.meta?.panelLeft?.character,
+      rightCurrChar: sceneWithMeta.meta?.panelRight?.character
+    });
+
+    return sceneWithMeta;
   };
 
   // Legacy addSceneToStory - keeping for external API compatibility but not used internally
@@ -100,13 +125,6 @@ export function PageFactoryProvider({ children, onSceneAdded }: PageFactoryProvi
     const currentVisibleScene = scenes[currentIndex];
     let insertIndex = allScenes.length; // Default to end if not found
 
-    console.log(`[PageFactory] === BEFORE INSERTION ===`);
-    console.log(`[PageFactory] Current visible index: ${currentIndex}`);
-    console.log(`[PageFactory] Current visible scene:`, currentVisibleScene?.type, (currentVisibleScene as any)?.sceneId);
-    console.log(`[PageFactory] AllScenes length: ${allScenes.length}`);
-    console.log(`[PageFactory] VisibleScenes length: ${scenes.length}`);
-    console.log(`[PageFactory] AllScenes structure:`, allScenes.map((s, i) => `${i}: ${s.type}(${(s as any).sceneId})${s.hidden ? '[HIDDEN]' : ''}`));
-
     if (currentVisibleScene) {
       // Find where the current visible scene appears in allScenes
       const currentSceneId = (currentVisibleScene as any).sceneId;
@@ -114,12 +132,9 @@ export function PageFactoryProvider({ children, onSceneAdded }: PageFactoryProvi
       if (allScenesIndex !== -1) {
         insertIndex = allScenesIndex + 1; // Insert after the current scene
       }
-      console.log(`[PageFactory] Found current scene at allScenes index ${allScenesIndex}, will insert at ${insertIndex}`);
     }
 
     insertScene(scene, insertIndex);
-    console.log(`[PAGE_INSERT] Inserted scene ${(scene as any).sceneId} at allScenes index ${insertIndex}`);
-    console.log(`[PageFactory] === AFTER INSERTION ===`);
 
     // Navigate to the new scene (currentIndex + 1 in visible scenes)
     setTimeout(() => {
@@ -143,10 +158,6 @@ export function PageFactoryProvider({ children, onSceneAdded }: PageFactoryProvi
       const currentVisibleScene = scenes[currentIndex];
       let userInsertIndex = allScenes.length; // Default to end if not found
 
-      console.log(`[AUTO_INSERT] === USER SCENE INSERTION ===`);
-      console.log(`[AUTO_INSERT] Current visible index: ${currentIndex}`);
-      console.log(`[AUTO_INSERT] Current visible scene:`, currentVisibleScene?.type, (currentVisibleScene as any)?.sceneId);
-
       if (currentVisibleScene) {
         // Find where the current visible scene appears in allScenes
         const currentSceneId = (currentVisibleScene as any).sceneId;
@@ -154,11 +165,9 @@ export function PageFactoryProvider({ children, onSceneAdded }: PageFactoryProvi
         if (allScenesIndex !== -1) {
           userInsertIndex = allScenesIndex + 1; // Insert after the current scene
         }
-        console.log(`[AUTO_INSERT] Found current scene at allScenes index ${allScenesIndex}, will insert user scene at ${userInsertIndex}`);
       }
 
       insertScene(userScene, userInsertIndex);
-      console.log(`[AUTO_INSERT] Inserted user scene ${(userScene as any).sceneId} at allScenes index ${userInsertIndex}`);
 
       // Auto-navigate to the user scene immediately (use visible scene index)
       setTimeout(() => {
@@ -171,11 +180,7 @@ export function PageFactoryProvider({ children, onSceneAdded }: PageFactoryProvi
         const aiScene = createCharacterPage(aiResponseText, "right");
         const aiInsertIndex = userInsertIndex + 1;
 
-        console.log(`[AUTO_INSERT] === AI SCENE INSERTION ===`);
-        console.log(`[AUTO_INSERT] Inserting AI scene at allScenes index ${aiInsertIndex} (after user scene)`);
-
         insertScene(aiScene, aiInsertIndex);
-        console.log(`[AUTO_INSERT] Inserted AI scene ${(aiScene as any).sceneId} at allScenes index ${aiInsertIndex}`);
 
         // Navigate to AI scene immediately after creation (use visible scene index)
         setTimeout(() => {

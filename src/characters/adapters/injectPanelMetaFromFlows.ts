@@ -13,15 +13,26 @@ export function injectPanelMetaFromFlows(scenes: Scene[]): Scene[] {
   let currentRight: string | null = null;
 
   const out = scenes.map((s, i) => {
-    // Check if this is a character scene that starts or continues a flow
-    // Character scenes have left-character and/or right-character properties
+    // Check if this is a scene that has character data (character, input, quest, etc.)
+    // These scenes have left-character and/or right-character properties
     const hasCharacters = (s as any)["left-character"] || (s as any)["right-character"];
     let isNewFlow = false;
 
-    if (s.type === "character" && hasCharacters) {
-      // Detect if this is a new flow (explicit character change or new character introduction)
+    if (hasCharacters) {
+      // Update character tracking for any scene type with character data
       const sceneLeft = (s as any)["left-character"];
       const sceneRight = (s as any)["right-character"];
+
+      // For non-character scenes, just update the tracking without meta injection
+      if (s.type !== "character") {
+        console.log(`[INJECT_DEBUG] Updating character tracking for ${s.type} scene: left=${sceneLeft}, right=${sceneRight}`);
+        currentLeft = sceneLeft || currentLeft;
+        currentRight = sceneRight || currentRight;
+        return s; // Return unchanged for non-character scenes
+      }
+
+      // Continue with character scene processing...
+      // Detect if this is a new flow (explicit character change or new character introduction)
 
       // Check if this scene explicitly resets characters (new flow detected)
       // Don't treat the very first character scene as a new flow
@@ -62,10 +73,15 @@ export function injectPanelMetaFromFlows(scenes: Scene[]): Scene[] {
           const nextCharacter = nextScene?.type === "character" ?
             (nextScene as any)[nextCharacterKey] ||
             nextScene?.meta?.[side === 'left' ? 'panelLeft' : 'panelRight']?.character :
-            nextScene?.type === "quest" ? current : NOCHARACTER;
+            nextScene?.type === "quest" ? current :
+            // If no next scene exists, assume character continues (for dynamically created scenes)
+            !nextScene ? current : NOCHARACTER;
 
           const aboutToSwap = nextCharacter !== current;
           const newCharacter = previous !== current;
+
+          console.log(`[INJECT_DEBUG] ${side} panel: current=${current}, previous=${previous}, newCharacter=${newCharacter}`);
+          console.log(`[INJECT_DEBUG] ${side} nextChar calculation: nextScene=${nextScene?.type}, nextCharacter=${nextCharacter}, aboutToSwap=${aboutToSwap}`);
 
           return {
             character: current,

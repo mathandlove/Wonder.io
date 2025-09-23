@@ -90,9 +90,6 @@ export function NavigationProvider({ children, initialIndex = 0 }: NavigationPro
 
   const goToIndex = useCallback((index: number) => {
     const clampedIndex = Math.max(0, Math.min(index, visibleScenes.length - 1));
-    const targetScene = visibleScenes[clampedIndex];
-    const sceneId = (targetScene as any)?.sceneId || 'no-id';
-    console.log(`[SCROLL] Going to visible index ${clampedIndex}, sceneId: ${sceneId}, type: ${targetScene?.type}`);
     setCurrentIndex(clampedIndex);
     snapApiRef.current?.scrollTo(clampedIndex, { behavior: "smooth" });
   }, [visibleScenes.length]);
