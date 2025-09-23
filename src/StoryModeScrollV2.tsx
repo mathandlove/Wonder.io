@@ -83,11 +83,9 @@ const StoryContent: React.FC = () => {
   // Handle scroll management
   const { railRef, index, setIsProgrammatic, targetIndex } = useScrollManager({ setCurrentIndex });
 
-  // Use navigation scenes (includes dynamically added scenes with panel meta)
-  const scenes = useMemo(
-    () => injectPanelMetaFromFlows(navigationScenes),
-    [navigationScenes]
-  );
+  // Use navigation scenes (already processed, just filter for visibility)
+  // Don't re-process with injectPanelMetaFromFlows as it breaks character metadata
+  const scenes = navigationScenes;
 
   // Debug: Expose scene hiding functions globally for testing
   React.useEffect(() => {
