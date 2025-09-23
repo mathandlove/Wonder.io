@@ -30,11 +30,7 @@
       "text": "Tell me about your last adventure Ms. Baker. What happened? Look I added a sthirsa line here. HOpefully I can see it."
 
     },
-{
-  "quest":"key",
-  "text":"Ask Ms. Baker what happened"
 
-},
 
                 {
           "input": "What should Leo ask?"
@@ -73,11 +69,16 @@
       "text": "Leo saved the day! The cookies are safe once again."
     }
   ],
-  "examplesX":            {
+  "examplesX":            [{
       "type": "title",
       "lvl1": "The",
       "lvl2": "Cookie Thief",
       "author": "Elliott Hedman",
       "background": "bakery.png"
-    }
+    },
+    {
+  "quest":"key",
+  "text":"Ask Ms. Baker what happened"
+
+}]
 }

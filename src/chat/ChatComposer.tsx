@@ -12,7 +12,7 @@ export const ChatComposer: React.FC<ChatComposerProps> = ({
   onSubmit,
   suggestions
 }) => {
-  const [userInput, setUserInput] = useState('');
+  const [userInput, setUserInput] = useState("What's wrong Ms. Baker?");
   const [isRecording, setIsRecording] = useState(false);
   const [showSuggestion, setShowSuggestion] = useState(false);
   const recognitionRef = useRef<any>(null);

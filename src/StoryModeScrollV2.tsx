@@ -21,6 +21,7 @@ import type { Scene } from "./types/scene";
 import "./components/SnapScroll.css";
 import { QuestProvider, useQuest } from "./quest/QuestManager"
 import { UIOverlayRoot } from "./components/UIOverlayRoot"
+import { ChatOrchestrator } from "./components/ChatOrchestrator"
 // Path to the story JSON bundle we want to load. In demo mode we keep this fixed
 // so the experience is deterministic for the presentation.
 
@@ -153,6 +154,9 @@ const StoryContent: React.FC = () => {
 
         {/* Layer 1.8: Speech bubbles (scroll-based with delayed transitions) */}
         <SpeechBubbleOrchestrator scenes={scenes} currentIndex={index} />
+
+        {/* Layer 1.9: Chat system (shows on lastInFlow scenes) */}
+        <ChatOrchestrator />
 
         {/* Layer 2: Document flow content with scroll snap targets */}
         <div style={{ position: "relative" }}>

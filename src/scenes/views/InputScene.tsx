@@ -1,62 +1,22 @@
 /**
- * Interactive input scene that triggers the chat dialogue system.
- * Shows empty scene while chat UI handles interaction.
+ * Simple input scene placeholder.
+ * Chat functionality is now handled by the global ChatOrchestrator.
  */
-import React, { useEffect, useState } from 'react';
+import React from 'react';
 import type { SceneProps } from '../registry';
 import type { InputScene } from '../../types/scene';
-import { useDialogue as useChatDialogue } from '../../chat/ChatDialogueContext';
-import { ChatLayer } from '../../chat/ChatLayer';
-import { useNavigation } from '../../context/NavigationContext';
 
 export default function InputScene({ scene, onComplete, sceneIndex }: SceneProps<InputScene>) {
-  const { grantPlayerTurn, questState } = useChatDialogue();
-  const { currentIndex } = useNavigation();
-  const [chatVisible, setChatVisible] = useState(false);
-  const [hasGrantedTurn, setHasGrantedTurn] = useState(false);
-
-  // Check if this input scene is currently active
-  const isActiveScene = sceneIndex === currentIndex;
-
-  // Grant player turn when scene becomes active
-  useEffect(() => {
-    if (isActiveScene && !hasGrantedTurn) {
-      // Grant player turn with the input prompt
-      grantPlayerTurn(`input-${sceneIndex}`);
-      setChatVisible(true);
-      setHasGrantedTurn(true);
-    }
-  }, [isActiveScene, hasGrantedTurn, grantPlayerTurn, sceneIndex]);
-
-  // Monitor quest completion
-  useEffect(() => {
-    if (questState === 'complete' && hasGrantedTurn) {
-      // Mark scene as complete when quest completes
-      onComplete?.();
-    }
-  }, [questState, hasGrantedTurn, onComplete]);
-
-  const handleChatHide = () => {
-    setChatVisible(false);
-    setHasGrantedTurn(false);
-  };
-
   return (
     <>
       {/* Empty scene - characters rendered by CharacterOrchestrator */}
+      {/* Chat UI handled by global ChatOrchestrator */}
       <div style={{
         height: '100vh',
         width: '100%',
         position: 'relative'
       }}>
       </div>
-
-      {/* Chat UI Layer */}
-      <ChatLayer
-        visible={chatVisible}
-        sceneIndex={sceneIndex || currentIndex}
-        onHide={handleChatHide}
-      />
     </>
   );
 }
