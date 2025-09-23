@@ -5,6 +5,7 @@
 // src/types/scene.ts
 export type CharacterScene = {
   type: "character";
+  sceneId?: string;
   text: string;
   speaker?: "left" | "right";
   background?: string;
@@ -21,6 +22,7 @@ export type CharacterScene = {
 
 export type QuestScene = {
   type: "quest";
+  sceneId?: string;
   text: string;
   background?: string;
   "left-character"?: string;
@@ -36,6 +38,7 @@ export type QuestScene = {
 
 export type InputScene = {
   type: "input";
+  sceneId?: string;
   text?: string; // prompt
   background?: string;
   "left-character"?: string;
@@ -51,6 +54,7 @@ export type InputScene = {
 
 export type ImageScene = {
   type: "image";
+  sceneId?: string;
   image: string;
   caption?: string;
   background?: string;
@@ -65,6 +69,7 @@ export type ImageScene = {
 
 export type CharacterFlowScene = {
   type: "character-flow";
+  sceneId?: string;
   background?: string;
   "left-character"?: string;
   "right-character"?: string;
@@ -79,6 +84,7 @@ export type CharacterFlowScene = {
 
 export type FullScene = {
   type: "full";
+  sceneId?: string;
   text: string;
   background?: string;
   flowSequence?: boolean;
@@ -92,6 +98,7 @@ export type FullScene = {
 
 export type TextScene = {
   type: "text";
+  sceneId?: string;
   text: string;
   character?: string;
   background?: string;

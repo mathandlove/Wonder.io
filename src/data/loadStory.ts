@@ -34,6 +34,7 @@ type RawStory = {
 
 function flattenScenes(rawScenes: RawScene[]): Scene[] {
   const out: Scene[] = [];
+  let sceneCounter = 0;
 
   rawScenes.forEach((scene) => {
     if (scene.type === "character-flow" && scene.flow) {
@@ -52,6 +53,7 @@ function flattenScenes(rawScenes: RawScene[]): Scene[] {
 
         // Use the current character state
         let flattened: Partial<Scene> = {
+          sceneId: `scene-${sceneCounter++}`,
           flowSequence: true,
           isFirstInFlow: flowIndex === 0,
           panelRestricted: true,
@@ -65,7 +67,6 @@ function flattenScenes(rawScenes: RawScene[]): Scene[] {
             ...flattened,
             type: "quest",
             text: f.text || f.quest, // Use f.text if available, fallback to f.quest
-            hidden: true, // Quest scenes are hidden by default (consumable)
           };
         } else if (f.input) {
           flattened = {
@@ -88,6 +89,7 @@ function flattenScenes(rawScenes: RawScene[]): Scene[] {
       // Create first image scene
       out.push({
         type: "image",
+        sceneId: `scene-${sceneCounter++}`,
         image: scene.image,
         caption: scene.text,
         background: scene.background,
@@ -99,6 +101,7 @@ function flattenScenes(rawScenes: RawScene[]): Scene[] {
       // Create second image scene (empty for now, image will stay)
       out.push({
         type: "image",
+        sceneId: `scene-${sceneCounter++}`,
         image: scene.image,
         caption: undefined, // No caption on second scene
         background: scene.background,
@@ -111,6 +114,7 @@ function flattenScenes(rawScenes: RawScene[]): Scene[] {
       // Add flowSequence and isFirstInFlow properties for background system compatibility
       out.push({
         ...scene,
+        sceneId: `scene-${sceneCounter++}`,
         flowSequence: false,
         isFirstInFlow: false,
         panelRestricted: false,

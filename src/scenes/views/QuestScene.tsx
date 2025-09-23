@@ -11,7 +11,7 @@ import { useDirectionalLock } from "../../hooks/useDirectionalLock";
 
 export default function QuestScene({ scene, onComplete, sceneIndex }: SceneProps<QuestScene>) {
   const { offer, accept, state } = useQuest();
-  const { currentIndex, goToNext } = useNavigation();
+  const { currentIndex, nextAndHide } = useNavigation();
   const [hasOffered, setHasOffered] = React.useState(false);
   const [isAccepted, setIsAccepted] = React.useState(false);
 
@@ -41,16 +41,17 @@ export default function QuestScene({ scene, onComplete, sceneIndex }: SceneProps
   // Detect when quest is accepted (phase changes to 'minimized')
   useEffect(() => {
     if (hasOffered && state.phase === 'minimized' && !isAccepted) {
-      console.log('[QuestScene] Quest accepted, removing scroll lock and advancing');
+      console.log('[QuestScene] Quest accepted, using nextAndHide');
       setIsAccepted(true);
 
       // Small delay to ensure scroll lock is released before advancing
       setTimeout(() => {
-        goToNext();
+        const sceneId = scene.sceneId || `quest-${sceneIndex}`;
+        nextAndHide(sceneId); // Navigate and hide in one action
         onComplete?.(); // Mark scene as complete if callback exists
       }, 50);
     }
-  }, [hasOffered, state.phase, isAccepted, goToNext, onComplete]);
+  }, [hasOffered, state.phase, isAccepted, nextAndHide, onComplete, scene, sceneIndex]);
 
   // Detect when user scrolls away from this scene (fallback)
   useEffect(() => {

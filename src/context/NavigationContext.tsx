@@ -16,6 +16,7 @@ export interface NavigationContextType {
   hideScene: (sceneId: string) => void;
   showScene: (sceneId: string) => void;
   goToNext: () => void;
+  nextAndHide: (sceneId: string) => void;
   goToIndex: (index: number) => void;
   registerSnapApi: (api: { scrollTo: (index: number, opts?: ScrollToOptions) => void }) => void;
   currentBackgroundId: string | null;
@@ -46,6 +47,15 @@ export function NavigationProvider({ children, initialIndex = 0 }: NavigationPro
     () => allScenes.filter(scene => !scene.hidden),
     [allScenes]
   );
+
+  // Debug: Log current scene when index changes
+  useEffect(() => {
+    const currentScene = visibleScenes[currentIndex];
+    if (currentScene) {
+      const sceneId = (currentScene as any)?.sceneId || 'no-id';
+      console.log(`[NavigationContext] Current scene: index ${currentIndex}, sceneId: ${sceneId}, type: ${currentScene.type}`);
+    }
+  }, [currentIndex, visibleScenes]);
 
 
   // Compute current background from current scene (use visibleScenes)
@@ -88,6 +98,9 @@ export function NavigationProvider({ children, initialIndex = 0 }: NavigationPro
 
   const goToIndex = useCallback((index: number) => {
     const clampedIndex = Math.max(0, Math.min(index, visibleScenes.length - 1));
+    const targetScene = visibleScenes[clampedIndex];
+    const sceneId = (targetScene as any)?.sceneId || 'no-id';
+    console.log(`[NavigationContext] Scrolling to index ${clampedIndex}, sceneId: ${sceneId}, type: ${targetScene?.type}`);
     setCurrentIndex(clampedIndex);
     snapApiRef.current?.scrollTo(clampedIndex, { behavior: "smooth" });
   }, [visibleScenes.length]);
@@ -105,17 +118,31 @@ export function NavigationProvider({ children, initialIndex = 0 }: NavigationPro
   }, []);
 
   const hideScene = useCallback((sceneId: string) => {
-    setAllScenes(prevScenes =>
-      prevScenes.map(scene =>
-        (scene as any).id === sceneId ? { ...scene, hidden: true } : scene
-      )
-    );
+    console.log(`[NavigationContext] Hiding scene with sceneId: ${sceneId}`);
+    setAllScenes(prevScenes => {
+      const updated = prevScenes.map(scene => {
+        if ((scene as any).sceneId === sceneId) {
+          console.log(`[NavigationContext] ✓ Found and hiding scene: ${sceneId}, type: ${scene.type}`);
+          return { ...scene, hidden: true };
+        }
+        return scene;
+      });
+
+      // Log which scenes are now hidden
+      const hiddenScenes = updated.filter(s => s.hidden).map(s => ({
+        id: (s as any).sceneId || 'no-id',
+        type: s.type
+      }));
+      console.log(`[NavigationContext] Currently hidden scenes:`, hiddenScenes);
+
+      return updated;
+    });
   }, []);
 
   const showScene = useCallback((sceneId: string) => {
     setAllScenes(prevScenes =>
       prevScenes.map(scene =>
-        (scene as any).id === sceneId ? { ...scene, hidden: false } : scene
+        (scene as any).sceneId === sceneId ? { ...scene, hidden: false } : scene
       )
     );
   }, []);
@@ -123,6 +150,13 @@ export function NavigationProvider({ children, initialIndex = 0 }: NavigationPro
   const goToNext = useCallback(() => {
     goToIndex(currentIndex + 1);
   }, [currentIndex, goToIndex]);
+
+  const nextAndHide = useCallback((sceneId: string) => {
+    console.log(`[NavigationContext] nextAndHide called for sceneId: ${sceneId} - hiding only (no auto-advance)`);
+
+    // Just hide the scene - no navigation
+    hideScene(sceneId);
+  }, [hideScene]);
 
   const contextValue = useMemo((): NavigationContextType => ({
     currentIndex,
@@ -135,6 +169,7 @@ export function NavigationProvider({ children, initialIndex = 0 }: NavigationPro
     hideScene,
     showScene,
     goToNext,
+    nextAndHide,
     goToIndex,
     registerSnapApi,
     currentBackgroundId,
@@ -148,6 +183,7 @@ export function NavigationProvider({ children, initialIndex = 0 }: NavigationPro
     hideScene,
     showScene,
     goToNext,
+    nextAndHide,
     goToIndex,
     registerSnapApi,
     currentBackgroundId,
