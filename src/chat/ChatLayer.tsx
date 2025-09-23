@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { ChatComposer } from './ChatComposer';
-import { TurnCue } from './TurnCue';
 import { AdvanceBar } from './AdvanceBar';
+import TurnCueBanner from '../components/chat/TurnCueBanner';
 import { useDialogue } from './ChatDialogueContext';
 import { useNavigation } from '../context/NavigationContext';
 import { useScrollGuardAPI } from '../context/ScrollGuardContext';
@@ -18,35 +18,16 @@ export const ChatLayer: React.FC<ChatLayerProps> = ({ visible, sceneIndex, onHid
     isPlayerTurn,
     waiting,
     questState,
+    showTurnBanner,
+    turnBannerText,
     submitPlayerUtterance,
     suggestions
   } = useDialogue();
 
   const { next } = useNavigation();
   const scrollGuard = useScrollGuardAPI();
-  const [showTurnCue, setShowTurnCue] = useState(false);
   const [exitingChat, setExitingChat] = useState(false);
-  const turnCueTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const lockTokenRef = useRef<symbol | null>(null);
-
-  // Show turn cue briefly when it becomes player's turn
-  useEffect(() => {
-    if (isPlayerTurn && visible) {
-      setShowTurnCue(true);
-      if (turnCueTimeoutRef.current) {
-        clearTimeout(turnCueTimeoutRef.current);
-      }
-      turnCueTimeoutRef.current = setTimeout(() => {
-        setShowTurnCue(false);
-      }, 2000); // Show for 2 seconds
-    }
-
-    return () => {
-      if (turnCueTimeoutRef.current) {
-        clearTimeout(turnCueTimeoutRef.current);
-      }
-    };
-  }, [isPlayerTurn, visible]);
 
   // Lock forward scrolling at this scene when it's player's turn
   useEffect(() => {
@@ -97,8 +78,8 @@ export const ChatLayer: React.FC<ChatLayerProps> = ({ visible, sceneIndex, onHid
 
   return (
     <>
-      {/* Turn cue overlay */}
-      <TurnCue visible={showTurnCue} />
+      {/* Turn cue banner above composer */}
+      <TurnCueBanner show={showTurnBanner} text={turnBannerText} />
 
       {/* Chat composer with advance bar */}
       <div className={`chat-composer-container ${exitingChat ? 'exit-bottom' : ''}`}>

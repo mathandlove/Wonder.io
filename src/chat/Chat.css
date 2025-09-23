@@ -356,3 +356,52 @@
     opacity: 0;
   }
 }
+
+/* Turn Cue Banner - sits above composer */
+.turn-cue-banner {
+  position: fixed;
+  left: 50%;
+  transform: translateX(-50%);
+  bottom: calc(72px + 72px + 32px); /* sits above composer + mic + gap */
+  max-width: min(680px, 92vw);
+  padding: 10px 14px;
+  border-radius: 14px;
+  background: rgba(15, 15, 15, 0.92) !important; /* black banner */
+  color: #fff !important;
+  font-size: 16px;
+  line-height: 1.2;
+  box-shadow: 0 6px 18px rgba(0,0,0,0.35);
+  z-index: 1001; /* above composer, below toasts */
+  animation: turnCueBannerEnter 220ms ease-out;
+  border: 2px solid rgba(255,255,255,0.08) !important;
+}
+
+.turn-cue-strong {
+  font-weight: 700;
+}
+
+@keyframes turnCueBannerEnter {
+  from { opacity: 0; transform: translate(-50%, 8px); }
+  to   { opacity: 1; transform: translate(-50%, 0); }
+}
+
+/* Banner nudge animation - continuous vertical bounce */
+.turn-cue-banner[data-nudged="true"] {
+  animation: bannerBounce 2s ease-in-out infinite !important;
+  transition: none !important; /* Disable transition during animation */
+}
+
+@keyframes bannerBounce {
+  0% {
+    transform: translateX(-50%) translateY(0);
+  }
+  25% {
+    transform: translateX(-50%) translateY(-8px);
+  }
+  50% {
+    transform: translateX(-50%) translateY(0);
+  }
+  100% {
+    transform: translateX(-50%) translateY(0);
+  }
+}

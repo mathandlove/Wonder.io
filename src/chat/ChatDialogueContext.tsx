@@ -13,9 +13,12 @@ interface DialogueContextType {
   waiting: boolean;
   suggestions?: string[];
   questState: 'active' | 'complete' | 'failed';
+  showTurnBanner: boolean;
+  turnBannerText?: string;
   grantPlayerTurn: (questId?: string) => void;
   submitPlayerUtterance: (text: string) => Promise<void>;
   setSuggestions: (suggestions: string[]) => void;
+  setTurnBannerText: (text?: string) => void;
   markGoalMet: () => void;
   markGoalNotMet: () => void;
 }
@@ -30,6 +33,14 @@ export const useDialogue = () => {
   return context;
 };
 
+export const useIsPlayerTurn = () => {
+  const context = useContext(DialogueContext);
+  if (!context) {
+    throw new Error('useIsPlayerTurn must be used within DialogueProvider');
+  }
+  return context.isPlayerTurn;
+};
+
 interface DialogueProviderProps {
   children: ReactNode;
 }
@@ -41,6 +52,7 @@ export const ChatDialogueProvider: React.FC<DialogueProviderProps> = ({ children
   const [suggestions, setSuggestions] = useState<string[]>([]);
   const [questState, setQuestState] = useState<'active' | 'complete' | 'failed'>('active');
   const [currentQuestId, setCurrentQuestId] = useState<string | undefined>();
+  const [turnBannerText, setTurnBannerText] = useState<string | undefined>();
 
   const grantPlayerTurn = useCallback((questId?: string) => {
     setCurrentQuestId(questId);
@@ -125,9 +137,12 @@ export const ChatDialogueProvider: React.FC<DialogueProviderProps> = ({ children
     waiting,
     suggestions,
     questState,
+    showTurnBanner: isPlayerTurn && !waiting,
+    turnBannerText,
     grantPlayerTurn,
     submitPlayerUtterance,
     setSuggestions,
+    setTurnBannerText,
     markGoalMet,
     markGoalNotMet
   };

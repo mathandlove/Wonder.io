@@ -130,27 +130,30 @@ export const ChatComposer: React.FC<ChatComposerProps> = ({
     setShowSuggestion(!showSuggestion);
   };
 
+
   return (
     <div className="chat-composer-container">
-      <div className="chat-composer-box">
-        <input
-          ref={inputRef}
-          type="text"
-          value={userInput}
-          onChange={(e) => setUserInput(e.target.value)}
-          onKeyDown={handleKeyDown}
-          placeholder="Type your message..."
-          autoFocus={!disabled}
-          disabled={disabled}
-        />
-        <button
-          className={`chat-send-button ${userInput.trim() ? 'has-text' : ''}`}
-          onClick={handleSubmit}
-          disabled={!userInput.trim() || disabled}
-          title="Send message"
-        >
-          <div className="send-icon-mask"></div>
-        </button>
+      <div className="composer-wrapper">
+        <div className="chat-composer-box">
+          <input
+            ref={inputRef}
+            type="text"
+            value={userInput}
+            onChange={(e) => setUserInput(e.target.value)}
+            onKeyDown={handleKeyDown}
+            placeholder="Type or speak..."
+            disabled={disabled}
+            className="composer-input"
+          />
+          <button
+            className={`chat-send-button ${userInput.trim() ? 'has-text' : ''}`}
+            onClick={handleSubmit}
+            disabled={!userInput.trim() || disabled}
+            title="Send message"
+          >
+            <div className="send-icon-mask"></div>
+          </button>
+        </div>
       </div>
       <button
         className={`chat-record-button ${isRecording ? 'recording' : ''}`}

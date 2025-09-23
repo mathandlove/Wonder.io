@@ -49,27 +49,6 @@ export default function InputScene({ scene, onComplete, sceneIndex }: SceneProps
         width: '100%',
         position: 'relative'
       }}>
-        {/* Optional: Show the input prompt question in the scene */}
-        {scene.text && chatVisible && (
-          <div style={{
-            position: 'absolute',
-            top: '20%',
-            left: '50%',
-            transform: 'translate(-50%, -50%)',
-            fontSize: '24px',
-            color: '#333',
-            fontFamily: 'Comic Sans MS, cursive',
-            textAlign: 'center',
-            maxWidth: '600px',
-            padding: '20px',
-            background: 'rgba(255, 255, 255, 0.9)',
-            borderRadius: '16px',
-            border: '3px solid #8B4513',
-            boxShadow: '0 4px 12px rgba(0, 0, 0, 0.2)'
-          }}>
-            {scene.text}
-          </div>
-        )}
       </div>
 
       {/* Chat UI Layer */}
