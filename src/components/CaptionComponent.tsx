@@ -80,22 +80,27 @@ export const CaptionComponent: React.FC<CaptionComponentProps> = ({ scenes, inde
       pointerEvents: 'none'
     }}>
       {captionRanges.map((range) => {
+        // Use the same transform logic as background system
         const tolerance = 0.1;
         let transform: string;
         let opacity: number;
 
-        // Show caption only on the second scene of each image pair
-        const shouldShow = Math.round(index) === range.secondSceneIndex;
-        console.log('[CAPTION] Index:', index, 'Rounded:', Math.round(index), 'Target:', range.secondSceneIndex, 'Should show:', shouldShow);
-        if (shouldShow) {
-          // Second image scene - caption visible
-          console.log('[CAPTION] Showing caption at index', index, 'for range', range.secondSceneIndex, range.caption);
+        // Caption should appear on the second scene of the image range
+        const captionStartIndex = range.secondSceneIndex;
+        const captionEndIndex = range.secondSceneIndex; // Caption is only visible for one scene
+
+        if (index < captionStartIndex - tolerance) {
+          // Caption is waiting below (not reached yet)
+          transform = `translateY(${(captionStartIndex - index) * 100}vh)`;
+          opacity = 0;
+        } else if (index > captionEndIndex + tolerance) {
+          // Caption has scrolled up and away
+          transform = `translateY(${(captionEndIndex - index) * 100}vh)`;
+          opacity = 0;
+        } else {
+          // Caption is visible and in final position
           transform = 'translateY(0)';
           opacity = 1;
-        } else {
-          // Any other scene - caption hidden
-          transform = 'translateY(100vh)';
-          opacity = 0;
         }
 
         return (
@@ -111,7 +116,8 @@ export const CaptionComponent: React.FC<CaptionComponentProps> = ({ scenes, inde
               overflow: 'visible',
               transform,
               opacity,
-              transition: 'transform 0.6s ease-out, opacity 0.6s ease-out'
+              transition: 'transform 0.8s cubic-bezier(0.25, 0.46, 0.45, 0.94), opacity 0.8s cubic-bezier(0.25, 0.46, 0.45, 0.94)',
+              willChange: 'transform, opacity' // Optimize for animation performance
             }}
           >
             {/* Cardboard edge background with shadow */}

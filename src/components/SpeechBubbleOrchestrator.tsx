@@ -10,7 +10,7 @@ import type { Scene, CharacterScene, InteractiveBubbleScene } from '../types/sce
 
 interface SpeechBubbleOrchestratorProps {
   scenes: Scene[];
-  currentIndex: number;
+  currentIndex?: number;
 }
 
 // Speech bubble positioning logic - each bubble only visible for its own scene
@@ -31,10 +31,11 @@ function translateForSpeechBubble(sceneIndex: number, scrollOffset: number): str
   }
 }
 
-export function SpeechBubbleOrchestrator({ scenes }: SpeechBubbleOrchestratorProps) {
-  // Get current scroll offset (float in scene units)
+export function SpeechBubbleOrchestrator({ scenes, currentIndex }: SpeechBubbleOrchestratorProps) {
+  // Use passed currentIndex or fall back to scroll offset
   const dummyRef = React.useRef<HTMLDivElement>(null);
-  const { offset: scrollOffset } = useScrollOffset(dummyRef);
+  const { offset: scrollOffsetFallback } = useScrollOffset(dummyRef);
+  const scrollOffset = currentIndex !== undefined ? currentIndex : scrollOffsetFallback;
 
   // Get dialogue context for interactive scenes
   const { getMessagesForScene } = useDialogue();
@@ -50,6 +51,8 @@ export function SpeechBubbleOrchestrator({ scenes }: SpeechBubbleOrchestratorPro
 
   // Find character scenes AND interactive-bubble scenes to render bubbles for
   const speechBubbles = useMemo(() => {
+    console.log('[SPEECH_BUBBLE] Processing scenes, total:', scenes.length, 'currentIndex:', scrollOffset);
+
     const bubbles: Array<{
       scene: CharacterScene | InteractiveBubbleScene;
       sceneIndex: number;
@@ -58,6 +61,7 @@ export function SpeechBubbleOrchestrator({ scenes }: SpeechBubbleOrchestratorPro
     }> = [];
 
     scenes.forEach((scene, index) => {
+      console.log(`[SPEECH_BUBBLE] Scene ${index}: type=${scene.type}`);
       if (scene?.type === 'character') {
         const transform = translateForSpeechBubble(index, scrollOffset);
         bubbles.push({
@@ -77,6 +81,7 @@ export function SpeechBubbleOrchestrator({ scenes }: SpeechBubbleOrchestratorPro
       }
     });
 
+    console.log('[SPEECH_BUBBLE] Found bubbles:', bubbles.length);
     return bubbles;
   }, [scenes, scrollOffset]);
 
