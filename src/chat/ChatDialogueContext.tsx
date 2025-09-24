@@ -58,17 +58,16 @@ export const ChatDialogueProvider: React.FC<DialogueProviderProps> = ({ children
   const [currentQuestId, setCurrentQuestId] = useState<string | undefined>();
   const [turnBannerText, setTurnBannerText] = useState<string | undefined>();
   const [bannerHidden, setBannerHidden] = useState(() => {
-    // Initialize from localStorage if available
+    // Clear localStorage on page load to ensure banner shows on refresh
     try {
-      const stored = localStorage.getItem('chat-banner-hidden');
-      return stored === 'true';
+      localStorage.removeItem('chat-banner-hidden');
     } catch {
-      return false;
+      // Ignore localStorage errors
     }
+    return false; // Always start with banner visible on refresh
   });
 
   const grantPlayerTurn = useCallback((questId?: string) => {
-    console.log('[BANNER_DEBUG] grantPlayerTurn called for questId:', questId, 'bannerHidden:', bannerHidden);
     setCurrentQuestId(questId);
     setIsPlayerTurn(true);
     setQuestState('active');
@@ -150,7 +149,6 @@ export const ChatDialogueProvider: React.FC<DialogueProviderProps> = ({ children
   }, []);
 
   const hideTurnBanner = useCallback(() => {
-    console.log('[BANNER_DEBUG] hideTurnBanner called - setting bannerHidden to true');
     setBannerHidden(true);
     // Persist to localStorage
     try {
@@ -161,7 +159,6 @@ export const ChatDialogueProvider: React.FC<DialogueProviderProps> = ({ children
   }, []);
 
   const resetTurnBanner = useCallback(() => {
-    console.log('[BANNER_DEBUG] resetTurnBanner called - setting bannerHidden to false');
     setBannerHidden(false);
     // Remove from localStorage
     try {
@@ -179,7 +176,6 @@ export const ChatDialogueProvider: React.FC<DialogueProviderProps> = ({ children
     questState,
     showTurnBanner: (() => {
       const shouldShow = isPlayerTurn && !waiting && !bannerHidden;
-      console.log('[BANNER_DEBUG] showTurnBanner computed:', shouldShow, 'isPlayerTurn:', isPlayerTurn, 'waiting:', waiting, 'bannerHidden:', bannerHidden);
       return shouldShow;
     })(),
     turnBannerText,

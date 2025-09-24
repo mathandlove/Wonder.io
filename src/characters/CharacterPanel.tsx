@@ -159,18 +159,6 @@ export const CharacterPanel: React.FC<CharacterPanelProps> = ({
 
   const displayCharacter = getDisplayCharacter();
 
-  // Debug logging for empty character panels
-  if (!displayCharacter && characterName) {
-    console.log(`[CHARACTER_PANEL] Empty panel for ${side}:`, {
-      characterName,
-      displayCharacter,
-      phase,
-      scrollDirection,
-      previousCharacter,
-      nextCharacter,
-      aboutToSwap
-    });
-  }
 
   return (
     <div

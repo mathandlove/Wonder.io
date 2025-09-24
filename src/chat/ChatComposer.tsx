@@ -1,5 +1,7 @@
 import React, { useState, useRef, useCallback, useEffect } from 'react';
 import { useDialogue } from './ChatDialogueContext';
+import { useDialogue as useNewDialogue } from '../dialogue/DialogueContext';
+import { usePageFactory } from '../components/PageFactory';
 import NextButton from '../components/ui/NextButton';
 import { Toast, useToast } from '../components/ui/Toast';
 import './Chat.css';
@@ -16,7 +18,11 @@ export const ChatComposer: React.FC<ChatComposerProps> = ({
   onNext
 }) => {
   const { hideTurnBanner, waiting, submitPlayerUtterance } = useDialogue();
+  const { beginRecording, updateRecording, endRecording } = useNewDialogue();
+  const { createInteractiveBubblePage, addSceneAndNavigate } = usePageFactory();
   const [isRecording, setIsRecording] = useState(false);
+  const [currentRecordingId, setCurrentRecordingId] = useState<string | null>(null);
+  const [currentSceneId, setCurrentSceneId] = useState<string | null>(null);
   const recognitionRef = useRef<any>(null);
   const { toast, hideToast } = useToast();
 
@@ -29,42 +35,106 @@ export const ChatComposer: React.FC<ChatComposerProps> = ({
         return;
       }
 
+      // Create a new interactive bubble scene and navigate to it
+      console.log('[CHAT_COMPOSER_DEBUG] Creating new interactive bubble scene');
+      const newScene = createInteractiveBubblePage();
+      const sceneId = newScene.sceneId || 'default';
+      console.log('[CHAT_COMPOSER_DEBUG] Created scene:', { sceneId, newScene });
+      setCurrentSceneId(sceneId);
+
+      // Add the scene and auto-scroll to it
+      console.log('[CHAT_COMPOSER_DEBUG] Adding scene and navigating');
+      addSceneAndNavigate(newScene);
+
+      // Start recording with the new scene ID
+      console.log('[CHAT_COMPOSER_DEBUG] Starting recording with sceneId:', sceneId);
+      const recordingId = beginRecording(sceneId);
+      console.log('[CHAT_COMPOSER_DEBUG] Recording started with ID:', recordingId);
+      setCurrentRecordingId(recordingId);
+
       const recognition = new SpeechRecognition();
-      recognition.continuous = false; // Changed to false for single utterance
-      recognition.interimResults = false; // Changed to false for final result only
+      recognition.continuous = true; // Allow continuous recording
+      recognition.interimResults = true; // Show interim results
       recognition.lang = 'en-US';
 
       recognition.onstart = () => {
-        console.log('Speech recognition started');
+        console.log('[CHAT_COMPOSER_DEBUG] Speech recognition started');
         setIsRecording(true);
       };
 
       recognition.onresult = (event: any) => {
-        let transcript = '';
-        for (let i = 0; i < event.results.length; i++) {
+        console.log('[CHAT_COMPOSER_DEBUG] Speech recognition result event:', event);
+        let interimTranscript = '';
+        let finalTranscript = '';
+
+        for (let i = event.resultIndex; i < event.results.length; i++) {
+          const transcript = event.results[i][0].transcript;
+          console.log('[CHAT_COMPOSER_DEBUG] Processing result:', {
+            index: i,
+            transcript,
+            isFinal: event.results[i].isFinal,
+            confidence: event.results[i][0].confidence
+          });
           if (event.results[i].isFinal) {
-            transcript += event.results[i][0].transcript + ' ';
+            finalTranscript += transcript + ' ';
+          } else {
+            interimTranscript += transcript;
           }
         }
-        const finalTranscript = transcript.trim();
+
+        console.log('[CHAT_COMPOSER_DEBUG] Processed transcripts:', {
+          interimTranscript,
+          finalTranscript,
+          recordingId: recordingId  // Use the captured recordingId instead of state
+        });
+
+        // Update with interim results - use captured recordingId
+        if (interimTranscript && recordingId) {
+          console.log('[CHAT_COMPOSER_DEBUG] Updating interim transcript:', { recordingId, interimTranscript });
+          updateRecording(recordingId, interimTranscript, { isInterim: true });
+        }
+
+        // Handle final transcript - use captured recordingId
         if (finalTranscript) {
-          // Submit directly without showing in input field
-          submitPlayerUtterance(finalTranscript);
+          const trimmedFinal = finalTranscript.trim();
+          console.log('[CHAT_COMPOSER_DEBUG] Final transcript received:', { recordingId, finalTranscript, trimmedFinal });
+          if (trimmedFinal && recordingId) {
+            endRecording(recordingId, trimmedFinal);
+            // Also submit to old system for compatibility
+            submitPlayerUtterance(trimmedFinal);
+            setCurrentRecordingId(null);
+            setIsRecording(false);
+            recognition.stop();
+          }
         }
       };
 
       recognition.onerror = (event: any) => {
-        console.error('Speech recognition error:', event.error);
+        console.error('[CHAT_COMPOSER_DEBUG] Speech recognition error:', event.error, 'Full event:', event);
         setIsRecording(false);
+        setCurrentRecordingId(null);
         if (event.error === 'not-allowed') {
           alert('Microphone access denied. Please allow microphone access and try again.');
         }
       };
 
       recognition.onend = () => {
-        console.log('Speech recognition ended');
+        console.log('[CHAT_COMPOSER_DEBUG] Speech recognition ended');
         setIsRecording(false);
         recognitionRef.current = null;
+      };
+
+      // Additional event handlers for debugging
+      recognition.onnomatch = (event: any) => {
+        console.log('[CHAT_COMPOSER_DEBUG] Speech recognition no match:', event);
+      };
+
+      recognition.onspeechstart = (event: any) => {
+        console.log('[CHAT_COMPOSER_DEBUG] Speech detected, starting recognition');
+      };
+
+      recognition.onspeechend = (event: any) => {
+        console.log('[CHAT_COMPOSER_DEBUG] Speech ended');
       };
 
       recognitionRef.current = recognition;
@@ -74,14 +144,13 @@ export const ChatComposer: React.FC<ChatComposerProps> = ({
       console.error('Error starting speech recognition:', error);
       alert('Could not start speech recognition. Please try again.');
     }
-  }, [submitPlayerUtterance]);
+  }, [submitPlayerUtterance, createInteractiveBubblePage, addSceneAndNavigate, beginRecording, updateRecording, endRecording, currentRecordingId]);
 
   const stopRecording = useCallback(() => {
     if (recognitionRef.current) {
       recognitionRef.current.stop();
       recognitionRef.current = null;
       setIsRecording(false);
-      console.log('Speech recognition stopped manually');
     }
   }, []);
 
@@ -98,7 +167,6 @@ export const ChatComposer: React.FC<ChatComposerProps> = ({
   const handleHintClick = () => {
     if (disabled || waiting) return;
     // TODO: Implement hint functionality
-    console.log('Hint button clicked');
   };
 
 

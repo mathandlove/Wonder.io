@@ -15,7 +15,6 @@ export const ChatOrchestrator: React.FC = () => {
   const [hasGrantedTurn, setHasGrantedTurn] = useState(false);
   const [lastProcessedIndex, setLastProcessedIndex] = useState(-1);
 
-  console.log('[CHAT_ORCHESTRATOR] Component mounted/rendered, scenes.length:', scenes.length, 'currentIndex:', currentIndex);
 
   // Get current scene
   const currentScene = scenes[currentIndex];
@@ -26,7 +25,6 @@ export const ChatOrchestrator: React.FC = () => {
 
   // Debug logging - only log when relevant
   if (currentScene?.type === 'input' || shouldShowChat || chatVisible) {
-    console.log('[CHAT_DEBUG] Scene:', currentIndex, 'type:', currentScene?.type, 'lastInFlow:', shouldShowChat, 'chatVisible:', chatVisible);
   }
 
   // Grant player turn when we navigate to a lastInFlow scene

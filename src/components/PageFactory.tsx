@@ -4,14 +4,16 @@
  * that can be scrolled to and navigated within the story.
  */
 import React, { createContext, useContext, useCallback, useEffect, useState } from "react";
-import type { CharacterScene, Scene } from "../types/scene";
+import type { CharacterScene, Scene, InteractiveBubbleScene } from "../types/scene";
 import { useDialogue } from "../context/DialogueContext";
 import { useNavigation } from "../context/NavigationContext";
 import { injectPanelMetaFromFlows } from "../characters/adapters/injectPanelMetaFromFlows";
 
 type PageFactoryContextType = {
   createCharacterPage: (text: string, speaker?: "left" | "right") => CharacterScene;
+  createInteractiveBubblePage: (recordingId?: string) => InteractiveBubbleScene;
   addSceneToStory: (scene: Scene) => void;
+  addSceneAndNavigate: (scene: Scene) => void;
 };
 
 const PageFactoryContext = createContext<PageFactoryContextType | null>(null);
@@ -64,15 +66,6 @@ export function PageFactoryProvider({ children, onSceneAdded }: PageFactoryProvi
       }
     }
 
-    // console.log('🏗️ Building character page from current scene:', {
-    //   currentIndex,
-    //   currentSceneType: currentScene?.type,
-    //   extractedLeftChar: leftCharacter,
-    //   extractedRightChar: rightCharacter,
-    //   newSpeaker: speaker,
-    //   textLength: text.length,
-    //   scenesLength: scenes.length
-    // });
 
     const sceneId = `created-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
     const newScene = {
@@ -94,28 +87,52 @@ export function PageFactoryProvider({ children, onSceneAdded }: PageFactoryProvi
     // Include the current scene as "previous" so transitions are calculated correctly
     const scenesForMetaInjection = [currentScene, newScene].filter(Boolean);
 
-    console.log(`[PANEL_INJECT] Before injection:`, {
-      numScenes: scenesForMetaInjection.length,
-      currentSceneType: currentScene?.type,
-      currentLeftChar: (currentScene as any)?.['left-character'],
-      currentRightChar: (currentScene as any)?.['right-character'],
-      newSceneLeftChar: newScene['left-character'],
-      newSceneRightChar: newScene['right-character']
-    });
 
     const scenesWithMeta = injectPanelMetaFromFlows(scenesForMetaInjection);
     const sceneWithMeta = scenesWithMeta[scenesWithMeta.length - 1]; // Get the last one (our new scene)
 
-    console.log(`[PANEL_INJECT] After injection:`, {
-      leftNewCharacter: sceneWithMeta.meta?.panelLeft?.newCharacter,
-      rightNewCharacter: sceneWithMeta.meta?.panelRight?.newCharacter,
-      leftPrevChar: sceneWithMeta.meta?.panelLeft?.previousCharacter,
-      rightPrevChar: sceneWithMeta.meta?.panelRight?.previousCharacter,
-      leftCurrChar: sceneWithMeta.meta?.panelLeft?.character,
-      rightCurrChar: sceneWithMeta.meta?.panelRight?.character
-    });
 
     return sceneWithMeta;
+  };
+
+  // Create an interactive bubble scene
+  const createInteractiveBubblePage = (recordingId?: string): InteractiveBubbleScene => {
+    const currentScene = scenes[currentIndex];
+
+    // Extract characters from current scene, with fallbacks
+    let leftCharacter = "leo";
+    let rightCharacter = "bakerMom";
+
+    if (currentScene) {
+      if ('left-character' in currentScene && currentScene['left-character']) {
+        leftCharacter = currentScene['left-character'] as string;
+      }
+      if ('right-character' in currentScene && currentScene['right-character']) {
+        rightCharacter = currentScene['right-character'] as string;
+      }
+      if (currentScene.meta?.panelLeft?.character) {
+        leftCharacter = currentScene.meta.panelLeft.character;
+      }
+      if (currentScene.meta?.panelRight?.character) {
+        rightCharacter = currentScene.meta.panelRight.character;
+      }
+    }
+
+    const sceneId = `interactive-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+    const newScene: InteractiveBubbleScene = {
+      type: "interactive-bubble",
+      sceneId,
+      recordingId,
+      "left-character": leftCharacter || "leo",
+      "right-character": rightCharacter || "bakerMom",
+    };
+
+    // Inject panel metadata
+    const scenesForMetaInjection = [currentScene, newScene].filter(Boolean);
+    const scenesWithMeta = injectPanelMetaFromFlows(scenesForMetaInjection);
+    const sceneWithMeta = scenesWithMeta[scenesWithMeta.length - 1];
+
+    return sceneWithMeta as InteractiveBubbleScene;
   };
 
   // Legacy addSceneToStory - keeping for external API compatibility but not used internally
@@ -140,6 +157,29 @@ export function PageFactoryProvider({ children, onSceneAdded }: PageFactoryProvi
     setTimeout(() => {
       goToIndex(currentIndex + 1);
     }, 100);
+
+    onSceneAdded?.(scene);
+  }, [insertScene, currentIndex, goToIndex, onSceneAdded, scenes, allScenes]);
+
+  // Add a scene and immediately navigate to it
+  const addSceneAndNavigate = useCallback((scene: Scene) => {
+    const currentVisibleScene = scenes[currentIndex];
+    let insertIndex = allScenes.length;
+
+    if (currentVisibleScene) {
+      const currentSceneId = (currentVisibleScene as any).sceneId;
+      const allScenesIndex = allScenes.findIndex(s => (s as any).sceneId === currentSceneId);
+      if (allScenesIndex !== -1) {
+        insertIndex = allScenesIndex + 1;
+      }
+    }
+
+    insertScene(scene, insertIndex);
+
+    // Navigate to the new scene with a slight delay for smooth transition
+    setTimeout(() => {
+      goToIndex(currentIndex + 1);
+    }, 50);
 
     onSceneAdded?.(scene);
   }, [insertScene, currentIndex, goToIndex, onSceneAdded, scenes, allScenes]);
@@ -199,7 +239,9 @@ export function PageFactoryProvider({ children, onSceneAdded }: PageFactoryProvi
 
   const contextValue: PageFactoryContextType = {
     createCharacterPage,
-    addSceneToStory
+    createInteractiveBubblePage,
+    addSceneToStory,
+    addSceneAndNavigate
   };
 
   return (

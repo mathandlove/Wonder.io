@@ -7,9 +7,6 @@ import { NOCHARACTER } from "../buildPanelRangesFromScenes";
 export function injectPanelMetaFromFlows(scenes: Scene[]): Scene[] {
   if (!Array.isArray(scenes) || scenes.length === 0) return scenes;
 
-  console.log(`[INJECT_DEBUG] Processing ${scenes.length} scenes, input scenes found:`,
-    scenes.map((s, i) => s.type === 'input' ? i : null).filter(x => x !== null));
-
 
   let inFlow = false;
   let currentLeft: string | null = null;
@@ -28,7 +25,6 @@ export function injectPanelMetaFromFlows(scenes: Scene[]): Scene[] {
 
       // For non-character scenes that need character rendering (like input), also inject meta
       if (s.type !== "character" && s.type !== "input") {
-        console.log(`[INJECT_DEBUG] Updating character tracking for ${s.type} scene: left=${sceneLeft}, right=${sceneRight}`);
         currentLeft = sceneLeft || currentLeft;
         currentRight = sceneRight || currentRight;
         return s; // Return unchanged for non-character/non-input scenes
@@ -83,8 +79,6 @@ export function injectPanelMetaFromFlows(scenes: Scene[]): Scene[] {
           const aboutToSwap = nextCharacter !== current;
           const newCharacter = previous !== current;
 
-          console.log(`[INJECT_DEBUG] ${side} panel: current=${current}, previous=${previous}, newCharacter=${newCharacter}`);
-          console.log(`[INJECT_DEBUG] ${side} nextChar calculation: nextScene=${nextScene?.type}, nextCharacter=${nextCharacter}, aboutToSwap=${aboutToSwap}`);
 
           return {
             character: current,

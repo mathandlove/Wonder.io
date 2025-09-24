@@ -57,7 +57,6 @@ export const CharacterOrchestrator: React.FC<Props> = ({ storyId, scenes }) => {
     const diff = scrollOffset - prevScrollOffsetRef.current;
     if (Math.abs(diff) > 0.01) { // Small threshold to avoid jitter
       const newDirection = diff > 0 ? 'forward' : 'backward';
-      // console.log(`[CharacterOrchestrator] Scroll direction: ${newDirection} (diff: ${diff.toFixed(3)})`);
       setScrollDirection(newDirection);
     }
     prevScrollOffsetRef.current = scrollOffset;

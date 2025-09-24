@@ -59,13 +59,11 @@ export const ChatLayer: React.FC<ChatLayerProps> = ({ visible, sceneIndex, onHid
       if (!waitingLockTokenRef.current) {
         // Lock both forward and backward scrolling during AI processing
         waitingLockTokenRef.current = scrollGuard.lockBoth();
-        console.log('[CHAT_LAYER] Locking all scrolling - waiting for AI');
       }
     } else {
       if (waitingLockTokenRef.current) {
         scrollGuard.clear(waitingLockTokenRef.current);
         waitingLockTokenRef.current = null;
-        console.log('[CHAT_LAYER] Unlocking scrolling - AI response received');
       }
     }
 
@@ -76,7 +74,7 @@ export const ChatLayer: React.FC<ChatLayerProps> = ({ visible, sceneIndex, onHid
         waitingLockTokenRef.current = null;
       }
     };
-  }, [waiting, visible, scrollGuard]);
+  }, [waiting, visible]);
 
   const handleContinue = () => {
     setExitingChat(true);
@@ -96,11 +94,9 @@ export const ChatLayer: React.FC<ChatLayerProps> = ({ visible, sceneIndex, onHid
 
   const handleKeepChatting = () => {
     // For future implementation - allow player to continue chatting
-    console.log('Keep chatting not yet implemented');
   };
 
   // Always render but control visibility with CSS to prevent flashing
-  console.log('[CHAT_LAYER] Rendering with visible:', visible, 'className:', `chat-layer ${visible ? 'visible' : 'hidden'}`);
 
   return (
     <div className={`chat-layer ${visible ? 'visible' : 'hidden'}`}>

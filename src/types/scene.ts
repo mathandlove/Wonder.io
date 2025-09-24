@@ -107,6 +107,22 @@ export type TextScene = {
   hidden?: boolean;
 };
 
+export type InteractiveBubbleScene = {
+  type: "interactive-bubble";
+  sceneId?: string;
+  recordingId?: string;  // Links to active recording in DialogueContext
+  background?: string;
+  "left-character"?: string;
+  "right-character"?: string;
+  flowSequence?: boolean;
+  isFirstInFlow?: boolean;
+  hidden?: boolean;
+  meta?: {
+    panelLeft?: { character: string; previousCharacter?: string; nextCharacter?: string; newCharacter?: boolean; aboutToSwap?: boolean };
+    panelRight?: { character: string; previousCharacter?: string; nextCharacter?: string; newCharacter?: boolean; aboutToSwap?: boolean };
+  };
+};
+
 export type Scene =
   | CharacterScene
   | QuestScene
@@ -114,7 +130,8 @@ export type Scene =
   | ImageScene
   | CharacterFlowScene
   | FullScene
-  | TextScene;
+  | TextScene
+  | InteractiveBubbleScene;
 
 export type Story = {
   scenes: Scene[];
