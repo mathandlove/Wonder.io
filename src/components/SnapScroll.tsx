@@ -184,7 +184,6 @@ const SnapScroll: React.FC<SnapScrollProps> = ({ storyContent }) => {
     const newIndex = determineCurrentSection();
     if (newIndex !== currentSectionIndex) {
       setCurrentSectionIndex(newIndex);
-      console.log(`[SnapScroll] Current section changed to ${newIndex}`);
     }
   }, [currentSectionIndex, determineCurrentSection]);
 
@@ -223,8 +222,6 @@ const SnapScroll: React.FC<SnapScrollProps> = ({ storyContent }) => {
       e.stopPropagation();
       wheelAccumRef.current = 0;
 
-      // Log blocked attempt
-      console.log(`[SnapScroll] Blocked ${isForward ? 'forward' : 'backward'} wheel at section ${currentSectionIndex}, reason: ${locks.reason}`);
 
       // Snap back to current section
       snapToSection(currentSectionIndex);
@@ -274,8 +271,6 @@ const SnapScroll: React.FC<SnapScrollProps> = ({ storyContent }) => {
         e.preventDefault();
         e.stopPropagation();
 
-        // Log blocked attempt
-        console.log(`[SnapScroll] Blocked ${isForward ? 'forward' : 'backward'} touch at section ${currentSectionIndex}, reason: ${locks.reason}`);
 
         // Snap back to current section
         snapToSection(currentSectionIndex);
@@ -309,8 +304,6 @@ const SnapScroll: React.FC<SnapScrollProps> = ({ storyContent }) => {
       e.preventDefault();
       e.stopPropagation();
 
-      // Log blocked attempt
-      console.log(`[SnapScroll] Blocked ${isForward ? 'forward' : 'backward'} key (${e.key}) at section ${currentSectionIndex}, reason: ${locks.reason}`);
 
       // Snap back to current section
       snapToSection(currentSectionIndex);
@@ -332,9 +325,6 @@ const SnapScroll: React.FC<SnapScrollProps> = ({ storyContent }) => {
     const newLocks = computeLocks();
     if (newLocks.forward !== locks.forward || newLocks.backward !== locks.backward) {
       setLocks(newLocks);
-      if (newLocks.forward || newLocks.backward) {
-        console.log(`[SnapScroll] Locks updated for section ${currentSectionIndex}: forward=${newLocks.forward}, backward=${newLocks.backward}, reason=${newLocks.reason}`);
-      }
     }
   }, [currentSectionIndex, computeLocks, locks.forward, locks.backward]);
 
@@ -375,7 +365,6 @@ const SnapScroll: React.FC<SnapScrollProps> = ({ storyContent }) => {
       const newLocks = computeLocks();
       if (newLocks.forward !== locks.forward || newLocks.backward !== locks.backward) {
         setLocks(newLocks);
-        console.log(`[SnapScroll] DOM lock attributes changed for section ${currentSectionIndex}: forward=${newLocks.forward}, backward=${newLocks.backward}`);
       }
     });
 

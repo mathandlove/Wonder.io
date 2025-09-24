@@ -149,13 +149,6 @@ const StoryContent: React.FC = () => {
         // - System is waiting for response
         // - Quest is still active
         const shouldLock = isPlayerTurn || waiting || questState === 'active';
-        console.log(`🔍 Input scene ${currentIndex} content lock check:`, {
-          isPlayerTurn,
-          waiting,
-          questState,
-          shouldLock,
-          direction
-        });
         return shouldLock;
       }
     }

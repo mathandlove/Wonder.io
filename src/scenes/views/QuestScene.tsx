@@ -7,10 +7,11 @@ import type { SceneProps } from "../registry";
 import type { QuestScene } from "../../types/scene";
 import { useQuest } from "../../quest/QuestManager";
 import { useNavigation } from "../../context/NavigationContext";
+import { sceneBus } from "../../scenes/registry/sceneBus";
 
 export default function QuestScene({ scene, onComplete, sceneIndex }: SceneProps<QuestScene>) {
   const { offer, accept, state } = useQuest();
-  const { currentIndex, nextAndHide } = useNavigation();
+  const { currentIndex, scenes } = useNavigation();
   const [hasOffered, setHasOffered] = React.useState(false);
   const [isAccepted, setIsAccepted] = React.useState(false);
 
@@ -38,11 +39,31 @@ export default function QuestScene({ scene, onComplete, sceneIndex }: SceneProps
       // Small delay to ensure scroll lock is released before advancing
       setTimeout(() => {
         const sceneId = scene.sceneId || `quest-${sceneIndex}`;
-        nextAndHide(sceneId); // Navigate and hide in one action
+
+        // Emit scene leave event for this quest scene
+        if (sceneId) {
+          sceneBus.emit('scene:leave', sceneId, 'forward');
+        }
+
+        // Find the next scene
+        const nextSceneIndex = currentIndex + 1;
+        const nextScene = scenes[nextSceneIndex];
+
+        if (nextScene && (nextScene as any).sceneId) {
+          // Emit scene enter event for the next scene
+          sceneBus.emit('scene:enter', (nextScene as any).sceneId, 'forward');
+        }
+
+        // Trigger scroll navigation to the next scene
+        const nextSection = document.querySelector(`[data-section-index="${nextSceneIndex}"]`);
+        if (nextSection) {
+          nextSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+
         onComplete?.(); // Mark scene as complete if callback exists
       }, 50);
     }
-  }, [hasOffered, state.phase, isAccepted, nextAndHide, onComplete, scene, sceneIndex]);
+  }, [hasOffered, state.phase, isAccepted, onComplete, scene, sceneIndex, currentIndex, scenes]);
 
   // Detect when user scrolls away from this scene (fallback)
   useEffect(() => {
