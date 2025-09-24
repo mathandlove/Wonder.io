@@ -3,11 +3,13 @@
   display: inline-flex;
   align-items: center;
   gap: 4px;
+
 }
 
 .story-thinking-dots .dot {
   font-size: 32px;
-  line-height: 1;
+  line-height: 0;
+
   animation: thinkingBounce 1.4s infinite;
 }
 
@@ -48,4 +50,19 @@
     opacity: 1;
     transform: translateY(0);
   }
+}
+
+/* White triangle pointer for waiting bubble - right side */
+.waiting-bubble-inner::after {
+  content: '';
+  position: absolute;
+  right: -10px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 0;
+  height: 0;
+  border-style: solid;
+  border-width: 15px 0 15px 28px;
+  border-color: transparent transparent transparent #fdf8e4;
+  z-index: -1;
 }

@@ -23,11 +23,11 @@ export function injectPanelMetaFromFlows(scenes: Scene[]): Scene[] {
       const sceneLeft = (s as any)["left-character"];
       const sceneRight = (s as any)["right-character"];
 
-      // For non-character scenes that need character rendering (like input), also inject meta
-      if (s.type !== "character" && s.type !== "input") {
+      // For non-character scenes that need character rendering (like input and interactive-bubble), also inject meta
+      if (s.type !== "character" && s.type !== "input" && s.type !== "interactive-bubble") {
         currentLeft = sceneLeft || currentLeft;
         currentRight = sceneRight || currentRight;
-        return s; // Return unchanged for non-character/non-input scenes
+        return s; // Return unchanged for scenes that don't need character rendering
       }
 
       // Continue with character scene processing...

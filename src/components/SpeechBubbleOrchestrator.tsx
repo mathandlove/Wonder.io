@@ -5,7 +5,8 @@
 import React, { useMemo } from 'react';
 import { useScrollOffset } from '../hooks/useScrollOffset';
 import { CardboardBubble } from './CardboardBubble';
-import type { Scene, CharacterScene } from '../types/scene';
+import { useDialogue } from '../dialogue/DialogueContext';
+import type { Scene, CharacterScene, InteractiveBubbleScene } from '../types/scene';
 
 interface SpeechBubbleOrchestratorProps {
   scenes: Scene[];
@@ -35,6 +36,9 @@ export function SpeechBubbleOrchestrator({ scenes }: SpeechBubbleOrchestratorPro
   const dummyRef = React.useRef<HTMLDivElement>(null);
   const { offset: scrollOffset } = useScrollOffset(dummyRef);
 
+  // Get dialogue context for interactive scenes
+  const { getMessagesForScene } = useDialogue();
+
   // Track scroll direction
   const prevScrollOffsetRef = React.useRef(scrollOffset);
   const scrollDirection = scrollOffset > prevScrollOffsetRef.current ? 'forward' : 'backward';
@@ -44,12 +48,13 @@ export function SpeechBubbleOrchestrator({ scenes }: SpeechBubbleOrchestratorPro
     prevScrollOffsetRef.current = scrollOffset;
   }, [scrollOffset]);
 
-  // Find character scenes to render bubbles for
-  const characterBubbles = useMemo(() => {
+  // Find character scenes AND interactive-bubble scenes to render bubbles for
+  const speechBubbles = useMemo(() => {
     const bubbles: Array<{
-      scene: CharacterScene;
+      scene: CharacterScene | InteractiveBubbleScene;
       sceneIndex: number;
       transform: string;
+      type: 'character' | 'interactive-bubble';
     }> = [];
 
     scenes.forEach((scene, index) => {
@@ -58,7 +63,16 @@ export function SpeechBubbleOrchestrator({ scenes }: SpeechBubbleOrchestratorPro
         bubbles.push({
           scene: scene as CharacterScene,
           sceneIndex: index,
-          transform
+          transform,
+          type: 'character'
+        });
+      } else if (scene?.type === 'interactive-bubble') {
+        const transform = translateForSpeechBubble(index, scrollOffset);
+        bubbles.push({
+          scene: scene as InteractiveBubbleScene,
+          sceneIndex: index,
+          transform,
+          type: 'interactive-bubble'
         });
       }
     });
@@ -79,73 +93,131 @@ export function SpeechBubbleOrchestrator({ scenes }: SpeechBubbleOrchestratorPro
       pointerEvents: 'none'
     }}>
       {/* Main speech bubbles */}
-      {characterBubbles.map(({ scene, sceneIndex, transform }) => {
-        const speakerLabel = scene.speaker === "left"
-          ? scene["left-character"] || "Left"
-          : scene.speaker === "right"
-          ? scene["right-character"] || "Right"
-          : "Narrator";
+      {speechBubbles.map(({ scene, sceneIndex, transform, type }) => {
+        // Handle different bubble content based on scene type
+        let bubbleContent: React.ReactNode = null;
+        let speakerLabel = "";
+        let side: 'left' | 'right' | 'center' = 'center';
+        let shouldShowWaitingBubble = false;
+
+        if (type === 'character') {
+          const characterScene = scene as CharacterScene;
+          speakerLabel = characterScene.speaker === "left"
+            ? characterScene["left-character"] || "Left"
+            : characterScene.speaker === "right"
+            ? characterScene["right-character"] || "Right"
+            : "Narrator";
+
+          side = characterScene.speaker === 'left' ? 'left' :
+                 characterScene.speaker === 'right' ? 'right' : 'center';
+
+          bubbleContent = characterScene.text;
+
+          // Determine if this scene should show waiting bubble (existing logic)
+          const isPageFactoryScene = !characterScene.flowSequence && characterScene.type === "character";
+          const isUserScene = characterScene.speaker === "left";
+          const hasSceneId = !!(characterScene as any).sceneId;
+          const nextSceneForWaiting = scenes[sceneIndex + 1];
+          const nextSceneIsAI = nextSceneForWaiting &&
+                               nextSceneForWaiting.type === "character" &&
+                               !(nextSceneForWaiting as any).flowSequence &&
+                               (nextSceneForWaiting as any).speaker === "right";
+
+          shouldShowWaitingBubble = isPageFactoryScene && isUserScene && hasSceneId && !nextSceneIsAI;
+
+        } else if (type === 'interactive-bubble') {
+          const interactiveScene = scene as InteractiveBubbleScene;
+          const messages = getMessagesForScene(interactiveScene.sceneId || '');
+
+          // Find the most relevant message to display
+          const recordingMessage = messages.find(m => m.status === 'recording' || m.status === 'pending');
+          const latestMessage = messages[messages.length - 1];
+          const displayMessage = recordingMessage || latestMessage;
+
+          if (displayMessage) {
+            // Set side based on message sender
+            side = displayMessage.sender === 'player' ? 'left' : 'right';
+            speakerLabel = displayMessage.sender === 'player'
+              ? interactiveScene["left-character"] || "Player"
+              : interactiveScene["right-character"] || "AI";
+
+            // Generate content based on message status
+            if (displayMessage.status === 'recording' && !displayMessage.text) {
+              bubbleContent = "🎤 Listening...";
+            } else if (displayMessage.isInterim && displayMessage.text) {
+              bubbleContent = `${displayMessage.text}...`;
+            } else if (displayMessage.text) {
+              bubbleContent = displayMessage.text;
+            } else if (displayMessage.status === 'pending') {
+              bubbleContent = "Sending...";
+            } else if (displayMessage.status === 'error') {
+              bubbleContent = "Failed to send";
+            }
+
+            // For interactive scenes, always show waiting bubble, but control visibility
+            const isUserMessage = displayMessage.sender === 'player';
+            const hasAIResponse = messages.some(m => m.sender === 'npc' && m.ts > displayMessage.ts);
+            shouldShowWaitingBubble = isUserMessage && displayMessage.status === 'sent' && !hasAIResponse;
+          } else {
+            // No messages yet - show placeholder
+            side = 'left';
+            speakerLabel = interactiveScene["left-character"] || "Player";
+            bubbleContent = "🎤 Press and hold to record";
+            // No waiting bubble for placeholder state
+            shouldShowWaitingBubble = false;
+          }
+        }
+
+        // Skip rendering if no content
+        if (!bubbleContent) return null;
 
         // Detect if bubble is entering (visible)
         const isVisible = transform === 'translateY(0)';
         const isEntering = isVisible;
 
-        // Detect if this scene has character entrance animation
-        // Check if any characters are entering (not just if speaker is left/right)
-        const leftCharacter = scene["left-character"];
-        const rightCharacter = scene["right-character"];
-
-        // Check previous scene to see if characters changed (indicating entrance)
-        const prevScene = sceneIndex > 0 ? scenes[sceneIndex - 1] : null;
-        const prevLeftChar = prevScene && 'left-character' in prevScene ? prevScene["left-character"] : null;
-        const prevRightChar = prevScene && 'right-character' in prevScene ? prevScene["right-character"] : null;
-
-        const leftCharEntering = leftCharacter && leftCharacter !== prevLeftChar;
-        const rightCharEntering = rightCharacter && rightCharacter !== prevRightChar;
-
-        const hasEnteringAnimation = leftCharEntering || rightCharEntering;
-
-        // Check next scene to see if characters will change (indicating swap for backwards scroll)
-        const nextSceneForSwap = sceneIndex < scenes.length - 1 ? scenes[sceneIndex + 1] : null;
-        const nextLeftChar = nextSceneForSwap && 'left-character' in nextSceneForSwap ? nextSceneForSwap["left-character"] : null;
-        const nextRightChar = nextSceneForSwap && 'right-character' in nextSceneForSwap ? nextSceneForSwap["right-character"] : null;
-
-        // Character swapping includes when next scene has NOCHARACTER (character exits)
-        const leftCharSwapping = leftCharacter && (leftCharacter !== nextLeftChar || nextLeftChar === 'NOCHARACTER');
-        const rightCharSwapping = rightCharacter && (rightCharacter !== nextRightChar || nextRightChar === 'NOCHARACTER');
-
-        const hasSwapAnimation = leftCharSwapping || rightCharSwapping;
-
+        // Animation and transition logic (simplified for interactive scenes)
         let transition;
-        if (isEntering) {
-          // Entering bubble - check scroll direction and animation needs
+        if (type === 'character') {
+          const characterScene = scene as CharacterScene;
+          // Detect if this scene has character entrance animation
+          const leftCharacter = characterScene["left-character"];
+          const rightCharacter = characterScene["right-character"];
 
+          // Check previous scene to see if characters changed (indicating entrance)
+          const prevScene = sceneIndex > 0 ? scenes[sceneIndex - 1] : null;
+          const prevLeftChar = prevScene && 'left-character' in prevScene ? prevScene["left-character"] : null;
+          const prevRightChar = prevScene && 'right-character' in prevScene ? prevScene["right-character"] : null;
+
+          const leftCharEntering = leftCharacter && leftCharacter !== prevLeftChar;
+          const rightCharEntering = rightCharacter && rightCharacter !== prevRightChar;
+          const hasEnteringAnimation = leftCharEntering || rightCharEntering;
+
+          // Check next scene to see if characters will change (indicating swap for backwards scroll)
+          const nextSceneForSwap = sceneIndex < scenes.length - 1 ? scenes[sceneIndex + 1] : null;
+          const nextLeftChar = nextSceneForSwap && 'left-character' in nextSceneForSwap ? nextSceneForSwap["left-character"] : null;
+          const nextRightChar = nextSceneForSwap && 'right-character' in nextSceneForSwap ? nextSceneForSwap["right-character"] : null;
+
+          const leftCharSwapping = leftCharacter && (leftCharacter !== nextLeftChar || nextLeftChar === 'NOCHARACTER');
+          const rightCharSwapping = rightCharacter && (rightCharacter !== nextRightChar || nextRightChar === 'NOCHARACTER');
+          const hasSwapAnimation = leftCharSwapping || rightCharSwapping;
+
+          if (isEntering) {
             if ((hasEnteringAnimation && scrollDirection === 'forward') || (scrollDirection === 'backward' && hasSwapAnimation)) {
               transition = 'transform 0.4s ease-out 1.6s'; // Forward + character entrance: delay
             } else {
               transition = 'transform 0.4s ease-out 0s'; // Forward + no character entrance: immediate
             }
+          } else {
+            transition = 'transform 0.3s ease-out 0s'; // Default/waiting
           }
-         else {
-
-          transition = 'transform 0.3s ease-out 0s'; // Default/waiting
+        } else {
+          // Interactive scenes use simpler transitions
+          transition = 'transform 0.4s ease-out 0s';
         }
 
-        // Determine if this scene should show waiting bubble
-        const isPageFactoryScene = !scene.flowSequence && scene.type === "character";
-        const isUserScene = scene.speaker === "left";
-        const hasSceneId = !!(scene as any).sceneId;
-        const nextSceneForWaiting = scenes[sceneIndex + 1];
-        const nextSceneIsAI = nextSceneForWaiting &&
-                             nextSceneForWaiting.type === "character" &&
-                             !(nextSceneForWaiting as any).flowSequence &&
-                             (nextSceneForWaiting as any).speaker === "right";
-
-        const shouldShowWaitingBubble = isPageFactoryScene && isUserScene && hasSceneId && !nextSceneIsAI;
-
         // Simple flexbox positioning based on speaker side
-        const justifyContent = scene.speaker === 'left' ? 'flex-start' :
-                             scene.speaker === 'right' ? 'flex-end' :
+        const justifyContent = side === 'left' ? 'flex-start' :
+                             side === 'right' ? 'flex-end' :
                              'center';
 
         const bubbleStyle = {
@@ -162,48 +234,18 @@ export function SpeechBubbleOrchestrator({ scenes }: SpeechBubbleOrchestratorPro
           pointerEvents: 'auto' as const,
         };
 
-
         return (
           <div
-            key={`bubble-${sceneIndex}`}
+            key={`bubble-${sceneIndex}-${type}`}
             style={bubbleStyle}
           >
             <CardboardBubble
-              side={scene.speaker === 'left' ? 'left' : scene.speaker === 'right' ? 'right' : 'center'}
+              side={side}
               speakerLabel={speakerLabel}
               showWaitingBubble={shouldShowWaitingBubble}
             >
-              {scene.text}
+              {bubbleContent}
             </CardboardBubble>
-
-            {/* Debug overlay for bubble state - DISABLED
-            <div style={{
-              position: 'absolute',
-              top: '-80px',
-              left: '50%',
-              transform: 'translateX(-50%)',
-              background: 'rgba(0, 255, 0, 0.8)',
-              color: 'black',
-              padding: '4px 8px',
-              borderRadius: '4px',
-              fontSize: '10px',
-              fontFamily: 'monospace',
-              whiteSpace: 'pre-line',
-              zIndex: 1000,
-              pointerEvents: 'none',
-              textAlign: 'center'
-            }}>
-              {`BUBBLE DEBUG
-Scene: ${sceneIndex}
-Speaker: ${scene.speaker}
-scrollDirection: ${scrollDirection}
-hasEnteringAnimation: ${hasEnteringAnimation}
-hasSwapAnimation: ${hasSwapAnimation}
-isEntering: ${isEntering}
-isExiting: ${isExiting}
-transform: ${transform}
-transition: ${transition}`}
-            </div> */}
           </div>
         );
       })}
