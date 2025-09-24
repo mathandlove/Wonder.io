@@ -7,7 +7,6 @@ import { NOCHARACTER } from "../buildPanelRangesFromScenes";
 export function injectPanelMetaFromFlows(scenes: Scene[]): Scene[] {
   if (!Array.isArray(scenes) || scenes.length === 0) return scenes;
 
-
   let inFlow = false;
   let currentLeft: string | null = null;
   let currentRight: string | null = null;

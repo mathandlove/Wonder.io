@@ -3,7 +3,6 @@ import { ChatComposer } from './ChatComposer';
 import TurnCueBanner from '../components/chat/TurnCueBanner';
 import { useDialogue } from './ChatDialogueContext';
 import { useNavigation } from '../context/NavigationContext';
-import { useScrollGuardAPI } from '../context/ScrollGuardContext';
 import './Chat.css';
 
 interface ChatLayerProps {
@@ -24,64 +23,11 @@ export const ChatLayer: React.FC<ChatLayerProps> = ({ visible, sceneIndex, onHid
   } = useDialogue();
 
   const { next } = useNavigation();
-  const scrollGuard = useScrollGuardAPI();
   const [exitingChat, setExitingChat] = useState(false);
-  const lockTokenRef = useRef<symbol | null>(null);
-  const waitingLockTokenRef = useRef<symbol | null>(null);
 
-  // Lock forward scrolling at this scene when it's player's turn
-  useEffect(() => {
-    if (isPlayerTurn && visible) {
-      if (!lockTokenRef.current) {
-        // Lock forward scrolling FROM this input scene
-        // This allows scrolling TO the input scene but not FROM it
-        lockTokenRef.current = scrollGuard.lockForwardAt(sceneIndex);
-      }
-    } else if (questState === 'complete' || !visible) {
-      if (lockTokenRef.current) {
-        scrollGuard.clear(lockTokenRef.current);
-        lockTokenRef.current = null;
-      }
-    }
-
-    // Cleanup on unmount
-    return () => {
-      if (lockTokenRef.current) {
-        scrollGuard.clear(lockTokenRef.current);
-        lockTokenRef.current = null;
-      }
-    };
-  }, [isPlayerTurn, questState, visible, sceneIndex]);
-
-  // Lock all scrolling when waiting for AI response
-  useEffect(() => {
-    if (waiting && visible) {
-      if (!waitingLockTokenRef.current) {
-        // Lock both forward and backward scrolling during AI processing
-        waitingLockTokenRef.current = scrollGuard.lockBoth();
-      }
-    } else {
-      if (waitingLockTokenRef.current) {
-        scrollGuard.clear(waitingLockTokenRef.current);
-        waitingLockTokenRef.current = null;
-      }
-    }
-
-    // Cleanup on unmount
-    return () => {
-      if (waitingLockTokenRef.current) {
-        scrollGuard.clear(waitingLockTokenRef.current);
-        waitingLockTokenRef.current = null;
-      }
-    };
-  }, [waiting, visible]);
 
   const handleContinue = () => {
     setExitingChat(true);
-    if (lockTokenRef.current) {
-      scrollGuard.clear(lockTokenRef.current);
-      lockTokenRef.current = null;
-    }
 
     // Animate out, then navigate
     setTimeout(() => {

@@ -24,6 +24,8 @@ import { ChatOrchestrator } from "./components/ChatOrchestrator"
 import { CaptionOrchestrator } from "./components/CaptionOrchestrator"
 import { SceneBusProvider } from "./scenes/registry/SceneBusProvider"
 import { sceneBus } from "./scenes/registry/sceneBus"
+import { ScrollLockDebugger } from "./components/ScrollLockDebugger"
+import { useDialogue } from "./chat/ChatDialogueContext"
 // Path to the story JSON bundle we want to load. In demo mode we keep this fixed
 // so the experience is deterministic for the presentation.
 
@@ -69,6 +71,9 @@ const StoryContent: React.FC = () => {
 
   // Navigation context
   const { scenes: navigationScenes, setScenes, setCurrentIndex, hideScene, showScene, allScenes } = useNavigation();
+
+  // Chat dialogue context for content lock checking
+  const { isPlayerTurn, waiting, questState } = useDialogue();
 
   // Derive a stable array of scenes from the loaded story
   const initialScenes = useMemo(() => story?.scenes || [], [story?.scenes]);
@@ -131,6 +136,33 @@ const StoryContent: React.FC = () => {
     setCurrentIndex(nextIndex);
   };
 
+  // Check content-level locks for input scenes
+  const checkContentLocks = (direction: 'forward' | 'backward', currentIndex: number): boolean => {
+    const currentScene = scenes[currentIndex];
+    if (!currentScene) return false;
+
+    // Only check locks for input scenes
+    if (currentScene.type === 'input') {
+      if (direction === 'forward') {
+        // Block forward navigation when:
+        // - Player turn is active (input needed)
+        // - System is waiting for response
+        // - Quest is still active
+        const shouldLock = isPlayerTurn || waiting || questState === 'active';
+        console.log(`🔍 Input scene ${currentIndex} content lock check:`, {
+          isPlayerTurn,
+          waiting,
+          questState,
+          shouldLock,
+          direction
+        });
+        return shouldLock;
+      }
+    }
+
+    return false; // No content locks for other scene types or backward navigation
+  };
+
 
   useStepScroll(containerRef, {
     onIndexChange: handleIndexChange,
@@ -139,6 +171,7 @@ const StoryContent: React.FC = () => {
     durationMs: 380,
     thresholdPx: 60, // Reasonable threshold - prevents accidental scene changes
     isInputFocused,
+    checkContentLocks,
   });
 
   // Ensure focus lands on the active scene for accessibility
@@ -232,12 +265,17 @@ const StoryContent: React.FC = () => {
             }
 
             return (
-            <div key={stableKey} className="scene story-scene-container" style={{
-              minHeight: '100vh',
-              scrollSnapAlign: 'start',
-              scrollSnapStop: 'always',
-              outline: 'none',
-            }}>
+            <div
+              key={stableKey}
+              className="scene story-scene-container"
+              data-section-index={i}
+              style={{
+                minHeight: '100vh',
+                scrollSnapAlign: 'start',
+                scrollSnapStop: 'always',
+                outline: 'none',
+              }}
+            >
               <FlowLayout
                 keyId={i.toString()}
                 panelRestricted={(scene as unknown as { panelRestricted?: boolean })?.panelRestricted ?? false}
@@ -254,6 +292,7 @@ const StoryContent: React.FC = () => {
         </PageFactoryProvider>
         <QuestDebugProbe />
         <UIOverlayRoot />
+        <ScrollLockDebugger />
       </QuestProvider>
     </SceneBusProvider>
   );

@@ -8,11 +8,12 @@ type StepScrollOpts = {
   durationMs?: number;
   thresholdPx?: number;
   isInputFocused?: () => boolean; // returns true if an input/textarea/contenteditable is focused
+  checkContentLocks?: (direction: 'forward' | 'backward', currentIndex: number) => boolean; // returns true if content is locked
 };
 
 export function useStepScroll(
   containerRef: React.RefObject<HTMLElement>,
-  { onIndexChange, getIndex, count, durationMs = 380, thresholdPx = 60, isInputFocused = () => false }: StepScrollOpts
+  { onIndexChange, getIndex, count, durationMs = 380, thresholdPx = 60, isInputFocused = () => false, checkContentLocks }: StepScrollOpts
 ) {
   const animatingRef = useRef(false);
   const touchStartYRef = useRef(0);
@@ -41,21 +42,47 @@ export function useStepScroll(
       }, 200); // Shorter blocking period to allow quicker scroll reversals
     };
 
+    const checkDomLocks = (direction: 'forward' | 'backward', currentIndex: number): boolean => {
+      const sections = el.querySelectorAll<HTMLElement>('.scene');
+      const currentSection = sections[currentIndex];
+      if (!currentSection) return false;
+
+      const lockAttribute = direction === 'forward' ? 'data-lock-forward' : 'data-lock-backward';
+      return currentSection.hasAttribute(lockAttribute);
+    };
+
     const snapRelative = (delta: number) => {
       if (delta === 0) return;
+
       const next = getIndex() + (delta > 0 ? 1 : -1);
       onIndexChange(Math.max(0, Math.min(next, count() - 1)));
       scrollToIndex(next);
     };
 
     const onWheel = (e: WheelEvent) => {
-
       if (isInputFocused()) return; // let inputs scroll
       // Only vertical intent
       if (Math.abs(e.deltaY) < Math.abs(e.deltaX)) return;
 
       if (animatingRef.current) {
         e.preventDefault();
+        return;
+      }
+
+      // Check locks before accumulating wheel delta
+      const currentIndex = getIndex();
+      const direction = e.deltaY > 0 ? 'forward' : 'backward';
+      const domLocked = checkDomLocks(direction, currentIndex);
+      const contentLocked = checkContentLocks ? checkContentLocks(direction, currentIndex) : false;
+
+      if (domLocked || contentLocked) {
+        e.preventDefault(); // Block all wheel scrolling when locked
+        const reason = domLocked ? 'DOM lock' : 'Content lock';
+
+        // Emit custom event for debugger
+        window.dispatchEvent(new CustomEvent('scroll-blocked', {
+          detail: { direction, currentIndex, reason, domLocked, contentLocked }
+        }));
         return;
       }
 
@@ -81,8 +108,26 @@ export function useStepScroll(
     const onTouchMove = (e: TouchEvent) => {
       if (!touching) return;
       if (animatingRef.current) { e.preventDefault(); return; }
+
       const dy = touchStartYRef.current - e.touches[0].clientY;
       if (Math.abs(dy) > thresholdPx) {
+        const currentIndex = getIndex();
+        const direction = dy > 0 ? 'forward' : 'backward';
+        const domLocked = checkDomLocks(direction, currentIndex);
+        const contentLocked = checkContentLocks ? checkContentLocks(direction, currentIndex) : false;
+
+        if (domLocked || contentLocked) {
+          e.preventDefault(); // Block touch scrolling when locked
+          touching = false;
+          const reason = domLocked ? 'DOM lock' : 'Content lock';
+
+          // Emit custom event for debugger
+          window.dispatchEvent(new CustomEvent('scroll-blocked', {
+            detail: { direction, currentIndex, reason, domLocked, contentLocked }
+          }));
+          return;
+        }
+
         e.preventDefault();
         touching = false;
         snapRelative(dy > 0 ? +1 : -1);
@@ -93,12 +138,32 @@ export function useStepScroll(
     const onKeyDown = (e: KeyboardEvent) => {
       if (isInputFocused()) return;
       if (animatingRef.current) return;
+
+      let direction: 'forward' | 'backward' | null = null;
       if (e.key === 'ArrowDown' || e.key === 'PageDown' || e.key === ' ') {
-        e.preventDefault();
-        snapRelative(+1);
+        direction = 'forward';
       } else if (e.key === 'ArrowUp' || e.key === 'PageUp') {
+        direction = 'backward';
+      }
+
+      if (direction) {
+        const currentIndex = getIndex();
+        const domLocked = checkDomLocks(direction, currentIndex);
+        const contentLocked = checkContentLocks ? checkContentLocks(direction, currentIndex) : false;
+
+        if (domLocked || contentLocked) {
+          e.preventDefault(); // Block keyboard scrolling when locked
+          const reason = domLocked ? 'DOM lock' : 'Content lock';
+
+          // Emit custom event for debugger
+          window.dispatchEvent(new CustomEvent('scroll-blocked', {
+            detail: { direction, currentIndex, reason, domLocked, contentLocked }
+          }));
+          return;
+        }
+
         e.preventDefault();
-        snapRelative(-1);
+        snapRelative(direction === 'forward' ? +1 : -1);
       }
     };
 
@@ -125,5 +190,5 @@ export function useStepScroll(
       el.removeEventListener('scrollend', onScrollEnd as any);
       if (settleTimerRef.current) window.clearTimeout(settleTimerRef.current);
     };
-  }, [containerRef, onIndexChange, getIndex, count, durationMs, thresholdPx, isInputFocused]);
+  }, [containerRef, onIndexChange, getIndex, count, durationMs, thresholdPx, isInputFocused, checkContentLocks]);
 }

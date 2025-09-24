@@ -7,7 +7,6 @@ import type { SceneProps } from "../registry";
 import type { QuestScene } from "../../types/scene";
 import { useQuest } from "../../quest/QuestManager";
 import { useNavigation } from "../../context/NavigationContext";
-import { useDirectionalLock } from "../../hooks/useDirectionalLock";
 
 export default function QuestScene({ scene, onComplete, sceneIndex }: SceneProps<QuestScene>) {
   const { offer, accept, state } = useQuest();
@@ -18,13 +17,6 @@ export default function QuestScene({ scene, onComplete, sceneIndex }: SceneProps
   // Check if this quest scene is currently active
   const isActiveScene = sceneIndex === currentIndex;
 
-  // Block all scrolling when quest is active and offered (but not when accepted)
-  // DISABLED FOR DEBUGGING
-  // useDirectionalLock({
-  //   active: isActiveScene && hasOffered && !isAccepted,
-  //   forward: true,
-  //   backward: true
-  // });
 
   // Offer quest only when this scene becomes active
   useEffect(() => {

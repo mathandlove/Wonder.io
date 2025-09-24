@@ -7,7 +7,6 @@ import StoryModeScrollV2 from './StoryModeScrollV2'
 import { DialogueProvider as OldDialogueProvider } from "./context/DialogueContext"
 import { DialogueProvider as NewDialogueProvider } from "./dialogue/DialogueContext"
 import { NavigationProvider } from "./context/NavigationContext"
-import { ScrollGuardProvider } from "./context/ScrollGuardContext"
 import { ChatDialogueProvider } from "./chat/ChatDialogueContext"
 
 
@@ -16,11 +15,9 @@ ReactDOM.createRoot(document.getElementById('root')!).render(
     <NavigationProvider initialIndex={3}>
       <OldDialogueProvider>
         <NewDialogueProvider>
-          <ScrollGuardProvider>
-            <ChatDialogueProvider>
-              <StoryModeScrollV2 />
-            </ChatDialogueProvider>
-          </ScrollGuardProvider>
+          <ChatDialogueProvider>
+            <StoryModeScrollV2 />
+          </ChatDialogueProvider>
         </NewDialogueProvider>
       </OldDialogueProvider>
     </NavigationProvider>
