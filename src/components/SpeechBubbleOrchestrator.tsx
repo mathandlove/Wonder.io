@@ -6,6 +6,7 @@ import React, { useMemo } from 'react';
 import { useScrollOffset } from '../hooks/useScrollOffset';
 import { CardboardBubble } from './CardboardBubble';
 import { useDialogue } from '../dialogue/DialogueContext';
+import { useRecording } from '../recording/RecordingContext';
 import type { Scene, CharacterScene, InteractiveBubbleScene } from '../types/scene';
 
 interface SpeechBubbleOrchestratorProps {
@@ -39,6 +40,8 @@ export function SpeechBubbleOrchestrator({ scenes, currentIndex }: SpeechBubbleO
 
   // Get dialogue context for interactive scenes
   const { getMessagesForScene } = useDialogue();
+  // Get recording context for continuous recording
+  const { getDisplayText, isRecording } = useRecording();
 
   // Track scroll direction
   const prevScrollOffsetRef = React.useRef(scrollOffset);
@@ -129,44 +132,58 @@ export function SpeechBubbleOrchestrator({ scenes, currentIndex }: SpeechBubbleO
 
         } else if (type === 'interactive-bubble') {
           const interactiveScene = scene as InteractiveBubbleScene;
-          const messages = getMessagesForScene(interactiveScene.sceneId || '');
 
-          // Find the most relevant message to display
-          const recordingMessage = messages.find(m => m.status === 'recording' || m.status === 'pending');
-          const latestMessage = messages[messages.length - 1];
-          const displayMessage = recordingMessage || latestMessage;
-
-          if (displayMessage) {
-            // Set side based on message sender
-            side = displayMessage.sender === 'player' ? 'left' : 'right';
-            speakerLabel = displayMessage.sender === 'player'
-              ? interactiveScene["left-character"] || "Player"
-              : interactiveScene["right-character"] || "AI";
-
-            // Generate content based on message status
-            if (displayMessage.status === 'recording' && !displayMessage.text) {
-              bubbleContent = "🎤 Listening...";
-            } else if (displayMessage.isInterim && displayMessage.text) {
-              bubbleContent = `${displayMessage.text}...`;
-            } else if (displayMessage.text) {
-              bubbleContent = displayMessage.text;
-            } else if (displayMessage.status === 'pending') {
-              bubbleContent = "Sending...";
-            } else if (displayMessage.status === 'error') {
-              bubbleContent = "Failed to send";
-            }
-
-            // For interactive scenes, always show waiting bubble, but control visibility
-            const isUserMessage = displayMessage.sender === 'player';
-            const hasAIResponse = messages.some(m => m.sender === 'npc' && m.ts > displayMessage.ts);
-            shouldShowWaitingBubble = isUserMessage && displayMessage.status === 'sent' && !hasAIResponse;
-          } else {
-            // No messages yet - show placeholder
+          // PRIORITY: Use global recording state when actively recording
+          if (isRecording()) {
+            const globalText = getDisplayText();
+            console.log('🎯 USING GLOBAL RECORDING STATE:', {
+              sceneIndex,
+              globalText,
+              displayingText: globalText || "🎤 Listening..."
+            });
             side = 'left';
             speakerLabel = interactiveScene["left-character"] || "Player";
-            bubbleContent = "🎤 Press and hold to record";
-            // No waiting bubble for placeholder state
+            bubbleContent = globalText || "🎤 Listening...";
             shouldShowWaitingBubble = false;
+          } else {
+            // Fall back to dialogue messages when not actively recording
+            const messages = getMessagesForScene(interactiveScene.sceneId || '');
+            const recordingMessage = messages.find(m => m.status === 'recording' || m.status === 'pending');
+            const latestMessage = messages[messages.length - 1];
+            const displayMessage = recordingMessage || latestMessage;
+
+            if (displayMessage) {
+              // Set side based on message sender
+              side = displayMessage.sender === 'player' ? 'left' : 'right';
+              speakerLabel = displayMessage.sender === 'player'
+                ? interactiveScene["left-character"] || "Player"
+                : interactiveScene["right-character"] || "AI";
+
+              // Generate content based on message status
+              if (displayMessage.status === 'recording' && !displayMessage.text) {
+                bubbleContent = "🎤 Listening...";
+              } else if (displayMessage.isInterim && displayMessage.text) {
+                bubbleContent = `${displayMessage.text}...`;
+              } else if (displayMessage.text) {
+                bubbleContent = displayMessage.text;
+              } else if (displayMessage.status === 'pending') {
+                bubbleContent = "Sending...";
+              } else if (displayMessage.status === 'error') {
+                bubbleContent = "Failed to send";
+              }
+
+              // For interactive scenes, always show waiting bubble, but control visibility
+              const isUserMessage = displayMessage.sender === 'player';
+              const hasAIResponse = messages.some(m => m.sender === 'npc' && m.ts > displayMessage.ts);
+              shouldShowWaitingBubble = isUserMessage && displayMessage.status === 'sent' && !hasAIResponse;
+            } else {
+              // No messages yet - show placeholder
+              side = 'left';
+              speakerLabel = interactiveScene["left-character"] || "Player";
+              bubbleContent = "🎤 Press and hold to record";
+              // No waiting bubble for placeholder state
+              shouldShowWaitingBubble = false;
+            }
           }
         }
 

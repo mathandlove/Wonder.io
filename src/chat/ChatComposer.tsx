@@ -4,6 +4,8 @@ import { useDialogue as useNewDialogue } from '../dialogue/DialogueContext';
 import { usePageFactory } from '../components/PageFactory';
 import NextButton from '../components/ui/NextButton';
 import { Toast, useToast } from '../components/ui/Toast';
+import { Recording } from '../recording/RecordingAPI';
+import { useRecording } from '../recording/RecordingContext';
 import './Chat.css';
 
 interface ChatComposerProps {
@@ -20,120 +22,43 @@ export const ChatComposer: React.FC<ChatComposerProps> = ({
   const { hideTurnBanner, waiting, submitPlayerUtterance } = useDialogue();
   const { beginRecording, updateRecording, endRecording } = useNewDialogue();
   const { createInteractiveBubblePage, addSceneAndNavigate } = usePageFactory();
-  const [isRecording, setIsRecording] = useState(false);
+  const { state: recordingState } = useRecording();
   const [currentRecordingId, setCurrentRecordingId] = useState<string | null>(null);
   const [currentSceneId, setCurrentSceneId] = useState<string | null>(null);
-  const recognitionRef = useRef<any>(null);
   const { toast, hideToast } = useToast();
 
   const startRecording = useCallback(() => {
-    try {
-      const SpeechRecognition = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
+    console.log('🎯 ChatComposer.startRecording() called');
+    // Create a new interactive bubble scene and navigate to it
+    const newScene = createInteractiveBubblePage();
+    const sceneId = newScene.sceneId || 'default';
+    setCurrentSceneId(sceneId);
 
-      if (!SpeechRecognition) {
-        alert('Speech recognition not supported in this browser');
-        return;
-      }
+    // Add the scene and auto-scroll to it
+    addSceneAndNavigate(newScene);
 
-      // Create a new interactive bubble scene and navigate to it
-      const newScene = createInteractiveBubblePage();
-      const sceneId = newScene.sceneId || 'default';
-      setCurrentSceneId(sceneId);
+    // Start recording with the new scene ID
+    const recordingId = beginRecording(sceneId);
+    setCurrentRecordingId(recordingId);
 
-      // Add the scene and auto-scroll to it
-      addSceneAndNavigate(newScene);
-
-      // Start recording with the new scene ID
-      const recordingId = beginRecording(sceneId);
-      setCurrentRecordingId(recordingId);
-
-      const recognition = new SpeechRecognition();
-      recognition.continuous = true; // Allow continuous recording
-      recognition.interimResults = true; // Show interim results
-      recognition.lang = 'en-US';
-
-      recognition.onstart = () => {
-        setIsRecording(true);
-      };
-
-      recognition.onresult = (event: any) => {
-        let interimTranscript = '';
-        let finalTranscript = '';
-
-        for (let i = event.resultIndex; i < event.results.length; i++) {
-          const transcript = event.results[i][0].transcript;
-
-          if (event.results[i].isFinal) {
-            finalTranscript += transcript + ' ';
-          } else {
-            interimTranscript += transcript;
-          }
-        }
-
-        // Update with interim results - use captured recordingId
-        if (interimTranscript && recordingId) {
-          updateRecording(recordingId, interimTranscript, { isInterim: true });
-        }
-
-        // Handle final transcript - use captured recordingId
-        if (finalTranscript) {
-          const trimmedFinal = finalTranscript.trim();
-          if (trimmedFinal && recordingId) {
-            endRecording(recordingId, trimmedFinal);
-            // Also submit to old system for compatibility
-            submitPlayerUtterance(trimmedFinal);
-            setCurrentRecordingId(null);
-            setIsRecording(false);
-            recognition.stop();
-          }
-        }
-      };
-
-      recognition.onerror = (event: any) => {
-        console.error('[CHAT_COMPOSER_DEBUG] Speech recognition error:', event.error, 'Full event:', event);
-        setIsRecording(false);
-        setCurrentRecordingId(null);
-        if (event.error === 'not-allowed') {
-          alert('Microphone access denied. Please allow microphone access and try again.');
-        }
-      };
-
-      recognition.onend = () => {
-        setIsRecording(false);
-        recognitionRef.current = null;
-      };
-
-      // Additional event handlers for debugging
-      recognition.onnomatch = (event: any) => {
-      };
-
-      recognition.onspeechstart = (event: any) => {
-      };
-
-      recognition.onspeechend = (event: any) => {
-      };
-
-      recognitionRef.current = recognition;
-      recognition.start();
-
-    } catch (error) {
-      console.error('Error starting speech recognition:', error);
-      alert('Could not start speech recognition. Please try again.');
-    }
-  }, [submitPlayerUtterance, createInteractiveBubblePage, addSceneAndNavigate, beginRecording, updateRecording, endRecording, currentRecordingId]);
+    // Use global Recording API
+    console.log('🎯 Using global Recording.start()');
+    Recording.start();
+  }, [createInteractiveBubblePage, addSceneAndNavigate, beginRecording]);
 
   const stopRecording = useCallback(() => {
-    if (recognitionRef.current) {
-      recognitionRef.current.stop();
-      recognitionRef.current = null;
-      setIsRecording(false);
-    }
+    console.log('🎯 ChatComposer.stopRecording() called');
+    console.log('🎯 Using global Recording.stop()');
+    Recording.stop();
   }, []);
 
   const handleRecordClick = () => {
     if (disabled || waiting) return;
     hideTurnBanner(); // Hide banner when user clicks microphone
-    if (isRecording) {
+    console.log('🎯 ChatComposer handleRecordClick', {
+      currentlyRecording: recordingState.isRecording
+    });
+    if (recordingState.isRecording) {
       stopRecording();
     } else {
       startRecording();
@@ -159,10 +84,10 @@ export const ChatComposer: React.FC<ChatComposerProps> = ({
         </button>
 
         <button
-          className={`chat-record-button ${isRecording ? 'recording' : ''} ${waiting ? 'waiting' : ''}`}
+          className={`chat-record-button ${recordingState.isRecording ? 'recording' : ''} ${waiting ? 'waiting' : ''}`}
           onClick={handleRecordClick}
           disabled={disabled || waiting}
-          title={isRecording ? 'Stop recording' : 'Start recording'}
+          title={recordingState.isRecording ? 'Stop recording' : 'Start recording'}
         >
           <div className="record-icon-mask"></div>
         </button>

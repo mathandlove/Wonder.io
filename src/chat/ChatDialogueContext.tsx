@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useState, useCallback, ReactNode } from 'react';
-import { useDialogue as useOldDialogue } from '../context/DialogueContext';
+import { useDialogue as useOldDialogue } from '../dialogue/DialogueContext';
 
 export interface Message {
   id: string;
@@ -103,7 +103,11 @@ export const ChatDialogueProvider: React.FC<DialogueProviderProps> = ({ children
     setMessages(prev => [...prev, playerMessage]);
 
     // Submit to old dialogue system to create character page with LEO speaking
-    oldDialogue.submitUserMessage(text);
+    if (oldDialogue.submitUserMessage) {
+      oldDialogue.submitUserMessage(text);
+    } else {
+      console.error('submitUserMessage is not available on oldDialogue:', Object.keys(oldDialogue));
+    }
 
     try {
       // Call mock LLM

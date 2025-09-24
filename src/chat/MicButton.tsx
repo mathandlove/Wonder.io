@@ -1,118 +1,43 @@
-import { useRef, useState } from "react";
-import { useDialogue } from "../dialogue/DialogueContext";
-import { usePageFactory } from "../components/PageFactory";
+import React from "react";
+import { Recording } from "../recording/RecordingAPI";
+import { useRecording } from "../recording/RecordingContext";
 
 export default function MicButton() {
-  const sttRef = useRef<any>(null);
-  const { beginRecording, updateRecording, endRecording } = useDialogue();
-  const { createInteractiveBubblePage, addSceneAndNavigate } = usePageFactory();
-  const [msgId, setMsgId] = useState<string | null>(null);
-  const [isRecording, setIsRecording] = useState(false);
-  const [currentSceneId, setCurrentSceneId] = useState<string | null>(null);
-
-  const start = () => {
-    try {
-      const SpeechRecognition = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
-
-      if (!SpeechRecognition) {
-        console.error('Speech recognition not supported');
-        return;
-      }
-
-      // Create a new interactive bubble scene and navigate to it
-      const newScene = createInteractiveBubblePage();
-      const sceneId = newScene.sceneId || 'default';
-      setCurrentSceneId(sceneId);
-
-      // Add the scene and auto-scroll to it
-      addSceneAndNavigate(newScene);
-
-      // Start recording with the new scene ID
-      const id = beginRecording(sceneId);
-      setMsgId(id);
-      setIsRecording(true);
-
-      const recognition = new SpeechRecognition();
-      recognition.continuous = true;
-      recognition.interimResults = true;
-      recognition.lang = 'en-US';
-
-      recognition.onresult = (event: any) => {
-        let interimTranscript = '';
-        let finalTranscript = '';
-
-        for (let i = event.resultIndex; i < event.results.length; i++) {
-          const transcript = event.results[i][0].transcript;
-          if (event.results[i].isFinal) {
-            finalTranscript += transcript + ' ';
-          } else {
-            interimTranscript += transcript;
-          }
-        }
-
-        if (interimTranscript && id) {
-          updateRecording(id, interimTranscript, { isInterim: true });
-        }
-
-        if (finalTranscript && id) {
-          const trimmedFinal = finalTranscript.trim();
-          if (trimmedFinal) {
-            endRecording(id, trimmedFinal);
-            setMsgId(null);
-            setIsRecording(false);
-            recognition.stop();
-          }
-        }
-      };
-
-      recognition.onerror = (event: any) => {
-        console.error('Speech recognition error:', event.error);
-        setIsRecording(false);
-        setMsgId(null);
-      };
-
-      recognition.onend = () => {
-        setIsRecording(false);
-        if (msgId) {
-          setMsgId(null);
-        }
-      };
-
-      sttRef.current = recognition;
-      recognition.start();
-    } catch (error) {
-      console.error('Failed to start recording:', error);
-      setIsRecording(false);
-    }
-  };
-
-  const stop = () => {
-    if (sttRef.current) {
-      sttRef.current.stop();
-      sttRef.current = null;
-    }
-    setIsRecording(false);
-  };
+  const { state } = useRecording();
 
   const handlePointerDown = () => {
-    if (!isRecording) {
-      start();
+    console.log('🔴 MIC BUTTON PRESSED - handlePointerDown called', {
+      currentlyRecording: state.isRecording
+    });
+    if (!state.isRecording) {
+      console.log('🎤 Calling Recording.start()');
+      Recording.start();
     }
   };
 
   const handlePointerUp = () => {
-    if (isRecording) {
-      stop();
+    console.log('🔵 MIC BUTTON RELEASED - handlePointerUp called', {
+      currentlyRecording: state.isRecording
+    });
+    if (state.isRecording) {
+      console.log('🛑 Calling Recording.stop()');
+      Recording.stop();
+    }
+  };
+
+  const handlePointerLeave = () => {
+    if (state.isRecording) {
+      Recording.stop();
     }
   };
 
   return (
     <button
-      className={`chat-record-button ${isRecording ? 'recording' : ''}`}
+      className={`chat-record-button ${state.isRecording ? 'recording' : ''}`}
       onPointerDown={handlePointerDown}
       onPointerUp={handlePointerUp}
-      onPointerLeave={handlePointerUp} // Stop if pointer leaves button while pressed
-      aria-label={isRecording ? "Stop recording" : "Start recording"}
+      onPointerLeave={handlePointerLeave}
+      aria-label={state.isRecording ? "Stop recording" : "Start recording"}
     >
       <div className="record-icon-mask" />
     </button>

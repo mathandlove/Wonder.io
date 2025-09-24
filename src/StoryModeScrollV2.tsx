@@ -24,7 +24,6 @@ import { ChatOrchestrator } from "./components/ChatOrchestrator"
 import { CaptionOrchestrator } from "./components/CaptionOrchestrator"
 import { SceneBusProvider } from "./scenes/registry/SceneBusProvider"
 import { sceneBus } from "./scenes/registry/sceneBus"
-import { ScrollLockDebugger } from "./components/ScrollLockDebugger"
 import { useDialogue } from "./chat/ChatDialogueContext"
 // Path to the story JSON bundle we want to load. In demo mode we keep this fixed
 // so the experience is deterministic for the presentation.
@@ -285,7 +284,6 @@ const StoryContent: React.FC = () => {
         </PageFactoryProvider>
         <QuestDebugProbe />
         <UIOverlayRoot />
-        <ScrollLockDebugger />
       </QuestProvider>
     </SceneBusProvider>
   );
