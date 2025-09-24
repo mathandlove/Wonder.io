@@ -39,7 +39,7 @@
 
 .story-character-content {
   position: relative;
-  width: 18vw;
+  width: 22vw;
   height: 400px;
   padding: 0;
   margin: 0;
@@ -67,7 +67,7 @@
 
 .story-wooden-dowel {
   position: absolute;
-  top: 50%;
+  top: 70px;
   left: 50%;
   transform: translateX(-50%);
   width: 20px;

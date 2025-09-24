@@ -91,8 +91,8 @@ export const CharacterOrchestrator: React.FC<Props> = ({ storyId, scenes, curren
   // Publish panel widths as CSS variables to constrain main content
   useLayoutEffect(() => {
     const updatePanelWidths = () => {
-      // Use 18vw for both panels
-      const panelWidth = window.innerWidth * 0.18; // 18% of viewport width
+      // Use 22vw for both panels
+      const panelWidth = window.innerWidth * 0.22; // 22% of viewport width
       const leftWidth = `${panelWidth}px`;
       const rightWidth = `${panelWidth}px`;
 
@@ -112,8 +112,8 @@ export const CharacterOrchestrator: React.FC<Props> = ({ storyId, scenes, curren
   // Fixed overlay container
   return (
     <div style={{ position: "fixed", inset: 0, pointerEvents: "none", zIndex: 60 }}>
-      {/* Left gutter column - 18% of viewport width */}
-      <div className="character-panel--left" style={{ position: "absolute", left: 0, top: 0, bottom: 0, width: "18vw", pointerEvents: "auto" }}>
+      {/* Left gutter column - 22% of viewport width */}
+      <div className="character-panel--left" style={{ position: "absolute", left: 0, top: 0, bottom: 0, width: "22vw", pointerEvents: "auto" }}>
         <CharacterPanel
           side="left"
           visible={true}
@@ -131,8 +131,8 @@ export const CharacterOrchestrator: React.FC<Props> = ({ storyId, scenes, curren
         />
       </div>
 
-      {/* Right gutter column - 18% of viewport width */}
-      <div className="character-panel--right" style={{ position: "absolute", right: 0, top: 0, bottom: 0, width: "18vw", pointerEvents: "auto" }}>
+      {/* Right gutter column - 22% of viewport width */}
+      <div className="character-panel--right" style={{ position: "absolute", right: 0, top: 0, bottom: 0, width: "22vw", pointerEvents: "auto" }}>
         <CharacterPanel
           side="right"
           visible={true}
