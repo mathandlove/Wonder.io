@@ -21,6 +21,9 @@ import "./components/SnapScroll.css";
 import { QuestProvider, useQuest } from "./quest/QuestManager"
 import { UIOverlayRoot } from "./components/UIOverlayRoot"
 import { ChatOrchestrator } from "./components/ChatOrchestrator"
+import { CaptionOrchestrator } from "./components/CaptionOrchestrator"
+import { SceneBusProvider } from "./scenes/registry/SceneBusProvider"
+import { sceneBus } from "./scenes/registry/sceneBus"
 // Path to the story JSON bundle we want to load. In demo mode we keep this fixed
 // so the experience is deterministic for the presentation.
 
@@ -107,15 +110,25 @@ const StoryContent: React.FC = () => {
   };
 
   const handleIndexChange = (nextIndex: number) => {
-    console.log('[STEP_SCROLL] Index changed to:', nextIndex, 'Previous index was:', index);
+    // Emit scene bus events for enter/leave
+    if (nextIndex !== index) {
+      // Emit leave event for previous scene
+      const prevScene = scenes[index];
+      if (prevScene && prevScene.sceneId) {
+        sceneBus.emit('scene:leave', prevScene.sceneId);
+      }
+
+      // Emit enter event for new scene
+      const newScene = scenes[nextIndex];
+      if (newScene && newScene.sceneId) {
+        sceneBus.emit('scene:enter', newScene.sceneId);
+      }
+    }
+
     setIndex(nextIndex);
     setCurrentIndex(nextIndex);
   };
 
-  // Debug: Log when index state actually updates
-  React.useEffect(() => {
-    console.log('[MAIN_COMPONENT] Index state updated to:', index);
-  }, [index]);
 
   useStepScroll(containerRef, {
     onIndexChange: handleIndexChange,
@@ -165,9 +178,10 @@ const StoryContent: React.FC = () => {
   // RENDER PATH #3: story loaded → render each scene in a vertical, snap-scrolling layout
 
   return (
-    <QuestProvider>
-    <PageFactoryProvider>
-      <CharacterAnimationProvider>
+    <SceneBusProvider>
+      <QuestProvider>
+        <PageFactoryProvider>
+          <CharacterAnimationProvider>
         <div
           ref={containerRef}
           className="story-scroll"
@@ -189,8 +203,8 @@ const StoryContent: React.FC = () => {
         {/* Layer 1.6: Image scenes (fixed, independent of scroll flow) */}
         <ImageSceneOrchestrator scenes={scenes} index={index} />
 
-        {/* Layer 1.7: Image captions (appear on second scene of each image pair) */}
-        <CaptionComponent scenes={scenes} index={index} key={`caption-${index}`} />
+        {/* Layer 1.7: Image captions - rendered outside document flow */}
+        <CaptionOrchestrator scenes={scenes} />
 
         {/* Layer 1.8: Speech bubbles (scroll-based with delayed transitions) */}
         <SpeechBubbleOrchestrator scenes={scenes} currentIndex={index} />
@@ -234,64 +248,46 @@ const StoryContent: React.FC = () => {
         </div>
 
         </div>
-      </CharacterAnimationProvider>
-    </PageFactoryProvider>
-    <QuestDebugProbe />
-    <UIOverlayRoot />
-    </QuestProvider>
+          </CharacterAnimationProvider>
+        </PageFactoryProvider>
+        <QuestDebugProbe />
+        <UIOverlayRoot />
+      </QuestProvider>
+    </SceneBusProvider>
   );
 };
 
 // ImageSceneOrchestrator: Renders image scenes outside the scroll flow with background-like transforms
 const ImageSceneOrchestrator = React.memo(function ImageSceneOrchestrator({ scenes, index }: { scenes: Scene[]; index: number }) {
-  // Build image ranges - group consecutive scenes with the same image
+  // Build image ranges - group image scenes with their following caption scenes
   const imageRanges = React.useMemo(() => {
     const ranges: Array<{ startIndex: number; endIndex: number; image: string; scene: Scene }> = [];
-    let currentImage: string | null = null;
-    let rangeStart = -1;
-    let currentScene: Scene | null = null;
+    let i = 0;
 
-    scenes.forEach((scene, i) => {
-      if (scene.type === 'image') {
-        if (scene.image !== currentImage) {
-          // Finish previous range if exists
-          if (currentImage && currentScene) {
-            ranges.push({
-              startIndex: rangeStart,
-              endIndex: i - 1,
-              image: currentImage,
-              scene: currentScene
-            });
-          }
-          // Start new range
-          currentImage = scene.image;
-          rangeStart = i;
-          currentScene = scene;
+    while (i < scenes.length) {
+      const scene = scenes[i];
+
+      if (scene.type === 'image' && scene.image) {
+        const startIndex = i;
+        let endIndex = i;
+
+        // Look ahead to include the caption scene if it exists
+        if (i + 1 < scenes.length && scenes[i + 1].type === 'caption') {
+          endIndex = i + 1; // Include the caption scene in the range
+          i += 2; // Skip both image and caption
+        } else {
+          i += 1; // Just the image scene
         }
-        // Continue current range (same image)
+
+        ranges.push({
+          startIndex,
+          endIndex,
+          image: scene.image,
+          scene: scene
+        });
       } else {
-        // Non-image scene, finish current range if exists
-        if (currentImage && currentScene) {
-          ranges.push({
-            startIndex: rangeStart,
-            endIndex: i - 1,
-            image: currentImage,
-            scene: currentScene
-          });
-          currentImage = null;
-          currentScene = null;
-        }
+        i += 1; // Skip non-image scenes
       }
-    });
-
-    // Finish final range if exists
-    if (currentImage && currentScene) {
-      ranges.push({
-        startIndex: rangeStart,
-        endIndex: scenes.length - 1,
-        image: currentImage,
-        scene: currentScene
-      });
     }
 
     return ranges;

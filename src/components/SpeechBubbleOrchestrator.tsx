@@ -51,7 +51,6 @@ export function SpeechBubbleOrchestrator({ scenes, currentIndex }: SpeechBubbleO
 
   // Find character scenes AND interactive-bubble scenes to render bubbles for
   const speechBubbles = useMemo(() => {
-    console.log('[SPEECH_BUBBLE] Processing scenes, total:', scenes.length, 'currentIndex:', scrollOffset);
 
     const bubbles: Array<{
       scene: CharacterScene | InteractiveBubbleScene;
@@ -61,7 +60,6 @@ export function SpeechBubbleOrchestrator({ scenes, currentIndex }: SpeechBubbleO
     }> = [];
 
     scenes.forEach((scene, index) => {
-      console.log(`[SPEECH_BUBBLE] Scene ${index}: type=${scene.type}`);
       if (scene?.type === 'character') {
         const transform = translateForSpeechBubble(index, scrollOffset);
         bubbles.push({
@@ -81,7 +79,6 @@ export function SpeechBubbleOrchestrator({ scenes, currentIndex }: SpeechBubbleO
       }
     });
 
-    console.log('[SPEECH_BUBBLE] Found bubbles:', bubbles.length);
     return bubbles;
   }, [scenes, scrollOffset]);
 

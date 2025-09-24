@@ -38,7 +38,6 @@ export function useScrollLockManager() {
     if (unlockAttempts >= 2) {
       const currentScene = visibleScenes[currentIndex];
       if (currentScene?.type === 'interactive-bubble') {
-        console.log('Scroll locked: Please complete your voice recording to continue');
         // TODO: Show visual indicator that scroll is locked
       }
     }
@@ -64,7 +63,6 @@ export function useScrollLockManager() {
   // Debug logging
   useEffect(() => {
     if (scrollLockState.shouldLock) {
-      console.log(`Scroll locked at scene ${currentIndex} (${visibleScenes[currentIndex]?.type})`);
     }
   }, [scrollLockState.shouldLock, currentIndex, visibleScenes]);
 

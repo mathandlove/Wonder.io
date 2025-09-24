@@ -18,7 +18,6 @@ type Action = BeginRecording | UpdateRecording | EndRecording | AppendNpc | SetS
 const initialState: State = { messagesById: {}, orderByScene: {} };
 
 function reducer(state: State, action: Action): State {
-  console.log('[REDUCER_DEBUG] action:', action, 'current state:', state);
 
   switch (action.type) {
     case 'BEGIN_RECORDING': {
@@ -32,7 +31,6 @@ function reducer(state: State, action: Action): State {
         messagesById: { ...state.messagesById, [id]: msg },
         orderByScene: { ...state.orderByScene, [action.sceneId]: [...scene, id] }
       };
-      console.log('[REDUCER_DEBUG] BEGIN_RECORDING result:', newState);
       return newState;
     }
     case 'UPDATE_RECORDING': {
@@ -89,14 +87,11 @@ function useDialogueValue() {
   // public API
   const beginRecording = (sceneId: string) => {
     const id = newId();
-    console.log('[DIALOGUE_DEBUG] beginRecording:', { sceneId, id });
     dispatch({ type: 'BEGIN_RECORDING', sceneId, id });
-    console.log('[DIALOGUE_DEBUG] state after BEGIN_RECORDING:', state);
     return id;
   };
 
   const updateRecording = (id: string, partialText: string, opts?: { isInterim?: boolean }) => {
-    console.log('[DIALOGUE_DEBUG] updateRecording:', { id, partialText, isInterim: opts?.isInterim });
     dispatch({ type: 'UPDATE_RECORDING', id, partialText, isInterim: opts?.isInterim });
   };
 
@@ -118,7 +113,6 @@ function useDialogueValue() {
   const getMessagesForScene = useCallback((sceneId: string): Message[] => {
     const messageIds = state.orderByScene[sceneId] ?? [];
     const messages = messageIds.map(id => state.messagesById[id]);
-    console.log('[DIALOGUE_DEBUG] getMessagesForScene:', { sceneId, messageIds, messages });
     return messages;
   }, [state]);
 

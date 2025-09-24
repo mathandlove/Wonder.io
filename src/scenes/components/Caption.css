@@ -1,0 +1,79 @@
+/* Base caption styling */
+.caption {
+  position: fixed;
+  bottom: 0;
+  height: auto;
+  width: 100%;
+  overflow: visible;
+  pointer-events: none;
+  z-index: 50; /* Above image content and other elements */
+}
+
+.caption--center {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+
+/* Construction paper background wrapper */
+.caption__paper {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  height: 35vh;
+  background-image: url('/VisualAssets/constructionEdge.png');
+  background-size: 100% auto;
+  background-position: top;
+  background-repeat: no-repeat;
+  filter: drop-shadow(0 -8px 16px rgba(0, 0, 0, 0.3)) drop-shadow(0 -4px 8px rgba(0, 0, 0, 0.2));
+  display: flex;
+  align-items: flex-end;
+  padding: 24px 36px;
+  box-sizing: border-box;
+}
+
+/* Caption text styling - flows naturally within the paper */
+.caption__text {
+  margin: 0;
+  width: 100%;
+  max-width: 80vw;
+  text-align: left;
+  font-size: calc(1.4rem + 10px);
+  font-weight: bold;
+  color: white;
+  line-height: 1.25;
+  letter-spacing: 0.02em;
+  font-family: 'Nunito', sans-serif;
+}
+
+/* Animation states */
+/* Base state before animation */
+.caption--pre .caption__paper {
+  transform: translateY(100%); /* Paper starts below window */
+}
+
+/* Animate in when the scene becomes active */
+.caption--animate-in .caption__paper {
+  transform: translateY(0); /* Paper slides up to final position */
+  transition: transform 600ms ease-out;
+}
+
+/* Exit animation - construction paper scrolls up off screen */
+.caption--animate-out .caption__paper {
+  transform: translateY(-100vh); /* Paper slides up completely off screen */
+  transition: transform 600ms ease-out;
+}
+
+/* Inactive state - completely hidden */
+.is-inactive {
+  opacity: 0;
+  visibility: hidden;
+}
+
+/* Active state - visible and ready for animation */
+.is-active {
+  opacity: 1;
+  visibility: visible;
+}

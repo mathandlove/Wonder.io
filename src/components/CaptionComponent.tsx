@@ -65,7 +65,6 @@ export const CaptionComponent: React.FC<CaptionComponentProps> = ({ scenes, inde
     }
 
     const filteredRanges = ranges.filter(range => range.caption); // Only show ranges with captions
-    console.log('[CAPTION] Found caption ranges:', filteredRanges);
     return filteredRanges;
   }, [scenes]);
 

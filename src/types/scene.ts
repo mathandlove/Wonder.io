@@ -123,6 +123,16 @@ export type InteractiveBubbleScene = {
   };
 };
 
+export type CaptionScene = {
+  type: "caption";
+  sceneId?: string;
+  caption: string;
+  align?: "center" | "bottom";
+  flowSequence?: boolean;
+  isFirstInFlow?: boolean;
+  hidden?: boolean;
+};
+
 export type Scene =
   | CharacterScene
   | QuestScene
@@ -131,7 +141,8 @@ export type Scene =
   | CharacterFlowScene
   | FullScene
   | TextScene
-  | InteractiveBubbleScene;
+  | InteractiveBubbleScene
+  | CaptionScene;
 
 export type Story = {
   scenes: Scene[];

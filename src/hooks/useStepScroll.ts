@@ -49,14 +49,12 @@ export function useStepScroll(
     };
 
     const onWheel = (e: WheelEvent) => {
-      console.log('[WHEEL] deltaY:', e.deltaY, 'accumulated:', wheelAccumRef.current, 'threshold:', thresholdPx, 'animating:', animatingRef.current);
 
       if (isInputFocused()) return; // let inputs scroll
       // Only vertical intent
       if (Math.abs(e.deltaY) < Math.abs(e.deltaX)) return;
 
       if (animatingRef.current) {
-        console.log('[WHEEL] Blocked - animation in progress');
         e.preventDefault();
         return;
       }
@@ -64,12 +62,10 @@ export function useStepScroll(
       wheelAccumRef.current += e.deltaY;
 
       if (wheelAccumRef.current > thresholdPx) {
-        console.log('[WHEEL] Threshold reached - advancing +1');
         e.preventDefault();
         wheelAccumRef.current = 0;
         snapRelative(+1);
       } else if (wheelAccumRef.current < -thresholdPx) {
-        console.log('[WHEEL] Threshold reached - advancing -1');
         e.preventDefault();
         wheelAccumRef.current = 0;
         snapRelative(-1);

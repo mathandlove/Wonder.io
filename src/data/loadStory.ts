@@ -87,29 +87,42 @@ function flattenScenes(rawScenes: RawScene[]): Scene[] {
         out.push(flattened as Scene);
       });
     } else if (scene.type === "image" && scene.image) {
-      // Create first image scene
+      // Create first image scene (no caption)
       out.push({
         type: "image",
         sceneId: `scene-${sceneCounter++}`,
         image: scene.image,
-        caption: scene.text,
+        caption: undefined, // No caption on first scene
         background: scene.background,
         flowSequence: false,
         isFirstInFlow: false,
         panelRestricted: false,
       });
 
-      // Create second image scene (empty for now, image will stay)
-      out.push({
-        type: "image",
-        sceneId: `scene-${sceneCounter++}`,
-        image: scene.image,
-        caption: undefined, // No caption on second scene
-        background: scene.background,
-        flowSequence: false,
-        isFirstInFlow: false,
-        panelRestricted: false,
-      });
+      // Create second scene as a CaptionScene if there's text
+      if (scene.text) {
+        out.push({
+          type: "caption",
+          sceneId: `scene-${sceneCounter++}`,
+          caption: scene.text,
+          align: "bottom",
+          flowSequence: false,
+          isFirstInFlow: false,
+          hidden: false,
+        });
+      } else {
+        // Create second image scene without caption if no text
+        out.push({
+          type: "image",
+          sceneId: `scene-${sceneCounter++}`,
+          image: scene.image,
+          caption: undefined,
+          background: scene.background,
+          flowSequence: false,
+          isFirstInFlow: false,
+          panelRestricted: false,
+        });
+      }
     } else {
       // Pass-through for any already-flat scene types you might have
       // Add flowSequence and isFirstInFlow properties for background system compatibility

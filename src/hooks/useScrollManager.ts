@@ -30,7 +30,6 @@ export function useScrollManager({ setCurrentIndex }: UseScrollManagerProps) {
   // Log scroll lock state for debugging
   useEffect(() => {
     if (isScrollLocked && unlockAttempts > 0) {
-      console.log(`User attempted to scroll ${unlockAttempts} times while locked at scene ${index}`);
     }
   }, [isScrollLocked, unlockAttempts, index]);
 
