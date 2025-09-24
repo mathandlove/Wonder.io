@@ -38,7 +38,7 @@ export function useStepScroll(
       if (settleTimerRef.current) window.clearTimeout(settleTimerRef.current);
       settleTimerRef.current = window.setTimeout(() => {
         animatingRef.current = false;
-      }, durationMs + 60);
+      }, 200); // Shorter blocking period to allow quicker scroll reversals
     };
 
     const snapRelative = (delta: number) => {

@@ -137,7 +137,7 @@ const StoryContent: React.FC = () => {
     getIndex,
     count: () => scenes.length,
     durationMs: 380,
-    thresholdPx: 1, // Minimum threshold - any scroll triggers scene change
+    thresholdPx: 60, // Reasonable threshold - prevents accidental scene changes
     isInputFocused,
   });
 
