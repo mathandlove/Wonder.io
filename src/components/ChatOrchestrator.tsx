@@ -29,8 +29,19 @@ export const ChatOrchestrator: React.FC = () => {
 
   // Grant player turn when we navigate to a lastInFlow scene
   useEffect(() => {
-    // Only update if we're actually changing to a different scene
-    if (currentIndex !== lastProcessedIndex) {
+    // Force scene change processing if shouldShowChatFinal changed from false to true
+    // This handles cases where the same scene becomes lastInFlow due to scene hiding
+    const shouldForceProcessing = shouldShowChatFinal && !chatVisible && !hasGrantedTurn;
+
+    // Check if we're changing to a different scene (index OR scene content changed)
+    const currentSceneId = (currentScene as any)?.sceneId;
+    const lastSceneId = (scenes[lastProcessedIndex] as any)?.sceneId;
+    const indexChanged = currentIndex !== lastProcessedIndex;
+    const sceneChanged = currentSceneId !== lastSceneId;
+    const hasSceneChanged = indexChanged || sceneChanged || shouldForceProcessing;
+
+
+    if (hasSceneChanged) {
       setLastProcessedIndex(currentIndex);
 
       // Coordinate all state changes together to prevent flashing
@@ -47,7 +58,7 @@ export const ChatOrchestrator: React.FC = () => {
         setHasGrantedTurn(false);
       }
     }
-  }, [currentIndex, shouldShowChatFinal, hasGrantedTurn, grantPlayerTurn, lastProcessedIndex]);
+  }, [currentIndex, shouldShowChatFinal, hasGrantedTurn, grantPlayerTurn, lastProcessedIndex, currentScene, scenes]);
 
   // Monitor quest completion
   useEffect(() => {
