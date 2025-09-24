@@ -173,6 +173,8 @@ export const ScrollLockDebugger: React.FC = () => {
 
       <div style={{ marginBottom: '12px', padding: '8px', background: 'rgba(255, 255, 255, 0.1)', borderRadius: '4px' }}>
         <div><strong>Current Section:</strong> {currentIndex}</div>
+        <div><strong>Scene Type:</strong> {scenes[currentIndex]?.type || 'unknown'}</div>
+        <div><strong>Last In Flow:</strong> {(scenes[currentIndex] as any)?.lastInFlow ? 'YES' : 'NO'}</div>
         <div><strong>Chat State:</strong> {waiting ? 'waiting' : isPlayerTurn ? 'player-turn' : 'idle'}</div>
         <div><strong>Quest State:</strong> {questState}</div>
         <div><strong>Total Events:</strong> {events.length}</div>

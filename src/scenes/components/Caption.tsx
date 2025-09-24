@@ -16,7 +16,6 @@ export default function Caption({ text, isActive, direction, align = "bottom" }:
 
   useEffect(() => {
     const wasActive = wasActiveRef.current;
-    console.log(`[CAPTION] Scene transition - isActive: ${isActive}, wasActive: ${wasActive}, current phase: ${phase}, direction: ${direction}`);
 
     // Clear any pending visibility timeout
     if (visibilityTimeoutRef.current) {
@@ -26,23 +25,19 @@ export default function Caption({ text, isActive, direction, align = "bottom" }:
 
     if (isActive) {
       // Entering: make visible immediately, then animate
-      console.log(`[CAPTION] Setting phase to 'pre' then 'entering'`);
       setShouldBeVisible(true);
       setPhase('pre');
       const id = requestAnimationFrame(() => {
-        console.log(`[CAPTION] Setting phase to 'entering'`);
         setPhase('entering');
       });
       wasActiveRef.current = isActive;
       return () => cancelAnimationFrame(id);
     } else if (wasActive) {
       // Leaving: start exit animation, delay hiding until animation completes
-      console.log(`[CAPTION] Setting phase to 'leaving'`);
       setPhase('leaving');
 
       // Keep visible during exit animation, then hide
       visibilityTimeoutRef.current = setTimeout(() => {
-        console.log(`[CAPTION] Setting phase back to 'pre' and hiding after animation`);
         setPhase('pre');
         setShouldBeVisible(false);
       }, 600); // Match CSS transition duration
@@ -56,7 +51,6 @@ export default function Caption({ text, isActive, direction, align = "bottom" }:
       };
     } else {
       // Not active and wasn't active: hide immediately
-      console.log(`[CAPTION] Staying in 'pre' phase and hidden`);
       setPhase('pre');
       setShouldBeVisible(false);
       wasActiveRef.current = isActive;

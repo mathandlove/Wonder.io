@@ -8,17 +8,13 @@ export function useSceneActive(sceneId: string) {
 
   useEffect(() => {
     const onEnter = (id: string, scrollDirection?: 'forward' | 'backward') => {
-      console.log(`[SCENE_BUS] Enter event for ${id}, target sceneId: ${sceneId}, direction: ${scrollDirection}`);
       if (id === sceneId) {
-        console.log(`[SCENE_BUS] Scene ${sceneId} entering - setting isActive to true`);
         setDirection(scrollDirection || 'forward');
         setIsActive(true);
       }
     };
     const onLeave = (id: string, scrollDirection?: 'forward' | 'backward') => {
-      console.log(`[SCENE_BUS] Leave event for ${id}, target sceneId: ${sceneId}, direction: ${scrollDirection}`);
       if (id === sceneId) {
-        console.log(`[SCENE_BUS] Scene ${sceneId} leaving - setting isActive to false`);
         setDirection(scrollDirection || 'forward');
         setIsActive(false);
       }

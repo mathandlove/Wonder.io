@@ -11,7 +11,7 @@ import { sceneBus } from "../../scenes/registry/sceneBus";
 
 export default function QuestScene({ scene, onComplete, sceneIndex }: SceneProps<QuestScene>) {
   const { offer, accept, state } = useQuest();
-  const { currentIndex, scenes } = useNavigation();
+  const { currentIndex, scenes, setCurrentIndex } = useNavigation();
   const [hasOffered, setHasOffered] = React.useState(false);
   const [isAccepted, setIsAccepted] = React.useState(false);
 
@@ -53,6 +53,9 @@ export default function QuestScene({ scene, onComplete, sceneIndex }: SceneProps
           // Emit scene enter event for the next scene
           sceneBus.emit('scene:enter', (nextScene as any).sceneId, 'forward');
         }
+
+        // Update navigation index to sync debugger and other components
+        setCurrentIndex(nextSceneIndex);
 
         // Trigger scroll navigation to the next scene
         const nextSection = document.querySelector(`[data-section-index="${nextSceneIndex}"]`);

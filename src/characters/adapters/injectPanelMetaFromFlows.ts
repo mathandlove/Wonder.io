@@ -194,6 +194,11 @@ export function injectPanelMetaFromFlows(scenes: Scene[]): Scene[] {
       (s as any)["left-character"] || (s as any)["right-character"] || s.type === "character" || s.type === "input"
     );
 
+    // Input scenes should always have lastInFlow to trigger chat UI
+    if (scene.type === "input") {
+      return { ...scene, lastInFlow: true } as any;
+    }
+
     if (isLastInFlow && !isFirstCharacterScene) {
       return { ...scene, lastInFlow: true } as any;
     }
