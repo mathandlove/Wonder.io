@@ -228,7 +228,7 @@
   position: fixed;
   left: 50%;
   transform: translateX(-50%);
-  bottom: calc(130px + 32px); /* sits above bottom rail + breathing room */
+  bottom: calc(100px + 32px); /* sits above bottom rail + breathing room */
   max-width: min(680px, 92vw);
   padding: 12px 16px;
   border-radius: 14px;

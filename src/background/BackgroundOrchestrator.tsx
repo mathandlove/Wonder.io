@@ -12,15 +12,17 @@ import type { SceneContent } from '../types/background';
 interface BackgroundOrchestratorProps {
   storyId?: string;
   storyContent: SceneContent[];
+  currentIndex?: number;
 }
 
-export function BackgroundOrchestrator({ storyId, storyContent }: BackgroundOrchestratorProps) {
+export function BackgroundOrchestrator({ storyId, storyContent, currentIndex }: BackgroundOrchestratorProps) {
   // Build background ranges using the original main branch logic
   const backgroundRanges = useMemo(() => buildBackgroundRanges(storyContent), [storyContent]);
 
-  // Get current scroll offset (float in scene units)
+  // Use passed currentIndex or fall back to scroll offset
   const dummyRef = React.useRef<HTMLDivElement>(null);
-  const { offset: scrollOffset } = useScrollOffset(dummyRef);
+  const { offset: scrollOffsetFallback } = useScrollOffset(dummyRef);
+  const scrollOffset = currentIndex !== undefined ? currentIndex : scrollOffsetFallback;
 
   // Find the active range and mount only [active-1, active, active+1] ranges
   const activeRangeIndex = useMemo(() => {

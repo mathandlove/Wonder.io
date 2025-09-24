@@ -2,9 +2,8 @@
  * Main story mode component that renders a story as scrollable scenes.
  * Each scene gets its own 100vh section with snap-scroll behavior.
  */
-import React, { useMemo } from "react";
+import React, { useMemo, useRef, useState, useLayoutEffect } from "react";
 import { useStory } from "./hooks/useStory";
-import { SnapLayer } from "./components/SnapLayer";
 import { FlowLayout } from "./components/FlowLayout";
 import { SceneRenderer } from "./components/SceneRenderer";
 import { PageFactoryProvider } from "./components/PageFactory";
@@ -15,7 +14,7 @@ import { SpeechBubbleOrchestrator } from "./components/SpeechBubbleOrchestrator"
 import { CaptionComponent } from "./components/CaptionComponent";
 import { injectPanelMetaFromFlows } from "./characters/adapters/injectPanelMetaFromFlows";
 import { useSceneNavigation } from "./hooks/useSceneNavigation";
-import { useScrollManager } from "./hooks/useScrollManager";
+import { useStepScroll } from "./hooks/useStepScroll";
 import { CharacterAnimationProvider } from "./context/CharacterAnimationContext";
 import type { Scene } from "./types/scene";
 import "./components/SnapScroll.css";
@@ -82,8 +81,58 @@ const StoryContent: React.FC = () => {
   // Handle scene navigation updates
   useSceneNavigation({ initialScenes: scenesWithPanelMeta, setScenes });
 
-  // Handle scroll management
-  const { railRef, index, setIsProgrammatic, targetIndex } = useScrollManager({ setCurrentIndex });
+  // Handle scroll management with step scroll system
+  const containerRef = useRef<HTMLDivElement>(null);
+  const [index, setIndex] = useState(0);
+
+  // Step scroll integration
+  const getIndex = () => {
+    const el = containerRef.current;
+    if (!el) return 0;
+    const y = el.scrollTop;
+    let best = 0, bestDist = Infinity;
+    const sections = el.querySelectorAll<HTMLElement>('.scene');
+    sections.forEach((s, i) => {
+      const dist = Math.abs(s.offsetTop - y);
+      if (dist < bestDist) { bestDist = dist; best = i; }
+    });
+    return best;
+  };
+
+  const isInputFocused = () => {
+    const a = document.activeElement as HTMLElement | null;
+    if (!a) return false;
+    const tag = a.tagName.toLowerCase();
+    return tag === 'input' || tag === 'textarea' || a.isContentEditable;
+  };
+
+  const handleIndexChange = (nextIndex: number) => {
+    console.log('[STEP_SCROLL] Index changed to:', nextIndex, 'Previous index was:', index);
+    setIndex(nextIndex);
+    setCurrentIndex(nextIndex);
+  };
+
+  // Debug: Log when index state actually updates
+  React.useEffect(() => {
+    console.log('[MAIN_COMPONENT] Index state updated to:', index);
+  }, [index]);
+
+  useStepScroll(containerRef, {
+    onIndexChange: handleIndexChange,
+    getIndex,
+    count: () => scenes.length,
+    durationMs: 380,
+    thresholdPx: 1, // Minimum threshold - any scroll triggers scene change
+    isInputFocused,
+  });
+
+  // Ensure focus lands on the active scene for accessibility
+  useLayoutEffect(() => {
+    const el = containerRef.current;
+    const node = el?.querySelectorAll<HTMLElement>('.scene')[index];
+    node?.setAttribute('tabindex', '-1');
+    node?.focus({ preventScroll: true });
+  }, [index]);
 
   // Use navigation scenes (already processed, just filter for visibility)
   // Don't re-process with injectPanelMetaFromFlows as it breaks character metadata
@@ -119,23 +168,29 @@ const StoryContent: React.FC = () => {
     <QuestProvider>
     <PageFactoryProvider>
       <CharacterAnimationProvider>
-        <SnapLayer
-          railRef={railRef}
-          targetIndex={targetIndex}
-          setIsProgrammatic={setIsProgrammatic}
-          currentIndex={index}
+        <div
+          ref={containerRef}
+          className="story-scroll"
+          tabIndex={0}
+          style={{
+            height: '100vh',
+            overflowY: 'auto',
+            scrollSnapType: 'y mandatory',
+            overscrollBehavior: 'contain',
+            WebkitOverflowScrolling: 'touch',
+          }}
         >
         {/* Layer 1: Hybrid background system */}
-        <BackgroundOrchestrator storyId="gingerbread" storyContent={scenes} />
+        <BackgroundOrchestrator storyId="gingerbread" storyContent={scenes} currentIndex={index} />
 
         {/* Layer 1.5: Character panels (fixed, independent of scroll flow) */}
-        <CharacterOrchestrator storyId="gingerbread" scenes={scenes} />
+        <CharacterOrchestrator storyId="gingerbread" scenes={scenes} currentIndex={index} />
 
         {/* Layer 1.6: Image scenes (fixed, independent of scroll flow) */}
         <ImageSceneOrchestrator scenes={scenes} index={index} />
 
         {/* Layer 1.7: Image captions (appear on second scene of each image pair) */}
-        <CaptionComponent scenes={scenes} index={index} />
+        <CaptionComponent scenes={scenes} index={index} key={`caption-${index}`} />
 
         {/* Layer 1.8: Speech bubbles (scroll-based with delayed transitions) */}
         <SpeechBubbleOrchestrator scenes={scenes} currentIndex={index} />
@@ -161,7 +216,12 @@ const StoryContent: React.FC = () => {
             }
 
             return (
-            <div key={stableKey} className="story-scene-container">
+            <div key={stableKey} className="scene story-scene-container" style={{
+              minHeight: '100vh',
+              scrollSnapAlign: 'start',
+              scrollSnapStop: 'always',
+              outline: 'none',
+            }}>
               <FlowLayout
                 keyId={i.toString()}
                 panelRestricted={(scene as unknown as { panelRestricted?: boolean })?.panelRestricted ?? false}
@@ -173,13 +233,7 @@ const StoryContent: React.FC = () => {
           })}
         </div>
 
-        {/* Layer 3: Programmatic scroll control (hidden) */}
-        <div ref={railRef} style={{ display: "none" }}>
-          {scenes.map((_, i) => (
-            <div key={i} data-rail-index={i} />
-          ))}
         </div>
-        </SnapLayer>
       </CharacterAnimationProvider>
     </PageFactoryProvider>
     <QuestDebugProbe />

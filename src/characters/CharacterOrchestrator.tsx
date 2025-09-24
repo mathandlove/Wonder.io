@@ -9,11 +9,15 @@ import { CharacterPanel } from "./CharacterPanel";
 type Props = {
   storyId: string;
   scenes: Scene[];
+  currentIndex?: number;
 };
 
-export const CharacterOrchestrator: React.FC<Props> = ({ storyId, scenes }) => {
-  const { index: scrollOffset } = useScrollManager({ setCurrentIndex: () => {} }); // continuous float in "scene units"
+export const CharacterOrchestrator: React.FC<Props> = ({ storyId, scenes, currentIndex }) => {
   const { notifyEntranceComplete } = useCharacterAnimation();
+
+  // Use passed currentIndex or fall back to scroll manager
+  const { index: scrollOffsetFallback } = useScrollManager({ setCurrentIndex: () => {} }); // continuous float in "scene units"
+  const scrollOffset = currentIndex !== undefined ? currentIndex : scrollOffsetFallback;
 
   // Get current scene meta and speaker info
   const { currentMeta, currentSpeaker } = useMemo(() => {

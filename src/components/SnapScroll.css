@@ -19,16 +19,23 @@
   scroll-behavior: smooth;
 }
 
-/* NEW: Apply scroll snap to the body/root */
+/* Disable all document-level scrolling - step scroll system handles everything */
 body, html {
-  scroll-snap-type: y mandatory !important;
-  scroll-behavior: smooth;
+  overflow: hidden !important; /* Completely disable body/html scrolling */
+  height: 100vh !important;
+  margin: 0 !important;
+  padding: 0 !important;
 }
 
-/* Ensure scroll container behavior */
+/* Hide any remaining scrollbars */
+body::-webkit-scrollbar,
+html::-webkit-scrollbar {
+  display: none !important;
+}
+
 body {
-  overflow-y: scroll;
-  overflow-x: hidden;
+  scrollbar-width: none !important; /* Firefox */
+  -ms-overflow-style: none !important; /* IE/Edge */
 }
 
 
@@ -70,6 +77,7 @@ body {
   box-sizing: border-box;
   min-height: 100vh;
   max-height: 100vh;
+  overflow: hidden !important; /* Prevent individual scene scrolling */
 }
 
 
@@ -150,6 +158,33 @@ body.scroll-locked {
     width: 100% !important;
     top: var(--scroll-lock-offset, 0) !important;
   }
+}
+
+/* Step scroll system - one scene per scroll */
+.story-scroll {
+  height: 100vh;
+  overflow-y: auto;
+  scroll-snap-type: y mandatory;
+  overscroll-behavior: contain;
+  -webkit-overflow-scrolling: touch;
+
+  /* Hide scrollbar */
+  scrollbar-width: none; /* Firefox */
+  -ms-overflow-style: none; /* Internet Explorer 10+ */
+}
+
+/* Hide scrollbar for WebKit browsers */
+.story-scroll::-webkit-scrollbar {
+  display: none;
+}
+
+/* Every scene is a stop */
+.scene {
+  min-height: 100vh;
+  max-height: 100vh;
+  scroll-snap-align: start;
+  scroll-snap-stop: always;
+  overflow: hidden; /* Prevent individual scene scrolling */
 }
 
 /* Reduced motion accessibility overrides */

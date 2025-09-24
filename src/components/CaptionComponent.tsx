@@ -64,7 +64,9 @@ export const CaptionComponent: React.FC<CaptionComponentProps> = ({ scenes, inde
       });
     }
 
-    return ranges.filter(range => range.caption); // Only show ranges with captions
+    const filteredRanges = ranges.filter(range => range.caption); // Only show ranges with captions
+    console.log('[CAPTION] Found caption ranges:', filteredRanges);
+    return filteredRanges;
   }, [scenes]);
 
   return (
@@ -83,8 +85,11 @@ export const CaptionComponent: React.FC<CaptionComponentProps> = ({ scenes, inde
         let opacity: number;
 
         // Show caption only on the second scene of each image pair
-        if (Math.round(index) === range.secondSceneIndex) {
+        const shouldShow = Math.round(index) === range.secondSceneIndex;
+        console.log('[CAPTION] Index:', index, 'Rounded:', Math.round(index), 'Target:', range.secondSceneIndex, 'Should show:', shouldShow);
+        if (shouldShow) {
           // Second image scene - caption visible
+          console.log('[CAPTION] Showing caption at index', index, 'for range', range.secondSceneIndex, range.caption);
           transform = 'translateY(0)';
           opacity = 1;
         } else {
