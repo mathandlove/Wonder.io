@@ -91,11 +91,10 @@ export const CharacterOrchestrator: React.FC<Props> = ({ storyId, scenes, curren
   // Publish panel widths as CSS variables to constrain main content
   useLayoutEffect(() => {
     const updatePanelWidths = () => {
-
-      // Always calculate panel widths to constrain center to 600px
-      const panelWidth = Math.max(280, (window.innerWidth - 600) / 2);
-      const leftWidth = `${panelWidth}px`; // Always apply panel width for consistent speech bubble sizing
-      const rightWidth = `${panelWidth}px`; // Always apply panel width for consistent speech bubble sizing
+      // Use 18vw for both panels
+      const panelWidth = window.innerWidth * 0.18; // 18% of viewport width
+      const leftWidth = `${panelWidth}px`;
+      const rightWidth = `${panelWidth}px`;
 
       document.documentElement.style.setProperty("--panel-left-width", leftWidth);
       document.documentElement.style.setProperty("--panel-right-width", rightWidth);
@@ -113,8 +112,8 @@ export const CharacterOrchestrator: React.FC<Props> = ({ storyId, scenes, curren
   // Fixed overlay container
   return (
     <div style={{ position: "fixed", inset: 0, pointerEvents: "none", zIndex: 60 }}>
-      {/* Left gutter column - expands to take available space */}
-      <div className="character-panel--left" style={{ position: "absolute", left: 0, top: 0, bottom: 0, width: "calc((100vw - 600px) / 2)", minWidth: "280px", pointerEvents: "auto" }}>
+      {/* Left gutter column - 18% of viewport width */}
+      <div className="character-panel--left" style={{ position: "absolute", left: 0, top: 0, bottom: 0, width: "18vw", pointerEvents: "auto" }}>
         <CharacterPanel
           side="left"
           visible={true}
@@ -132,8 +131,8 @@ export const CharacterOrchestrator: React.FC<Props> = ({ storyId, scenes, curren
         />
       </div>
 
-      {/* Right gutter column - expands to take available space */}
-      <div className="character-panel--right" style={{ position: "absolute", right: 0, top: 0, bottom: 0, width: "calc((100vw - 600px) / 2)", minWidth: "280px", pointerEvents: "auto" }}>
+      {/* Right gutter column - 18% of viewport width */}
+      <div className="character-panel--right" style={{ position: "absolute", right: 0, top: 0, bottom: 0, width: "18vw", pointerEvents: "auto" }}>
         <CharacterPanel
           side="right"
           visible={true}
