@@ -54,12 +54,13 @@ export function CaptionOrchestrator({ scenes }: CaptionOrchestratorProps) {
 
 function CaptionRenderer({ scene }: { scene: Scene }) {
   const captionScene = scene as any; // CaptionScene type
-  const isActive = useSceneActive(scene.sceneId || '');
+  const { isActive, direction } = useSceneActive(scene.sceneId || '');
 
   return (
     <Caption
       text={captionScene.caption}
       isActive={isActive}
+      direction={direction}
       align={captionScene.align || "bottom"}
     />
   );

@@ -49,20 +49,31 @@
 }
 
 /* Animation states */
-/* Base state before animation */
+/* Base state before animation - forward direction (coming from below) */
 .caption--pre .caption__paper {
   transform: translateY(100%); /* Paper starts below window */
 }
 
+/* Base state before animation - backward direction (coming from above) */
+.caption--pre-reverse .caption__paper {
+  transform: translateY(-100vh); /* Paper starts above window */
+}
+
 /* Animate in when the scene becomes active */
 .caption--animate-in .caption__paper {
-  transform: translateY(0); /* Paper slides up to final position */
+  transform: translateY(0); /* Paper slides to final position */
   transition: transform 600ms ease-out;
 }
 
-/* Exit animation - construction paper scrolls up off screen */
+/* Exit animation - forward scroll (paper goes up) */
 .caption--animate-out .caption__paper {
   transform: translateY(-100vh); /* Paper slides up completely off screen */
+  transition: transform 600ms ease-out;
+}
+
+/* Exit animation - backward scroll (paper goes down) */
+.caption--animate-out-reverse .caption__paper {
+  transform: translateY(100%); /* Paper slides down off screen */
   transition: transform 600ms ease-out;
 }
 

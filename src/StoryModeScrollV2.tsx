@@ -112,16 +112,18 @@ const StoryContent: React.FC = () => {
   const handleIndexChange = (nextIndex: number) => {
     // Emit scene bus events for enter/leave
     if (nextIndex !== index) {
+      const direction = nextIndex > index ? 'forward' : 'backward';
+
       // Emit leave event for previous scene
       const prevScene = scenes[index];
       if (prevScene && prevScene.sceneId) {
-        sceneBus.emit('scene:leave', prevScene.sceneId);
+        sceneBus.emit('scene:leave', prevScene.sceneId, direction);
       }
 
       // Emit enter event for new scene
       const newScene = scenes[nextIndex];
       if (newScene && newScene.sceneId) {
-        sceneBus.emit('scene:enter', newScene.sceneId);
+        sceneBus.emit('scene:enter', newScene.sceneId, direction);
       }
     }
 

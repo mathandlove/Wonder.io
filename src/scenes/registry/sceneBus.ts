@@ -3,7 +3,8 @@
  */
 
 type SceneEvent = 'scene:enter' | 'scene:leave';
-type SceneEventListener = (sceneId: string) => void;
+type ScrollDirection = 'forward' | 'backward';
+type SceneEventListener = (sceneId: string, direction?: ScrollDirection) => void;
 
 class SceneBus {
   private listeners: Map<SceneEvent, Set<SceneEventListener>> = new Map();
@@ -22,10 +23,10 @@ class SceneBus {
     }
   }
 
-  emit(event: SceneEvent, sceneId: string) {
+  emit(event: SceneEvent, sceneId: string, direction?: ScrollDirection) {
     const eventListeners = this.listeners.get(event);
     if (eventListeners) {
-      eventListeners.forEach(listener => listener(sceneId));
+      eventListeners.forEach(listener => listener(sceneId, direction));
     }
   }
 
