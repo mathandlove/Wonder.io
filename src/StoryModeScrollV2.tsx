@@ -86,7 +86,8 @@ const StoryContent: React.FC = () => {
           hasMetaLeft: !!scene.meta?.panelLeft,
           hasMetaRight: !!scene.meta?.panelRight,
           metaLeftChar: scene.meta?.panelLeft?.character,
-          metaRightChar: scene.meta?.panelRight?.character
+          metaRightChar: scene.meta?.panelRight?.character,
+          lastInFlow: !!(scene as any).lastInFlow
         });
       }
     });

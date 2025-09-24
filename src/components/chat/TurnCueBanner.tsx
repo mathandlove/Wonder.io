@@ -8,35 +8,52 @@ type Props = {
 export default function TurnCueBanner({ show, text }: Props) {
   const [isNudging, setIsNudging] = useState(false);
   const [hasStartedNudging, setHasStartedNudging] = useState(false);
+  const [isVisible, setIsVisible] = useState(false);
+  const [isFadingOut, setIsFadingOut] = useState(false);
 
   useEffect(() => {
-    if (!show) {
-      // Don't reset nudging state when banner hides temporarily
-      return;
-    }
+    if (show) {
+      setIsVisible(true);
+      setIsFadingOut(false);
 
-    // Only start nudging if we haven't started yet
-    if (!hasStartedNudging) {
-      const nudgeTimer = setTimeout(() => {
+      // Only start nudging if we haven't started yet
+      if (!hasStartedNudging) {
+        const nudgeTimer = setTimeout(() => {
+          setIsNudging(true);
+          setHasStartedNudging(true);
+        }, 500);
+
+        return () => {
+          clearTimeout(nudgeTimer);
+        };
+      } else {
+        // Resume nudging immediately if we've already started
         setIsNudging(true);
-        setHasStartedNudging(true);
-      }, 500);
+      }
+    } else {
+      // Start fade out animation
+      setIsFadingOut(true);
+      setIsNudging(false);
+
+      // Hide after fade out completes
+      const fadeTimer = setTimeout(() => {
+        setIsVisible(false);
+        setIsFadingOut(false);
+      }, 300); // Match CSS transition duration
 
       return () => {
-        clearTimeout(nudgeTimer);
+        clearTimeout(fadeTimer);
       };
-    } else {
-      // Resume nudging immediately if we've already started
-      setIsNudging(true);
     }
   }, [show, hasStartedNudging]);
 
-  if (!show) return null;
+  if (!isVisible) return null;
+
   return (
     <div
       role="status"
       aria-live="polite"
-      className="turn-cue-banner"
+      className={`turn-cue-banner ${isFadingOut ? 'fade-out' : ''}`}
       data-testid="turn-cue-banner"
       data-nudged={isNudging}
     >

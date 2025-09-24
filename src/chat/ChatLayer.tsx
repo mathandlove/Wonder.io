@@ -1,6 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { ChatComposer } from './ChatComposer';
-import { AdvanceBar } from './AdvanceBar';
 import TurnCueBanner from '../components/chat/TurnCueBanner';
 import { useDialogue } from './ChatDialogueContext';
 import { useNavigation } from '../context/NavigationContext';
@@ -28,6 +27,7 @@ export const ChatLayer: React.FC<ChatLayerProps> = ({ visible, sceneIndex, onHid
   const scrollGuard = useScrollGuardAPI();
   const [exitingChat, setExitingChat] = useState(false);
   const lockTokenRef = useRef<symbol | null>(null);
+  const waitingLockTokenRef = useRef<symbol | null>(null);
 
   // Lock forward scrolling at this scene when it's player's turn
   useEffect(() => {
@@ -52,6 +52,31 @@ export const ChatLayer: React.FC<ChatLayerProps> = ({ visible, sceneIndex, onHid
       }
     };
   }, [isPlayerTurn, questState, visible, sceneIndex]);
+
+  // Lock all scrolling when waiting for AI response
+  useEffect(() => {
+    if (waiting && visible) {
+      if (!waitingLockTokenRef.current) {
+        // Lock both forward and backward scrolling during AI processing
+        waitingLockTokenRef.current = scrollGuard.lockBoth();
+        console.log('[CHAT_LAYER] Locking all scrolling - waiting for AI');
+      }
+    } else {
+      if (waitingLockTokenRef.current) {
+        scrollGuard.clear(waitingLockTokenRef.current);
+        waitingLockTokenRef.current = null;
+        console.log('[CHAT_LAYER] Unlocking scrolling - AI response received');
+      }
+    }
+
+    // Cleanup on unmount
+    return () => {
+      if (waitingLockTokenRef.current) {
+        scrollGuard.clear(waitingLockTokenRef.current);
+        waitingLockTokenRef.current = null;
+      }
+    };
+  }, [waiting, visible, scrollGuard]);
 
   const handleContinue = () => {
     setExitingChat(true);
@@ -78,21 +103,16 @@ export const ChatLayer: React.FC<ChatLayerProps> = ({ visible, sceneIndex, onHid
   console.log('[CHAT_LAYER] Rendering with visible:', visible, 'className:', `chat-layer ${visible ? 'visible' : 'hidden'}`);
 
   return (
-    <div className={`chat-layer ${visible ? 'visible' : 'hidden'}`} style={{border: '2px solid red'}}>
+    <div className={`chat-layer ${visible ? 'visible' : 'hidden'}`}>
       {/* Turn cue banner above composer */}
       <TurnCueBanner show={showTurnBanner} text={turnBannerText} />
 
-      {/* Chat composer with advance bar */}
+      {/* Chat composer with integrated next button */}
       <div className={`chat-composer-container ${exitingChat ? 'exit-bottom' : ''}`}>
         <ChatComposer
           disabled={!isPlayerTurn || waiting}
-          onSubmit={submitPlayerUtterance}
-          suggestions={suggestions}
-        />
-        <AdvanceBar
-          canAdvance={questState === 'complete'}
+          questState={questState}
           onNext={handleContinue}
-          onKeepChatting={handleKeepChatting}
         />
       </div>
     </div>

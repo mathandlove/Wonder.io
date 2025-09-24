@@ -1,49 +1,27 @@
 import React, { useState, useRef, useCallback, useEffect } from 'react';
+import { useDialogue } from './ChatDialogueContext';
+import NextButton from '../components/ui/NextButton';
+import { Toast, useToast } from '../components/ui/Toast';
 import './Chat.css';
 
 interface ChatComposerProps {
   disabled: boolean;
-  onSubmit: (text: string) => void;
-  suggestions?: string[];
+  questState: 'active' | 'complete' | 'failed';
+  onNext: () => void;
 }
 
 export const ChatComposer: React.FC<ChatComposerProps> = ({
   disabled,
-  onSubmit,
-  suggestions
+  questState,
+  onNext
 }) => {
-  const [userInput, setUserInput] = useState("What's wrong Ms. Baker?");
+  const { hideTurnBanner, waiting, submitPlayerUtterance } = useDialogue();
   const [isRecording, setIsRecording] = useState(false);
-  const [showSuggestion, setShowSuggestion] = useState(false);
   const recognitionRef = useRef<any>(null);
-  const inputRef = useRef<HTMLInputElement>(null);
-
-  // Auto-scroll to end of input when text updates during recording
-  useEffect(() => {
-    if (isRecording && inputRef.current) {
-      const length = userInput.length;
-      inputRef.current.setSelectionRange(length, length);
-      inputRef.current.scrollLeft = inputRef.current.scrollWidth;
-    }
-  }, [userInput, isRecording]);
-
-  const handleSubmit = () => {
-    if (userInput.trim() && !disabled) {
-      onSubmit(userInput.trim());
-      setUserInput('');
-    }
-  };
-
-  const handleKeyDown = (e: React.KeyboardEvent) => {
-    if (e.key === 'Enter' && userInput.trim() && !disabled) {
-      handleSubmit();
-    }
-  };
+  const { toast, hideToast } = useToast();
 
   const startRecording = useCallback(() => {
     try {
-      setUserInput('');
-
       const SpeechRecognition = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
 
       if (!SpeechRecognition) {
@@ -52,8 +30,8 @@ export const ChatComposer: React.FC<ChatComposerProps> = ({
       }
 
       const recognition = new SpeechRecognition();
-      recognition.continuous = true;
-      recognition.interimResults = true;
+      recognition.continuous = false; // Changed to false for single utterance
+      recognition.interimResults = false; // Changed to false for final result only
       recognition.lang = 'en-US';
 
       recognition.onstart = () => {
@@ -68,12 +46,11 @@ export const ChatComposer: React.FC<ChatComposerProps> = ({
             transcript += event.results[i][0].transcript + ' ';
           }
         }
-        for (let i = event.resultIndex; i < event.results.length; i++) {
-          if (!event.results[i].isFinal) {
-            transcript += event.results[i][0].transcript;
-          }
+        const finalTranscript = transcript.trim();
+        if (finalTranscript) {
+          // Submit directly without showing in input field
+          submitPlayerUtterance(finalTranscript);
         }
-        setUserInput(transcript.trim());
       };
 
       recognition.onerror = (event: any) => {
@@ -86,17 +63,8 @@ export const ChatComposer: React.FC<ChatComposerProps> = ({
 
       recognition.onend = () => {
         console.log('Speech recognition ended');
-        if (recognitionRef.current === recognition) {
-          try {
-            recognition.start();
-          } catch (error) {
-            console.log('Could not restart recognition, stopping');
-            setIsRecording(false);
-            recognitionRef.current = null;
-          }
-        } else {
-          setIsRecording(false);
-        }
+        setIsRecording(false);
+        recognitionRef.current = null;
       };
 
       recognitionRef.current = recognition;
@@ -106,7 +74,7 @@ export const ChatComposer: React.FC<ChatComposerProps> = ({
       console.error('Error starting speech recognition:', error);
       alert('Could not start speech recognition. Please try again.');
     }
-  }, []);
+  }, [submitPlayerUtterance]);
 
   const stopRecording = useCallback(() => {
     if (recognitionRef.current) {
@@ -118,7 +86,8 @@ export const ChatComposer: React.FC<ChatComposerProps> = ({
   }, []);
 
   const handleRecordClick = () => {
-    if (disabled) return;
+    if (disabled || waiting) return;
+    hideTurnBanner(); // Hide banner when user clicks microphone
     if (isRecording) {
       stopRecording();
     } else {
@@ -126,62 +95,49 @@ export const ChatComposer: React.FC<ChatComposerProps> = ({
     }
   };
 
-  const handleSuggestionClick = () => {
-    setShowSuggestion(!showSuggestion);
+  const handleHintClick = () => {
+    if (disabled || waiting) return;
+    // TODO: Implement hint functionality
+    console.log('Hint button clicked');
   };
 
 
   return (
     <div className="chat-composer-container">
-      <div className="composer-wrapper">
-        <div className="chat-composer-box">
-          <input
-            ref={inputRef}
-            type="text"
-            value={userInput}
-            onChange={(e) => setUserInput(e.target.value)}
-            onKeyDown={handleKeyDown}
-            placeholder="Type or speak..."
-            disabled={disabled}
-            className="composer-input"
-          />
-          <button
-            className={`chat-send-button ${userInput.trim() ? 'has-text' : ''}`}
-            onClick={handleSubmit}
-            disabled={!userInput.trim() || disabled}
-            title="Send message"
-          >
-            <div className="send-icon-mask"></div>
-          </button>
-        </div>
-      </div>
-      <button
-        className={`chat-record-button ${isRecording ? 'recording' : ''}`}
-        onClick={handleRecordClick}
-        disabled={disabled}
-        title={isRecording ? 'Stop recording' : 'Start recording'}
-      >
-        <div className="record-icon-mask"></div>
-      </button>
-
-      {/* Suggestions lightbulb */}
-      {suggestions && suggestions.length > 0 && (
+      <div className="simplified-chat-rail">
         <button
-          className="chat-suggestion-button"
-          onClick={handleSuggestionClick}
-          disabled={disabled}
-          title="Get suggestions"
+          className={`chat-hint-button ${waiting ? 'waiting' : ''}`}
+          onClick={handleHintClick}
+          disabled={disabled || waiting}
+          title="Get a hint"
         >
-          💡
+          <div className="hint-icon-mask"></div>
         </button>
-      )}
 
-      {/* Suggestion popup */}
-      {showSuggestion && (
-        <div className="chat-suggestion-popup">
-          Why do you need help?
-        </div>
-      )}
+        <button
+          className={`chat-record-button ${isRecording ? 'recording' : ''} ${waiting ? 'waiting' : ''}`}
+          onClick={handleRecordClick}
+          disabled={disabled || waiting}
+          title={isRecording ? 'Stop recording' : 'Start recording'}
+        >
+          <div className="record-icon-mask"></div>
+        </button>
+
+        <NextButton
+          locked={questState !== 'complete'}
+          onClick={onNext}
+        />
+      </div>
+
+      {/* Accessibility hint for locked state */}
+      <p id="next-hint" className="visually-hidden">Finish the quest to continue.</p>
+
+      {/* Toast notifications */}
+      <Toast
+        message={toast.message}
+        visible={toast.visible}
+        onHide={hideToast}
+      />
     </div>
   );
 };

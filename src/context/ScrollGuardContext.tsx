@@ -70,35 +70,35 @@ export const ScrollGuardProvider: React.FC<{children: React.ReactNode}> = ({ chi
     const prev = claims.current.get(token) || { forward: false, backward: false };
     claims.current.set(token, { ...prev, ...next });
     recompute();
-  }, [recompute]);
+  }, []);
 
   const clear = useCallback((token: Token) => {
     if (claims.current.has(token)) {
       claims.current.delete(token);
       recompute();
     }
-  }, [recompute]);
+  }, []);
 
   const lockForward = useCallback(() => {
     const t = makeToken();
     claims.current.set(t, { forward: true, backward: false });
     recompute();
     return t;
-  }, [recompute]);
+  }, []);
 
   const lockBackward = useCallback(() => {
     const t = makeToken();
     claims.current.set(t, { forward: false, backward: true });
     recompute();
     return t;
-  }, [recompute]);
+  }, []);
 
   const lockBoth = useCallback(() => {
     const t = makeToken();
     claims.current.set(t, { forward: true, backward: true });
     recompute();
     return t;
-  }, [recompute]);
+  }, []);
 
   // New scene-aware lock methods
   const lockForwardAt = useCallback((index: number) => {
@@ -106,14 +106,14 @@ export const ScrollGuardProvider: React.FC<{children: React.ReactNode}> = ({ chi
     claims.current.set(t, { forward: false, backward: false, forwardAtIndex: index });
     recompute();
     return t;
-  }, [recompute]);
+  }, []);
 
   const lockBackwardAt = useCallback((index: number) => {
     const t = makeToken();
     claims.current.set(t, { forward: false, backward: false, backwardAtIndex: index });
     recompute();
     return t;
-  }, [recompute]);
+  }, []);
 
   // Compute whether scrolling is allowed based on current position
   const canScrollForward = useMemo(() => {

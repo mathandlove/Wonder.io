@@ -4,6 +4,7 @@
  */
 import React, { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState } from "react";
 import type { Scene } from "../types/scene";
+import { injectPanelMetaFromFlows } from "../characters/adapters/injectPanelMetaFromFlows";
 
 export interface NavigationContextType {
   currentIndex: number;
@@ -98,7 +99,11 @@ export function NavigationProvider({ children, initialIndex = 0 }: NavigationPro
     setAllScenes(prevScenes => {
       const newScenes = [...prevScenes];
       newScenes.splice(index, 0, scene);
-      return newScenes;
+
+      // Recalculate lastInFlow for all scenes after inserting new scene
+      const scenesWithUpdatedFlow = injectPanelMetaFromFlows(newScenes);
+
+      return scenesWithUpdatedFlow;
     });
   }, []);
 
