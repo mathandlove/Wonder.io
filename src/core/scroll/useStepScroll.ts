@@ -36,7 +36,8 @@ export function useStepScroll(
     checkContentLocks
   }: StepScrollOpts
 ) {
-  const animatingRef = useRef(false);
+  const cooldownRef = useRef(false); // Prevents rapid-fire scrolling
+  const scrollAnimatingRef = useRef(false); // Tracks actual scroll animation state
   const touchStartYRef = useRef(0);
   const wheelAccumRef = useRef(0);
   const settleTimerRef = useRef<number | null>(null);
@@ -49,14 +50,14 @@ export function useStepScroll(
 
     window.dispatchEvent(new CustomEvent('stepscroll:debug', {
       detail: {
-        animating: animatingRef.current,
+        animating: scrollAnimatingRef.current,
         wheelAccum: wheelAccumRef.current,
         currentIndex,
         isLocked: lockState?.isLocked ?? false,
         lockReason: lockState?.reason ?? '',
         lockedForward,
         lockedBackward,
-        blockDismissActive: false,
+        blockDismissActive: cooldownRef.current, // Show cooldown state in debug
         settleTimerActive: settleTimerRef.current !== null,
         lastEvent,
         timestamp: Date.now(),
@@ -82,15 +83,41 @@ export function useStepScroll(
       const section = el.querySelectorAll<HTMLElement>('.scene')[clamped];
       if (!section) return;
 
-      animatingRef.current = true;
+      // Check if we're already at the target position
+      const currentScroll = el.scrollTop;
+      const targetScroll = section.offsetTop;
+      const scrollDelta = Math.abs(currentScroll - targetScroll);
+
+      console.log(`📜 scrollToIndex(${clamped}):`, {
+        currentScroll,
+        targetScroll,
+        scrollDelta,
+        alreadyAtTarget: scrollDelta < 5
+      });
+
+      // If already at target, no need to scroll
+      if (scrollDelta < 5) {
+        console.log('✅ Already at target position - no scroll needed');
+        emitDebug(`scrollToIndex(${clamped}) - already at target`);
+        return;
+      }
+
+      scrollAnimatingRef.current = true;
       section.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      console.log(`📜 Starting smooth scroll to index ${clamped}`);
       emitDebug(`scrollToIndex(${clamped})`);
 
       // Fallback timer in case scrollend doesn't fire
-      if (settleTimerRef.current) window.clearTimeout(settleTimerRef.current);
+      if (settleTimerRef.current) {
+        console.log('🔄 Clearing existing settle timer before scroll');
+        window.clearTimeout(settleTimerRef.current);
+      }
+      console.log('⏱️ Setting 600ms fallback timer for scrollend');
       settleTimerRef.current = window.setTimeout(() => {
-        animatingRef.current = false;
-        emitDebug('settle timer fired - checking new scene locks');
+        console.log('⏰ Fallback timer fired (scrollend didn\'t fire) - clearing scroll animating flag');
+        scrollAnimatingRef.current = false;
+        settleTimerRef.current = null;
+        emitDebug('settle timer fired - scroll animation complete');
       }, 600);
     };
 
@@ -109,14 +136,21 @@ export function useStepScroll(
       return domLocked || contentLocked;
     };
 
+    const startCooldown = (durationMs: number) => {
+      cooldownRef.current = true;
+      console.log(`⏳ Starting ${durationMs}ms cooldown`);
+      setTimeout(() => {
+        cooldownRef.current = false;
+        console.log('✅ Cooldown complete - ready for next scroll');
+        emitDebug('cooldown complete');
+      }, durationMs);
+    };
+
     const attemptTransition = (direction: Direction) => {
       const currentIndex = getIndex();
       const locked = isLocked(direction, currentIndex);
 
       if (locked) {
-        // Set animating flag to prevent multiple blocked events
-        animatingRef.current = true;
-
         // Emit unified scroll attempt event (blocked)
         const blockedEvent = {
           direction,
@@ -129,18 +163,11 @@ export function useStepScroll(
         window.dispatchEvent(new CustomEvent('scroll:attempt', { detail: blockedEvent }));
         emitDebug(`BLOCKED: ${direction}`, { isLocked: true, reason: 'content lock' });
 
-        // Clear animating flag after a short delay to allow single event emission
-        if (settleTimerRef.current) window.clearTimeout(settleTimerRef.current);
-        settleTimerRef.current = window.setTimeout(() => {
-          animatingRef.current = false;
-          emitDebug('block timer cleared - ready for next attempt');
-        }, 300);
+        // Start cooldown to prevent rapid-fire blocked attempts
+        startCooldown(300);
 
         return false; // Blocked
       }
-
-      // Commit to transition - set flag immediately to block subsequent events
-      animatingRef.current = true;
 
       const delta = direction === 'forward' ? 1 : -1;
       const next = currentIndex + delta;
@@ -161,6 +188,9 @@ export function useStepScroll(
       onIndexChange(clamped);
       scrollToIndex(clamped);
 
+      // Start cooldown to prevent rapid-fire successful scrolls
+      startCooldown(300);
+
       return true; // Success
     };
 
@@ -175,9 +205,14 @@ export function useStepScroll(
       // Only handle vertical scrolling
       if (Math.abs(e.deltaY) < Math.abs(e.deltaX)) return;
 
-      // Block all scrolling during animation
-      if (animatingRef.current) {
+      // Block all scrolling during cooldown or scroll animation
+      if (cooldownRef.current || scrollAnimatingRef.current) {
         e.preventDefault();
+        if (cooldownRef.current) {
+          console.log('⏸️ Wheel event blocked: cooldown active');
+        } else {
+          console.log('⏸️ Wheel event blocked: scroll animation in progress');
+        }
         return;
       }
 
@@ -211,7 +246,7 @@ export function useStepScroll(
       const e = evt as TouchEvent;
       if (!touching) return;
 
-      if (animatingRef.current) {
+      if (cooldownRef.current || scrollAnimatingRef.current) {
         e.preventDefault();
         return;
       }
@@ -232,7 +267,7 @@ export function useStepScroll(
     const onKeyDown = (evt: Event) => {
       const e = evt as KeyboardEvent;
       if (isInputFocused()) return;
-      if (animatingRef.current) return;
+      if (cooldownRef.current || scrollAnimatingRef.current) return;
 
       let direction: Direction | null = null;
 
@@ -249,7 +284,14 @@ export function useStepScroll(
     };
 
     const onScrollEnd = () => {
-      animatingRef.current = false;
+      console.log('🏁 scrollend event fired - clearing scroll animation flag');
+      scrollAnimatingRef.current = false;
+      if (settleTimerRef.current) {
+        console.log('🔄 Clearing settle timer (scrollend fired)');
+        window.clearTimeout(settleTimerRef.current);
+        settleTimerRef.current = null;
+      }
+      emitDebug('scrollend fired');
     };
 
     // ============ EVENT LISTENERS ============

@@ -55,10 +55,14 @@ export function useContentLocks({ scenes, isPlayerTurn, waiting, questState, get
       // Only lock if scene has caption and sceneId
       if (captionText && captionText.trim() && sceneId && getCaptionState) {
         const captionState = getCaptionState(sceneId);
+        console.log(`🔒 Caption lock check for ${sceneId}:`, {
+          captionState,
+          willBlock: !captionState || captionState === 'hidden'
+        });
 
-        // Lock if caption is hidden or showing (not yet dismissed)
-        // Allow scroll once caption is dismissed
-        if (!captionState || captionState === 'hidden' || captionState === 'showing') {
+        // Lock only if caption is hidden (not yet shown)
+        // Once showing or dismissed, allow scroll
+        if (!captionState || captionState === 'hidden') {
           return true; // Block forward scroll
         }
       }

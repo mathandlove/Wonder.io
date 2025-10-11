@@ -7,7 +7,7 @@
  * This hook provides the "single source of truth" for scene state that
  * affects both rendering (ImageScene) and locking (useContentLocks).
  */
-import { useEffect, useRef, useCallback } from 'react';
+import { useEffect, useRef, useCallback, useState } from 'react';
 import type { Scene } from '@core/types/scene';
 
 // Runtime state for image scenes with captions
@@ -45,6 +45,9 @@ export function useSceneOrchestrator({
   // Runtime state storage - persists across renders
   const stateMapRef = useRef<SceneStateMap>(new Map());
 
+  // Force re-render when state map changes
+  const [, forceUpdate] = useState({});
+
   // Get state for a scene
   const getSceneState = useCallback((sceneId: string): SceneRuntimeState | undefined => {
     return stateMapRef.current.get(sceneId);
@@ -62,6 +65,8 @@ export function useSceneOrchestrator({
       ...existing,
       captionState: state,
     });
+    console.log(`🎯 setCaptionState: ${sceneId} → ${state}`, stateMapRef.current.get(sceneId));
+    forceUpdate({}); // Trigger re-render so components see the new state
   }, []);
 
   // Listen to scroll:attempt events and update caption states
@@ -118,6 +123,9 @@ export function useSceneOrchestrator({
 
   // Initialize caption states when scenes change
   useEffect(() => {
+    console.log('🔄 Initializing caption states for', scenes.length, 'scenes');
+    let needsUpdate = false;
+
     scenes.forEach((scene, index) => {
       if (scene.type !== 'image') return;
 
@@ -125,14 +133,30 @@ export function useSceneOrchestrator({
       const captionText = imageScene.caption || imageScene.text;
       const sceneId = imageScene.sceneId;
 
+      console.log(`  Scene ${index}:`, { type: scene.type, sceneId, hasCaption: !!captionText });
+
       // Only initialize if scene has caption and sceneId
-      if (!captionText || !captionText.trim() || !sceneId) return;
+      if (!captionText || !captionText.trim() || !sceneId) {
+        console.log(`  ⚠️ Skipping scene ${index}: missing caption or sceneId`);
+        return;
+      }
 
       // Initialize to 'hidden' if not already set
       if (!stateMapRef.current.has(sceneId)) {
         stateMapRef.current.set(sceneId, { captionState: 'hidden' });
+        console.log(`  ✅ Initialized caption state for ${sceneId}: hidden`);
+        needsUpdate = true;
+      } else {
+        console.log(`  ℹ️ Scene ${sceneId} already has state:`, stateMapRef.current.get(sceneId));
       }
     });
+    console.log('📊 Final state map:', Array.from(stateMapRef.current.entries()));
+
+    // Trigger re-render if we initialized any new states
+    if (needsUpdate) {
+      console.log('🔄 Triggering re-render after initialization');
+      forceUpdate({});
+    }
   }, [scenes]);
 
   return {

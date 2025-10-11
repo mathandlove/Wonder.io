@@ -204,12 +204,14 @@ const StoryContent: React.FC = () => {
                   );
                 })}
               </div>
+
+              {/* Debug display - inside ScrollControl to access SceneOrchestrator context */}
+              <StepScrollDebug />
             </ScrollControl>
           </CharacterAnimationProvider>
         </PageFactoryProvider>
         <QuestDebugProbe />
         <UIOverlayRoot />
-        <StepScrollDebug />
       </QuestProvider>
   );
 };

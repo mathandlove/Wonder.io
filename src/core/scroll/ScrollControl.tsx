@@ -15,6 +15,7 @@ import type { Scene } from '@core/types/scene';
 import { useStepScroll } from './useStepScroll';
 import { useContentLocks } from './useContentLocks';
 import { useSceneOrchestrator } from './useSceneOrchestrator';
+import { SceneOrchestratorProvider } from './SceneOrchestratorContext';
 
 export interface ScrollControlProps {
   // Core scene management
@@ -147,13 +148,15 @@ export function ScrollControl({
   };
 
   return (
-    <div
-      ref={containerRef}
-      className={className}
-      style={containerStyle}
-      tabIndex={0}
-    >
-      {children}
-    </div>
+    <SceneOrchestratorProvider orchestrator={sceneOrchestrator}>
+      <div
+        ref={containerRef}
+        className={className}
+        style={containerStyle}
+        tabIndex={0}
+      >
+        {children}
+      </div>
+    </SceneOrchestratorProvider>
   );
 }

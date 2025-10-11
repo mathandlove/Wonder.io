@@ -61,7 +61,19 @@
 }
 
 /* Animation states */
-/* Base state before animation */
+/* Hidden state - not yet triggered */
+.caption--hidden .caption__text {
+  opacity: 0;
+  transform: translateY(12px);
+  transition: none;
+}
+
+.caption--hidden::before {
+  transform: translateY(100%); /* Background starts below window */
+  transition: none;
+}
+
+/* Pre-animation state (legacy, same as hidden) */
 .caption--pre .caption__text {
   opacity: 0;
   transform: translateY(12px);
