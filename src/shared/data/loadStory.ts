@@ -56,7 +56,6 @@ function flattenScenes(rawScenes: RawScene[]): Scene[] {
           sceneId: `scene-${sceneCounter++}`,
           flowSequence: true,
           isFirstInFlow: flowIndex === 0,
-          panelRestricted: true,
           background: scene.background,
           "left-character": currentLeftCharacter,
           "right-character": currentRightCharacter,
@@ -73,7 +72,6 @@ function flattenScenes(rawScenes: RawScene[]): Scene[] {
             ...flattened,
             type: "input",
             text: f.input,
-            panelRestricted: true, // Input scenes should show characters like other flow scenes
           };
         } else if (f.text) {
           flattened = {
@@ -87,42 +85,16 @@ function flattenScenes(rawScenes: RawScene[]): Scene[] {
         out.push(flattened as Scene);
       });
     } else if (scene.type === "image" && scene.image) {
-      // Create first image scene (no caption)
+      // Create single image scene with caption (if text is present)
       out.push({
         type: "image",
         sceneId: `scene-${sceneCounter++}`,
         image: scene.image,
-        caption: undefined, // No caption on first scene
+        text: scene.text, // Include caption text from the JSON
         background: scene.background,
         flowSequence: false,
         isFirstInFlow: false,
-        panelRestricted: false,
-      });
-
-      // Create second scene as a CaptionScene if there's text
-      if (scene.text) {
-        out.push({
-          type: "caption",
-          sceneId: `scene-${sceneCounter++}`,
-          caption: scene.text,
-          align: "bottom",
-          flowSequence: false,
-          isFirstInFlow: false,
-          hidden: false,
-        });
-      } else {
-        // Create second image scene without caption if no text
-        out.push({
-          type: "image",
-          sceneId: `scene-${sceneCounter++}`,
-          image: scene.image,
-          caption: undefined,
-          background: scene.background,
-          flowSequence: false,
-          isFirstInFlow: false,
-          panelRestricted: false,
-        });
-      }
+      } as Scene);
     } else {
       // Pass-through for any already-flat scene types you might have
       // Add flowSequence and isFirstInFlow properties for background system compatibility

@@ -9,6 +9,11 @@
       "image":"story/dragonFeet.png",
       "text":"I protect my city by searching for clues."
     },
+                {
+      "type":"image",
+      "image":"story/dragonFeet.png",
+      "text":"2"
+    },
     {
       "type": "character-flow",
       "background":"bakery.png",

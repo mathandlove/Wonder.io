@@ -7,46 +7,22 @@ type CaptionProps = {
   align?: "center" | "bottom";
 };
 
-export default function Caption({ text, isActive, direction }: CaptionProps) {
+export default function Caption({ text, isActive, direction, align = 'bottom' }: CaptionProps) {
+  // Determine animation class based on isActive state
+  const animationClass = isActive ? 'caption--animate-in' : 'caption--pre';
 
-
-
-
-  // Determine animation class based on phase and direction
-  /*
-  let animationClass = direction === 'backward' ? "caption--pre-reverse" : "caption--pre";
-  if (phase === 'leaving') {
-    animationClass = direction === 'backward' ? "caption--animate-out-reverse" : "caption--animate-out";
-  } else if (phase === 'entering') {
-    animationClass = "caption--animate-in";
-  }
-    */
+  // Debug logging
+  console.log('Caption render:', { text, isActive, direction, animationClass });
 
   return (
     <div
-      className={[
-        "caption",
-      ].join(" ")}
-      style={{
-        border: '3px solid blue', // Debug border
-        zIndex: 9999, // Force on top
-        display: 'block' // Force display
-      }}
-      aria-hidden={false}
+      className={`caption ${animationClass} ${align === 'center' ? 'caption--center' : ''}`}
+      aria-hidden={!isActive}
+      style={{ border: '2px solid red' }} // Temporary debug border
     >
-      <div className="caption__paper">
-        <p className="caption__text" style={{ color: 'red', fontSize: '24px' }}>{text}</p>
-      </div>
-      <div style={{
-        position: 'absolute',
-        top: '50%',
-        left: '50%',
-        background: 'green',
-        color: 'white',
-        padding: '10px',
-        zIndex: 10000
-      }}>
-        DEBUG: isActive={isActive ? 'YES' : 'NO'}
+      <p className="caption__text">{text}</p>
+      <div style={{ position: 'fixed', top: 10, right: 10, background: 'yellow', padding: '5px', zIndex: 99999 }}>
+        Caption isActive: {isActive ? 'YES' : 'NO'}
       </div>
     </div>
   );

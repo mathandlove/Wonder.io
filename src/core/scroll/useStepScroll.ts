@@ -1,12 +1,18 @@
-// src/hooks/useStepScroll.ts
-import {useEffect, useRef} from 'react';
+/**
+ * useStepScroll - One-scene-at-a-time scroll control
+ *
+ * Intercepts wheel/touch/keyboard events and enforces single-scene transitions.
+ * Prevents native scrolling and implements momentum-free, deliberate navigation.
+ */
+import { useEffect, useRef, useCallback } from 'react';
 
-// Extend DOM interface for experimental scrollend event
 declare global {
   interface HTMLElementEventMap {
     scrollend: Event;
   }
 }
+
+type Direction = 'forward' | 'backward';
 
 type StepScrollOpts = {
   onIndexChange: (nextIndex: number) => void;
@@ -14,18 +20,49 @@ type StepScrollOpts = {
   count: () => number;
   durationMs?: number;
   thresholdPx?: number;
-  isInputFocused?: () => boolean; // returns true if an input/textarea/contenteditable is focused
-  checkContentLocks?: (direction: 'forward' | 'backward', currentIndex: number) => boolean; // returns true if content is locked
+  isInputFocused?: () => boolean;
+  checkContentLocks?: (direction: Direction, currentIndex: number) => boolean;
 };
 
 export function useStepScroll(
   containerRef: React.RefObject<HTMLElement | HTMLDivElement | null>,
-  { onIndexChange, getIndex, count, durationMs = 380, thresholdPx = 60, isInputFocused = () => false, checkContentLocks }: StepScrollOpts
+  {
+    onIndexChange,
+    getIndex,
+    count,
+    durationMs = 380,
+    thresholdPx = 60,
+    isInputFocused = () => false,
+    checkContentLocks
+  }: StepScrollOpts
 ) {
   const animatingRef = useRef(false);
   const touchStartYRef = useRef(0);
   const wheelAccumRef = useRef(0);
   const settleTimerRef = useRef<number | null>(null);
+
+  // Debug state emitter
+  const emitDebug = useCallback((lastEvent: string, lockState?: { isLocked: boolean; reason: string; direction?: 'forward' | 'backward' }) => {
+    const currentIndex = getIndex();
+    const lockedForward = checkContentLocks?.('forward', currentIndex) ?? false;
+    const lockedBackward = checkContentLocks?.('backward', currentIndex) ?? false;
+
+    window.dispatchEvent(new CustomEvent('stepscroll:debug', {
+      detail: {
+        animating: animatingRef.current,
+        wheelAccum: wheelAccumRef.current,
+        currentIndex,
+        isLocked: lockState?.isLocked ?? false,
+        lockReason: lockState?.reason ?? '',
+        lockedForward,
+        lockedBackward,
+        blockDismissActive: false,
+        settleTimerActive: settleTimerRef.current !== null,
+        lastEvent,
+        timestamp: Date.now(),
+      }
+    }));
+  }, [getIndex, checkContentLocks]);
 
   useEffect(() => {
     const el = containerRef.current;
@@ -35,21 +72,29 @@ export function useStepScroll(
     el.style.overscrollBehavior = 'contain';
     el.style.scrollSnapType = 'y mandatory';
 
+    // Emit initial state
+    emitDebug('useStepScroll initialized');
+
+    // ============ CORE FUNCTIONS ============
+
     const scrollToIndex = (idx: number) => {
       const clamped = Math.max(0, Math.min(idx, count() - 1));
       const section = el.querySelectorAll<HTMLElement>('.scene')[clamped];
       if (!section) return;
+
       animatingRef.current = true;
       section.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      emitDebug(`scrollToIndex(${clamped})`);
 
-      // Fallback settle in case scrollend is not fired
+      // Fallback timer in case scrollend doesn't fire
       if (settleTimerRef.current) window.clearTimeout(settleTimerRef.current);
       settleTimerRef.current = window.setTimeout(() => {
         animatingRef.current = false;
-      }, 600); // Match smooth scroll duration to prevent overlapping animations
+        emitDebug('settle timer fired - checking new scene locks');
+      }, 600);
     };
 
-    const checkDomLocks = (direction: 'forward' | 'backward', currentIndex: number): boolean => {
+    const checkDomLocks = (direction: Direction, currentIndex: number): boolean => {
       const sections = el.querySelectorAll<HTMLElement>('.scene');
       const currentSection = sections[currentIndex];
       if (!currentSection) return false;
@@ -58,51 +103,67 @@ export function useStepScroll(
       return currentSection.hasAttribute(lockAttribute);
     };
 
-    const snapRelative = (delta: number) => {
-      if (delta === 0) return;
-
-      const next = getIndex() + (delta > 0 ? 1 : -1);
-      onIndexChange(Math.max(0, Math.min(next, count() - 1)));
-      scrollToIndex(next);
+    const isLocked = (direction: Direction, currentIndex: number): boolean => {
+      const domLocked = checkDomLocks(direction, currentIndex);
+      const contentLocked = checkContentLocks?.(direction, currentIndex) ?? false;
+      return domLocked || contentLocked;
     };
+
+    const attemptTransition = (direction: Direction) => {
+      const currentIndex = getIndex();
+      const locked = isLocked(direction, currentIndex);
+
+      if (locked) {
+        emitDebug(`BLOCKED: ${direction}`, { isLocked: true, reason: 'content lock' });
+        return false; // Blocked
+      }
+
+      // Commit to transition - set flag immediately to block subsequent events
+      animatingRef.current = true;
+
+      const delta = direction === 'forward' ? 1 : -1;
+      const next = currentIndex + delta;
+      const clamped = Math.max(0, Math.min(next, count() - 1));
+
+      emitDebug(`TRANSITION: ${direction} to index ${clamped}`, { isLocked: false, reason: '' });
+      onIndexChange(clamped);
+      scrollToIndex(clamped);
+
+      return true; // Success
+    };
+
+    // ============ EVENT HANDLERS ============
 
     const onWheel = (evt: Event) => {
       const e = evt as WheelEvent;
-      if (isInputFocused()) return; // let inputs scroll
-      // Only vertical intent
+
+      // Allow normal scrolling for inputs
+      if (isInputFocused()) return;
+
+      // Only handle vertical scrolling
       if (Math.abs(e.deltaY) < Math.abs(e.deltaX)) return;
 
+      // Block all scrolling during animation
       if (animatingRef.current) {
         e.preventDefault();
         return;
       }
 
-      // Check locks before accumulating wheel delta
-      const currentIndex = getIndex();
-      const direction = e.deltaY > 0 ? 'forward' : 'backward';
-      const domLocked = checkDomLocks(direction, currentIndex);
-      const contentLocked = checkContentLocks ? checkContentLocks(direction, currentIndex) : false;
-
-      if (domLocked || contentLocked) {
-        e.preventDefault(); // Block all wheel scrolling when locked
-        const reason = domLocked ? 'DOM lock' : 'Content lock';
-
-        // Emit custom event for debugger
-        window.dispatchEvent(new CustomEvent('scroll-blocked', {
-          detail: { direction, currentIndex, reason, domLocked, contentLocked }
-        }));
-        return;
-      }
-
       e.preventDefault(); // Always prevent native scroll
+
+      // Accumulate delta until threshold
       wheelAccumRef.current += e.deltaY;
 
       if (wheelAccumRef.current > thresholdPx) {
         wheelAccumRef.current = 0;
-        snapRelative(+1);
+        emitDebug(`wheel threshold exceeded: forward`);
+        attemptTransition('forward');
       } else if (wheelAccumRef.current < -thresholdPx) {
         wheelAccumRef.current = 0;
-        snapRelative(-1);
+        emitDebug(`wheel threshold exceeded: backward`);
+        attemptTransition('backward');
+      } else {
+        emitDebug(`wheel accumulating: ${wheelAccumRef.current.toFixed(0)}px`);
       }
     };
 
@@ -113,43 +174,36 @@ export function useStepScroll(
       touching = true;
       touchStartYRef.current = e.touches[0].clientY;
     };
+
     const onTouchMove = (evt: Event) => {
       const e = evt as TouchEvent;
       if (!touching) return;
-      if (animatingRef.current) { e.preventDefault(); return; }
+
+      if (animatingRef.current) {
+        e.preventDefault();
+        return;
+      }
 
       const dy = touchStartYRef.current - e.touches[0].clientY;
+
       if (Math.abs(dy) > thresholdPx) {
-        const currentIndex = getIndex();
-        const direction = dy > 0 ? 'forward' : 'backward';
-        const domLocked = checkDomLocks(direction, currentIndex);
-        const contentLocked = checkContentLocks ? checkContentLocks(direction, currentIndex) : false;
-
-        if (domLocked || contentLocked) {
-          e.preventDefault(); // Block touch scrolling when locked
-          touching = false;
-          const reason = domLocked ? 'DOM lock' : 'Content lock';
-
-          // Emit custom event for debugger
-          window.dispatchEvent(new CustomEvent('scroll-blocked', {
-            detail: { direction, currentIndex, reason, domLocked, contentLocked }
-          }));
-          return;
-        }
-
         e.preventDefault();
         touching = false;
-        snapRelative(dy > 0 ? +1 : -1);
+        attemptTransition(dy > 0 ? 'forward' : 'backward');
       }
     };
-    const onTouchEnd = () => { touching = false; };
+
+    const onTouchEnd = () => {
+      touching = false;
+    };
 
     const onKeyDown = (evt: Event) => {
       const e = evt as KeyboardEvent;
       if (isInputFocused()) return;
       if (animatingRef.current) return;
 
-      let direction: 'forward' | 'backward' | null = null;
+      let direction: Direction | null = null;
+
       if (e.key === 'ArrowDown' || e.key === 'PageDown' || e.key === ' ') {
         direction = 'forward';
       } else if (e.key === 'ArrowUp' || e.key === 'PageUp') {
@@ -157,38 +211,22 @@ export function useStepScroll(
       }
 
       if (direction) {
-        const currentIndex = getIndex();
-        const domLocked = checkDomLocks(direction, currentIndex);
-        const contentLocked = checkContentLocks ? checkContentLocks(direction, currentIndex) : false;
-
-        if (domLocked || contentLocked) {
-          e.preventDefault(); // Block keyboard scrolling when locked
-          const reason = domLocked ? 'DOM lock' : 'Content lock';
-
-          // Emit custom event for debugger
-          window.dispatchEvent(new CustomEvent('scroll-blocked', {
-            detail: { direction, currentIndex, reason, domLocked, contentLocked }
-          }));
-          return;
-        }
-
         e.preventDefault();
-        snapRelative(direction === 'forward' ? +1 : -1);
+        attemptTransition(direction);
       }
     };
 
     const onScrollEnd = () => {
-      // Some browsers fire this, many do not yet
       animatingRef.current = false;
     };
 
-    // listeners (critical: passive false where we call preventDefault)
+    // ============ EVENT LISTENERS ============
+
     el.addEventListener('wheel', onWheel, { passive: false });
     el.addEventListener('touchstart', onTouchStart, { passive: true });
     el.addEventListener('touchmove', onTouchMove, { passive: false });
     el.addEventListener('touchend', onTouchEnd, { passive: true });
     el.addEventListener('keydown', onKeyDown, { passive: false });
-    // scrollend is experimental, safe to add
     el.addEventListener('scrollend', onScrollEnd);
 
     return () => {
@@ -200,5 +238,5 @@ export function useStepScroll(
       el.removeEventListener('scrollend', onScrollEnd);
       if (settleTimerRef.current) window.clearTimeout(settleTimerRef.current);
     };
-  }, [containerRef, onIndexChange, getIndex, count, durationMs, thresholdPx, isInputFocused, checkContentLocks]);
+  }, [containerRef, onIndexChange, getIndex, count, durationMs, thresholdPx, isInputFocused, checkContentLocks, emitDebug]);
 }

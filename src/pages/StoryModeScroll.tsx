@@ -2,7 +2,7 @@
  * Main story mode component that renders a story as scrollable scenes.
  * Each scene gets its own 100vh section with snap-scroll behavior.
  */
-import React, { useMemo, useRef, useState, useLayoutEffect } from "react";
+import React, { useMemo, useState } from "react";
 import { useStory } from '@shared/hooks/useStory';
 import { FlowLayout } from '@features/flow-layout/FlowLayout';
 import { SceneRenderer } from '@shared/components/SceneRenderer';
@@ -14,7 +14,7 @@ import { SpeechBubbleOrchestrator } from '@features/chat/orchestrators/SpeechBub
 import { ImageSceneOrchestrator } from '@features/image-scene/ImageSceneOrchestrator';
 import { injectPanelMetaFromFlows } from '@features/characters/adapters/injectPanelMetaFromFlows';
 import { useSceneNavigation } from '@core/navigation/useSceneNavigation';
-import { useStepScroll } from '@core/scroll/useStepScroll';
+import { ScrollControl } from '@core/scroll/ScrollControl';
 import { CharacterAnimationProvider } from '@features/characters-context/CharacterAnimationContext';
 import type { Scene } from '@core/types/scene';
 import type { QuestHook } from '@core/quest/QuestManager';
@@ -42,6 +42,7 @@ import { ChatOrchestrator } from '@features/chat/orchestrators/ChatOrchestrator'
 import { SceneBusProvider } from '@core/bus/SceneBusProvider'
 import { sceneBus } from '@core/bus/sceneBus'
 import { useDialogue } from '@features/chat/context/useChatDialogue'
+import { StepScrollDebug } from '@core/scroll/StepScrollDebug'
 // Path to the story JSON bundle we want to load. In demo mode we keep this fixed
 // so the experience is deterministic for the presentation.
 
@@ -76,7 +77,7 @@ const QuestDebugProbe: React.FC = () => {
 };
 
 // StoryModeScrollV2 is the main screen that renders scenes as full-screen snap sections
-const StoryModeScrollV2: React.FC = () => {
+const StoryModeScroll: React.FC = () => {
   return <StoryContent />;
 };
 
@@ -94,6 +95,10 @@ const StoryContent: React.FC = () => {
   // Derive a stable array of scenes from the loaded story
   const initialScenes = useMemo(() => story?.scenes || [], [story?.scenes]);
 
+  // Use navigation scenes (already processed, just filter for visibility)
+  // Don't re-process with injectPanelMetaFromFlows as it breaks character metadata
+  const scenes = navigationScenes;
+
   // Inject panel metadata from flow-based authoring
   const scenesWithPanelMeta = useMemo(() => {
     const processed = injectPanelMetaFromFlows(initialScenes);
@@ -105,31 +110,10 @@ const StoryContent: React.FC = () => {
   // Handle scene navigation updates
   useSceneNavigation({ initialScenes: scenesWithPanelMeta, setScenes });
 
-  // Handle scroll management with step scroll system
-  const containerRef = useRef<HTMLDivElement>(null);
+  // Scene index state
   const [index, setIndex] = useState(0);
 
-  // Step scroll integration
-  const getIndex = () => {
-    const el = containerRef.current;
-    if (!el) return 0;
-    const y = el.scrollTop;
-    let best = 0, bestDist = Infinity;
-    const sections = el.querySelectorAll<HTMLElement>('.scene');
-    sections.forEach((s, i) => {
-      const dist = Math.abs(s.offsetTop - y);
-      if (dist < bestDist) { bestDist = dist; best = i; }
-    });
-    return best;
-  };
-
-  const isInputFocused = () => {
-    const a = document.activeElement as HTMLElement | null;
-    if (!a) return false;
-    const tag = a.tagName.toLowerCase();
-    return tag === 'input' || tag === 'textarea' || a.isContentEditable;
-  };
-
+  // Handle scene index changes - emit bus events and update navigation
   const handleIndexChange = (nextIndex: number) => {
     // Emit scene bus events for enter/leave
     if (nextIndex !== index) {
@@ -152,49 +136,7 @@ const StoryContent: React.FC = () => {
     setCurrentIndex(nextIndex);
   };
 
-  // Check content-level locks for input scenes
-  const checkContentLocks = (direction: 'forward' | 'backward', currentIndex: number): boolean => {
-    const currentScene = scenes[currentIndex];
-    if (!currentScene) return false;
-
-    // Only check locks for input scenes
-    if (currentScene.type === 'input') {
-      if (direction === 'forward') {
-        // Block forward navigation when:
-        // - Player turn is active (input needed)
-        // - System is waiting for response
-        // - Quest is still active
-        const shouldLock = isPlayerTurn || waiting || questState === 'active';
-        return shouldLock;
-      }
-    }
-
-    return false; // No content locks for other scene types or backward navigation
-  };
-
-
-  useStepScroll(containerRef, {
-    onIndexChange: handleIndexChange,
-    getIndex,
-    count: () => scenes.length,
-    durationMs: 380,
-    thresholdPx: 60, // Reasonable threshold - prevents accidental scene changes
-    isInputFocused,
-    checkContentLocks,
-  });
-
-  // Ensure focus lands on the active scene for accessibility
-  useLayoutEffect(() => {
-    const el = containerRef.current;
-    const node = el?.querySelectorAll<HTMLElement>('.scene')[index];
-    node?.setAttribute('tabindex', '-1');
-    node?.focus({ preventScroll: true });
-  }, [index]);
-
-  // Use navigation scenes (already processed, just filter for visibility)
-  // Don't re-process with injectPanelMetaFromFlows as it breaks character metadata
-  const scenes = navigationScenes;
-
+  // Note: Focus management is now handled within ScrollControl component
 
   // Debug: Expose scene hiding functions globally for testing
   React.useEffect(() => {
@@ -227,80 +169,78 @@ const StoryContent: React.FC = () => {
       <QuestProvider>
         <PageFactoryProvider>
           <CharacterAnimationProvider>
-        <div
-          ref={containerRef}
-          className="story-scroll"
-          tabIndex={0}
-          style={{
-            height: '100vh',
-            overflowY: 'auto',
-            scrollSnapType: 'y mandatory',
-            overscrollBehavior: 'contain',
-            WebkitOverflowScrolling: 'touch',
-          }}
-        >
-        {/* Layer 1: Hybrid background system */}
-        <BackgroundOrchestrator storyId="gingerbread" storyContent={scenes} currentIndex={index} />
-
-        {/* Layer 1.5: Character panels (fixed, independent of scroll flow) */}
-        <CharacterOrchestrator storyId="gingerbread" scenes={scenes} currentIndex={index} />
-
-        {/* Layer 1.6: Image scenes (fixed, independent of scroll flow) */}
-        <ImageSceneOrchestrator scenes={scenes} index={index} />
-
-        {/* Layer 1.7: Image captions - now rendered within ImageScene components */}
-
-        {/* Layer 1.8: Speech bubbles (scroll-based with delayed transitions) */}
-        <SpeechBubbleOrchestrator scenes={scenes} currentIndex={index} />
-
-        {/* Layer 1.9: Chat system (shows on lastInFlow scenes) */}
-        <ChatOrchestrator />
-
-        {/* Layer 2: Document flow content with scroll snap targets */}
-        <div style={{ position: "relative" }}>
-          {scenes.map((scene: Scene, i: number) => {
-            // Use stable ID if available, fallback to index for original scenes
-            const stableKey = (scene as SceneWithId).sceneId || `original-${i}`;
-
-            // Hidden scenes are already filtered out by NavigationContext,
-            // but add safety check and zero-height container if somehow present
-            if (scene.hidden) {
-              return (
-                <div
-                  key={stableKey}
-                  style={{ height: 0, overflow: 'hidden', visibility: 'hidden' }}
-                />
-              );
-            }
-
-            return (
-            <div
-              key={stableKey}
-              className="scene story-scene-container"
-              data-section-index={i}
-              style={{
-                minHeight: '100vh',
-                scrollSnapAlign: 'start',
-                scrollSnapStop: 'always',
-                outline: 'none',
-              }}
+            {/* Unified scroll control component */}
+            <ScrollControl
+              scenes={scenes}
+              currentIndex={index}
+              onIndexChange={handleIndexChange}
+              isPlayerTurn={isPlayerTurn}
+              waiting={waiting}
+              questState={questState}
+              className="story-scroll"
             >
-              <FlowLayout
-                keyId={i.toString()}
-                panelRestricted={(scene as unknown as { panelRestricted?: boolean })?.panelRestricted ?? false}
-              >
-                <SceneContentWithNavigation scene={scene} sceneIndex={i} />
-              </FlowLayout>
-            </div>
-            );
-          })}
-        </div>
+              {/* Layer 1: Hybrid background system */}
+              <BackgroundOrchestrator storyId="gingerbread" storyContent={scenes} currentIndex={index} />
 
-        </div>
+              {/* Layer 1.5: Character panels (fixed, independent of scroll flow) */}
+              <CharacterOrchestrator storyId="gingerbread" scenes={scenes} currentIndex={index} />
+
+              {/* Layer 1.6: Image scenes (fixed, independent of scroll flow) */}
+              <ImageSceneOrchestrator scenes={scenes} index={index} />
+
+              {/* Layer 1.7: Image captions - now rendered within ImageScene components */}
+
+              {/* Layer 1.8: Speech bubbles (scroll-based with delayed transitions) */}
+              <SpeechBubbleOrchestrator scenes={scenes} currentIndex={index} />
+
+              {/* Layer 1.9: Chat system (shows on lastInFlow scenes) */}
+              <ChatOrchestrator />
+
+              {/* Layer 2: Document flow content with scroll snap targets */}
+              <div style={{ position: "relative" }}>
+                {scenes.map((scene: Scene, i: number) => {
+                  // Use stable ID if available, fallback to index for original scenes
+                  const stableKey = (scene as SceneWithId).sceneId || `original-${i}`;
+
+                  // Hidden scenes are already filtered out by NavigationContext,
+                  // but add safety check and zero-height container if somehow present
+                  if (scene.hidden) {
+                    return (
+                      <div
+                        key={stableKey}
+                        style={{ height: 0, overflow: 'hidden', visibility: 'hidden' }}
+                      />
+                    );
+                  }
+
+                  return (
+                    <div
+                      key={stableKey}
+                      className="scene story-scene-container"
+                      data-section-index={i}
+                      style={{
+                        minHeight: '100vh',
+                        scrollSnapAlign: 'start',
+                        scrollSnapStop: 'always',
+                        outline: 'none',
+                      }}
+                    >
+                      <FlowLayout
+                        keyId={i.toString()}
+                        panelRestricted={(scene as unknown as { panelRestricted?: boolean })?.panelRestricted ?? false}
+                      >
+                        <SceneContentWithNavigation scene={scene} sceneIndex={i} />
+                      </FlowLayout>
+                    </div>
+                  );
+                })}
+              </div>
+            </ScrollControl>
           </CharacterAnimationProvider>
         </PageFactoryProvider>
         <QuestDebugProbe />
         <UIOverlayRoot />
+        <StepScrollDebug />
       </QuestProvider>
     </SceneBusProvider>
   );
@@ -334,4 +274,4 @@ const SceneContentWithNavigation = React.memo(function SceneContentWithNavigatio
 
 // Default export so the router or parent can render this screen
 // (kept simple for easy wiring during the demo)
-export default StoryModeScrollV2;
+export default StoryModeScroll;

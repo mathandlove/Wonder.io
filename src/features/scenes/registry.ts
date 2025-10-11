@@ -13,7 +13,6 @@ import ImageScene from "./views/ImageScene";
 import FullScene from "./views/FullScene";
 import TextScene from "./views/TextScene";
 import InteractiveBubbleScene from "./views/InteractiveBubbleScene";
-import CaptionScene from "./views/CaptionScene";
 
 export type SceneProps<T extends Scene = Scene> = {
   scene: T;
@@ -29,6 +28,6 @@ export const sceneRegistry: Record<string, ComponentType<SceneProps>> = {
   full: FullScene as ComponentType<SceneProps>,
   text: TextScene as ComponentType<SceneProps>,
   "interactive-bubble": InteractiveBubbleScene as ComponentType<SceneProps>,
-  caption: CaptionScene as ComponentType<SceneProps>,
+  // caption: removed - captions are now handled within ImageScene
   // character-flow is handled separately or not implemented yet
 };

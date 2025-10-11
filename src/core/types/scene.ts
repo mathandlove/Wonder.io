@@ -56,7 +56,8 @@ export type ImageScene = {
   type: "image";
   sceneId?: string;
   image: string;
-  caption?: string;
+  text?: string; // Caption text (legacy property name)
+  caption?: string; // Alternative caption property
   background?: string;
   flowSequence?: boolean;
   isFirstInFlow?: boolean;

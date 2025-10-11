@@ -11,8 +11,20 @@ import { useSceneActive } from "../hooks/useSceneActive";
 
 export default function ImageScene({ scene }: SceneProps<ImageScene>) {
   const { isActive, direction } = useSceneActive(scene.sceneId || '');
-  const hasCaption = scene.text && scene.text.trim() !== '';
+  // Support both 'text' (legacy) and 'caption' properties
+  const captionText = scene.text || scene.caption;
+  const hasCaption = captionText && captionText.trim() !== '';
 
+  // Debug logging
+  console.log('ImageScene render:', {
+    sceneId: scene.sceneId,
+    hasCaption,
+    text: scene.text,
+    caption: scene.caption,
+    captionText,
+    isActive,
+    direction
+  });
 
   return (
     <div style={{
@@ -25,20 +37,22 @@ export default function ImageScene({ scene }: SceneProps<ImageScene>) {
     }}>
       <img
         src={resolveStoryImage(scene.image)}
-        alt={scene.caption || scene.text || "Story image"}
+        alt={scene.caption || "Story image"}
         style={{
           maxWidth: '100%',
           maxHeight: '100%',
           objectFit: 'contain'
         }}
       />
-      {/* Always show caption - hasCaption check was hiding them */}
-      <Caption
-        text={scene.text || "Default caption text"}
-        isActive={true}
-        direction={direction}
-        align="bottom"
-      />
+      {/* Show caption when scene has caption text */}
+      {hasCaption && (
+        <Caption
+          text={captionText!}
+          isActive={isActive}
+          direction={direction}
+          align="bottom"
+        />
+      )}
     </div>
   );
 }
