@@ -38,12 +38,22 @@ export function useContentLocks({ scenes, isPlayerTurn, waiting, questState, get
 
     // === INPUT SCENES ===
     if (currentScene.type === 'input') {
-      return isPlayerTurn || waiting;
+      // Only lock forward scroll when waiting for input
+      // Always allow backward scroll
+      if (direction === 'forward') {
+        return isPlayerTurn || waiting;
+      }
+      return false;
     }
 
     // === QUEST SCENES ===
     if (currentScene.type === 'quest') {
-      return questState === 'active';
+      // Only lock forward scroll when quest is active
+      // Always allow backward scroll
+      if (direction === 'forward') {
+        return questState === 'active';
+      }
+      return false;
     }
 
     // === IMAGE SCENES WITH CAPTIONS ===
