@@ -6,11 +6,11 @@ import React, { useMemo, useRef, useState, useLayoutEffect } from "react";
 import { useStory } from "./hooks/useStory";
 import { FlowLayout } from "./components/FlowLayout";
 import { SceneRenderer } from "./components/SceneRenderer";
-import { PageFactoryProvider } from "./components/chat/PageFactory";
+import { PageFactoryProvider } from "./chat/orchestrators/PageFactory";
 import { useNavigation } from "./context/NavigationContext";
 import { BackgroundOrchestrator } from "./background/BackgroundOrchestrator";
 import { CharacterOrchestrator } from "./characters/CharacterOrchestrator";
-import { SpeechBubbleOrchestrator } from "./components/chat/SpeechBubbleOrchestrator";
+import { SpeechBubbleOrchestrator } from "./chat/orchestrators/SpeechBubbleOrchestrator";
 import { ImageSceneOrchestrator } from "./components/image/ImageSceneOrchestrator";
 import { injectPanelMetaFromFlows } from "./characters/adapters/injectPanelMetaFromFlows";
 import { useSceneNavigation } from "./hooks/useSceneNavigation";
@@ -38,10 +38,10 @@ declare global {
 }
 import { QuestProvider, useQuest } from "./quest/QuestManager"
 import { UIOverlayRoot } from "./components/UIOverlayRoot"
-import { ChatOrchestrator } from "./components/chat/ChatOrchestrator"
+import { ChatOrchestrator } from "./chat/orchestrators/ChatOrchestrator"
 import { SceneBusProvider } from "./scenes/registry/SceneBusProvider"
 import { sceneBus } from "./scenes/registry/sceneBus"
-import { useDialogue } from "./chat/ChatDialogueContext"
+import { useDialogue } from "./chat/context/ChatDialogueContext"
 // Path to the story JSON bundle we want to load. In demo mode we keep this fixed
 // so the experience is deterministic for the presentation.
 

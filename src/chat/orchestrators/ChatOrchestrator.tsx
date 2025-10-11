@@ -5,8 +5,8 @@
  */
 import React, { useEffect, useState } from 'react';
 import { useNavigation } from '../../context/NavigationContext';
-import { useDialogue as useChatDialogue } from '../../chat/ChatDialogueContext';
-import { ChatLayer } from '../../chat/ChatLayer';
+import { useDialogue as useChatDialogue } from '../context/ChatDialogueContext';
+import { ChatLayer } from '../ChatLayer';
 import type { Scene } from '../../types/scene';
 
 // Extended scene type that includes the dynamically added lastInFlow property

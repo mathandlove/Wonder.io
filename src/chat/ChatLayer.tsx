@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { ChatComposer } from './ChatComposer';
-import TurnCueBanner from '../components/chat/TurnCueBanner';
-import { useDialogue } from './ChatDialogueContext';
+import TurnCueBanner from './components/TurnCueBanner';
+import { useDialogue } from './context/ChatDialogueContext';
 import { useNavigation } from '../context/NavigationContext';
 import './Chat.css';
 
@@ -22,7 +22,7 @@ export const ChatLayer: React.FC<ChatLayerProps> = ({ visible, sceneIndex, onHid
     suggestions
   } = useDialogue();
 
-  const { next } = useNavigation();
+  const { goToNext } = useNavigation();
   const [exitingChat, setExitingChat] = useState(false);
 
 
@@ -31,7 +31,7 @@ export const ChatLayer: React.FC<ChatLayerProps> = ({ visible, sceneIndex, onHid
 
     // Animate out, then navigate
     setTimeout(() => {
-      next();
+      goToNext();
       if (onHide) {
         onHide();
       }

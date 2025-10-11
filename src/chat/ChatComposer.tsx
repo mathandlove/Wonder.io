@@ -1,7 +1,7 @@
 import React, { useState, useRef, useCallback, useEffect } from 'react';
-import { useDialogue } from './ChatDialogueContext';
+import { useDialogue } from './context/ChatDialogueContext';
 import { useDialogue as useNewDialogue } from '../dialogue/DialogueContext';
-import { usePageFactory } from '../components/PageFactory';
+import { usePageFactory } from './orchestrators/PageFactory';
 import NextButton from '../components/ui/NextButton';
 import { Toast, useToast } from '../components/ui/Toast';
 import { Recording } from '../recording/RecordingAPI';

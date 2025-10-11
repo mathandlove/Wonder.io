@@ -5,7 +5,7 @@ import ReactDOM from 'react-dom/client'
 import StoryModeScrollV2 from './StoryModeScrollV2'
 import { DialogueProvider } from "./dialogue/DialogueContext"
 import { NavigationProvider } from "./context/NavigationContext"
-import { ChatDialogueProvider } from "./chat/ChatDialogueContext"
+import { ChatDialogueProvider } from "./chat/context/ChatDialogueContext"
 import { RecordingProvider } from "./recording/RecordingContext"
 
 

@@ -1,6 +1,6 @@
-import { useDialogue } from "../dialogue/DialogueContext";
-import { useNavigation } from "../context/NavigationContext";
-import type { Message } from "../dialogue/types";
+import { useDialogue } from "../../dialogue/DialogueContext";
+import { useNavigation } from "../../context/NavigationContext";
+import type { Message } from "../../dialogue/types";
 import "./BubbleOrchestrator.css";
 
 interface BubbleOrchestratorProps {

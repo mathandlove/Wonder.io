@@ -1,5 +1,5 @@
-import React, { createContext, useContext, useState, useCallback, ReactNode } from 'react';
-import { useDialogue as useOldDialogue } from '../dialogue/DialogueContext';
+import React, { createContext, useContext, useState, useCallback, type ReactNode } from 'react';
+import { useDialogue as useOldDialogue } from '../../dialogue/DialogueContext';
 
 export interface Message {
   id: string;

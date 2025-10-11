@@ -1,6 +1,6 @@
 import { useRef, useState } from "react";
 import { useDialogue } from "../dialogue/DialogueContext";
-import { usePageFactory } from "../components/chat/PageFactory";
+import { usePageFactory } from "./orchestrators/PageFactory";
 
 // Types for the Web Speech API
 type SpeechRecognitionConstructor = new () => SpeechRecognitionInterface;

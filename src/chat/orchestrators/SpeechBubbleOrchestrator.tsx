@@ -4,8 +4,8 @@
  */
 import React, { useMemo } from 'react';
 import { useScrollOffset } from '../../hooks/useScrollOffset';
-import { CardboardBubble } from './CardboardBubble';
-import { useDialogue } from '../../chat/ChatDialogueContext';
+import { CardboardBubble } from '../components/CardboardBubble';
+import { useDialogue } from '../context/ChatDialogueContext';
 import { useDialogue as useRecordingDialogue } from '../../dialogue/DialogueContext';
 import { useRecording } from '../../recording/RecordingContext';
 import type { Scene, CharacterScene, InteractiveBubbleScene, InputScene } from '../../types/scene';
