@@ -13,9 +13,13 @@ import type { Scene } from '@core/types/scene';
 // Runtime state for image scenes with captions
 export type CaptionState = 'hidden' | 'showing' | 'dismissed';
 
+// Runtime state for input scenes
+export type InputState = 'idle' | 'recording' | 'waiting' | 'converting';
+
 // Runtime state for a scene (can be extended for other scene types)
 export interface SceneRuntimeState {
   captionState?: CaptionState;
+  inputState?: InputState;
   // Future: other runtime flags like skipFlag, completionState, etc.
 }
 
@@ -31,6 +35,15 @@ export interface SceneOrchestratorHook {
 
   // Update caption state (for future manual control)
   setCaptionState: (sceneId: string, state: CaptionState) => void;
+
+  // Get input state specifically (convenience accessor)
+  getInputState: (sceneId: string) => InputState | undefined;
+
+  // Update input state
+  setInputState: (sceneId: string, state: InputState) => void;
+
+  // Dialogue-to-scene conversion orchestration
+  convertDialogueToScenes: (playerMessageId: string, npcMessageId: string) => Promise<void>;
 }
 
 interface UseSceneOrchestratorParams {
@@ -66,6 +79,22 @@ export function useSceneOrchestrator({
       captionState: state,
     });
     console.log(`🎯 setCaptionState: ${sceneId} → ${state}`, stateMapRef.current.get(sceneId));
+    forceUpdate({}); // Trigger re-render so components see the new state
+  }, []);
+
+  // Get input state specifically
+  const getInputState = useCallback((sceneId: string): InputState | undefined => {
+    return stateMapRef.current.get(sceneId)?.inputState;
+  }, []);
+
+  // Set input state
+  const setInputState = useCallback((sceneId: string, state: InputState) => {
+    const existing = stateMapRef.current.get(sceneId) || {};
+    stateMapRef.current.set(sceneId, {
+      ...existing,
+      inputState: state,
+    });
+    console.log(`🎯 setInputState: ${sceneId} → ${state}`, stateMapRef.current.get(sceneId));
     forceUpdate({}); // Trigger re-render so components see the new state
   }, []);
 
@@ -121,33 +150,62 @@ export function useSceneOrchestrator({
     };
   }, [scenes, getCaptionState, setCaptionState]);
 
-  // Initialize caption states when scenes change
+  // Initialize caption and input states when scenes change
   useEffect(() => {
-    console.log('🔄 Initializing caption states for', scenes.length, 'scenes');
+    console.log('🔄 Initializing scene states for', scenes.length, 'scenes');
     let needsUpdate = false;
 
     scenes.forEach((scene, index) => {
-      if (scene.type !== 'image') return;
+      const sceneWithId = scene as Scene & { sceneId?: string; caption?: string; text?: string };
+      const sceneId = sceneWithId.sceneId;
 
-      const imageScene = scene as Scene & { caption?: string; text?: string; sceneId?: string };
-      const captionText = imageScene.caption || imageScene.text;
-      const sceneId = imageScene.sceneId;
-
-      console.log(`  Scene ${index}:`, { type: scene.type, sceneId, hasCaption: !!captionText });
-
-      // Only initialize if scene has caption and sceneId
-      if (!captionText || !captionText.trim() || !sceneId) {
-        console.log(`  ⚠️ Skipping scene ${index}: missing caption or sceneId`);
+      // Skip scenes without sceneId
+      if (!sceneId) {
+        console.log(`  ⚠️ Skipping scene ${index}: no sceneId`);
         return;
       }
 
-      // Initialize to 'hidden' if not already set
-      if (!stateMapRef.current.has(sceneId)) {
-        stateMapRef.current.set(sceneId, { captionState: 'hidden' });
-        console.log(`  ✅ Initialized caption state for ${sceneId}: hidden`);
-        needsUpdate = true;
-      } else {
-        console.log(`  ℹ️ Scene ${sceneId} already has state:`, stateMapRef.current.get(sceneId));
+      // Initialize IMAGE scenes with caption state
+      if (scene.type === 'image') {
+        const captionText = sceneWithId.caption || sceneWithId.text;
+
+        console.log(`  Scene ${index}:`, { type: scene.type, sceneId, hasCaption: !!captionText });
+
+        // Only initialize if scene has caption
+        if (captionText && captionText.trim()) {
+          // Initialize to 'hidden' if not already set
+          if (!stateMapRef.current.has(sceneId)) {
+            stateMapRef.current.set(sceneId, { captionState: 'hidden' });
+            console.log(`  ✅ Initialized caption state for ${sceneId}: hidden`);
+            needsUpdate = true;
+          } else if (!stateMapRef.current.get(sceneId)?.captionState) {
+            const existing = stateMapRef.current.get(sceneId) || {};
+            stateMapRef.current.set(sceneId, { ...existing, captionState: 'hidden' });
+            console.log(`  ✅ Added caption state to existing scene ${sceneId}: hidden`);
+            needsUpdate = true;
+          } else {
+            console.log(`  ℹ️ Image scene ${sceneId} already has caption state:`, stateMapRef.current.get(sceneId));
+          }
+        }
+      }
+
+      // Initialize INPUT scenes with idle state
+      if (scene.type === 'input') {
+        console.log(`  Scene ${index}:`, { type: scene.type, sceneId });
+
+        // Initialize to 'idle' if not already set
+        if (!stateMapRef.current.has(sceneId)) {
+          stateMapRef.current.set(sceneId, { inputState: 'idle' });
+          console.log(`  ✅ Initialized input state for ${sceneId}: idle`);
+          needsUpdate = true;
+        } else if (!stateMapRef.current.get(sceneId)?.inputState) {
+          const existing = stateMapRef.current.get(sceneId) || {};
+          stateMapRef.current.set(sceneId, { ...existing, inputState: 'idle' });
+          console.log(`  ✅ Added input state to existing scene ${sceneId}: idle`);
+          needsUpdate = true;
+        } else {
+          console.log(`  ℹ️ Input scene ${sceneId} already has input state:`, stateMapRef.current.get(sceneId));
+        }
       }
     });
     console.log('📊 Final state map:', Array.from(stateMapRef.current.entries()));
@@ -159,9 +217,34 @@ export function useSceneOrchestrator({
     }
   }, [scenes]);
 
+  // Orchestrate conversion from dialogue messages to permanent scenes
+  const convertDialogueToScenes = useCallback(async (playerMessageId: string, npcMessageId: string) => {
+    console.log('🎬 SceneOrchestrator: Starting dialogue-to-scene conversion', {
+      playerMessageId,
+      npcMessageId
+    });
+
+    // TODO: Implementation steps:
+    // 1. Get player and NPC messages from DialogueContext
+    // 2. Create 3 new scenes:
+    //    - CharacterScene with player message (left side)
+    //    - CharacterScene with NPC response (right side)
+    //    - New InputScene for next turn
+    // 3. Insert scenes after the current interactive-bubble scene
+    // 4. Mark messages as 'converting' in DialogueContext
+    // 5. Update SceneManager with new scenes
+    // 6. Navigate to NPC scene
+    // 7. Mark messages as 'converted' in DialogueContext
+
+    console.log('⚠️ convertDialogueToScenes: Not yet implemented');
+  }, []);
+
   return {
     getSceneState,
     getCaptionState,
     setCaptionState,
+    getInputState,
+    setInputState,
+    convertDialogueToScenes,
   };
 }

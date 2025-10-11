@@ -1,10 +1,17 @@
 import React, { createContext, useContext, useReducer, useCallback } from "react";
-import type { Message } from "./types";
+import type { Message, ConversationTurn } from "./types";
 import { newId, nowIso } from "./types";
 
 type State = {
   messagesById: Record<string, Message>;
   orderByScene: Record<string, string[]>;  // sceneId -> [messageId...]
+  conversationTurns: ConversationTurn[];   // Tracks player-NPC pairs ready for scene conversion
+};
+
+const initialState: State = {
+  messagesById: {},
+  orderByScene: {},
+  conversationTurns: []
 };
 
 type BeginRecording = { type: 'BEGIN_RECORDING'; sceneId: string; id: string };
@@ -12,13 +19,12 @@ type UpdateRecording = { type: 'UPDATE_RECORDING'; id: string; partialText: stri
 type EndRecording = { type: 'END_RECORDING'; id: string; finalText: string };
 type AppendNpc = { type: 'APPEND_NPC'; sceneId: string; id: string; text: string };
 type SetStatus = { type: 'SET_STATUS'; id: string; status: Message['status'] };
+type StartConversion = { type: 'START_CONVERSION'; playerMessageId: string; npcMessageId: string };
+type CompleteConversion = { type: 'COMPLETE_CONVERSION'; playerMessageId: string; npcMessageId: string };
 
-type Action = BeginRecording | UpdateRecording | EndRecording | AppendNpc | SetStatus;
-
-const initialState: State = { messagesById: {}, orderByScene: {} };
+type Action = BeginRecording | UpdateRecording | EndRecording | AppendNpc | SetStatus | StartConversion | CompleteConversion;
 
 function reducer(state: State, action: Action): State {
-
   switch (action.type) {
     case 'BEGIN_RECORDING': {
       const id = action.id;
@@ -29,7 +35,8 @@ function reducer(state: State, action: Action): State {
       const scene = state.orderByScene[action.sceneId] ?? [];
       const newState = {
         messagesById: { ...state.messagesById, [id]: msg },
-        orderByScene: { ...state.orderByScene, [action.sceneId]: [...scene, id] }
+        orderByScene: { ...state.orderByScene, [action.sceneId]: [...scene, id] },
+        conversationTurns: state.conversationTurns
       };
       return newState;
     }
@@ -64,7 +71,8 @@ function reducer(state: State, action: Action): State {
       const scene = state.orderByScene[action.sceneId] ?? [];
       return {
         messagesById: { ...state.messagesById, [id]: msg },
-        orderByScene: { ...state.orderByScene, [action.sceneId]: [...scene, id] }
+        orderByScene: { ...state.orderByScene, [action.sceneId]: [...scene, id] },
+        conversationTurns: state.conversationTurns
       };
     }
     case 'SET_STATUS': {
@@ -73,6 +81,48 @@ function reducer(state: State, action: Action): State {
       return {
         ...state,
         messagesById: { ...state.messagesById, [action.id]: { ...prev, status: action.status, ts: nowIso() } }
+      };
+    }
+    case 'START_CONVERSION': {
+      const playerMsg = state.messagesById[action.playerMessageId];
+      const npcMsg = state.messagesById[action.npcMessageId];
+      if (!playerMsg || !npcMsg) return state;
+
+      // Create conversation turn to track this pair
+      const turn: ConversationTurn = {
+        playerMessageId: action.playerMessageId,
+        npcMessageId: action.npcMessageId,
+        sceneId: playerMsg.sceneId
+      };
+
+      return {
+        ...state,
+        messagesById: {
+          ...state.messagesById,
+          [action.playerMessageId]: { ...playerMsg, status: 'converting', ts: nowIso() },
+          [action.npcMessageId]: { ...npcMsg, status: 'converting', ts: nowIso() }
+        },
+        conversationTurns: [...state.conversationTurns, turn]
+      };
+    }
+    case 'COMPLETE_CONVERSION': {
+      const playerMsg = state.messagesById[action.playerMessageId];
+      const npcMsg = state.messagesById[action.npcMessageId];
+      if (!playerMsg || !npcMsg) return state;
+
+      // Remove this turn from pending conversions
+      const updatedTurns = state.conversationTurns.filter(
+        turn => turn.playerMessageId !== action.playerMessageId || turn.npcMessageId !== action.npcMessageId
+      );
+
+      return {
+        ...state,
+        messagesById: {
+          ...state.messagesById,
+          [action.playerMessageId]: { ...playerMsg, status: 'converted', ts: nowIso() },
+          [action.npcMessageId]: { ...npcMsg, status: 'converted', ts: nowIso() }
+        },
+        conversationTurns: updatedTurns
       };
     }
     default: return state;
@@ -96,16 +146,31 @@ function useDialogueValue() {
   };
 
   const endRecording = async (id: string, finalText: string) => {
+    // Get sceneId BEFORE dispatching, to avoid stale closure
+    const sceneId = state.messagesById[id]?.sceneId;
+    if (!sceneId) {
+      console.error('❌ endRecording: Message not found:', id);
+      return;
+    }
+
     dispatch({ type: 'END_RECORDING', id, finalText });
+
     try {
+      console.log('🤖 Calling LLM service...');
       // call LLM/reply service here; get npcText
       const npcText = await (window as any).services?.replyTo?.(finalText) ?? "I hear you!"; // replace with real service
-      const sceneId = state.messagesById[id]?.sceneId!;
+      console.log('✅ LLM response:', npcText);
+
+      const npcId = newId();
+      console.log('📝 Creating NPC message:', { sceneId, npcId, npcText });
+
       dispatch({ type: 'SET_STATUS', id, status: 'sent' });
-      dispatch({ type: 'APPEND_NPC', sceneId, id: newId(), text: npcText });
+      dispatch({ type: 'APPEND_NPC', sceneId, id: npcId, text: npcText });
+
       // hand off to quest logic elsewhere
       (window as any).services?.onTurnComplete?.({ sceneId, playerId: id, npcText });
     } catch (e) {
+      console.error('❌ endRecording error:', e);
       dispatch({ type: 'SET_STATUS', id, status: 'error' });
     }
   };
@@ -116,7 +181,28 @@ function useDialogueValue() {
     return messages;
   }, [state]);
 
-  return { state, beginRecording, updateRecording, endRecording, getMessagesForScene };
+  const startConversion = (playerMessageId: string, npcMessageId: string) => {
+    dispatch({ type: 'START_CONVERSION', playerMessageId, npcMessageId });
+  };
+
+  const completeConversion = (playerMessageId: string, npcMessageId: string) => {
+    dispatch({ type: 'COMPLETE_CONVERSION', playerMessageId, npcMessageId });
+  };
+
+  const getPendingConversions = useCallback((): ConversationTurn[] => {
+    return state.conversationTurns;
+  }, [state.conversationTurns]);
+
+  return {
+    state,
+    beginRecording,
+    updateRecording,
+    endRecording,
+    getMessagesForScene,
+    startConversion,
+    completeConversion,
+    getPendingConversions
+  };
 }
 
 export function DialogueProvider({ children }: { children: React.ReactNode }) {

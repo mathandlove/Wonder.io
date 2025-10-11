@@ -12,6 +12,7 @@
 import { useEffect, useState } from 'react';
 import { useSceneManager } from '@core/scenes/SceneManager';
 import { useSceneOrchestratorContext } from './SceneOrchestratorContext';
+import { useDialogue } from '@core/dialogue/DialogueContext';
 import type { Scene } from '@core/types/scene';
 
 interface DebugState {
@@ -43,9 +44,35 @@ export function StepScrollDebug() {
     timestamp: 0,
   });
 
+  // Draggable position state - load from localStorage or default to top-right
+  const getInitialPosition = () => {
+    const saved = localStorage.getItem('debugPanel:position');
+    if (saved) {
+      try {
+        return JSON.parse(saved);
+      } catch (e) {
+        return { top: 10, right: 10, left: null, bottom: null };
+      }
+    }
+    return { top: 10, right: 10, left: null, bottom: null };
+  };
+
+  const [position, setPosition] = useState<{ top: number | null; right: number | null; left: number | null; bottom: number | null }>(getInitialPosition);
+  const [isDragging, setIsDragging] = useState(false);
+  const [dragStart, setDragStart] = useState({ x: 0, y: 0 });
+
   // Get scene manager and orchestrator for additional context
   const sceneManager = useSceneManager();
   const orchestrator = useSceneOrchestratorContext();
+
+  // Try to get dialogue context, may be undefined if not in provider tree
+  let dialogue;
+  try {
+    dialogue = useDialogue();
+  } catch (e) {
+    // DialogueProvider not available
+    dialogue = null;
+  }
 
   useEffect(() => {
     // Listen for custom debug events from useStepScroll
@@ -67,12 +94,94 @@ export function StepScrollDebug() {
   const captionState = orchestrator?.getCaptionState(sceneId);
   const hasCaption = sceneType === 'image' && ((currentScene?.caption || currentScene?.text)?.trim() || false);
 
+  // Get dialogue messages for current scene (safely)
+  const messages = dialogue?.getMessagesForScene(sceneId) ?? [];
+  const pendingConversions = dialogue?.getPendingConversions() ?? [];
+
+  // Get input state from orchestrator (or use 'idle' as default)
+  const inputState = orchestrator?.getInputState(sceneId) ?? 'idle';
+
+  // Test button handlers - update orchestrator state
+  const handleSetIdle = () => {
+    if (!orchestrator) return;
+    console.log('🎯 Setting input state: IDLE for scene:', sceneId);
+    orchestrator.setInputState(sceneId, 'idle');
+  };
+
+  const handleSetRecording = () => {
+    if (!orchestrator) return;
+    console.log('🎯 Setting input state: RECORDING for scene:', sceneId);
+    orchestrator.setInputState(sceneId, 'recording');
+  };
+
+  const handleSetWaiting = () => {
+    if (!orchestrator) return;
+    console.log('🎯 Setting input state: WAITING for scene:', sceneId);
+    orchestrator.setInputState(sceneId, 'waiting');
+  };
+
+  const handleSetConverting = () => {
+    if (!orchestrator) return;
+    console.log('🎯 Setting input state: CONVERTING for scene:', sceneId);
+    orchestrator.setInputState(sceneId, 'converting');
+  };
+
+  // Drag handlers
+  const handleMouseDown = (e: React.MouseEvent) => {
+    // Only start drag if clicking on the header (not buttons)
+    if ((e.target as HTMLElement).tagName === 'BUTTON') return;
+
+    setIsDragging(true);
+    setDragStart({
+      x: e.clientX - (position.left ?? window.innerWidth - (position.right ?? 0) - 400),
+      y: e.clientY - (position.top ?? 0)
+    });
+    e.preventDefault();
+  };
+
+  const handleMouseMove = (e: MouseEvent) => {
+    if (!isDragging) return;
+
+    const newLeft = e.clientX - dragStart.x;
+    const newTop = e.clientY - dragStart.y;
+
+    setPosition({
+      top: newTop,
+      left: newLeft,
+      right: null,
+      bottom: null
+    });
+  };
+
+  const handleMouseUp = () => {
+    if (isDragging) {
+      setIsDragging(false);
+      // Save position to localStorage
+      localStorage.setItem('debugPanel:position', JSON.stringify(position));
+    }
+  };
+
+  // Add/remove mouse event listeners for dragging
+  useEffect(() => {
+    if (isDragging) {
+      window.addEventListener('mousemove', handleMouseMove);
+      window.addEventListener('mouseup', handleMouseUp);
+      return () => {
+        window.removeEventListener('mousemove', handleMouseMove);
+        window.removeEventListener('mouseup', handleMouseUp);
+      };
+    }
+  }, [isDragging, dragStart, position]);
+
   return (
     <div
+      onMouseDown={handleMouseDown}
       style={{
         position: 'fixed',
-        top: '10px',
-        right: '10px',
+        top: position.top !== null ? `${position.top}px` : undefined,
+        right: position.right !== null ? `${position.right}px` : undefined,
+        left: position.left !== null ? `${position.left}px` : undefined,
+        bottom: position.bottom !== null ? `${position.bottom}px` : undefined,
         background: 'rgba(0, 0, 0, 0.95)',
         color: '#0f0',
         padding: '15px',
@@ -85,51 +194,15 @@ export function StepScrollDebug() {
         border: '2px solid #0f0',
         maxHeight: '90vh',
         overflowY: 'auto',
+        cursor: isDragging ? 'grabbing' : 'grab',
+        userSelect: 'none',
       }}
     >
-      <div style={{ marginBottom: '10px', fontSize: '14px', fontWeight: 'bold', color: '#0ff' }}>
+      <div style={{ marginBottom: '10px', fontSize: '14px', fontWeight: 'bold', color: '#0ff', cursor: 'grab' }}>
         📊 Scroll & Scene Debug
       </div>
 
       <div style={{ display: 'grid', gap: '5px' }}>
-        {/* Scene Info Section */}
-        <div style={{ marginBottom: '8px', paddingBottom: '8px', borderBottom: '1px solid #0f0' }}>
-          <div style={{ color: '#0ff', marginBottom: '4px', fontWeight: 'bold' }}>🎬 Current Scene</div>
-          <div>
-            📍 Index: <strong>{state.currentIndex}</strong> / {sceneManager.visibleScenes.length - 1}
-          </div>
-          <div style={{ color: '#ff0' }}>
-            🎭 Type: <strong>{sceneType}</strong>
-          </div>
-          <div style={{ fontSize: '10px', color: '#888', wordBreak: 'break-all' }}>
-            ID: {sceneId}
-          </div>
-          {sceneType === 'image' && hasCaption && (
-            <div style={{
-              marginTop: '6px',
-              paddingTop: '6px',
-              borderTop: '1px dashed #444'
-            }}>
-              <div style={{ color: '#f0f', fontSize: '10px', marginBottom: '3px' }}>
-                📝 Caption Component
-              </div>
-              <div style={{ marginLeft: '12px', fontSize: '10px' }}>
-                <div style={{ color: captionState ? '#0f0' : '#f00' }}>
-                  State: <strong>{captionState ? captionState.toUpperCase() : 'UNDEFINED'}</strong>
-                </div>
-                <div style={{ color: '#0ff' }}>
-                  CSS: <strong>
-                    caption--{captionState === 'showing' ? 'animate-in' : captionState === 'dismissed' ? 'animate-out' : 'hidden'}
-                  </strong>
-                </div>
-                <div style={{ color: '#888' }}>
-                  Text: {currentScene?.caption || currentScene?.text ? '✓' : '✗'}
-                </div>
-              </div>
-            </div>
-          )}
-        </div>
-
         {/* Scroll State Section */}
         <div style={{ marginBottom: '8px', paddingBottom: '8px', borderBottom: '1px solid #0f0' }}>
           <div style={{ color: '#0ff', marginBottom: '4px', fontWeight: 'bold' }}>🖱️ Scroll State</div>
@@ -160,17 +233,6 @@ export function StepScrollDebug() {
           </div>
         </div>
 
-        {/* Timers Section */}
-        <div style={{ marginBottom: '8px' }}>
-          <div style={{ color: '#0ff', marginBottom: '4px', fontWeight: 'bold' }}>⏱️ Timers</div>
-          <div style={{ color: state.blockDismissActive ? '#ff0' : '#666', fontSize: '10px' }}>
-            Block Dismiss: <strong>{state.blockDismissActive ? 'ACTIVE' : 'idle'}</strong>
-          </div>
-          <div style={{ color: state.settleTimerActive ? '#ff0' : '#666', fontSize: '10px' }}>
-            Settle: <strong>{state.settleTimerActive ? 'ACTIVE' : 'idle'}</strong>
-          </div>
-        </div>
-
         {/* Last Event Section */}
         {state.lastEvent && (
           <div style={{ marginTop: '8px', paddingTop: '8px', borderTop: '1px solid #0f0' }}>
@@ -181,6 +243,102 @@ export function StepScrollDebug() {
             </div>
           </div>
         )}
+      </div>
+
+      {/* Input Scene State Test */}
+      <div style={{ marginTop: '10px', paddingTop: '10px', borderTop: '2px solid #f0f' }}>
+        <div style={{ color: '#f0f', marginBottom: '8px', fontWeight: 'bold' }}>🎙️ Input Scene State Test</div>
+
+        {/* Current State Display */}
+        <div style={{ marginBottom: '10px', paddingBottom: '8px', borderBottom: '1px solid #444' }}>
+          <div style={{ color: '#0ff', fontSize: '10px', marginBottom: '4px' }}>Current State:</div>
+          <div style={{
+            marginLeft: '8px',
+            padding: '8px',
+            background: 'rgba(255,255,255,0.05)',
+            borderRadius: '4px',
+            border: '2px solid #0f0'
+          }}>
+            <div style={{ color: '#0f0', fontSize: '14px', fontWeight: 'bold', textAlign: 'center' }}>
+              {inputState.toUpperCase()}
+            </div>
+          </div>
+        </div>
+
+        {/* State Change Buttons */}
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '6px' }}>
+          <button
+            onClick={handleSetIdle}
+            style={{
+              padding: '8px',
+              background: inputState === 'idle' ? '#0a0' : '#333',
+              border: inputState === 'idle' ? '2px solid #0f0' : '1px solid #666',
+              borderRadius: '4px',
+              color: inputState === 'idle' ? '#fff' : '#999',
+              cursor: 'pointer',
+              fontSize: '10px',
+              fontWeight: 'bold'
+            }}
+          >
+            ⏸️ IDLE
+          </button>
+
+          <button
+            onClick={handleSetRecording}
+            style={{
+              padding: '8px',
+              background: inputState === 'recording' ? '#a00' : '#333',
+              border: inputState === 'recording' ? '2px solid #f00' : '1px solid #666',
+              borderRadius: '4px',
+              color: inputState === 'recording' ? '#fff' : '#999',
+              cursor: 'pointer',
+              fontSize: '10px',
+              fontWeight: 'bold'
+            }}
+          >
+            🔴 RECORDING
+          </button>
+
+          <button
+            onClick={handleSetWaiting}
+            style={{
+              padding: '8px',
+              background: inputState === 'waiting' ? '#aa0' : '#333',
+              border: inputState === 'waiting' ? '2px solid #ff0' : '1px solid #666',
+              borderRadius: '4px',
+              color: inputState === 'waiting' ? '#fff' : '#999',
+              cursor: 'pointer',
+              fontSize: '10px',
+              fontWeight: 'bold'
+            }}
+          >
+            ⏳ WAITING
+          </button>
+
+          <button
+            onClick={handleSetConverting}
+            style={{
+              padding: '8px',
+              background: inputState === 'converting' ? '#00a' : '#333',
+              border: inputState === 'converting' ? '2px solid #0ff' : '1px solid #666',
+              borderRadius: '4px',
+              color: inputState === 'converting' ? '#fff' : '#999',
+              cursor: 'pointer',
+              fontSize: '10px',
+              fontWeight: 'bold'
+            }}
+          >
+            🔄 CONVERTING
+          </button>
+        </div>
+
+        {/* State descriptions */}
+        <div style={{ marginTop: '8px', fontSize: '8px', color: '#888', lineHeight: '1.4' }}>
+          <div><strong>IDLE:</strong> No speech bubble shown</div>
+          <div><strong>RECORDING:</strong> Bubble showing with live text</div>
+          <div><strong>WAITING:</strong> Bubble + waiting indicator</div>
+          <div><strong>CONVERTING:</strong> Creating permanent scenes</div>
+        </div>
       </div>
 
       {/* Stats Footer */}

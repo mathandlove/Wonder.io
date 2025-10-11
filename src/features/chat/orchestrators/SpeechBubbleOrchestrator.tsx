@@ -7,6 +7,7 @@ import { CardboardBubble } from '@features/chat/components/CardboardBubble';
 import { useDialogue } from '../context/useChatDialogue';
 import { useDialogue as useRecordingDialogue } from '@core/dialogue/DialogueContext';
 import { useRecording } from '@core/recording/RecordingContext';
+import { useSceneOrchestratorContext } from '@core/scroll/SceneOrchestratorContext';
 import type { Scene, CharacterScene, InteractiveBubbleScene, InputScene } from '@core/types/scene';
 import type { Message } from '@core/dialogue/types';
 
@@ -56,6 +57,8 @@ export function SpeechBubbleOrchestrator({ scenes, currentIndex = 0 }: SpeechBub
   const { getMessagesForScene } = useRecordingDialogue();
   // Get recording context for continuous recording
   const { getDisplayText, isRecording } = useRecording();
+  // Get orchestrator context for input scene state
+  const orchestrator = useSceneOrchestratorContext();
 
   // Track scroll direction
   const prevScrollOffsetRef = React.useRef(scrollOffset);
@@ -157,58 +160,94 @@ export function SpeechBubbleOrchestrator({ scenes, currentIndex = 0 }: SpeechBub
           // Handle both interactive-bubble and input scenes the same way
           const sceneId = (scene as SceneWithId).sceneId || '';
 
-          // PRIORITY: Use global recording state when actively recording
-          if (isRecording()) {
-            const globalText = getDisplayText();
-            side = 'left';
-            speakerLabel = (scene as SceneWithId)["left-character"] || "Player";
-            bubbleContent = globalText || "🎤 Listening...";
-            shouldShowWaitingBubble = false;
-          } else {
-            // Fall back to dialogue messages when not actively recording
-            const recordingMessages = getMessagesForScene(sceneId);
-            const messages = recordingMessages.length > 0 ? recordingMessages : globalMessages;
-            const latestMessage = messages[messages.length - 1];
+          // PRIORITY: Check orchestrator input state for input scenes
+          const inputState = orchestrator?.getInputState(sceneId);
 
-            if (latestMessage) {
-              // Set side based on message sender
-              side = latestMessage.sender === 'player' ? 'left' : 'right';
-              speakerLabel = latestMessage.sender === 'player'
-                ? (scene as SceneWithId)["left-character"] || "Player"
-                : (scene as SceneWithId)["right-character"] || "AI";
-
-              // Generate content based on message status
-              const extMessage = latestMessage as ExtendedMessage;
-              if (extMessage.status === 'recording' && !latestMessage.text) {
-                bubbleContent = "🎤 Listening...";
-              } else if (extMessage.isInterim && latestMessage.text) {
-                bubbleContent = `${latestMessage.text}...`;
-              } else if (latestMessage.text) {
-                bubbleContent = latestMessage.text;
-              } else if (extMessage.status === 'pending') {
-                bubbleContent = "Sending...";
-              } else if (extMessage.status === 'error') {
-                bubbleContent = "Failed to send";
-              }
-
-              // For interactive scenes, always show waiting bubble, but control visibility
-              const isUserMessage = latestMessage.sender === 'player';
-              const hasAIResponse = messages.some(m => {
-                const extM = m as ExtendedMessage;
-                const extLatest = latestMessage as ExtendedMessage;
-                // Use timestamp if available (chat system), otherwise use ts (dialogue system)
-                const mTime = extM.timestamp || new Date(extM.ts).getTime();
-                const latestTime = extLatest.timestamp || new Date(extLatest.ts).getTime();
-                return m.sender === 'npc' && mTime > latestTime;
-              });
-              shouldShowWaitingBubble = isUserMessage && extMessage.status === 'sent' && !hasAIResponse;
-            } else {
-              // No messages yet - show placeholder
+          if (type === 'input' && inputState) {
+            // For input scenes, respect the orchestrator state machine
+            if (inputState === 'idle') {
+              // IDLE: No speech bubble shown
+              bubbleContent = null; // Will be skipped by the null check below
+            } else if (inputState === 'recording') {
+              // RECORDING: Bubble showing with live text
+              const globalText = getDisplayText();
               side = 'left';
               speakerLabel = (scene as SceneWithId)["left-character"] || "Player";
-              bubbleContent = "🎤 Press and hold to record";
-              // No waiting bubble for placeholder state
+              bubbleContent = globalText || "🎤 Listening...";
               shouldShowWaitingBubble = false;
+            } else if (inputState === 'waiting') {
+              // WAITING: Show the player's last message + waiting bubble below
+              const recordingMessages = getMessagesForScene(sceneId);
+              const latestPlayerMessage = recordingMessages.filter(m => m.sender === 'player').pop();
+
+              side = 'left';
+              speakerLabel = (scene as SceneWithId)["left-character"] || "Player";
+              bubbleContent = latestPlayerMessage?.text || "Sent message";
+              shouldShowWaitingBubble = true;
+            } else if (inputState === 'converting') {
+              // CONVERTING: Creating permanent scenes
+              side = 'center';
+              speakerLabel = "System";
+              bubbleContent = "🔄 Converting to permanent scenes...";
+              shouldShowWaitingBubble = false;
+            }
+          } else {
+            // For interactive-bubble scenes OR input scenes without orchestrator state,
+            // fall back to the original logic
+
+            // Use global recording state when actively recording
+            if (isRecording()) {
+              const globalText = getDisplayText();
+              side = 'left';
+              speakerLabel = (scene as SceneWithId)["left-character"] || "Player";
+              bubbleContent = globalText || "🎤 Listening...";
+              shouldShowWaitingBubble = false;
+            } else {
+              // Fall back to dialogue messages when not actively recording
+              const recordingMessages = getMessagesForScene(sceneId);
+              const messages = recordingMessages.length > 0 ? recordingMessages : globalMessages;
+              const latestMessage = messages[messages.length - 1];
+
+              if (latestMessage) {
+                // Set side based on message sender
+                side = latestMessage.sender === 'player' ? 'left' : 'right';
+                speakerLabel = latestMessage.sender === 'player'
+                  ? (scene as SceneWithId)["left-character"] || "Player"
+                  : (scene as SceneWithId)["right-character"] || "AI";
+
+                // Generate content based on message status
+                const extMessage = latestMessage as ExtendedMessage;
+                if (extMessage.status === 'recording' && !latestMessage.text) {
+                  bubbleContent = "🎤 Listening...";
+                } else if (extMessage.isInterim && latestMessage.text) {
+                  bubbleContent = `${latestMessage.text}...`;
+                } else if (latestMessage.text) {
+                  bubbleContent = latestMessage.text;
+                } else if (extMessage.status === 'pending') {
+                  bubbleContent = "Sending...";
+                } else if (extMessage.status === 'error') {
+                  bubbleContent = "Failed to send";
+                }
+
+                // For interactive scenes, always show waiting bubble, but control visibility
+                const isUserMessage = latestMessage.sender === 'player';
+                const hasAIResponse = messages.some(m => {
+                  const extM = m as ExtendedMessage;
+                  const extLatest = latestMessage as ExtendedMessage;
+                  // Use timestamp if available (chat system), otherwise use ts (dialogue system)
+                  const mTime = extM.timestamp || new Date(extM.ts).getTime();
+                  const latestTime = extLatest.timestamp || new Date(extLatest.ts).getTime();
+                  return m.sender === 'npc' && mTime > latestTime;
+                });
+                shouldShowWaitingBubble = isUserMessage && extMessage.status === 'sent' && !hasAIResponse;
+              } else {
+                // No messages yet - show placeholder
+                side = 'left';
+                speakerLabel = (scene as SceneWithId)["left-character"] || "Player";
+                bubbleContent = "🎤 Press and hold to record";
+                // No waiting bubble for placeholder state
+                shouldShowWaitingBubble = false;
+              }
             }
           }
         }
