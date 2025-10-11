@@ -1,16 +1,16 @@
-import React, { useState, useRef, useCallback, useEffect } from 'react";
-import { useDialogue } from './context/ChatDialogueContext";
-import { useDialogue as useNewDialogue } from '@core/dialogue/DialogueContext";
-import { usePageFactory } from './orchestrators/PageFactory";
-import NextButton from '@shared/ui/NextButton";
-import { Toast, useToast } from '@shared/ui/Toast";
-import { Recording } from '@core/recording/RecordingAPI";
-import { useRecording } from '@core/recording/RecordingContext";
-import './Chat.css";
+import React, { useState, useRef, useCallback, useEffect } from 'react';
+import { useDialogue } from './context/useChatDialogue';
+import { useDialogue as useNewDialogue } from '@core/dialogue/DialogueContext';
+import { usePageFactory } from './orchestrators/PageFactory';
+import NextButton from '@shared/components/ui/NextButton';
+import { Toast, useToast } from '@shared/components/ui/Toast';
+import { Recording } from '@core/recording/RecordingAPI';
+import { useRecording } from '@core/recording/RecordingContext';
+import './Chat.css';
 
 interface ChatComposerProps {
   disabled: boolean;
-  questState: 'active' | 'complete' | 'failed";
+  questState: 'active' | 'complete' | 'failed';
   onNext: () => void;
 }
 
@@ -31,7 +31,7 @@ export const ChatComposer: React.FC<ChatComposerProps> = ({
     console.log('🎯 ChatComposer.startRecording() called');
     // Create a new interactive bubble scene and navigate to it
     const newScene = createInteractiveBubblePage();
-    const sceneId = newScene.sceneId || 'default";
+    const sceneId = newScene.sceneId || 'default';
     setCurrentSceneId(sceneId);
 
     // Add the scene and auto-scroll to it

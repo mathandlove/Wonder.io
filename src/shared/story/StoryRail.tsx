@@ -1,6 +1,6 @@
 // src/story/StoryRail.tsx
-import React, { useMemo, useRef, useState, useLayoutEffect } from 'react";
-import { useStepScroll } from '@core/scroll/useStepScroll";
+import React, { useMemo, useRef, useState, useLayoutEffect } from 'react';
+import { useStepScroll } from '@core/scroll/useStepScroll';
 
 type Scene = { id: string; /* plus your fields */ };
 

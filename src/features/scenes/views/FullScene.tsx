@@ -4,7 +4,7 @@
  */
 import React from "react";
 import type { SceneProps } from "../registry";
-import type { FullScene } from "../../types/scene";
+import type { FullScene } from "@core/types/scene";
 
 export default function FullScene({ scene }: SceneProps<FullScene>) {
   return (

@@ -4,9 +4,9 @@
  * This hook determines when scrolling should be locked based on the current scene
  * and integrates with the navigation system to provide scroll lock for interactive scenes.
  */
-import { useEffect, useMemo, useState } from 'react";
-import { useScrollLock } from './useScrollLock";
-import { useNavigation } from '@core/navigation/NavigationContext";
+import { useEffect, useMemo, useState } from 'react';
+import { useScrollLock } from './useScrollLock';
+import { useNavigation } from '@core/navigation/NavigationContext';
 
 export function useScrollLockManager() {
   const { visibleScenes, currentIndex } = useNavigation();

@@ -1,4 +1,4 @@
-export type PanelSide = 'left' | 'right";
+export type PanelSide = 'left' | 'right';
 
 export interface PanelStateLite {
   visible: boolean;

@@ -1,8 +1,8 @@
-import React from 'react";
-import { useEntranceGateContext } from '@features/characters/EntranceGateContext";
-import { useScrollManager } from '@shared/hooks/useScrollManager";
-import { useEntranceGate } from '@shared/hooks/useEntranceGate";
-import type { Scene } from '@core/types/scene";
+import React from 'react';
+import { useEntranceGateContext } from '@features/characters-context/EntranceGateContext';
+import { useScrollManager } from '@shared/hooks/useScrollManager';
+import { useEntranceGate } from '@shared/hooks/useEntranceGate';
+import type { Scene } from '@core/types/scene';
 
 interface EntranceGateDebuggerProps {
   scenes: Scene[];

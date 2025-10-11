@@ -6,7 +6,7 @@
  * - index: discrete current scene (e.g. 2)
  * - isProgrammatic: guard during smooth scrolls
  */
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react";
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
 export type ScrollOffsetState = {
   offset: number;          // continuous, e.g. 2.37 scenes

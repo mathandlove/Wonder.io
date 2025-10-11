@@ -24,7 +24,7 @@ export interface Hotspot {
   mapId?: string;
 }
 
-const API_BASE_URL = 'http://localhost:3001/api";
+const API_BASE_URL = 'http://localhost:3001/api';
 
 export class SelectionAPI {
   private async handleResponse<T>(response: Response): Promise<T> {

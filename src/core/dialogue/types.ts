@@ -1,7 +1,7 @@
 import { ulid } from "ulid";
 
-export type DeliveryStatus = 'draft' | 'recording' | 'pending' | 'sent' | 'error";
-export type Sender = 'player' | 'npc";
+export type DeliveryStatus = 'draft' | 'recording' | 'pending' | 'sent' | 'error';
+export type Sender = 'player' | 'npc';
 
 export type Message = {
   id: string;            // ulid()

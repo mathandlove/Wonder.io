@@ -1,9 +1,9 @@
-import React, { useEffect, useRef, useState } from 'react";
-import './CardboardBubble.css";
-import { WaitingBubble } from './WaitingBubble";
+import React, { useEffect, useRef, useState } from 'react';
+import './CardboardBubble.css';
+import { WaitingBubble } from './WaitingBubble';
 
 interface CardboardBubbleProps {
-  side?: 'left' | 'right' | 'center";
+  side?: 'left' | 'right' | 'center';
   children: React.ReactNode;
   speakerLabel?: string;
   onViewportExit?: () => void; // Callback when bubble leaves viewport
@@ -50,7 +50,7 @@ export const CardboardBubble: React.FC<CardboardBubbleProps> = ({
     ? 'cardboard-bubble-center'
     : `cardboard-bubble-${side}`;
 
-  const showTail = side === 'left' || side === 'right";
+  const showTail = side === 'left' || side === 'right';
 
   // Simple class name - no complex animation logic needed
   const finalClassName = `cardboard-bubble ${bubbleClass}`.trim();

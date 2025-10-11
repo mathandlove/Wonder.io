@@ -4,7 +4,7 @@
  */
 // src/scenes/registry.ts
 import type { ComponentType } from "react";
-import type { Scene } from '@core/types/scene";
+import type { Scene } from '@core/types/scene';
 
 import CharacterScene from "./views/CharacterScene";
 import QuestScene from "./views/QuestScene";

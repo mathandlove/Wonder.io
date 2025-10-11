@@ -2,12 +2,12 @@
  * BackgroundOrchestrator - Hybrid background system that combines range-based logic
  * from the original main branch with optimized rendering
  */
-import React, { useMemo } from 'react";
-import { useScrollOffset } from '@shared/hooks/useScrollOffset";
-import { buildBackgroundRanges } from './buildBackgroundRanges";
-import { resolveBackgroundUrl } from './resolveBackgroundUrl";
-import { translateForRange } from './positionBackground";
-import type { SceneContent } from '@shared/types/background";
+import React, { useMemo } from 'react';
+import { useScrollOffset } from '@shared/hooks/useScrollOffset';
+import { buildBackgroundRanges } from './buildBackgroundRanges';
+import { resolveBackgroundUrl } from './resolveBackgroundUrl';
+import { translateForRange } from './positionBackground';
+import type { SceneContent } from '@shared/types/background';
 
 interface BackgroundOrchestratorProps {
   storyId?: string;

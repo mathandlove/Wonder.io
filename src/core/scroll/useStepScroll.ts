@@ -1,5 +1,5 @@
 // src/hooks/useStepScroll.ts
-import {useEffect, useRef} from 'react";
+import {useEffect, useRef} from 'react';
 
 // Extend DOM interface for experimental scrollend event
 declare global {
@@ -32,8 +32,8 @@ export function useStepScroll(
     if (!el) return;
 
     // Ensure container has required CSS properties
-    el.style.overscrollBehavior = 'contain";
-    el.style.scrollSnapType = 'y mandatory";
+    el.style.overscrollBehavior = 'contain';
+    el.style.scrollSnapType = 'y mandatory';
 
     const scrollToIndex = (idx: number) => {
       const clamped = Math.max(0, Math.min(idx, count() - 1));
@@ -54,7 +54,7 @@ export function useStepScroll(
       const currentSection = sections[currentIndex];
       if (!currentSection) return false;
 
-      const lockAttribute = direction === 'forward' ? 'data-lock-forward' : 'data-lock-backward";
+      const lockAttribute = direction === 'forward' ? 'data-lock-forward' : 'data-lock-backward';
       return currentSection.hasAttribute(lockAttribute);
     };
 
@@ -79,13 +79,13 @@ export function useStepScroll(
 
       // Check locks before accumulating wheel delta
       const currentIndex = getIndex();
-      const direction = e.deltaY > 0 ? 'forward' : 'backward";
+      const direction = e.deltaY > 0 ? 'forward' : 'backward';
       const domLocked = checkDomLocks(direction, currentIndex);
       const contentLocked = checkContentLocks ? checkContentLocks(direction, currentIndex) : false;
 
       if (domLocked || contentLocked) {
         e.preventDefault(); // Block all wheel scrolling when locked
-        const reason = domLocked ? 'DOM lock' : 'Content lock";
+        const reason = domLocked ? 'DOM lock' : 'Content lock';
 
         // Emit custom event for debugger
         window.dispatchEvent(new CustomEvent('scroll-blocked', {
@@ -121,14 +121,14 @@ export function useStepScroll(
       const dy = touchStartYRef.current - e.touches[0].clientY;
       if (Math.abs(dy) > thresholdPx) {
         const currentIndex = getIndex();
-        const direction = dy > 0 ? 'forward' : 'backward";
+        const direction = dy > 0 ? 'forward' : 'backward';
         const domLocked = checkDomLocks(direction, currentIndex);
         const contentLocked = checkContentLocks ? checkContentLocks(direction, currentIndex) : false;
 
         if (domLocked || contentLocked) {
           e.preventDefault(); // Block touch scrolling when locked
           touching = false;
-          const reason = domLocked ? 'DOM lock' : 'Content lock";
+          const reason = domLocked ? 'DOM lock' : 'Content lock';
 
           // Emit custom event for debugger
           window.dispatchEvent(new CustomEvent('scroll-blocked', {
@@ -151,9 +151,9 @@ export function useStepScroll(
 
       let direction: 'forward' | 'backward' | null = null;
       if (e.key === 'ArrowDown' || e.key === 'PageDown' || e.key === ' ') {
-        direction = 'forward";
+        direction = 'forward';
       } else if (e.key === 'ArrowUp' || e.key === 'PageUp') {
-        direction = 'backward";
+        direction = 'backward';
       }
 
       if (direction) {
@@ -163,7 +163,7 @@ export function useStepScroll(
 
         if (domLocked || contentLocked) {
           e.preventDefault(); // Block keyboard scrolling when locked
-          const reason = domLocked ? 'DOM lock' : 'Content lock";
+          const reason = domLocked ? 'DOM lock' : 'Content lock';
 
           // Emit custom event for debugger
           window.dispatchEvent(new CustomEvent('scroll-blocked', {

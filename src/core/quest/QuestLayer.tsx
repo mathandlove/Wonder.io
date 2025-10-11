@@ -1,8 +1,8 @@
 /**
  * QuestLayer - Quest offer sheet and minimized HUD
  */
-import { useQuestStatus, useQuest } from './QuestManager";
-import './QuestLayer.css";
+import { useQuestStatus, useQuest } from './QuestManager';
+import './QuestLayer.css';
 
 export interface QuestLayerProps {
   // Props can be added later
@@ -36,10 +36,10 @@ export function QuestLayer() {
             <h2 className="quest-title">Quest</h2>
             <p className="quest-text">
               {(() => {
-                const text = currentQuest?.text || currentQuest?.title || currentQuest?.id || 'Unknown Quest";
+                const text = currentQuest?.text || currentQuest?.title || currentQuest?.id || 'Unknown Quest';
                 if (typeof text === 'object') {
                   console.error('Quest text is an object:', text);
-                  return 'Quest Text Error";
+                  return 'Quest Text Error';
                 }
                 return String(text);
               })()}
@@ -56,7 +56,7 @@ export function QuestLayer() {
         <div className={`quest-pill-box ${phase === 'minimized' ? 'quest-pill-enter' : ''}`}>
           <div className="quest-pill-text">
             {(() => {
-              const text = currentQuest?.text || currentQuest?.title || currentQuest?.id || 'Quest Active";
+              const text = currentQuest?.text || currentQuest?.title || currentQuest?.id || 'Quest Active';
               return typeof text === 'object' ? 'Quest Active' : String(text);
             })()}
           </div>
@@ -71,10 +71,10 @@ export function QuestLayer() {
               <h2 className="quest-title">QUEST<br/>COMPLETE</h2>
               <p className="quest-text">
                 {(() => {
-                  const text = currentQuest?.text || currentQuest?.title || currentQuest?.id || 'Quest Completed";
+                  const text = currentQuest?.text || currentQuest?.title || currentQuest?.id || 'Quest Completed';
                   if (typeof text === 'object') {
                     console.error('Quest text is an object:', text);
-                    return 'Quest Completed";
+                    return 'Quest Completed';
                   }
                   return String(text);
                 })()}
@@ -102,7 +102,7 @@ export function QuestLayer() {
             }}
             onEnded={(e) => {
               // Hide video and trigger clear state after 2 seconds
-              (e.target as HTMLVideoElement).style.display = 'none";
+              (e.target as HTMLVideoElement).style.display = 'none';
               setTimeout(() => {
                 clear();
               }, 2000);
@@ -118,10 +118,10 @@ export function QuestLayer() {
             <h2 className="quest-title">QUEST<br/>COMPLETE</h2>
             <p className="quest-text">
               {(() => {
-                const text = currentQuest?.text || currentQuest?.title || currentQuest?.id || 'Quest Completed";
+                const text = currentQuest?.text || currentQuest?.title || currentQuest?.id || 'Quest Completed';
                 if (typeof text === 'object') {
                   console.error('Quest text is an object:', text);
-                  return 'Quest Completed";
+                  return 'Quest Completed';
                 }
                 return String(text);
               })()}

@@ -4,7 +4,7 @@
  */
 import React from "react";
 import type { SceneProps } from "../registry";
-import type { CharacterScene as CharacterSceneType } from "../../types/scene";
+import type { CharacterScene as CharacterSceneType } from "@core/types/scene";
 
 export default function CharacterScene({ scene, sceneIndex }: SceneProps<CharacterSceneType>) {
   return (

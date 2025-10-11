@@ -1,5 +1,5 @@
 
-import './WaitingBubble.css";
+import './WaitingBubble.css';
 
 interface ThinkingDotsProps {
   className?: string;
@@ -16,7 +16,7 @@ function ThinkingDots({ className = '' }: ThinkingDotsProps) {
 }
 
 interface WaitingBubbleProps {
-  side?: 'left' | 'right' | 'center";
+  side?: 'left' | 'right' | 'center';
   speakerLabel?: string;
   isDelayed?: boolean;
   isReady?: boolean;

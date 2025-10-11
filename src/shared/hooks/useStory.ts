@@ -4,8 +4,8 @@
  */
 // src/hooks/useStory.ts
 import { useEffect, useState } from "react";
-import type { Story } from '@core/types/scene";
-import { loadStory } from '@shared/data/loadStory";
+import type { Story } from '@core/types/scene';
+import { loadStory } from '@shared/data/loadStory';
 
 export function useStory(url: string) {
   const [story, setStory] = useState<Story | null>(null);

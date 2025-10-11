@@ -2,8 +2,8 @@
  * Simple event bus for scene enter/leave events
  */
 
-type SceneEvent = 'scene:enter' | 'scene:leave";
-type ScrollDirection = 'forward' | 'backward";
+type SceneEvent = 'scene:enter' | 'scene:leave';
+type ScrollDirection = 'forward' | 'backward';
 type SceneEventListener = (sceneId: string, direction?: ScrollDirection) => void;
 
 class SceneBus {

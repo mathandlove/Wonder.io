@@ -1,9 +1,9 @@
-import React, { useState, useEffect, useRef } from 'react";
-import { ChatComposer } from './ChatComposer";
-import TurnCueBanner from '@shared/components/TurnCueBanner";
-import { useDialogue } from './context/ChatDialogueContext";
-import { useNavigation } from '@core/navigation/NavigationContext";
-import './Chat.css";
+import React, { useState, useEffect, useRef } from 'react';
+import { ChatComposer } from './ChatComposer';
+import TurnCueBanner from '@features/chat/components/TurnCueBanner';
+import { useDialogue } from './context/useChatDialogue';
+import { useNavigation } from '@core/navigation/NavigationContext';
+import './Chat.css';
 
 interface ChatLayerProps {
   visible: boolean;

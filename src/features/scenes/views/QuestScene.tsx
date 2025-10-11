@@ -4,9 +4,9 @@
  */
 import React, { useEffect } from "react";
 import type { SceneProps } from "../registry";
-import type { QuestScene } from "../../types/scene";
-import { useQuest } from "../../quest/QuestManager";
-import { useNavigation } from "../../context/NavigationContext";
+import type { QuestScene } from "@core/types/scene";
+import { useQuest } from "@core/quest/QuestManager";
+import { useNavigation } from "@core/navigation/NavigationContext";
 
 export default function QuestScene({ scene, onComplete, sceneIndex }: SceneProps<QuestScene>) {
   const { offer, accept, state } = useQuest();

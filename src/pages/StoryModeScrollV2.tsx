@@ -3,28 +3,28 @@
  * Each scene gets its own 100vh section with snap-scroll behavior.
  */
 import React, { useMemo, useRef, useState, useLayoutEffect } from "react";
-import { useStory } from '@shared/hooks/useStory";
-import { FlowLayout } from '@shared/components/FlowLayout";
-import { SceneRenderer } from '@shared/components/SceneRenderer";
-import { PageFactoryProvider } from '@features/chat/orchestrators/PageFactory";
-import { useNavigation } from '@core/navigation/NavigationContext";
-import { BackgroundOrchestrator } from '@features/background/BackgroundOrchestrator";
-import { CharacterOrchestrator } from '@features/characters/CharacterOrchestrator";
-import { SpeechBubbleOrchestrator } from '@features/chat/orchestrators/SpeechBubbleOrchestrator";
-import { ImageSceneOrchestrator } from '@shared/components/image/ImageSceneOrchestrator";
-import { injectPanelMetaFromFlows } from '@features/characters/adapters/injectPanelMetaFromFlows";
-import { useSceneNavigation } from '@core/navigation/useSceneNavigation";
-import { useStepScroll } from '@core/scroll/useStepScroll";
-import { CharacterAnimationProvider } from '@features/characters/CharacterAnimationContext";
-import type { Scene } from '@core/types/scene";
-import type { QuestHook } from '@core/quest/QuestManager";
+import { useStory } from '@shared/hooks/useStory';
+import { FlowLayout } from '@features/flow-layout/FlowLayout';
+import { SceneRenderer } from '@shared/components/SceneRenderer';
+import { PageFactoryProvider } from '@features/chat/orchestrators/PageFactory';
+import { useNavigation } from '@core/navigation/NavigationContext';
+import { BackgroundOrchestrator } from '@features/background/BackgroundOrchestrator';
+import { CharacterOrchestrator } from '@features/characters/CharacterOrchestrator';
+import { SpeechBubbleOrchestrator } from '@features/chat/orchestrators/SpeechBubbleOrchestrator';
+import { ImageSceneOrchestrator } from '@features/image-scene/ImageSceneOrchestrator';
+import { injectPanelMetaFromFlows } from '@features/characters/adapters/injectPanelMetaFromFlows';
+import { useSceneNavigation } from '@core/navigation/useSceneNavigation';
+import { useStepScroll } from '@core/scroll/useStepScroll';
+import { CharacterAnimationProvider } from '@features/characters-context/CharacterAnimationContext';
+import type { Scene } from '@core/types/scene';
+import type { QuestHook } from '@core/quest/QuestManager';
 
 // Extended scene type for dynamic properties
 type SceneWithId = Scene & {
   sceneId?: string;
   hidden?: boolean;
 };
-import "./components/SnapScroll.css";
+import "@shared/components/SnapScroll.css";
 
 // Type extension for debugging window object
 declare global {
@@ -41,7 +41,7 @@ import { UIOverlayRoot } from '@shared/components/UIOverlayRoot'
 import { ChatOrchestrator } from '@features/chat/orchestrators/ChatOrchestrator'
 import { SceneBusProvider } from '@core/bus/SceneBusProvider'
 import { sceneBus } from '@core/bus/sceneBus'
-import { useDialogue } from '@features/chat/context/ChatDialogueContext'
+import { useDialogue } from '@features/chat/context/useChatDialogue'
 // Path to the story JSON bundle we want to load. In demo mode we keep this fixed
 // so the experience is deterministic for the presentation.
 
@@ -133,7 +133,7 @@ const StoryContent: React.FC = () => {
   const handleIndexChange = (nextIndex: number) => {
     // Emit scene bus events for enter/leave
     if (nextIndex !== index) {
-      const direction = nextIndex > index ? 'forward' : 'backward";
+      const direction = nextIndex > index ? 'forward' : 'backward';
 
       // Emit leave event for previous scene
       const prevScene = scenes[index];
@@ -164,7 +164,7 @@ const StoryContent: React.FC = () => {
         // - Player turn is active (input needed)
         // - System is waiting for response
         // - Quest is still active
-        const shouldLock = isPlayerTurn || waiting || questState === 'active";
+        const shouldLock = isPlayerTurn || waiting || questState === 'active';
         return shouldLock;
       }
     }

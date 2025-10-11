@@ -1,4 +1,4 @@
-import type { Scene } from "../../types/scene";
+import type { Scene } from "@core/types/scene";
 import { NOCHARACTER } from "../buildPanelRangesFromScenes";
 
 // Input: flattened scenes
@@ -67,7 +67,7 @@ export function injectPanelMetaFromFlows(scenes: Scene[]): Scene[] {
           if (!current) return null;
 
           const nextScene = scenes[i + 1];
-          const nextCharacterKey = side === 'left' ? 'left-character' : 'right-character";
+          const nextCharacterKey = side === 'left' ? 'left-character' : 'right-character';
           const nextCharacter = nextScene?.type === "character" ?
             (nextScene as any)[nextCharacterKey] ||
             nextScene?.meta?.[side === 'left' ? 'panelLeft' : 'panelRight']?.character :

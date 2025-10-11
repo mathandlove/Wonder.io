@@ -1,6 +1,6 @@
-import React, { createContext, useContext, useCallback, useRef } from 'react";
+import React, { createContext, useContext, useCallback, useRef } from 'react';
 
-type Side = 'left' | 'right";
+type Side = 'left' | 'right';
 type EntranceCompleteHandler = (side: Side) => void;
 
 interface EntranceGateContextType {

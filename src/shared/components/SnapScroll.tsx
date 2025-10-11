@@ -1,8 +1,8 @@
-import React, { useCallback, useEffect, useRef, useState } from 'react";
-import './SnapScroll.css";
+import React, { useCallback, useEffect, useRef, useState } from 'react';
+import './SnapScroll.css';
 
 interface FlowItem {
-  side?: 'left' | 'right";
+  side?: 'left' | 'right';
   text?: string;
   waiting?: boolean;
   /** Guards: lock navigation until unlocked by app logic */

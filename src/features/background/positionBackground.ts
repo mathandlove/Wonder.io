@@ -1,7 +1,7 @@
 /**
  * Position background ranges using 3-state transform logic from original main branch
  */
-import type { BackgroundRange } from '@shared/types/background";
+import type { BackgroundRange } from '@shared/types/background';
 
 export function translateForRange(range: BackgroundRange, scrollOffset: number): string {
   // Add tolerance for small scroll offsets near boundaries to prevent jitter
@@ -20,6 +20,6 @@ export function translateForRange(range: BackgroundRange, scrollOffset: number):
     return `translateY(${(range.endIndex + 1 - scrollOffset) * 100}vh)`;
   } else {
     // Background is visible and fixed in place
-    return 'translateY(0)";
+    return 'translateY(0)';
   }
 }

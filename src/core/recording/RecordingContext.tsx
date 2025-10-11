@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useReducer, useCallback, useRef, useEffect } from "react";
-import { useDialogue } from '@core/dialogue/DialogueContext";
+import { useDialogue } from '@core/dialogue/DialogueContext';
 import { Recording } from "./RecordingAPI";
 
 // Recording state
@@ -168,7 +168,7 @@ export function RecordingProvider({ children }: { children: React.ReactNode }) {
 
     recognition.continuous = true;
     recognition.interimResults = true;
-    recognition.lang = 'en-US";
+    recognition.lang = 'en-US';
 
     const scheduleRestart = () => {
       restartTimeoutRef.current = setTimeout(() => {
@@ -189,13 +189,13 @@ export function RecordingProvider({ children }: { children: React.ReactNode }) {
     };
 
     recognition.onresult = (event: any) => {
-      let interimText = '";
-      let finalText = '";
+      let interimText = '';
+      let finalText = '';
 
       for (let i = event.resultIndex; i < event.results.length; i++) {
         const transcript = event.results[i][0].transcript;
         if (event.results[i].isFinal) {
-          finalText += transcript + ' ";
+          finalText += transcript + ' ';
         } else {
           interimText += transcript;
         }

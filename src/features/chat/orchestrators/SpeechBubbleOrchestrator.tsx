@@ -2,14 +2,14 @@
  * SpeechBubbleOrchestrator - Uses scroll-based transforms like BackgroundOrchestrator
  * but with delayed transitions to coordinate with character entrance animations.
  */
-import React, { useMemo } from 'react";
-import { useScrollOffset } from '../../hooks/useScrollOffset";
-import { CardboardBubble } from '@shared/components/CardboardBubble";
-import { useDialogue } from '../context/ChatDialogueContext";
-import { useDialogue as useRecordingDialogue } from '../../dialogue/DialogueContext";
-import { useRecording } from '../../recording/RecordingContext";
-import type { Scene, CharacterScene, InteractiveBubbleScene, InputScene } from '../../types/scene";
-import type { Message } from '../../dialogue/types";
+import React, { useMemo } from 'react';
+import { useScrollOffset } from '@shared/hooks/useScrollOffset';
+import { CardboardBubble } from '@features/chat/components/CardboardBubble';
+import { useDialogue } from '../context/useChatDialogue';
+import { useDialogue as useRecordingDialogue } from '@core/dialogue/DialogueContext';
+import { useRecording } from '@core/recording/RecordingContext';
+import type { Scene, CharacterScene, InteractiveBubbleScene, InputScene } from '@core/types/scene';
+import type { Message } from '@core/dialogue/types';
 
 // Extended scene types that include commonly accessed properties
 type SceneWithId = Scene & {
@@ -44,7 +44,7 @@ function translateForSpeechBubble(sceneIndex: number, scrollOffset: number): str
     return `translateY(${(sceneIndex - scrollOffset) * 100}vh)`;
   } else {
     // Bubble is visible only during its own scene
-    return 'translateY(0)";
+    return 'translateY(0)';
   }
 }
 
@@ -62,7 +62,7 @@ export function SpeechBubbleOrchestrator({ scenes, currentIndex }: SpeechBubbleO
 
   // Track scroll direction
   const prevScrollOffsetRef = React.useRef(scrollOffset);
-  const scrollDirection = scrollOffset > prevScrollOffsetRef.current ? 'forward' : 'backward";
+  const scrollDirection = scrollOffset > prevScrollOffsetRef.current ? 'forward' : 'backward';
 
   // Update previous scroll offset for next render
   React.useEffect(() => {
@@ -76,7 +76,7 @@ export function SpeechBubbleOrchestrator({ scenes, currentIndex }: SpeechBubbleO
       scene: CharacterScene | InteractiveBubbleScene | InputScene;
       sceneIndex: number;
       transform: string;
-      type: 'character' | 'interactive-bubble' | 'input";
+      type: 'character' | 'interactive-bubble' | 'input';
     }> = [];
 
     scenes.forEach((scene, index) => {
@@ -128,7 +128,7 @@ export function SpeechBubbleOrchestrator({ scenes, currentIndex }: SpeechBubbleO
         // Handle different bubble content based on scene type
         let bubbleContent: React.ReactNode = null;
         let speakerLabel = "";
-        let side: 'left' | 'right' | 'center' = 'center";
+        let side: 'left' | 'right' | 'center' = 'center';
         let shouldShowWaitingBubble = false;
 
         if (type === 'character') {
@@ -140,7 +140,7 @@ export function SpeechBubbleOrchestrator({ scenes, currentIndex }: SpeechBubbleO
             : "Narrator";
 
           side = characterScene.speaker === 'left' ? 'left' :
-                 characterScene.speaker === 'right' ? 'right' : 'center";
+                 characterScene.speaker === 'right' ? 'right' : 'center';
 
           bubbleContent = characterScene.text;
 
@@ -158,7 +158,7 @@ export function SpeechBubbleOrchestrator({ scenes, currentIndex }: SpeechBubbleO
 
         } else if (type === 'interactive-bubble' || type === 'input') {
           // Handle both interactive-bubble and input scenes the same way
-          const sceneId = (scene as SceneWithId).sceneId || '";
+          const sceneId = (scene as SceneWithId).sceneId || '';
 
           // PRIORITY: Use global recording state when actively recording
           if (isRecording()) {
@@ -168,7 +168,7 @@ export function SpeechBubbleOrchestrator({ scenes, currentIndex }: SpeechBubbleO
               globalText,
               displayingText: globalText || "🎤 Listening..."
             });
-            side = 'left";
+            side = 'left';
             speakerLabel = (scene as SceneWithId)["left-character"] || "Player";
             bubbleContent = globalText || "🎤 Listening...";
             shouldShowWaitingBubble = false;
@@ -187,7 +187,7 @@ export function SpeechBubbleOrchestrator({ scenes, currentIndex }: SpeechBubbleO
 
             if (latestMessage) {
               // Set side based on message sender
-              side = latestMessage.sender === 'player' ? 'left' : 'right";
+              side = latestMessage.sender === 'player' ? 'left' : 'right';
               speakerLabel = latestMessage.sender === 'player'
                 ? (scene as SceneWithId)["left-character"] || "Player"
                 : (scene as SceneWithId)["right-character"] || "AI";
@@ -207,7 +207,7 @@ export function SpeechBubbleOrchestrator({ scenes, currentIndex }: SpeechBubbleO
               }
 
               // For interactive scenes, always show waiting bubble, but control visibility
-              const isUserMessage = latestMessage.sender === 'player";
+              const isUserMessage = latestMessage.sender === 'player';
               const hasAIResponse = messages.some(m => {
                 const extM = m as ExtendedMessage;
                 const extLatest = latestMessage as ExtendedMessage;
@@ -219,7 +219,7 @@ export function SpeechBubbleOrchestrator({ scenes, currentIndex }: SpeechBubbleO
               shouldShowWaitingBubble = isUserMessage && extMessage.status === 'sent' && !hasAIResponse;
             } else {
               // No messages yet - show placeholder
-              side = 'left";
+              side = 'left';
               speakerLabel = (scene as SceneWithId)["left-character"] || "Player";
               bubbleContent = "🎤 Press and hold to record";
               // No waiting bubble for placeholder state
@@ -232,7 +232,7 @@ export function SpeechBubbleOrchestrator({ scenes, currentIndex }: SpeechBubbleO
         if (!bubbleContent) return null;
 
         // Detect if bubble is entering (visible)
-        const isVisible = transform === 'translateY(0)";
+        const isVisible = transform === 'translateY(0)';
         const isEntering = isVisible;
 
         // Animation and transition logic (simplified for interactive scenes)
@@ -272,13 +272,13 @@ export function SpeechBubbleOrchestrator({ scenes, currentIndex }: SpeechBubbleO
           }
         } else {
           // Interactive and input scenes use simpler transitions
-          transition = 'transform 0.4s ease-out 0s";
+          transition = 'transform 0.4s ease-out 0s';
         }
 
         // Simple flexbox positioning based on speaker side
         const justifyContent = side === 'left' ? 'flex-start' :
                              side === 'right' ? 'flex-end' :
-                             'center";
+                             'center';
 
         const bubbleStyle = {
           position: 'absolute' as const,

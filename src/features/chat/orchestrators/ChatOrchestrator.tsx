@@ -3,11 +3,11 @@
  * when the scene has lastInFlow property, allowing input on any
  * scene that's the last in a character flow.
  */
-import React, { useEffect, useState } from 'react";
-import { useNavigation } from '../../context/NavigationContext";
-import { useDialogue as useChatDialogue } from '../context/ChatDialogueContext";
-import { ChatLayer } from '../ChatLayer";
-import type { Scene } from '../../types/scene";
+import React, { useEffect, useState } from 'react';
+import { useNavigation } from '@core/navigation/NavigationContext';
+import { useDialogue as useChatDialogue } from '../context/useChatDialogue';
+import { ChatLayer } from '../ChatLayer';
+import type { Scene } from '@core/types/scene';
 
 // Extended scene type that includes the dynamically added lastInFlow property
 type SceneWithLastInFlow = Scene & {

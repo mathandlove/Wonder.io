@@ -4,7 +4,7 @@
  */
 import React from "react";
 import type { SceneProps } from "../registry";
-import type { InteractiveBubbleScene as InteractiveBubbleSceneType } from "../../types/scene";
+import type { InteractiveBubbleScene as InteractiveBubbleSceneType } from "@core/types/scene";
 
 export default function InteractiveBubbleScene({ scene, sceneIndex }: SceneProps<InteractiveBubbleSceneType>) {
   return (

@@ -1,6 +1,6 @@
-import React, { useEffect, useState, useRef } from 'react";
-import './TextScene.css";
-import type { TextScene as TextSceneType } from '@core/types/scene";
+import React, { useEffect, useState, useRef } from 'react';
+import './TextScene.css';
+import type { TextScene as TextSceneType } from '@core/types/scene';
 
 interface TextSceneProps {
   scene: TextSceneType;

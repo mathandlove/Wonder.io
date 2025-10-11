@@ -1,9 +1,9 @@
-import React, { createContext, useContext, useState, useCallback, type ReactNode } from 'react";
-import { useDialogue as useOldDialogue } from '../../dialogue/DialogueContext";
+import React, { createContext, useState, useCallback, type ReactNode } from 'react';
+import { useDialogue as useOldDialogue } from '@core/dialogue/DialogueContext';
 
 export interface Message {
   id: string;
-  sender: 'player' | 'npc";
+  sender: 'player' | 'npc';
   text: string;
   timestamp: Date;
 }
@@ -13,7 +13,7 @@ interface DialogueContextType {
   isPlayerTurn: boolean;
   waiting: boolean;
   suggestions?: string[];
-  questState: 'active' | 'complete' | 'failed";
+  questState: 'active' | 'complete' | 'failed';
   showTurnBanner: boolean;
   turnBannerText?: string;
   grantPlayerTurn: (questId?: string) => void;
@@ -26,23 +26,7 @@ interface DialogueContextType {
   markGoalNotMet: () => void;
 }
 
-const DialogueContext = createContext<DialogueContextType | undefined>(undefined);
-
-export const useDialogue = () => {
-  const context = useContext(DialogueContext);
-  if (!context) {
-    throw new Error('useDialogue must be used within DialogueProvider');
-  }
-  return context;
-};
-
-export const useIsPlayerTurn = () => {
-  const context = useContext(DialogueContext);
-  if (!context) {
-    throw new Error('useIsPlayerTurn must be used within DialogueProvider');
-  }
-  return context.isPlayerTurn;
-};
+export const DialogueContext = createContext<DialogueContextType | undefined>(undefined);
 
 interface DialogueProviderProps {
   children: ReactNode;
@@ -82,7 +66,7 @@ export const ChatDialogueProvider: React.FC<DialogueProviderProps> = ({ children
     return `AI Response to: ${playerText}`;
   };
 
-  const evaluateQuest = (playerText: string, npcResponse: string): boolean => {
+  const evaluateQuest = (playerText: string): boolean => {
     // For now, check if player text contains "monkey"
     return playerText.toLowerCase().includes('monkey');
   };
@@ -102,13 +86,6 @@ export const ChatDialogueProvider: React.FC<DialogueProviderProps> = ({ children
     };
     setMessages(prev => [...prev, playerMessage]);
 
-    // Submit to old dialogue system to create character page with LEO speaking
-    if (oldDialogue.submitUserMessage) {
-      oldDialogue.submitUserMessage(text);
-    } else {
-      console.error('submitUserMessage is not available on oldDialogue:', Object.keys(oldDialogue));
-    }
-
     try {
       // Call mock LLM
       const npcResponse = await mockLLMCall(text);
@@ -123,7 +100,7 @@ export const ChatDialogueProvider: React.FC<DialogueProviderProps> = ({ children
       setMessages(prev => [...prev, npcMessage]);
 
       // Evaluate quest completion
-      const goalMet = evaluateQuest(text, npcResponse);
+      const goalMet = evaluateQuest(text);
 
       if (goalMet) {
         setQuestState('complete');

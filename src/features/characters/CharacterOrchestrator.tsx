@@ -1,7 +1,7 @@
 import React, { useEffect, useMemo, useState, useLayoutEffect } from "react";
-import { useScrollManager } from '@shared/hooks/useScrollManager";
-import { useCharacterAnimation } from '@features/characters/CharacterAnimationContext";
-import type { Scene } from '@core/types/scene";
+import { useScrollManager } from '@shared/hooks/useScrollManager';
+import { useCharacterAnimation } from '@features/characters-context/CharacterAnimationContext';
+import type { Scene } from '@core/types/scene';
 import { CharacterPanel } from "./CharacterPanel";
 
 
@@ -60,7 +60,7 @@ export const CharacterOrchestrator: React.FC<Props> = ({ storyId, scenes, curren
   React.useEffect(() => {
     const diff = scrollOffset - prevScrollOffsetRef.current;
     if (Math.abs(diff) > 0.01) { // Small threshold to avoid jitter
-      const newDirection = diff > 0 ? 'forward' : 'backward";
+      const newDirection = diff > 0 ? 'forward' : 'backward';
       setScrollDirection(newDirection);
     }
     prevScrollOffsetRef.current = scrollOffset;

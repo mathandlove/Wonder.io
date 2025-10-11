@@ -1,9 +1,9 @@
-import type { Scene } from '@core/types/scene";
+import type { Scene } from '@core/types/scene';
 import type { PanelRange } from "./types";
 
 // Special character name to indicate explicit "no character" state
 // cspell:ignore NOCHARACTER
-export const NOCHARACTER = "NOCHARACTER";
+export const NOCHARACTER = 'NOCHARACTER';
 
 /**
  * Derive Character Panel ranges from scene metadata.

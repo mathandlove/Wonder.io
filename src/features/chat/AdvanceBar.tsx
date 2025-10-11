@@ -1,5 +1,5 @@
-import React from 'react";
-import './Chat.css";
+import React from 'react';
+import './Chat.css';
 
 interface AdvanceBarProps {
   canAdvance: boolean;

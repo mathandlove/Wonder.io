@@ -3,9 +3,9 @@
  * Keeps scenes dumb while preserving existing assistantText auto-advance logic.
  */
 import React, { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState } from "react";
-import type { Scene } from '@core/types/scene";
-import { injectPanelMetaFromFlows } from '@features/characters/adapters/injectPanelMetaFromFlows";
-import { sceneBus } from '@core/bus/sceneBus";
+import type { Scene } from '@core/types/scene';
+import { injectPanelMetaFromFlows } from '@features/characters/adapters/injectPanelMetaFromFlows';
+import { sceneBus } from '@core/bus/sceneBus';
 
 export interface NavigationContextType {
   currentIndex: number;

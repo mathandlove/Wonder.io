@@ -3,8 +3,8 @@
  * Manages positioning and visibility of image scenes based on scroll position
  */
 import React from "react";
-import { SceneRenderer } from "../SceneRenderer";
-import type { Scene } from "../../types/scene";
+import { SceneRenderer } from "@shared/components/SceneRenderer";
+import type { Scene } from "@core/types/scene";
 
 interface ImageSceneOrchestratorProps {
   scenes: Scene[];
@@ -71,7 +71,7 @@ export const ImageSceneOrchestrator = React.memo(function ImageSceneOrchestrator
           transform = `translateY(${(range.endIndex - index) * 100}vh)`;
         } else {
           // Image range is visible and fixed in place
-          transform = 'translateY(0)";
+          transform = 'translateY(0)';
         }
 
         return (

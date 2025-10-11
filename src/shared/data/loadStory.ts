@@ -3,7 +3,7 @@
  * Flattens character-flow scenes into individual scenes and validates data structure.
  */
 // src/data/loadStory.ts
-import type { Scene, Story } from '@core/types/scene";
+import type { Scene, Story } from '@core/types/scene';
 
 type RawFlowItem = {
   side?: "left" | "right";

@@ -3,7 +3,7 @@ import "./Caption.css";
 type CaptionProps = {
   text: string;
   isActive: boolean; // driven by scene manager enter/leave
-  direction: 'forward' | 'backward";
+  direction: 'forward' | 'backward';
   align?: "center" | "bottom";
 };
 

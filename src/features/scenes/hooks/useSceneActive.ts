@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { useSceneBus } from "../registry/SceneBusProvider";
+import { useSceneBus } from "@core/bus/SceneBusProvider";
 
 export function useSceneActive(sceneId: string) {
   const bus = useSceneBus();

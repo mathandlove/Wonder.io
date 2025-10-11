@@ -3,7 +3,7 @@
  * No scroll math, no containers - just executes scrollIntoView when targetIndex changes
  */
 import React, { createContext, useCallback, useContext, useEffect } from "react";
-import { useNavigation } from '@core/navigation/NavigationContext";
+import { useNavigation } from '@core/navigation/NavigationContext';
 
 /**
  * Type definitions for the SnapLayer API.

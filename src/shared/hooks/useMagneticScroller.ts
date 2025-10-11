@@ -8,7 +8,7 @@
  *
  * Emits a targetIndex when a programmatic nudge is warranted (debounced)
  */
-import { useEffect, useRef, useState } from 'react";
+import { useEffect, useRef, useState } from 'react';
 
 export type MagneticConfig = {
   minGesturePx?: number;        // default 50

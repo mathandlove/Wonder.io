@@ -1,6 +1,6 @@
-import React, { useState, useRef, useEffect } from 'react";
-import type { PanelSide } from './types";
-import './CharacterPanel.css";
+import React, { useState, useRef, useEffect } from 'react';
+import type { PanelSide } from './types';
+import './CharacterPanel.css';
 
 interface CharacterPanelProps {
   side: PanelSide;
@@ -10,7 +10,7 @@ interface CharacterPanelProps {
   nextCharacter?: string | null;
   newCharacter?: boolean; // true if previousCharacter !== currentCharacter
   aboutToSwap?: boolean; // boolean modifier flag
-  scrollDirection?: 'forward' | 'backward";
+  scrollDirection?: 'forward' | 'backward';
   pose?: string | null;
   storyId: string;
   animNonce?: number; // Forces animation restart when incremented
@@ -18,7 +18,7 @@ interface CharacterPanelProps {
   isSpeaking?: boolean; // true if this character is currently the speaker
 }
 
-type Phase = 'hidden' | 'entering' | 'idle' | 'speaking";
+type Phase = 'hidden' | 'entering' | 'idle' | 'speaking';
 
 export const CharacterPanel: React.FC<CharacterPanelProps> = ({
   side,
@@ -39,7 +39,7 @@ export const CharacterPanel: React.FC<CharacterPanelProps> = ({
 
   // Pure renderer - determine phase based on scroll direction and character state
   const getCurrentPhase = (): Phase => {
-    if (!visible || !characterName) return 'hidden";
+    if (!visible || !characterName) return 'hidden';
 
     // Check if character is actively speaking first
 
@@ -47,21 +47,21 @@ export const CharacterPanel: React.FC<CharacterPanelProps> = ({
     if (scrollDirection === 'forward') {
       // Forward scroll: character enters when new
       if (newCharacter) {
-        return 'entering";
+        return 'entering';
       }
     } else if (scrollDirection === 'backward') {
       // Backward scroll: character enters when about to swap (exit animation)
       if (aboutToSwap) {
-        return 'entering";
+        return 'entering';
       }
     }
 
         if (isSpeaking) {
-      return 'speaking";
+      return 'speaking';
     }
 
     // Default to idle (no animation needed)
-    return 'idle";
+    return 'idle';
   };
 
   const phase = getCurrentPhase();
@@ -107,9 +107,9 @@ export const CharacterPanel: React.FC<CharacterPanelProps> = ({
 
   // CSS class for current phase and side
   const getCardClasses = () => {
-    const baseClass = 'story-character-cardboard";
-    const phaseClass = phase === 'entering' ? `entering-${side}` : 'idle";
-    const swapClass = aboutToSwap ? 'about-to-swap' : '";
+    const baseClass = 'story-character-cardboard';
+    const phaseClass = phase === 'entering' ? `entering-${side}` : 'idle';
+    const swapClass = aboutToSwap ? 'about-to-swap' : '';
     return `${baseClass} ${phaseClass} ${swapClass}`.trim();
   };
 
@@ -118,9 +118,9 @@ export const CharacterPanel: React.FC<CharacterPanelProps> = ({
   // Get speaking animation class for character inner div
   const getInnerClasses = () => {
     if (phase === 'speaking') {
-      return side === 'left' ? 'story-character-speaking' : 'story-character-speaking-right";
+      return side === 'left' ? 'story-character-speaking' : 'story-character-speaking-right';
     }
-    return '";
+    return '';
   };
 
   // Character display logic with animation-based character swapping
@@ -147,12 +147,12 @@ export const CharacterPanel: React.FC<CharacterPanelProps> = ({
   };
 
   const getDisplayImage = (char: string | null) => {
-    if (!char || char === 'NOCHARACTER') return '";
+    if (!char || char === 'NOCHARACTER') return '';
     return `/stories/${storyId}.bundle/images/characters/${char}${pose ? `.${pose}` : ''}.sticker-cardboard-3d.webp?${version}`;
   };
 
   const getFallbackImage = (char: string | null) => {
-    if (!char || char === 'NOCHARACTER') return '";
+    if (!char || char === 'NOCHARACTER') return '';
     return `/assets.core/images/characters/${char}${pose ? `.${pose}` : ''}.sticker-cardboard-3d.webp?${version}`;
   };
 

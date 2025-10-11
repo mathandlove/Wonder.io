@@ -1,6 +1,6 @@
-import { useEffect, useReducer } from 'react";
+import { useEffect, useReducer } from 'react';
 
-type Side = 'left' | 'right";
+type Side = 'left' | 'right';
 
 type GateState = {
   sceneToken: string;

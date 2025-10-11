@@ -1,14 +1,14 @@
 /**
  * QuestManager - React Context + reducer implementation
  */
-import { createContext, useContext, useReducer, useMemo, useCallback, useEffect } from 'react";
-import type { ReactNode } from 'react";
+import { createContext, useContext, useReducer, useMemo, useCallback, useEffect } from 'react';
+import type { ReactNode } from 'react';
 
 // ============================================================================
 // Types
 // ============================================================================
 
-export type QuestPhase = 'idle' | 'offered' | 'minimized' | 'complete' | 'clear";
+export type QuestPhase = 'idle' | 'offered' | 'minimized' | 'complete' | 'clear';
 
 export interface Quest {
   id: string;

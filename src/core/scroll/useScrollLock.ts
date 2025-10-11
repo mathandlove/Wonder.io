@@ -4,7 +4,7 @@
  * This hook provides active scroll prevention using non-passive event listeners
  * to handle cases where CSS scroll-snap fails with fast momentum scrolling.
  */
-import { useCallback, useEffect, useRef } from 'react";
+import { useCallback, useEffect, useRef } from 'react';
 
 interface ScrollLockConfig {
   isLocked: boolean;

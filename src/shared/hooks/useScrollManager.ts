@@ -2,9 +2,9 @@
  * Hook that encapsulates scroll offset management, programmatic scroll control,
  * scroll lock management, and synchronization with NavigationContext.
  */
-import { useEffect, useRef } from 'react";
-import { useScrollOffset } from './useScrollOffset";
-import { useScrollLockManager } from './useScrollLockManager";
+import { useEffect, useRef } from 'react';
+import { useScrollOffset } from './useScrollOffset';
+import { useScrollLockManager } from '@core/scroll/useScrollLockManager';
 
 interface UseScrollManagerProps {
   setCurrentIndex: (index: number) => void;

@@ -2,8 +2,8 @@
  * Hook that handles updating NavigationContext when story changes.
  * Manages the synchronization between loaded story scenes and navigation state.
  */
-import { useEffect } from 'react";
-import type { Scene } from '@core/types/scene";
+import { useEffect } from 'react';
+import type { Scene } from '@core/types/scene';
 
 interface UseSceneNavigationProps {
   initialScenes: Scene[];

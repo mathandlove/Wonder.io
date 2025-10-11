@@ -1,7 +1,7 @@
 /**
  * Build background ranges from story content using the original main branch rules
  */
-import type { SceneContent, BackgroundRange } from '@shared/types/background";
+import type { SceneContent, BackgroundRange } from '@shared/types/background';
 
 export function buildBackgroundRanges(storyContent: SceneContent[]): BackgroundRange[] {
   const backgroundRanges: BackgroundRange[] = [];
@@ -13,7 +13,7 @@ export function buildBackgroundRanges(storyContent: SceneContent[]): BackgroundR
     let newBg: string | null = null;
 
     if (content.type === 'image') {
-      newBg = 'comicBackground";
+      newBg = 'comicBackground';
     } else if (content.type === 'image-text') {
       // Don't change background for image-text, it continues from previous image
       return;

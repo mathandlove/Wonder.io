@@ -1,6 +1,6 @@
 import React from "react";
 import type { SceneProps } from "../registry";
-import type { CaptionScene as CaptionSceneType } from "../../types/scene";
+import type { CaptionScene as CaptionSceneType } from "@core/types/scene";
 
 export default function CaptionScene({ scene }: SceneProps<CaptionSceneType>) {
   // CaptionScene renders nothing - captions are handled by CaptionOrchestrator outside document flow

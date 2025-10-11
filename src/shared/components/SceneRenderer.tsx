@@ -5,8 +5,8 @@
 // src/components/SceneRenderer.tsx
 import React, { Suspense } from "react";
 import type { ComponentType } from "react";
-import type { Scene } from '@core/types/scene";
-import { sceneRegistry, type SceneProps } from '@features/scenes/registry";
+import type { Scene } from '@core/types/scene';
+import { sceneRegistry, type SceneProps } from '@features/scenes/registry';
 
 // Small error boundary so a broken scene doesn't crash the whole run
 class SceneErrorBoundary extends React.Component<{ children: React.ReactNode }, { hasError: boolean; message?: string }> {

@@ -4,9 +4,9 @@
  */
 import React from "react";
 import type { SceneProps } from "../registry";
-import type { TextScene as TextSceneType } from "../../types/scene";
-import TextSceneComponent from "../../components/TextScene";
-import { useNavigation } from "../../context/NavigationContext";
+import type { TextScene as TextSceneType } from "@core/types/scene";
+import TextSceneComponent from "@shared/components/TextScene";
+import { useNavigation } from "@core/navigation/NavigationContext";
 
 export default function TextScene({ scene, onComplete }: SceneProps<TextSceneType>) {
   const { goToNext } = useNavigation();

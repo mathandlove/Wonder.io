@@ -4,7 +4,7 @@ import "./Caption.css";
 type CaptionProps = {
   text: string;
   showCaption: boolean; // driven by scene manager enter/leave
-  direction: 'forward' | 'backward";
+  direction: 'forward' | 'backward';
 };
 
 export default function Caption({ text, showCaption, direction }: CaptionProps) {

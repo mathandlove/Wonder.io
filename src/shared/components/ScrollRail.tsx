@@ -4,8 +4,8 @@
  * Renders a transparent, absolute-positioned scroll container that owns native scrolling
  * and creates one 100vh target per scene. This is the single source of scroll events.
  */
-import React, { forwardRef } from 'react";
-import './SnapScroll.css";
+import React, { forwardRef } from 'react';
+import './SnapScroll.css';
 
 type ScrollRailProps = {
   sceneCount: number;
@@ -25,4 +25,4 @@ export const ScrollRail = forwardRef<HTMLDivElement, ScrollRailProps>(
   }
 );
 
-ScrollRail.displayName = 'ScrollRail";
+ScrollRail.displayName = 'ScrollRail';

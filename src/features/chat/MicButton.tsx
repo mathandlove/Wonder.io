@@ -1,5 +1,5 @@
 import { useRef, useState } from "react";
-import { useDialogue } from '@core/dialogue/DialogueContext";
+import { useDialogue } from '@core/dialogue/DialogueContext';
 import { usePageFactory } from "./orchestrators/PageFactory";
 
 // Types for the Web Speech API
@@ -64,7 +64,7 @@ export default function MicButton() {
 
       // Create a new interactive bubble scene and navigate to it
       const newScene = createInteractiveBubblePage();
-      const sceneId = newScene.sceneId || 'default";
+      const sceneId = newScene.sceneId || 'default';
 
 
       // Add the scene and auto-scroll to it
@@ -78,16 +78,16 @@ export default function MicButton() {
       const recognition = new SpeechRecognition();
       recognition.continuous = true;
       recognition.interimResults = true;
-      recognition.lang = 'en-US";
+      recognition.lang = 'en-US';
 
       recognition.onresult = (event: SpeechRecognitionEvent) => {
-        let interimTranscript = '";
-        let finalTranscript = '";
+        let interimTranscript = '';
+        let finalTranscript = '';
 
         for (let i = event.resultIndex; i < event.results.length; i++) {
           const transcript = event.results[i][0].transcript;
           if (event.results[i].isFinal) {
-            finalTranscript += transcript + ' ";
+            finalTranscript += transcript + ' ';
           } else {
             interimTranscript += transcript;
           }

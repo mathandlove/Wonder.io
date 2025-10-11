@@ -4,14 +4,14 @@
  */
 import React from "react";
 import type { SceneProps } from "../registry";
-import type { ImageScene } from "../../types/scene";
-import { resolveStoryImage } from "../../utils/imageResolver";
-import Caption from "../../components/image/Caption";
+import type { ImageScene } from "@core/types/scene";
+import { resolveStoryImage } from "@shared/utils/imageResolver";
+import Caption from "@features/image-scene/Caption";
 import { useSceneActive } from "../hooks/useSceneActive";
 
 export default function ImageScene({ scene }: SceneProps<ImageScene>) {
   const { isActive, direction } = useSceneActive(scene.sceneId || '');
-  const hasCaption = scene.text && scene.text.trim() !== '";
+  const hasCaption = scene.text && scene.text.trim() !== '';
 
 
   return (

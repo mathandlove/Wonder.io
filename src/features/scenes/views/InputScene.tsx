@@ -2,9 +2,9 @@
  * Simple input scene placeholder.
  * Chat functionality is now handled by the global ChatOrchestrator.
  */
-import React from 'react";
-import type { SceneProps } from '../registry";
-import type { InputScene } from '../../types/scene";
+import React from 'react';
+import type { SceneProps } from '../registry';
+import type { InputScene } from '@core/types/scene';
 
 export default function InputScene({ scene, onComplete, sceneIndex }: SceneProps<InputScene>) {
   return (

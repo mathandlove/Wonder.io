@@ -1,7 +1,7 @@
 /**
  * InteractionGuard stub - minimal implementation for compilation
  */
-import React from 'react";
+import React from 'react';
 
 export interface InteractionGuardProps {
   // Props can be added later
