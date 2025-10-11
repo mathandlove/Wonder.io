@@ -4,7 +4,7 @@
  */
 import React, { createContext, useContext, useCallback } from "react";
 import type { Scene, InteractiveBubbleScene } from "@core/types/scene";
-import { useNavigation } from "@core/navigation/NavigationContext";
+import { useSceneManager } from "@core/scenes/SceneManager";
 import { injectPanelMetaFromFlows } from "../../characters/adapters/injectPanelMetaFromFlows";
 
 type PageFactoryContextType = {
@@ -21,7 +21,7 @@ type PageFactoryProviderProps = {
 };
 
 export function PageFactoryProvider({ children, onSceneAdded }: PageFactoryProviderProps) {
-  const { scenes, currentIndex, insertScene, goToIndex, allScenes } = useNavigation();
+  const { scenes, currentIndex, insertScene, goToIndex, allScenes } = useSceneManager();
 
   // Create an interactive bubble scene
   const createInteractiveBubblePage = (recordingId?: string): InteractiveBubbleScene => {

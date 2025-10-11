@@ -6,10 +6,10 @@ import React from "react";
 import type { SceneProps } from "../registry";
 import type { TextScene as TextSceneType } from "@core/types/scene";
 import TextSceneComponent from "@shared/components/TextScene";
-import { useNavigation } from "@core/navigation/NavigationContext";
+import { useSceneManager } from "@core/scenes/SceneManager";
 
 export default function TextScene({ scene, onComplete }: SceneProps<TextSceneType>) {
-  const { goToNext } = useNavigation();
+  const { goToNext } = useSceneManager();
 
   const handleComplete = () => {
     // Navigate to next scene when text scene is completed

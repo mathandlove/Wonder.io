@@ -1,12 +1,19 @@
 /**
- * NavigationProvider owns navigation state/APIs and syncs with SnapLayer.
- * Keeps scenes dumb while preserving existing assistantText auto-advance logic.
+ * SceneManager - Manages scene collection, visibility, and progression state
+ *
+ * Responsibilities:
+ * - Scene collection management (allScenes array)
+ * - Scene visibility filtering (hidden scenes)
+ * - Scene insertion and dynamic scene creation
+ * - Current position tracking (currentIndex)
+ * - Navigation helpers (goToNext, goToIndex, etc.)
+ * - Derived state (currentBackgroundId, visibleScenes)
  */
 import React, { createContext, useCallback, useContext, useMemo, useState } from "react";
 import type { Scene } from '@core/types/scene';
 import { injectPanelMetaFromFlows } from '@features/characters/adapters/injectPanelMetaFromFlows';
 
-export interface NavigationContextType {
+export interface SceneManagerType {
   currentIndex: number;
   setCurrentIndex: (index: number) => void;
   allScenes: Scene[];
@@ -23,23 +30,23 @@ export interface NavigationContextType {
   currentBackgroundId: string | null;
 }
 
-const NavigationContext = createContext<NavigationContextType | null>(null);
+const SceneManagerContext = createContext<SceneManagerType | null>(null);
 
 // eslint-disable-next-line react-refresh/only-export-components
-export function useNavigation(): NavigationContextType {
-  const context = useContext(NavigationContext);
+export function useSceneManager(): SceneManagerType {
+  const context = useContext(SceneManagerContext);
   if (!context) {
-    throw new Error("useNavigation must be used within NavigationProvider");
+    throw new Error("useSceneManager must be used within SceneManagerProvider");
   }
   return context;
 }
 
-interface NavigationProviderProps {
+interface SceneManagerProviderProps {
   children: React.ReactNode;
   initialIndex?: number;
 }
 
-export function NavigationProvider({ children, initialIndex = 0 }: NavigationProviderProps) {
+export function SceneManagerProvider({ children, initialIndex = 0 }: SceneManagerProviderProps) {
   const [currentIndex, setCurrentIndex] = useState(initialIndex);
   const [allScenes, setAllScenes] = useState<Scene[]>([]);
 
@@ -48,8 +55,6 @@ export function NavigationProvider({ children, initialIndex = 0 }: NavigationPro
     () => allScenes.filter(scene => !scene.hidden),
     [allScenes]
   );
-
-
 
   // Compute current background from current scene (use visibleScenes)
   const currentBackgroundId = useMemo(() => {
@@ -120,7 +125,6 @@ export function NavigationProvider({ children, initialIndex = 0 }: NavigationPro
     if (hideFromScene && fromSceneId) {
       hideScene(fromSceneId);
       // After hiding, stay on current index (which now shows the next scene)
-      // No need to change currentIndex - the useEffect will emit events automatically
     } else {
       // Just advance to next scene
       setCurrentIndex(currentIndex + 1);
@@ -130,7 +134,7 @@ export function NavigationProvider({ children, initialIndex = 0 }: NavigationPro
     onComplete?.();
   }, [currentIndex, hideScene]);
 
-  const contextValue = useMemo((): NavigationContextType => ({
+  const contextValue = useMemo((): SceneManagerType => ({
     currentIndex,
     setCurrentIndex,
     allScenes,
@@ -162,9 +166,8 @@ export function NavigationProvider({ children, initialIndex = 0 }: NavigationPro
   ]);
 
   return (
-    <NavigationContext.Provider value={contextValue}>
+    <SceneManagerContext.Provider value={contextValue}>
       {children}
-    </NavigationContext.Provider>
+    </SceneManagerContext.Provider>
   );
 }
-

@@ -1,5 +1,5 @@
 import { useDialogue } from "@core/dialogue/DialogueContext";
-import { useNavigation } from "@core/navigation/NavigationContext";
+import { useSceneManager } from "@core/scenes/SceneManager";
 import type { Message } from "@core/dialogue/types";
 import "./BubbleOrchestrator.css";
 
@@ -9,7 +9,7 @@ interface BubbleOrchestratorProps {
 
 export default function BubbleOrchestrator({ className }: BubbleOrchestratorProps) {
   const { getMessagesForScene } = useDialogue();
-  const { visibleScenes, currentIndex } = useNavigation();
+  const { visibleScenes, currentIndex } = useSceneManager();
 
   const currentSceneId = visibleScenes[currentIndex]?.sceneId || 'default';
   const messages = getMessagesForScene(currentSceneId);

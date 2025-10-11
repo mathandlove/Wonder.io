@@ -6,11 +6,11 @@ import React, { useEffect } from "react";
 import type { SceneProps } from "../registry";
 import type { QuestScene } from "@core/types/scene";
 import { useQuest } from "@core/quest/QuestManager";
-import { useNavigation } from "@core/navigation/NavigationContext";
+import { useSceneManager } from "@core/scenes/SceneManager";
 
 export default function QuestScene({ scene, onComplete, sceneIndex }: SceneProps<QuestScene>) {
   const { offer, accept, state } = useQuest();
-  const { currentIndex, scenes, navigateToNext } = useNavigation();
+  const { currentIndex, scenes, navigateToNext } = useSceneManager();
   const [hasOffered, setHasOffered] = React.useState(false);
   const [isAccepted, setIsAccepted] = React.useState(false);
 

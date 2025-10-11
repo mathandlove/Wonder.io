@@ -7,7 +7,7 @@ import { useStory } from '@shared/hooks/useStory';
 import { FlowLayout } from '@features/flow-layout/FlowLayout';
 import { SceneRenderer } from '@shared/components/SceneRenderer';
 import { PageFactoryProvider } from '@features/chat/orchestrators/PageFactory';
-import { useNavigation } from '@core/navigation/NavigationContext';
+import { useSceneManager } from '@core/scenes/SceneManager';
 import { BackgroundOrchestrator } from '@features/background/BackgroundOrchestrator';
 import { CharacterOrchestrator } from '@features/characters/CharacterOrchestrator';
 import { SpeechBubbleOrchestrator } from '@features/chat/orchestrators/SpeechBubbleOrchestrator';
@@ -78,13 +78,13 @@ const StoryModeScroll: React.FC = () => {
   return <StoryContent />;
 };
 
-// StoryContent: inner component that uses NavigationProvider context
+// StoryContent: inner component that uses SceneManagerProvider context
 const StoryContent: React.FC = () => {
   // Load story data
   const { story, loading, error } = useStory(STORY_URL);
 
   // Navigation context
-  const { scenes, currentIndex, setScenes, setCurrentIndex, hideScene, showScene, allScenes } = useNavigation();
+  const { scenes, currentIndex, setScenes, setCurrentIndex, hideScene, showScene, allScenes } = useSceneManager();
 
   // Chat dialogue context for content lock checking
   const { isPlayerTurn, waiting, questState } = useDialogue();
@@ -223,7 +223,7 @@ const SceneContentWithNavigation = React.memo(function SceneContentWithNavigatio
   }
 
   // Use navigation context instead of direct snap API
-  // const { goToNext } = useNavigation();
+  // const { goToNext } = useSceneManager();
 
   // When the scene signals completion, use navigation context to advance
   // const handleComplete = React.useCallback(() => {

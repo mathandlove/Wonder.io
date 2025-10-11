@@ -4,7 +4,7 @@
  * scene that's the last in a character flow.
  */
 import React, { useEffect, useState } from 'react';
-import { useNavigation } from '@core/navigation/NavigationContext';
+import { useSceneManager } from '@core/scenes/SceneManager';
 import { useDialogue as useChatDialogue } from '../context/useChatDialogue';
 import { ChatLayer } from '../ChatLayer';
 import type { Scene } from '@core/types/scene';
@@ -16,7 +16,7 @@ type SceneWithLastInFlow = Scene & {
 };
 
 export const ChatOrchestrator: React.FC = () => {
-  const { currentIndex, scenes } = useNavigation();
+  const { currentIndex, scenes } = useSceneManager();
   const { grantPlayerTurn, questState } = useChatDialogue();
   const [chatVisible, setChatVisible] = useState(false);
   const [hasGrantedTurn, setHasGrantedTurn] = useState(false);
