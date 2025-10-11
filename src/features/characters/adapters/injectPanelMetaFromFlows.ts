@@ -1,0 +1,213 @@
+import type { Scene } from "../../types/scene";
+import { NOCHARACTER } from "../buildPanelRangesFromScenes";
+
+// Input: flattened scenes
+// Output: new scenes array where any scene inside a character-flow
+// has meta.panelLeft/meta.panelRight set to { character: string }.
+export function injectPanelMetaFromFlows(scenes: Scene[]): Scene[] {
+  if (!Array.isArray(scenes) || scenes.length === 0) return scenes;
+
+  let inFlow = false;
+  let currentLeft: string | null = null;
+  let currentRight: string | null = null;
+
+  const out = scenes.map((s, i) => {
+    // Check if this is a scene that has character data (character, input, quest, etc.)
+    // These scenes have left-character and/or right-character properties
+    const hasCharacters = (s as any)["left-character"] || (s as any)["right-character"];
+    let isNewFlow = false;
+
+    if (hasCharacters) {
+      // Update character tracking for any scene type with character data
+      const sceneLeft = (s as any)["left-character"];
+      const sceneRight = (s as any)["right-character"];
+
+      // For non-character scenes that need character rendering (like input and interactive-bubble), also inject meta
+      if (s.type !== "character" && s.type !== "input" && s.type !== "interactive-bubble") {
+        currentLeft = sceneLeft || currentLeft;
+        currentRight = sceneRight || currentRight;
+        return s; // Return unchanged for scenes that don't need character rendering
+      }
+
+      // Continue with character scene processing...
+      // Detect if this is a new flow (explicit character change or new character introduction)
+
+      // Check if this scene explicitly resets characters (new flow detected)
+      // Don't treat the very first character scene as a new flow
+      const hasExistingFlow = currentLeft !== null || currentRight !== null;
+      isNewFlow = hasExistingFlow && (
+        (sceneLeft && !sceneRight && currentRight) || // Only left char when we had right
+        (sceneLeft !== currentLeft && !!sceneLeft) ||     // Different left character
+        (sceneRight !== currentRight && !!sceneRight)     // Different right character
+      );
+
+      // Store previous character state to determine who was already present
+      const previousLeft = currentLeft;
+      const previousRight = currentRight;
+
+      // Update current character state
+      if (isNewFlow) {
+        // Reset to only what this scene explicitly defines
+        currentLeft = sceneLeft || null;
+        currentRight = sceneRight || null;
+      } else {
+        // Continue previous flow
+        currentLeft = sceneLeft ?? currentLeft;
+        currentRight = sceneRight ?? currentRight;
+      }
+      inFlow = true;
+
+      // For character and input scenes, determine speaking state based on speaker and whether character was already present
+      if (s.type === "character" || s.type === "input") {
+        const speaker = (s as any).speaker;
+        const meta = { ...(s as any).meta };
+
+        // Helper function to create panel state
+        const createPanelState = (side: 'left' | 'right', current: string | null, previous: string | null) => {
+          if (!current) return null;
+
+          const nextScene = scenes[i + 1];
+          const nextCharacterKey = side === 'left' ? 'left-character' : 'right-character";
+          const nextCharacter = nextScene?.type === "character" ?
+            (nextScene as any)[nextCharacterKey] ||
+            nextScene?.meta?.[side === 'left' ? 'panelLeft' : 'panelRight']?.character :
+            nextScene?.type === "quest" ? current :
+            // If no next scene exists, assume character continues (for dynamically created scenes)
+            !nextScene ? current : NOCHARACTER;
+
+          const aboutToSwap = nextCharacter !== current;
+          const newCharacter = previous !== current;
+
+
+          return {
+            character: current,
+            previousCharacter: previous || NOCHARACTER,
+            nextCharacter: nextCharacter || NOCHARACTER,
+            newCharacter,
+            aboutToSwap
+          };
+        };
+
+        // Set panel states
+        const leftPanel = createPanelState('left', currentLeft, previousLeft);
+        const rightPanel = createPanelState('right', currentRight, previousRight);
+
+        if (leftPanel) meta.panelLeft = leftPanel;
+        if (rightPanel) meta.panelRight = rightPanel;
+
+        // Bubble animates immediately if the speaking character is not new
+        const speakerSide = (s as any).speaker;
+        const speakingPanelNew = speakerSide === 'left' ? leftPanel?.newCharacter :
+                                speakerSide === 'right' ? rightPanel?.newCharacter :
+                                false;
+        meta.bubbleAnimateImmediately = !speakingPanelNew;
+
+        // Mark as new flow if this scene starts a new character flow
+        const sceneData = { ...s, meta } as any;
+        if (isNewFlow) {
+          sceneData.newFlow = true;
+        }
+
+        return sceneData as Scene;
+      }
+    }
+
+    // Check if we're leaving a character flow (non-character scene)
+    if (s.type !== "character" && !hasCharacters) {
+      // Only reset if we're not in a flow sequence
+      if (!(s as any).flowSequence) {
+        // Save the characters before resetting
+        const prevLeftCharacter = currentLeft;
+        const prevRightCharacter = currentRight;
+
+        inFlow = false;
+        currentLeft = null;
+        currentRight = null;
+
+        // For scenes ending character flows, animate character exit
+        const meta = { ...(s as any).meta };
+        const hadLeftChar = prevLeftCharacter && prevLeftCharacter !== NOCHARACTER;
+        const hadRightChar = prevRightCharacter && prevRightCharacter !== NOCHARACTER;
+
+        meta.panelLeft = {
+          character: NOCHARACTER,
+          previousCharacter: prevLeftCharacter || NOCHARACTER,
+          nextCharacter: NOCHARACTER,
+          newCharacter: hadLeftChar,
+          aboutToSwap: false
+        };
+        meta.panelRight = {
+          character: NOCHARACTER,
+          previousCharacter: prevRightCharacter || NOCHARACTER,
+          nextCharacter: NOCHARACTER,
+          newCharacter: hadRightChar,
+          aboutToSwap: false
+        };
+        meta.bubbleAnimateImmediately = true;
+
+        return { ...s, meta } as Scene;
+      }
+    }
+
+    // For any scene in a character context, inject basic panel metadata
+    if (inFlow || hasCharacters) {
+      const meta = { ...(s as any).meta };
+      meta.panelLeft = { character: currentLeft || NOCHARACTER };
+      meta.panelRight = { character: currentRight || NOCHARACTER };
+
+      const sceneData = { ...s, meta } as any;
+      if (isNewFlow) sceneData.newFlow = true;
+      return sceneData as Scene;
+    }
+
+    // Fallback: inject NOCHARACTER for scenes outside character flows
+    const meta = { ...(s as any).meta };
+    meta.panelLeft = { character: NOCHARACTER };
+    meta.panelRight = { character: NOCHARACTER };
+    meta.bubbleAnimateImmediately = true;
+
+    return { ...s, meta } as Scene;
+  });
+
+  // Second pass: mark the last scene in each character flow with lastInFlow
+  const finalOut = out.map((scene, i) => {
+    // Check if this scene is in a character flow
+    const hasCharacters = (scene as any)["left-character"] || (scene as any)["right-character"] ||
+                         (scene.type === "character" || scene.type === "input");
+
+    if (!hasCharacters) {
+      // Non-character scenes should never have lastInFlow
+      const sceneWithoutLastInFlow = { ...scene };
+      delete (sceneWithoutLastInFlow as any).lastInFlow;
+      return sceneWithoutLastInFlow;
+    }
+
+    // Look ahead to see if the next scene starts a new flow or exits character flow
+    const nextScene = out[i + 1];
+    const isLastInFlow = !nextScene || ( // No next scene (end of story) OR
+                        (nextScene as any).newFlow || // Next scene starts new flow
+                        (!((nextScene as any)["left-character"] || (nextScene as any)["right-character"]) &&
+                         nextScene.type !== "character" && nextScene.type !== "input")); // Next scene exits character flow
+
+    // Also ensure this scene is not the very first scene with characters (not beginning of first flow)
+    const isFirstCharacterScene = i === 0 || !out.slice(0, i).some(s =>
+      (s as any)["left-character"] || (s as any)["right-character"] || s.type === "character" || s.type === "input"
+    );
+
+    // Input scenes should always have lastInFlow to trigger chat UI
+    if (scene.type === "input") {
+      return { ...scene, lastInFlow: true } as any;
+    }
+
+    if (isLastInFlow && !isFirstCharacterScene) {
+      return { ...scene, lastInFlow: true } as any;
+    }
+
+    // Explicitly remove lastInFlow if this scene doesn't qualify
+    const sceneWithoutLastInFlow = { ...scene };
+    delete (sceneWithoutLastInFlow as any).lastInFlow;
+    return sceneWithoutLastInFlow;
+  });
+
+  return finalOut;
+}
