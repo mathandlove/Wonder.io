@@ -1,13 +1,13 @@
-
 import "./Caption.css";
 
 type CaptionProps = {
   text: string;
-  showCaption: boolean; // driven by scene manager enter/leave
+  isActive: boolean; // driven by scene manager enter/leave
   direction: 'forward' | 'backward';
+  align?: "center" | "bottom";
 };
 
-export default function Caption({ text, showCaption, direction }: CaptionProps) {
+export default function Caption({ text, isActive, direction }: CaptionProps) {
 
 
 
@@ -46,7 +46,7 @@ export default function Caption({ text, showCaption, direction }: CaptionProps) 
         padding: '10px',
         zIndex: 10000
       }}>
-        DEBUG: showCaption={showCaption ? 'YES' : 'NO'} 
+        DEBUG: isActive={isActive ? 'YES' : 'NO'}
       </div>
     </div>
   );

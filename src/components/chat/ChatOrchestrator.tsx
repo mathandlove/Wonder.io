@@ -4,9 +4,16 @@
  * scene that's the last in a character flow.
  */
 import React, { useEffect, useState } from 'react';
-import { useNavigation } from '../context/NavigationContext';
-import { useDialogue as useChatDialogue } from '../chat/ChatDialogueContext';
-import { ChatLayer } from '../chat/ChatLayer';
+import { useNavigation } from '../../context/NavigationContext';
+import { useDialogue as useChatDialogue } from '../../chat/ChatDialogueContext';
+import { ChatLayer } from '../../chat/ChatLayer';
+import type { Scene } from '../../types/scene';
+
+// Extended scene type that includes the dynamically added lastInFlow property
+type SceneWithLastInFlow = Scene & {
+  lastInFlow?: boolean;
+  sceneId?: string;
+};
 
 export const ChatOrchestrator: React.FC = () => {
   const { currentIndex, scenes } = useNavigation();
@@ -17,15 +24,12 @@ export const ChatOrchestrator: React.FC = () => {
 
 
   // Get current scene
-  const currentScene = scenes[currentIndex];
-  const shouldShowChat = (currentScene as any)?.lastInFlow;
+  const currentScene = scenes[currentIndex] as SceneWithLastInFlow | undefined;
+  const shouldShowChat = currentScene?.lastInFlow;
 
   // Use the corrected shouldShowChat logic
   const shouldShowChatFinal = shouldShowChat;
 
-  // Debug logging - only log when relevant
-  if (currentScene?.type === 'input' || shouldShowChat || chatVisible) {
-  }
 
   // Grant player turn when we navigate to a lastInFlow scene
   useEffect(() => {
@@ -34,8 +38,8 @@ export const ChatOrchestrator: React.FC = () => {
     const shouldForceProcessing = shouldShowChatFinal && !chatVisible && !hasGrantedTurn;
 
     // Check if we're changing to a different scene (index OR scene content changed)
-    const currentSceneId = (currentScene as any)?.sceneId;
-    const lastSceneId = (scenes[lastProcessedIndex] as any)?.sceneId;
+    const currentSceneId = currentScene?.sceneId;
+    const lastSceneId = (scenes[lastProcessedIndex] as SceneWithLastInFlow | undefined)?.sceneId;
     const indexChanged = currentIndex !== lastProcessedIndex;
     const sceneChanged = currentSceneId !== lastSceneId;
     const hasSceneChanged = indexChanged || sceneChanged || shouldForceProcessing;
@@ -58,7 +62,7 @@ export const ChatOrchestrator: React.FC = () => {
         setHasGrantedTurn(false);
       }
     }
-  }, [currentIndex, shouldShowChatFinal, hasGrantedTurn, grantPlayerTurn, lastProcessedIndex, currentScene, scenes]);
+  }, [currentIndex, shouldShowChatFinal, hasGrantedTurn, grantPlayerTurn, lastProcessedIndex, currentScene, scenes, chatVisible]);
 
   // Monitor quest completion
   useEffect(() => {

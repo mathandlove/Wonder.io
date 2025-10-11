@@ -6,28 +6,38 @@ import React from "react";
 import type { SceneProps } from "../registry";
 import type { ImageScene } from "../../types/scene";
 import { resolveStoryImage } from "../../utils/imageResolver";
+import Caption from "../../components/image/Caption";
+import { useSceneActive } from "../hooks/useSceneActive";
 
 export default function ImageScene({ scene }: SceneProps<ImageScene>) {
+  const { isActive, direction } = useSceneActive(scene.sceneId || '');
+  const hasCaption = scene.text && scene.text.trim() !== '';
+
+
   return (
     <div style={{
-      position: 'fixed',
-      top: 0,
-      left: 0,
+      position: 'relative',
       width: '100vw',
       height: '100vh',
       display: 'flex',
       alignItems: 'center',
-      justifyContent: 'center',
-      zIndex: -1
+      justifyContent: 'center'
     }}>
       <img
         src={resolveStoryImage(scene.image)}
-        alt={scene.caption || "Story image"}
+        alt={scene.caption || scene.text || "Story image"}
         style={{
           maxWidth: '100%',
           maxHeight: '100%',
           objectFit: 'contain'
         }}
+      />
+      {/* Always show caption - hasCaption check was hiding them */}
+      <Caption
+        text={scene.text || "Default caption text"}
+        isActive={true}
+        direction={direction}
+        align="bottom"
       />
     </div>
   );

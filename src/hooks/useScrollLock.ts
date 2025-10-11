@@ -71,6 +71,18 @@ export function useScrollLock({ isLocked, lockedPosition, onUnlockRequest }: Scr
     }
   }, [isLocked, onUnlockRequest]);
 
+  // Keyboard handler
+  const preventKeydown = useCallback((e: KeyboardEvent) => {
+    if (isLocked && (
+      e.code === 'Space' || e.code === 'PageUp' || e.code === 'PageDown' ||
+      e.code === 'ArrowUp' || e.code === 'ArrowDown' ||
+      e.code === 'Home' || e.code === 'End'
+    )) {
+      e.preventDefault();
+      onUnlockRequest?.();
+    }
+  }, [isLocked, onUnlockRequest]);
+
   // Main effect - add/remove event listeners based on lock state
   useEffect(() => {
     if (!isLocked) {
@@ -91,16 +103,7 @@ export function useScrollLock({ isLocked, lockedPosition, onUnlockRequest }: Scr
     document.addEventListener('wheel', preventScroll, options);
 
     // Prevent keyboard scrolling
-    document.addEventListener('keydown', (e) => {
-      if (isLocked && (
-        e.code === 'Space' || e.code === 'PageUp' || e.code === 'PageDown' ||
-        e.code === 'ArrowUp' || e.code === 'ArrowDown' ||
-        e.code === 'Home' || e.code === 'End'
-      )) {
-        e.preventDefault();
-        onUnlockRequest?.();
-      }
-    }, options);
+    document.addEventListener('keydown', preventKeydown, options);
 
     // Prevent touch scrolling (but allow taps)
     document.addEventListener('touchstart', preventTouch, options);
@@ -113,7 +116,7 @@ export function useScrollLock({ isLocked, lockedPosition, onUnlockRequest }: Scr
     // Cleanup
     return () => {
       document.removeEventListener('wheel', preventScroll);
-      document.removeEventListener('keydown', preventScroll);
+      document.removeEventListener('keydown', preventKeydown);
       document.removeEventListener('touchstart', preventTouch);
       document.removeEventListener('touchmove', preventTouch);
       window.removeEventListener('scroll', handleScroll);
@@ -125,7 +128,7 @@ export function useScrollLock({ isLocked, lockedPosition, onUnlockRequest }: Scr
         unlockTimeoutRef.current = null;
       }
     };
-  }, [isLocked, preventScroll, preventTouch, handleScroll, forceScrollPosition, onUnlockRequest]);
+  }, [isLocked, preventScroll, preventKeydown, preventTouch, handleScroll, forceScrollPosition, onUnlockRequest]);
 
   // Apply/remove CSS scroll lock styles
   useEffect(() => {

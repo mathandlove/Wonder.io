@@ -7,7 +7,6 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useScrollLock } from './useScrollLock';
 import { useNavigation } from '../context/NavigationContext';
-import type { InteractiveBubbleScene } from '../types/scene';
 
 export function useScrollLockManager() {
   const { visibleScenes, currentIndex } = useNavigation();
@@ -60,11 +59,7 @@ export function useScrollLockManager() {
     setUnlockAttempts(0);
   }, [currentIndex]);
 
-  // Debug logging
-  useEffect(() => {
-    if (scrollLockState.shouldLock) {
-    }
-  }, [scrollLockState.shouldLock, currentIndex, visibleScenes]);
+
 
   return {
     isScrollLocked,

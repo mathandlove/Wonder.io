@@ -1,0 +1,113 @@
+/* Base caption styling */
+.caption {
+  position: absolute;
+  bottom: 0;
+  height: 100%;
+  width: 100%;
+  left: 0;
+  right: 0;
+
+  overflow: visible;
+  pointer-events: none;
+  z-index: 50; /* Above image content and other elements */
+  contain: layout paint;
+}
+
+.caption--center {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+
+/* Construction paper background with shadow */
+.caption::before {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  height: 30vh;
+  background-image: url('/VisualAssets/constructionEdge.png');
+  background-size: 100% auto;
+  background-position: center -10px;
+  background-repeat: no-repeat;
+  filter: drop-shadow(0 -8px 16px rgba(0, 0, 0, 0.3)) drop-shadow(0 -4px 8px rgba(0, 0, 0, 0.2));
+  z-index: 0;   /* Behind the text, above page */
+  will-change: transform, filter;
+  transform: translateY(100%); /* default off-screen; overridden by state classes */
+}
+
+/* Caption text styling - positioned absolutely within the background */
+.caption__text {
+  margin: 0;
+  padding: 24px 36px;
+  position: absolute;
+  bottom: 10px; /* Position within the background container */
+  left: 30px;
+  width: calc(100vw - 60px);
+  max-width: 80vw;
+  text-align: left;
+  font-size: calc(1.4rem + 10px);
+  font-weight: bold;
+  color: white;
+  line-height: 1.25;
+  letter-spacing: 0.02em;
+  position: relative;
+  z-index: 1;   /* Above paper */
+  font-family: 'Nunito', sans-serif;
+  box-sizing: border-box;
+  will-change: opacity, transform;
+}
+
+/* Animation states */
+/* Base state before animation */
+.caption--pre .caption__text {
+  opacity: 0;
+  transform: translateY(12px);
+  transition: none;
+}
+
+.caption--pre::before {
+  transform: translateY(100%); /* Background starts below window */
+  transition: none;
+}
+
+/* Animate in when the scene becomes active */
+.caption--animate-in .caption__text {
+  opacity: 1;
+  transform: translateY(0);
+  transition: opacity 320ms ease, transform 320ms ease;
+}
+
+.caption--animate-in::before {
+  transform: translateY(0); /* Background slides up to final position */
+  transition: transform 320ms ease;
+}
+
+/* Exit animation - construction paper scrolls up off screen */
+.caption--animate-out .caption__text {
+  opacity: 1; /* stays visible during exit */
+  transform: translateY(-12px);
+  transition: opacity 320ms ease, transform 320ms ease;
+}
+
+.caption--animate-out::before {
+  transform: translateY(-100%); /* Background slides up off screen */
+  transition: transform 320ms ease;
+}
+
+
+@media (prefers-reduced-motion: reduce) {
+  .caption--animate-in .caption__text,
+  .caption--animate-out .caption__text {
+    transition: none;
+    transform: none;
+  }
+  .caption--animate-in::before,
+  .caption--animate-out::before,
+  .caption--pre::before {
+    transition: none;
+    transform: translateY(0);
+  }
+}

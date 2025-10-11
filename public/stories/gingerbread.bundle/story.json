@@ -32,6 +32,7 @@
     },
 
 
+
                 {
           "input": "What should Leo ask?"
 
@@ -69,16 +70,15 @@
       "text": "Leo saved the day! The cookies are safe once again."
     }
   ],
-  "examplesX":            [{
+  "examplesX":            [    {
+  "quest":"key",
+  "text":"Ask Ms. Baker what happened"
+
+},{
       "type": "title",
       "lvl1": "The",
       "lvl2": "Cookie Thief",
       "author": "Elliott Hedman",
       "background": "bakery.png"
-    },
-    {
-  "quest":"key",
-  "text":"Ask Ms. Baker what happened"
-
-}]
+    }]
 }

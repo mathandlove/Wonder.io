@@ -1,6 +1,4 @@
 
-import React from 'react';
-import { CardboardBubble } from './CardboardBubble';
 import './WaitingBubble.css';
 
 interface ThinkingDotsProps {
@@ -28,11 +26,6 @@ interface WaitingBubbleProps {
 
 export function WaitingBubble({
   side = 'right',
-  speakerLabel,
-  isDelayed = false,
-  isReady = true,
-  onViewportExit,
-  onViewportEnter
 }: WaitingBubbleProps) {
   return (
     <div

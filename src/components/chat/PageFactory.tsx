@@ -3,9 +3,9 @@
  * that can be scrolled to and navigated within the story.
  */
 import React, { createContext, useContext, useCallback } from "react";
-import type { Scene, InteractiveBubbleScene } from "../types/scene";
-import { useNavigation } from "../context/NavigationContext";
-import { injectPanelMetaFromFlows } from "../characters/adapters/injectPanelMetaFromFlows";
+import type { Scene, InteractiveBubbleScene } from "../../types/scene";
+import { useNavigation } from "../../context/NavigationContext";
+import { injectPanelMetaFromFlows } from "../../characters/adapters/injectPanelMetaFromFlows";
 
 type PageFactoryContextType = {
   createInteractiveBubblePage: (recordingId?: string) => InteractiveBubbleScene;

@@ -278,8 +278,12 @@ export function RecordingProvider({ children }: { children: React.ReactNode }) {
     // End recording with complete accumulated transcript only when manually stopped
     const currentSessionId = currentSessionIdRef.current;
     if (currentSessionId) {
-      // Use the accumulated final transcript from our state
-      const completeText = (state.finalTranscript || state.interimTranscript || '').trim();
+      // Use the full accumulated displayText (contains all speech results)
+      const completeText = state.displayText.trim();
+      console.log('🎯 FREEZING FINAL ACCUMULATED TEXT:', {
+        displayText: state.displayText,
+        finalText: completeText
+      });
       if (completeText) {
         endRecording(currentSessionId, completeText);
       }

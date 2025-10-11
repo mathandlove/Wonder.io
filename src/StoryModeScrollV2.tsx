@@ -6,22 +6,39 @@ import React, { useMemo, useRef, useState, useLayoutEffect } from "react";
 import { useStory } from "./hooks/useStory";
 import { FlowLayout } from "./components/FlowLayout";
 import { SceneRenderer } from "./components/SceneRenderer";
-import { PageFactoryProvider } from "./components/PageFactory";
+import { PageFactoryProvider } from "./components/chat/PageFactory";
 import { useNavigation } from "./context/NavigationContext";
 import { BackgroundOrchestrator } from "./background/BackgroundOrchestrator";
 import { CharacterOrchestrator } from "./characters/CharacterOrchestrator";
-import { SpeechBubbleOrchestrator } from "./components/SpeechBubbleOrchestrator";
-import { CaptionComponent } from "./components/CaptionComponent";
+import { SpeechBubbleOrchestrator } from "./components/chat/SpeechBubbleOrchestrator";
+import { ImageSceneOrchestrator } from "./components/image/ImageSceneOrchestrator";
 import { injectPanelMetaFromFlows } from "./characters/adapters/injectPanelMetaFromFlows";
 import { useSceneNavigation } from "./hooks/useSceneNavigation";
 import { useStepScroll } from "./hooks/useStepScroll";
 import { CharacterAnimationProvider } from "./context/CharacterAnimationContext";
 import type { Scene } from "./types/scene";
+import type { QuestHook } from "./quest/QuestManager";
+
+// Extended scene type for dynamic properties
+type SceneWithId = Scene & {
+  sceneId?: string;
+  hidden?: boolean;
+};
 import "./components/SnapScroll.css";
+
+// Type extension for debugging window object
+declare global {
+  interface Window {
+    __quest?: QuestHook;
+    __hideScene?: (sceneId: string) => void;
+    __showScene?: (sceneId: string) => void;
+    __allScenes?: Scene[];
+    __visibleScenes?: Scene[];
+  }
+}
 import { QuestProvider, useQuest } from "./quest/QuestManager"
 import { UIOverlayRoot } from "./components/UIOverlayRoot"
-import { ChatOrchestrator } from "./components/ChatOrchestrator"
-import { CaptionOrchestrator } from "./components/CaptionOrchestrator"
+import { ChatOrchestrator } from "./components/chat/ChatOrchestrator"
 import { SceneBusProvider } from "./scenes/registry/SceneBusProvider"
 import { sceneBus } from "./scenes/registry/sceneBus"
 import { useDialogue } from "./chat/ChatDialogueContext"
@@ -46,7 +63,7 @@ const QuestDebugProbe: React.FC = () => {
   React.useEffect(() => {
     // Log every state change
     // Expose quest controls in the console for manual testing
-    (window as any).__quest = {
+    window.__quest = {
       state: quest.state,
       offer: quest.offer,
       accept: quest.accept,
@@ -178,13 +195,14 @@ const StoryContent: React.FC = () => {
   // Don't re-process with injectPanelMetaFromFlows as it breaks character metadata
   const scenes = navigationScenes;
 
+
   // Debug: Expose scene hiding functions globally for testing
   React.useEffect(() => {
     if (typeof window !== 'undefined') {
-      (window as any).__hideScene = hideScene;
-      (window as any).__showScene = showScene;
-      (window as any).__allScenes = allScenes;
-      (window as any).__visibleScenes = navigationScenes;
+      window.__hideScene = hideScene;
+      window.__showScene = showScene;
+      window.__allScenes = allScenes;
+      window.__visibleScenes = navigationScenes;
     }
   }, [hideScene, showScene, allScenes, navigationScenes]);
 
@@ -230,8 +248,7 @@ const StoryContent: React.FC = () => {
         {/* Layer 1.6: Image scenes (fixed, independent of scroll flow) */}
         <ImageSceneOrchestrator scenes={scenes} index={index} />
 
-        {/* Layer 1.7: Image captions - rendered outside document flow */}
-        <CaptionOrchestrator scenes={scenes} />
+        {/* Layer 1.7: Image captions - now rendered within ImageScene components */}
 
         {/* Layer 1.8: Speech bubbles (scroll-based with delayed transitions) */}
         <SpeechBubbleOrchestrator scenes={scenes} currentIndex={index} />
@@ -243,7 +260,7 @@ const StoryContent: React.FC = () => {
         <div style={{ position: "relative" }}>
           {scenes.map((scene: Scene, i: number) => {
             // Use stable ID if available, fallback to index for original scenes
-            const stableKey = (scene as any).sceneId || `original-${i}`;
+            const stableKey = (scene as SceneWithId).sceneId || `original-${i}`;
 
             // Hidden scenes are already filtered out by NavigationContext,
             // but add safety check and zero-height container if somehow present
@@ -289,87 +306,6 @@ const StoryContent: React.FC = () => {
   );
 };
 
-// ImageSceneOrchestrator: Renders image scenes outside the scroll flow with background-like transforms
-const ImageSceneOrchestrator = React.memo(function ImageSceneOrchestrator({ scenes, index }: { scenes: Scene[]; index: number }) {
-  // Build image ranges - group image scenes with their following caption scenes
-  const imageRanges = React.useMemo(() => {
-    const ranges: Array<{ startIndex: number; endIndex: number; image: string; scene: Scene }> = [];
-    let i = 0;
-
-    while (i < scenes.length) {
-      const scene = scenes[i];
-
-      if (scene.type === 'image' && scene.image) {
-        const startIndex = i;
-        let endIndex = i;
-
-        // Look ahead to include the caption scene if it exists
-        if (i + 1 < scenes.length && scenes[i + 1].type === 'caption') {
-          endIndex = i + 1; // Include the caption scene in the range
-          i += 2; // Skip both image and caption
-        } else {
-          i += 1; // Just the image scene
-        }
-
-        ranges.push({
-          startIndex,
-          endIndex,
-          image: scene.image,
-          scene: scene
-        });
-      } else {
-        i += 1; // Skip non-image scenes
-      }
-    }
-
-    return ranges;
-  }, [scenes]);
-
-  return (
-    <div style={{
-      position: 'fixed',
-      top: 0,
-      left: 0,
-      width: '100vw',
-      height: '100vh',
-      zIndex: -5 // Between background (-10) and content
-    }}>
-      {imageRanges.map((range) => {
-        // Calculate transform based on range, not individual scene
-        const tolerance = 0.1;
-        let transform: string;
-
-        if (index < range.startIndex - tolerance) {
-          // Image range is waiting below (not reached yet)
-          transform = `translateY(${(range.startIndex - index) * 100}vh)`;
-        } else if (index > range.endIndex + tolerance) {
-          // Image range has scrolled up and away
-          transform = `translateY(${(range.endIndex - index) * 100}vh)`;
-        } else {
-          // Image range is visible and fixed in place
-          transform = 'translateY(0)';
-        }
-
-        return (
-          <div
-            key={`image-range-${range.startIndex}-${range.endIndex}`}
-            style={{
-              position: 'absolute',
-              top: 0,
-              left: 0,
-              width: '100%',
-              height: '100%',
-              transform,
-              transition: 'transform 0.6s ease-out'
-            }}
-          >
-            <SceneRenderer scene={range.scene} />
-          </div>
-        );
-      })}
-    </div>
-  );
-});
 
 // SceneContentWithNavigation: thin wrapper to render a scene and navigate to the next scene when it completes
 const SceneContentWithNavigation = React.memo(function SceneContentWithNavigation({ scene, sceneIndex }: { scene: Scene; sceneIndex: number }) {

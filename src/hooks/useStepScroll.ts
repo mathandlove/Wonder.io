@@ -1,6 +1,13 @@
 // src/hooks/useStepScroll.ts
 import {useEffect, useRef} from 'react';
 
+// Extend DOM interface for experimental scrollend event
+declare global {
+  interface HTMLElementEventMap {
+    scrollend: Event;
+  }
+}
+
 type StepScrollOpts = {
   onIndexChange: (nextIndex: number) => void;
   getIndex: () => number;
@@ -12,7 +19,7 @@ type StepScrollOpts = {
 };
 
 export function useStepScroll(
-  containerRef: React.RefObject<HTMLElement>,
+  containerRef: React.RefObject<HTMLElement | HTMLDivElement | null>,
   { onIndexChange, getIndex, count, durationMs = 380, thresholdPx = 60, isInputFocused = () => false, checkContentLocks }: StepScrollOpts
 ) {
   const animatingRef = useRef(false);
@@ -39,7 +46,7 @@ export function useStepScroll(
       if (settleTimerRef.current) window.clearTimeout(settleTimerRef.current);
       settleTimerRef.current = window.setTimeout(() => {
         animatingRef.current = false;
-      }, 200); // Shorter blocking period to allow quicker scroll reversals
+      }, 600); // Match smooth scroll duration to prevent overlapping animations
     };
 
     const checkDomLocks = (direction: 'forward' | 'backward', currentIndex: number): boolean => {
@@ -59,7 +66,8 @@ export function useStepScroll(
       scrollToIndex(next);
     };
 
-    const onWheel = (e: WheelEvent) => {
+    const onWheel = (evt: Event) => {
+      const e = evt as WheelEvent;
       if (isInputFocused()) return; // let inputs scroll
       // Only vertical intent
       if (Math.abs(e.deltaY) < Math.abs(e.deltaX)) return;
@@ -86,26 +94,27 @@ export function useStepScroll(
         return;
       }
 
+      e.preventDefault(); // Always prevent native scroll
       wheelAccumRef.current += e.deltaY;
 
       if (wheelAccumRef.current > thresholdPx) {
-        e.preventDefault();
         wheelAccumRef.current = 0;
         snapRelative(+1);
       } else if (wheelAccumRef.current < -thresholdPx) {
-        e.preventDefault();
         wheelAccumRef.current = 0;
         snapRelative(-1);
       }
     };
 
     let touching = false;
-    const onTouchStart = (e: TouchEvent) => {
+    const onTouchStart = (evt: Event) => {
+      const e = evt as TouchEvent;
       if (isInputFocused()) return;
       touching = true;
       touchStartYRef.current = e.touches[0].clientY;
     };
-    const onTouchMove = (e: TouchEvent) => {
+    const onTouchMove = (evt: Event) => {
+      const e = evt as TouchEvent;
       if (!touching) return;
       if (animatingRef.current) { e.preventDefault(); return; }
 
@@ -135,7 +144,8 @@ export function useStepScroll(
     };
     const onTouchEnd = () => { touching = false; };
 
-    const onKeyDown = (e: KeyboardEvent) => {
+    const onKeyDown = (evt: Event) => {
+      const e = evt as KeyboardEvent;
       if (isInputFocused()) return;
       if (animatingRef.current) return;
 
@@ -179,15 +189,15 @@ export function useStepScroll(
     el.addEventListener('touchend', onTouchEnd, { passive: true });
     el.addEventListener('keydown', onKeyDown, { passive: false });
     // scrollend is experimental, safe to add
-    el.addEventListener('scrollend', onScrollEnd as any);
+    el.addEventListener('scrollend', onScrollEnd);
 
     return () => {
-      el.removeEventListener('wheel', onWheel as any);
-      el.removeEventListener('touchstart', onTouchStart as any);
-      el.removeEventListener('touchmove', onTouchMove as any);
-      el.removeEventListener('touchend', onTouchEnd as any);
-      el.removeEventListener('keydown', onKeyDown as any);
-      el.removeEventListener('scrollend', onScrollEnd as any);
+      el.removeEventListener('wheel', onWheel);
+      el.removeEventListener('touchstart', onTouchStart);
+      el.removeEventListener('touchmove', onTouchMove);
+      el.removeEventListener('touchend', onTouchEnd);
+      el.removeEventListener('keydown', onKeyDown);
+      el.removeEventListener('scrollend', onScrollEnd);
       if (settleTimerRef.current) window.clearTimeout(settleTimerRef.current);
     };
   }, [containerRef, onIndexChange, getIndex, count, durationMs, thresholdPx, isInputFocused, checkContentLocks]);

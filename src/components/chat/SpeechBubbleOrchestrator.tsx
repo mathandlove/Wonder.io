@@ -3,11 +3,27 @@
  * but with delayed transitions to coordinate with character entrance animations.
  */
 import React, { useMemo } from 'react';
-import { useScrollOffset } from '../hooks/useScrollOffset';
+import { useScrollOffset } from '../../hooks/useScrollOffset';
 import { CardboardBubble } from './CardboardBubble';
-import { useDialogue } from '../dialogue/DialogueContext';
-import { useRecording } from '../recording/RecordingContext';
-import type { Scene, CharacterScene, InteractiveBubbleScene } from '../types/scene';
+import { useDialogue } from '../../chat/ChatDialogueContext';
+import { useDialogue as useRecordingDialogue } from '../../dialogue/DialogueContext';
+import { useRecording } from '../../recording/RecordingContext';
+import type { Scene, CharacterScene, InteractiveBubbleScene, InputScene } from '../../types/scene';
+import type { Message } from '../../dialogue/types';
+
+// Extended scene types that include commonly accessed properties
+type SceneWithId = Scene & {
+  sceneId?: string;
+  flowSequence?: boolean;
+  speaker?: "left" | "right";
+  "left-character"?: string;
+  "right-character"?: string;
+};
+
+// Extended message type for dialogue system - the actual Message type already includes what we need
+type ExtendedMessage = Message & {
+  timestamp?: number; // For compatibility with chat system timestamps
+};
 
 interface SpeechBubbleOrchestratorProps {
   scenes: Scene[];
@@ -39,7 +55,8 @@ export function SpeechBubbleOrchestrator({ scenes, currentIndex }: SpeechBubbleO
   const scrollOffset = currentIndex !== undefined ? currentIndex : scrollOffsetFallback;
 
   // Get dialogue context for interactive scenes
-  const { getMessagesForScene } = useDialogue();
+  const { messages: globalMessages } = useDialogue();
+  const { getMessagesForScene } = useRecordingDialogue();
   // Get recording context for continuous recording
   const { getDisplayText, isRecording } = useRecording();
 
@@ -52,14 +69,14 @@ export function SpeechBubbleOrchestrator({ scenes, currentIndex }: SpeechBubbleO
     prevScrollOffsetRef.current = scrollOffset;
   }, [scrollOffset]);
 
-  // Find character scenes AND interactive-bubble scenes to render bubbles for
+  // Find character scenes AND interactive scenes (input/interactive-bubble) to render bubbles for
   const speechBubbles = useMemo(() => {
 
     const bubbles: Array<{
-      scene: CharacterScene | InteractiveBubbleScene;
+      scene: CharacterScene | InteractiveBubbleScene | InputScene;
       sceneIndex: number;
       transform: string;
-      type: 'character' | 'interactive-bubble';
+      type: 'character' | 'interactive-bubble' | 'input';
     }> = [];
 
     scenes.forEach((scene, index) => {
@@ -78,6 +95,15 @@ export function SpeechBubbleOrchestrator({ scenes, currentIndex }: SpeechBubbleO
           sceneIndex: index,
           transform,
           type: 'interactive-bubble'
+        });
+      } else if (scene?.type === 'input') {
+        // Handle input scenes like interactive-bubble scenes
+        const transform = translateForSpeechBubble(index, scrollOffset);
+        bubbles.push({
+          scene: scene as InputScene,
+          sceneIndex: index,
+          transform,
+          type: 'input'
         });
       }
     });
@@ -121,65 +147,80 @@ export function SpeechBubbleOrchestrator({ scenes, currentIndex }: SpeechBubbleO
           // Determine if this scene should show waiting bubble (existing logic)
           const isPageFactoryScene = !characterScene.flowSequence && characterScene.type === "character";
           const isUserScene = characterScene.speaker === "left";
-          const hasSceneId = !!(characterScene as any).sceneId;
+          const hasSceneId = !!(characterScene as SceneWithId).sceneId;
           const nextSceneForWaiting = scenes[sceneIndex + 1];
           const nextSceneIsAI = nextSceneForWaiting &&
                                nextSceneForWaiting.type === "character" &&
-                               !(nextSceneForWaiting as any).flowSequence &&
-                               (nextSceneForWaiting as any).speaker === "right";
+                               !(nextSceneForWaiting as SceneWithId).flowSequence &&
+                               (nextSceneForWaiting as SceneWithId).speaker === "right";
 
           shouldShowWaitingBubble = isPageFactoryScene && isUserScene && hasSceneId && !nextSceneIsAI;
 
-        } else if (type === 'interactive-bubble') {
-          const interactiveScene = scene as InteractiveBubbleScene;
+        } else if (type === 'interactive-bubble' || type === 'input') {
+          // Handle both interactive-bubble and input scenes the same way
+          const sceneId = (scene as SceneWithId).sceneId || '';
 
           // PRIORITY: Use global recording state when actively recording
           if (isRecording()) {
             const globalText = getDisplayText();
-            console.log('🎯 USING GLOBAL RECORDING STATE:', {
+            console.log('🎯 USING GLOBAL RECORDING STATE (story-map):', {
               sceneIndex,
               globalText,
               displayingText: globalText || "🎤 Listening..."
             });
             side = 'left';
-            speakerLabel = interactiveScene["left-character"] || "Player";
+            speakerLabel = (scene as SceneWithId)["left-character"] || "Player";
             bubbleContent = globalText || "🎤 Listening...";
             shouldShowWaitingBubble = false;
           } else {
             // Fall back to dialogue messages when not actively recording
-            const messages = getMessagesForScene(interactiveScene.sceneId || '');
-            const recordingMessage = messages.find(m => m.status === 'recording' || m.status === 'pending');
+            const recordingMessages = getMessagesForScene(sceneId);
+            const messages = recordingMessages.length > 0 ? recordingMessages : globalMessages;
             const latestMessage = messages[messages.length - 1];
-            const displayMessage = recordingMessage || latestMessage;
 
-            if (displayMessage) {
+            console.log('💬 USING DIALOGUE MESSAGES (recording stopped):', {
+              sceneIndex,
+              sceneId,
+              messageCount: messages.length,
+              latestMessage: latestMessage?.text || 'none'
+            });
+
+            if (latestMessage) {
               // Set side based on message sender
-              side = displayMessage.sender === 'player' ? 'left' : 'right';
-              speakerLabel = displayMessage.sender === 'player'
-                ? interactiveScene["left-character"] || "Player"
-                : interactiveScene["right-character"] || "AI";
+              side = latestMessage.sender === 'player' ? 'left' : 'right';
+              speakerLabel = latestMessage.sender === 'player'
+                ? (scene as SceneWithId)["left-character"] || "Player"
+                : (scene as SceneWithId)["right-character"] || "AI";
 
               // Generate content based on message status
-              if (displayMessage.status === 'recording' && !displayMessage.text) {
+              const extMessage = latestMessage as ExtendedMessage;
+              if (extMessage.status === 'recording' && !latestMessage.text) {
                 bubbleContent = "🎤 Listening...";
-              } else if (displayMessage.isInterim && displayMessage.text) {
-                bubbleContent = `${displayMessage.text}...`;
-              } else if (displayMessage.text) {
-                bubbleContent = displayMessage.text;
-              } else if (displayMessage.status === 'pending') {
+              } else if (extMessage.isInterim && latestMessage.text) {
+                bubbleContent = `${latestMessage.text}...`;
+              } else if (latestMessage.text) {
+                bubbleContent = latestMessage.text;
+              } else if (extMessage.status === 'pending') {
                 bubbleContent = "Sending...";
-              } else if (displayMessage.status === 'error') {
+              } else if (extMessage.status === 'error') {
                 bubbleContent = "Failed to send";
               }
 
               // For interactive scenes, always show waiting bubble, but control visibility
-              const isUserMessage = displayMessage.sender === 'player';
-              const hasAIResponse = messages.some(m => m.sender === 'npc' && m.ts > displayMessage.ts);
-              shouldShowWaitingBubble = isUserMessage && displayMessage.status === 'sent' && !hasAIResponse;
+              const isUserMessage = latestMessage.sender === 'player';
+              const hasAIResponse = messages.some(m => {
+                const extM = m as ExtendedMessage;
+                const extLatest = latestMessage as ExtendedMessage;
+                // Use timestamp if available (chat system), otherwise use ts (dialogue system)
+                const mTime = extM.timestamp || new Date(extM.ts).getTime();
+                const latestTime = extLatest.timestamp || new Date(extLatest.ts).getTime();
+                return m.sender === 'npc' && mTime > latestTime;
+              });
+              shouldShowWaitingBubble = isUserMessage && extMessage.status === 'sent' && !hasAIResponse;
             } else {
               // No messages yet - show placeholder
               side = 'left';
-              speakerLabel = interactiveScene["left-character"] || "Player";
+              speakerLabel = (scene as SceneWithId)["left-character"] || "Player";
               bubbleContent = "🎤 Press and hold to record";
               // No waiting bubble for placeholder state
               shouldShowWaitingBubble = false;
@@ -230,7 +271,7 @@ export function SpeechBubbleOrchestrator({ scenes, currentIndex }: SpeechBubbleO
             transition = 'transform 0.3s ease-out 0s'; // Default/waiting
           }
         } else {
-          // Interactive scenes use simpler transitions
+          // Interactive and input scenes use simpler transitions
           transition = 'transform 0.4s ease-out 0s';
         }
 
