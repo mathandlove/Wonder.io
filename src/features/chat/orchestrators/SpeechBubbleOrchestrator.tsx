@@ -3,7 +3,6 @@
  * but with delayed transitions to coordinate with character entrance animations.
  */
 import React, { useMemo } from 'react';
-import { useScrollOffset } from '@shared/hooks/useScrollOffset';
 import { CardboardBubble } from '@features/chat/components/CardboardBubble';
 import { useDialogue } from '../context/useChatDialogue';
 import { useDialogue as useRecordingDialogue } from '@core/dialogue/DialogueContext';
@@ -48,11 +47,9 @@ function translateForSpeechBubble(sceneIndex: number, scrollOffset: number): str
   }
 }
 
-export function SpeechBubbleOrchestrator({ scenes, currentIndex }: SpeechBubbleOrchestratorProps) {
-  // Use passed currentIndex or fall back to scroll offset
-  const dummyRef = React.useRef<HTMLDivElement>(null);
-  const { offset: scrollOffsetFallback } = useScrollOffset(dummyRef);
-  const scrollOffset = currentIndex !== undefined ? currentIndex : scrollOffsetFallback;
+export function SpeechBubbleOrchestrator({ scenes, currentIndex = 0 }: SpeechBubbleOrchestratorProps) {
+  // Use currentIndex directly (always passed from ScrollControl)
+  const scrollOffset = currentIndex;
 
   // Get dialogue context for interactive scenes
   const { messages: globalMessages } = useDialogue();
@@ -163,11 +160,6 @@ export function SpeechBubbleOrchestrator({ scenes, currentIndex }: SpeechBubbleO
           // PRIORITY: Use global recording state when actively recording
           if (isRecording()) {
             const globalText = getDisplayText();
-            console.log('🎯 USING GLOBAL RECORDING STATE (story-map):', {
-              sceneIndex,
-              globalText,
-              displayingText: globalText || "🎤 Listening..."
-            });
             side = 'left';
             speakerLabel = (scene as SceneWithId)["left-character"] || "Player";
             bubbleContent = globalText || "🎤 Listening...";
@@ -177,13 +169,6 @@ export function SpeechBubbleOrchestrator({ scenes, currentIndex }: SpeechBubbleO
             const recordingMessages = getMessagesForScene(sceneId);
             const messages = recordingMessages.length > 0 ? recordingMessages : globalMessages;
             const latestMessage = messages[messages.length - 1];
-
-            console.log('💬 USING DIALOGUE MESSAGES (recording stopped):', {
-              sceneIndex,
-              sceneId,
-              messageCount: messages.length,
-              latestMessage: latestMessage?.text || 'none'
-            });
 
             if (latestMessage) {
               // Set side based on message sender

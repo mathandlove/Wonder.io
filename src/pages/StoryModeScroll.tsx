@@ -2,7 +2,7 @@
  * Main story mode component that renders a story as scrollable scenes.
  * Each scene gets its own 100vh section with snap-scroll behavior.
  */
-import React, { useMemo, useState } from "react";
+import React, { useMemo } from "react";
 import { useStory } from '@shared/hooks/useStory';
 import { FlowLayout } from '@features/flow-layout/FlowLayout';
 import { SceneRenderer } from '@shared/components/SceneRenderer';
@@ -24,7 +24,6 @@ type SceneWithId = Scene & {
   sceneId?: string;
   hidden?: boolean;
 };
-import "@shared/components/SnapScroll.css";
 
 // Type extension for debugging window object
 declare global {
@@ -39,8 +38,6 @@ declare global {
 import { QuestProvider, useQuest } from '@core/quest/QuestManager'
 import { UIOverlayRoot } from '@shared/components/UIOverlayRoot'
 import { ChatOrchestrator } from '@features/chat/orchestrators/ChatOrchestrator'
-import { SceneBusProvider } from '@core/bus/SceneBusProvider'
-import { sceneBus } from '@core/bus/sceneBus'
 import { useDialogue } from '@features/chat/context/useChatDialogue'
 import { StepScrollDebug } from '@core/scroll/StepScrollDebug'
 // Path to the story JSON bundle we want to load. In demo mode we keep this fixed
@@ -87,52 +84,25 @@ const StoryContent: React.FC = () => {
   const { story, loading, error } = useStory(STORY_URL);
 
   // Navigation context
-  const { scenes: navigationScenes, setScenes, setCurrentIndex, hideScene, showScene, allScenes } = useNavigation();
+  const { scenes, currentIndex, setScenes, setCurrentIndex, hideScene, showScene, allScenes } = useNavigation();
 
   // Chat dialogue context for content lock checking
   const { isPlayerTurn, waiting, questState } = useDialogue();
 
   // Derive a stable array of scenes from the loaded story
-  const initialScenes = useMemo(() => story?.scenes || [], [story?.scenes]);
+  const initialScenes = useMemo(() => {
+    if (!story?.scenes) return [];
+    // Inject panel metadata once during story load
+    return injectPanelMetaFromFlows(story.scenes);
+  }, [story?.scenes]);
 
-  // Use navigation scenes (already processed, just filter for visibility)
-  // Don't re-process with injectPanelMetaFromFlows as it breaks character metadata
-  const scenes = navigationScenes;
+  // Handle scene navigation updates - send processed scenes to NavigationContext
+  useSceneNavigation({ initialScenes, setScenes });
 
-  // Inject panel metadata from flow-based authoring
-  const scenesWithPanelMeta = useMemo(() => {
-    const processed = injectPanelMetaFromFlows(initialScenes);
-
-
-    return processed;
-  }, [initialScenes]);
-
-  // Handle scene navigation updates
-  useSceneNavigation({ initialScenes: scenesWithPanelMeta, setScenes });
-
-  // Scene index state
-  const [index, setIndex] = useState(0);
-
-  // Handle scene index changes - emit bus events and update navigation
+  // Handle scene index changes
   const handleIndexChange = (nextIndex: number) => {
-    // Emit scene bus events for enter/leave
-    if (nextIndex !== index) {
-      const direction = nextIndex > index ? 'forward' : 'backward';
-
-      // Emit leave event for previous scene
-      const prevScene = scenes[index];
-      if (prevScene && prevScene.sceneId) {
-        sceneBus.emit('scene:leave', prevScene.sceneId, direction);
-      }
-
-      // Emit enter event for new scene
-      const newScene = scenes[nextIndex];
-      if (newScene && newScene.sceneId) {
-        sceneBus.emit('scene:enter', newScene.sceneId, direction);
-      }
-    }
-
-    setIndex(nextIndex);
+    // Update NavigationContext index
+    // NavigationContext will emit scene:enter/leave events automatically
     setCurrentIndex(nextIndex);
   };
 
@@ -144,9 +114,9 @@ const StoryContent: React.FC = () => {
       window.__hideScene = hideScene;
       window.__showScene = showScene;
       window.__allScenes = allScenes;
-      window.__visibleScenes = navigationScenes;
+      window.__visibleScenes = scenes;
     }
-  }, [hideScene, showScene, allScenes, navigationScenes]);
+  }, [hideScene, showScene, allScenes, scenes]);
 
   // RENDER PATH #1: still loading the story → show a friendly centered message
   if (loading) {
@@ -165,14 +135,13 @@ const StoryContent: React.FC = () => {
   // RENDER PATH #3: story loaded → render each scene in a vertical, snap-scrolling layout
 
   return (
-    <SceneBusProvider>
-      <QuestProvider>
-        <PageFactoryProvider>
-          <CharacterAnimationProvider>
+    <QuestProvider>
+      <PageFactoryProvider>
+        <CharacterAnimationProvider>
             {/* Unified scroll control component */}
             <ScrollControl
               scenes={scenes}
-              currentIndex={index}
+              currentIndex={currentIndex}
               onIndexChange={handleIndexChange}
               isPlayerTurn={isPlayerTurn}
               waiting={waiting}
@@ -180,18 +149,18 @@ const StoryContent: React.FC = () => {
               className="story-scroll"
             >
               {/* Layer 1: Hybrid background system */}
-              <BackgroundOrchestrator storyId="gingerbread" storyContent={scenes} currentIndex={index} />
+              <BackgroundOrchestrator storyId="gingerbread" storyContent={scenes} currentIndex={currentIndex} />
 
               {/* Layer 1.5: Character panels (fixed, independent of scroll flow) */}
-              <CharacterOrchestrator storyId="gingerbread" scenes={scenes} currentIndex={index} />
+              <CharacterOrchestrator storyId="gingerbread" scenes={scenes} currentIndex={currentIndex} />
 
               {/* Layer 1.6: Image scenes (fixed, independent of scroll flow) */}
-              <ImageSceneOrchestrator scenes={scenes} index={index} />
+              <ImageSceneOrchestrator scenes={scenes} index={currentIndex} />
 
               {/* Layer 1.7: Image captions - now rendered within ImageScene components */}
 
               {/* Layer 1.8: Speech bubbles (scroll-based with delayed transitions) */}
-              <SpeechBubbleOrchestrator scenes={scenes} currentIndex={index} />
+              <SpeechBubbleOrchestrator scenes={scenes} currentIndex={currentIndex} />
 
               {/* Layer 1.9: Chat system (shows on lastInFlow scenes) */}
               <ChatOrchestrator />
@@ -242,7 +211,6 @@ const StoryContent: React.FC = () => {
         <UIOverlayRoot />
         <StepScrollDebug />
       </QuestProvider>
-    </SceneBusProvider>
   );
 };
 

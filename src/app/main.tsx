@@ -11,7 +11,7 @@ import { RecordingProvider } from '@core/recording/RecordingContext'
 
 ReactDOM.createRoot(document.getElementById('root')!).render(
   // <React.StrictMode>
-    <NavigationProvider initialIndex={3}>
+    <NavigationProvider initialIndex={0}>
       <DialogueProvider>
         <RecordingProvider>
           <ChatDialogueProvider>

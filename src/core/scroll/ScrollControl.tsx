@@ -14,7 +14,7 @@ import React, { useRef, useCallback, useLayoutEffect } from 'react';
 import type { Scene } from '@core/types/scene';
 import { useStepScroll } from './useStepScroll';
 import { useContentLocks } from './useContentLocks';
-import { sceneBus } from '@core/bus/sceneBus';
+import { useSceneOrchestrator } from './useSceneOrchestrator';
 
 export interface ScrollControlProps {
   // Core scene management
@@ -83,12 +83,19 @@ export function ScrollControl({
     return tag === 'input' || tag === 'textarea' || a.isContentEditable;
   }, []);
 
+  // Scene orchestrator - manages runtime state for scenes
+  const sceneOrchestrator = useSceneOrchestrator({
+    scenes,
+    currentIndex,
+  });
+
   // Content locking system
   const { checkContentLocks } = useContentLocks({
     scenes,
     isPlayerTurn,
     waiting,
     questState,
+    getCaptionState: sceneOrchestrator.getCaptionState,
   });
 
   // Step scroll system
@@ -101,6 +108,23 @@ export function ScrollControl({
     isInputFocused,
     checkContentLocks,
   });
+
+  // Watch for external currentIndex changes (programmatic navigation)
+  // and scroll to that index
+  const prevIndexRef = React.useRef(currentIndex);
+  useLayoutEffect(() => {
+    const el = containerRef.current;
+    if (!el) return;
+
+    // Only scroll if index changed externally (not from our own scroll events)
+    if (currentIndex !== prevIndexRef.current) {
+      const section = el.querySelectorAll<HTMLElement>('.scene')[currentIndex];
+      if (section) {
+        section.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }
+      prevIndexRef.current = currentIndex;
+    }
+  }, [currentIndex]);
 
   // Focus management for accessibility
   useLayoutEffect(() => {

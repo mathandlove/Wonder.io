@@ -1,9 +1,9 @@
-import React, { useState, useRef, useCallback, useEffect } from 'react';
+import React, { useCallback } from 'react';
 import { useDialogue } from './context/useChatDialogue';
 import { useDialogue as useNewDialogue } from '@core/dialogue/DialogueContext';
 import { usePageFactory } from './orchestrators/PageFactory';
-import NextButton from '@shared/components/ui/NextButton';
-import { Toast, useToast } from '@shared/components/ui/Toast';
+import NextButton from './ui/NextButton';
+import { Toast, useToast } from './ui/Toast';
 import { Recording } from '@core/recording/RecordingAPI';
 import { useRecording } from '@core/recording/RecordingContext';
 import './Chat.css';
@@ -19,12 +19,10 @@ export const ChatComposer: React.FC<ChatComposerProps> = ({
   questState,
   onNext
 }) => {
-  const { hideTurnBanner, waiting, submitPlayerUtterance } = useDialogue();
-  const { beginRecording, updateRecording, endRecording } = useNewDialogue();
+  const { hideTurnBanner, waiting } = useDialogue();
+  const { beginRecording } = useNewDialogue();
   const { createInteractiveBubblePage, addSceneAndNavigate } = usePageFactory();
   const { state: recordingState } = useRecording();
-  const [currentRecordingId, setCurrentRecordingId] = useState<string | null>(null);
-  const [currentSceneId, setCurrentSceneId] = useState<string | null>(null);
   const { toast, hideToast } = useToast();
 
   const startRecording = useCallback(() => {
@@ -32,14 +30,12 @@ export const ChatComposer: React.FC<ChatComposerProps> = ({
     // Create a new interactive bubble scene and navigate to it
     const newScene = createInteractiveBubblePage();
     const sceneId = newScene.sceneId || 'default';
-    setCurrentSceneId(sceneId);
 
     // Add the scene and auto-scroll to it
     addSceneAndNavigate(newScene);
 
     // Start recording with the new scene ID
-    const recordingId = beginRecording(sceneId);
-    setCurrentRecordingId(recordingId);
+    beginRecording(sceneId);
 
     // Use global Recording API
     console.log('🎯 Using global Recording.start()');

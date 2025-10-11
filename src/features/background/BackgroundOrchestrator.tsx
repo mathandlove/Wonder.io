@@ -3,7 +3,6 @@
  * from the original main branch with optimized rendering
  */
 import React, { useMemo } from 'react';
-import { useScrollOffset } from '@shared/hooks/useScrollOffset';
 import { buildBackgroundRanges } from './buildBackgroundRanges';
 import { resolveBackgroundUrl } from './resolveBackgroundUrl';
 import { translateForRange } from './positionBackground';
@@ -15,14 +14,12 @@ interface BackgroundOrchestratorProps {
   currentIndex?: number;
 }
 
-export function BackgroundOrchestrator({ storyId, storyContent, currentIndex }: BackgroundOrchestratorProps) {
+export function BackgroundOrchestrator({ storyId, storyContent, currentIndex = 0 }: BackgroundOrchestratorProps) {
   // Build background ranges using the original main branch logic
   const backgroundRanges = useMemo(() => buildBackgroundRanges(storyContent), [storyContent]);
 
-  // Use passed currentIndex or fall back to scroll offset
-  const dummyRef = React.useRef<HTMLDivElement>(null);
-  const { offset: scrollOffsetFallback } = useScrollOffset(dummyRef);
-  const scrollOffset = currentIndex !== undefined ? currentIndex : scrollOffsetFallback;
+  // Use currentIndex directly (always passed from ScrollControl)
+  const scrollOffset = currentIndex;
 
   // Find the active range and mount only [active-1, active, active+1] ranges
   const activeRangeIndex = useMemo(() => {

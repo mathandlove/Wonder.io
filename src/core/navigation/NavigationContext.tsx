@@ -2,10 +2,9 @@
  * NavigationProvider owns navigation state/APIs and syncs with SnapLayer.
  * Keeps scenes dumb while preserving existing assistantText auto-advance logic.
  */
-import React, { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState } from "react";
+import React, { createContext, useCallback, useContext, useMemo, useState } from "react";
 import type { Scene } from '@core/types/scene';
 import { injectPanelMetaFromFlows } from '@features/characters/adapters/injectPanelMetaFromFlows';
-import { sceneBus } from '@core/bus/sceneBus';
 
 export interface NavigationContextType {
   currentIndex: number;
@@ -21,7 +20,6 @@ export interface NavigationContextType {
   nextAndHide: (sceneId: string) => void;
   goToIndex: (index: number) => void;
   navigateToNext: (fromSceneId?: string, onComplete?: () => void, hideFromScene?: boolean) => void;
-  registerSnapApi: (api: { scrollTo: (index: number, opts?: ScrollToOptions) => void }) => void;
   currentBackgroundId: string | null;
 }
 
@@ -68,33 +66,11 @@ export function NavigationProvider({ children, initialIndex = 0 }: NavigationPro
 
     return null;
   }, [visibleScenes, currentIndex]);
-  const snapApiRef = useRef<{ scrollTo: (index: number, opts?: ScrollToOptions) => void } | null>(null);
-
-  // Register SnapLayer's API for programmatic control
-  const registerSnapApi = useCallback((api: { scrollTo: (index: number, opts?: ScrollToOptions) => void }) => {
-    snapApiRef.current = api;
-    // Don't auto-scroll on registration to prevent infinite loops
-    // The scroll position will be handled by user interactions or explicit navigation calls
-  }, []);
-
-  // Auto-scroll to initial index when scenes are loaded and snap API is ready
-  const [hasInitialScrolled, setHasInitialScrolled] = useState(false);
-  useEffect(() => {
-    if (snapApiRef.current && visibleScenes.length > 0 && initialIndex > 0 && !hasInitialScrolled) {
-      // Small delay to ensure DOM is ready
-      const timer = setTimeout(() => {
-        const clampedIndex = Math.max(0, Math.min(initialIndex, visibleScenes.length - 1));
-        snapApiRef.current?.scrollTo(clampedIndex, { behavior: "auto" }); // Use "auto" for instant jump
-        setHasInitialScrolled(true);
-      }, 100);
-      return () => clearTimeout(timer);
-    }
-  }, [visibleScenes.length, initialIndex, hasInitialScrolled]); // Only run when scenes load or initialIndex changes
 
   const goToIndex = useCallback((index: number) => {
     const clampedIndex = Math.max(0, Math.min(index, visibleScenes.length - 1));
     setCurrentIndex(clampedIndex);
-    snapApiRef.current?.scrollTo(clampedIndex, { behavior: "smooth" });
+    // ScrollControl listens to currentIndex and handles the scroll
   }, [visibleScenes.length]);
 
   const insertScene = useCallback((scene: Scene, index: number) => {
@@ -115,17 +91,19 @@ export function NavigationProvider({ children, initialIndex = 0 }: NavigationPro
 
   const hideScene = useCallback((sceneId: string) => {
     setAllScenes(prevScenes =>
-      prevScenes.map(scene =>
-        (scene as any).sceneId === sceneId ? { ...scene, hidden: true } : scene
-      )
+      prevScenes.map(scene => {
+        const sceneWithId = scene as Scene & { sceneId?: string };
+        return sceneWithId.sceneId === sceneId ? { ...scene, hidden: true } : scene;
+      })
     );
   }, []);
 
   const showScene = useCallback((sceneId: string) => {
     setAllScenes(prevScenes =>
-      prevScenes.map(scene =>
-        (scene as any).sceneId === sceneId ? { ...scene, hidden: false } : scene
-      )
+      prevScenes.map(scene => {
+        const sceneWithId = scene as Scene & { sceneId?: string };
+        return sceneWithId.sceneId === sceneId ? { ...scene, hidden: false } : scene;
+      })
     );
   }, []);
 
@@ -138,47 +116,19 @@ export function NavigationProvider({ children, initialIndex = 0 }: NavigationPro
   }, [hideScene]);
 
   const navigateToNext = useCallback((fromSceneId?: string, onComplete?: () => void, hideFromScene?: boolean) => {
-    // Small delay to ensure scroll lock is released before advancing
-    setTimeout(() => {
-      // Emit scene leave event for current scene
-      if (fromSceneId) {
-        sceneBus.emit('scene:leave', fromSceneId, 'forward');
-      }
+    // Hide the current scene if requested
+    if (hideFromScene && fromSceneId) {
+      hideScene(fromSceneId);
+      // After hiding, stay on current index (which now shows the next scene)
+      // No need to change currentIndex - the useEffect will emit events automatically
+    } else {
+      // Just advance to next scene
+      setCurrentIndex(currentIndex + 1);
+    }
 
-      // Find the next scene BEFORE hiding (important for correct index calculation)
-      const nextSceneIndex = currentIndex + 1;
-      const nextScene = visibleScenes[nextSceneIndex];
-
-      // Calculate the adjusted target index after hiding
-      // If we hid a scene before the target, target index decreases by 1
-      const adjustedNextIndex = hideFromScene && fromSceneId ? currentIndex : nextSceneIndex;
-
-      // Hide the from scene if requested (this changes visibleScenes indices)
-      if (hideFromScene && fromSceneId) {
-        hideScene(fromSceneId);
-      }
-
-      // Update navigation index IMMEDIATELY after hiding to keep everything in sync
-      setCurrentIndex(adjustedNextIndex);
-
-      // Emit scene enter event for the next scene AFTER hiding and index update
-      if (nextScene && (nextScene as any).sceneId) {
-        sceneBus.emit('scene:enter', (nextScene as any).sceneId, 'forward');
-      }
-
-      // Use setTimeout only for the scroll (to let React finish state updates)
-      setTimeout(() => {
-        // Trigger scroll navigation to the next scene (DOM uses filtered indices)
-        const nextSection = document.querySelector(`[data-section-index="${adjustedNextIndex}"]`);
-        if (nextSection) {
-          nextSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
-        }
-      }, 0);
-
-      // Call completion callback if provided
-      onComplete?.();
-    }, 50);
-  }, [currentIndex, visibleScenes, setCurrentIndex, hideScene]);
+    // Call completion callback if provided
+    onComplete?.();
+  }, [currentIndex, hideScene]);
 
   const contextValue = useMemo((): NavigationContextType => ({
     currentIndex,
@@ -194,7 +144,6 @@ export function NavigationProvider({ children, initialIndex = 0 }: NavigationPro
     nextAndHide,
     goToIndex,
     navigateToNext,
-    registerSnapApi,
     currentBackgroundId,
   }), [
     currentIndex,
@@ -209,7 +158,6 @@ export function NavigationProvider({ children, initialIndex = 0 }: NavigationPro
     nextAndHide,
     goToIndex,
     navigateToNext,
-    registerSnapApi,
     currentBackgroundId,
   ]);
 

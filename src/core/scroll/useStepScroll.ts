@@ -114,7 +114,28 @@ export function useStepScroll(
       const locked = isLocked(direction, currentIndex);
 
       if (locked) {
+        // Set animating flag to prevent multiple blocked events
+        animatingRef.current = true;
+
+        // Emit unified scroll attempt event (blocked)
+        const blockedEvent = {
+          direction,
+          blocked: true,
+          fromIndex: currentIndex,
+          toIndex: currentIndex, // Stayed on same scene
+          timestamp: Date.now(),
+        };
+        console.log('🚫 scroll:attempt (BLOCKED):', blockedEvent);
+        window.dispatchEvent(new CustomEvent('scroll:attempt', { detail: blockedEvent }));
         emitDebug(`BLOCKED: ${direction}`, { isLocked: true, reason: 'content lock' });
+
+        // Clear animating flag after a short delay to allow single event emission
+        if (settleTimerRef.current) window.clearTimeout(settleTimerRef.current);
+        settleTimerRef.current = window.setTimeout(() => {
+          animatingRef.current = false;
+          emitDebug('block timer cleared - ready for next attempt');
+        }, 300);
+
         return false; // Blocked
       }
 
@@ -124,6 +145,17 @@ export function useStepScroll(
       const delta = direction === 'forward' ? 1 : -1;
       const next = currentIndex + delta;
       const clamped = Math.max(0, Math.min(next, count() - 1));
+
+      // Emit unified scroll attempt event (successful)
+      const successEvent = {
+        direction,
+        blocked: false,
+        fromIndex: currentIndex,
+        toIndex: clamped,
+        timestamp: Date.now(),
+      };
+      console.log('✅ scroll:attempt (SUCCESS):', successEvent);
+      window.dispatchEvent(new CustomEvent('scroll:attempt', { detail: successEvent }));
 
       emitDebug(`TRANSITION: ${direction} to index ${clamped}`, { isLocked: false, reason: '' });
       onIndexChange(clamped);

@@ -1,5 +1,4 @@
 import React, { useEffect, useMemo, useState, useLayoutEffect } from "react";
-import { useScrollManager } from '@shared/hooks/useScrollManager';
 import { useCharacterAnimation } from '@features/characters-context/CharacterAnimationContext';
 import type { Scene } from '@core/types/scene';
 import { CharacterPanel } from "./CharacterPanel";
@@ -12,12 +11,11 @@ type Props = {
   currentIndex?: number;
 };
 
-export const CharacterOrchestrator: React.FC<Props> = ({ storyId, scenes, currentIndex }) => {
+export const CharacterOrchestrator: React.FC<Props> = ({ storyId, scenes, currentIndex = 0 }) => {
   const { notifyEntranceComplete } = useCharacterAnimation();
 
-  // Use passed currentIndex or fall back to scroll manager
-  const { index: scrollOffsetFallback } = useScrollManager({ setCurrentIndex: () => {} }); // continuous float in "scene units"
-  const scrollOffset = currentIndex !== undefined ? currentIndex : scrollOffsetFallback;
+  // Use currentIndex directly (always passed from ScrollControl)
+  const scrollOffset = currentIndex;
 
   // Get current scene meta and speaker info
   const { currentMeta, currentSpeaker } = useMemo(() => {
