@@ -9,6 +9,11 @@ export type DeliveryStatus =
   | 'converted'   // Scenes created and conversation moved to character scenes
   | 'error';      // Error occurred
 
+// State machine for image captions
+export type ImageState =
+  | 'hidden'      // Caption not yet shown
+  | 'showing';    // Caption is visible after first scroll attempt (then unlocks)
+
 export type Sender = 'player' | 'npc';
 
 export type Message = {

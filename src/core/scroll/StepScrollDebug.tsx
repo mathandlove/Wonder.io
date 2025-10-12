@@ -13,6 +13,7 @@ import { useEffect, useState } from 'react';
 import { useSceneManager } from '@core/scenes/SceneManager';
 import { useSceneOrchestratorContext } from './SceneOrchestratorContext';
 import { useDialogue } from '@core/dialogue/DialogueContext';
+import { useImageState } from '@features/image-scene/ImageStateContext';
 import type { Scene } from '@core/types/scene';
 
 interface DebugState {
@@ -64,6 +65,7 @@ export function StepScrollDebug() {
   // Get scene manager and orchestrator for additional context
   const sceneManager = useSceneManager();
   const orchestrator = useSceneOrchestratorContext();
+  const imageState = useImageState();
 
   // Try to get dialogue context, may be undefined if not in provider tree
   let dialogue;
@@ -91,7 +93,7 @@ export function StepScrollDebug() {
   const currentScene = sceneManager.visibleScenes[state.currentIndex] as (Scene & { sceneId?: string, caption?: string, text?: string }) | undefined;
   const sceneType = currentScene?.type || 'unknown';
   const sceneId = currentScene?.sceneId || 'no-id';
-  const captionState = orchestrator?.getCaptionState(sceneId);
+  const captionState = imageState.getImageState(sceneId);
   const hasCaption = sceneType === 'image' && ((currentScene?.caption || currentScene?.text)?.trim() || false);
 
   // Get dialogue messages for current scene (safely)
@@ -232,6 +234,32 @@ export function StepScrollDebug() {
             ⬆️ Backward: <strong>{state.lockedBackward ? 'LOCKED' : 'free'}</strong>
           </div>
         </div>
+
+        {/* Image Caption State Section - Only show for image scenes with captions */}
+        {sceneType === 'image' && hasCaption && (
+          <div style={{ marginBottom: '8px', paddingBottom: '8px', borderBottom: '1px solid #f0f' }}>
+            <div style={{ color: '#f0f', marginBottom: '4px', fontWeight: 'bold' }}>🖼️ Image Caption State</div>
+            <div style={{
+              padding: '6px',
+              background: 'rgba(255,0,255,0.1)',
+              borderRadius: '4px',
+              border: '1px solid #f0f'
+            }}>
+              <div style={{
+                color: captionState === 'showing' ? '#0f0' : '#666',
+                fontSize: '12px',
+                fontWeight: 'bold'
+              }}>
+                {captionState === 'hidden' && '⚫ HIDDEN'}
+                {captionState === 'showing' && '✅ SHOWING'}
+              </div>
+              <div style={{ color: '#888', fontSize: '9px', marginTop: '2px' }}>
+                {captionState === 'hidden' && 'Caption waiting (scroll blocked until shown)'}
+                {captionState === 'showing' && 'Caption visible (scroll unlocked)'}
+              </div>
+            </div>
+          </div>
+        )}
 
         {/* Last Event Section */}
         {state.lastEvent && (

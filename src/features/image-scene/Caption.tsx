@@ -1,20 +1,18 @@
 import "./Caption.css";
-import type { CaptionState } from "@core/scroll/useSceneOrchestrator";
+import type { ImageState } from "@core/dialogue/types";
 
 type CaptionProps = {
   text: string;
-  state: CaptionState;
+  state: ImageState;
   align?: "center" | "bottom";
 };
 
 export default function Caption({ text, state, align = 'bottom' }: CaptionProps) {
-  // Map caption state to CSS class
+  // Map ImageState to CSS class
   // hidden: no animation, invisible (below viewport)
-  // showing: animate in (slide up with construction paper)
-  // dismissed: animate out (slide up off screen) then stay hidden
+  // showing: animate in (slide up with construction paper), stays visible
   const stateClass =
     state === 'showing' ? 'caption--animate-in' :
-    state === 'dismissed' ? 'caption--animate-out' :
     'caption--hidden';
 
   return (

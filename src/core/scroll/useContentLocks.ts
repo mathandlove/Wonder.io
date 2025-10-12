@@ -5,14 +5,14 @@
  * No side effects, no events, just pure decision logic.
  */
 import type { Scene } from '@core/types/scene';
-import type { CaptionState } from './useSceneOrchestrator';
+import type { ImageState } from '@core/dialogue/types';
 
 type UseContentLocksParams = {
   scenes: Scene[];
   isPlayerTurn: boolean;
   waiting: boolean;
   questState: 'idle' | 'active' | 'completed' | 'complete' | 'failed';
-  getCaptionState?: (sceneId: string) => CaptionState | undefined;
+  getCaptionState?: (sceneId: string) => ImageState | undefined;
 };
 
 export function useContentLocks({ scenes, isPlayerTurn, waiting, questState, getCaptionState }: UseContentLocksParams) {

@@ -16,6 +16,8 @@ import { useStepScroll } from './useStepScroll';
 import { useContentLocks } from './useContentLocks';
 import { useSceneOrchestrator } from './useSceneOrchestrator';
 import { SceneOrchestratorProvider } from './SceneOrchestratorContext';
+import { useImageState } from '@features/image-scene/ImageStateContext';
+import './ScrollControl.css';
 
 export interface ScrollControlProps {
   // Core scene management
@@ -90,13 +92,16 @@ export function ScrollControl({
     currentIndex,
   });
 
+  // Image state context for caption management
+  const imageState = useImageState();
+
   // Content locking system
   const { checkContentLocks } = useContentLocks({
     scenes,
     isPlayerTurn,
     waiting,
     questState,
-    getCaptionState: sceneOrchestrator.getCaptionState,
+    getCaptionState: imageState.getImageState,
   });
 
   // Step scroll system
@@ -144,6 +149,8 @@ export function ScrollControl({
     scrollSnapType: 'y mandatory',
     overscrollBehavior: 'contain',
     WebkitOverflowScrolling: 'touch',
+    scrollbarWidth: 'none', // Firefox
+    msOverflowStyle: 'none', // IE and Edge
     ...style,
   };
 

@@ -40,6 +40,7 @@ import { UIOverlayRoot } from '@shared/components/UIOverlayRoot'
 import { ChatOrchestrator } from '@features/chat/orchestrators/ChatOrchestrator'
 import { useDialogue } from '@features/chat/context/useChatDialogue'
 import { StepScrollDebug } from '@core/scroll/StepScrollDebug'
+import { ImageStateProvider } from '@features/image-scene/ImageStateContext'
 // Path to the story JSON bundle we want to load. In demo mode we keep this fixed
 // so the experience is deterministic for the presentation.
 
@@ -137,9 +138,10 @@ const StoryContent: React.FC = () => {
   return (
     <QuestProvider>
       <PageFactoryProvider>
-        <CharacterAnimationProvider>
-            {/* Unified scroll control component */}
-            <ScrollControl
+        <ImageStateProvider>
+          <CharacterAnimationProvider>
+              {/* Unified scroll control component */}
+              <ScrollControl
               scenes={scenes}
               currentIndex={currentIndex}
               onIndexChange={handleIndexChange}
@@ -209,10 +211,11 @@ const StoryContent: React.FC = () => {
               <StepScrollDebug />
             </ScrollControl>
           </CharacterAnimationProvider>
-        </PageFactoryProvider>
-        <QuestDebugProbe />
-        <UIOverlayRoot />
-      </QuestProvider>
+        </ImageStateProvider>
+      </PageFactoryProvider>
+      <QuestDebugProbe />
+      <UIOverlayRoot />
+    </QuestProvider>
   );
 };
 

@@ -7,23 +7,22 @@ import type { SceneProps } from "../registry";
 import type { ImageScene } from "@core/types/scene";
 import { resolveStoryImage } from "@shared/utils/imageResolver";
 import Caption from "@features/image-scene/Caption";
-import { useSceneOrchestratorContext } from "@core/scroll/SceneOrchestratorContext";
+import { useImageState } from "@features/image-scene/ImageStateContext";
 
 export default function ImageScene({ scene }: SceneProps<ImageScene>) {
   // Support both 'text' (legacy) and 'caption' properties
   const captionText = scene.text || scene.caption;
   const hasCaption = captionText && captionText.trim() !== '';
 
-  // Get caption state from orchestrator
-  const orchestrator = useSceneOrchestratorContext();
+  // Get caption state from ImageStateContext
+  const imageState = useImageState();
   const sceneId = scene.sceneId;
-  const captionState = sceneId && orchestrator ? orchestrator.getCaptionState(sceneId) : undefined;
+  const captionState = sceneId ? imageState.getImageState(sceneId) : 'hidden';
 
   console.log(`📸 ImageScene render:`, {
     sceneId,
     hasCaption,
     captionState,
-    orchestratorExists: !!orchestrator,
     captionText: captionText?.substring(0, 30)
   });
 
