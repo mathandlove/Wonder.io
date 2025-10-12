@@ -3,9 +3,9 @@
  * Images use background-size: cover for full-space coverage.
  */
 import React from "react";
-import type { SceneProps } from "../registry";
+import type { SceneProps } from "./registry";
 import type { ImageScene } from "@core/types/scene";
-import { resolveStoryImage } from "@shared/utils/imageResolver";
+import { resolveStoryImage } from "@core/data/imageResolver";
 import Caption from "@features/image-scene/Caption";
 import { useImageState } from "@features/image-scene/ImageStateContext";
 

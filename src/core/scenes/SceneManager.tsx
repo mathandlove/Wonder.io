@@ -5,28 +5,46 @@
  * - Scene collection management (allScenes array)
  * - Scene visibility filtering (hidden scenes)
  * - Scene insertion and dynamic scene creation
- * - Current position tracking (currentIndex)
+ * - Current position tracking (navigationIndex for scene/state pairs)
+ * - Navigation array (flat array of scene/state combinations)
  * - Navigation helpers (goToNext, goToIndex, etc.)
- * - Derived state (currentBackgroundId, visibleScenes)
+ * - Derived state (currentBackgroundId, visibleScenes, currentScene)
  */
 import React, { createContext, useCallback, useContext, useMemo, useState } from "react";
 import type { Scene } from '@core/types/scene';
 import { injectPanelMetaFromFlows } from '@features/characters/adapters/injectPanelMetaFromFlows';
+import { buildNavigationArray } from '@core/navigation/buildNavigationArray';
+import type { NavigationItem } from '@core/navigation/types';
 
 export interface SceneManagerType {
+  // Legacy scene-based navigation (backward compatibility)
   currentIndex: number;
   setCurrentIndex: (index: number) => void;
   allScenes: Scene[];
   scenes: Scene[]; // Alias for visibleScenes (backward compatibility)
   visibleScenes: Scene[];
+
+  // New navigation array system
+  navigationArray: NavigationItem[];
+  navigationIndex: number;
+  setNavigationIndex: (index: number) => void;
+  getCurrentNavigationItem: () => NavigationItem | null;
+  getCurrentScene: () => Scene | null;
+  getCurrentSceneId: () => string | null;
+
+  // Scene management
   setScenes: (scenes: Scene[]) => void;
   insertScene: (scene: Scene, index: number) => void;
   hideScene: (sceneId: string) => void;
   showScene: (sceneId: string) => void;
+
+  // Navigation methods
   goToNext: () => void;
   nextAndHide: (sceneId: string) => void;
   goToIndex: (index: number) => void;
   navigateToNext: (fromSceneId?: string, onComplete?: () => void, hideFromScene?: boolean) => void;
+
+  // Derived state
   currentBackgroundId: string | null;
 }
 
@@ -48,6 +66,7 @@ interface SceneManagerProviderProps {
 
 export function SceneManagerProvider({ children, initialIndex = 0 }: SceneManagerProviderProps) {
   const [currentIndex, setCurrentIndex] = useState(initialIndex);
+  const [navigationIndex, setNavigationIndex] = useState(0);
   const [allScenes, setAllScenes] = useState<Scene[]>([]);
 
   // Filter out hidden scenes for navigation and rendering
@@ -56,9 +75,30 @@ export function SceneManagerProvider({ children, initialIndex = 0 }: SceneManage
     [allScenes]
   );
 
-  // Compute current background from current scene (use visibleScenes)
+  // Build navigation array from visible scenes
+  const navigationArray = useMemo(
+    () => buildNavigationArray(visibleScenes),
+    [visibleScenes]
+  );
+
+  // Helper functions for navigation array access
+  const getCurrentNavigationItem = useCallback((): NavigationItem | null => {
+    return navigationArray[navigationIndex] || null;
+  }, [navigationArray, navigationIndex]);
+
+  const getCurrentScene = useCallback((): Scene | null => {
+    const item = getCurrentNavigationItem();
+    return item?.scene || null;
+  }, [getCurrentNavigationItem]);
+
+  const getCurrentSceneId = useCallback((): string | null => {
+    const item = getCurrentNavigationItem();
+    return item?.sceneId || null;
+  }, [getCurrentNavigationItem]);
+
+  // Compute current background from current navigation item
   const currentBackgroundId = useMemo(() => {
-    const currentScene = visibleScenes[currentIndex];
+    const currentScene = getCurrentScene();
     if (!currentScene) return null;
 
     // Only return background if explicitly defined and not empty
@@ -70,7 +110,7 @@ export function SceneManagerProvider({ children, initialIndex = 0 }: SceneManage
     }
 
     return null;
-  }, [visibleScenes, currentIndex]);
+  }, [getCurrentScene]);
 
   const goToIndex = useCallback((index: number) => {
     const clampedIndex = Math.max(0, Math.min(index, visibleScenes.length - 1));
@@ -135,25 +175,51 @@ export function SceneManagerProvider({ children, initialIndex = 0 }: SceneManage
   }, [currentIndex, hideScene]);
 
   const contextValue = useMemo((): SceneManagerType => ({
+    // Legacy scene-based navigation
     currentIndex,
     setCurrentIndex,
     allScenes,
     scenes: visibleScenes, // Backward compatibility alias
     visibleScenes,
+
+    // New navigation array system
+    navigationArray,
+    navigationIndex,
+    setNavigationIndex,
+    getCurrentNavigationItem,
+    getCurrentScene,
+    getCurrentSceneId,
+
+    // Scene management
     setScenes,
     insertScene,
     hideScene,
     showScene,
+
+    // Navigation methods
     goToNext,
     nextAndHide,
     goToIndex,
     navigateToNext,
+
+    // Derived state
     currentBackgroundId,
   }), [
+    // Legacy
     currentIndex,
     setCurrentIndex,
     allScenes,
     visibleScenes,
+
+    // New navigation array
+    navigationArray,
+    navigationIndex,
+    setNavigationIndex,
+    getCurrentNavigationItem,
+    getCurrentScene,
+    getCurrentSceneId,
+
+    // Methods
     setScenes,
     insertScene,
     hideScene,
@@ -162,6 +228,8 @@ export function SceneManagerProvider({ children, initialIndex = 0 }: SceneManage
     nextAndHide,
     goToIndex,
     navigateToNext,
+
+    // Derived
     currentBackgroundId,
   ]);
 

@@ -3,9 +3,9 @@
  * Each scene gets its own 100vh section with snap-scroll behavior.
  */
 import React, { useMemo } from "react";
-import { useStory } from '@shared/hooks/useStory';
+import { useStory } from '@core/data/useStory';
 import { FlowLayout } from '@features/flow-layout/FlowLayout';
-import { SceneRenderer } from '@shared/components/SceneRenderer';
+import { SceneRenderer } from '@core/scenes/SceneRenderer';
 import { PageFactoryProvider } from '@features/chat/orchestrators/PageFactory';
 import { useSceneManager } from '@core/scenes/SceneManager';
 import { BackgroundOrchestrator } from '@features/background/BackgroundOrchestrator';
@@ -17,7 +17,7 @@ import { useSceneNavigation } from '@core/navigation/useSceneNavigation';
 import { ScrollControl } from '@core/scroll/ScrollControl';
 import { CharacterAnimationProvider } from '@features/characters-context/CharacterAnimationContext';
 import type { Scene } from '@core/types/scene';
-import type { QuestHook } from '@core/quest/QuestManager';
+import type { QuestHook } from '@features/quest/QuestManager';
 
 // Extended scene type for dynamic properties
 type SceneWithId = Scene & {
@@ -35,8 +35,8 @@ declare global {
     __visibleScenes?: Scene[];
   }
 }
-import { QuestProvider, useQuest } from '@core/quest/QuestManager'
-import { UIOverlayRoot } from '@shared/components/UIOverlayRoot'
+import { QuestProvider, useQuest } from '@features/quest/QuestManager'
+import { UIOverlayRoot } from '@core/uiLayout/UIOverlayRoot'
 import { ChatOrchestrator } from '@features/chat/orchestrators/ChatOrchestrator'
 import { useDialogue } from '@features/chat/context/useChatDialogue'
 import { StepScrollDebug } from '@core/scroll/StepScrollDebug'

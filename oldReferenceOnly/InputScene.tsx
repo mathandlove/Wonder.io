@@ -3,7 +3,7 @@
  * Speech bubbles are rendered by SpeechBubbleOrchestrator outside the document flow.
  * This is identical to InteractiveBubbleScene but uses the "input" type from story JSON.
  */
-import type { SceneProps } from "../registry";
+import type { SceneProps } from "../scenes/registry";
 import type { InputScene } from "@core/types/scene";
 
 export default function InputSceneComponent({ scene, sceneIndex }: SceneProps<InputScene>) {

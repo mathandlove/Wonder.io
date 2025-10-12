@@ -44,11 +44,13 @@ export interface SceneOrchestratorHook {
 interface UseSceneOrchestratorParams {
   scenes: Scene[];
   currentIndex: number;
+  onIndexChange?: (index: number) => void;
 }
 
 export function useSceneOrchestrator({
   scenes,
   currentIndex,
+  onIndexChange,
 }: UseSceneOrchestratorParams): SceneOrchestratorHook {
   // Runtime state storage - persists across renders
   const stateMapRef = useRef<SceneStateMap>(new Map());
@@ -97,8 +99,14 @@ export function useSceneOrchestrator({
     if (!currentState || currentState === 'hidden') {
       imageState.setImageState(sceneId, 'showing');
       console.log(`📸 Caption transition: ${sceneId} hidden → showing`);
+
+      // Increment navigation index to move from image:hidden to image:showing
+      if (onIndexChange) {
+        console.log(`📍 Incrementing navigation index: ${currentIndex} → ${currentIndex + 1}`);
+        onIndexChange(currentIndex + 1);
+      }
     }
-  }, [imageState]);
+  }, [imageState, currentIndex, onIndexChange]);
 
   // Listen to scroll:attempt events and trigger caption transitions
   useEffect(() => {

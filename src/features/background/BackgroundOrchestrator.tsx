@@ -6,7 +6,7 @@ import React, { useMemo } from 'react';
 import { buildBackgroundRanges } from './buildBackgroundRanges';
 import { resolveBackgroundUrl } from './resolveBackgroundUrl';
 import { translateForRange } from './positionBackground';
-import type { SceneContent } from '@shared/types/background';
+import type { SceneContent } from 'oldReferenceOnly/background';
 
 interface BackgroundOrchestratorProps {
   storyId?: string;

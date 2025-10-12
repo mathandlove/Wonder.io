@@ -1,7 +1,7 @@
 /**
  * Build background ranges from story content using the original main branch rules
  */
-import type { SceneContent, BackgroundRange } from '@shared/types/background';
+import type { SceneContent, BackgroundRange } from 'oldReferenceOnly/background';
 
 export function buildBackgroundRanges(storyContent: SceneContent[]): BackgroundRange[] {
   const backgroundRanges: BackgroundRange[] = [];

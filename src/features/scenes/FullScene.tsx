@@ -3,7 +3,7 @@
  * Shows text in full screen format without speech bubbles.
  */
 import React from "react";
-import type { SceneProps } from "../registry";
+import type { SceneProps } from "./registry";
 import type { FullScene } from "@core/types/scene";
 
 export default function FullScene({ scene }: SceneProps<FullScene>) {

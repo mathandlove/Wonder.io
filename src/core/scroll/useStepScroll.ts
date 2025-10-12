@@ -3,8 +3,13 @@
  *
  * Intercepts wheel/touch/keyboard events and enforces single-scene transitions.
  * Prevents native scrolling and implements momentum-free, deliberate navigation.
+ *
+ * Now supports navigation array - scrolls only when sceneId changes,
+ * otherwise just updates state without scrolling.
  */
 import { useEffect, useRef, useCallback } from 'react';
+import type { NavigationItem } from '@core/navigation/types';
+import { shouldScroll } from '@core/navigation/types';
 
 declare global {
   interface HTMLElementEventMap {
@@ -22,6 +27,7 @@ type StepScrollOpts = {
   thresholdPx?: number;
   isInputFocused?: () => boolean;
   checkContentLocks?: (direction: Direction, currentIndex: number) => boolean;
+  navigationArray?: NavigationItem[]; // Optional: enables smart scrolling
 };
 
 export function useStepScroll(
@@ -33,7 +39,8 @@ export function useStepScroll(
     durationMs = 380,
     thresholdPx = 60,
     isInputFocused = () => false,
-    checkContentLocks
+    checkContentLocks,
+    navigationArray
   }: StepScrollOpts
 ) {
   const cooldownRef = useRef(false); // Prevents rapid-fire scrolling
@@ -78,8 +85,32 @@ export function useStepScroll(
 
     // ============ CORE FUNCTIONS ============
 
-    const scrollToIndex = (idx: number) => {
+    const scrollToIndex = (idx: number, fromIdx?: number) => {
       const clamped = Math.max(0, Math.min(idx, count() - 1));
+
+      // Check if we should actually scroll using navigation array
+      let shouldAnimate = true;
+      if (navigationArray && fromIdx !== undefined) {
+        const fromItem = navigationArray[fromIdx];
+        const toItem = navigationArray[clamped];
+        if (fromItem && toItem) {
+          shouldAnimate = shouldScroll(fromItem, toItem);
+          console.log(`🔍 shouldScroll check:`, {
+            fromScene: fromItem.sceneId,
+            toScene: toItem.sceneId,
+            shouldAnimate,
+            reason: shouldAnimate ? 'different scenes' : 'same scene, state change only'
+          });
+        }
+      }
+
+      // If we're staying on the same scene (state change only), don't scroll
+      if (!shouldAnimate) {
+        console.log('⚡ State change only - no scroll animation');
+        emitDebug(`scrollToIndex(${clamped}) - state change only, no scroll`);
+        return;
+      }
+
       const section = el.querySelectorAll<HTMLElement>('.scene')[clamped];
       if (!section) return;
 
@@ -186,7 +217,7 @@ export function useStepScroll(
 
       emitDebug(`TRANSITION: ${direction} to index ${clamped}`, { isLocked: false, reason: '' });
       onIndexChange(clamped);
-      scrollToIndex(clamped);
+      scrollToIndex(clamped, currentIndex); // Pass fromIdx to enable smart scrolling
 
       // Start cooldown to prevent rapid-fire successful scrolls
       startCooldown(300);
@@ -312,5 +343,5 @@ export function useStepScroll(
       el.removeEventListener('scrollend', onScrollEnd);
       if (settleTimerRef.current) window.clearTimeout(settleTimerRef.current);
     };
-  }, [containerRef, onIndexChange, getIndex, count, durationMs, thresholdPx, isInputFocused, checkContentLocks, emitDebug]);
+  }, [containerRef, onIndexChange, getIndex, count, durationMs, thresholdPx, isInputFocused, checkContentLocks, navigationArray, emitDebug]);
 }

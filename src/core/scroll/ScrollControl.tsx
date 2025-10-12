@@ -17,6 +17,7 @@ import { useContentLocks } from './useContentLocks';
 import { useSceneOrchestrator } from './useSceneOrchestrator';
 import { SceneOrchestratorProvider } from './SceneOrchestratorContext';
 import { useImageState } from '@features/image-scene/ImageStateContext';
+import { useSceneManager } from '@core/scenes/SceneManager';
 import './ScrollControl.css';
 
 export interface ScrollControlProps {
@@ -60,6 +61,10 @@ export function ScrollControl({
 }: ScrollControlProps) {
   const containerRef = useRef<HTMLDivElement>(null);
 
+  // Get navigation array from SceneManager
+  const sceneManager = useSceneManager();
+  const navigationArray = sceneManager.navigationArray;
+
   // Get index from scroll position
   const getIndex = useCallback(() => {
     const el = containerRef.current;
@@ -90,6 +95,7 @@ export function ScrollControl({
   const sceneOrchestrator = useSceneOrchestrator({
     scenes,
     currentIndex,
+    onIndexChange, // Pass index change callback so orchestrator can update navigation
   });
 
   // Image state context for caption management
@@ -104,7 +110,7 @@ export function ScrollControl({
     getCaptionState: imageState.getImageState,
   });
 
-  // Step scroll system
+  // Step scroll system with navigation array support
   useStepScroll(containerRef, {
     onIndexChange,
     getIndex,
@@ -113,6 +119,7 @@ export function ScrollControl({
     thresholdPx: scrollConfig.thresholdPx ?? 60,
     isInputFocused,
     checkContentLocks,
+    navigationArray, // Enable smart scrolling based on scene/state changes
   });
 
   // Watch for external currentIndex changes (programmatic navigation)

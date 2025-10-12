@@ -3,7 +3,7 @@
  * Manages positioning and visibility of image scenes based on scroll position
  */
 import React from "react";
-import { SceneRenderer } from "@shared/components/SceneRenderer";
+import { SceneRenderer } from "@core/scenes/SceneRenderer";
 import type { Scene } from "@core/types/scene";
 
 interface ImageSceneOrchestratorProps {

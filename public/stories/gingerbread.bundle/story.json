@@ -4,7 +4,35 @@
   "scenes": [
 
  
-            {
+
+        {
+      "type":"image",
+      "image":"story/dragonFight.png",
+      "text":"Sometimes I have to fight the monsters."
+    },
+        {
+      "type":"image",
+      "image":"story/cheers.png",
+      "text":"It is worth it because I am protecting all my friends."
+    },{
+      "type": "character-flow",
+      "background":"bakery.png",
+      "left-character": "leo",
+      "right-character": "bakerMom",
+      "flow": [
+
+        {
+        
+      "side": "right",
+      "text": "Tell me about your last adventure Ms. Baker. What happened? Look I added a sthirsa line here. HOpefully I can see it.",
+      "States":["input"]
+
+    }
+
+
+
+              ]
+      },            {
       "type":"image",
       "image":"story/dragonFeet.png",
       "text":"I protect my city by searching for clues."
@@ -14,49 +42,10 @@
       "image":"story/dragonFeet.png",
       "text":"2"
     },
-    {
-      "type": "character-flow",
-      "background":"bakery.png",
-      "left-character": "leo",
-      "right-character": "bakerMom",
-      "flow": [
-        {
-          "side": "right",
-          "text": "Help!"
-        },
-        {
-          "side": "right",
-          "text": "Somebody please help me!",
-          "right-character": "fox"
-        },
-        {
-        
-      "side": "left",
-      "text": "Tell me about your last adventure Ms. Baker. What happened? Look I added a sthirsa line here. HOpefully I can see it."
-
-    },
-
-
-
-                {
-          "input": "What should Leo ask?"
-
-        }]
-      },
         {
       "type":"image",
       "image":"story/dragonFeet.png",
       "text":"I protect my city by searching for clues."
-    },
-    {
-      "type":"image",
-      "image":"story/dragonFight.png",
-      "text":"Sometimes I have to fight the monsters."
-    },
-        {
-      "type":"image",
-      "image":"story/cheers.png",
-      "text":"It is worth it because I am protecting all my friends."
     },
     {
       "type": "text",
@@ -85,5 +74,13 @@
       "lvl2": "Cookie Thief",
       "author": "Elliott Hedman",
       "background": "bakery.png"
-    }]
+    },        {
+          "side": "right",
+          "text": "Help!"
+        },
+        {
+          "side": "right",
+          "text": "Somebody please help me!",
+          "right-character": "fox"
+        }]
 }

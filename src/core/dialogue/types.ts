@@ -14,6 +14,15 @@ export type ImageState =
   | 'hidden'      // Caption not yet shown
   | 'showing';    // Caption is visible after first scroll attempt (then unlocks)
 
+// State machine for dialogue scenes with interactive features (quest/input)
+export type DialogueState =
+  | 'basic'           // 1. Just dialogue, no features visible
+  | 'pre-feature'     // 2. Feature about to appear (scroll blocked down)
+  | 'show-quest'      // 3. Quest UI visible (scroll blocked up & down)
+  | 'input-ready'     // 4. Input UI ready for user (scroll blocked down)
+  | 'input-recording' // 5. User speaking (scroll blocked down)
+  | 'ai-waiting';     // 6. Waiting for AI response (scroll blocked down)
+
 export type Sender = 'player' | 'npc';
 
 export type Message = {

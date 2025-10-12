@@ -2,8 +2,8 @@
  * CharacterScene now serves as a scroll target only.
  * Speech bubbles are rendered by SpeechBubbleOrchestrator outside the document flow.
  */
-import React from "react";
-import type { SceneProps } from "../registry";
+
+import type { SceneProps } from "./registry";
 import type { CharacterScene as CharacterSceneType } from "@core/types/scene";
 
 export default function CharacterScene({ scene, sceneIndex }: SceneProps<CharacterSceneType>) {

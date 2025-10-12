@@ -1,18 +1,17 @@
 /**
  * Maps scene types to their corresponding React components.
  * Handles lazy loading and provides type-safe scene routing.
+ *
+ * Note: quest and input are no longer scene types - they are features
+ * that appear within character-flow scenes via the States field.
  */
-// src/scenes/registry.ts
 import type { ComponentType } from "react";
 import type { Scene } from '@core/types/scene';
 
-import CharacterScene from "./views/CharacterScene";
-import QuestScene from "./views/QuestScene";
-import InputScene from "./views/InputScene";
-import ImageScene from "./views/ImageScene";
-import FullScene from "./views/FullScene";
-import TextScene from "./views/TextScene";
-import InteractiveBubbleScene from "./views/InteractiveBubbleScene";
+import CharacterScene from "./CharacterScene";
+import ImageScene from "./ImageScene";
+import FullScene from "./FullScene";
+import TextScene from "./TextScene";
 
 export type SceneProps<T extends Scene = Scene> = {
   scene: T;
@@ -22,12 +21,9 @@ export type SceneProps<T extends Scene = Scene> = {
 
 export const sceneRegistry: Record<string, ComponentType<SceneProps>> = {
   character: CharacterScene as ComponentType<SceneProps>,
-  quest: QuestScene as ComponentType<SceneProps>,
-  input: InputScene as ComponentType<SceneProps>,
+  "character-flow": CharacterScene as ComponentType<SceneProps>, // Uses States field for quest/input features
   image: ImageScene as ComponentType<SceneProps>,
   full: FullScene as ComponentType<SceneProps>,
   text: TextScene as ComponentType<SceneProps>,
-  "interactive-bubble": InteractiveBubbleScene as ComponentType<SceneProps>,
   // caption: removed - captions are now handled within ImageScene
-  // character-flow is handled separately or not implemented yet
 };

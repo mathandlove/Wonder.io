@@ -5,7 +5,7 @@
 import React, { useEffect } from "react";
 import type { SceneProps } from "../registry";
 import type { QuestScene } from "@core/types/scene";
-import { useQuest } from "@core/quest/QuestManager";
+import { useQuest } from "@features/quest/QuestManager";
 import { useSceneManager } from "@core/scenes/SceneManager";
 
 export default function QuestScene({ scene, onComplete, sceneIndex }: SceneProps<QuestScene>) {

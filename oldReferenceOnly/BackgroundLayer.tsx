@@ -3,7 +3,7 @@
  * Drives background transitions purely from continuous scrollOffset
  */
 import React, { useState, useEffect, useCallback, useRef } from "react";
-import { resolveBackgroundImage } from '@shared/utils/imageResolver';
+import { resolveBackgroundImage } from '@core/data/imageResolver';
 import type { Scene } from '@core/types/scene';
 
 interface BackgroundLayerProps {

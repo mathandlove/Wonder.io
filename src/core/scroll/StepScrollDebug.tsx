@@ -89,10 +89,12 @@ export function StepScrollDebug() {
     };
   }, []);
 
-  // Get current scene info
+  // Get current navigation item and scene info
+  const navigationArray = sceneManager.navigationArray;
+  const currentNavItem = navigationArray[state.currentIndex];
   const currentScene = sceneManager.visibleScenes[state.currentIndex] as (Scene & { sceneId?: string, caption?: string, text?: string }) | undefined;
   const sceneType = currentScene?.type || 'unknown';
-  const sceneId = currentScene?.sceneId || 'no-id';
+  const sceneId = currentNavItem?.sceneId || currentScene?.sceneId || 'no-id';
   const captionState = imageState.getImageState(sceneId);
   const hasCaption = sceneType === 'image' && ((currentScene?.caption || currentScene?.text)?.trim() || false);
 
@@ -100,33 +102,23 @@ export function StepScrollDebug() {
   const messages = dialogue?.getMessagesForScene(sceneId) ?? [];
   const pendingConversions = dialogue?.getPendingConversions() ?? [];
 
-  // Get input state from orchestrator (or use 'idle' as default)
-  const inputState = orchestrator?.getInputState(sceneId) ?? 'idle';
+  // Format scene state for display
+  const formatSceneState = (): string => {
+    if (!currentNavItem) return 'No state';
+    const { sceneState } = currentNavItem;
 
-  // Test button handlers - update orchestrator state
-  const handleSetIdle = () => {
-    if (!orchestrator) return;
-    console.log('🎯 Setting input state: IDLE for scene:', sceneId);
-    orchestrator.setInputState(sceneId, 'idle');
+    if (sceneState.type === 'image') {
+      return `image: ${sceneState.state}`;
+    } else if (sceneState.type === 'dialogue') {
+      return `dialogue: ${sceneState.state}`;
+    } else if (sceneState.type === 'simple') {
+      return 'simple';
+    } else if (sceneState.type === 'quest') {
+      return `quest: ${sceneState.state}`;
+    }
+    return 'unknown';
   };
 
-  const handleSetRecording = () => {
-    if (!orchestrator) return;
-    console.log('🎯 Setting input state: RECORDING for scene:', sceneId);
-    orchestrator.setInputState(sceneId, 'recording');
-  };
-
-  const handleSetWaiting = () => {
-    if (!orchestrator) return;
-    console.log('🎯 Setting input state: WAITING for scene:', sceneId);
-    orchestrator.setInputState(sceneId, 'waiting');
-  };
-
-  const handleSetConverting = () => {
-    if (!orchestrator) return;
-    console.log('🎯 Setting input state: CONVERTING for scene:', sceneId);
-    orchestrator.setInputState(sceneId, 'converting');
-  };
 
   // Drag handlers
   const handleMouseDown = (e: React.MouseEvent) => {
@@ -205,6 +197,23 @@ export function StepScrollDebug() {
       </div>
 
       <div style={{ display: 'grid', gap: '5px' }}>
+        {/* Scene & State Section */}
+        <div style={{ marginBottom: '8px', paddingBottom: '8px', borderBottom: '1px solid #0ff' }}>
+          <div style={{ color: '#0ff', marginBottom: '4px', fontWeight: 'bold' }}>🎬 Scene & State</div>
+          <div style={{ color: '#0f0' }}>
+            📍 Index: <strong>{state.currentIndex}</strong> / {navigationArray.length - 1}
+          </div>
+          <div style={{ color: '#0f0' }}>
+            🆔 Scene ID: <strong>{sceneId}</strong>
+          </div>
+          <div style={{ color: '#ff0' }}>
+            🔧 State: <strong>{formatSceneState()}</strong>
+          </div>
+          <div style={{ color: '#888', fontSize: '9px', marginTop: '2px' }}>
+            Type: {sceneType}
+          </div>
+        </div>
+
         {/* Scroll State Section */}
         <div style={{ marginBottom: '8px', paddingBottom: '8px', borderBottom: '1px solid #0f0' }}>
           <div style={{ color: '#0ff', marginBottom: '4px', fontWeight: 'bold' }}>🖱️ Scroll State</div>
@@ -271,102 +280,6 @@ export function StepScrollDebug() {
             </div>
           </div>
         )}
-      </div>
-
-      {/* Input Scene State Test */}
-      <div style={{ marginTop: '10px', paddingTop: '10px', borderTop: '2px solid #f0f' }}>
-        <div style={{ color: '#f0f', marginBottom: '8px', fontWeight: 'bold' }}>🎙️ Input Scene State Test</div>
-
-        {/* Current State Display */}
-        <div style={{ marginBottom: '10px', paddingBottom: '8px', borderBottom: '1px solid #444' }}>
-          <div style={{ color: '#0ff', fontSize: '10px', marginBottom: '4px' }}>Current State:</div>
-          <div style={{
-            marginLeft: '8px',
-            padding: '8px',
-            background: 'rgba(255,255,255,0.05)',
-            borderRadius: '4px',
-            border: '2px solid #0f0'
-          }}>
-            <div style={{ color: '#0f0', fontSize: '14px', fontWeight: 'bold', textAlign: 'center' }}>
-              {inputState.toUpperCase()}
-            </div>
-          </div>
-        </div>
-
-        {/* State Change Buttons */}
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '6px' }}>
-          <button
-            onClick={handleSetIdle}
-            style={{
-              padding: '8px',
-              background: inputState === 'idle' ? '#0a0' : '#333',
-              border: inputState === 'idle' ? '2px solid #0f0' : '1px solid #666',
-              borderRadius: '4px',
-              color: inputState === 'idle' ? '#fff' : '#999',
-              cursor: 'pointer',
-              fontSize: '10px',
-              fontWeight: 'bold'
-            }}
-          >
-            ⏸️ IDLE
-          </button>
-
-          <button
-            onClick={handleSetRecording}
-            style={{
-              padding: '8px',
-              background: inputState === 'recording' ? '#a00' : '#333',
-              border: inputState === 'recording' ? '2px solid #f00' : '1px solid #666',
-              borderRadius: '4px',
-              color: inputState === 'recording' ? '#fff' : '#999',
-              cursor: 'pointer',
-              fontSize: '10px',
-              fontWeight: 'bold'
-            }}
-          >
-            🔴 RECORDING
-          </button>
-
-          <button
-            onClick={handleSetWaiting}
-            style={{
-              padding: '8px',
-              background: inputState === 'waiting' ? '#aa0' : '#333',
-              border: inputState === 'waiting' ? '2px solid #ff0' : '1px solid #666',
-              borderRadius: '4px',
-              color: inputState === 'waiting' ? '#fff' : '#999',
-              cursor: 'pointer',
-              fontSize: '10px',
-              fontWeight: 'bold'
-            }}
-          >
-            ⏳ WAITING
-          </button>
-
-          <button
-            onClick={handleSetConverting}
-            style={{
-              padding: '8px',
-              background: inputState === 'converting' ? '#00a' : '#333',
-              border: inputState === 'converting' ? '2px solid #0ff' : '1px solid #666',
-              borderRadius: '4px',
-              color: inputState === 'converting' ? '#fff' : '#999',
-              cursor: 'pointer',
-              fontSize: '10px',
-              fontWeight: 'bold'
-            }}
-          >
-            🔄 CONVERTING
-          </button>
-        </div>
-
-        {/* State descriptions */}
-        <div style={{ marginTop: '8px', fontSize: '8px', color: '#888', lineHeight: '1.4' }}>
-          <div><strong>IDLE:</strong> No speech bubble shown</div>
-          <div><strong>RECORDING:</strong> Bubble showing with live text</div>
-          <div><strong>WAITING:</strong> Bubble + waiting indicator</div>
-          <div><strong>CONVERTING:</strong> Creating permanent scenes</div>
-        </div>
       </div>
 
       {/* Stats Footer */}
