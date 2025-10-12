@@ -62,12 +62,12 @@ export function SpeechBubbleOrchestrator({ scenes, currentIndex = 0 }: SpeechBub
   const sceneStates = useSceneStates();
 
   // IMPORTANT: Get navigationArray to access modified scenes (like recording scenes)
-  // visibleScenes only contains the base scenes, not the dynamically created ones
+  // navigationArray contains ALL scene items including dynamically created ones
   const sceneManager = useSceneManager();
   const { navigationArray, navigationIndex } = sceneManager;
 
   // Use navigationIndex for scroll offset since we're working with navigationArray
-  // NOT currentIndex which is based on visibleScenes array
+  // NOT currentIndex which is based on visible scenes array
   const scrollOffset = navigationIndex;
 
   // Track scroll direction

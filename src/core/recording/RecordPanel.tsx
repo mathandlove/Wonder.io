@@ -1,67 +1,41 @@
-import React, { useCallback } from 'react';
-import { useDialogue } from './context/useChatDialogue';
-import { useDialogue as useNewDialogue } from '@core/dialogue/DialogueContext';
-import { usePageFactory } from './orchestrators/PageFactory';
-import NextButton from './ui/NextButton';
-import { Toast, useToast } from './ui/Toast';
-import { Recording } from '@core/recording/RecordingAPI';
+import React from 'react';
+import { useDialogue } from '../../features/chat/context/useChatDialogue';
+import NextButton from '../../features/chat/ui/NextButton';
+import { Toast, useToast } from '../../features/chat/ui/Toast';
 import { useRecording } from '@core/recording/RecordingContext';
-import './Chat.css';
+import './css/RecordPanel.css';
 
-interface ChatComposerProps {
+interface RecordPanelProps {
   disabled: boolean;
   questState: 'active' | 'complete' | 'failed';
   onNext: () => void;
+  onRecordStart: () => void;
+  onRecordStop: () => void;
 }
 
-export const ChatComposer: React.FC<ChatComposerProps> = ({
+export const RecordPanel: React.FC<RecordPanelProps> = ({
   disabled,
   questState,
-  onNext
+  onNext,
+  onRecordStart,
+  onRecordStop
 }) => {
   const { hideTurnBanner, waiting } = useDialogue();
-  const { beginRecording } = useNewDialogue();
-  const { createInteractiveBubblePage, addSceneAndNavigate } = usePageFactory();
   const { state: recordingState } = useRecording();
   const { toast, hideToast } = useToast();
-  // Simplified: Always show recorder button
+
   const buttonClassName = `chat-record-button
     ${recordingState.isRecording ? 'recording' : ''}
     ${waiting ? 'waiting' : ''}`;
 
-  const startRecording = useCallback(() => {
-    console.log('🎯 ChatComposer.startRecording() called');
-    // Create a new interactive bubble scene and navigate to it
-    const newScene = createInteractiveBubblePage();
-    const sceneId = newScene.sceneId || 'default';
-
-    // Add the scene and auto-scroll to it
-    addSceneAndNavigate(newScene);
-
-    // Start recording with the new scene ID
-    beginRecording(sceneId);
-
-    // Use global Recording API
-    console.log('🎯 Using global Recording.start()');
-    Recording.start();
-  }, [createInteractiveBubblePage, addSceneAndNavigate, beginRecording]);
-
-  const stopRecording = useCallback(() => {
-    console.log('🎯 ChatComposer.stopRecording() called');
-    console.log('🎯 Using global Recording.stop()');
-    Recording.stop();
-  }, []);
-
   const handleRecordClick = () => {
     if (disabled || waiting) return;
     hideTurnBanner(); // Hide banner when user clicks microphone
-    console.log('🎯 ChatComposer handleRecordClick', {
-      currentlyRecording: recordingState.isRecording
-    });
+
     if (recordingState.isRecording) {
-      stopRecording();
+      onRecordStop();
     } else {
-      startRecording();
+      onRecordStart();
     }
   };
 
@@ -72,7 +46,7 @@ export const ChatComposer: React.FC<ChatComposerProps> = ({
 
 
   return (
-    <div className="chat-composer-container">
+    <div className="record-panel-container">
       <div className="simplified-chat-rail">
         <button
           className={`chat-hint-button ${waiting ? 'waiting' : ''}`}

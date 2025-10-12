@@ -6,7 +6,7 @@ import React, { useMemo } from "react";
 import { useStory } from '@core/data/useStory';
 import { FlowLayout } from '@features/flow-layout/FlowLayout';
 import { SceneRenderer } from '@core/scenes/SceneRenderer';
-import { PageFactoryProvider } from '@features/chat/orchestrators/PageFactory';
+import { PageFactoryProvider } from '@core/navigation/PageFactory';
 import { useSceneManager } from '@core/scenes/SceneManager';
 import { BackgroundOrchestrator } from '@features/background/BackgroundOrchestrator';
 import { CharacterOrchestrator } from '@features/characters/CharacterOrchestrator';
@@ -14,6 +14,8 @@ import { SpeechBubbleOrchestrator } from '@features/chat/orchestrators/SpeechBub
 import { injectPanelMetaFromFlows } from '@features/characters/adapters/injectPanelMetaFromFlows';
 import { ScrollControl } from '@core/scroll/ScrollControl';
 import { CharacterAnimationProvider } from '@features/characters/CharacterAnimationContext';
+import TurnCueBanner from '@features/chat/components/TurnCueBanner';
+import { useDialogue } from '@features/chat/context/useChatDialogue';
 import type { Scene } from '@core/types/scene';
 import type { QuestHook } from '@features/quest/QuestManager';
 
@@ -35,8 +37,6 @@ declare global {
 }
 import { QuestProvider, useQuest } from '@features/quest/QuestManager'
 import { UIOverlayRoot } from '@core/uiLayout/UIOverlayRoot'
-import { ChatOrchestrator } from '@features/chat/orchestrators/ChatOrchestrator'
-import { useDialogue } from '@features/chat/context/useChatDialogue'
 import { StepScrollDebug } from '@core/scroll/StepScrollDebug'
 import { SceneStatesProvider } from '@core/scenes/SceneStates'
 // Path to the story JSON bundle we want to load. In demo mode we keep this fixed
@@ -85,6 +85,9 @@ const StoryContent: React.FC = () => {
   // Navigation context
   const { scenes, currentIndex, setScenes, setCurrentIndex, hideScene, showScene, allScenes } = useSceneManager();
 
+  // Dialogue context for turn banners
+  const { showTurnBanner, turnBannerText } = useDialogue();
+
   // Derive a stable array of scenes from the loaded story and set them in SceneManager
   React.useEffect(() => {
     if (!story?.scenes) return;
@@ -108,7 +111,7 @@ const StoryContent: React.FC = () => {
       window.__hideScene = hideScene;
       window.__showScene = showScene;
       window.__allScenes = allScenes;
-      window.__visibleScenes = scenes;
+      window.__visibleScenes = scenes; // scenes = visibleScenes (filtered allScenes)
     }
   }, [hideScene, showScene, allScenes, scenes]);
 
@@ -149,8 +152,8 @@ const StoryContent: React.FC = () => {
               {/* Layer 1.8: Speech bubbles (scroll-based with delayed transitions) */}
               <SpeechBubbleOrchestrator scenes={scenes} currentIndex={currentIndex} />
 
-              {/* Layer 1.9: Chat system (shows on lastInFlow scenes) */}
-              <ChatOrchestrator />
+              {/* Layer 1.9: Turn cue banner */}
+              <TurnCueBanner show={showTurnBanner} text={turnBannerText} />
 
               {/* Layer 2: Document flow content with scroll snap targets */}
               <div style={{ position: "relative" }}>
@@ -196,10 +199,10 @@ const StoryContent: React.FC = () => {
             <StepScrollDebug />
           </ScrollControl>
           </CharacterAnimationProvider>
-        </SceneStatesProvider>
 
-        {/* UI Overlays - inside provider tree so they have context access */}
-        <UIOverlayRoot />
+          {/* UI Overlays - must be inside SceneStatesProvider for RecordingOrchestrator */}
+          <UIOverlayRoot />
+        </SceneStatesProvider>
       </PageFactoryProvider>
       <QuestDebugProbe />
     </QuestProvider>

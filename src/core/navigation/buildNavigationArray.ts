@@ -15,14 +15,15 @@ import { ulid } from 'ulid';
 
 /**
  * Main builder function - converts scenes to navigation array
+ * Filters out hidden scenes and expands remaining scenes into navigation items
  */
 export function buildNavigationArray(scenes: Scene[]): NavigationItem[] {
   console.log('🏗️ buildNavigationArray called with', scenes.length, 'scenes');
-  console.log('📋 Scene types:', scenes.map(s => s.type));
 
   const navigationArray: NavigationItem[] = [];
   let navigationIndex = 0;
 
+  // Filter and process scenes in one pass
   for (const scene of scenes) {
     // Skip hidden scenes
     if (scene.hidden) continue;
@@ -46,7 +47,7 @@ export function buildNavigationArray(scenes: Scene[]): NavigationItem[] {
     sceneId: item.sceneId,
     sceneType: item.scene.type,
     stateType: item.sceneState.type,
-    state: item.sceneState.type === 'dialogue' || item.sceneState.type === 'image' ? (item.sceneState as any).state : 'n/a'
+    state: item.sceneState.type === 'dialogue' || item.sceneState.type === 'image' ? (item.sceneState as Record<string, unknown>).state : 'n/a'
   })));
 
   return navigationArray;
@@ -223,29 +224,11 @@ function expandDialogueStates(
     });
 
     // 2. Input-showInput: Show input UI (microphone button)
+    // When user records, PageFactory will dynamically create recording + response scenes
     items.push({
       scene,
       sceneId,
       sceneState: { type: 'dialogue', state: 'input-showInput' },
-      lockForward: true,
-      lockBackward: false,
-      index: currentIndex++,
-    });
-
-    // 3. Create a new scene for user recording (in the same flow)
-    // Copy the entire character scene, changing sceneId, text, and speaker position
-    const recordingSceneId = `${sceneId}-recording`;
-    const recordingScene: Scene = {
-      ...(scene as Record<string, unknown>),
-      sceneId: recordingSceneId,
-      text: 'Sup?', // Empty text - user will record their own
-      speaker: 'left', // Position speech bubble on the left side for user
-    } as Scene;
-
-    items.push({
-      scene: recordingScene,
-      sceneId: recordingSceneId,
-      sceneState: { type: 'dialogue', state: 'input-recording' },
       lockForward: true,
       lockBackward: false,
       index: currentIndex++,

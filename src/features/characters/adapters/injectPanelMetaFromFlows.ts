@@ -169,45 +169,5 @@ export function injectPanelMetaFromFlows(scenes: Scene[]): Scene[] {
     return { ...s, meta } as Scene;
   });
 
-  // Second pass: mark the last scene in each character flow with lastInFlow
-  const finalOut = out.map((scene, i) => {
-    // Check if this scene is in a character flow
-    const hasCharacters = (scene as any)["left-character"] || (scene as any)["right-character"] ||
-                         (scene.type === "character" || scene.type === "input");
-
-    if (!hasCharacters) {
-      // Non-character scenes should never have lastInFlow
-      const sceneWithoutLastInFlow = { ...scene };
-      delete (sceneWithoutLastInFlow as any).lastInFlow;
-      return sceneWithoutLastInFlow;
-    }
-
-    // Look ahead to see if the next scene starts a new flow or exits character flow
-    const nextScene = out[i + 1];
-    const isLastInFlow = !nextScene || ( // No next scene (end of story) OR
-                        (nextScene as any).newFlow || // Next scene starts new flow
-                        (!((nextScene as any)["left-character"] || (nextScene as any)["right-character"]) &&
-                         nextScene.type !== "character" && nextScene.type !== "input")); // Next scene exits character flow
-
-    // Also ensure this scene is not the very first scene with characters (not beginning of first flow)
-    const isFirstCharacterScene = i === 0 || !out.slice(0, i).some(s =>
-      (s as any)["left-character"] || (s as any)["right-character"] || s.type === "character" || s.type === "input"
-    );
-
-    // Input scenes should always have lastInFlow to trigger chat UI
-    if (scene.type === "input") {
-      return { ...scene, lastInFlow: true } as any;
-    }
-
-    if (isLastInFlow && !isFirstCharacterScene) {
-      return { ...scene, lastInFlow: true } as any;
-    }
-
-    // Explicitly remove lastInFlow if this scene doesn't qualify
-    const sceneWithoutLastInFlow = { ...scene };
-    delete (sceneWithoutLastInFlow as any).lastInFlow;
-    return sceneWithoutLastInFlow;
-  });
-
-  return finalOut;
+  return out;
 }

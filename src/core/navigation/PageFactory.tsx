@@ -5,7 +5,7 @@
 import React, { createContext, useContext, useCallback } from "react";
 import type { Scene, InteractiveBubbleScene } from "@core/types/scene";
 import { useSceneManager } from "@core/scenes/SceneManager";
-import { injectPanelMetaFromFlows } from "../../characters/adapters/injectPanelMetaFromFlows";
+import { injectPanelMetaFromFlows } from "@features/characters/adapters/injectPanelMetaFromFlows";
 
 type PageFactoryContextType = {
   createInteractiveBubblePage: (recordingId?: string) => InteractiveBubbleScene;

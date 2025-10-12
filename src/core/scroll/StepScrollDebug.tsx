@@ -77,8 +77,8 @@ export function StepScrollDebug() {
 
   // Get current navigation item and scene info (using navigationIndex from SceneManager)
   const currentNavItem = navigationArray[navigationIndex];
-  // IMPORTANT: Use the scene from NavigationItem, not visibleScenes array
-  // NavigationItem.scene is the actual scene object being rendered
+  // IMPORTANT: Use the scene from NavigationItem, not allScenes array
+  // NavigationItem.scene is the actual scene object being rendered (including dynamically created ones)
   const currentScene = currentNavItem?.scene as (Scene & { sceneId?: string, caption?: string, text?: string }) | undefined;
   const sceneType = currentScene?.type || 'unknown';
   const sceneId = currentNavItem?.sceneId || 'no-id';
@@ -292,7 +292,7 @@ export function StepScrollDebug() {
 
       {/* Stats Footer */}
       <div style={{ marginTop: '10px', paddingTop: '8px', borderTop: '1px solid #0f0', fontSize: '9px', color: '#666' }}>
-        Total Scenes: {sceneManager.allScenes.length} | Visible: {sceneManager.visibleScenes.length}
+        Total Scenes: {sceneManager.allScenes.length} | Visible: {sceneManager.scenes.length} | Nav Items: {navigationArray.length}
       </div>
     </div>
   );

@@ -6,7 +6,7 @@
  * - Scene visibility filtering (hidden scenes)
  * - Scene insertion and dynamic scene creation
  * - Current position tracking (navigationIndex for scene/state pairs)
- * - Navigation array (flat array of scene/state combinations)
+ * - Navigation array (flat array of scene/state combinations built directly from allScenes)
  * - Navigation helpers (goToNext, goToIndex, etc.)
  * - Derived state (currentBackgroundId, visibleScenes, currentScene)
  */
@@ -21,8 +21,7 @@ export interface SceneManagerType {
   currentIndex: number;
   setCurrentIndex: (index: number) => void;
   allScenes: Scene[];
-  scenes: Scene[]; // Alias for visibleScenes (backward compatibility)
-  visibleScenes: Scene[];
+  scenes: Scene[]; // Alias for allScenes (backward compatibility)
 
   // New navigation array system
   navigationArray: NavigationItem[];
@@ -72,16 +71,18 @@ export function SceneManagerProvider({ children, initialIndex = 0 }: SceneManage
   const [navigationIndex, setNavigationIndex] = useState(0);
   const [allScenes, setAllScenes] = useState<Scene[]>([]);
 
-  // Filter out hidden scenes for navigation and rendering
-  const visibleScenes = useMemo(
-    () => allScenes.filter(scene => !scene.hidden),
+  // Build navigation array directly from allScenes
+  // (buildNavigationArray handles filtering hidden scenes internally)
+  const baseNavigationArray = useMemo(
+    () => buildNavigationArray(allScenes),
     [allScenes]
   );
 
-  // Build initial navigation array from visible scenes
-  const baseNavigationArray = useMemo(
-    () => buildNavigationArray(visibleScenes),
-    [visibleScenes]
+  // Derive visible scenes for backward compatibility
+  // (scenes that are not hidden - same filtering as buildNavigationArray)
+  const visibleScenes = useMemo(
+    () => allScenes.filter(scene => !scene.hidden),
+    [allScenes]
   );
 
   // Mutable navigation array that can be collapsed as we progress forward
@@ -135,7 +136,7 @@ export function SceneManagerProvider({ children, initialIndex = 0 }: SceneManage
       const newScenes = [...prevScenes];
       newScenes.splice(index, 0, scene);
 
-      // Recalculate lastInFlow for all scenes after inserting new scene
+      // Recalculate panel metadata for all scenes after inserting new scene
       const scenesWithUpdatedFlow = injectPanelMetaFromFlows(newScenes);
 
       return scenesWithUpdatedFlow;
@@ -252,7 +253,6 @@ export function SceneManagerProvider({ children, initialIndex = 0 }: SceneManage
     setCurrentIndex,
     allScenes,
     scenes: visibleScenes, // Backward compatibility alias
-    visibleScenes,
 
     // New navigation array system
     navigationArray,

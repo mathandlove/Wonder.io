@@ -2,38 +2,36 @@
  * UIOverlayRoot - Container for all UI overlays (quests, dialogs, etc.)
  */
 import { QuestLayer } from '@features/quest/QuestLayer';
-import { ChatComposer } from '@features/chat/ChatComposer';
-import { useDialogue } from '@features/chat/context/useChatDialogue';
+import { RecordingOrchestrator } from '@core/recording/RecordPanelOrchestrator';
 import { useSceneManager } from '@core/scenes/SceneManager';
-import { useState } from 'react';
 
 export function UIOverlayRoot() {
-  const { isPlayerTurn, waiting, questState } = useDialogue();
-  const { goToNext } = useSceneManager();
-  const [exitingChat, setExitingChat] = useState(false);
+  const { navigationArray, navigationIndex } = useSceneManager();
 
-  const handleContinue = () => {
-    setExitingChat(true);
-    // Animate out, then navigate
-    setTimeout(() => {
-      goToNext();
-      setExitingChat(false);
-    }, 600); // Match animation duration
-  };
+  // Check if current scene should show recording panel
+  const currentNavItem = navigationArray[navigationIndex];
+  const shouldShowRecordPanel =
+    currentNavItem?.sceneState.type === 'dialogue' &&
+    currentNavItem?.sceneState.state === 'input-showInput';
+
+  // Debug logging
+  console.log('🎭 UIOverlayRoot render:', {
+    navigationIndex,
+    currentNavItem: currentNavItem ? {
+      sceneType: currentNavItem.scene.type,
+      stateType: currentNavItem.sceneState.type,
+      state: (currentNavItem.sceneState as any).state
+    } : null,
+    shouldShowRecordPanel
+  });
 
   return (
     <>
       {/* Quest system overlay */}
       <QuestLayer />
 
-      {/* Chat composer - always visible and independent */}
-      <div className={`chat-composer-container ${exitingChat ? 'exit-bottom' : ''}`}>
-        <ChatComposer
-          disabled={!isPlayerTurn || waiting}
-          questState={questState}
-          onNext={handleContinue}
-        />
-      </div>
+      {/* Recording panel - shows entire chat rail on input-showInput scenes */}
+      {shouldShowRecordPanel && <RecordingOrchestrator />}
 
       {/* Future overlays can be added here */}
     </>
