@@ -18,7 +18,7 @@ export function useStepScroll(
   containerRef: React.RefObject<HTMLElement | HTMLDivElement | null>,
   {
     onNavigate,
-    thresholdPx = 60,
+    thresholdPx = 10,
     isInputFocused = () => false,
   }: StepScrollOpts
 ) {

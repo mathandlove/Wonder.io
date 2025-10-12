@@ -24,6 +24,10 @@ export const ChatComposer: React.FC<ChatComposerProps> = ({
   const { createInteractiveBubblePage, addSceneAndNavigate } = usePageFactory();
   const { state: recordingState } = useRecording();
   const { toast, hideToast } = useToast();
+  // Simplified: Always show recorder button
+  const buttonClassName = `chat-record-button
+    ${recordingState.isRecording ? 'recording' : ''}
+    ${waiting ? 'waiting' : ''}`;
 
   const startRecording = useCallback(() => {
     console.log('🎯 ChatComposer.startRecording() called');
@@ -80,7 +84,7 @@ export const ChatComposer: React.FC<ChatComposerProps> = ({
         </button>
 
         <button
-          className={`chat-record-button ${recordingState.isRecording ? 'recording' : ''} ${waiting ? 'waiting' : ''}`}
+          className={buttonClassName}
           onClick={handleRecordClick}
           disabled={disabled || waiting}
           title={recordingState.isRecording ? 'Stop recording' : 'Start recording'}

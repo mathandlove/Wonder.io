@@ -77,9 +77,11 @@ export function StepScrollDebug() {
 
   // Get current navigation item and scene info (using navigationIndex from SceneManager)
   const currentNavItem = navigationArray[navigationIndex];
-  const currentScene = sceneManager.visibleScenes[navigationIndex] as (Scene & { sceneId?: string, caption?: string, text?: string }) | undefined;
+  // IMPORTANT: Use the scene from NavigationItem, not visibleScenes array
+  // NavigationItem.scene is the actual scene object being rendered
+  const currentScene = currentNavItem?.scene as (Scene & { sceneId?: string, caption?: string, text?: string }) | undefined;
   const sceneType = currentScene?.type || 'unknown';
-  const sceneId = currentNavItem?.sceneId || currentScene?.sceneId || 'no-id';
+  const sceneId = currentNavItem?.sceneId || 'no-id';
 
   // Get caption state from navigation array (single source of truth)
   const captionState: ImageState =
@@ -202,6 +204,28 @@ export function StepScrollDebug() {
           <div style={{ color: '#888', fontSize: '9px', marginTop: '2px' }}>
             Type: {sceneType}
           </div>
+          {/* Show speaker if available */}
+          {currentScene && 'speaker' in currentScene && currentScene.speaker && (
+            <div style={{ color: '#0ff', fontSize: '10px', marginTop: '4px' }}>
+              🎤 Speaker: <strong>{currentScene.speaker}</strong>
+            </div>
+          )}
+          {/* Show scene text if available (including empty strings) */}
+          {currentScene && 'text' in currentScene && currentScene.text !== undefined && (
+            <div style={{
+              color: '#ff0',
+              fontSize: '9px',
+              marginTop: '4px',
+              padding: '4px',
+              background: 'rgba(255,255,0,0.1)',
+              borderRadius: '4px',
+              maxHeight: '60px',
+              overflowY: 'auto',
+              wordBreak: 'break-word'
+            }}>
+              💬 Text: {currentScene.text === '' ? '<empty>' : `"${currentScene.text}"`}
+            </div>
+          )}
         </div>
 
         {/* Scroll State Section */}

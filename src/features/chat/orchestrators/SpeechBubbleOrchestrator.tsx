@@ -9,6 +9,7 @@ import { useDialogue as useRecordingDialogue } from '@core/dialogue/DialogueCont
 import { useRecording } from '@core/recording/RecordingContext';
 import { useSceneOrchestratorContext } from '@core/scenes/SceneOrchestratorContext';
 import { useSceneStates } from '@core/scenes/SceneStates';
+import { useSceneManager } from '@core/scenes/SceneManager';
 import type { Scene, CharacterScene, InteractiveBubbleScene, InputScene } from '@core/types/scene';
 import type { Message } from '@core/dialogue/types';
 
@@ -50,9 +51,6 @@ function translateForSpeechBubble(sceneIndex: number, scrollOffset: number): str
 }
 
 export function SpeechBubbleOrchestrator({ scenes, currentIndex = 0 }: SpeechBubbleOrchestratorProps) {
-  // Use currentIndex directly (always passed from ScrollControl)
-  const scrollOffset = currentIndex;
-
   // Get dialogue context for interactive scenes
   const { messages: globalMessages } = useDialogue();
   const { getMessagesForScene } = useRecordingDialogue();
@@ -62,6 +60,15 @@ export function SpeechBubbleOrchestrator({ scenes, currentIndex = 0 }: SpeechBub
   const orchestrator = useSceneOrchestratorContext();
   // Get scene states for dialogue state management
   const sceneStates = useSceneStates();
+
+  // IMPORTANT: Get navigationArray to access modified scenes (like recording scenes)
+  // visibleScenes only contains the base scenes, not the dynamically created ones
+  const sceneManager = useSceneManager();
+  const { navigationArray, navigationIndex } = sceneManager;
+
+  // Use navigationIndex for scroll offset since we're working with navigationArray
+  // NOT currentIndex which is based on visibleScenes array
+  const scrollOffset = navigationIndex;
 
   // Track scroll direction
   const prevScrollOffsetRef = React.useRef(scrollOffset);
@@ -73,6 +80,7 @@ export function SpeechBubbleOrchestrator({ scenes, currentIndex = 0 }: SpeechBub
   }, [scrollOffset]);
 
   // Find character scenes AND interactive scenes (input/interactive-bubble) to render bubbles for
+  // IMPORTANT: Use navigationArray to get the actual scene objects (including dynamically created ones)
   const speechBubbles = useMemo(() => {
 
     const bubbles: Array<{
@@ -82,7 +90,10 @@ export function SpeechBubbleOrchestrator({ scenes, currentIndex = 0 }: SpeechBub
       type: 'character' | 'interactive-bubble' | 'input';
     }> = [];
 
-    scenes.forEach((scene, index) => {
+    // Use navigationArray which contains the actual scenes being rendered
+    navigationArray.forEach((navItem, index) => {
+      const scene = navItem.scene;
+
       if (scene?.type === 'character') {
         const transform = translateForSpeechBubble(index, scrollOffset);
         bubbles.push({
@@ -112,7 +123,7 @@ export function SpeechBubbleOrchestrator({ scenes, currentIndex = 0 }: SpeechBub
     });
 
     return bubbles;
-  }, [scenes, scrollOffset]);
+  }, [navigationArray, scrollOffset]);
 
   // Waiting bubbles are now integrated into each CardboardBubble
 
@@ -134,6 +145,18 @@ export function SpeechBubbleOrchestrator({ scenes, currentIndex = 0 }: SpeechBub
         let side: 'left' | 'right' | 'center' = 'center';
         let shouldShowWaitingBubble = false;
 
+        // Debug logging for recording scene
+        const sceneWithId = scene as SceneWithId;
+        if (sceneWithId.sceneId?.includes('-recording')) {
+          console.log(`🔍 RECORDING SCENE FOUND:`, {
+            sceneId: sceneWithId.sceneId,
+            type: scene.type,
+            speaker: sceneWithId.speaker,
+            text: sceneWithId.text,
+            sceneIndex
+          });
+        }
+
         if (type === 'character') {
           const characterScene = scene as CharacterScene;
           const sceneId = (characterScene as SceneWithId).sceneId;
@@ -141,6 +164,15 @@ export function SpeechBubbleOrchestrator({ scenes, currentIndex = 0 }: SpeechBub
           // Check if this scene has dialogue states
           const sceneState = sceneId ? sceneStates.getSceneState(sceneId) : undefined;
           const dialogueState = sceneState?.type === 'dialogue' ? sceneState.state : null;
+
+          // Debug logging for dialogue state
+          if (sceneId?.includes('-recording')) {
+            console.log(`🔍 RECORDING SCENE DIALOGUE STATE:`, {
+              sceneId,
+              sceneState,
+              dialogueState
+            });
+          }
 
           speakerLabel = characterScene.speaker === "left"
             ? characterScene["left-character"] || "Left"
@@ -151,30 +183,11 @@ export function SpeechBubbleOrchestrator({ scenes, currentIndex = 0 }: SpeechBub
           side = characterScene.speaker === 'left' ? 'left' :
                  characterScene.speaker === 'right' ? 'right' : 'center';
 
-          // Handle dialogue states
+          // Handle dialogue states - all states just show the scene text
           if (dialogueState) {
-            if (dialogueState === 'input-basic') {
-              // State 1: Show dialogue text normally
-              bubbleContent = characterScene.text;
-              console.log(`💬 input-basic state for ${sceneId}`);
-            } else if (dialogueState === 'input-showInput') {
-              // State 2: Show dialogue text (just text, no indicator)
-              bubbleContent = characterScene.text;
-              console.log(`💬 input-showInput state for ${sceneId}`);
-            } else if (dialogueState === 'input-recording') {
-              // State 3: User is recording (handled by input scene type below)
-              // This shouldn't happen for character type, but just in case
-              bubbleContent = characterScene.text;
-            } else if (dialogueState === 'quest-basic') {
-              // Quest state 1: Show dialogue normally
-              bubbleContent = characterScene.text;
-            } else if (dialogueState === 'quest-showing') {
-              // Quest state 2: Show dialogue text (just text, no indicator)
-              bubbleContent = characterScene.text;
-            } else {
-              // Unknown dialogue state, show text
-              bubbleContent = characterScene.text;
-            }
+            // All dialogue states: just show the text
+            bubbleContent = characterScene.text;
+            console.log(`💬 ${dialogueState} state for ${sceneId}, text: "${characterScene.text}"`);
           } else {
             // No dialogue state, show text normally
             bubbleContent = characterScene.text;
@@ -196,22 +209,8 @@ export function SpeechBubbleOrchestrator({ scenes, currentIndex = 0 }: SpeechBub
           // Handle both interactive-bubble and input scenes the same way
           const sceneId = (scene as SceneWithId).sceneId || '';
 
-          // Check if this is an input-recording scene from dialogue flow
-          const sceneState = sceneStates.getSceneState(sceneId);
-          const dialogueState = sceneState?.type === 'dialogue' ? sceneState.state : null;
-
-          if (dialogueState === 'input-recording') {
-            // State 3: User recording scene - show live recording text (or empty initially)
-            const globalText = getDisplayText();
-            side = 'left';
-            speakerLabel = (scene as SceneWithId)["left-character"] || "Player";
-            bubbleContent = globalText || null; // Show text when available, otherwise no bubble
-            shouldShowWaitingBubble = false;
-            console.log(`💬 input-recording state for ${sceneId}`);
-          } else {
-            // Fall back to existing logic for interactive-bubble and legacy input scenes
-            // PRIORITY: Check orchestrator input state for input scenes
-            const inputState = orchestrator?.getInputState(sceneId);
+          // PRIORITY: Check orchestrator input state for input scenes
+          const inputState = orchestrator?.getInputState(sceneId);
 
           if (type === 'input' && inputState) {
             // For input scenes, respect the orchestrator state machine
@@ -219,11 +218,12 @@ export function SpeechBubbleOrchestrator({ scenes, currentIndex = 0 }: SpeechBub
               // IDLE: No speech bubble shown
               bubbleContent = null; // Will be skipped by the null check below
             } else if (inputState === 'recording') {
-              // RECORDING: Bubble showing with live text
+              // RECORDING: Only show bubble when there's actual transcribed text
               const globalText = getDisplayText();
               side = 'left';
               speakerLabel = (scene as SceneWithId)["left-character"] || "Player";
-              bubbleContent = globalText || "🎤 Listening...";
+              // Only show bubble if there's transcribed text (no placeholder)
+              bubbleContent = globalText && globalText.trim() ? globalText : null;
               shouldShowWaitingBubble = false;
             } else if (inputState === 'waiting') {
               // WAITING: Show the player's last message + waiting bubble below
@@ -250,7 +250,8 @@ export function SpeechBubbleOrchestrator({ scenes, currentIndex = 0 }: SpeechBub
               const globalText = getDisplayText();
               side = 'left';
               speakerLabel = (scene as SceneWithId)["left-character"] || "Player";
-              bubbleContent = globalText || "🎤 Listening...";
+              // Only show bubble if there's transcribed text (no placeholder)
+              bubbleContent = globalText && globalText.trim() ? globalText : null;
               shouldShowWaitingBubble = false;
             } else {
               // Fall back to dialogue messages when not actively recording
@@ -268,7 +269,8 @@ export function SpeechBubbleOrchestrator({ scenes, currentIndex = 0 }: SpeechBub
                 // Generate content based on message status
                 const extMessage = latestMessage as ExtendedMessage;
                 if (extMessage.status === 'recording' && !latestMessage.text) {
-                  bubbleContent = "🎤 Listening...";
+                  // Don't show any bubble while recording without text
+                  bubbleContent = null;
                 } else if (extMessage.isInterim && latestMessage.text) {
                   bubbleContent = `${latestMessage.text}...`;
                 } else if (latestMessage.text) {
@@ -291,16 +293,26 @@ export function SpeechBubbleOrchestrator({ scenes, currentIndex = 0 }: SpeechBub
                 });
                 shouldShowWaitingBubble = isUserMessage && extMessage.status === 'sent' && !hasAIResponse;
               } else {
-                // No messages yet - show placeholder
-                side = 'left';
-                speakerLabel = (scene as SceneWithId)["left-character"] || "Player";
-                bubbleContent = "🎤 Press and hold to record";
-                // No waiting bubble for placeholder state
-                shouldShowWaitingBubble = false;
+                // No messages yet - don't show any bubble
+                bubbleContent = null;
               }
             }
           }
-          }
+        }
+
+        // Debug: Log final bubble state before rendering
+        if (sceneWithId.sceneId?.includes('-recording')) {
+          console.log(`🎨 FINAL BUBBLE STATE:`, {
+            sceneId: sceneWithId.sceneId,
+            bubbleContent,
+            side,
+            speakerLabel,
+            willRender: !!bubbleContent,
+            sceneIndex,
+            scrollOffset,
+            transform,
+            isVisible: transform === 'translateY(0)'
+          });
         }
 
         // Skip rendering if no content

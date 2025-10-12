@@ -36,7 +36,7 @@
   align-items: center;
   justify-content: center;
   gap: 12px;
-  z-index: 1000;
+  z-index: 1100; /* Above quest hand stamp video (1001) and quest layer (300) */
    /* Top, horizontal, bottom padding */
   background: linear-gradient(180deg, rgba(0,0,0,0) 0%, rgba(0,0,0,0.03) 40%, rgba(0,0,0,0.08) 100%);
   backdrop-filter: blur(2px);
@@ -203,6 +203,40 @@
   transition: transform 0.3s ease;
 }
 
+/* Dialogue state-driven button animations */
+.chat-record-button.hidden {
+  opacity: 0 !important;
+  transform: translateY(120px) !important;
+  pointer-events: none !important;
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1) !important;
+}
+
+.chat-record-button.slide-up {
+  opacity: 1 !important;
+  transform: translateY(0) !important;
+  pointer-events: auto !important;
+  animation: slideUpBounce 0.6s cubic-bezier(0.34, 1.56, 0.64, 1) !important;
+  display: flex !important;
+  visibility: visible !important;
+}
+
+@keyframes slideUpBounce {
+  0% {
+    opacity: 0;
+    transform: translateY(120px) scale(0.8);
+  }
+  60% {
+    transform: translateY(-10px) scale(1.05);
+  }
+  80% {
+    transform: translateY(5px) scale(0.98);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
 
 
 
@@ -292,9 +326,10 @@
   border-radius: 16px;
   box-shadow: 0 6px 20px rgba(0, 0, 0, 0.25);
   max-width: min(480px, calc(100vw - 48px));
-  height:50px;
+  min-height: 100px; /* Allow room for 100px button */
   margin: 0 auto;
   position: relative;
+  overflow: visible; /* Don't clip the button animation */
 }
 
 /* Parchment inner area for simplified rail */

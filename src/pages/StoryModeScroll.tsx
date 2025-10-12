@@ -197,9 +197,11 @@ const StoryContent: React.FC = () => {
           </ScrollControl>
           </CharacterAnimationProvider>
         </SceneStatesProvider>
+
+        {/* UI Overlays - inside provider tree so they have context access */}
+        <UIOverlayRoot />
       </PageFactoryProvider>
       <QuestDebugProbe />
-      <UIOverlayRoot />
     </QuestProvider>
   );
 };

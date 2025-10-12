@@ -10,7 +10,7 @@
  */
 
 import type { Scene, CharacterFlowScene } from '@core/types/scene';
-import type { NavigationItem, SceneState } from './types';
+import type { NavigationItem } from './types';
 import { ulid } from 'ulid';
 
 /**
@@ -60,13 +60,14 @@ function expandScene(scene: Scene, sceneId: string, startIndex: number): Navigat
     case 'image':
       return expandImageScene(scene, sceneId, startIndex);
 
-    case 'character':
+    case 'character': {
       // Check if this character scene has States field (from character-flow flattening)
       const characterScene = scene as Scene & { States?: string[] };
       if (characterScene.States && characterScene.States.length > 0) {
-        return expandCharacterWithStates(characterScene, sceneId, startIndex);
+        return expandCharacterWithStates(characterScene as Scene & { States: string[] }, sceneId, startIndex);
       }
       return [createSimpleNavigationItem(scene, sceneId, startIndex)];
+    }
 
     case 'character-flow':
       return expandCharacterFlowScene(scene, sceneId, startIndex);
@@ -79,7 +80,7 @@ function expandScene(scene: Scene, sceneId: string, startIndex: number): Navigat
       return [createSimpleNavigationItem(scene, sceneId, startIndex)];
 
     default:
-      console.warn('Unknown scene type:', (scene as any).type);
+      console.warn('Unknown scene type:', (scene as { type?: string }).type);
       return [createSimpleNavigationItem(scene, sceneId, startIndex)];
   }
 }
@@ -232,13 +233,14 @@ function expandDialogueStates(
     });
 
     // 3. Create a new scene for user recording (in the same flow)
-    // This will be a new scene with type 'input-recording' that shows the user's speech
+    // Copy the entire character scene, changing sceneId, text, and speaker position
     const recordingSceneId = `${sceneId}-recording`;
     const recordingScene: Scene = {
-      ...scene,
-      type: 'input',
+      ...(scene as Record<string, unknown>),
       sceneId: recordingSceneId,
-    };
+      text: 'Sup?', // Empty text - user will record their own
+      speaker: 'left', // Position speech bubble on the left side for user
+    } as Scene;
 
     items.push({
       scene: recordingScene,
@@ -249,6 +251,7 @@ function expandDialogueStates(
       index: currentIndex++,
     });
   }
+    
 
   return items;
 }

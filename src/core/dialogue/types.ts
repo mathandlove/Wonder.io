@@ -21,7 +21,11 @@ export type DialogueState =
   | 'show-quest'      // 3. Quest UI visible (scroll blocked up & down)
   | 'input-ready'     // 4. Input UI ready for user (scroll blocked down)
   | 'input-recording' // 5. User speaking (scroll blocked down)
-  | 'ai-waiting';     // 6. Waiting for AI response (scroll blocked down)
+  | 'ai-waiting'      // 6. Waiting for AI response (scroll blocked down)
+  | 'quest-basic'     // Quest state 1: Show dialogue with quest pending
+  | 'quest-showing'   // Quest state 2: Quest UI visible
+  | 'input-basic'     // Input state 1: Show dialogue with input pending
+  | 'input-showInput'; // Input state 2: Show input UI (microphone button)
 
 export type Sender = 'player' | 'npc';
 

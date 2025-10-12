@@ -5,22 +5,18 @@
 
  
 
-        {
-      "type":"image",
-      "image":"story/dragonFight.png",
-      "text":"Sometimes I have to fight the monsters."
-    },
-        {
-      "type":"image",
-      "image":"story/cheers.png",
-      "text":"It is worth it because I am protecting all my friends."
-    },{
+{
       "type": "character-flow",
       "background":"bakery.png",
       "left-character": "leo",
       "right-character": "bakerMom",
       "flow": [
+        {
+        
+      "side": "left",
+      "text": "Test"
 
+    },
         {
         
       "side": "right",
@@ -32,7 +28,16 @@
 
 
               ]
-      },            {
+      },           {
+      "type":"image",
+      "image":"story/dragonFight.png",
+      "text":"Sometimes I have to fight the monsters."
+    },
+        {
+      "type":"image",
+      "image":"story/cheers.png",
+      "text":"It is worth it because I am protecting all my friends."
+    },         {
       "type":"image",
       "image":"story/dragonFeet.png",
       "text":"I protect my city by searching for clues."

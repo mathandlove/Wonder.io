@@ -86,7 +86,7 @@ export function ScrollControl({
   // Pure gesture detection - emits direction, SceneManager handles navigation
   useStepScroll(containerRef, {
     onNavigate: advanceNavigation, // Direct connection to SceneManager!
-    thresholdPx: scrollConfig.thresholdPx ?? 60,
+    thresholdPx: scrollConfig.thresholdPx ?? 10,
     isInputFocused,
   });
 
