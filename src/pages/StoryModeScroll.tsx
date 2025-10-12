@@ -83,10 +83,17 @@ const StoryContent: React.FC = () => {
   const { story, loading, error } = useStory(STORY_URL);
 
   // Navigation context
-  const { scenes, currentIndex, setScenes, setCurrentIndex, hideScene, showScene, allScenes } = useSceneManager();
+  const { scenes, currentIndex, setScenes, setCurrentIndex, hideScene, showScene, allScenes, navigationArray, navigationIndex } = useSceneManager();
 
   // Dialogue context for turn banners
   const { showTurnBanner, turnBannerText } = useDialogue();
+
+  // Extract scenes from navigationArray and inject meta for character orchestration
+  // This recalculates previousCharacter/nextCharacter/newCharacter for ALL scenes including dynamic ones
+  const allNavigationScenes = useMemo(() => {
+    const scenes = navigationArray.map(item => item.scene);
+    return injectPanelMetaFromFlows(scenes);
+  }, [navigationArray]);
 
   // Derive a stable array of scenes from the loaded story and set them in SceneManager
   React.useEffect(() => {
@@ -143,13 +150,13 @@ const StoryContent: React.FC = () => {
             onIndexChange={handleIndexChange}
             className="story-scroll"
           >
-              {/* Layer 1: Hybrid background system */}
-              <BackgroundOrchestrator storyId="gingerbread" storyContent={scenes} currentIndex={currentIndex} />
+              {/* Layer 1: Hybrid background system - uses navigationArray for dynamic scenes */}
+              <BackgroundOrchestrator storyId="gingerbread" storyContent={allNavigationScenes} currentIndex={navigationIndex} />
 
-              {/* Layer 1.5: Character panels (fixed, independent of scroll flow) */}
-              <CharacterOrchestrator storyId="gingerbread" scenes={scenes} currentIndex={currentIndex} />
+              {/* Layer 1.5: Character panels (fixed, independent of scroll flow) - uses navigationArray */}
+              <CharacterOrchestrator storyId="gingerbread" scenes={allNavigationScenes} currentIndex={navigationIndex} />
 
-              {/* Layer 1.8: Speech bubbles (scroll-based with delayed transitions) */}
+              {/* Layer 1.8: Speech bubbles - already uses navigationArray internally */}
               <SpeechBubbleOrchestrator scenes={scenes} currentIndex={currentIndex} />
 
               {/* Layer 1.9: Turn cue banner */}

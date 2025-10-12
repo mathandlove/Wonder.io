@@ -55,9 +55,23 @@ export function RecordingOrchestrator() {
       const recordingId = `rec-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
       console.log('1️⃣ Generated recording ID:', recordingId);
 
-      // 2. Create a new CharacterScene
+      // 2. Create a new CharacterScene, inheriting context from current scene
       console.log('2️⃣ Creating recording scene...');
-      const newScene = createRecordingScene(recordingId);
+      const currentScene = currentNavItem?.scene;
+      const currentBackground = currentScene?.background;
+      const leftCharacter = 'left-character' in (currentScene || {}) ? (currentScene as any)['left-character'] : undefined;
+      const rightCharacter = 'right-character' in (currentScene || {}) ? (currentScene as any)['right-character'] : undefined;
+
+      console.log('📋 Context extracted from current scene:', {
+        background: currentBackground,
+        leftCharacter,
+        rightCharacter,
+        currentSceneType: currentScene?.type
+      });
+
+      const newScene = createRecordingScene(recordingId, currentBackground, leftCharacter, rightCharacter);
+      // Note: meta will be injected by injectPanelMetaFromFlows in StoryModeScroll
+
       const sceneId = newScene.sceneId || 'default';
       console.log('✅ Created recording scene:', {
         sceneId,
