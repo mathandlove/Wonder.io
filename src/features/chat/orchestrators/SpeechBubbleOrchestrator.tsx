@@ -193,17 +193,9 @@ export function SpeechBubbleOrchestrator({ scenes, currentIndex = 0 }: SpeechBub
             bubbleContent = characterScene.text;
           }
 
-          // Determine if this scene should show waiting bubble (existing logic)
-          const isPageFactoryScene = !characterScene.flowSequence && characterScene.type === "character";
-          const isUserScene = characterScene.speaker === "left";
-          const hasSceneId = !!(characterScene as SceneWithId).sceneId;
-          const nextSceneForWaiting = scenes[sceneIndex + 1];
-          const nextSceneIsAI = nextSceneForWaiting &&
-                               nextSceneForWaiting.type === "character" &&
-                               !(nextSceneForWaiting as SceneWithId).flowSequence &&
-                               (nextSceneForWaiting as SceneWithId).speaker === "right";
-
-          shouldShowWaitingBubble = isPageFactoryScene && isUserScene && hasSceneId && !nextSceneIsAI;
+          // Show waiting bubble based solely on dialogue state
+          // When state is 'ai-waiting', show the animated ellipses bubble
+          shouldShowWaitingBubble = dialogueState === 'ai-waiting';
 
         } else if (type === 'interactive-bubble' || type === 'input') {
           // Handle both interactive-bubble and input scenes the same way

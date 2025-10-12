@@ -6,7 +6,7 @@
 export type CharacterScene = {
   type: "character";
   sceneId?: string;
-  text: string;
+  text: string; // Empty string during recording, filled when transcript arrives
   speaker?: "left" | "right";
   background?: string;
   "left-character"?: string;
@@ -15,6 +15,8 @@ export type CharacterScene = {
   isFirstInFlow?: boolean;
   hidden?: boolean;
   States?: string[]; // Array of feature states: "quest", "input" (from character-flow flattening)
+  recordingId?: string; // Links to active recording session - used to update text when recording completes
+  isRecording?: boolean; // Visual flag: true during recording, false when text is filled in
   meta?: {
     panelLeft?: { character: string; previousCharacter?: string; nextCharacter?: string; newCharacter?: boolean; aboutToSwap?: boolean };
     panelRight?: { character: string; previousCharacter?: string; nextCharacter?: string; newCharacter?: boolean; aboutToSwap?: boolean };

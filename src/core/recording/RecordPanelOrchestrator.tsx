@@ -1,53 +1,95 @@
 /**
- * RecordPanelOrchestrator - Manages the recording panel visibility and state
- *
- * Renders the RecordPanel (chat rail with hint/record/next buttons) and passes
- * necessary props. Parent component (UIOverlayRoot) controls when this is shown
- * based on scene state.
+ * RecordPanelOrchestrator - Orchestrates the recording flow
  *
  * Responsibilities:
- * - Orchestrate recording flow (page creation, navigation, recording start/stop)
- * - Coordinate between PageFactory, SceneManager, and Recording systems
- * - Handle business logic for recording sessions
+ * - Create new page when recording starts
+ * - Navigate to the new page
+ * - Manage recording API lifecycle
+ * - Coordinate with quest system for completion
+ *
+ * State Management:
+ * - Behavior driven by SCENE STATE (input-showInput), not dialogue state
+ * - When scene is input-showInput, recording is enabled
+ * - Quest completion determines if Next button is unlocked
  */
-import {  useCallback } from 'react';
-import { useDialogue } from '@features/chat/context/useChatDialogue';
+import { useCallback } from 'react';
+import { useQuest } from '@features/quest/QuestManager';
 import { useDialogue as useNewDialogue } from '@core/dialogue/DialogueContext';
 import { useSceneManager } from '@core/scenes/SceneManager';
 import { usePageFactory } from '@core/navigation/PageFactory';
 import { Recording } from '@core/recording/RecordingAPI';
 import { RecordPanel } from './RecordPanel';
+import { useRecording } from './RecordingContext';
 
 export function RecordingOrchestrator() {
-  const { isPlayerTurn, waiting, questState } = useDialogue();
-  const { beginRecording } = useNewDialogue();
-  const { goToNext } = useSceneManager();
-  const { createInteractiveBubblePage, addSceneAndNavigate } = usePageFactory();
+  console.log('🎬 RecordingOrchestrator RENDER');
+
+  const quest = useQuest();
+  const { getCurrentNavigationItem, insertNavigationItem, updateNavigationItemState, navigationIndex, setNavigationIndex } = useSceneManager();
+  const { createRecordingScene } = usePageFactory();
+
+  // Get current scene state to understand context
+  const currentNavItem = getCurrentNavigationItem();
+  const sceneState = currentNavItem?.sceneState;
+
+  console.log('📊 RecordingOrchestrator state:', {
+    sceneState,
+    questState: quest.state
+  });
 
   /**
    * Handle recording start - creates new page, navigates, and starts recording
    * This is the orchestration logic that coordinates multiple systems
    */
   const handleRecordStart = useCallback(() => {
-    console.log('🎯 RecordingOrchestrator.handleRecordStart() - orchestrating recording session');
+    console.log('🎯 RecordingOrchestrator.handleRecordStart() - START');
 
-    // 1. Create a new interactive bubble scene
-    const newScene = createInteractiveBubblePage();
-    const sceneId = newScene.sceneId || 'default';
-    console.log('📄 Created new scene:', sceneId);
+    try {
+      // 0. Update current navigation item state from input-showInput to basic
+      // This transitions the current scene away from showing the RecordPanel
+      console.log('0️⃣ Transitioning current scene to basic state at index:', navigationIndex);
+      updateNavigationItemState(navigationIndex, { type: 'dialogue', state: 'basic' });
+      console.log('✅ Current scene transitioned to basic (RecordPanel will stay visible during nav)');
 
-    // 2. Add the scene and navigate to it
-    addSceneAndNavigate(newScene);
-    console.log('🧭 Navigated to new scene');
+      // 1. Generate unique recording ID
+      const recordingId = `rec-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+      console.log('1️⃣ Generated recording ID:', recordingId);
 
-    // 3. Begin recording with the new scene ID
-    beginRecording(sceneId);
-    console.log('🎙️ Started recording context');
+      // 2. Create a new CharacterScene
+      console.log('2️⃣ Creating recording scene...');
+      const newScene = createRecordingScene(recordingId);
+      const sceneId = newScene.sceneId || 'default';
+      console.log('✅ Created recording scene:', {
+        sceneId,
+        recordingId,
+        type: newScene.type,
+        text: newScene.text
+      });
 
-    // 4. Start the global recording API
-    Recording.start();
-    console.log('✅ Recording session initialized');
-  }, [createInteractiveBubblePage, addSceneAndNavigate, beginRecording]);
+      // 3. Create NavigationItem with recording state
+      const newNavItem = {
+        scene: newScene,
+        sceneId,
+        sceneState: { type: 'dialogue' as const, state: 'input-recording' as const },
+        lockForward: true,  // Lock forward during recording
+        lockBackward: false,
+        index: navigationIndex + 1
+      };
+
+      console.log('3️⃣ Inserting navigation item directly after current position');
+      insertNavigationItem(newNavItem, navigationIndex + 1);
+      console.log('✅ Navigation item inserted (no rebuild!)');
+
+      // 4. Navigate to the new page using navigationIndex
+      console.log('4️⃣ Navigating to new recording page...');
+      setNavigationIndex(navigationIndex + 1);
+      console.log(`✅ Navigation complete! Moved to index ${navigationIndex + 1}`);
+
+      console.log('🎉 Page created and navigated! Original scenes untouched.');
+    } catch (error) {
+      console.error('❌ Error in handleRecordStart:', error);
+    }
+  }, [createRecordingScene, insertNavigationItem, updateNavigationItemState, navigationIndex, setNavigationIndex]);
 
   /**
    * Handle recording stop - stops the recording API
@@ -60,15 +102,19 @@ export function RecordingOrchestrator() {
 
   /**
    * Handle continue button - navigates to next scene
+   * Uses navigation array system to handle both static and dynamic scenes
    */
   const handleContinue = useCallback(() => {
     // TODO: Add exit animation if needed
-    goToNext();
-  }, [goToNext]);
+    setNavigationIndex(navigationIndex + 1);
+  }, [navigationIndex, setNavigationIndex]);
+
+  // Quest state determines if Next button is enabled
+  const questState = quest.state === 'completed' ? 'complete' : 'active';
 
   return (
     <RecordPanel
-      disabled={!isPlayerTurn || waiting}
+      disabled={false}  // Recording is always enabled when this panel shows
       questState={questState}
       onNext={handleContinue}
       onRecordStart={handleRecordStart}

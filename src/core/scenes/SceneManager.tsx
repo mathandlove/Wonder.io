@@ -7,7 +7,7 @@
  * - Scene insertion and dynamic scene creation
  * - Current position tracking (navigationIndex for scene/state pairs)
  * - Navigation array (flat array of scene/state combinations built directly from allScenes)
- * - Navigation helpers (goToNext, goToIndex, etc.)
+ * - Navigation helpers (goToIndex, advanceNavigation, etc.)
  * - Derived state (currentBackgroundId, visibleScenes, currentScene)
  */
 import React, { createContext, useCallback, useContext, useMemo, useState } from "react";
@@ -34,11 +34,12 @@ export interface SceneManagerType {
   // Scene management
   setScenes: (scenes: Scene[]) => void;
   insertScene: (scene: Scene, index: number) => void;
+  insertNavigationItem: (item: NavigationItem, index: number) => void; // Insert directly without rebuild
+  updateNavigationItemState: (index: number, newState: SceneState) => void; // Update state of navigation item
   hideScene: (sceneId: string) => void;
   showScene: (sceneId: string) => void;
 
   // Navigation methods (legacy scene-based)
-  goToNext: () => void;
   nextAndHide: (sceneId: string) => void;
   goToIndex: (index: number) => void;
   navigateToNext: (fromSceneId?: string, onComplete?: () => void, hideFromScene?: boolean) => void;
@@ -72,11 +73,11 @@ export function SceneManagerProvider({ children, initialIndex = 0 }: SceneManage
   const [allScenes, setAllScenes] = useState<Scene[]>([]);
 
   // Build navigation array directly from allScenes
-  // (buildNavigationArray handles filtering hidden scenes internally)
-  const baseNavigationArray = useMemo(
-    () => buildNavigationArray(allScenes),
-    [allScenes]
-  );
+  // Cache built items to avoid rebuilding existing scenes
+  const baseNavigationArray = useMemo(() => {
+    console.log('🔄 Rebuilding navigation array (scenes changed)');
+    return buildNavigationArray(allScenes);
+  }, [allScenes]);
 
   // Derive visible scenes for backward compatibility
   // (scenes that are not hidden - same filtering as buildNavigationArray)
@@ -91,7 +92,7 @@ export function SceneManagerProvider({ children, initialIndex = 0 }: SceneManage
   // Sync navigationArray with baseNavigationArray when scenes change
   React.useEffect(() => {
     setNavigationArray(baseNavigationArray);
-    setNavigationIndex(0); // Reset to beginning when scenes change
+    // Do NOT touch navigationIndex - let it stay where it is
   }, [baseNavigationArray]);
 
   // Helper functions for navigation array access
@@ -136,10 +137,39 @@ export function SceneManagerProvider({ children, initialIndex = 0 }: SceneManage
       const newScenes = [...prevScenes];
       newScenes.splice(index, 0, scene);
 
-      // Recalculate panel metadata for all scenes after inserting new scene
-      const scenesWithUpdatedFlow = injectPanelMetaFromFlows(newScenes);
+      // Do NOT recalculate metadata - just insert the scene as-is
+      // Metadata should only be calculated once during initial story load
+      return newScenes;
+    });
+  }, []);
 
-      return scenesWithUpdatedFlow;
+  // Insert a navigation item directly without rebuilding the entire navigation array
+  const insertNavigationItem = useCallback((item: NavigationItem, index: number) => {
+    console.log('➕ Inserting navigation item directly at index:', index);
+    setNavigationArray(prevArray => {
+      const newArray = [...prevArray];
+      newArray.splice(index, 0, item);
+      console.log(`✅ Inserted at index ${index}, array length: ${prevArray.length} → ${newArray.length}`);
+      return newArray;
+    });
+
+    // Do NOT add to allScenes - that would trigger a rebuild!
+    // Dynamic scenes only live in navigationArray
+  }, []);
+
+  // Update the state of a navigation item at a specific index
+  const updateNavigationItemState = useCallback((index: number, newState: SceneState) => {
+    console.log(`🔄 Updating navigation item state at index ${index}:`, newState);
+    setNavigationArray(prevArray => {
+      const newArray = [...prevArray];
+      if (newArray[index]) {
+        newArray[index] = {
+          ...newArray[index],
+          sceneState: newState
+        };
+        console.log(`✅ Updated navigation item state at index ${index}`);
+      }
+      return newArray;
     });
   }, []);
 
@@ -164,10 +194,6 @@ export function SceneManagerProvider({ children, initialIndex = 0 }: SceneManage
       })
     );
   }, []);
-
-  const goToNext = useCallback(() => {
-    goToIndex(currentIndex + 1);
-  }, [currentIndex, goToIndex]);
 
   const nextAndHide = useCallback((sceneId: string) => {
     hideScene(sceneId);
@@ -265,11 +291,12 @@ export function SceneManagerProvider({ children, initialIndex = 0 }: SceneManage
     // Scene management
     setScenes,
     insertScene,
+    insertNavigationItem,
+    updateNavigationItemState,
     hideScene,
     showScene,
 
     // Navigation methods
-    goToNext,
     nextAndHide,
     goToIndex,
     navigateToNext,
@@ -295,9 +322,10 @@ export function SceneManagerProvider({ children, initialIndex = 0 }: SceneManage
     // Methods
     setScenes,
     insertScene,
+    insertNavigationItem,
+    updateNavigationItemState,
     hideScene,
     showScene,
-    goToNext,
     nextAndHide,
     goToIndex,
     navigateToNext,

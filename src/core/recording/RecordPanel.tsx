@@ -1,5 +1,10 @@
+/**
+ * RecordPanel - Pure presentational recording UI
+ *
+ * Displays: Hint button, Record button, Next button, Toast notifications
+ * All logic handled by RecordPanelOrchestrator
+ */
 import React from 'react';
-import { useDialogue } from '../../features/chat/context/useChatDialogue';
 import NextButton from '../../features/chat/ui/NextButton';
 import { Toast, useToast } from '../../features/chat/ui/Toast';
 import { useRecording } from '@core/recording/RecordingContext';
@@ -20,38 +25,66 @@ export const RecordPanel: React.FC<RecordPanelProps> = ({
   onRecordStart,
   onRecordStop
 }) => {
-  const { hideTurnBanner, waiting } = useDialogue();
+  console.log('🎨 RecordPanel RENDER', {
+    disabled,
+    questState,
+    hasOnRecordStart: !!onRecordStart,
+    hasOnRecordStop: !!onRecordStop,
+    hasOnNext: !!onNext
+  });
+
   const { state: recordingState } = useRecording();
   const { toast, hideToast } = useToast();
 
-  const buttonClassName = `chat-record-button
-    ${recordingState.isRecording ? 'recording' : ''}
-    ${waiting ? 'waiting' : ''}`;
+  console.log('🎨 RecordPanel computed state:', {
+    isRecording: recordingState.isRecording,
+    disabled
+  });
+
+  const buttonClassName = `chat-record-button ${recordingState.isRecording ? 'recording' : ''}`;
 
   const handleRecordClick = () => {
-    if (disabled || waiting) return;
-    hideTurnBanner(); // Hide banner when user clicks microphone
+    console.log('🎤 RecordPanel.handleRecordClick() called', {
+      disabled,
+      isRecording: recordingState.isRecording,
+      willExecute: !disabled
+    });
+
+    if (disabled) {
+      console.log('⛔ Click blocked: disabled');
+      return;
+    }
 
     if (recordingState.isRecording) {
+      console.log('🛑 Stopping recording...');
       onRecordStop();
     } else {
+      console.log('▶️ Starting recording...');
       onRecordStart();
     }
   };
 
   const handleHintClick = () => {
-    if (disabled || waiting) return;
+    if (disabled) return;
     // TODO: Implement hint functionality
   };
 
 
   return (
-    <div className="record-panel-container">
+    <div
+      className="record-panel-container"
+      onClick={(e) => {
+        console.log('🟦 CONTAINER CLICK', {
+          target: e.target,
+          classList: (e.target as HTMLElement).classList?.value
+        });
+      }}
+    >
       <div className="simplified-chat-rail">
         <button
-          className={`chat-hint-button ${waiting ? 'waiting' : ''}`}
+          className="chat-hint-button"
           onClick={handleHintClick}
-          disabled={disabled || waiting}
+          disabled={disabled}
           title="Get a hint"
         >
           <div className="hint-icon-mask"></div>
@@ -59,8 +92,23 @@ export const RecordPanel: React.FC<RecordPanelProps> = ({
 
         <button
           className={buttonClassName}
-          onClick={handleRecordClick}
-          disabled={disabled || waiting}
+          onClick={(e) => {
+            console.log('🔴 RAW BUTTON CLICK EVENT', {
+              target: e.target,
+              currentTarget: e.currentTarget,
+              disabled: e.currentTarget.disabled,
+              timestamp: Date.now()
+            });
+            handleRecordClick();
+          }}
+          onPointerDown={(e) => {
+            console.log('👆 POINTER DOWN on button', {
+              pointerType: e.pointerType,
+              disabled: e.currentTarget.disabled,
+              disabledProp: disabled
+            });
+          }}
+          disabled={disabled}
           title={recordingState.isRecording ? 'Stop recording' : 'Start recording'}
         >
           <div className="record-icon-mask"></div>

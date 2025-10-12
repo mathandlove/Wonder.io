@@ -12,7 +12,7 @@ export default function TextScene({ scene, onComplete }: SceneProps<TextSceneTyp
   const [characterImageUrl, setCharacterImageUrl] = useState<string | null>(null);
   const sceneRef = useRef<HTMLDivElement>(null);
   const textBubbleRef = useRef<HTMLDivElement>(null);
-  const { goToNext } = useSceneManager();
+  const { navigationIndex, setNavigationIndex } = useSceneManager();
 
   const storyId = "gingerbread";
 
@@ -45,7 +45,7 @@ export default function TextScene({ scene, onComplete }: SceneProps<TextSceneTyp
 
   const handleClick = () => {
     onComplete?.();
-    goToNext();
+    setNavigationIndex(navigationIndex + 1);
   };
 
   return (

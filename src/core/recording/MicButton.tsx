@@ -1,58 +1,22 @@
-import { useRecording } from './RecordingContext';
+/**
+ * MicButton - Pure presentational button for recording
+ * No business logic - just renders UI and fires callbacks
+ */
 
-// Custom events for recording lifecycle
-export interface RecordingStartEvent extends CustomEvent {
-  detail: {
-    timestamp: number;
-  };
+interface MicButtonProps {
+  isRecording: boolean;
+  onStart: () => void;
+  onStop: () => void;
+  disabled?: boolean;
 }
 
-export interface RecordingUpdateEvent extends CustomEvent {
-  detail: {
-    transcript: string;
-    isInterim: boolean;
-    timestamp: number;
-  };
-}
-
-export interface RecordingCompleteEvent extends CustomEvent {
-  detail: {
-    transcript: string;
-    timestamp: number;
-  };
-}
-
-export default function MicButton() {
-  const { start, stop, isRecording: checkIsRecording } = useRecording();
-
-  const handlePointerDown = () => {
-    if (!checkIsRecording()) {
-      // Emit recording start event for external listeners (like SceneManager/PageFactory)
-      const startEvent = new CustomEvent('recording:start', {
-        detail: {
-          timestamp: Date.now(),
-        }
-      });
-      window.dispatchEvent(startEvent);
-
-      start();
-    }
-  };
-
-  const handlePointerUp = () => {
-    if (checkIsRecording()) {
-      stop();
-      // RecordingContext will handle the completion and emit events internally
-    }
-  };
-
+export default function MicButton({ isRecording, onStart, onStop, disabled = false }: MicButtonProps) {
   return (
     <button
-      className={`chat-record-button ${checkIsRecording() ? 'recording' : ''}`}
-      onPointerDown={handlePointerDown}
-      onPointerUp={handlePointerUp}
-      onPointerLeave={handlePointerUp} // Stop if pointer leaves button while pressed
-      aria-label={checkIsRecording() ? "Stop recording" : "Start recording"}
+      className={`chat-record-button ${isRecording ? 'recording' : ''}`}
+      onClick={isRecording ? onStop : onStart}
+      disabled={disabled}
+      aria-label={isRecording ? "Stop recording" : "Start recording"}
     >
       <div className="record-icon-mask" />
     </button>

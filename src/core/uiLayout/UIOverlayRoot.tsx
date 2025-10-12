@@ -9,10 +9,13 @@ export function UIOverlayRoot() {
   const { navigationArray, navigationIndex } = useSceneManager();
 
   // Check if current scene should show recording panel
+  // Show for: input-showInput (ready to record), input-recording (actively recording), ai-waiting (waiting for response)
   const currentNavItem = navigationArray[navigationIndex];
+  const dialogueState = currentNavItem?.sceneState.type === 'dialogue' ? currentNavItem.sceneState.state : null;
   const shouldShowRecordPanel =
-    currentNavItem?.sceneState.type === 'dialogue' &&
-    currentNavItem?.sceneState.state === 'input-showInput';
+    dialogueState === 'input-showInput' ||
+    dialogueState === 'input-recording' ||
+    dialogueState === 'ai-waiting';
 
   // Debug logging
   console.log('🎭 UIOverlayRoot render:', {
