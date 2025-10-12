@@ -38,11 +38,14 @@ export interface SceneManagerType {
   hideScene: (sceneId: string) => void;
   showScene: (sceneId: string) => void;
 
-  // Navigation methods
+  // Navigation methods (legacy scene-based)
   goToNext: () => void;
   nextAndHide: (sceneId: string) => void;
   goToIndex: (index: number) => void;
   navigateToNext: (fromSceneId?: string, onComplete?: () => void, hideFromScene?: boolean) => void;
+
+  // Navigation methods (new navigation array-based)
+  advanceNavigation: (direction: 'forward' | 'backward') => void;
 
   // Derived state
   currentBackgroundId: string | null;
@@ -174,6 +177,35 @@ export function SceneManagerProvider({ children, initialIndex = 0 }: SceneManage
     onComplete?.();
   }, [currentIndex, hideScene]);
 
+  // Navigation array-based navigation with debouncing
+  const advanceNavigation = useCallback((direction: 'forward' | 'backward') => {
+    const delta = direction === 'forward' ? 1 : -1;
+    const next = navigationIndex + delta;
+    const clamped = Math.max(0, Math.min(next, navigationArray.length - 1));
+
+    // Don't advance if already at boundary
+    if (clamped === navigationIndex) {
+      console.log(`🛑 Already at ${direction === 'forward' ? 'end' : 'start'} - no navigation`);
+      return;
+    }
+
+    console.log(`📍 Navigation ${direction}: ${navigationIndex} → ${clamped}`);
+    setNavigationIndex(clamped);
+
+    // Also update currentIndex for backward compatibility
+    // This keeps scene-based components working during transition
+    const item = navigationArray[clamped];
+    if (item) {
+      const sceneIndex = visibleScenes.findIndex(s => {
+        const sceneWithId = s as Scene & { sceneId?: string };
+        return sceneWithId.sceneId === item.sceneId;
+      });
+      if (sceneIndex !== -1) {
+        setCurrentIndex(sceneIndex);
+      }
+    }
+  }, [navigationIndex, navigationArray, visibleScenes]);
+
   const contextValue = useMemo((): SceneManagerType => ({
     // Legacy scene-based navigation
     currentIndex,
@@ -201,6 +233,7 @@ export function SceneManagerProvider({ children, initialIndex = 0 }: SceneManage
     nextAndHide,
     goToIndex,
     navigateToNext,
+    advanceNavigation,
 
     // Derived state
     currentBackgroundId,
@@ -228,6 +261,7 @@ export function SceneManagerProvider({ children, initialIndex = 0 }: SceneManage
     nextAndHide,
     goToIndex,
     navigateToNext,
+    advanceNavigation,
 
     // Derived
     currentBackgroundId,

@@ -1,23 +1,21 @@
 /**
- * ScrollControl - Unified scroll management component
+ * ScrollControl - Navigation-driven scroll management
  *
- * Encapsulates all scroll behavior including:
- * - One-scene-at-a-time step scrolling (useStepScroll)
- * - Content-based scroll locking (useContentLocks)
- * - Scene transition events
- * - Caption triggering and dismissal
+ * Orchestrates navigation through scenes and scene states:
+ * - Gesture detection (useStepScroll) advances navigation index
+ * - Navigation index changes trigger state transitions (useSceneOrchestrator)
+ * - Physical scroll animations follow navigation changes
  *
- * This component hides implementation details and provides a clean API
- * for controlled scrolling through story scenes.
+ * Navigation always advances, regardless of content state. State transitions
+ * (like showing captions) happen automatically when navigation lands on a new state.
  */
-import React, { useRef, useCallback, useLayoutEffect } from 'react';
+import React, { useRef, useCallback, useLayoutEffect, useEffect } from 'react';
 import type { Scene } from '@core/types/scene';
 import { useStepScroll } from './useStepScroll';
-import { useContentLocks } from './useContentLocks';
-import { useSceneOrchestrator } from './useSceneOrchestrator';
-import { SceneOrchestratorProvider } from './SceneOrchestratorContext';
-import { useImageState } from '@features/image-scene/ImageStateContext';
 import { useSceneManager } from '@core/scenes/SceneManager';
+import { useImageState } from '@features/image-scene/ImageStateContext';
+import { useSceneOrchestrator } from '../scenes/useSceneOrchestrator';
+import { SceneOrchestratorProvider } from '../scenes/SceneOrchestratorContext';
 import './ScrollControl.css';
 
 export interface ScrollControlProps {
@@ -26,15 +24,9 @@ export interface ScrollControlProps {
   currentIndex: number;
   onIndexChange: (index: number) => void;
 
-  // Content lock state (for input/quest scenes)
-  isPlayerTurn?: boolean;
-  waiting?: boolean;
-  questState?: 'idle' | 'active' | 'completed' | 'complete' | 'failed';
-
   // Optional scroll configuration
   scrollConfig?: {
     thresholdPx?: number;
-    durationMs?: number;
   };
 
   // Child content to render inside scroll container
@@ -51,9 +43,6 @@ export function ScrollControl({
   scenes,
   currentIndex,
   onIndexChange,
-  isPlayerTurn = false,
-  waiting = false,
-  questState = 'idle',
   scrollConfig = {},
   children,
   className = 'scroll-control',
@@ -61,27 +50,18 @@ export function ScrollControl({
 }: ScrollControlProps) {
   const containerRef = useRef<HTMLDivElement>(null);
 
-  // Get navigation array from SceneManager
+  // Get navigation from SceneManager
   const sceneManager = useSceneManager();
-  const navigationArray = sceneManager.navigationArray;
+  const { advanceNavigation, navigationIndex, navigationArray } = sceneManager;
 
-  // Get index from scroll position
-  const getIndex = useCallback(() => {
-    const el = containerRef.current;
-    if (!el) return 0;
-    const y = el.scrollTop;
-    let best = 0;
-    let bestDist = Infinity;
-    const sections = el.querySelectorAll<HTMLElement>('.scene');
-    sections.forEach((s, i) => {
-      const dist = Math.abs(s.offsetTop - y);
-      if (dist < bestDist) {
-        bestDist = dist;
-        best = i;
-      }
-    });
-    return best;
-  }, []);
+  // Get image state for caption management
+  const imageState = useImageState();
+
+  // Scene orchestrator for input scene runtime state management
+  const sceneOrchestrator = useSceneOrchestrator({
+    scenes,
+    currentIndex: navigationIndex,
+  });
 
   // Check if input is focused
   const isInputFocused = useCallback(() => {
@@ -91,51 +71,49 @@ export function ScrollControl({
     return tag === 'input' || tag === 'textarea' || a.isContentEditable;
   }, []);
 
-  // Scene orchestrator - manages runtime state for scenes
-  const sceneOrchestrator = useSceneOrchestrator({
-    scenes,
-    currentIndex,
-    onIndexChange, // Pass index change callback so orchestrator can update navigation
-  });
+  // Watch navigationIndex and trigger state transitions
+  useEffect(() => {
+    const currentNavItem = navigationArray[navigationIndex];
+    if (!currentNavItem) return;
 
-  // Image state context for caption management
-  const imageState = useImageState();
+    const { sceneId, scene, sceneState } = currentNavItem;
 
-  // Content locking system
-  const { checkContentLocks } = useContentLocks({
-    scenes,
-    isPlayerTurn,
-    waiting,
-    questState,
-    getCaptionState: imageState.getImageState,
-  });
+    // Handle image caption transitions
+    if (sceneState.type === 'image' && sceneState.state === 'hidden') {
+      const imageScene = scene as Scene & { caption?: string; text?: string };
+      const captionText = imageScene.caption || imageScene.text;
 
-  // Step scroll system with navigation array support
+      if (captionText && captionText.trim()) {
+        // Transition from hidden → showing
+        imageState.setImageState(sceneId, 'showing');
+        console.log(`📸 Caption transition: ${sceneId} hidden → showing`);
+      }
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [navigationIndex, navigationArray, imageState.setImageState]);
+
+  // Pure gesture detection - emits direction, SceneManager handles navigation
   useStepScroll(containerRef, {
-    onIndexChange,
-    getIndex,
-    count: () => scenes.length,
-    durationMs: scrollConfig.durationMs ?? 380,
+    onNavigate: advanceNavigation, // Direct connection to SceneManager!
     thresholdPx: scrollConfig.thresholdPx ?? 60,
     isInputFocused,
-    checkContentLocks,
-    navigationArray, // Enable smart scrolling based on scene/state changes
   });
 
-  // Watch for external currentIndex changes (programmatic navigation)
-  // and scroll to that index
-  const prevIndexRef = React.useRef(currentIndex);
+  // Watch for scene index changes and perform scroll animations
+  // (Scene index changes when navigation advances to a different physical scene)
+  const prevSceneIndexRef = React.useRef(currentIndex);
   useLayoutEffect(() => {
     const el = containerRef.current;
     if (!el) return;
 
-    // Only scroll if index changed externally (not from our own scroll events)
-    if (currentIndex !== prevIndexRef.current) {
+    // Only scroll if scene changed (not just state within same scene)
+    if (currentIndex !== prevSceneIndexRef.current) {
       const section = el.querySelectorAll<HTMLElement>('.scene')[currentIndex];
       if (section) {
+        console.log(`📜 Scrolling to scene ${currentIndex}`);
         section.scrollIntoView({ behavior: 'smooth', block: 'start' });
       }
-      prevIndexRef.current = currentIndex;
+      prevSceneIndexRef.current = currentIndex;
     }
   }, [currentIndex]);
 

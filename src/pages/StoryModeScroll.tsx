@@ -13,9 +13,8 @@ import { CharacterOrchestrator } from '@features/characters/CharacterOrchestrato
 import { SpeechBubbleOrchestrator } from '@features/chat/orchestrators/SpeechBubbleOrchestrator';
 import { ImageSceneOrchestrator } from '@features/image-scene/ImageSceneOrchestrator';
 import { injectPanelMetaFromFlows } from '@features/characters/adapters/injectPanelMetaFromFlows';
-import { useSceneNavigation } from '@core/navigation/useSceneNavigation';
 import { ScrollControl } from '@core/scroll/ScrollControl';
-import { CharacterAnimationProvider } from '@features/characters-context/CharacterAnimationContext';
+import { CharacterAnimationProvider } from '@features/characters/CharacterAnimationContext';
 import type { Scene } from '@core/types/scene';
 import type { QuestHook } from '@features/quest/QuestManager';
 
@@ -87,18 +86,13 @@ const StoryContent: React.FC = () => {
   // Navigation context
   const { scenes, currentIndex, setScenes, setCurrentIndex, hideScene, showScene, allScenes } = useSceneManager();
 
-  // Chat dialogue context for content lock checking
-  const { isPlayerTurn, waiting, questState } = useDialogue();
-
-  // Derive a stable array of scenes from the loaded story
-  const initialScenes = useMemo(() => {
-    if (!story?.scenes) return [];
+  // Derive a stable array of scenes from the loaded story and set them in SceneManager
+  React.useEffect(() => {
+    if (!story?.scenes) return;
     // Inject panel metadata once during story load
-    return injectPanelMetaFromFlows(story.scenes);
-  }, [story?.scenes]);
-
-  // Handle scene navigation updates - send processed scenes to NavigationContext
-  useSceneNavigation({ initialScenes, setScenes });
+    const processedScenes = injectPanelMetaFromFlows(story.scenes);
+    setScenes(processedScenes);
+  }, [story?.scenes, setScenes]);
 
   // Handle scene index changes
   const handleIndexChange = (nextIndex: number) => {
@@ -145,9 +139,6 @@ const StoryContent: React.FC = () => {
               scenes={scenes}
               currentIndex={currentIndex}
               onIndexChange={handleIndexChange}
-              isPlayerTurn={isPlayerTurn}
-              waiting={waiting}
-              questState={questState}
               className="story-scroll"
             >
               {/* Layer 1: Hybrid background system */}

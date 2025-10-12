@@ -7,7 +7,7 @@ import { CardboardBubble } from '@features/chat/components/CardboardBubble';
 import { useDialogue } from '../context/useChatDialogue';
 import { useDialogue as useRecordingDialogue } from '@core/dialogue/DialogueContext';
 import { useRecording } from '@core/recording/RecordingContext';
-import { useSceneOrchestratorContext } from '@core/scroll/SceneOrchestratorContext';
+import { useSceneOrchestratorContext } from '@core/scenes/SceneOrchestratorContext';
 import type { Scene, CharacterScene, InteractiveBubbleScene, InputScene } from '@core/types/scene';
 import type { Message } from '@core/dialogue/types';
 

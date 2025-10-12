@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useState, useLayoutEffect } from "react";
-import { useCharacterAnimation } from '@features/characters-context/CharacterAnimationContext';
+import { useCharacterAnimation } from '@features/characters/CharacterAnimationContext';
 import type { Scene } from '@core/types/scene';
 import { CharacterPanel } from "./CharacterPanel";
 

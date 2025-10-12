@@ -11,36 +11,21 @@
  */
 import { useEffect, useState } from 'react';
 import { useSceneManager } from '@core/scenes/SceneManager';
-import { useSceneOrchestratorContext } from './SceneOrchestratorContext';
 import { useDialogue } from '@core/dialogue/DialogueContext';
 import { useImageState } from '@features/image-scene/ImageStateContext';
 import type { Scene } from '@core/types/scene';
 
 interface DebugState {
-  animating: boolean;
   wheelAccum: number;
-  currentIndex: number;
-  isLocked: boolean;
-  lockReason: string;
-  lockedForward: boolean;
-  lockedBackward: boolean;
-  blockDismissActive: boolean;
-  settleTimerActive: boolean;
+  debounceActive: boolean;
   lastEvent: string;
   timestamp: number;
 }
 
 export function StepScrollDebug() {
   const [state, setState] = useState<DebugState>({
-    animating: false,
     wheelAccum: 0,
-    currentIndex: 0,
-    isLocked: false,
-    lockReason: '',
-    lockedForward: false,
-    lockedBackward: false,
-    blockDismissActive: false,
-    settleTimerActive: false,
+    debounceActive: false,
     lastEvent: '',
     timestamp: 0,
   });
@@ -62,10 +47,12 @@ export function StepScrollDebug() {
   const [isDragging, setIsDragging] = useState(false);
   const [dragStart, setDragStart] = useState({ x: 0, y: 0 });
 
-  // Get scene manager and orchestrator for additional context
+  // Get scene manager and image state for additional context
   const sceneManager = useSceneManager();
-  const orchestrator = useSceneOrchestratorContext();
   const imageState = useImageState();
+
+  // Get current navigation state directly from SceneManager
+  const { navigationIndex, navigationArray, isLocked, lockReason } = sceneManager;
 
   // Try to get dialogue context, may be undefined if not in provider tree
   let dialogue;
@@ -89,10 +76,9 @@ export function StepScrollDebug() {
     };
   }, []);
 
-  // Get current navigation item and scene info
-  const navigationArray = sceneManager.navigationArray;
-  const currentNavItem = navigationArray[state.currentIndex];
-  const currentScene = sceneManager.visibleScenes[state.currentIndex] as (Scene & { sceneId?: string, caption?: string, text?: string }) | undefined;
+  // Get current navigation item and scene info (using navigationIndex from SceneManager)
+  const currentNavItem = navigationArray[navigationIndex];
+  const currentScene = sceneManager.visibleScenes[navigationIndex] as (Scene & { sceneId?: string, caption?: string, text?: string }) | undefined;
   const sceneType = currentScene?.type || 'unknown';
   const sceneId = currentNavItem?.sceneId || currentScene?.sceneId || 'no-id';
   const captionState = imageState.getImageState(sceneId);
@@ -201,7 +187,7 @@ export function StepScrollDebug() {
         <div style={{ marginBottom: '8px', paddingBottom: '8px', borderBottom: '1px solid #0ff' }}>
           <div style={{ color: '#0ff', marginBottom: '4px', fontWeight: 'bold' }}>🎬 Scene & State</div>
           <div style={{ color: '#0f0' }}>
-            📍 Index: <strong>{state.currentIndex}</strong> / {navigationArray.length - 1}
+            📍 Index: <strong>{navigationIndex}</strong> / {navigationArray.length - 1}
           </div>
           <div style={{ color: '#0f0' }}>
             🆔 Scene ID: <strong>{sceneId}</strong>
@@ -217,8 +203,8 @@ export function StepScrollDebug() {
         {/* Scroll State Section */}
         <div style={{ marginBottom: '8px', paddingBottom: '8px', borderBottom: '1px solid #0f0' }}>
           <div style={{ color: '#0ff', marginBottom: '4px', fontWeight: 'bold' }}>🖱️ Scroll State</div>
-          <div style={{ color: state.animating ? '#ff0' : '#0f0' }}>
-            🎬 Animating: <strong>{state.animating ? 'TRUE' : 'FALSE'}</strong>
+          <div style={{ color: state.debounceActive ? '#ff0' : '#0f0' }}>
+            ⏱️ Debounce: <strong>{state.debounceActive ? 'ACTIVE' : 'INACTIVE'}</strong>
           </div>
           <div style={{ color: Math.abs(state.wheelAccum) > 0 ? '#ff0' : '#0f0' }}>
             📊 Wheel Accum: <strong>{state.wheelAccum.toFixed(0)}px</strong>
@@ -228,20 +214,14 @@ export function StepScrollDebug() {
         {/* Lock State Section */}
         <div style={{ marginBottom: '8px', paddingBottom: '8px', borderBottom: '1px solid #0f0' }}>
           <div style={{ color: '#0ff', marginBottom: '4px', fontWeight: 'bold' }}>🔒 Lock State</div>
-          <div style={{ color: (state.lockedForward || state.lockedBackward) ? '#f00' : '#0f0' }}>
-            Status: <strong>{state.isLocked ? 'LOCKED' : 'FREE'}</strong>
+          <div style={{ color: isLocked ? '#f00' : '#0f0' }}>
+            Status: <strong>{isLocked ? 'LOCKED' : 'FREE'}</strong>
           </div>
-          {state.lockReason && (
+          {lockReason && (
             <div style={{ color: '#f80', fontSize: '10px' }}>
-              Reason: {state.lockReason}
+              Reason: {lockReason}
             </div>
           )}
-          <div style={{ color: state.lockedForward ? '#f00' : '#0f0', marginLeft: '12px', fontSize: '10px' }}>
-            ⬇️ Forward: <strong>{state.lockedForward ? 'LOCKED' : 'free'}</strong>
-          </div>
-          <div style={{ color: state.lockedBackward ? '#f00' : '#0f0', marginLeft: '12px', fontSize: '10px' }}>
-            ⬆️ Backward: <strong>{state.lockedBackward ? 'LOCKED' : 'free'}</strong>
-          </div>
         </div>
 
         {/* Image Caption State Section - Only show for image scenes with captions */}

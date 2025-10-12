@@ -1,15 +1,13 @@
 /**
- * useSceneOrchestrator - Manages runtime state for scenes
+ * useSceneOrchestrator - Manages runtime state for input scenes
  *
- * Listens to scroll:attempt events and updates scene runtime state
- * (input states, etc.) based on user interactions.
+ * Provides runtime state storage for input scenes (idle, recording, waiting, converting).
+ * Used by SpeechBubbleOrchestrator to determine which bubbles to show.
  *
- * Note: Image caption state is now managed by ImageStateContext
- * in the image-scene feature directory.
+ * Note: Caption transitions are now handled directly in ScrollControl.
  */
 import { useEffect, useRef, useCallback, useState } from 'react';
 import type { Scene } from '@core/types/scene';
-import { useImageState } from '@features/image-scene/ImageStateContext';
 
 // Runtime state for input scenes
 export type InputState = 'idle' | 'recording' | 'waiting' | 'converting';
@@ -34,9 +32,6 @@ export interface SceneOrchestratorHook {
   // Update input state
   setInputState: (sceneId: string, state: InputState) => void;
 
-  // Handle caption state transitions for image scenes
-  handleCaptionTransition: (sceneId: string, scene: Scene) => void;
-
   // Dialogue-to-scene conversion orchestration
   convertDialogueToScenes: (playerMessageId: string, npcMessageId: string) => Promise<void>;
 }
@@ -44,22 +39,17 @@ export interface SceneOrchestratorHook {
 interface UseSceneOrchestratorParams {
   scenes: Scene[];
   currentIndex: number;
-  onIndexChange?: (index: number) => void;
 }
 
 export function useSceneOrchestrator({
   scenes,
   currentIndex,
-  onIndexChange,
 }: UseSceneOrchestratorParams): SceneOrchestratorHook {
   // Runtime state storage - persists across renders
   const stateMapRef = useRef<SceneStateMap>(new Map());
 
   // Force re-render when state map changes
   const [, forceUpdate] = useState({});
-
-  // Get image state context for managing caption states
-  const imageState = useImageState();
 
   // Get state for a scene
   const getSceneState = useCallback((sceneId: string): SceneRuntimeState | undefined => {
@@ -82,70 +72,7 @@ export function useSceneOrchestrator({
     forceUpdate({}); // Trigger re-render so components see the new state
   }, []);
 
-  // Handle caption state transitions for image scenes
-  const handleCaptionTransition = useCallback((sceneId: string, scene: Scene) => {
-    const imageScene = scene as Scene & { caption?: string; text?: string };
-    const captionText = imageScene.caption || imageScene.text;
-
-    // Only handle image scenes with captions
-    if (scene.type !== 'image' || !captionText || !captionText.trim()) {
-      return;
-    }
-
-    // Get current state from ImageStateContext
-    const currentState = imageState.getImageState(sceneId);
-
-    // Transition: hidden → showing
-    if (!currentState || currentState === 'hidden') {
-      imageState.setImageState(sceneId, 'showing');
-      console.log(`📸 Caption transition: ${sceneId} hidden → showing`);
-
-      // Increment navigation index to move from image:hidden to image:showing
-      if (onIndexChange) {
-        console.log(`📍 Incrementing navigation index: ${currentIndex} → ${currentIndex + 1}`);
-        onIndexChange(currentIndex + 1);
-      }
-    }
-  }, [imageState, currentIndex, onIndexChange]);
-
-  // Listen to scroll:attempt events and trigger caption transitions
-  useEffect(() => {
-    const handleScrollAttempt = (event: Event) => {
-      const customEvent = event as CustomEvent<{
-        direction: 'forward' | 'backward';
-        blocked: boolean;
-        fromIndex: number;
-        toIndex: number;
-        timestamp: number;
-      }>;
-
-      const { blocked, fromIndex, direction } = customEvent.detail;
-
-      // Only react to blocked forward scrolls (user trying to advance but locked)
-      if (!blocked || direction !== 'forward') return;
-
-      const currentScene = scenes[fromIndex];
-      if (!currentScene) return;
-
-      const sceneWithId = currentScene as Scene & { sceneId?: string };
-      const sceneId = sceneWithId.sceneId;
-
-      // Skip if no sceneId
-      if (!sceneId) return;
-
-      // Delegate to handleCaptionTransition
-      handleCaptionTransition(sceneId, currentScene);
-    };
-
-    window.addEventListener('scroll:attempt', handleScrollAttempt);
-
-    return () => {
-      window.removeEventListener('scroll:attempt', handleScrollAttempt);
-    };
-  }, [scenes, handleCaptionTransition]);
-
   // Initialize input states when scenes change
-  // Note: Image caption states are now initialized in ImageStateContext
   useEffect(() => {
     console.log('🔄 Initializing scene states for', scenes.length, 'scenes');
     let needsUpdate = false;
@@ -214,7 +141,6 @@ export function useSceneOrchestrator({
     getSceneState,
     getInputState,
     setInputState,
-    handleCaptionTransition,
     convertDialogueToScenes,
   };
 }
