@@ -9,7 +9,7 @@
  * Each NavigationItem represents one "scroll stop" in the story.
  */
 
-import type { Scene } from '@core/types/scene';
+import type { Scene, CharacterFlowScene } from '@core/types/scene';
 import type { NavigationItem, SceneState } from './types';
 import { ulid } from 'ulid';
 
@@ -17,6 +17,9 @@ import { ulid } from 'ulid';
  * Main builder function - converts scenes to navigation array
  */
 export function buildNavigationArray(scenes: Scene[]): NavigationItem[] {
+  console.log('🏗️ buildNavigationArray called with', scenes.length, 'scenes');
+  console.log('📋 Scene types:', scenes.map(s => s.type));
+
   const navigationArray: NavigationItem[] = [];
   let navigationIndex = 0;
 
@@ -27,11 +30,24 @@ export function buildNavigationArray(scenes: Scene[]): NavigationItem[] {
     // Ensure scene has an ID
     const sceneId = scene.sceneId || ulid();
 
+    console.log(`\n🔨 Processing scene: type=${scene.type}, sceneId=${sceneId}`);
+
     // Expand scene into navigation items based on type
     const items = expandScene(scene, sceneId, navigationIndex);
+    console.log(`  ✨ Expanded into ${items.length} navigation item(s)`);
+
     navigationArray.push(...items);
     navigationIndex += items.length;
   }
+
+  console.log(`\n✅ Built navigation array with ${navigationArray.length} total items`);
+  console.log('📊 Navigation breakdown:', navigationArray.map((item, idx) => ({
+    index: idx,
+    sceneId: item.sceneId,
+    sceneType: item.scene.type,
+    stateType: item.sceneState.type,
+    state: item.sceneState.type === 'dialogue' || item.sceneState.type === 'image' ? (item.sceneState as any).state : 'n/a'
+  })));
 
   return navigationArray;
 }
@@ -44,12 +60,19 @@ function expandScene(scene: Scene, sceneId: string, startIndex: number): Navigat
     case 'image':
       return expandImageScene(scene, sceneId, startIndex);
 
+    case 'character':
+      // Check if this character scene has States field (from character-flow flattening)
+      const characterScene = scene as Scene & { States?: string[] };
+      if (characterScene.States && characterScene.States.length > 0) {
+        return expandCharacterWithStates(characterScene, sceneId, startIndex);
+      }
+      return [createSimpleNavigationItem(scene, sceneId, startIndex)];
+
     case 'character-flow':
       return expandCharacterFlowScene(scene, sceneId, startIndex);
 
     // Simple scenes with no substates
     case 'text':
-    case 'character':
     case 'full':
     case 'caption':
     case 'interactive-bubble':
@@ -102,12 +125,28 @@ function expandImageScene(scene: Scene & { caption?: string; text?: string }, sc
 }
 
 /**
+ * Character scene with States expansion - for flattened character-flow scenes
+ * States field controls which interactive features appear (quest/input)
+ */
+function expandCharacterWithStates(scene: Scene & { States: string[] }, sceneId: string, startIndex: number): NavigationItem[] {
+  const states = scene.States;
+  const hasQuest = states.includes('quest');
+  const hasInput = states.includes('input');
+
+  console.log('🔍 expandCharacterWithStates:', { sceneId, states, hasQuest, hasInput });
+
+  return expandDialogueStates(scene, sceneId, startIndex, { hasQuest, hasInput });
+}
+
+/**
  * Character-flow scene expansion - checks flow items for States field
  * States field controls which interactive features appear (quest/input)
  */
-function expandCharacterFlowScene(scene: Scene & { flow: Array<{ States?: string[] }> }, sceneId: string, startIndex: number): NavigationItem[] {
+function expandCharacterFlowScene(scene: CharacterFlowScene, sceneId: string, startIndex: number): NavigationItem[] {
   // Check if any flow item has States field with features
   const flowItemWithStates = scene.flow.find(item => item.States && item.States.length > 0);
+
+  console.log('🔍 expandCharacterFlowScene:', { sceneId, flowItemWithStates, flow: scene.flow });
 
   if (flowItemWithStates && flowItemWithStates.States) {
     // Has interactive features - expand based on States array
@@ -115,9 +154,11 @@ function expandCharacterFlowScene(scene: Scene & { flow: Array<{ States?: string
     const hasQuest = states.includes('quest');
     const hasInput = states.includes('input');
 
+    console.log('✅ Found States:', { states, hasQuest, hasInput });
     return expandDialogueStates(scene, sceneId, startIndex, { hasQuest, hasInput });
   }
 
+  console.log('⚠️ No States found, creating simple nav item');
   // Simple character-flow scene without interactive features
   return [{
     scene,
@@ -130,13 +171,13 @@ function expandCharacterFlowScene(scene: Scene & { flow: Array<{ States?: string
 }
 
 /**
- * Expands a dialogue scene with States into full state machine
+ * Expands a dialogue scene with States into navigation items
  * States: ["quest", "input"] or ["input"] or ["quest"]
  *
  * Flow depends on which features are enabled:
- * - hasQuest + hasInput: pre-feature → show-quest → input-ready → input-recording → ai-waiting → basic
- * - hasInput only: pre-feature → input-ready → input-recording → ai-waiting → basic
- * - hasQuest only: pre-feature → show-quest → basic
+ * - hasInput only: input-basic → input-showInput → [new scene: input-recording]
+ * - hasQuest only: quest-basic → quest-showing
+ * - hasQuest + hasInput: quest-basic → quest-showing → input-basic → input-showInput → [new scene: input-recording]
  */
 function expandDialogueStates(
   scene: Scene,
@@ -147,34 +188,12 @@ function expandDialogueStates(
   const items: NavigationItem[] = [];
   let currentIndex = startIndex;
 
-  // 1. Pre-feature state (dialogue shows, feature not yet revealed)
-  items.push({
-    scene,
-    sceneId,
-    sceneState: { type: 'dialogue', state: 'pre-feature' },
-    lockForward: true,
-    lockBackward: false,
-    index: currentIndex++,
-  });
-
-  // 2. Show quest if quest feature enabled
+  // Quest flow
   if (features.hasQuest) {
     items.push({
       scene,
       sceneId,
-      sceneState: { type: 'dialogue', state: 'show-quest' },
-      lockForward: true,
-      lockBackward: true,
-      index: currentIndex++,
-    });
-  }
-
-  // 3-5. Input flow if input feature enabled
-  if (features.hasInput) {
-    items.push({
-      scene,
-      sceneId,
-      sceneState: { type: 'dialogue', state: 'input-ready' },
+      sceneState: { type: 'dialogue', state: 'quest-basic' },
       lockForward: true,
       lockBackward: false,
       index: currentIndex++,
@@ -183,31 +202,53 @@ function expandDialogueStates(
     items.push({
       scene,
       sceneId,
+      sceneState: { type: 'dialogue', state: 'quest-showing' },
+      lockForward: true,
+      lockBackward: false,
+      index: currentIndex++,
+    });
+  }
+
+  // Input flow
+  if (features.hasInput) {
+    // 1. Input-basic: Show dialogue with text
+    items.push({
+      scene,
+      sceneId,
+      sceneState: { type: 'dialogue', state: 'input-basic' },
+      lockForward: true,
+      lockBackward: false,
+      index: currentIndex++,
+    });
+
+    // 2. Input-showInput: Show input UI (microphone button)
+    items.push({
+      scene,
+      sceneId,
+      sceneState: { type: 'dialogue', state: 'input-showInput' },
+      lockForward: true,
+      lockBackward: false,
+      index: currentIndex++,
+    });
+
+    // 3. Create a new scene for user recording (in the same flow)
+    // This will be a new scene with type 'input-recording' that shows the user's speech
+    const recordingSceneId = `${sceneId}-recording`;
+    const recordingScene: Scene = {
+      ...scene,
+      type: 'input',
+      sceneId: recordingSceneId,
+    };
+
+    items.push({
+      scene: recordingScene,
+      sceneId: recordingSceneId,
       sceneState: { type: 'dialogue', state: 'input-recording' },
       lockForward: true,
       lockBackward: false,
       index: currentIndex++,
     });
-
-    items.push({
-      scene,
-      sceneId,
-      sceneState: { type: 'dialogue', state: 'ai-waiting' },
-      lockForward: true,
-      lockBackward: false,
-      index: currentIndex++,
-    });
   }
-
-  // 6. Final basic state (all features completed)
-  items.push({
-    scene,
-    sceneId,
-    sceneState: { type: 'dialogue', state: 'basic' },
-    lockForward: false,
-    lockBackward: false,
-    index: currentIndex++,
-  });
 
   return items;
 }

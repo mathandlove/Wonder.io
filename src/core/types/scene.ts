@@ -14,6 +14,7 @@ export type CharacterScene = {
   flowSequence?: boolean;
   isFirstInFlow?: boolean;
   hidden?: boolean;
+  States?: string[]; // Array of feature states: "quest", "input" (from character-flow flattening)
   meta?: {
     panelLeft?: { character: string; previousCharacter?: string; nextCharacter?: string; newCharacter?: boolean; aboutToSwap?: boolean };
     panelRight?: { character: string; previousCharacter?: string; nextCharacter?: string; newCharacter?: boolean; aboutToSwap?: boolean };
@@ -80,6 +81,7 @@ export type CharacterFlowScene = {
     text?: string;
     quest?: string;
     input?: string;
+    States?: string[]; // Array of feature states: "quest", "input"
   }>;
 };
 

@@ -8,6 +8,7 @@ import { useDialogue } from '../context/useChatDialogue';
 import { useDialogue as useRecordingDialogue } from '@core/dialogue/DialogueContext';
 import { useRecording } from '@core/recording/RecordingContext';
 import { useSceneOrchestratorContext } from '@core/scenes/SceneOrchestratorContext';
+import { useSceneStates } from '@core/scenes/SceneStates';
 import type { Scene, CharacterScene, InteractiveBubbleScene, InputScene } from '@core/types/scene';
 import type { Message } from '@core/dialogue/types';
 
@@ -59,6 +60,8 @@ export function SpeechBubbleOrchestrator({ scenes, currentIndex = 0 }: SpeechBub
   const { getDisplayText, isRecording } = useRecording();
   // Get orchestrator context for input scene state
   const orchestrator = useSceneOrchestratorContext();
+  // Get scene states for dialogue state management
+  const sceneStates = useSceneStates();
 
   // Track scroll direction
   const prevScrollOffsetRef = React.useRef(scrollOffset);
@@ -133,6 +136,12 @@ export function SpeechBubbleOrchestrator({ scenes, currentIndex = 0 }: SpeechBub
 
         if (type === 'character') {
           const characterScene = scene as CharacterScene;
+          const sceneId = (characterScene as SceneWithId).sceneId;
+
+          // Check if this scene has dialogue states
+          const sceneState = sceneId ? sceneStates.getSceneState(sceneId) : undefined;
+          const dialogueState = sceneState?.type === 'dialogue' ? sceneState.state : null;
+
           speakerLabel = characterScene.speaker === "left"
             ? characterScene["left-character"] || "Left"
             : characterScene.speaker === "right"
@@ -142,7 +151,34 @@ export function SpeechBubbleOrchestrator({ scenes, currentIndex = 0 }: SpeechBub
           side = characterScene.speaker === 'left' ? 'left' :
                  characterScene.speaker === 'right' ? 'right' : 'center';
 
-          bubbleContent = characterScene.text;
+          // Handle dialogue states
+          if (dialogueState) {
+            if (dialogueState === 'input-basic') {
+              // State 1: Show dialogue text normally
+              bubbleContent = characterScene.text;
+              console.log(`💬 input-basic state for ${sceneId}`);
+            } else if (dialogueState === 'input-showInput') {
+              // State 2: Show dialogue text (just text, no indicator)
+              bubbleContent = characterScene.text;
+              console.log(`💬 input-showInput state for ${sceneId}`);
+            } else if (dialogueState === 'input-recording') {
+              // State 3: User is recording (handled by input scene type below)
+              // This shouldn't happen for character type, but just in case
+              bubbleContent = characterScene.text;
+            } else if (dialogueState === 'quest-basic') {
+              // Quest state 1: Show dialogue normally
+              bubbleContent = characterScene.text;
+            } else if (dialogueState === 'quest-showing') {
+              // Quest state 2: Show dialogue text (just text, no indicator)
+              bubbleContent = characterScene.text;
+            } else {
+              // Unknown dialogue state, show text
+              bubbleContent = characterScene.text;
+            }
+          } else {
+            // No dialogue state, show text normally
+            bubbleContent = characterScene.text;
+          }
 
           // Determine if this scene should show waiting bubble (existing logic)
           const isPageFactoryScene = !characterScene.flowSequence && characterScene.type === "character";
@@ -160,8 +196,22 @@ export function SpeechBubbleOrchestrator({ scenes, currentIndex = 0 }: SpeechBub
           // Handle both interactive-bubble and input scenes the same way
           const sceneId = (scene as SceneWithId).sceneId || '';
 
-          // PRIORITY: Check orchestrator input state for input scenes
-          const inputState = orchestrator?.getInputState(sceneId);
+          // Check if this is an input-recording scene from dialogue flow
+          const sceneState = sceneStates.getSceneState(sceneId);
+          const dialogueState = sceneState?.type === 'dialogue' ? sceneState.state : null;
+
+          if (dialogueState === 'input-recording') {
+            // State 3: User recording scene - show live recording text (or empty initially)
+            const globalText = getDisplayText();
+            side = 'left';
+            speakerLabel = (scene as SceneWithId)["left-character"] || "Player";
+            bubbleContent = globalText || null; // Show text when available, otherwise no bubble
+            shouldShowWaitingBubble = false;
+            console.log(`💬 input-recording state for ${sceneId}`);
+          } else {
+            // Fall back to existing logic for interactive-bubble and legacy input scenes
+            // PRIORITY: Check orchestrator input state for input scenes
+            const inputState = orchestrator?.getInputState(sceneId);
 
           if (type === 'input' && inputState) {
             // For input scenes, respect the orchestrator state machine
@@ -249,6 +299,7 @@ export function SpeechBubbleOrchestrator({ scenes, currentIndex = 0 }: SpeechBub
                 shouldShowWaitingBubble = false;
               }
             }
+          }
           }
         }
 

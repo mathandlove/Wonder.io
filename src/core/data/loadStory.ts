@@ -11,6 +11,7 @@ type RawFlowItem = {
   waiting?: boolean;
   quest?: string;
   input?: string;
+  States?: string[]; // New: array of feature states like ["quest", "input"]
   "left-character"?: string;
   "right-character"?: string;
 };
@@ -60,6 +61,11 @@ function flattenScenes(rawScenes: RawScene[]): Scene[] {
           "left-character": currentLeftCharacter,
           "right-character": currentRightCharacter,
         };
+
+        // Preserve States field if present
+        if (f.States) {
+          (flattened as any).States = f.States;
+        }
 
         if (f.quest) {
           flattened = {
