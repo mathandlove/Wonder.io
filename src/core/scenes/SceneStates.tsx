@@ -38,13 +38,24 @@ interface SceneStatesProviderProps {
 }
 
 export function SceneStatesProvider({ children }: SceneStatesProviderProps) {
+  // Use state to store states - components will re-render when this changes
   const [states, setStates] = useState<Record<string, SceneState>>({});
 
   const updateSceneState = useCallback((sceneId: string, state: SceneState) => {
-    setStates(prev => ({
-      ...prev,
-      [sceneId]: state,
-    }));
+    setStates(prev => {
+      // Only update if state actually changed
+      const currentState = prev[sceneId];
+      if (currentState &&
+          currentState.type === state.type &&
+          JSON.stringify(currentState) === JSON.stringify(state)) {
+        return prev; // Return same reference to prevent re-render
+      }
+
+      return {
+        ...prev,
+        [sceneId]: state,
+      };
+    });
   }, []);
 
   const getSceneState = useCallback((sceneId: string): SceneState | undefined => {
