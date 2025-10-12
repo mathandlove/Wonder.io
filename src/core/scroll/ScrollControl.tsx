@@ -13,9 +13,9 @@ import React, { useRef, useCallback, useLayoutEffect, useEffect } from 'react';
 import type { Scene } from '@core/types/scene';
 import { useStepScroll } from './useStepScroll';
 import { useSceneManager } from '@core/scenes/SceneManager';
-import { useImageState } from '@features/image-scene/ImageStateContext';
 import { useSceneOrchestrator } from '../scenes/useSceneOrchestrator';
 import { SceneOrchestratorProvider } from '../scenes/SceneOrchestratorContext';
+import { useSceneStates } from '@core/scenes/SceneStates';
 import './ScrollControl.css';
 
 export interface ScrollControlProps {
@@ -50,18 +50,30 @@ export function ScrollControl({
 }: ScrollControlProps) {
   const containerRef = useRef<HTMLDivElement>(null);
 
-  // Get navigation from SceneManager
+  // Get navigation from SceneManager (single source of truth)
   const sceneManager = useSceneManager();
   const { advanceNavigation, navigationIndex, navigationArray } = sceneManager;
 
-  // Get image state for caption management
-  const imageState = useImageState();
+  // Get SceneStates for persistent state cache
+  const sceneStates = useSceneStates();
 
   // Scene orchestrator for input scene runtime state management
   const sceneOrchestrator = useSceneOrchestrator({
     scenes,
     currentIndex: navigationIndex,
   });
+
+  // Update SceneStates whenever navigationIndex changes
+  // This keeps a persistent cache of scene states that survives navigation
+  useEffect(() => {
+    const currentNavItem = navigationArray[navigationIndex];
+    if (!currentNavItem) return;
+
+    const { sceneId, sceneState } = currentNavItem;
+    sceneStates.updateSceneState(sceneId, sceneState);
+
+    console.log(`🗃️ SceneStates updated: ${sceneId} -> ${sceneState.type}${sceneState.type === 'image' ? `:${sceneState.state}` : ''}`);
+  }, [navigationIndex, navigationArray, sceneStates]);
 
   // Check if input is focused
   const isInputFocused = useCallback(() => {
@@ -70,27 +82,6 @@ export function ScrollControl({
     const tag = a.tagName.toLowerCase();
     return tag === 'input' || tag === 'textarea' || a.isContentEditable;
   }, []);
-
-  // Watch navigationIndex and trigger state transitions
-  useEffect(() => {
-    const currentNavItem = navigationArray[navigationIndex];
-    if (!currentNavItem) return;
-
-    const { sceneId, scene, sceneState } = currentNavItem;
-
-    // Handle image caption transitions
-    if (sceneState.type === 'image' && sceneState.state === 'hidden') {
-      const imageScene = scene as Scene & { caption?: string; text?: string };
-      const captionText = imageScene.caption || imageScene.text;
-
-      if (captionText && captionText.trim()) {
-        // Transition from hidden → showing
-        imageState.setImageState(sceneId, 'showing');
-        console.log(`📸 Caption transition: ${sceneId} hidden → showing`);
-      }
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [navigationIndex, navigationArray, imageState.setImageState]);
 
   // Pure gesture detection - emits direction, SceneManager handles navigation
   useStepScroll(containerRef, {

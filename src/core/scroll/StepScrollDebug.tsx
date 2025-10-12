@@ -12,8 +12,8 @@
 import { useEffect, useState } from 'react';
 import { useSceneManager } from '@core/scenes/SceneManager';
 import { useDialogue } from '@core/dialogue/DialogueContext';
-import { useImageState } from '@features/image-scene/ImageStateContext';
 import type { Scene } from '@core/types/scene';
+import type { ImageState } from '@core/dialogue/types';
 
 interface DebugState {
   wheelAccum: number;
@@ -47,9 +47,8 @@ export function StepScrollDebug() {
   const [isDragging, setIsDragging] = useState(false);
   const [dragStart, setDragStart] = useState({ x: 0, y: 0 });
 
-  // Get scene manager and image state for additional context
+  // Get scene manager for additional context (single source of truth)
   const sceneManager = useSceneManager();
-  const imageState = useImageState();
 
   // Get current navigation state directly from SceneManager
   const { navigationIndex, navigationArray, isLocked, lockReason } = sceneManager;
@@ -81,7 +80,12 @@ export function StepScrollDebug() {
   const currentScene = sceneManager.visibleScenes[navigationIndex] as (Scene & { sceneId?: string, caption?: string, text?: string }) | undefined;
   const sceneType = currentScene?.type || 'unknown';
   const sceneId = currentNavItem?.sceneId || currentScene?.sceneId || 'no-id';
-  const captionState = imageState.getImageState(sceneId);
+
+  // Get caption state from navigation array (single source of truth)
+  const captionState: ImageState =
+    currentNavItem?.sceneState.type === 'image'
+      ? currentNavItem.sceneState.state
+      : 'hidden';
   const hasCaption = sceneType === 'image' && ((currentScene?.caption || currentScene?.text)?.trim() || false);
 
   // Get dialogue messages for current scene (safely)

@@ -11,7 +11,6 @@ import { useSceneManager } from '@core/scenes/SceneManager';
 import { BackgroundOrchestrator } from '@features/background/BackgroundOrchestrator';
 import { CharacterOrchestrator } from '@features/characters/CharacterOrchestrator';
 import { SpeechBubbleOrchestrator } from '@features/chat/orchestrators/SpeechBubbleOrchestrator';
-import { ImageSceneOrchestrator } from '@features/image-scene/ImageSceneOrchestrator';
 import { injectPanelMetaFromFlows } from '@features/characters/adapters/injectPanelMetaFromFlows';
 import { ScrollControl } from '@core/scroll/ScrollControl';
 import { CharacterAnimationProvider } from '@features/characters/CharacterAnimationContext';
@@ -39,7 +38,7 @@ import { UIOverlayRoot } from '@core/uiLayout/UIOverlayRoot'
 import { ChatOrchestrator } from '@features/chat/orchestrators/ChatOrchestrator'
 import { useDialogue } from '@features/chat/context/useChatDialogue'
 import { StepScrollDebug } from '@core/scroll/StepScrollDebug'
-import { ImageStateProvider } from '@features/image-scene/ImageStateContext'
+import { SceneStatesProvider } from '@core/scenes/SceneStates'
 // Path to the story JSON bundle we want to load. In demo mode we keep this fixed
 // so the experience is deterministic for the presentation.
 
@@ -132,25 +131,20 @@ const StoryContent: React.FC = () => {
   return (
     <QuestProvider>
       <PageFactoryProvider>
-        <ImageStateProvider>
+        <SceneStatesProvider>
           <CharacterAnimationProvider>
-              {/* Unified scroll control component */}
-              <ScrollControl
-              scenes={scenes}
-              currentIndex={currentIndex}
-              onIndexChange={handleIndexChange}
-              className="story-scroll"
-            >
+            {/* Unified scroll control component */}
+            <ScrollControl
+            scenes={scenes}
+            currentIndex={currentIndex}
+            onIndexChange={handleIndexChange}
+            className="story-scroll"
+          >
               {/* Layer 1: Hybrid background system */}
               <BackgroundOrchestrator storyId="gingerbread" storyContent={scenes} currentIndex={currentIndex} />
 
               {/* Layer 1.5: Character panels (fixed, independent of scroll flow) */}
               <CharacterOrchestrator storyId="gingerbread" scenes={scenes} currentIndex={currentIndex} />
-
-              {/* Layer 1.6: Image scenes (fixed, independent of scroll flow) */}
-              <ImageSceneOrchestrator scenes={scenes} index={currentIndex} />
-
-              {/* Layer 1.7: Image captions - now rendered within ImageScene components */}
 
               {/* Layer 1.8: Speech bubbles (scroll-based with delayed transitions) */}
               <SpeechBubbleOrchestrator scenes={scenes} currentIndex={currentIndex} />
@@ -198,11 +192,11 @@ const StoryContent: React.FC = () => {
                 })}
               </div>
 
-              {/* Debug display - inside ScrollControl to access SceneOrchestrator context */}
-              <StepScrollDebug />
-            </ScrollControl>
+            {/* Debug display - inside ScrollControl to access SceneOrchestrator context */}
+            <StepScrollDebug />
+          </ScrollControl>
           </CharacterAnimationProvider>
-        </ImageStateProvider>
+        </SceneStatesProvider>
       </PageFactoryProvider>
       <QuestDebugProbe />
       <UIOverlayRoot />
@@ -213,25 +207,11 @@ const StoryContent: React.FC = () => {
 
 // SceneContentWithNavigation: thin wrapper to render a scene and navigate to the next scene when it completes
 const SceneContentWithNavigation = React.memo(function SceneContentWithNavigation({ scene, sceneIndex }: { scene: Scene; sceneIndex: number }) {
-  // Skip rendering image scenes here since they're handled by ImageSceneOrchestrator
-  if (scene.type === 'image') {
-    return null;
-  }
-
-  // Use navigation context instead of direct snap API
-  // const { goToNext } = useSceneManager();
-
-  // When the scene signals completion, use navigation context to advance
-  // const handleComplete = React.useCallback(() => {
-  //   goToNext();
-  // }, [goToNext]);
-
   // SceneRenderer picks the right visual component for the given scene.type
   return (
     <SceneRenderer
       scene={scene}
       sceneIndex={sceneIndex}
-      // onComplete={handleComplete} // callback the scene triggers when it's done (e.g., after a button pressed)
     />
   );
 });
