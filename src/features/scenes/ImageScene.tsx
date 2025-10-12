@@ -5,7 +5,7 @@
 import type { SceneProps } from "./registry";
 import type { ImageScene } from "@core/types/scene";
 import { resolveStoryImage } from "@core/data/imageResolver";
-import Caption from "@features/image-scene/Caption";
+import Caption from "@features/caption/Caption";
 import { useSceneStates } from "@core/scenes/SceneStates";
 import type { ImageState } from "@core/dialogue/types";
 

@@ -78,11 +78,20 @@ export function SceneManagerProvider({ children, initialIndex = 0 }: SceneManage
     [allScenes]
   );
 
-  // Build navigation array from visible scenes
-  const navigationArray = useMemo(
+  // Build initial navigation array from visible scenes
+  const baseNavigationArray = useMemo(
     () => buildNavigationArray(visibleScenes),
     [visibleScenes]
   );
+
+  // Mutable navigation array that can be collapsed as we progress forward
+  const [navigationArray, setNavigationArray] = useState<NavigationItem[]>([]);
+
+  // Sync navigationArray with baseNavigationArray when scenes change
+  React.useEffect(() => {
+    setNavigationArray(baseNavigationArray);
+    setNavigationIndex(0); // Reset to beginning when scenes change
+  }, [baseNavigationArray]);
 
   // Helper functions for navigation array access
   const getCurrentNavigationItem = useCallback((): NavigationItem | null => {
@@ -177,7 +186,7 @@ export function SceneManagerProvider({ children, initialIndex = 0 }: SceneManage
     onComplete?.();
   }, [currentIndex, hideScene]);
 
-  // Navigation array-based navigation with debouncing
+  // Navigation array-based navigation with state collapse
   const advanceNavigation = useCallback((direction: 'forward' | 'backward') => {
     const delta = direction === 'forward' ? 1 : -1;
     const next = navigationIndex + delta;
@@ -189,11 +198,42 @@ export function SceneManagerProvider({ children, initialIndex = 0 }: SceneManage
       return;
     }
 
-    console.log(`📍 Navigation ${direction}: ${navigationIndex} → ${clamped}`);
-    setNavigationIndex(clamped);
+    // When moving FORWARD, collapse previous states of the same scene
+    if (direction === 'forward' && clamped < navigationArray.length) {
+      const targetItem = navigationArray[clamped];
+      const currentItem = navigationArray[navigationIndex];
+
+      // Check if we're moving to next state of same scene
+      if (targetItem && currentItem && targetItem.sceneId === currentItem.sceneId) {
+        // Remove all previous navigation items for this scene
+        const newArray = navigationArray.filter((item, idx) => {
+          // Keep items that are:
+          // 1. Not for this scene, OR
+          // 2. The target state we're moving to (or later states)
+          return item.sceneId !== targetItem.sceneId || idx >= clamped;
+        });
+
+        console.log(`🗑️ Collapsed ${navigationArray.length - newArray.length} previous state(s) for scene ${targetItem.sceneId}`);
+
+        // Update array and adjust index
+        setNavigationArray(newArray);
+        // New index is now 0 because we removed items before it
+        const newIndex = newArray.findIndex(item => item === targetItem);
+        setNavigationIndex(newIndex);
+
+        console.log(`📍 Navigation forward with collapse: index ${navigationIndex} → ${newIndex} (array ${navigationArray.length} → ${newArray.length})`);
+      } else {
+        // Different scene, just advance normally
+        console.log(`📍 Navigation ${direction}: ${navigationIndex} → ${clamped}`);
+        setNavigationIndex(clamped);
+      }
+    } else {
+      // Moving backward, no collapse needed
+      console.log(`📍 Navigation ${direction}: ${navigationIndex} → ${clamped}`);
+      setNavigationIndex(clamped);
+    }
 
     // Also update currentIndex for backward compatibility
-    // This keeps scene-based components working during transition
     const item = navigationArray[clamped];
     if (item) {
       const sceneIndex = visibleScenes.findIndex(s => {

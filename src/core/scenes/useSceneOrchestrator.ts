@@ -16,7 +16,7 @@ export type InputState = 'idle' | 'recording' | 'waiting' | 'converting';
 export interface SceneRuntimeState {
   inputState?: InputState;
   // Future: other runtime flags like skipFlag, completionState, etc.
-  // Note: captionState moved to ImageStateContext
+  // Note: captionState moved to SceneStates context
 }
 
 // Map of sceneId → runtime state
