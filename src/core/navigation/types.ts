@@ -19,7 +19,7 @@ import type { ImageState, DialogueState } from '@core/dialogue/types';
 export type SceneState =
   | { type: 'image'; state: ImageState }
   | { type: 'dialogue'; state: DialogueState }
-  | { type: 'simple' }  // Text scenes, title scenes, etc - no substates
+  | { type: 'static' }  // For text, full, caption - scenes with no state variations
   | { type: 'quest'; state: 'idle' | 'active' | 'completed' | 'failed' };
 
 /**

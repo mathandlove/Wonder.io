@@ -48,11 +48,16 @@ export function BackgroundOrchestrator({ storyId, storyContent, currentIndex = 0
         }
       }
 
-      // Render the next range if we're approaching a transition
+      // Render the next range if we're approaching a transition (forward)
+      // OR if we just left it (backward scroll) - symmetrical to prevRange logic
       const nextRangeIndex = activeRangeIndex + 1;
-      if (nextRangeIndex < backgroundRanges.length &&
-          scrollOffset > activeRange.endIndex - 0.5) {
-        ranges.push(backgroundRanges[nextRangeIndex]);
+      if (nextRangeIndex < backgroundRanges.length) {
+        const nextRange = backgroundRanges[nextRangeIndex];
+        // Keep next range visible during forward approach OR backward exit transition
+        if (scrollOffset > activeRange.endIndex - 0.5 ||
+            scrollOffset >= nextRange.startIndex - 1.5) {
+          ranges.push(nextRange);
+        }
       }
     }
 

@@ -39,6 +39,8 @@ import { QuestProvider, useQuest } from '@features/quest/QuestManager'
 import { UIOverlayRoot } from '@core/uiLayout/UIOverlayRoot'
 import { StepScrollDebug } from '@core/scroll/StepScrollDebug'
 import { SceneStatesProvider } from '@core/scenes/SceneStates'
+import { ChatGatewayProvider } from '@features/chat/gateway'
+import { ChatFlowOrchestratorComponent } from '@core/dialogue/ChatFlowOrchestratorComponent'
 // Path to the story JSON bundle we want to load. In demo mode we keep this fixed
 // so the experience is deterministic for the presentation.
 
@@ -95,6 +97,41 @@ const StoryContent: React.FC = () => {
     return injectPanelMetaFromFlows(scenes);
   }, [navigationArray]);
 
+  // Deduplicate navigationArray by sceneId to get unique scenes for DOM rendering
+  // Each scene may have multiple states in navigationArray, but only needs one DOM element
+  const uniqueScenes = useMemo(() => {
+    const seenSceneIds = new Set<string>();
+    const unique: Scene[] = [];
+
+    navigationArray.forEach(item => {
+      const sceneId = item.sceneId;
+      if (!seenSceneIds.has(sceneId)) {
+        seenSceneIds.add(sceneId);
+        // Use the scene from allNavigationScenes (with meta injected)
+        const sceneWithMeta = allNavigationScenes[navigationArray.indexOf(item)];
+        unique.push(sceneWithMeta);
+      }
+    });
+
+    return unique;
+  }, [navigationArray, allNavigationScenes]);
+
+  // Map navigationIndex to DOM scroll index (currentIndex for uniqueScenes)
+  // Since multiple navigation items can map to same scene, we find the scene's first appearance
+  const scrollIndex = useMemo(() => {
+    const currentNavItem = navigationArray[navigationIndex];
+    if (!currentNavItem) return 0;
+
+    // Find the index in uniqueScenes that matches the current navigationItem's sceneId
+    const sceneId = currentNavItem.sceneId;
+    const index = uniqueScenes.findIndex(scene => {
+      const sceneWithId = scene as Scene & { sceneId?: string };
+      return sceneWithId.sceneId === sceneId;
+    });
+
+    return index >= 0 ? index : 0;
+  }, [navigationArray, navigationIndex, uniqueScenes]);
+
   // Derive a stable array of scenes from the loaded story and set them in SceneManager
   React.useEffect(() => {
     if (!story?.scenes) return;
@@ -141,12 +178,16 @@ const StoryContent: React.FC = () => {
   return (
     <QuestProvider>
       <PageFactoryProvider>
-        <SceneStatesProvider>
-          <CharacterAnimationProvider>
-            {/* Unified scroll control component */}
+        <ChatGatewayProvider>
+          <SceneStatesProvider>
+            {/* ChatFlow orchestrator watches for ai-waiting state and triggers responses */}
+            <ChatFlowOrchestratorComponent />
+
+            <CharacterAnimationProvider>
+            {/* Unified scroll control component - uses uniqueScenes from navigationArray */}
             <ScrollControl
-            scenes={scenes}
-            currentIndex={currentIndex}
+            scenes={uniqueScenes}
+            currentIndex={scrollIndex}
             onIndexChange={handleIndexChange}
             className="story-scroll"
           >
@@ -162,9 +203,9 @@ const StoryContent: React.FC = () => {
               {/* Layer 1.9: Turn cue banner */}
               <TurnCueBanner show={showTurnBanner} text={turnBannerText} />
 
-              {/* Layer 2: Document flow content with scroll snap targets */}
+              {/* Layer 2: Document flow content with scroll snap targets - renders from navigationArray */}
               <div style={{ position: "relative" }}>
-                {scenes.map((scene: Scene, i: number) => {
+                {uniqueScenes.map((scene: Scene, i: number) => {
                   // Use stable ID if available, fallback to index for original scenes
                   const stableKey = (scene as SceneWithId).sceneId || `original-${i}`;
 
@@ -207,9 +248,10 @@ const StoryContent: React.FC = () => {
           </ScrollControl>
           </CharacterAnimationProvider>
 
-          {/* UI Overlays - must be inside SceneStatesProvider for RecordingOrchestrator */}
-          <UIOverlayRoot />
-        </SceneStatesProvider>
+            {/* UI Overlays - must be inside SceneStatesProvider for RecordingOrchestrator */}
+            <UIOverlayRoot />
+          </SceneStatesProvider>
+        </ChatGatewayProvider>
       </PageFactoryProvider>
       <QuestDebugProbe />
     </QuestProvider>

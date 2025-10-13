@@ -25,41 +25,17 @@ export const RecordPanel: React.FC<RecordPanelProps> = ({
   onRecordStart,
   onRecordStop
 }) => {
-  console.log('🎨 RecordPanel RENDER', {
-    disabled,
-    questState,
-    hasOnRecordStart: !!onRecordStart,
-    hasOnRecordStop: !!onRecordStop,
-    hasOnNext: !!onNext
-  });
-
   const { state: recordingState } = useRecording();
   const { toast, hideToast } = useToast();
-
-  console.log('🎨 RecordPanel computed state:', {
-    isRecording: recordingState.isRecording,
-    disabled
-  });
 
   const buttonClassName = `chat-record-button ${recordingState.isRecording ? 'recording' : ''}`;
 
   const handleRecordClick = () => {
-    console.log('🎤 RecordPanel.handleRecordClick() called', {
-      disabled,
-      isRecording: recordingState.isRecording,
-      willExecute: !disabled
-    });
-
-    if (disabled) {
-      console.log('⛔ Click blocked: disabled');
-      return;
-    }
+    if (disabled) return;
 
     if (recordingState.isRecording) {
-      console.log('🛑 Stopping recording...');
       onRecordStop();
     } else {
-      console.log('▶️ Starting recording...');
       onRecordStart();
     }
   };
@@ -71,15 +47,7 @@ export const RecordPanel: React.FC<RecordPanelProps> = ({
 
 
   return (
-    <div
-      className="record-panel-container"
-      onClick={(e) => {
-        console.log('🟦 CONTAINER CLICK', {
-          target: e.target,
-          classList: (e.target as HTMLElement).classList?.value
-        });
-      }}
-    >
+    <div className="record-panel-container">
       <div className="simplified-chat-rail">
         <button
           className="chat-hint-button"
@@ -92,22 +60,7 @@ export const RecordPanel: React.FC<RecordPanelProps> = ({
 
         <button
           className={buttonClassName}
-          onClick={(e) => {
-            console.log('🔴 RAW BUTTON CLICK EVENT', {
-              target: e.target,
-              currentTarget: e.currentTarget,
-              disabled: e.currentTarget.disabled,
-              timestamp: Date.now()
-            });
-            handleRecordClick();
-          }}
-          onPointerDown={(e) => {
-            console.log('👆 POINTER DOWN on button', {
-              pointerType: e.pointerType,
-              disabled: e.currentTarget.disabled,
-              disabledProp: disabled
-            });
-          }}
+          onClick={handleRecordClick}
           disabled={disabled}
           title={recordingState.isRecording ? 'Stop recording' : 'Start recording'}
         >

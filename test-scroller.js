@@ -7,7 +7,7 @@ async function testMagneticScroller() {
     let browser;
     
     try {
-        console.log('🚀 Starting magnetic scroller verification...');
+
         
         // Launch browser
         browser = await puppeteer.launch({ 

@@ -18,7 +18,7 @@ import { ulid } from 'ulid';
  * Filters out hidden scenes and expands remaining scenes into navigation items
  */
 export function buildNavigationArray(scenes: Scene[]): NavigationItem[] {
-  console.log('🏗️ buildNavigationArray called with', scenes.length, 'scenes');
+
 
   const navigationArray: NavigationItem[] = [];
   let navigationIndex = 0;
@@ -31,24 +31,16 @@ export function buildNavigationArray(scenes: Scene[]): NavigationItem[] {
     // Ensure scene has an ID
     const sceneId = scene.sceneId || ulid();
 
-    console.log(`\n🔨 Processing scene: type=${scene.type}, sceneId=${sceneId}`);
+
 
     // Expand scene into navigation items based on type
     const items = expandScene(scene, sceneId, navigationIndex);
-    console.log(`  ✨ Expanded into ${items.length} navigation item(s)`);
+
 
     navigationArray.push(...items);
     navigationIndex += items.length;
   }
 
-  console.log(`\n✅ Built navigation array with ${navigationArray.length} total items`);
-  console.log('📊 Navigation breakdown:', navigationArray.map((item, idx) => ({
-    index: idx,
-    sceneId: item.sceneId,
-    sceneType: item.scene.type,
-    stateType: item.sceneState.type,
-    state: item.sceneState.type === 'dialogue' || item.sceneState.type === 'image' ? (item.sceneState as Record<string, unknown>).state : 'n/a'
-  })));
 
   return navigationArray;
 }
@@ -77,7 +69,6 @@ function expandScene(scene: Scene, sceneId: string, startIndex: number): Navigat
     case 'text':
     case 'full':
     case 'caption':
-    case 'interactive-bubble':
       return [createSimpleNavigationItem(scene, sceneId, startIndex)];
 
     default:
@@ -115,11 +106,11 @@ function expandImageScene(scene: Scene & { caption?: string; text?: string }, sc
     ];
   }
 
-  // Image without caption: simple
+  // Image without caption: basic dialogue state
   return [{
     scene,
     sceneId,
-    sceneState: { type: 'simple' },
+    sceneState: { type: 'dialogue', state: 'basic' },
     lockForward: false,
     lockBackward: false,
     index: startIndex,
@@ -148,7 +139,7 @@ function expandCharacterFlowScene(scene: CharacterFlowScene, sceneId: string, st
   // Check if any flow item has States field with features
   const flowItemWithStates = scene.flow.find(item => item.States && item.States.length > 0);
 
-  console.log('🔍 expandCharacterFlowScene:', { sceneId, flowItemWithStates, flow: scene.flow });
+
 
   if (flowItemWithStates && flowItemWithStates.States) {
     // Has interactive features - expand based on States array
@@ -160,12 +151,12 @@ function expandCharacterFlowScene(scene: CharacterFlowScene, sceneId: string, st
     return expandDialogueStates(scene, sceneId, startIndex, { hasQuest, hasInput });
   }
 
-  console.log('⚠️ No States found, creating simple nav item');
-  // Simple character-flow scene without interactive features
+
+  // Character-flow scene without interactive features - basic dialogue state
   return [{
     scene,
     sceneId,
-    sceneState: { type: 'simple' },
+    sceneState: { type: 'dialogue', state: 'basic' },
     lockForward: false,
     lockBackward: false,
     index: startIndex,
@@ -240,13 +231,14 @@ function expandDialogueStates(
 }
 
 /**
- * Creates a simple navigation item for scenes with no substates
+ * Creates a static navigation item for scenes with no substates
+ * Used for text, full, and caption scenes that have no state variations
  */
 function createSimpleNavigationItem(scene: Scene, sceneId: string, index: number): NavigationItem {
   return {
     scene,
     sceneId,
-    sceneState: { type: 'simple' },
+    sceneState: { type: 'static' },
     lockForward: false,
     lockBackward: false,
     index,

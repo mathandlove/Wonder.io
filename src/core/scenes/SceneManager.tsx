@@ -14,7 +14,7 @@ import React, { createContext, useCallback, useContext, useMemo, useState } from
 import type { Scene } from '@core/types/scene';
 import { injectPanelMetaFromFlows } from '@features/characters/adapters/injectPanelMetaFromFlows';
 import { buildNavigationArray } from '@core/navigation/buildNavigationArray';
-import type { NavigationItem } from '@core/navigation/types';
+import type { NavigationItem, SceneState } from '@core/navigation/types';
 
 export interface SceneManagerType {
   // Legacy scene-based navigation (backward compatibility)
@@ -36,6 +36,7 @@ export interface SceneManagerType {
   insertScene: (scene: Scene, index: number) => void;
   insertNavigationItem: (item: NavigationItem, index: number) => void; // Insert directly without rebuild
   updateNavigationItemState: (index: number, newState: SceneState) => void; // Update state of navigation item
+  updateSceneTextByRecordingId: (recordingId: string, newText: string) => void; // Update scene text during recording
   hideScene: (sceneId: string) => void;
   showScene: (sceneId: string) => void;
 
@@ -73,9 +74,7 @@ export function SceneManagerProvider({ children, initialIndex = 0 }: SceneManage
   const [allScenes, setAllScenes] = useState<Scene[]>([]);
 
   // Build navigation array directly from allScenes
-  // Cache built items to avoid rebuilding existing scenes
   const baseNavigationArray = useMemo(() => {
-    console.log('🔄 Rebuilding navigation array (scenes changed)');
     return buildNavigationArray(allScenes);
   }, [allScenes]);
 
@@ -145,21 +144,15 @@ export function SceneManagerProvider({ children, initialIndex = 0 }: SceneManage
 
   // Insert a navigation item directly without rebuilding the entire navigation array
   const insertNavigationItem = useCallback((item: NavigationItem, index: number) => {
-    console.log('➕ Inserting navigation item directly at index:', index);
     setNavigationArray(prevArray => {
       const newArray = [...prevArray];
       newArray.splice(index, 0, item);
-      console.log(`✅ Inserted at index ${index}, array length: ${prevArray.length} → ${newArray.length}`);
       return newArray;
     });
-
-    // Do NOT add to allScenes - that would trigger a rebuild!
-    // Dynamic scenes only live in navigationArray
   }, []);
 
   // Update the state of a navigation item at a specific index
   const updateNavigationItemState = useCallback((index: number, newState: SceneState) => {
-    console.log(`🔄 Updating navigation item state at index ${index}:`, newState);
     setNavigationArray(prevArray => {
       const newArray = [...prevArray];
       if (newArray[index]) {
@@ -167,8 +160,30 @@ export function SceneManagerProvider({ children, initialIndex = 0 }: SceneManage
           ...newArray[index],
           sceneState: newState
         };
-        console.log(`✅ Updated navigation item state at index ${index}`);
       }
+      return newArray;
+    });
+  }, []);
+
+  // Update scene text by recordingId (for live transcript updates during recording)
+  const updateSceneTextByRecordingId = useCallback((recordingId: string, newText: string) => {
+    setNavigationArray(prevArray => {
+      const newArray = [...prevArray];
+
+      for (let i = 0; i < newArray.length; i++) {
+        const scene = newArray[i].scene;
+        if ('recordingId' in scene && scene.recordingId === recordingId) {
+          newArray[i] = {
+            ...newArray[i],
+            scene: {
+              ...scene,
+              text: newText
+            }
+          };
+          break;
+        }
+      }
+
       return newArray;
     });
   }, []);
@@ -219,11 +234,7 @@ export function SceneManagerProvider({ children, initialIndex = 0 }: SceneManage
     const next = navigationIndex + delta;
     const clamped = Math.max(0, Math.min(next, navigationArray.length - 1));
 
-    // Don't advance if already at boundary
-    if (clamped === navigationIndex) {
-      console.log(`🛑 Already at ${direction === 'forward' ? 'end' : 'start'} - no navigation`);
-      return;
-    }
+    if (clamped === navigationIndex) return;
 
     // When moving FORWARD, collapse previous states of the same scene
     if (direction === 'forward' && clamped < navigationArray.length) {
@@ -232,31 +243,17 @@ export function SceneManagerProvider({ children, initialIndex = 0 }: SceneManage
 
       // Check if we're moving to next state of same scene
       if (targetItem && currentItem && targetItem.sceneId === currentItem.sceneId) {
-        // Remove all previous navigation items for this scene
         const newArray = navigationArray.filter((item, idx) => {
-          // Keep items that are:
-          // 1. Not for this scene, OR
-          // 2. The target state we're moving to (or later states)
           return item.sceneId !== targetItem.sceneId || idx >= clamped;
         });
 
-        console.log(`🗑️ Collapsed ${navigationArray.length - newArray.length} previous state(s) for scene ${targetItem.sceneId}`);
-
-        // Update array and adjust index
         setNavigationArray(newArray);
-        // New index is now 0 because we removed items before it
         const newIndex = newArray.findIndex(item => item === targetItem);
         setNavigationIndex(newIndex);
-
-        console.log(`📍 Navigation forward with collapse: index ${navigationIndex} → ${newIndex} (array ${navigationArray.length} → ${newArray.length})`);
       } else {
-        // Different scene, just advance normally
-        console.log(`📍 Navigation ${direction}: ${navigationIndex} → ${clamped}`);
         setNavigationIndex(clamped);
       }
     } else {
-      // Moving backward, no collapse needed
-      console.log(`📍 Navigation ${direction}: ${navigationIndex} → ${clamped}`);
       setNavigationIndex(clamped);
     }
 
@@ -293,6 +290,7 @@ export function SceneManagerProvider({ children, initialIndex = 0 }: SceneManage
     insertScene,
     insertNavigationItem,
     updateNavigationItemState,
+    updateSceneTextByRecordingId,
     hideScene,
     showScene,
 
@@ -324,6 +322,7 @@ export function SceneManagerProvider({ children, initialIndex = 0 }: SceneManage
     insertScene,
     insertNavigationItem,
     updateNavigationItemState,
+    updateSceneTextByRecordingId,
     hideScene,
     showScene,
     nextAndHide,

@@ -6,7 +6,7 @@ class RecordingAPI {
 
   // Called by RecordingProvider to register the functions
   register(start: () => void, stop: () => void, abort: () => void) {
-    console.log('🔧 RECORDING API REGISTERED with functions');
+
     this.startFn = start;
     this.stopFn = stop;
     this.abortFn = abort;
@@ -15,7 +15,7 @@ class RecordingAPI {
   start() {
     console.log('📞 Recording.start() called');
     if (this.startFn) {
-      console.log('✅ Calling registered start function');
+
       this.startFn();
     } else {
       console.warn('❌ Recording API not initialized - ensure RecordingProvider is mounted');

@@ -103,8 +103,8 @@ export function StepScrollDebug() {
       return `image: ${sceneState.state}`;
     } else if (sceneState.type === 'dialogue') {
       return `dialogue: ${sceneState.state}`;
-    } else if (sceneState.type === 'simple') {
-      return 'simple';
+    } else if (sceneState.type === 'static') {
+      return 'static';
     } else if (sceneState.type === 'quest') {
       return `quest: ${sceneState.state}`;
     }

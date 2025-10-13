@@ -39,10 +39,6 @@ const initialState: RecordingState = {
 function recordingReducer(state: RecordingState, action: RecordingEvent): RecordingState {
   switch (action.type) {
     case 'START':
-      console.log('🎤 RECORDING STARTED:', {
-        sessionId: action.sessionId,
-        resetState: 'accumulatedText and displayText cleared'
-      });
       return {
         ...state,
         isRecording: true,
@@ -55,11 +51,6 @@ function recordingReducer(state: RecordingState, action: RecordingEvent): Record
       };
     case 'STOP':
     case 'ABORT':
-      console.log('🛑 RECORDING STOPPED:', {
-        finalAccumulatedText: state.accumulatedText,
-        finalDisplayText: state.displayText,
-        action: action.type
-      });
       return {
         ...state,
         isRecording: false,
@@ -72,11 +63,6 @@ function recordingReducer(state: RecordingState, action: RecordingEvent): Record
       };
     case 'INTERIM':
       const interimDisplayText = state.accumulatedText + ' ' + action.text;
-      console.log('🔄 INTERIM UPDATE:', {
-        accumulatedText: state.accumulatedText,
-        interimText: action.text,
-        displayText: interimDisplayText.trim()
-      });
       return {
         ...state,
         interimTranscript: action.text,
@@ -93,13 +79,6 @@ function recordingReducer(state: RecordingState, action: RecordingEvent): Record
       const newDisplayText = action.interimText
         ? newAccumulated + ' ' + action.interimText
         : newAccumulated;
-      console.log('📝 ACCUMULATE UPDATE:', {
-        previousAccumulated: state.accumulatedText,
-        finalText: action.finalText,
-        newAccumulated,
-        interimText: action.interimText || '',
-        newDisplayText: newDisplayText.trim()
-      });
       return {
         ...state,
         accumulatedText: newAccumulated,
@@ -179,7 +158,6 @@ export function RecordingProvider({ children }: { children: React.ReactNode }) {
             if (newRecognition) {
               recognitionRef.current = newRecognition;
               newRecognition.start();
-              console.log('🔄 AUTO-RESTART (continuous recording)');
             }
           } catch (e) {
             // Silent fail for restart attempts
@@ -255,7 +233,6 @@ export function RecordingProvider({ children }: { children: React.ReactNode }) {
       if (recognition) {
         recognitionRef.current = recognition;
         recognition.start();
-        console.log('🎤 RECORDING STARTED');
       }
     } catch (error) {
       dispatch({ type: 'ABORT' });
@@ -278,12 +255,7 @@ export function RecordingProvider({ children }: { children: React.ReactNode }) {
     // End recording with complete accumulated transcript only when manually stopped
     const currentSessionId = currentSessionIdRef.current;
     if (currentSessionId) {
-      // Use the full accumulated displayText (contains all speech results)
       const completeText = state.displayText.trim();
-      console.log('🎯 FREEZING FINAL ACCUMULATED TEXT:', {
-        displayText: state.displayText,
-        finalText: completeText
-      });
       if (completeText) {
         endRecording(currentSessionId, completeText);
       }
@@ -291,7 +263,6 @@ export function RecordingProvider({ children }: { children: React.ReactNode }) {
 
     currentSessionIdRef.current = null;
     dispatch({ type: 'STOP' });
-    console.log('🛑 RECORDING STOPPED');
   }, [state.finalTranscript, state.interimTranscript, endRecording]);
 
   const abort = useCallback(() => {
@@ -312,7 +283,6 @@ export function RecordingProvider({ children }: { children: React.ReactNode }) {
 
   // Register with global Recording API
   useEffect(() => {
-    console.log('🔧 Registering RecordingContext with global Recording API');
     Recording.register(start, stop, abort);
   }, [start, stop, abort]);
 

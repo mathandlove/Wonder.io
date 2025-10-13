@@ -1,6 +1,6 @@
 /**
  * Type definitions for all story scene types and data structures.
- * Defines the shape of character, waiting, quest, input, and image scenes.
+ * Defines the shape of character, quest, image, and caption scenes.
  */
 // src/types/scene.ts
 export type CharacterScene = {
@@ -27,22 +27,6 @@ export type QuestScene = {
   type: "quest";
   sceneId?: string;
   text: string;
-  background?: string;
-  "left-character"?: string;
-  "right-character"?: string;
-  flowSequence?: boolean;
-  isFirstInFlow?: boolean;
-  hidden?: boolean;
-  meta?: {
-    panelLeft?: { character: string; previousCharacter?: string; nextCharacter?: string; newCharacter?: boolean; aboutToSwap?: boolean };
-    panelRight?: { character: string; previousCharacter?: string; nextCharacter?: string; newCharacter?: boolean; aboutToSwap?: boolean };
-  };
-};
-
-export type InputScene = {
-  type: "input";
-  sceneId?: string;
-  text?: string; // prompt
   background?: string;
   "left-character"?: string;
   "right-character"?: string;
@@ -112,22 +96,6 @@ export type TextScene = {
   hidden?: boolean;
 };
 
-export type InteractiveBubbleScene = {
-  type: "interactive-bubble";
-  sceneId?: string;
-  recordingId?: string;  // Links to active recording in DialogueContext
-  background?: string;
-  "left-character"?: string;
-  "right-character"?: string;
-  flowSequence?: boolean;
-  isFirstInFlow?: boolean;
-  hidden?: boolean;
-  meta?: {
-    panelLeft?: { character: string; previousCharacter?: string; nextCharacter?: string; newCharacter?: boolean; aboutToSwap?: boolean };
-    panelRight?: { character: string; previousCharacter?: string; nextCharacter?: string; newCharacter?: boolean; aboutToSwap?: boolean };
-  };
-};
-
 export type CaptionScene = {
   type: "caption";
   sceneId?: string;
@@ -141,12 +109,10 @@ export type CaptionScene = {
 export type Scene =
   | CharacterScene
   | QuestScene
-  | InputScene
   | ImageScene
   | CharacterFlowScene
   | FullScene
   | TextScene
-  | InteractiveBubbleScene
   | CaptionScene;
 
 export type Story = {
