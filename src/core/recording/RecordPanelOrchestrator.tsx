@@ -19,6 +19,27 @@ import { usePageFactory } from '@core/navigation/PageFactory';
 import { Recording } from '@core/recording/RecordingAPI';
 import { RecordPanel } from './RecordPanel';
 import { useRecording } from './RecordingContext';
+import type { Scene } from '@core/types/scene';
+
+// Type guard for scenes with character properties
+type SceneWithCharacters = Scene & {
+  'left-character'?: string;
+  'right-character'?: string;
+};
+
+function hasCharacterProperties(scene: Scene | undefined | null): scene is SceneWithCharacters {
+  return scene !== null && scene !== undefined &&
+    ('left-character' in scene || 'right-character' in scene);
+}
+
+// Type guard for scenes with recordingId
+type SceneWithRecording = Scene & {
+  recordingId?: string;
+};
+
+function hasRecordingId(scene: Scene | undefined | null): scene is SceneWithRecording {
+  return scene !== null && scene !== undefined && 'recordingId' in scene;
+}
 
 export function RecordingOrchestrator() {
   const quest = useQuest();
@@ -37,7 +58,7 @@ export function RecordingOrchestrator() {
   React.useEffect(() => {
     const isRecordingState = sceneState?.type === 'dialogue' && sceneState.state === 'input-recording';
     const currentScene = currentNavItem?.scene;
-    const sceneRecordingId = 'recordingId' in (currentScene || {}) ? (currentScene as any).recordingId : undefined;
+    const sceneRecordingId = hasRecordingId(currentScene) ? currentScene.recordingId : undefined;
 
     if (isRecordingState && !recording.isRecording() && sceneRecordingId) {
       setActiveRecordingId(sceneRecordingId);
@@ -74,8 +95,8 @@ export function RecordingOrchestrator() {
       // Create a new CharacterScene, inheriting context from current scene
       const currentScene = currentNavItem?.scene;
       const currentBackground = currentScene && 'background' in currentScene ? currentScene.background : undefined;
-      const leftCharacter = 'left-character' in (currentScene || {}) ? (currentScene as any)['left-character'] : undefined;
-      const rightCharacter = 'right-character' in (currentScene || {}) ? (currentScene as any)['right-character'] : undefined;
+      const leftCharacter = hasCharacterProperties(currentScene) ? currentScene['left-character'] : undefined;
+      const rightCharacter = hasCharacterProperties(currentScene) ? currentScene['right-character'] : undefined;
 
       const newScene = createRecordingScene(recordingId, currentBackground, leftCharacter, rightCharacter);
       const sceneId = newScene.sceneId || 'default';

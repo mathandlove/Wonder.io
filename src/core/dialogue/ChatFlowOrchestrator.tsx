@@ -18,7 +18,18 @@ import { useCallback } from 'react';
 import { useChatGateway, type ChatInput } from '@features/chat/gateway/ChatGateway';
 import { usePageFactory } from '@core/navigation/PageFactory';
 import { useSceneManager } from '@core/scenes/SceneManager';
-import type { CharacterScene } from '@core/types/scene';
+import type { CharacterScene, Scene } from '@core/types/scene';
+
+// Type guard for scenes with character properties
+type SceneWithCharacters = Scene & {
+  'left-character'?: string;
+  'right-character'?: string;
+};
+
+function hasCharacterProperties(scene: Scene | undefined | null): scene is SceneWithCharacters {
+  return scene !== null && scene !== undefined &&
+    ('left-character' in scene || 'right-character' in scene);
+}
 
 export interface ChatFlowOrchestratorProps {
   onError?: (error: string) => void;
@@ -50,9 +61,9 @@ export function useChatFlowOrchestrator(props?: ChatFlowOrchestratorProps) {
       const background = input.metadata?.currentBackground ||
         (currentScene && 'background' in currentScene ? currentScene.background : undefined);
       const leftCharacter = input.metadata?.leftCharacter ||
-        ('left-character' in (currentScene || {}) ? (currentScene as any)['left-character'] : undefined);
+        (hasCharacterProperties(currentScene) ? currentScene['left-character'] : undefined);
       const rightCharacter = input.metadata?.rightCharacter ||
-        ('right-character' in (currentScene || {}) ? (currentScene as any)['right-character'] : undefined);
+        (hasCharacterProperties(currentScene) ? currentScene['right-character'] : undefined);
 
 
 
@@ -143,8 +154,8 @@ export function useChatFlowOrchestrator(props?: ChatFlowOrchestratorProps) {
         timestamp: new Date(),
         speaker: 'left',
         currentBackground: currentScene && 'background' in currentScene ? currentScene.background : undefined,
-        leftCharacter: 'left-character' in (currentScene || {}) ? (currentScene as any)['left-character'] : undefined,
-        rightCharacter: 'right-character' in (currentScene || {}) ? (currentScene as any)['right-character'] : undefined,
+        leftCharacter: hasCharacterProperties(currentScene) ? currentScene['left-character'] : undefined,
+        rightCharacter: hasCharacterProperties(currentScene) ? currentScene['right-character'] : undefined,
       }
     };
 
