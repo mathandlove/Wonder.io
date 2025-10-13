@@ -41,6 +41,15 @@ function hasRecordingId(scene: Scene | undefined | null): scene is SceneWithReco
   return scene !== null && scene !== undefined && 'recordingId' in scene;
 }
 
+// Type guard for scenes with flowId
+type SceneWithFlowId = Scene & {
+  flowId?: string;
+};
+
+function hasFlowId(scene: Scene | undefined | null): scene is SceneWithFlowId {
+  return scene !== null && scene !== undefined && 'flowId' in scene;
+}
+
 export function RecordingOrchestrator() {
   const quest = useQuest();
   const { getCurrentNavigationItem, insertNavigationItem, updateNavigationItemState, updateSceneTextByRecordingId, navigationIndex, setNavigationIndex } = useSceneManager();
@@ -97,8 +106,15 @@ export function RecordingOrchestrator() {
       const currentBackground = currentScene && 'background' in currentScene ? currentScene.background : undefined;
       const leftCharacter = hasCharacterProperties(currentScene) ? currentScene['left-character'] : undefined;
       const rightCharacter = hasCharacterProperties(currentScene) ? currentScene['right-character'] : undefined;
+      const flowId = hasFlowId(currentScene) ? currentScene.flowId : undefined;
 
       const newScene = createRecordingScene(recordingId, currentBackground, leftCharacter, rightCharacter);
+
+      // Copy flowId from the original scene to the recording scene
+      if (flowId) {
+        (newScene as any).flowId = flowId;
+      }
+
       const sceneId = newScene.sceneId || 'default';
 
       // Create NavigationItem with recording state
@@ -140,7 +156,7 @@ export function RecordingOrchestrator() {
   }, [navigationIndex, setNavigationIndex]);
 
   // Quest state determines if Next button is enabled
-  const questState = quest.state === 'completed' ? 'complete' : 'active';
+  const questState = quest.state.phase === 'complete' ? 'complete' : 'active';
 
   return (
     <RecordPanel

@@ -4,6 +4,10 @@
  */
 // src/data/loadStory.ts
 import type { Scene, Story } from '@core/types/scene';
+import type { FlowMetadataMap } from '@core/data/FlowMetadataStore';
+
+// Re-export for convenience
+export type { FlowMetadataMap } from '@core/data/FlowMetadataStore';
 
 type RawFlowItem = {
   side?: "left" | "right";
@@ -11,6 +15,9 @@ type RawFlowItem = {
   waiting?: boolean;
   quest?: string;
   input?: string;
+  type?: "input" | "quest"; // Marks this as metadata item
+  CharacterDescription?: string; // AI chat context (for input)
+  successCharacterSays?: string; // Expected phrase for quest completion
   States?: string[]; // New: array of feature states like ["quest", "input"]
   "left-character"?: string;
   "right-character"?: string;
@@ -33,17 +40,64 @@ type RawStory = {
   [k: string]: unknown;
 };
 
-function flattenScenes(rawScenes: RawScene[]): Scene[] {
+export interface FlattenResult {
+  scenes: Scene[];
+  flowMetadata: FlowMetadataMap;
+}
+
+function flattenScenes(rawScenes: RawScene[]): FlattenResult {
   const out: Scene[] = [];
+  const flowMetadata: FlowMetadataMap = {};
   let sceneCounter = 0;
+  let flowCounter = 0;
 
   rawScenes.forEach((scene) => {
     if (scene.type === "character-flow" && scene.flow) {
+      // Scan for input metadata in this flow
+      const inputMetadataItem = scene.flow.find(
+        f => f.type === "input" && f.CharacterDescription
+      );
+
+      // Scan for quest metadata in this flow
+      const questMetadataItem = scene.flow.find(
+        f => f.type === "quest" && f.text && f.successCharacterSays
+      );
+
+      // Generate unique flowId if this flow has either input or quest metadata
+      const hasMetadata = inputMetadataItem || questMetadataItem;
+      const flowId = hasMetadata ? `flow-${flowCounter++}` : undefined;
+
+      // Store metadata if found
+      if (flowId) {
+        flowMetadata[flowId] = {
+          characterDescription: inputMetadataItem?.CharacterDescription,
+          questText: questMetadataItem?.text,
+          successCharacterSays: (questMetadataItem?.successCharacterSays || inputMetadataItem?.successCharacterSays)!
+        };
+      }
+
       // Track current characters throughout the flow
       let currentLeftCharacter = scene["left-character"];
       let currentRightCharacter = scene["right-character"];
 
       scene.flow.forEach((f, flowIndex) => {
+        // Handle pure input metadata items (they don't become scenes, but affect previous scene)
+        if (f.type === "input" && !f.text && !f.quest) {
+          // Find the last normal character scene (not quest) and add "input" state
+          for (let i = out.length - 1; i >= 0; i--) {
+            const prevScene = out[i];
+            if (prevScene.type === "character") {
+              // Add "input" to the States array
+              const currentStates = (prevScene as any).States || [];
+              if (!currentStates.includes("input")) {
+                (prevScene as any).States = [...currentStates, "input"];
+              }
+              break; // Found and updated the previous dialogue scene
+            }
+          }
+          return; // Skip creating a scene for this metadata item
+        }
+
         // Update characters if specified in this flow item
         if (f["left-character"]) {
           currentLeftCharacter = f["left-character"];
@@ -61,6 +115,11 @@ function flattenScenes(rawScenes: RawScene[]): Scene[] {
           "left-character": currentLeftCharacter,
           "right-character": currentRightCharacter,
         };
+
+        // Attach flowId reference if this flow has metadata
+        if (flowId) {
+          (flattened as any).flowId = flowId;
+        }
 
         // Preserve States field if present
         if (f.States) {
@@ -117,14 +176,14 @@ function flattenScenes(rawScenes: RawScene[]): Scene[] {
     }
   });
 
-  return out;
+  return { scenes: out, flowMetadata };
 }
 
-export async function loadStory(url: string): Promise<Story> {
+export async function loadStory(url: string): Promise<{ story: Story; flowMetadata: FlowMetadataMap }> {
   const res = await fetch(url, { cache: "no-store" });
   if (!res.ok) throw new Error(`Failed to load story: ${res.status}`);
   const data = (await res.json()) as RawStory;
   const rawScenes = data.scenes ?? [];
-  const scenes = flattenScenes(rawScenes);
-  return { scenes };
+  const { scenes, flowMetadata } = flattenScenes(rawScenes);
+  return { story: { scenes }, flowMetadata };
 }

@@ -15,7 +15,7 @@ class RecordingAPI {
   start() {
     console.log('📞 Recording.start() called');
     if (this.startFn) {
-
+      console.log('✅ Calling registered start function');
       this.startFn();
     } else {
       console.warn('❌ Recording API not initialized - ensure RecordingProvider is mounted');

@@ -41,6 +41,7 @@ import { StepScrollDebug } from '@core/scroll/StepScrollDebug'
 import { SceneStatesProvider } from '@core/scenes/SceneStates'
 import { ChatGatewayProvider } from '@features/chat/gateway'
 import { ChatFlowOrchestratorComponent } from '@core/dialogue/ChatFlowOrchestratorComponent'
+import { FlowMetadataProvider, useFlowMetadata } from '@core/data/FlowMetadataStore'
 // Path to the story JSON bundle we want to load. In demo mode we keep this fixed
 // so the experience is deterministic for the presentation.
 
@@ -76,13 +77,23 @@ const QuestDebugProbe: React.FC = () => {
 
 // StoryModeScrollV2 is the main screen that renders scenes as full-screen snap sections
 const StoryModeScroll: React.FC = () => {
-  return <StoryContent />;
+  return (
+    <FlowMetadataProvider>
+      <StoryContent />
+    </FlowMetadataProvider>
+  );
 };
 
 // StoryContent: inner component that uses SceneManagerProvider context
 const StoryContent: React.FC = () => {
   // Load story data
-  const { story, loading, error } = useStory(STORY_URL);
+  const { story, flowMetadata, loading, error } = useStory(STORY_URL);
+
+  // Flow metadata store
+  const flowMetadataStore = useFlowMetadata();
+
+  // Track if we've already populated the store to prevent infinite loops
+  const hasPopulatedMetadata = React.useRef(false);
 
   // Navigation context
   const { scenes, currentIndex, setScenes, setCurrentIndex, hideScene, showScene, allScenes, navigationArray, navigationIndex } = useSceneManager();
@@ -131,6 +142,21 @@ const StoryContent: React.FC = () => {
 
     return index >= 0 ? index : 0;
   }, [navigationArray, navigationIndex, uniqueScenes]);
+
+  // Populate flow metadata store when story loads (only once)
+  React.useEffect(() => {
+    if (!flowMetadata || hasPopulatedMetadata.current) return;
+
+    const entries = Object.entries(flowMetadata);
+    if (entries.length === 0) return;
+
+    // Populate the FlowMetadataStore with all flow metadata from the story
+    entries.forEach(([flowId, metadata]) => {
+      flowMetadataStore.setFlowMetadata(flowId, metadata);
+    });
+
+    hasPopulatedMetadata.current = true;
+  }, [flowMetadata, flowMetadataStore]);
 
   // Derive a stable array of scenes from the loaded story and set them in SceneManager
   React.useEffect(() => {

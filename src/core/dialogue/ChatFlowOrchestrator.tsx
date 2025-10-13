@@ -14,10 +14,11 @@
  * - SceneManager (inserting scenes into navigation)
  */
 
-import { useCallback } from 'react';
+import React, { useCallback } from 'react';
 import { useChatGateway, type ChatInput } from '@features/chat/gateway/ChatGateway';
 import { usePageFactory } from '@core/navigation/PageFactory';
 import { useSceneManager } from '@core/scenes/SceneManager';
+import { useSceneFlowMetadata } from '@core/data/FlowMetadataStore';
 import type { CharacterScene, Scene } from '@core/types/scene';
 
 // Type guard for scenes with character properties
@@ -29,6 +30,15 @@ type SceneWithCharacters = Scene & {
 function hasCharacterProperties(scene: Scene | undefined | null): scene is SceneWithCharacters {
   return scene !== null && scene !== undefined &&
     ('left-character' in scene || 'right-character' in scene);
+}
+
+// Type guard for scenes with flowId
+type SceneWithFlowId = Scene & {
+  flowId?: string;
+};
+
+function hasFlowId(scene: Scene | undefined | null): scene is SceneWithFlowId {
+  return scene !== null && scene !== undefined && 'flowId' in scene;
 }
 
 export interface ChatFlowOrchestratorProps {
@@ -43,6 +53,11 @@ export function useChatFlowOrchestrator(props?: ChatFlowOrchestratorProps) {
   const chatGateway = useChatGateway();
   const pageFactory = usePageFactory();
   const sceneManager = useSceneManager();
+
+  // Get current scene to access flow metadata
+  const currentNavItem = sceneManager.getCurrentNavigationItem();
+  const currentScene = currentNavItem?.scene;
+  const flowMetadata = useSceneFlowMetadata(hasFlowId(currentScene) ? currentScene : null);
 
   /**
    * Main orchestration function:
@@ -144,9 +159,6 @@ export function useChatFlowOrchestrator(props?: ChatFlowOrchestratorProps) {
     transcript: string,
     recordingId?: string
   ): Promise<void> => {
-    const currentNavItem = sceneManager.getCurrentNavigationItem();
-    const currentScene = currentNavItem?.scene;
-
     const input: ChatInput = {
       text: transcript,
       recordingId,
@@ -156,11 +168,12 @@ export function useChatFlowOrchestrator(props?: ChatFlowOrchestratorProps) {
         currentBackground: currentScene && 'background' in currentScene ? currentScene.background : undefined,
         leftCharacter: hasCharacterProperties(currentScene) ? currentScene['left-character'] : undefined,
         rightCharacter: hasCharacterProperties(currentScene) ? currentScene['right-character'] : undefined,
+        characterDescription: flowMetadata?.characterDescription,
       }
     };
 
     await processUserInput(input);
-  }, [sceneManager, processUserInput]);
+  }, [currentScene, flowMetadata, processUserInput]);
 
   return {
     processUserInput,

@@ -12,6 +12,7 @@
 import { useEffect, useState } from 'react';
 import { useSceneManager } from '@core/scenes/SceneManager';
 import { useDialogue } from '@core/dialogue/DialogueContext';
+import { useSceneFlowMetadata } from '@core/data/FlowMetadataStore';
 import type { Scene } from '@core/types/scene';
 import type { ImageState } from '@core/dialogue/types';
 
@@ -53,6 +54,11 @@ export function StepScrollDebug() {
   // Get current navigation state directly from SceneManager
   const { navigationIndex, navigationArray } = sceneManager;
 
+  // Get flow metadata for current scene
+  const currentNavItem = navigationArray[navigationIndex];
+  const currentScene = currentNavItem?.scene as (Scene & { sceneId?: string, flowId?: string }) | undefined;
+  const flowMetadata = useSceneFlowMetadata(currentScene);
+
   // Try to get dialogue context, may be undefined if not in provider tree
   let dialogue;
   try {
@@ -75,11 +81,7 @@ export function StepScrollDebug() {
     };
   }, []);
 
-  // Get current navigation item and scene info (using navigationIndex from SceneManager)
-  const currentNavItem = navigationArray[navigationIndex];
-  // IMPORTANT: Use the scene from NavigationItem, not allScenes array
-  // NavigationItem.scene is the actual scene object being rendered (including dynamically created ones)
-  const currentScene = currentNavItem?.scene as (Scene & { sceneId?: string, caption?: string, text?: string }) | undefined;
+  // Extract scene info (currentNavItem and currentScene already defined above for flowMetadata hook)
   const sceneType = currentScene?.type || 'unknown';
   const sceneId = currentNavItem?.sceneId || 'no-id';
 
@@ -185,7 +187,7 @@ export function StepScrollDebug() {
       }}
     >
       <div style={{ marginBottom: '10px', fontSize: '14px', fontWeight: 'bold', color: '#0ff', cursor: 'grab' }}>
-        📊 Scroll & Scene Debug
+        📊 Scene & Flow Debug
       </div>
 
       <div style={{ display: 'grid', gap: '5px' }}>
@@ -228,15 +230,61 @@ export function StepScrollDebug() {
           )}
         </div>
 
-        {/* Scroll State Section */}
-        <div style={{ marginBottom: '8px', paddingBottom: '8px', borderBottom: '1px solid #0f0' }}>
-          <div style={{ color: '#0ff', marginBottom: '4px', fontWeight: 'bold' }}>🖱️ Scroll State</div>
-          <div style={{ color: state.debounceActive ? '#ff0' : '#0f0' }}>
-            ⏱️ Debounce: <strong>{state.debounceActive ? 'ACTIVE' : 'INACTIVE'}</strong>
+        {/* Flow Metadata Section */}
+        <div style={{ marginBottom: '8px', paddingBottom: '8px', borderBottom: '1px solid #f0f' }}>
+          <div style={{ color: '#f0f', marginBottom: '4px', fontWeight: 'bold' }}>🗃️ Flow Metadata</div>
+          <div style={{ color: currentScene?.flowId ? '#0f0' : '#666' }}>
+            🔑 Flow ID: <strong>{currentScene?.flowId || 'None'}</strong>
           </div>
-          <div style={{ color: Math.abs(state.wheelAccum) > 0 ? '#ff0' : '#0f0' }}>
-            📊 Wheel Accum: <strong>{state.wheelAccum.toFixed(0)}px</strong>
-          </div>
+          {flowMetadata ? (
+            <>
+              {flowMetadata.characterDescription && (
+                <div style={{
+                  color: '#0ff',
+                  fontSize: '10px',
+                  marginTop: '6px',
+                  padding: '6px',
+                  background: 'rgba(0,255,255,0.1)',
+                  borderRadius: '4px',
+                  maxHeight: '100px',
+                  overflowY: 'auto',
+                  wordBreak: 'break-word'
+                }}>
+                  <div style={{ fontWeight: 'bold', marginBottom: '4px' }}>📝 Character Description:</div>
+                  <div style={{ color: '#0f0' }}>{flowMetadata.characterDescription}</div>
+                </div>
+              )}
+              {flowMetadata.questText && (
+                <div style={{
+                  color: '#f90',
+                  fontSize: '10px',
+                  marginTop: '6px',
+                  padding: '6px',
+                  background: 'rgba(255,153,0,0.1)',
+                  borderRadius: '4px',
+                  wordBreak: 'break-word'
+                }}>
+                  <div style={{ fontWeight: 'bold', marginBottom: '4px' }}>🎯 Quest Text:</div>
+                  <div style={{ color: '#fa0' }}>{flowMetadata.questText}</div>
+                </div>
+              )}
+              <div style={{
+                color: '#ff0',
+                fontSize: '10px',
+                marginTop: '4px',
+                padding: '4px',
+                background: 'rgba(255,255,0,0.1)',
+                borderRadius: '4px'
+              }}>
+                <div style={{ fontWeight: 'bold' }}>✅ Success Phrase:</div>
+                <div>"{flowMetadata.successCharacterSays}"</div>
+              </div>
+            </>
+          ) : (
+            <div style={{ color: '#666', fontSize: '10px', marginTop: '4px', fontStyle: 'italic' }}>
+              No flow metadata for this scene
+            </div>
+          )}
         </div>
 
         {/* Image Caption State Section - Only show for image scenes with captions */}
@@ -261,17 +309,6 @@ export function StepScrollDebug() {
                 {captionState === 'hidden' && 'Caption waiting (scroll blocked until shown)'}
                 {captionState === 'showing' && 'Caption visible (scroll unlocked)'}
               </div>
-            </div>
-          </div>
-        )}
-
-        {/* Last Event Section */}
-        {state.lastEvent && (
-          <div style={{ marginTop: '8px', paddingTop: '8px', borderTop: '1px solid #0f0' }}>
-            <div style={{ color: '#0ff', fontSize: '10px' }}>Last Event:</div>
-            <div style={{ color: '#ff0', fontSize: '10px', wordBreak: 'break-word' }}>{state.lastEvent}</div>
-            <div style={{ color: '#666', fontSize: '9px' }}>
-              {new Date(state.timestamp).toLocaleTimeString()}.{String(state.timestamp % 1000).padStart(3, '0')}
             </div>
           </div>
         )}

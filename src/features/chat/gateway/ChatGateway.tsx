@@ -28,6 +28,7 @@ export interface ChatInput {
     currentBackground?: string;
     leftCharacter?: string;
     rightCharacter?: string;
+    characterDescription?: string; // AI context about the character
   };
 }
 
@@ -49,6 +50,7 @@ interface ChatPayload {
   message: string;
   context?: {
     previousMessages?: string[]; // Last N messages for context (if needed)
+    characterDescription?: string; // Character context for AI response
   };
 }
 
@@ -97,7 +99,18 @@ export const ChatGatewayProvider: React.FC<ChatGatewayProviderProps> = ({
     ];
 
     const randomResponse = responses[Math.floor(Math.random() * responses.length)];
-    return `${randomResponse} [Echo: "${payload.message}"]`;
+
+    // Build response with echo and character description (if present)
+    let response = `${randomResponse} [Echo: "${payload.message}"]`;
+
+    if (payload.context?.characterDescription) {
+      // Extract first line (up to first period or first 80 chars)
+      const firstLine = payload.context.characterDescription.split('.')[0] + '.';
+      const truncated = firstLine.length > 80 ? firstLine.substring(0, 80) + '...' : firstLine;
+      response += ` [Character: ${truncated}]`;
+    }
+
+    return response;
   };
 
   /**
@@ -110,6 +123,7 @@ export const ChatGatewayProvider: React.FC<ChatGatewayProviderProps> = ({
       context: {
         // Could add previous messages here if needed for context
         // For now, keeping it minimal
+        characterDescription: input.metadata?.characterDescription
       }
     };
   };
@@ -124,19 +138,11 @@ export const ChatGatewayProvider: React.FC<ChatGatewayProviderProps> = ({
     setLastError(undefined);
 
     try {
-      console.log('🌐 ChatGateway.submitChat:', {
-        text: input.text,
-        recordingId: input.recordingId,
-        metadata: input.metadata
-      });
-
       // Build privacy-aware payload
       const payload = buildPayload(input);
 
       // Call mock ChatGPT (in production, this would be your backend)
       const responseText = await mockChatGPTCall(payload);
-
-      console.log('✅ ChatGateway received response:', responseText);
 
       return {
         text: responseText,
