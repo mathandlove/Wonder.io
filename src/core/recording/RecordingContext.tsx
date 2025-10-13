@@ -136,7 +136,7 @@ export function RecordingProvider({ children }: { children: React.ReactNode }) {
   const restartTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const currentSessionIdRef = useRef<string | null>(null);
 
-  const createRecognition = useCallback((sessionId: string) => {
+  const createRecognition = useCallback((_sessionId: string) => {
     if (!hasWebSpeechAPI()) {
       dispatch({ type: 'UNSUPPORTED' });
       return null;
@@ -191,7 +191,7 @@ export function RecordingProvider({ children }: { children: React.ReactNode }) {
       }
     };
 
-    recognition.onerror = (event: any) => {
+    recognition.onerror = (_event: any) => {
       // Auto-restart on Chrome/Edge after error
       if (isChrome() || /Edge/.test(navigator.userAgent)) {
         scheduleRestart();

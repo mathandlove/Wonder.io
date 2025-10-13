@@ -51,7 +51,7 @@ export function StepScrollDebug() {
   const sceneManager = useSceneManager();
 
   // Get current navigation state directly from SceneManager
-  const { navigationIndex, navigationArray, isLocked, lockReason } = sceneManager;
+  const { navigationIndex, navigationArray } = sceneManager;
 
   // Try to get dialogue context, may be undefined if not in provider tree
   let dialogue;
@@ -90,9 +90,9 @@ export function StepScrollDebug() {
       : 'hidden';
   const hasCaption = sceneType === 'image' && ((currentScene?.caption || currentScene?.text)?.trim() || false);
 
-  // Get dialogue messages for current scene (safely)
-  const messages = dialogue?.getMessagesForScene(sceneId) ?? [];
-  const pendingConversions = dialogue?.getPendingConversions() ?? [];
+  // Get dialogue messages for current scene (safely) - currently unused but available for future debugging
+  // const messages = dialogue?.getMessagesForScene(sceneId) ?? [];
+  // const pendingConversions = dialogue?.getPendingConversions() ?? [];
 
   // Format scene state for display
   const formatSceneState = (): string => {
@@ -237,19 +237,6 @@ export function StepScrollDebug() {
           <div style={{ color: Math.abs(state.wheelAccum) > 0 ? '#ff0' : '#0f0' }}>
             📊 Wheel Accum: <strong>{state.wheelAccum.toFixed(0)}px</strong>
           </div>
-        </div>
-
-        {/* Lock State Section */}
-        <div style={{ marginBottom: '8px', paddingBottom: '8px', borderBottom: '1px solid #0f0' }}>
-          <div style={{ color: '#0ff', marginBottom: '4px', fontWeight: 'bold' }}>🔒 Lock State</div>
-          <div style={{ color: isLocked ? '#f00' : '#0f0' }}>
-            Status: <strong>{isLocked ? 'LOCKED' : 'FREE'}</strong>
-          </div>
-          {lockReason && (
-            <div style={{ color: '#f80', fontSize: '10px' }}>
-              Reason: {lockReason}
-            </div>
-          )}
         </div>
 
         {/* Image Caption State Section - Only show for image scenes with captions */}

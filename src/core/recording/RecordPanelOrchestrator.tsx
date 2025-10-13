@@ -73,7 +73,7 @@ export function RecordingOrchestrator() {
 
       // Create a new CharacterScene, inheriting context from current scene
       const currentScene = currentNavItem?.scene;
-      const currentBackground = currentScene?.background;
+      const currentBackground = currentScene && 'background' in currentScene ? currentScene.background : undefined;
       const leftCharacter = 'left-character' in (currentScene || {}) ? (currentScene as any)['left-character'] : undefined;
       const rightCharacter = 'right-character' in (currentScene || {}) ? (currentScene as any)['right-character'] : undefined;
 

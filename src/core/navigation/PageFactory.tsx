@@ -3,7 +3,7 @@
  * that can be scrolled to and navigated within the story.
  */
 import React, { createContext, useContext } from "react";
-import type { CharacterScene } from "@core/types/scene";
+import type { CharacterScene, Scene } from "@core/types/scene";
 
 type PageFactoryContextType = {
   createRecordingScene: (

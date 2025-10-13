@@ -47,7 +47,8 @@ export function useChatFlowOrchestrator(props?: ChatFlowOrchestratorProps) {
       const navigationIndex = sceneManager.navigationIndex;
 
       // Extract context from current scene or use metadata
-      const background = input.metadata?.currentBackground || currentScene?.background;
+      const background = input.metadata?.currentBackground ||
+        (currentScene && 'background' in currentScene ? currentScene.background : undefined);
       const leftCharacter = input.metadata?.leftCharacter ||
         ('left-character' in (currentScene || {}) ? (currentScene as any)['left-character'] : undefined);
       const rightCharacter = input.metadata?.rightCharacter ||
@@ -141,7 +142,7 @@ export function useChatFlowOrchestrator(props?: ChatFlowOrchestratorProps) {
       metadata: {
         timestamp: new Date(),
         speaker: 'left',
-        currentBackground: currentScene?.background,
+        currentBackground: currentScene && 'background' in currentScene ? currentScene.background : undefined,
         leftCharacter: 'left-character' in (currentScene || {}) ? (currentScene as any)['left-character'] : undefined,
         rightCharacter: 'right-character' in (currentScene || {}) ? (currentScene as any)['right-character'] : undefined,
       }

@@ -12,7 +12,6 @@
  */
 import React, { createContext, useCallback, useContext, useMemo, useState } from "react";
 import type { Scene } from '@core/types/scene';
-import { injectPanelMetaFromFlows } from '@features/characters/adapters/injectPanelMetaFromFlows';
 import { buildNavigationArray } from '@core/navigation/buildNavigationArray';
 import type { NavigationItem, SceneState } from '@core/navigation/types';
 

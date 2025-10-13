@@ -74,10 +74,13 @@ function flattenScenes(rawScenes: RawScene[]): Scene[] {
             text: f.text || f.quest, // Use f.text if available, fallback to f.quest
           };
         } else if (f.input) {
+          // Input flow items become character scenes
+          // The States field (already preserved above) will mark them as interactive
           flattened = {
             ...flattened,
-            type: "input",
+            type: "character",
             text: f.input,
+            speaker: f.side,
           };
         } else if (f.text) {
           flattened = {
