@@ -90,6 +90,7 @@ export interface SceneManagerType {
 
   // Navigation methods (new navigation array-based)
   advanceNavigation: (direction: 'forward' | 'backward') => void;
+  forceAdvanceNavigation: (direction: 'forward' | 'backward') => void; // Bypass locks but still collapse states
 
   // Derived state
   currentBackgroundId: string | null;
@@ -275,21 +276,8 @@ export function SceneManagerProvider({ children, initialIndex = 0 }: SceneManage
     onComplete?.();
   }, [currentIndex, hideScene]);
 
-  // Navigation array-based navigation with state collapse
-  const advanceNavigation = useCallback((direction: 'forward' | 'backward') => {
-    // Check if current navigation item locks this direction
-    const currentItem = navigationArray[navigationIndex];
-    if (currentItem) {
-      if (direction === 'forward' && currentItem.lockForward) {
-        console.log('🔒 Navigation locked forward at', currentItem.sceneId, currentItem.sceneState);
-        return;
-      }
-      if (direction === 'backward' && currentItem.lockBackward) {
-        console.log('🔒 Navigation locked backward at', currentItem.sceneId, currentItem.sceneState);
-        return;
-      }
-    }
-
+  // Force advance navigation (bypasses locks but still collapses states)
+  const forceAdvanceNavigation = useCallback((direction: 'forward' | 'backward') => {
     const delta = direction === 'forward' ? 1 : -1;
     const next = navigationIndex + delta;
     const clamped = Math.max(0, Math.min(next, navigationArray.length - 1));
@@ -310,6 +298,7 @@ export function SceneManagerProvider({ children, initialIndex = 0 }: SceneManage
         setNavigationArray(newArray);
         const newIndex = newArray.findIndex(item => item === targetItem);
         setNavigationIndex(newIndex);
+        console.log(`🗑️ Collapsed ${currentItem.sceneState.type}:${(currentItem.sceneState as any).state || 'static'}`);
       } else {
         setNavigationIndex(clamped);
       }
@@ -328,7 +317,27 @@ export function SceneManagerProvider({ children, initialIndex = 0 }: SceneManage
         setCurrentIndex(sceneIndex);
       }
     }
-  }, [navigationIndex, navigationArray, visibleScenes]);
+  }, [navigationIndex, navigationArray, setNavigationIndex, setNavigationArray, visibleScenes, setCurrentIndex]);
+
+  // Navigation array-based navigation with state collapse
+  const advanceNavigation = useCallback((direction: 'forward' | 'backward') => {
+    // Check if current navigation item locks this direction
+    const currentItem = navigationArray[navigationIndex];
+    if (currentItem) {
+      if (direction === 'forward' && currentItem.lockForward) {
+        console.log('🔒 Navigation locked forward at', currentItem.sceneId, currentItem.sceneState);
+        return;
+      }
+      if (direction === 'backward' && currentItem.lockBackward) {
+        console.log('🔒 Navigation locked backward at', currentItem.sceneId, currentItem.sceneState);
+        return;
+      }
+    }
+
+    // Delegate to forceAdvanceNavigation for the actual logic
+    forceAdvanceNavigation(direction);
+  }, [navigationIndex, navigationArray, forceAdvanceNavigation]);
+
 
   const contextValue = useMemo((): SceneManagerType => ({
     // Legacy scene-based navigation
@@ -359,6 +368,7 @@ export function SceneManagerProvider({ children, initialIndex = 0 }: SceneManage
     goToIndex,
     navigateToNext,
     advanceNavigation,
+    forceAdvanceNavigation,
 
     // Derived state
     currentBackgroundId,
@@ -389,6 +399,7 @@ export function SceneManagerProvider({ children, initialIndex = 0 }: SceneManage
     goToIndex,
     navigateToNext,
     advanceNavigation,
+    forceAdvanceNavigation,
 
     // Derived
     currentBackgroundId,

@@ -181,12 +181,12 @@ function expandDialogueStates(
   const items: NavigationItem[] = [];
   let currentIndex = startIndex;
 
-  // Quest flow: basic → showing → accepted
-  if (features.hasQuest) {
+  // Combined quest + input flow: basic → quest-showing → input-showInput
+  if (features.hasQuest && features.hasInput) {
     items.push({
       scene,
       sceneId,
-      sceneState: { type: 'dialogue', state: 'quest-basic' },
+      sceneState: { type: 'dialogue', state: 'basic' },
       lockForward: false,
       lockBackward: false,
       index: currentIndex++,
@@ -204,37 +204,61 @@ function expandDialogueStates(
     items.push({
       scene,
       sceneId,
-      sceneState: { type: 'dialogue', state: 'quest-accepted' },
-      lockForward: false,
-      lockBackward: false,
-      index: currentIndex++,
-    });
-  }
-
-  // Input flow
-  if (features.hasInput) {
-    // 1. Input-basic: Show dialogue with text (scrollable - no lock)
-    items.push({
-      scene,
-      sceneId,
-      sceneState: { type: 'dialogue', state: 'input-basic' },
-      lockForward: false, // Allow scrolling to reveal input UI
-      lockBackward: false,
-      index: currentIndex++,
-    });
-
-    // 2. Input-showInput: Show input UI (microphone button) - LOCK HERE
-    // When user records, PageFactory will dynamically create recording + response scenes
-    items.push({
-      scene,
-      sceneId,
       sceneState: { type: 'dialogue', state: 'input-showInput' },
       lockForward: true, // Block scrolling until user records
       lockBackward: false,
       index: currentIndex++,
     });
   }
-    
+  // Quest-only flow: quest-basic → quest-showing → quest-accepted
+  else if (features.hasQuest) {
+    items.push({
+      scene,
+      sceneId,
+      sceneState: { type: 'dialogue', state: 'quest-basic' },
+      lockForward: false,
+      lockBackward: false,
+      index: currentIndex++,
+    });
+
+    items.push({
+      scene,
+      sceneId,
+      sceneState: { type: 'dialogue', state: 'quest-showing' },
+      lockForward: true,
+      lockBackward: true,
+      index: currentIndex++,
+    });
+
+    items.push({
+      scene,
+      sceneId,
+      sceneState: { type: 'dialogue', state: 'quest-accepted' },
+      lockForward: false,
+      lockBackward: false,
+      index: currentIndex++,
+    });
+  }
+  // Input-only flow: input-basic → input-showInput
+  else if (features.hasInput) {
+    items.push({
+      scene,
+      sceneId,
+      sceneState: { type: 'dialogue', state: 'input-basic' },
+      lockForward: false,
+      lockBackward: false,
+      index: currentIndex++,
+    });
+
+    items.push({
+      scene,
+      sceneId,
+      sceneState: { type: 'dialogue', state: 'input-showInput' },
+      lockForward: true,
+      lockBackward: false,
+      index: currentIndex++,
+    });
+  }
 
   return items;
 }

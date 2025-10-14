@@ -25,6 +25,12 @@
       "text": "Tell me about your last adventure Ms. Baker. What happened? Look I added a sthirsa line here. HOpefully I can see it."
 
     },
+        {
+      "type":"quest",
+      "text":"Figure out what happened.",
+      "successCharacterSays":"My cookie was stolen."   
+     },
+     
     {
       "type":"input",
       "CharacterDescription":"Ms. Baker is a friendly baker at dreary lane bakery. She made a giant cookie last night and is worried about it. She does not want to talk about why it is so important that her cookie is found, but it's urgent. The last time she saw her cookie was when it was cooling on a baking pan, hot out of the oven."
@@ -34,34 +40,7 @@
 
               ]
       },
-      {
-      "type": "character-flow",
-      "background":"bakery.png",
-      "left-character": "leo",
-      "right-character": "fox",
-      "flow": [
-        {
-        
-      "side": "left",
-      "text": "Test"
 
-    },
-        {
-        
-      "side": "right",
-      "text": "Tell me about your last adventure Ms. Baker. What happened? Look I added a sthirsa line here. HOpefully I can see it."
-
-    },
-    {
-      "type":"quest",
-      "text":"Figure out what happened.",
-      "successCharacterSays":"My cookie was stolen."   
-     }
-
-
-
-              ]
-      }, 
       {
       "type":"image",
       "image":"story/dragonFight.png",

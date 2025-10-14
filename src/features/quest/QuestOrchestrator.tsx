@@ -82,17 +82,10 @@ export function QuestOrchestrator() {
 
     // Detect transition from 'offered' to 'minimized' (user clicked Accept)
     if (previousPhase === 'offered' && currentPhase === 'minimized') {
-      console.log('✅ QuestOrchestrator: Quest accepted, advancing to quest-accepted state');
+      console.log('✅ QuestOrchestrator: Quest accepted, advancing and collapsing quest-showing state');
 
-      // Force advance navigation to quest-accepted (bypasses lockForward temporarily)
-      // We need to advance DESPITE the lock because accepting the quest IS the unlock condition
-      const currentIndex = sceneManager.navigationIndex;
-      const nextIndex = currentIndex + 1;
-
-      if (nextIndex < sceneManager.navigationArray.length) {
-        console.log(`🔓 Forcing navigation advance from ${currentIndex} to ${nextIndex} (quest accepted)`);
-        sceneManager.setNavigationIndex(nextIndex);
-      }
+      // Use forceAdvanceNavigation to bypass locks but still collapse states
+      sceneManager.forceAdvanceNavigation('forward');
     }
 
     // Update ref for next comparison
