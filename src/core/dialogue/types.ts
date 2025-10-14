@@ -24,6 +24,7 @@ export type DialogueState =
   | 'ai-waiting'      // 6. Waiting for AI response (scroll blocked down)
   | 'quest-basic'     // Quest state 1: Show dialogue with quest pending
   | 'quest-showing'   // Quest state 2: Quest UI visible
+  | 'quest-accepted'  // Quest state 3: Quest accepted, can continue
   | 'input-basic'     // Input state 1: Show dialogue with input pending
   | 'input-showInput'; // Input state 2: Show input UI (microphone button)
 

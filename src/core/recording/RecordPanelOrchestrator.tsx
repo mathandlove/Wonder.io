@@ -95,7 +95,7 @@ export function RecordingOrchestrator() {
    */
   const handleRecordStart = useCallback(() => {
     try {
-      // Update current navigation item state from input-showInput to basic
+      // Update current navigation item state from input-showInput to basic (locks auto-recalculated)
       updateNavigationItemState(navigationIndex, { type: 'dialogue', state: 'basic' });
 
       // Generate unique recording ID
@@ -122,8 +122,8 @@ export function RecordingOrchestrator() {
         scene: newScene,
         sceneId,
         sceneState: { type: 'dialogue' as const, state: 'input-recording' as const },
-        lockForward: true,
-        lockBackward: false,
+        lockForward: true, // Block scrolling in both directions while recording
+        lockBackward: true,
         index: navigationIndex + 1
       };
 

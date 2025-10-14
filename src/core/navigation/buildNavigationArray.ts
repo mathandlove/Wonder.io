@@ -123,7 +123,7 @@ function expandImageScene(scene: Scene & { caption?: string; text?: string }, sc
  */
 function expandCharacterWithStates(scene: Scene & { States: string[] }, sceneId: string, startIndex: number): NavigationItem[] {
   const states = scene.States;
-  const hasQuest = states.includes('quest');
+  const hasQuest = states.includes('quest') || states.includes('giveQuest');
   const hasInput = states.includes('input');
 
   console.log('🔍 expandCharacterWithStates:', { sceneId, states, hasQuest, hasInput });
@@ -144,7 +144,7 @@ function expandCharacterFlowScene(scene: CharacterFlowScene, sceneId: string, st
   if (flowItemWithStates && flowItemWithStates.States) {
     // Has interactive features - expand based on States array
     const states = flowItemWithStates.States;
-    const hasQuest = states.includes('quest');
+    const hasQuest = states.includes('quest') || states.includes('giveQuest');
     const hasInput = states.includes('input');
 
     console.log('✅ Found States:', { states, hasQuest, hasInput });
@@ -169,8 +169,8 @@ function expandCharacterFlowScene(scene: CharacterFlowScene, sceneId: string, st
  *
  * Flow depends on which features are enabled:
  * - hasInput only: input-basic → input-showInput → [new scene: input-recording]
- * - hasQuest only: quest-basic → quest-showing
- * - hasQuest + hasInput: quest-basic → quest-showing → input-basic → input-showInput → [new scene: input-recording]
+ * - hasQuest only: quest-basic → quest-showing → quest-accepted
+ * - hasQuest + hasInput: quest-basic → quest-showing → quest-accepted → input-basic → input-showInput → [new scene: input-recording]
  */
 function expandDialogueStates(
   scene: Scene,
@@ -181,13 +181,13 @@ function expandDialogueStates(
   const items: NavigationItem[] = [];
   let currentIndex = startIndex;
 
-  // Quest flow
+  // Quest flow: basic → showing → accepted
   if (features.hasQuest) {
     items.push({
       scene,
       sceneId,
       sceneState: { type: 'dialogue', state: 'quest-basic' },
-      lockForward: true,
+      lockForward: false,
       lockBackward: false,
       index: currentIndex++,
     });
@@ -196,7 +196,16 @@ function expandDialogueStates(
       scene,
       sceneId,
       sceneState: { type: 'dialogue', state: 'quest-showing' },
-      lockForward: true,
+      lockForward: true, // Block scrolling in both directions until quest is accepted
+      lockBackward: true,
+      index: currentIndex++,
+    });
+
+    items.push({
+      scene,
+      sceneId,
+      sceneState: { type: 'dialogue', state: 'quest-accepted' },
+      lockForward: false,
       lockBackward: false,
       index: currentIndex++,
     });
@@ -204,23 +213,23 @@ function expandDialogueStates(
 
   // Input flow
   if (features.hasInput) {
-    // 1. Input-basic: Show dialogue with text
+    // 1. Input-basic: Show dialogue with text (scrollable - no lock)
     items.push({
       scene,
       sceneId,
       sceneState: { type: 'dialogue', state: 'input-basic' },
-      lockForward: true,
+      lockForward: false, // Allow scrolling to reveal input UI
       lockBackward: false,
       index: currentIndex++,
     });
 
-    // 2. Input-showInput: Show input UI (microphone button)
+    // 2. Input-showInput: Show input UI (microphone button) - LOCK HERE
     // When user records, PageFactory will dynamically create recording + response scenes
     items.push({
       scene,
       sceneId,
       sceneState: { type: 'dialogue', state: 'input-showInput' },
-      lockForward: true,
+      lockForward: true, // Block scrolling until user records
       lockBackward: false,
       index: currentIndex++,
     });

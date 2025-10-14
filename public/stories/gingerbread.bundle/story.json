@@ -5,34 +5,7 @@
 
  
 
-{
-      "type": "character-flow",
-      "background":"bakery.png",
-      "left-character": "leo",
-      "right-character": "fox",
-      "flow": [
-        {
-        
-      "side": "left",
-      "text": "Test"
-
-    },
-        {
-        
-      "side": "right",
-      "text": "Tell me about your last adventure Ms. Baker. What happened? Look I added a sthirsa line here. HOpefully I can see it."
-
-    },
-    {
-      "type":"quest",
-      "text":"Figure out what happened.",
-      "successCharacterSays":"My cookie was stolen."   
-     }
-
-
-
-              ]
-      },           
+          
       
       {
       "type": "character-flow",
@@ -61,6 +34,34 @@
 
               ]
       },
+      {
+      "type": "character-flow",
+      "background":"bakery.png",
+      "left-character": "leo",
+      "right-character": "fox",
+      "flow": [
+        {
+        
+      "side": "left",
+      "text": "Test"
+
+    },
+        {
+        
+      "side": "right",
+      "text": "Tell me about your last adventure Ms. Baker. What happened? Look I added a sthirsa line here. HOpefully I can see it."
+
+    },
+    {
+      "type":"quest",
+      "text":"Figure out what happened.",
+      "successCharacterSays":"My cookie was stolen."   
+     }
+
+
+
+              ]
+      }, 
       {
       "type":"image",
       "image":"story/dragonFight.png",

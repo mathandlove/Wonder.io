@@ -15,6 +15,50 @@ import type { Scene } from '@core/types/scene';
 import { buildNavigationArray } from '@core/navigation/buildNavigationArray';
 import type { NavigationItem, SceneState } from '@core/navigation/types';
 
+/**
+ * Determine scroll locks based purely on the current state
+ * Locks are state-dependent, not preserved from previous states
+ *
+ * Export this so dynamically created navigation items can use it
+ */
+export function getLocksForState(state: SceneState): { lockForward: boolean; lockBackward: boolean } {
+  // Default: no locks
+  if (state.type === 'static') {
+    return { lockForward: false, lockBackward: false };
+  }
+
+  if (state.type === 'image') {
+    // Image hidden state blocks forward scroll until image is revealed
+    if (state.state === 'hidden') {
+      return { lockForward: true, lockBackward: false };
+    }
+    return { lockForward: false, lockBackward: false };
+  }
+
+  if (state.type === 'dialogue') {
+    switch (state.state) {
+      // Quest states
+      case 'quest-showing':
+        return { lockForward: true, lockBackward: true }; // Must accept quest
+
+      // Input states
+      case 'input-basic':
+        return { lockForward: false, lockBackward: false }; // Can scroll freely
+      case 'input-showInput':
+        return { lockForward: true, lockBackward: false }; // Must record to continue, can go back
+      case 'input-recording':
+      case 'ai-waiting':
+        return { lockForward: true, lockBackward: true }; // Cannot navigate during recording/waiting
+
+      // Default dialogue states (basic, quest-basic, quest-accepted, etc.)
+      default:
+        return { lockForward: false, lockBackward: false };
+    }
+  }
+
+  return { lockForward: false, lockBackward: false };
+}
+
 export interface SceneManagerType {
   // Legacy scene-based navigation (backward compatibility)
   currentIndex: number;
@@ -34,7 +78,7 @@ export interface SceneManagerType {
   setScenes: (scenes: Scene[]) => void;
   insertScene: (scene: Scene, index: number) => void;
   insertNavigationItem: (item: NavigationItem, index: number) => void; // Insert directly without rebuild
-  updateNavigationItemState: (index: number, newState: SceneState) => void; // Update state of navigation item
+  updateNavigationItemState: (index: number, newState: SceneState) => void; // Update state of navigation item (locks auto-recalculated)
   updateSceneTextByRecordingId: (recordingId: string, newText: string) => void; // Update scene text during recording
   hideScene: (sceneId: string) => void;
   showScene: (sceneId: string) => void;
@@ -151,13 +195,17 @@ export function SceneManagerProvider({ children, initialIndex = 0 }: SceneManage
   }, []);
 
   // Update the state of a navigation item at a specific index
+  // Locks are automatically recalculated based on the new state (no lock memory)
   const updateNavigationItemState = useCallback((index: number, newState: SceneState) => {
     setNavigationArray(prevArray => {
       const newArray = [...prevArray];
       if (newArray[index]) {
+        const locks = getLocksForState(newState);
         newArray[index] = {
           ...newArray[index],
-          sceneState: newState
+          sceneState: newState,
+          lockForward: locks.lockForward,
+          lockBackward: locks.lockBackward,
         };
       }
       return newArray;
@@ -229,6 +277,19 @@ export function SceneManagerProvider({ children, initialIndex = 0 }: SceneManage
 
   // Navigation array-based navigation with state collapse
   const advanceNavigation = useCallback((direction: 'forward' | 'backward') => {
+    // Check if current navigation item locks this direction
+    const currentItem = navigationArray[navigationIndex];
+    if (currentItem) {
+      if (direction === 'forward' && currentItem.lockForward) {
+        console.log('🔒 Navigation locked forward at', currentItem.sceneId, currentItem.sceneState);
+        return;
+      }
+      if (direction === 'backward' && currentItem.lockBackward) {
+        console.log('🔒 Navigation locked backward at', currentItem.sceneId, currentItem.sceneState);
+        return;
+      }
+    }
+
     const delta = direction === 'forward' ? 1 : -1;
     const next = navigationIndex + delta;
     const clamped = Math.max(0, Math.min(next, navigationArray.length - 1));

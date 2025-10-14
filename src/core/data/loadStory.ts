@@ -83,7 +83,7 @@ function flattenScenes(rawScenes: RawScene[]): FlattenResult {
       scene.flow.forEach((f, flowIndex) => {
         // Handle pure input metadata items (they don't become scenes, but affect previous scene)
         if (f.type === "input" && !f.text && !f.quest) {
-          // Find the last normal character scene (not quest) and add "input" state
+          // Find the last normal character scene and add "input" state
           for (let i = out.length - 1; i >= 0; i--) {
             const prevScene = out[i];
             if (prevScene.type === "character") {
@@ -91,6 +91,23 @@ function flattenScenes(rawScenes: RawScene[]): FlattenResult {
               const currentStates = (prevScene as any).States || [];
               if (!currentStates.includes("input")) {
                 (prevScene as any).States = [...currentStates, "input"];
+              }
+              break; // Found and updated the previous dialogue scene
+            }
+          }
+          return; // Skip creating a scene for this metadata item
+        }
+
+        // Handle pure quest metadata items (they don't become scenes, but affect previous scene)
+        if (f.type === "quest" && !f.side) {
+          // Find the last normal character scene and add "giveQuest" state
+          for (let i = out.length - 1; i >= 0; i--) {
+            const prevScene = out[i];
+            if (prevScene.type === "character") {
+              // Add "giveQuest" to the States array
+              const currentStates = (prevScene as any).States || [];
+              if (!currentStates.includes("giveQuest")) {
+                (prevScene as any).States = [...currentStates, "giveQuest"];
               }
               break; // Found and updated the previous dialogue scene
             }
@@ -126,13 +143,8 @@ function flattenScenes(rawScenes: RawScene[]): FlattenResult {
           (flattened as any).States = f.States;
         }
 
-        if (f.quest) {
-          flattened = {
-            ...flattened,
-            type: "quest",
-            text: f.text || f.quest, // Use f.text if available, fallback to f.quest
-          };
-        } else if (f.input) {
+        // Only create scenes for flow items with actual dialogue content
+        if (f.input) {
           // Input flow items become character scenes
           // The States field (already preserved above) will mark them as interactive
           flattened = {
@@ -148,6 +160,9 @@ function flattenScenes(rawScenes: RawScene[]): FlattenResult {
             text: f.text,
             speaker: f.side,
           };
+        } else {
+          // No text content, skip creating a scene
+          return;
         }
 
         out.push(flattened as Scene);

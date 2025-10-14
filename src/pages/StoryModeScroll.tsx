@@ -36,6 +36,7 @@ declare global {
   }
 }
 import { QuestProvider, useQuest } from '@features/quest/QuestManager'
+import { QuestOrchestrator } from '@features/quest/QuestOrchestrator'
 import { UIOverlayRoot } from '@core/uiLayout/UIOverlayRoot'
 import { StepScrollDebug } from '@core/scroll/StepScrollDebug'
 import { SceneStatesProvider } from '@core/scenes/SceneStates'
@@ -208,6 +209,9 @@ const StoryContent: React.FC = () => {
           <SceneStatesProvider>
             {/* ChatFlow orchestrator watches for ai-waiting state and triggers responses */}
             <ChatFlowOrchestratorComponent />
+
+            {/* Quest orchestrator watches for quest-showing state and offers quests */}
+            <QuestOrchestrator />
 
             <CharacterAnimationProvider>
             {/* Unified scroll control component - uses uniqueScenes from navigationArray */}

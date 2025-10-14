@@ -37,10 +37,6 @@ export interface QuestStatus {
   currentQuest?: Quest;
 }
 
-export interface QuestGates {
-  canScroll: boolean;
-  canAdvanceDialogue: boolean;
-}
 
 export interface QuestHook {
   state: QuestState;
@@ -239,13 +235,4 @@ export function useQuestStatus(): QuestStatus {
     phase: state.phase,
     currentQuest: state.currentQuest,
   };
-}
-
-export function useQuestGates(): QuestGates {
-  const { state } = useQuestContext();
-
-  return useMemo(() => ({
-    canScroll: state.phase !== 'offered',
-    canAdvanceDialogue: state.phase !== 'offered',
-  }), [state.phase]);
 }

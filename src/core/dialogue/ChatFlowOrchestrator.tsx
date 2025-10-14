@@ -17,7 +17,7 @@
 import React, { useCallback } from 'react';
 import { useChatGateway, type ChatInput } from '@features/chat/gateway/ChatGateway';
 import { usePageFactory } from '@core/navigation/PageFactory';
-import { useSceneManager } from '@core/scenes/SceneManager';
+import { useSceneManager, getLocksForState } from '@core/scenes/SceneManager';
 import { useSceneFlowMetadata } from '@core/data/FlowMetadataStore';
 import type { CharacterScene, Scene } from '@core/types/scene';
 
@@ -118,7 +118,7 @@ export function useChatFlowOrchestrator(props?: ChatFlowOrchestratorProps) {
 
       onSceneCreated?.(finalScene);
 
-      // Step 4: Update previous scene state to 'basic' (remove input UI)
+      // Step 4: Update previous scene state to 'basic' (remove input UI, locks auto-recalculated)
       // This collapses the recording input UI from the previous scene
       sceneManager.updateNavigationItemState(navigationIndex, {
         type: 'dialogue' as const,
@@ -127,12 +127,14 @@ export function useChatFlowOrchestrator(props?: ChatFlowOrchestratorProps) {
 
       // Step 5: Insert the scene into navigation with 'input-showInput' state
       // This shows the input UI on the new response scene for the next user input
+      const sceneState = { type: 'dialogue' as const, state: 'input-showInput' as const };
+      const locks = getLocksForState(sceneState); // Calculate locks from state
       const newNavItem = {
         scene: finalScene,
         sceneId: finalScene.sceneId || `scene-${Date.now()}`,
-        sceneState: { type: 'dialogue' as const, state: 'input-showInput' as const },
-        lockForward: false,
-        lockBackward: false,
+        sceneState,
+        lockForward: locks.lockForward,
+        lockBackward: locks.lockBackward,
         index: navigationIndex + 1
       };
 
