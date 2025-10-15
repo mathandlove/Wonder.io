@@ -59,10 +59,6 @@
   max-width: 90vw; /* Never wider than 90% of viewport width */
   min-width: 560px; /* Minimum width to fit all buttons: 192+15+59+40+192+40+20+2 = 560px */
   box-sizing: border-box; /* Include borders in width calculation */
-  animation: breathingGlow 10s ease-in-out infinite; /* TEMP: Testing glow on all states */
-  box-shadow: 0 0 40px 10px rgba(255, 190, 60, 0.8); /* TEMP: Static bright glow to test visibility */
-  outline: 10px solid yellow !important; /* TEMP: Super obvious test */
-  filter: drop-shadow(0 0 30px rgba(255, 190, 60, 0.9)); /* TEMP: Alternative glow method */
 }
 
 /* Quest Offer State - glowing yellow effect */
@@ -70,19 +66,18 @@
   animation: breathingGlow 10s ease-in-out infinite !important;
 }
 
-/* Breathing glow animation - yellow glow effect for quest announcement */
+/* Breathing glow animation - yellow glow effect for quest announcement using drop-shadow */
 @keyframes breathingGlow {
   0%, 100% {
-    box-shadow:
-      0 0 0 1px rgba(90, 50, 0, 0.25) inset,
-      0 6px 20px rgba(0, 0, 0, 0.25),
-      0 0 24px rgba(255, 190, 60, 0.35);
+    filter:
+      drop-shadow(0 0 20px rgba(255, 190, 60, 0.4))
+      drop-shadow(0 0 10px rgba(255, 190, 60, 0.6));
   }
   50% {
-    box-shadow:
-      0 0 0 1px rgba(90, 50, 0, 0.3) inset,
-      0 6px 20px rgba(0, 0, 0, 0.25),
-      0 0 36px rgba(255, 190, 60, 0.5);
+    filter:
+      drop-shadow(0 0 40px rgba(255, 190, 60, 0.6))
+      drop-shadow(0 0 20px rgba(255, 190, 60, 0.8))
+      drop-shadow(0 0 10px rgba(255, 190, 60, 1.0));
   }
 }
 
