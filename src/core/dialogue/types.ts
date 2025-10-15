@@ -26,7 +26,9 @@ export type DialogueState =
   | 'quest-showing'   // Quest state 2: Quest UI visible
   | 'quest-accepted'  // Quest state 3: Quest accepted, can continue
   | 'input-basic'     // Input state 1: Show dialogue with input pending
-  | 'input-showInput'; // Input state 2: Show input UI (microphone button)
+  | 'input-showInput' // Input state 2: Show input UI (microphone button)
+  | 'show-hint'       // Show hint overlay/modal
+  | 'record-answer';  // Recording answer (like input-recording but for Answer button)
 
 export type Sender = 'player' | 'npc';
 

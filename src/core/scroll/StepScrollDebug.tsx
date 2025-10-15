@@ -152,12 +152,26 @@ export function StepScrollDebug() {
     sceneManager.updateNavigationItemState(navigationIndex, { type: 'dialogue', state: 'basic' });
   };
 
+  const setRecordPanelShowQuest = () => {
+    sceneManager.updateNavigationItemState(navigationIndex, { type: 'dialogue', state: 'show-quest' });
+  };
+
   const setRecordPanelShowInput = () => {
     sceneManager.updateNavigationItemState(navigationIndex, { type: 'dialogue', state: 'input-showInput' });
   };
 
   const setRecordPanelRecording = () => {
     sceneManager.updateNavigationItemState(navigationIndex, { type: 'dialogue', state: 'input-recording' });
+  };
+
+  const setRecordPanelShowHint = () => {
+    // Using a new state for showing hint - will need to be added to DialogueState type
+    sceneManager.updateNavigationItemState(navigationIndex, { type: 'dialogue', state: 'show-hint' as any });
+  };
+
+  const setRecordPanelRecordAnswer = () => {
+    // Using a new state for recording answer - will need to be added to DialogueState type
+    sceneManager.updateNavigationItemState(navigationIndex, { type: 'dialogue', state: 'record-answer' as any });
   };
 
   const setRecordPanelAiWaiting = () => {
@@ -291,62 +305,15 @@ export function StepScrollDebug() {
           )}
         </div>
 
-        {/* Flow Metadata Section */}
+        {/* Flow Metadata Section - Hidden for more space */}
+        {/*
         <div style={{ marginBottom: '8px', paddingBottom: '8px', borderBottom: '1px solid #f0f' }}>
           <div style={{ color: '#f0f', marginBottom: '4px', fontWeight: 'bold' }}>🗃️ Flow Metadata</div>
           <div style={{ color: currentScene?.flowId ? '#0f0' : '#666' }}>
             🔑 Flow ID: <strong>{currentScene?.flowId || 'None'}</strong>
           </div>
-          {flowMetadata ? (
-            <>
-              {flowMetadata.characterDescription && (
-                <div style={{
-                  color: '#0ff',
-                  fontSize: '10px',
-                  marginTop: '6px',
-                  padding: '6px',
-                  background: 'rgba(0,255,255,0.1)',
-                  borderRadius: '4px',
-                  maxHeight: '100px',
-                  overflowY: 'auto',
-                  wordBreak: 'break-word'
-                }}>
-                  <div style={{ fontWeight: 'bold', marginBottom: '4px' }}>📝 Character Description:</div>
-                  <div style={{ color: '#0f0' }}>{flowMetadata.characterDescription}</div>
-                </div>
-              )}
-              {flowMetadata.questText && (
-                <div style={{
-                  color: '#f90',
-                  fontSize: '10px',
-                  marginTop: '6px',
-                  padding: '6px',
-                  background: 'rgba(255,153,0,0.1)',
-                  borderRadius: '4px',
-                  wordBreak: 'break-word'
-                }}>
-                  <div style={{ fontWeight: 'bold', marginBottom: '4px' }}>🎯 Quest Text:</div>
-                  <div style={{ color: '#fa0' }}>{flowMetadata.questText}</div>
-                </div>
-              )}
-              <div style={{
-                color: '#ff0',
-                fontSize: '10px',
-                marginTop: '4px',
-                padding: '4px',
-                background: 'rgba(255,255,0,0.1)',
-                borderRadius: '4px'
-              }}>
-                <div style={{ fontWeight: 'bold' }}>✅ Success Phrase:</div>
-                <div>"{flowMetadata.successCharacterSays}"</div>
-              </div>
-            </>
-          ) : (
-            <div style={{ color: '#666', fontSize: '10px', marginTop: '4px', fontStyle: 'italic' }}>
-              No flow metadata for this scene
-            </div>
-          )}
         </div>
+        */}
 
         {/* Image Caption State Section - Only show for image scenes with captions */}
         {sceneType === 'image' && hasCaption && (
@@ -378,70 +345,116 @@ export function StepScrollDebug() {
       {/* RecordPanel Controls Section */}
       <div style={{ marginTop: '10px', paddingTop: '8px', borderTop: '1px solid #f90' }}>
         <div style={{ color: '#f90', marginBottom: '8px', fontWeight: 'bold' }}>🎙️ RecordPanel Visual States</div>
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr', gap: '6px' }}>
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '6px' }}>
           <button
             onClick={setRecordPanelHidden}
             style={{
-              padding: '10px',
+              padding: '8px',
               background: currentNavItem?.sceneState.type === 'dialogue' && currentNavItem?.sceneState.state === 'basic' ? '#666' : '#333',
               color: '#fff',
               border: '2px solid #666',
               borderRadius: '4px',
               cursor: 'pointer',
-              fontSize: '11px',
+              fontSize: '10px',
               fontWeight: 'bold'
             }}
           >
-            ❌ No Panel (basic)
+            ❌ Hidden
+          </button>
+          <button
+            onClick={setRecordPanelShowQuest}
+            style={{
+              padding: '8px',
+              background: currentNavItem?.sceneState.type === 'dialogue' && currentNavItem?.sceneState.state === 'show-quest' ? '#FFD700' : '#333',
+              color: currentNavItem?.sceneState.type === 'dialogue' && currentNavItem?.sceneState.state === 'show-quest' ? '#000' : '#fff',
+              border: '2px solid #FFD700',
+              borderRadius: '4px',
+              cursor: 'pointer',
+              fontSize: '10px',
+              fontWeight: 'bold'
+            }}
+          >
+            🎯 Quest
           </button>
           <button
             onClick={setRecordPanelShowInput}
             style={{
-              padding: '10px',
+              padding: '8px',
               background: currentNavItem?.sceneState.type === 'dialogue' && currentNavItem?.sceneState.state === 'input-showInput' ? '#0f0' : '#333',
               color: '#fff',
               border: '2px solid #0f0',
               borderRadius: '4px',
               cursor: 'pointer',
-              fontSize: '11px',
+              fontSize: '10px',
               fontWeight: 'bold'
             }}
           >
-            ✅ Ready (all buttons enabled)
+            ✅ Ready
           </button>
           <button
             onClick={setRecordPanelRecording}
             style={{
-              padding: '10px',
+              padding: '8px',
               background: currentNavItem?.sceneState.type === 'dialogue' && currentNavItem?.sceneState.state === 'input-recording' ? '#d81919' : '#333',
               color: '#fff',
               border: '2px solid #d81919',
               borderRadius: '4px',
               cursor: 'pointer',
-              fontSize: '11px',
+              fontSize: '10px',
               fontWeight: 'bold'
             }}
           >
-            🔴 Recording (Ask pressed + Stop visible)
+            🔴 Ask Rec
+          </button>
+          <button
+            onClick={setRecordPanelShowHint}
+            style={{
+              padding: '8px',
+              background: currentNavItem?.sceneState.type === 'dialogue' && currentNavItem?.sceneState.state === 'show-hint' ? '#FFA500' : '#333',
+              color: '#fff',
+              border: '2px solid #FFA500',
+              borderRadius: '4px',
+              cursor: 'pointer',
+              fontSize: '10px',
+              fontWeight: 'bold'
+            }}
+          >
+            💡 Hint
+          </button>
+          <button
+            onClick={setRecordPanelRecordAnswer}
+            style={{
+              padding: '8px',
+              background: currentNavItem?.sceneState.type === 'dialogue' && currentNavItem?.sceneState.state === 'record-answer' ? '#9370DB' : '#333',
+              color: '#fff',
+              border: '2px solid #9370DB',
+              borderRadius: '4px',
+              cursor: 'pointer',
+              fontSize: '10px',
+              fontWeight: 'bold'
+            }}
+          >
+            🟣 Answer Rec
           </button>
           <button
             onClick={setRecordPanelAiWaiting}
             style={{
-              padding: '10px',
+              padding: '8px',
               background: currentNavItem?.sceneState.type === 'dialogue' && currentNavItem?.sceneState.state === 'ai-waiting' ? '#666' : '#333',
               color: '#fff',
               border: '2px solid #999',
               borderRadius: '4px',
               cursor: 'pointer',
-              fontSize: '11px',
-              fontWeight: 'bold'
+              fontSize: '10px',
+              fontWeight: 'bold',
+              gridColumn: 'span 2'
             }}
           >
-            ⏳ AI Waiting (all buttons disabled)
+            ⏳ AI Waiting
           </button>
         </div>
         <div style={{ marginTop: '8px', fontSize: '9px', color: '#888', fontStyle: 'italic' }}>
-          Four visual states for RecordPanel testing
+          Seven visual states for RecordPanel testing
         </div>
       </div>
 

@@ -48,13 +48,18 @@ export const RecordPanel: React.FC<RecordPanelProps> = ({
 
   // Determine visual state based on dialogueState
   // - basic: No panel shown
+  // - show-quest: Quest offered, panel visible
   // - input-showInput: Panel shown, all buttons enabled and ready
   // - input-recording: Recording active, Stop button visible, Ask button appears pressed
+  // - show-hint: Hint displayed, Hint button appears pressed
+  // - record-answer: Recording answer, Stop button visible, Answer button appears pressed
   // - ai-waiting: All buttons disabled (waiting for AI response)
-  const isRecording = dialogueState === 'input-recording';
+  const isAskRecording = dialogueState === 'input-recording';
+  const isAnswerRecording = dialogueState === 'record-answer';
+  const isHintShowing = dialogueState === 'show-hint';
   const isWaiting = dialogueState === 'ai-waiting';
-  // Show Stop button whenever in recording state (for visual testing, not dependent on actual recording API)
-  const showStopButton = isRecording;
+  // Show Stop button whenever in any recording state
+  const showStopButton = isAskRecording || isAnswerRecording;
   const buttonsDisabled = isWaiting || disabled;
 
   return (
@@ -86,7 +91,7 @@ export const RecordPanel: React.FC<RecordPanelProps> = ({
             <div className="div-2">
               {/* Ask Button - with red overlay when recording */}
               <button
-                className={`button ${isRecording ? 'recording' : ''} ${buttonsDisabled ? 'disabled' : ''}`}
+                className={`button ${isAskRecording ? 'recording' : ''} ${buttonsDisabled ? 'disabled' : ''}`}
                 onClick={handleAskClick}
                 disabled={buttonsDisabled}
                 title="Ask a question"
@@ -94,9 +99,9 @@ export const RecordPanel: React.FC<RecordPanelProps> = ({
                 <div className="answer">Ask</div>
               </button>
 
-              {/* Hint Button - cardboard button with lightbulb */}
+              {/* Hint Button - cardboard button with lightbulb, pressed when hint showing */}
               <button
-                className={`hint-btn ${buttonsDisabled ? 'disabled' : ''}`}
+                className={`hint-btn ${isHintShowing ? 'recording' : ''} ${buttonsDisabled ? 'disabled' : ''}`}
                 onClick={handleHintClick}
                 disabled={buttonsDisabled}
                 title="Get a hint"
@@ -105,12 +110,13 @@ export const RecordPanel: React.FC<RecordPanelProps> = ({
               </button>
             </div>
 
-            {/* Answer Button - locked state controlled by quest completion */}
+            {/* Answer Button - locked state controlled by quest completion, pressed when recording answer */}
             <NextButton
               locked={questState !== 'complete'}
               onClick={onNext}
               label="Answer"
               disabled={buttonsDisabled}
+              isRecording={isAnswerRecording}
             />
           </div>
         </div>
