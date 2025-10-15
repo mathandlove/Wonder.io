@@ -103,7 +103,7 @@ export const RecordPanel: React.FC<RecordPanelProps> = ({
             /* Quest Offer: Single Accept button centered */
             <div className="button-wrapper">
               <button className="button" onClick={onNext} disabled={disabled}>
-                <div className="div">Accept</div>
+                <div className="answer">Accept</div>
               </button>
             </div>
           ) : (
