@@ -110,7 +110,8 @@ export const RecordPanel: React.FC<RecordPanelProps> = ({
             <div className="answer-text-display">
               <p className="answer-text-with-label">
                 <span className="quest-label">Answer:</span>
-                <span className="quest-description"> Someone stole your cookies.</span>
+                <br />
+                <span className="quest-description">Someone stole your cookies.</span>
               </p>
             </div>
           ) : (
