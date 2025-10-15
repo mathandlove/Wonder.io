@@ -4,21 +4,25 @@ type Props = {
   locked: boolean;
   onClick: () => void;
   label?: string; // "Answer" or "Next" - defaults to "Next" for backwards compatibility
+  disabled?: boolean; // Additional disabled state (e.g., during AI waiting)
 };
 
-export default function NextButton({ locked, onClick, label = "Next" }: Props) {
+export default function NextButton({ locked, onClick, label = "Next", disabled = false }: Props) {
   return (
     <button
-      className={`next-btn ${locked ? "locked" : "enabled"}`}
+      className={`next-btn ${locked ? "locked" : "enabled"} ${disabled ? "disabled" : ""}`}
       onClick={(e) => {
         if (locked) {
           // fire a small toast/nudge instead of advancing
           document.dispatchEvent(new CustomEvent("toast", { detail: "Finish the quest to continue." }));
           return;
         }
+        if (disabled) {
+          return; // Do nothing when disabled
+        }
         onClick();
       }}
-      aria-disabled={locked || undefined}
+      aria-disabled={locked || disabled || undefined}
       aria-describedby={locked ? "next-hint" : undefined}
     >
       {locked ? (

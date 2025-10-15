@@ -158,10 +158,14 @@ export function RecordingOrchestrator() {
   // Quest state determines if Next button is enabled
   const questState = quest.state.phase === 'complete' ? 'complete' : 'active';
 
+  // Get dialogue state for visual presentation
+  const dialogueState = sceneState?.type === 'dialogue' ? sceneState.state : 'basic';
+
   return (
     <RecordPanel
       disabled={false}  // Recording is always enabled when this panel shows
       questState={questState}
+      dialogueState={dialogueState}
       onNext={handleContinue}
       onRecordStart={handleRecordStart}
       onRecordStop={handleRecordStop}

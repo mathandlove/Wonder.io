@@ -357,6 +357,58 @@
   z-index: 1;
 }
 
+/* ===================================
+   BUTTON STATE CLASSES
+   =================================== */
+
+/* Recording state - Ask button appears pressed with red overlay */
+.frame .button.recording::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    0deg,
+    rgba(216, 25, 25, 0.17) 0%,
+    rgba(216, 25, 25, 0.17) 100%
+  );
+  border-radius: 16px;
+  pointer-events: none;
+  z-index: 1;
+}
+
+.frame .button.recording {
+  box-shadow: inset 8px 8px 4px rgba(0, 0, 0, 0.25);
+}
+
+/* Disabled state - all buttons are dimmed and non-interactive */
+.frame .button.disabled,
+.frame .hint-btn.disabled,
+.next-btn.disabled {
+  opacity: 0.4;
+  cursor: not-allowed !important;
+  pointer-events: none;
+}
+
+/* Disabled buttons don't get hover effects */
+.frame .button.disabled:hover::after,
+.frame .hint-btn.disabled:hover::after,
+.next-btn.disabled:hover::after {
+  display: none;
+}
+
+/* Disabled buttons don't get active effects */
+.frame .button.disabled:active,
+.frame .hint-btn.disabled:active,
+.next-btn.disabled:active {
+  box-shadow: none;
+}
+
+.frame .button.disabled:active::after,
+.frame .hint-btn.disabled:active::after,
+.next-btn.disabled:active::after {
+  display: none;
+}
+
 .frame .answer {
   align-self: stretch;
   color: #ffffff;

@@ -13,6 +13,7 @@ import './css/RecordPanel.css';
 interface RecordPanelProps {
   disabled: boolean;
   questState: 'active' | 'complete' | 'failed';
+  dialogueState: string; // The scene's dialogue state (basic, input-recording, ai-waiting, etc.)
   questText?: string;
   onNext: () => void;
   onRecordStart: () => void;
@@ -23,6 +24,7 @@ interface RecordPanelProps {
 export const RecordPanel: React.FC<RecordPanelProps> = ({
   disabled,
   questState,
+  dialogueState,
   questText = "Find out what going on.",
   onNext,
   onRecordStart,
@@ -44,8 +46,14 @@ export const RecordPanel: React.FC<RecordPanelProps> = ({
     }
   };
 
-  // Determine if Stop button should be visible (only during recording)
-  const showStopButton = recordingState.isRecording;
+  // Determine visual state based on dialogueState
+  // - basic: No panel shown
+  // - input-recording: Recording active, Stop button visible, Ask button appears pressed
+  // - ai-waiting: All buttons disabled (waiting for AI response)
+  const isRecording = dialogueState === 'input-recording';
+  const isWaiting = dialogueState === 'ai-waiting';
+  const showStopButton = isRecording && recordingState.isRecording;
+  const buttonsDisabled = isWaiting || disabled;
 
   return (
     <div className="record-panel-container">
@@ -74,11 +82,11 @@ export const RecordPanel: React.FC<RecordPanelProps> = ({
         <div className="frame-wrapper">
           <div className="div">
             <div className="div-2">
-              {/* Ask Button - with red overlay */}
+              {/* Ask Button - with red overlay when recording */}
               <button
-                className="button"
+                className={`button ${isRecording ? 'recording' : ''} ${buttonsDisabled ? 'disabled' : ''}`}
                 onClick={handleAskClick}
-                disabled={disabled}
+                disabled={buttonsDisabled}
                 title="Ask a question"
               >
                 <div className="answer">Ask</div>
@@ -86,9 +94,9 @@ export const RecordPanel: React.FC<RecordPanelProps> = ({
 
               {/* Hint Button - cardboard button with lightbulb */}
               <button
-                className="hint-btn"
+                className={`hint-btn ${buttonsDisabled ? 'disabled' : ''}`}
                 onClick={handleHintClick}
-                disabled={disabled}
+                disabled={buttonsDisabled}
                 title="Get a hint"
               >
                 <img className="img" alt="" src="/VisualAssets/lightbulb.svg" />
@@ -100,6 +108,7 @@ export const RecordPanel: React.FC<RecordPanelProps> = ({
               locked={questState !== 'complete'}
               onClick={onNext}
               label="Answer"
+              disabled={buttonsDisabled}
             />
           </div>
         </div>

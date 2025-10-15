@@ -148,22 +148,12 @@ export function StepScrollDebug() {
   };
 
   // RecordPanel state control handlers
-  const setRecordPanelOffscreen = () => {
+  const setRecordPanelHidden = () => {
     sceneManager.updateNavigationItemState(navigationIndex, { type: 'dialogue', state: 'basic' });
   };
 
-  const setRecordPanelAskRecording = () => {
+  const setRecordPanelRecording = () => {
     sceneManager.updateNavigationItemState(navigationIndex, { type: 'dialogue', state: 'input-recording' });
-  };
-
-  const setRecordPanelAnswerRecording = () => {
-    // For answer recording, we'll use input-recording state but with a flag or different approach
-    // For now, using same state as Ask since both show recording UI
-    sceneManager.updateNavigationItemState(navigationIndex, { type: 'dialogue', state: 'input-recording' });
-  };
-
-  const setRecordPanelShowInput = () => {
-    sceneManager.updateNavigationItemState(navigationIndex, { type: 'dialogue', state: 'input-showInput' });
   };
 
   const setRecordPanelAiWaiting = () => {
@@ -383,87 +373,56 @@ export function StepScrollDebug() {
 
       {/* RecordPanel Controls Section */}
       <div style={{ marginTop: '10px', paddingTop: '8px', borderTop: '1px solid #f90' }}>
-        <div style={{ color: '#f90', marginBottom: '8px', fontWeight: 'bold' }}>🎙️ RecordPanel Controls</div>
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '6px' }}>
+        <div style={{ color: '#f90', marginBottom: '8px', fontWeight: 'bold' }}>🎙️ RecordPanel Visual States</div>
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr', gap: '6px' }}>
           <button
-            onClick={setRecordPanelOffscreen}
+            onClick={setRecordPanelHidden}
             style={{
-              padding: '8px',
-              background: currentNavItem?.sceneState.type === 'dialogue' && currentNavItem?.sceneState.state === 'basic' ? '#f90' : '#333',
+              padding: '10px',
+              background: currentNavItem?.sceneState.type === 'dialogue' && currentNavItem?.sceneState.state === 'basic' ? '#666' : '#333',
               color: '#fff',
-              border: '1px solid #f90',
+              border: '2px solid #666',
               borderRadius: '4px',
               cursor: 'pointer',
-              fontSize: '10px',
+              fontSize: '11px',
               fontWeight: 'bold'
             }}
           >
-            Offscreen
+            ❌ No Panel (basic)
           </button>
           <button
-            onClick={setRecordPanelShowInput}
+            onClick={setRecordPanelRecording}
             style={{
-              padding: '8px',
-              background: currentNavItem?.sceneState.type === 'dialogue' && currentNavItem?.sceneState.state === 'input-showInput' ? '#0f0' : '#333',
+              padding: '10px',
+              background: currentNavItem?.sceneState.type === 'dialogue' && currentNavItem?.sceneState.state === 'input-recording' ? '#d81919' : '#333',
               color: '#fff',
-              border: '1px solid #0f0',
+              border: '2px solid #d81919',
               borderRadius: '4px',
               cursor: 'pointer',
-              fontSize: '10px',
+              fontSize: '11px',
               fontWeight: 'bold'
             }}
           >
-            Show Input
-          </button>
-          <button
-            onClick={setRecordPanelAskRecording}
-            style={{
-              padding: '8px',
-              background: currentNavItem?.sceneState.type === 'dialogue' && currentNavItem?.sceneState.state === 'input-recording' ? '#f00' : '#333',
-              color: '#fff',
-              border: '1px solid #f00',
-              borderRadius: '4px',
-              cursor: 'pointer',
-              fontSize: '10px',
-              fontWeight: 'bold'
-            }}
-          >
-            Ask Recording
-          </button>
-          <button
-            onClick={setRecordPanelAnswerRecording}
-            style={{
-              padding: '8px',
-              background: '#333',
-              color: '#fff',
-              border: '1px solid #f0f',
-              borderRadius: '4px',
-              cursor: 'pointer',
-              fontSize: '10px',
-              fontWeight: 'bold'
-            }}
-          >
-            Answer Rec
+            🔴 Recording (Ask pressed + Stop visible)
           </button>
           <button
             onClick={setRecordPanelAiWaiting}
             style={{
-              padding: '8px',
-              background: currentNavItem?.sceneState.type === 'dialogue' && currentNavItem?.sceneState.state === 'ai-waiting' ? '#0ff' : '#333',
+              padding: '10px',
+              background: currentNavItem?.sceneState.type === 'dialogue' && currentNavItem?.sceneState.state === 'ai-waiting' ? '#666' : '#333',
               color: '#fff',
-              border: '1px solid #0ff',
+              border: '2px solid #999',
               borderRadius: '4px',
               cursor: 'pointer',
-              fontSize: '10px',
-              fontWeight: 'bold',
-              gridColumn: 'span 2'
+              fontSize: '11px',
+              fontWeight: 'bold'
             }}
           >
-            AI Waiting
+            ⏳ AI Waiting (all buttons disabled)
           </button>
         </div>
         <div style={{ marginTop: '8px', fontSize: '9px', color: '#888', fontStyle: 'italic' }}>
-          Click to change RecordPanel visibility state
+          Three visual states for RecordPanel testing
         </div>
       </div>
 
