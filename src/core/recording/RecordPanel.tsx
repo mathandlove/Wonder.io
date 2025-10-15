@@ -1,7 +1,7 @@
 /**
  * RecordPanel - Pure presentational recording UI
  *
- * Displays: Hint button, Record button, Next button, Toast notifications
+ * Displays: Stop button (above), Quest label, Ask button, Hint button, Answer button, Toast notifications
  * All logic handled by RecordPanelOrchestrator
  */
 import React from 'react';
@@ -13,64 +13,92 @@ import './css/RecordPanel.css';
 interface RecordPanelProps {
   disabled: boolean;
   questState: 'active' | 'complete' | 'failed';
+  questText?: string;
   onNext: () => void;
   onRecordStart: () => void;
   onRecordStop: () => void;
+  onAskClick?: () => void;
 }
 
 export const RecordPanel: React.FC<RecordPanelProps> = ({
   disabled,
   questState,
+  questText = "Find out what going on.",
   onNext,
   onRecordStart,
-  onRecordStop
+  onRecordStop,
+  onAskClick
 }) => {
   const { state: recordingState } = useRecording();
   const { toast, hideToast } = useToast();
-
-  const buttonClassName = `chat-record-button ${recordingState.isRecording ? 'recording' : ''}`;
-
-  const handleRecordClick = () => {
-    if (disabled) return;
-
-    if (recordingState.isRecording) {
-      onRecordStop();
-    } else {
-      onRecordStart();
-    }
-  };
 
   const handleHintClick = () => {
     if (disabled) return;
     // TODO: Implement hint functionality
   };
 
+  const handleAskClick = () => {
+    if (disabled) return;
+    if (onAskClick) {
+      onAskClick();
+    }
+  };
 
   return (
     <div className="record-panel-container">
-      <div className="simplified-chat-rail">
-        <button
-          className="chat-hint-button"
-          onClick={handleHintClick}
-          disabled={disabled}
-          title="Get a hint"
-        >
-          <div className="hint-icon-mask"></div>
-        </button>
+      {/* Main Frame - matching Figma exactly */}
+      <div className="frame">
+        {/* Stop Recording Button - positioned absolutely above frame */}
+        {/* Temporarily always showing for testing */}
+        <div className="record-button" onClick={onRecordStop}>
+          <div className="ellipse" />
+          <img className="vector" alt="Stop recording" src="/VisualAssets/recordIcon.svg" />
+          <div className="text-wrapper">Stop</div>
+        </div>
 
-        <button
-          className={buttonClassName}
-          onClick={handleRecordClick}
-          disabled={disabled}
-          title={recordingState.isRecording ? 'Stop recording' : 'Start recording'}
-        >
-          <div className="record-icon-mask"></div>
-        </button>
+        {/* Quest Section - white card with shadow */}
+        <div className="whiteframe">
+          <div className="quest">
+            <p className="quest-find-out-what">
+              <span className="span">Quest:</span>
+              <span className="text-wrapper-2"> {questText}</span>
+            </p>
+          </div>
+        </div>
 
-        <NextButton
-          locked={questState !== 'complete'}
-          onClick={onNext}
-        />
+        {/* Button Rail - white background with buttons */}
+        <div className="frame-wrapper">
+          <div className="div">
+            <div className="div-2">
+              {/* Ask Button - with red overlay */}
+              <button
+                className="button"
+                onClick={handleAskClick}
+                disabled={disabled}
+                title="Ask a question"
+              >
+                <div className="answer">Ask</div>
+              </button>
+
+              {/* Hint Button - cardboard button with lightbulb */}
+              <button
+                className="hint-btn"
+                onClick={handleHintClick}
+                disabled={disabled}
+                title="Get a hint"
+              >
+                <img className="img" alt="" src="/VisualAssets/lightbulb.svg" />
+              </button>
+            </div>
+
+            {/* Answer Button - temporarily always enabled for testing */}
+            <NextButton
+              locked={false}
+              onClick={onNext}
+              label="Answer"
+            />
+          </div>
+        </div>
       </div>
 
       {/* Accessibility hint for locked state */}

@@ -1,331 +1,484 @@
-/* Record Panel Container - anchored bottom rail UI layer */
+/* ===================================
+   RECORD PANEL - EXACT FIGMA STRUCTURE
+   =================================== */
+
+/* Record Panel Container - wrapper for positioning */
 .record-panel-container,
 .chat-composer-container {
   position: fixed;
-  bottom: 40px;
+  bottom: 0; /* Flush with bottom of window */
   left: 50%;
   transform: translateX(-50%);
   display: flex;
+  flex-direction: column;
   align-items: center;
-  justify-content: center;
-  gap: 12px;
-  z-index: 1100; /* Above quest hand stamp video (1001) and quest layer (300) */
-   /* Top, horizontal, bottom padding */
+  justify-content: flex-end;
+  gap: 0;
+  z-index: 1100;
   background: transparent;
+  pointer-events: none;
 }
 
-/* Waiting state styles - desaturate and disable interactions */
-.chat-record-button.waiting {
-  opacity: 0.5;
-  cursor: not-allowed !important;
-  transform: none !important;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1) !important;
-  border-color: #ccc !important;
-  filter: grayscale(50%);
+.record-panel-container > *,
+.chat-composer-container > * {
+  pointer-events: auto;
 }
 
-.chat-record-button.waiting:hover {
-  transform: none !important;
-  background: none !important;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1) !important;
+/* ===================================
+   MAIN FRAME
+   =================================== */
+
+.frame {
+  align-items: flex-start;
+  background-image: url(/VisualAssets/cardboard.png);
+  background-position: center;
+  background-size: 360px 540px; /* 30% of original 1200×1800px (1200×0.3=360, 1800×0.3=540) */
+  background-repeat: repeat; /* Tile the texture instead of stretching */
+  border-color: #49301d;
+  border-left-style: solid;
+  border-left-width: 7px;
+  border-radius: 32px 32px 0px 0px;
+  border-right-style: solid;
+  border-right-width: 7px;
+  border-top-style: solid;
+  border-top-width: 7px;
+  display: inline-flex;
+  flex-direction: column;
+  padding: 10px 10px 0px; /* Reduced from 32px to 10px for tighter cardboard frame */
+  position: relative;
+  max-width: 90vw; /* Never wider than 90% of viewport width */
+  min-width: 560px; /* Minimum width to fit all buttons: 192+15+59+40+192+40+20+2 = 560px */
+  box-sizing: border-box; /* Include borders in width calculation */
 }
 
-.chat-hint-button.waiting {
-  opacity: 0.5;
-  cursor: not-allowed !important;
-  transform: none !important;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1) !important;
-  border-color: #ccc !important;
-  filter: grayscale(50%);
-}
+/* ===================================
+   RECORD BUTTON (STOP)
+   =================================== */
 
-.chat-hint-button.waiting:hover {
-  transform: none !important;
-  background: none !important;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1) !important;
-}
-
-/* Record button styling */
-.chat-record-button {
-  width: 100px !important;
-  height: 100px !important;
-  border-radius: 50% !important;
-  padding: 0 !important;
-  background-image: url('/VisualAssets/cardboard.png') !important;
-  background-size: cover !important;
-  background-position: center !important;
-  border: 4px solid #8B4513 !important;
-  cursor: pointer !important;
-  display: flex !important;
-  align-items: center !important;
-  justify-content: center !important;
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2) !important;
-  position: relative !important;
-}
-
-/* Hint button styling - pill shape like next button */
-.chat-hint-button {
-  min-width: 96px !important;
-  height: 48px !important;
-  padding: 0 16px !important;
-  border-radius: 24px !important; /* pill shape */
-  background-image: url('/VisualAssets/cardboard.png') !important;
-  background-size: cover !important;
-  background-position: center !important;
-  border: 4px solid #8B4513 !important;
-  cursor: pointer !important;
-  display: inline-flex !important;
-  align-items: center !important;
-  justify-content: center !important;
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2) !important;
-  position: relative !important;
-}
-
-.chat-record-button:hover:not(.recording) {
-  transform: translateY(-4px) scale(1.05) !important;
-  border-color: #45a049 !important;
-  box-shadow: 0 8px 20px rgba(76, 175, 80, 0.4) !important;
-  background-color: rgba(76, 175, 80, 0.1) !important;
-}
-
-.chat-record-button:hover:not(.recording) .record-icon-mask {
-  transform: scale(1.1) !important;
-}
-
-/* Hint button hover state */
-.chat-hint-button:hover {
-  transform: translateY(-4px) scale(1.05) !important;
-  border-color: #FFC107 !important;
-  box-shadow: 0 8px 20px rgba(255, 193, 7, 0.4) !important;
-  background-color: rgba(255, 193, 7, 0.1) !important;
-}
-
-.chat-hint-button:hover .hint-icon-mask {
-  transform: scale(1.1) !important;
-}
-
-/* Recording state styling */
-.chat-record-button.recording {
-  border-color: #FF6B35 !important;
-  background-color: rgba(255, 107, 53, 0.2) !important;
-  animation: recordingPulse 1.5s ease-in-out infinite !important;
-}
-
-.chat-record-button.recording .record-icon-mask {
-  display: none !important;
-}
-
-.chat-record-button.recording::after {
-  content: "Tap to\AStop";
-  white-space: pre;
+.frame .record-button {
+  align-items: center;
+  display: flex;
+  flex-direction: column;
+  gap: 5px; /* Reduced from 12px to 5px - space between microphone and "Stop" text */
+  height: 196px;
+  left: 50%; /* Center horizontally */
+  transform: translateX(-50%); /* Center horizontally */
+  padding: 32px 0px;
   position: absolute;
-  color: white;
-  font-size: 8px;
-  font-weight: bold;
-  text-align: center;
-  text-transform: uppercase;
-  letter-spacing: 1px;
-  line-height: 1.2;
-  text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.5);
+  top: -94.5px; /* Lowered by 5px from -99.5px - circle overlaps quest box slightly */
+  width: 192px; /* Same width as Ask button */
+  cursor: pointer;
 }
 
+.frame .ellipse {
+  aspect-ratio: 1;
+  background-color: #d81919;
+  border: 4px solid;
+  border-color: #ffffff;
+  border-radius: 94.5px;
+  box-shadow: inset 11px 11px 4px #00000040;
+  height: 189px;
+  left: 50%;
+  transform: translateX(-50%); /* Center the circle */
+  position: absolute;
+  top: 15px;
+  width: 189px;
+  /* Figma noise: size 0.5 (baseFrequency 0.5), density 100%, color #431b1b at 43% opacity */
+  background-image: linear-gradient(0deg, rgba(67, 27, 27, 0.43) 0%, rgba(67, 27, 27, 0.43) 100%),
+    url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.5' numOctaves='1' /%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' /%3E%3C/svg%3E");
+  background-blend-mode: normal, overlay;
+  /* Crop to show only top half with straight horizontal cut at diameter midline */
+  clip-path: inset(0 0 50% 0); /* Crop bottom half - show only top 50% */
+  overflow: hidden;
+  transition: all 0.2s ease-in-out;
+  /* Pulsing animation to indicate active recording */
+  animation: recordingPulse 1.2s ease-in-out infinite; /* Faster, more urgent pulse */
+}
+
+/* Recording pulse animation - dramatic brightness pulse */
 @keyframes recordingPulse {
   0%, 100% {
-    box-shadow: 0 0 20px rgba(255, 107, 53, 0.6);
+    background-color: #d81919; /* Dark red */
+    box-shadow: inset 11px 11px 4px #00000040;
+    filter: brightness(1);
   }
   50% {
-    box-shadow: 0 0 40px rgba(255, 107, 53, 0.9);
+    background-color: #ff4444; /* Bright vibrant red */
+    box-shadow: inset 11px 11px 2px #00000010; /* Much lighter shadow for intense glow */
+    filter: brightness(1.3); /* Extra brightness boost */
   }
 }
 
-/* Icon masks */
-.record-icon-mask {
-  width: 40px;
-  height: 40px;
-  background-color: white;
-  mask-image: url('/VisualAssets/recordIcon.svg');
-  -webkit-mask-image: url('/VisualAssets/recordIcon.svg');
-  mask-size: contain;
-  -webkit-mask-size: contain;
-  mask-repeat: no-repeat;
-  -webkit-mask-repeat: no-repeat;
-  mask-position: center;
-  -webkit-mask-position: center;
-  transition: transform 0.3s ease;
+/* Hover state - make it pop! Pauses animation and shows inverted shadow */
+.frame .record-button:hover .ellipse {
+  animation-play-state: paused; /* Freeze the pulse animation on hover */
+  background-color: #ff3333 !important; /* Lighter, brighter red - override animation */
+  box-shadow: inset 0px 2px 6px 0px rgba(0, 0, 0, 0.5) !important; /* Inverted shadow from top - opposite of quest box */
+  filter: brightness(1.4) !important; /* Extra bright on hover */
+  background-image: linear-gradient(0deg, rgba(255, 80, 80, 0.3) 0%, rgba(255, 80, 80, 0.3) 100%),
+    url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.5' numOctaves='1' /%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' /%3E%3C/svg%3E");
 }
 
-.hint-icon-mask {
-  width: 24px;
-  height: 24px;
-  background-color: white;
-  mask-image: url('/VisualAssets/lightbulb.svg');
-  -webkit-mask-image: url('/VisualAssets/lightbulb.svg');
-  mask-size: contain;
-  -webkit-mask-size: contain;
-  mask-repeat: no-repeat;
-  -webkit-mask-repeat: no-repeat;
-  mask-position: center;
-  -webkit-mask-position: center;
-  transition: transform 0.3s ease;
+/* Hover effect on text and icon */
+.frame .record-button:hover .vector,
+.frame .record-button:hover .text-wrapper {
+  transform: scale(1.05);
 }
 
-/* Dialogue state-driven button animations */
-.chat-record-button.hidden {
-  opacity: 0 !important;
-  transform: translateY(120px) !important;
-  pointer-events: none !important;
-  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1) !important;
+.frame .vector,
+.frame .text-wrapper {
+  transition: transform 0.2s ease-in-out;
 }
 
-.chat-record-button.slide-up {
-  opacity: 1 !important;
-  transform: translateY(0) !important;
-  pointer-events: auto !important;
-  animation: slideUpBounce 0.6s cubic-bezier(0.34, 1.56, 0.64, 1) !important;
-  display: flex !important;
-  visibility: visible !important;
-}
-
-@keyframes slideUpBounce {
-  0% {
-    opacity: 0;
-    transform: translateY(120px) scale(0.8);
-  }
-  60% {
-    transform: translateY(-10px) scale(1.05);
-  }
-  80% {
-    transform: translateY(5px) scale(0.98);
-  }
-  100% {
-    opacity: 1;
-    transform: translateY(0) scale(1);
-  }
-}
-
-/* Animation for container exit */
-.chat-composer-container.exit-bottom {
-  animation: chatExitBottom 0.6s cubic-bezier(0.4, 0, 0.6, 1) forwards;
-}
-
-@keyframes chatExitBottom {
-  from {
-    bottom: 40px;
-    opacity: 1;
-  }
-  to {
-    bottom: -200px;
-    opacity: 0;
-  }
-}
-
-/* Simplified Chat Rail - just microphone and next button on cardboard */
-.simplified-chat-rail {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 48px; /* increased spacing */
-  padding: 12px 24px 12px 24px;
-  background-image: url('/VisualAssets/cardboard.png');
-  background-size: cover;
-  background-position: center;
-  border: 3px solid #8B4513;
-  border-radius: 16px;
-  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.25);
-  max-width: min(480px, calc(100vw - 48px));
-  min-height: 100px; /* Allow room for 100px button */
-  margin: 0 auto;
+.frame .vector {
+  height: 37.5px; /* 25px * 1.5 = 37.5px (50% increase) */
   position: relative;
-  overflow: visible; /* Don't clip the button animation */
+  width: 37.5px; /* 25px * 1.5 = 37.5px (50% increase) */
+  z-index: 1;
+  filter: brightness(0) invert(1); /* Make microphone white */
 }
 
-/* Parchment inner area for simplified rail */
-.simplified-chat-rail::after {
-  content: '';
-  position: absolute;
-  top: 3px;
-  left: 3px;
-  right: 3px;
-  bottom: 3px;
-  background: linear-gradient(135deg, rgba(245, 220, 180, 0.9), rgba(225, 195, 150, 0.9));
-  border-radius: 8px;
-  pointer-events: none;
-  z-index: 0;
-}
-
-/* Content positioned above pseudo-elements */
-.simplified-chat-rail > * {
+.frame .text-wrapper {
+  color: #ffffff;
+  font-family: "Inter", Helvetica, sans-serif;
+  font-size: 20px;
+  font-weight: 700;
+  letter-spacing: 0;
+  line-height: normal;
   position: relative;
+  text-align: center;
+  white-space: nowrap;
+  width: fit-content;
   z-index: 1;
 }
 
-/* Next Button */
-.next-btn {
-  min-width: 96px;
-  height: 48px; /* back to original height */
-  padding: 0 16px;
-  border-radius: 24px; /* back to original pill shape */
-  display: inline-flex;
+/* ===================================
+   QUEST SECTION (WHITE FRAME)
+   =================================== */
+
+.frame .whiteframe {
   align-items: center;
+  background: linear-gradient(
+      0deg,
+      rgba(73, 48, 29, 0.2) 0%,
+      rgba(73, 48, 29, 0.2) 100%
+    ),
+    linear-gradient(
+      0deg,
+      rgba(255, 255, 255, 1) 0%,
+      rgba(255, 255, 255, 1) 100%
+    );
+  border-color: #49301d;
+  border-left-style: solid;
+  border-left-width: 1px;
+  border-radius: 16px 16px 0px 0px;
+  border-right-style: solid;
+  border-right-width: 1px;
+  border-top-style: solid;
+  border-top-width: 1px;
+  box-shadow: inset 0px -2px 4px 0px #000000; /* Added spread radius of 0 to prevent horizontal shadow */
+  display: flex;
+  flex: 0 0 auto;
+  flex-direction: column;
+  gap: 34px;
+  justify-content: center;
+  padding: 0px 20px;
+  position: relative;
+  width: 100%; /* Expand to fill frame width instead of fixed 620px */
+  min-width: 540px; /* Match button rail minimum width (560px - 20px padding) */
+  box-sizing: border-box; /* Include padding and borders in width calculation */
+}
+
+.frame .quest {
+  align-items: flex-start; /* Align to start instead of center */
+  display: flex; /* Changed from inline-flex */
+  flex: 0 0 auto;
+  gap: 0; /* Remove internal gap */
+  justify-content: flex-start; /* Align to start instead of center */
+  padding: 21px 20px; /* Symmetric padding: 21px top/bottom, 20px left/right */
+  position: relative;
+  width: 100%; /* Full width of parent */
+}
+
+.frame .quest-find-out-what {
+  color: transparent;
+  font-family: "Inter", Helvetica, sans-serif;
+  font-size: 24px;
+  font-weight: 400;
+  letter-spacing: 0;
+  line-height: normal;
+  margin: 0; /* Remove all margins */
+  padding: 0; /* Remove all padding */
+  position: relative;
+  width: 100%; /* Expand to fill available space */
+  max-width: 100%; /* Prevent overflow */
+  word-wrap: break-word; /* Allow text to wrap on narrow screens */
+}
+
+.frame .span {
+  color: #b2652a;
+  font-weight: 700;
+}
+
+.frame .text-wrapper-2 {
+  color: #5c5c5c;
+  font-family: "Inter", Helvetica, sans-serif;
+  font-weight: 400;
+}
+
+/* ===================================
+   BUTTON RAIL (FRAME WRAPPER)
+   =================================== */
+
+.frame .frame-wrapper {
+  align-items: center;
+  background-color: #ffffff;
+  border-bottom-style: solid;
+  border-bottom-width: 1px;
+  border-color: #49301d;
+  border-left-style: solid;
+  border-left-width: 1px;
+  border-right-style: solid;
+  border-right-width: 1px;
+  display: flex;
+  flex: 0 0 auto;
+  flex-direction: column;
+  gap: 34px;
+  padding: 18px 20px;
+  position: relative;
+  width: 100%; /* Expand to fill frame width instead of fixed 620px */
+  min-width: 540px; /* Minimum to fit buttons: 192+15+59+40+192+40 = 538px, rounded to 540px */
+  box-sizing: border-box; /* Include padding and borders in width calculation */
+}
+
+.frame .div {
+  align-items: center;
+  align-self: stretch;
+  display: flex;
+  height: 55px; /* Reduced from 75px to match button height */
+  justify-content: space-between;
+  position: relative;
+  width: 100%;
+  gap: 60px; /* Minimum 60px spacing between Ask/Hint group and Answer button */
+}
+
+.frame .div-2 {
+  align-items: center;
+  display: inline-flex;
+  flex: 0 0 auto;
+  gap: 15px;
   justify-content: center;
   position: relative;
-  transition: transform .12s ease, background .12s ease;
-  border: none;
+}
+
+/* ===================================
+   SHARED BUTTON STYLES (ASK, HINT, ANSWER)
+   =================================== */
+
+/* Base button idle state - cardboard texture only */
+.frame .button,
+.frame .hint-btn,
+.next-btn {
+  all: unset;
+  align-items: center;
+  background-image: url(/VisualAssets/cardboard.png);
+  background-position: center;
+  background-size: 360px 540px; /* 30% of original 1200×1800px (1200×0.3=360, 1800×0.3=540) */
+  background-repeat: repeat; /* Tile the texture instead of stretching */
+  border: 3px solid;
+  border-color: #49301d;
+  border-radius: 16px;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  height: 55px; /* Reduced from 75px by 20px */
+  justify-content: center;
+  padding: 8px 38px; /* Reduced vertical padding from 18px to 8px */
+  position: relative;
   cursor: pointer;
-  font-size: 20px;
+  transition: all 0.15s ease;
 }
 
-.next-btn.enabled {
-  background: #f6d07f; /* gold color */
-  box-shadow: 0 2px 0 rgba(0,0,0,.2);
-  color: #5d4037;
+/* Ask button specific width */
+.frame .button {
+  width: 192px;
 }
 
-.next-btn.enabled:active {
-  transform: translateY(1px);
+/* Hint button specific width - tight */
+.frame .hint-btn {
+  width: 59px;
+  padding: 9px 20px; /* Reduced vertical padding from 19px to 9px (10px reduction) */
 }
 
-.next-btn.enabled:hover {
-  background: #f4c842;
-  transform: translateY(-1px);
+/* Answer button specific width */
+.next-btn {
+  width: 192px;
 }
 
+/* Hover state - red tint like pressed state */
+.frame .button:hover::after,
+.frame .hint-btn:hover::after,
+.next-btn:hover::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    0deg,
+    rgba(216, 25, 25, 0.17) 0%,
+    rgba(216, 25, 25, 0.17) 100%
+  ); /* Same red overlay as pressed state */
+  border-radius: 16px;
+  pointer-events: none;
+  z-index: 1;
+}
+
+/* Active/Pressed state - red overlay + inset shadow */
+.frame .button:active,
+.frame .hint-btn:active,
+.next-btn:active {
+  box-shadow: inset 8px 8px 4px rgba(0, 0, 0, 0.25);
+}
+
+/* Red tint overlay on press (overrides hover) */
+.frame .button:active::after,
+.frame .hint-btn:active::after,
+.next-btn:active::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    0deg,
+    rgba(216, 25, 25, 0.17) 0%,
+    rgba(216, 25, 25, 0.17) 100%
+  ) !important; /* Override hover state */
+  border-radius: 16px;
+  pointer-events: none;
+  z-index: 1;
+}
+
+.frame .answer {
+  align-self: stretch;
+  color: #ffffff;
+  flex: 1;
+  font-family: "Inter", Helvetica, sans-serif;
+  font-size: 32px;
+  font-weight: 700;
+  letter-spacing: 0;
+  line-height: normal;
+  margin-top: -3px;
+  position: relative;
+  text-align: center;
+  z-index: 2;
+}
+
+/* ===================================
+   HINT BUTTON - ICON STYLING
+   =================================== */
+
+/* Hint button uses shared styles above, this is just for the icon */
+.frame .img {
+  height: 35px;
+  width: 35px;
+  object-fit: contain;
+  position: relative;
+  filter: brightness(0) invert(1); /* Makes the icon white */
+  z-index: 2; /* Above any overlays */
+}
+
+/* ===================================
+   ANSWER BUTTON (NextButton wrapper)
+   =================================== */
+
+/* Answer button uses shared styles defined above with .next-btn */
+
+.frame .text-wrapper-3 {
+  color: #ffffff;
+  font-family: "Inter", Helvetica, sans-serif;
+  font-size: 32px;
+  font-weight: 700;
+  letter-spacing: 0;
+  line-height: normal;
+  margin-left: -2.5px;
+  margin-right: -2.5px;
+  margin-top: -3px;
+  position: relative;
+  text-align: center;
+  width: fit-content;
+}
+
+/* ===================================
+   NEXTBUTTON INTEGRATION
+   =================================== */
+
+/* NextButton uses shared button styles defined above */
+
+/* Locked state - disable interactions but keep cardboard visible */
 .next-btn.locked {
-  background: linear-gradient(145deg, #7a7a7a, #4a4a4a); /* gray gradient */
-  box-shadow: 0 2px 0 rgba(0,0,0,.3);
   cursor: not-allowed;
+  opacity: 0.5; /* Dim when locked */
 }
 
-.next-btn .arrow {
-  font-size: 20px;
-  font-weight: bold;
-  color: #5d4037;
+/* Locked state doesn't get hover/active effects */
+.next-btn.locked:hover::after {
+  display: none; /* No hover overlay when locked */
 }
 
-/* Faded background NEXT text that appears blocked */
+.next-btn.locked:active {
+  box-shadow: none;
+}
+
+.next-btn.locked:active::after {
+  display: none; /* No red overlay when locked */
+}
+
+.next-label-text {
+  color: #ffffff;
+  font-family: "Inter", Helvetica, sans-serif;
+  font-size: 32px;
+  font-weight: 700;
+  letter-spacing: 0;
+  line-height: normal;
+  margin-left: -2.5px;
+  margin-right: -2.5px;
+  margin-top: -3px;
+  position: relative;
+  text-align: center;
+  width: fit-content;
+  z-index: 1;
+}
+
 .next-label-background {
-  font-family: 'Comic Sans MS', cursive;
+  font-family: "Inter", Helvetica, sans-serif;
   font-size: 14px;
-  font-weight: bold;
-  color: rgba(255, 255, 255, 0.3); /* very faded white */
+  font-weight: 700;
+  color: rgba(255, 255, 255, 0.3);
   text-transform: uppercase;
   letter-spacing: 1px;
   position: absolute;
   z-index: 1;
 }
 
-/* Lock overlay that sits on top of the NEXT text */
 .lock-image-overlay {
   width: 24px;
   height: 24px;
   object-fit: contain;
   position: absolute;
-  z-index: 2; /* above the text */
+  z-index: 2;
 }
 
-/* Toast notifications */
+.next-btn .arrow {
+  font-size: 20px;
+  font-weight: bold;
+  color: white;
+  position: relative;
+  z-index: 1;
+}
+
+/* ===================================
+   TOAST NOTIFICATIONS
+   =================================== */
+
 .toast {
   position: fixed;
   top: 50%;
@@ -335,7 +488,7 @@
   color: white;
   padding: 12px 24px;
   border-radius: 8px;
-  font-family: 'Comic Sans MS', cursive;
+  font-family: "Inter", Helvetica, sans-serif;
   font-size: 16px;
   z-index: 2000;
   animation: toastFadeIn 0.3s ease-out;
@@ -353,11 +506,33 @@
   }
 }
 
-/* Accessibility */
+/* ===================================
+   ACCESSIBILITY
+   =================================== */
+
 .visually-hidden {
   position: absolute;
   left: -9999px;
   width: 1px;
   height: 1px;
   overflow: hidden;
+}
+
+/* ===================================
+   ANIMATIONS
+   =================================== */
+
+.chat-composer-container.exit-bottom {
+  animation: chatExitBottom 0.6s cubic-bezier(0.4, 0, 0.6, 1) forwards;
+}
+
+@keyframes chatExitBottom {
+  from {
+    bottom: 40px;
+    opacity: 1;
+  }
+  to {
+    bottom: -200px;
+    opacity: 0;
+  }
 }

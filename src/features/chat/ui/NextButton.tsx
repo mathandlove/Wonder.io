@@ -3,9 +3,10 @@ import React from "react";
 type Props = {
   locked: boolean;
   onClick: () => void;
+  label?: string; // "Answer" or "Next" - defaults to "Next" for backwards compatibility
 };
 
-export default function NextButton({ locked, onClick }: Props) {
+export default function NextButton({ locked, onClick, label = "Next" }: Props) {
   return (
     <button
       className={`next-btn ${locked ? "locked" : "enabled"}`}
@@ -22,11 +23,11 @@ export default function NextButton({ locked, onClick }: Props) {
     >
       {locked ? (
         <>
-          <span className="next-label-background">NEXT</span>
+          <span className="next-label-background">{label.toUpperCase()}</span>
           <img src="/VisualAssets/lock.png" alt="" className="lock-image-overlay" aria-hidden />
         </>
       ) : (
-        <span className="arrow" aria-hidden>›</span>
+        <span className="next-label-text">{label}</span>
       )}
     </button>
   );
