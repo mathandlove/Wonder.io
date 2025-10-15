@@ -60,6 +60,7 @@
   min-width: 560px; /* Minimum width to fit all buttons: 192+15+59+40+192+40+20+2 = 560px */
   box-sizing: border-box; /* Include borders in width calculation */
   animation: breathingGlow 10s ease-in-out infinite; /* TEMP: Testing glow on all states */
+  box-shadow: 0 0 40px 10px rgba(255, 190, 60, 0.8); /* TEMP: Static bright glow to test visibility */
 }
 
 /* Quest Offer State - glowing yellow effect */
