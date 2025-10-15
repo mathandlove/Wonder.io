@@ -44,17 +44,21 @@ export const RecordPanel: React.FC<RecordPanelProps> = ({
     }
   };
 
+  // Determine if Stop button should be visible (only during recording)
+  const showStopButton = recordingState.isRecording;
+
   return (
     <div className="record-panel-container">
       {/* Main Frame - matching Figma exactly */}
       <div className="frame">
-        {/* Stop Recording Button - positioned absolutely above frame */}
-        {/* Temporarily always showing for testing */}
-        <div className="record-button" onClick={onRecordStop}>
-          <div className="ellipse" />
-          <img className="vector" alt="Stop recording" src="/VisualAssets/recordIcon.svg" />
-          <div className="text-wrapper">Stop</div>
-        </div>
+        {/* Stop Recording Button - only visible during recording */}
+        {showStopButton && (
+          <div className="record-button" onClick={onRecordStop}>
+            <div className="ellipse" />
+            <img className="vector" alt="Stop recording" src="/VisualAssets/recordIcon.svg" />
+            <div className="text-wrapper">Stop</div>
+          </div>
+        )}
 
         {/* Quest Section - white card with shadow */}
         <div className="whiteframe">
@@ -91,9 +95,9 @@ export const RecordPanel: React.FC<RecordPanelProps> = ({
               </button>
             </div>
 
-            {/* Answer Button - temporarily always enabled for testing */}
+            {/* Answer Button - locked state controlled by quest completion */}
             <NextButton
-              locked={false}
+              locked={questState !== 'complete'}
               onClick={onNext}
               label="Answer"
             />

@@ -13,6 +13,7 @@ import { useEffect, useState } from 'react';
 import { useSceneManager } from '@core/scenes/SceneManager';
 import { useDialogue } from '@core/dialogue/DialogueContext';
 import { useSceneFlowMetadata } from '@core/data/FlowMetadataStore';
+import { useQuest } from '@features/quest/QuestManager';
 import type { Scene } from '@core/types/scene';
 import type { ImageState } from '@core/dialogue/types';
 
@@ -58,6 +59,9 @@ export function StepScrollDebug() {
   const currentNavItem = navigationArray[navigationIndex];
   const currentScene = currentNavItem?.scene as (Scene & { sceneId?: string, flowId?: string }) | undefined;
   const flowMetadata = useSceneFlowMetadata(currentScene);
+
+  // Get quest state for Answer button control
+  const quest = useQuest();
 
   // Try to get dialogue context, may be undefined if not in provider tree
   let dialogue;
@@ -111,6 +115,29 @@ export function StepScrollDebug() {
       return `quest: ${sceneState.state}`;
     }
     return 'unknown';
+  };
+
+  // RecordPanel state control handlers
+  const setRecordPanelOffscreen = () => {
+    sceneManager.updateNavigationItemState(navigationIndex, { type: 'dialogue', state: 'basic' });
+  };
+
+  const setRecordPanelAskRecording = () => {
+    sceneManager.updateNavigationItemState(navigationIndex, { type: 'dialogue', state: 'input-recording' });
+  };
+
+  const setRecordPanelAnswerRecording = () => {
+    // For answer recording, we'll use input-recording state but with a flag or different approach
+    // For now, using same state as Ask since both show recording UI
+    sceneManager.updateNavigationItemState(navigationIndex, { type: 'dialogue', state: 'input-recording' });
+  };
+
+  const setRecordPanelShowInput = () => {
+    sceneManager.updateNavigationItemState(navigationIndex, { type: 'dialogue', state: 'input-showInput' });
+  };
+
+  const setRecordPanelAiWaiting = () => {
+    sceneManager.updateNavigationItemState(navigationIndex, { type: 'dialogue', state: 'ai-waiting' });
   };
 
 
@@ -312,6 +339,135 @@ export function StepScrollDebug() {
             </div>
           </div>
         )}
+      </div>
+
+      {/* RecordPanel Controls Section */}
+      <div style={{ marginTop: '10px', paddingTop: '8px', borderTop: '1px solid #f90' }}>
+        <div style={{ color: '#f90', marginBottom: '8px', fontWeight: 'bold' }}>🎙️ RecordPanel Controls</div>
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '6px' }}>
+          <button
+            onClick={setRecordPanelOffscreen}
+            style={{
+              padding: '8px',
+              background: currentNavItem?.sceneState.type === 'dialogue' && currentNavItem?.sceneState.state === 'basic' ? '#f90' : '#333',
+              color: '#fff',
+              border: '1px solid #f90',
+              borderRadius: '4px',
+              cursor: 'pointer',
+              fontSize: '10px',
+              fontWeight: 'bold'
+            }}
+          >
+            Offscreen
+          </button>
+          <button
+            onClick={setRecordPanelShowInput}
+            style={{
+              padding: '8px',
+              background: currentNavItem?.sceneState.type === 'dialogue' && currentNavItem?.sceneState.state === 'input-showInput' ? '#0f0' : '#333',
+              color: '#fff',
+              border: '1px solid #0f0',
+              borderRadius: '4px',
+              cursor: 'pointer',
+              fontSize: '10px',
+              fontWeight: 'bold'
+            }}
+          >
+            Show Input
+          </button>
+          <button
+            onClick={setRecordPanelAskRecording}
+            style={{
+              padding: '8px',
+              background: currentNavItem?.sceneState.type === 'dialogue' && currentNavItem?.sceneState.state === 'input-recording' ? '#f00' : '#333',
+              color: '#fff',
+              border: '1px solid #f00',
+              borderRadius: '4px',
+              cursor: 'pointer',
+              fontSize: '10px',
+              fontWeight: 'bold'
+            }}
+          >
+            Ask Recording
+          </button>
+          <button
+            onClick={setRecordPanelAnswerRecording}
+            style={{
+              padding: '8px',
+              background: '#333',
+              color: '#fff',
+              border: '1px solid #f0f',
+              borderRadius: '4px',
+              cursor: 'pointer',
+              fontSize: '10px',
+              fontWeight: 'bold'
+            }}
+          >
+            Answer Rec
+          </button>
+          <button
+            onClick={setRecordPanelAiWaiting}
+            style={{
+              padding: '8px',
+              background: currentNavItem?.sceneState.type === 'dialogue' && currentNavItem?.sceneState.state === 'ai-waiting' ? '#0ff' : '#333',
+              color: '#fff',
+              border: '1px solid #0ff',
+              borderRadius: '4px',
+              cursor: 'pointer',
+              fontSize: '10px',
+              fontWeight: 'bold',
+              gridColumn: 'span 2'
+            }}
+          >
+            AI Waiting
+          </button>
+        </div>
+        <div style={{ marginTop: '8px', fontSize: '9px', color: '#888', fontStyle: 'italic' }}>
+          Click to change RecordPanel visibility state
+        </div>
+      </div>
+
+      {/* Quest Controls Section - Answer Button Lock State */}
+      <div style={{ marginTop: '10px', paddingTop: '8px', borderTop: '1px solid #ff0' }}>
+        <div style={{ color: '#ff0', marginBottom: '8px', fontWeight: 'bold' }}>🎯 Quest & Answer Button</div>
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '6px' }}>
+          <button
+            onClick={() => quest.complete()}
+            style={{
+              padding: '8px',
+              background: quest.state.phase === 'complete' ? '#0f0' : '#333',
+              color: '#fff',
+              border: '1px solid #0f0',
+              borderRadius: '4px',
+              cursor: 'pointer',
+              fontSize: '10px',
+              fontWeight: 'bold'
+            }}
+          >
+            ✅ Answer Unlocked
+          </button>
+          <button
+            onClick={() => quest.reset()}
+            style={{
+              padding: '8px',
+              background: quest.state.phase !== 'complete' ? '#f00' : '#333',
+              color: '#fff',
+              border: '1px solid #f00',
+              borderRadius: '4px',
+              cursor: 'pointer',
+              fontSize: '10px',
+              fontWeight: 'bold'
+            }}
+          >
+            🔒 Answer Locked
+          </button>
+        </div>
+        <div style={{ marginTop: '4px', fontSize: '10px', color: '#ff0' }}>
+          Quest Phase: <strong>{quest.state.phase}</strong>
+        </div>
+        <div style={{ marginTop: '4px', fontSize: '9px', color: '#888', fontStyle: 'italic' }}>
+          Quest completion controls Answer button lock state
+        </div>
       </div>
 
       {/* Stats Footer */}
