@@ -64,9 +64,21 @@
 /* Quest Offer State - glowing yellow effect */
 .record-panel-container.quest-offer-centered .frame {
   animation: breathingGlow 10s ease-in-out infinite !important;
+  position: relative; /* Ensure pseudo-element positioning works */
 }
 
-/* Breathing glow animation - smooth golden glow with inward depth */
+/* Inward glow overlay using ::before pseudo-element */
+.record-panel-container.quest-offer-centered .frame::before {
+  content: '';
+  position: absolute;
+  inset: 0; /* Cover entire frame */
+  border-radius: 32px; /* Match frame's border-radius */
+  pointer-events: none; /* Don't block clicks */
+  animation: breathingGlowInset 10s ease-in-out infinite;
+  z-index: 1; /* Above background, below content */
+}
+
+/* Breathing glow animation - outward golden aura */
 @keyframes breathingGlow {
   0%, 100% {
     filter:
@@ -77,9 +89,6 @@
       hue-rotate(-5deg)
       brightness(1.03)
       saturate(1.1);
-    box-shadow:
-      inset 0 0 20px rgba(255, 190, 60, 0.15),
-      inset 0 0 10px rgba(255, 200, 80, 0.2);
   }
   50% {
     filter:
@@ -90,10 +99,23 @@
       hue-rotate(-3deg)
       brightness(1.06)
       saturate(1.15);
+  }
+}
+
+/* Breathing inset glow animation - inward golden depth */
+@keyframes breathingGlowInset {
+  0%, 100% {
     box-shadow:
-      inset 0 0 30px rgba(255, 190, 60, 0.25),
-      inset 0 0 15px rgba(255, 200, 80, 0.35),
-      inset 0 0 5px rgba(255, 230, 120, 0.4);
+      inset 0 0 30px rgba(255, 190, 60, 0.2),
+      inset 0 0 20px rgba(255, 200, 80, 0.25),
+      inset 0 0 10px rgba(255, 215, 100, 0.3);
+  }
+  50% {
+    box-shadow:
+      inset 0 0 50px rgba(255, 190, 60, 0.35),
+      inset 0 0 30px rgba(255, 200, 80, 0.45),
+      inset 0 0 15px rgba(255, 215, 100, 0.5),
+      inset 0 0 5px rgba(255, 230, 120, 0.6);
   }
 }
 
