@@ -108,7 +108,10 @@ export const RecordPanel: React.FC<RecordPanelProps> = ({
           ) : isAnswerRecording ? (
             /* Answer Recording: Display answer text instead of buttons */
             <div className="answer-text-display">
-              <p className="answer-text">Someone stole your cookies.</p>
+              <p className="answer-text-with-label">
+                <span className="quest-label">Answer:</span>
+                <span className="quest-description"> Someone stole your cookies.</span>
+              </p>
             </div>
           ) : (
             /* Normal State: Ask, Hint, Answer buttons */

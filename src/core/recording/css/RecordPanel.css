@@ -414,23 +414,22 @@
 
 /* Answer Recording: Text display instead of buttons */
 .frame .answer-text-display {
-  align-items: center;
+  align-items: flex-start; /* Top align for less spacing */
   align-self: stretch;
   display: flex;
-  justify-content: center;
-  padding: 20px 40px;
+  justify-content: flex-start; /* Left justify */
+  padding: 21px 20px; /* Match quest section padding */
   position: relative;
   width: 100%;
-  min-height: 75px;
 }
 
-.frame .answer-text {
-  color: #5c5c5c;
+.frame .answer-text-with-label {
+  color: transparent; /* Base transparent, colors on spans */
   font-family: "Inter", Helvetica, sans-serif;
   font-size: 24px;
   font-weight: 400;
-  line-height: 1.4;
-  text-align: center;
+  line-height: normal;
+  text-align: left; /* Left justified */
   margin: 0;
   padding: 0;
   width: 100%;
