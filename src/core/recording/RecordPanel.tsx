@@ -48,6 +48,7 @@ export const RecordPanel: React.FC<RecordPanelProps> = ({
 
   // Determine visual state based on dialogueState
   // - basic: No panel shown
+  // - input-showInput: Panel shown, all buttons enabled and ready
   // - input-recording: Recording active, Stop button visible, Ask button appears pressed
   // - ai-waiting: All buttons disabled (waiting for AI response)
   const isRecording = dialogueState === 'input-recording';

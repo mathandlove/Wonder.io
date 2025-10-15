@@ -152,6 +152,10 @@ export function StepScrollDebug() {
     sceneManager.updateNavigationItemState(navigationIndex, { type: 'dialogue', state: 'basic' });
   };
 
+  const setRecordPanelShowInput = () => {
+    sceneManager.updateNavigationItemState(navigationIndex, { type: 'dialogue', state: 'input-showInput' });
+  };
+
   const setRecordPanelRecording = () => {
     sceneManager.updateNavigationItemState(navigationIndex, { type: 'dialogue', state: 'input-recording' });
   };
@@ -391,6 +395,21 @@ export function StepScrollDebug() {
             ❌ No Panel (basic)
           </button>
           <button
+            onClick={setRecordPanelShowInput}
+            style={{
+              padding: '10px',
+              background: currentNavItem?.sceneState.type === 'dialogue' && currentNavItem?.sceneState.state === 'input-showInput' ? '#0f0' : '#333',
+              color: '#fff',
+              border: '2px solid #0f0',
+              borderRadius: '4px',
+              cursor: 'pointer',
+              fontSize: '11px',
+              fontWeight: 'bold'
+            }}
+          >
+            ✅ Ready (all buttons enabled)
+          </button>
+          <button
             onClick={setRecordPanelRecording}
             style={{
               padding: '10px',
@@ -422,7 +441,7 @@ export function StepScrollDebug() {
           </button>
         </div>
         <div style={{ marginTop: '8px', fontSize: '9px', color: '#888', fontStyle: 'italic' }}>
-          Three visual states for RecordPanel testing
+          Four visual states for RecordPanel testing
         </div>
       </div>
 
