@@ -82,15 +82,15 @@ export const RecordPanel: React.FC<RecordPanelProps> = ({
             <p className={`quest-find-out-what ${isQuestOffer ? 'quest-offer' : ''}`}>
               {isQuestOffer ? (
                 <>
-                  <span className="text-wrapper">Quest:</span>
-                  <span className="span">&nbsp;</span>
-                  <span className="text-wrapper-2"> </span>
-                  <span className="text-wrapper-3">{questText}</span>
+                  <span className="quest-label">Quest:</span>
+                  <span>&nbsp;</span>
+                  <span> </span>
+                  <span className="quest-description">{questText}</span>
                 </>
               ) : (
                 <>
-                  <span className="span">Quest:</span>
-                  <span className="text-wrapper-2"> {questText}</span>
+                  <span className="quest-label">Quest:</span>
+                  <span className="quest-description"> {questText}</span>
                 </>
               )}
             </p>

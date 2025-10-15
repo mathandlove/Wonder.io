@@ -204,38 +204,78 @@
   width: 100%; /* Full width of parent */
 }
 
+/* ===================================
+   QUEST HEADING SYSTEM
+   =================================== */
+
+/* Base quest text container */
 .frame .quest-find-out-what {
-  color: transparent;
+  color: transparent; /* Transparent base, colors set on spans */
   font-family: "Inter", Helvetica, sans-serif;
-  font-size: 24px;
+  font-size: 24px; /* Base size for normal state */
   font-weight: 400;
   letter-spacing: 0;
   line-height: normal;
-  margin: 0; /* Remove all margins */
-  padding: 0; /* Remove all padding */
+  margin: 0;
+  padding: 0;
   position: relative;
-  width: 100%; /* Expand to fill available space */
-  max-width: 100%; /* Prevent overflow */
-  word-wrap: break-word; /* Allow text to wrap on narrow screens */
+  width: 100%;
+  max-width: 100%;
+  word-wrap: break-word;
 }
 
+/* Quest Label - "Quest:" heading */
+.frame .quest-label {
+  color: #b2652a; /* Orange */
+  font-family: "Inter", Helvetica, sans-serif;
+  font-size: 24px; /* Inherits from parent, can be overridden */
+  font-weight: 700; /* Bold */
+  letter-spacing: 0;
+}
+
+/* Quest Description - the actual quest text */
+.frame .quest-description {
+  color: #5c5c5c; /* Gray */
+  font-family: "Inter", Helvetica, sans-serif;
+  font-size: 24px; /* Inherits from parent, can be overridden */
+  font-weight: 400; /* Regular */
+  letter-spacing: 0;
+}
+
+/* Legacy class support (span) - maps to quest-label */
 .frame .span {
   color: #b2652a;
   font-weight: 700;
 }
 
+/* Legacy class support (text-wrapper-2) - maps to quest-description */
 .frame .text-wrapper-2 {
   color: #5c5c5c;
   font-family: "Inter", Helvetica, sans-serif;
   font-weight: 400;
 }
 
-/* Quest Offer State - larger text sizes */
+/* ===================================
+   QUEST OFFER STATE MODIFIERS
+   =================================== */
+
+/* Quest Offer: Larger, centered layout */
 .frame .quest-find-out-what.quest-offer {
-  font-size: 36px;
+  font-size: 36px; /* Larger base size */
   text-align: center;
 }
 
+/* Quest Label in offer state - larger */
+.frame .quest-find-out-what.quest-offer .quest-label {
+  font-size: 36px;
+}
+
+/* Quest Description in offer state - larger */
+.frame .quest-find-out-what.quest-offer .quest-description {
+  font-size: 32px;
+}
+
+/* Legacy support for quest-offer */
 .frame .quest-find-out-what.quest-offer .text-wrapper-2 {
   font-size: 24px;
 }
