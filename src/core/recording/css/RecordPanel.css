@@ -6,7 +6,7 @@
 .record-panel-container,
 .chat-composer-container {
   position: fixed;
-  bottom: 0; /* Flush with bottom of window */
+  bottom: -64px; /* Lowered 64px to hide bottom corners below screen */
   left: 50%;
   transform: translateX(-50%);
   display: flex;
