@@ -61,6 +61,8 @@
   box-sizing: border-box; /* Include borders in width calculation */
   animation: breathingGlow 10s ease-in-out infinite; /* TEMP: Testing glow on all states */
   box-shadow: 0 0 40px 10px rgba(255, 190, 60, 0.8); /* TEMP: Static bright glow to test visibility */
+  outline: 10px solid yellow !important; /* TEMP: Super obvious test */
+  filter: drop-shadow(0 0 30px rgba(255, 190, 60, 0.9)); /* TEMP: Alternative glow method */
 }
 
 /* Quest Offer State - glowing yellow effect */
