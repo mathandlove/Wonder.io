@@ -48,6 +48,7 @@ export function StepScrollDebug() {
   const [position, setPosition] = useState<{ top: number | null; right: number | null; left: number | null; bottom: number | null }>(getInitialPosition);
   const [isDragging, setIsDragging] = useState(false);
   const [dragStart, setDragStart] = useState({ x: 0, y: 0 });
+  const [isVisible, setIsVisible] = useState(true);
 
   // Get scene manager for additional context (single source of truth)
   const sceneManager = useSceneManager();
@@ -82,6 +83,35 @@ export function StepScrollDebug() {
 
     return () => {
       window.removeEventListener('stepscroll:debug' as any, handleDebug);
+    };
+  }, []);
+
+  // Keyboard shortcut: backslash (\) to toggle visibility and recenter
+  useEffect(() => {
+    const handleKeyPress = (e: KeyboardEvent) => {
+      // Check for backslash key
+      if (e.key === '\\' || e.key === 'Backslash') {
+        e.preventDefault();
+
+        setIsVisible(prev => {
+          const newVisible = !prev;
+
+          // If showing the panel, recenter it to default position
+          if (newVisible) {
+            const centerPosition = { top: 10, right: 10, left: null, bottom: null };
+            setPosition(centerPosition);
+            localStorage.setItem('debugPanel:position', JSON.stringify(centerPosition));
+          }
+
+          return newVisible;
+        });
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyPress);
+
+    return () => {
+      window.removeEventListener('keydown', handleKeyPress);
     };
   }, []);
 
@@ -188,6 +218,11 @@ export function StepScrollDebug() {
     }
   }, [isDragging, dragStart, position]);
 
+  // Don't render if not visible
+  if (!isVisible) {
+    return null;
+  }
+
   return (
     <div
       onMouseDown={handleMouseDown}
@@ -213,8 +248,13 @@ export function StepScrollDebug() {
         userSelect: 'none',
       }}
     >
-      <div style={{ marginBottom: '10px', fontSize: '14px', fontWeight: 'bold', color: '#0ff', cursor: 'grab' }}>
-        📊 Scene & Flow Debug
+      <div style={{ marginBottom: '10px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+        <div style={{ fontSize: '14px', fontWeight: 'bold', color: '#0ff', cursor: 'grab' }}>
+          📊 Scene & Flow Debug
+        </div>
+        <div style={{ fontSize: '9px', color: '#666', fontStyle: 'italic', cursor: 'default', userSelect: 'text' }}>
+          Press \ to hide
+        </div>
       </div>
 
       <div style={{ display: 'grid', gap: '5px' }}>
