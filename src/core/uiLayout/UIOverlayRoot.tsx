@@ -1,7 +1,6 @@
 /**
  * UIOverlayRoot - Container for all UI overlays (quests, dialogs, etc.)
  */
-import { QuestLayer } from '@features/quest/QuestLayer';
 import { RecordingOrchestrator } from '@core/recording/RecordPanelOrchestrator';
 import { useSceneManager } from '@core/scenes/SceneManager';
 
@@ -33,10 +32,7 @@ export function UIOverlayRoot() {
 
   return (
     <>
-      {/* Quest system overlay */}
-      <QuestLayer />
-
-      {/* Recording panel - shows entire chat rail on input-showInput scenes */}
+      {/* Recording panel - shows entire chat rail including quest offers */}
       {shouldShowRecordPanel && <RecordingOrchestrator />}
 
       {/* Future overlays can be added here */}
