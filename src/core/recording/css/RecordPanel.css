@@ -19,6 +19,14 @@
   pointer-events: none;
 }
 
+/* Quest Offer State - centered on screen */
+.record-panel-container.quest-offer-centered {
+  bottom: auto; /* Remove bottom positioning */
+  top: 50%; /* Center vertically */
+  transform: translate(-50%, -50%); /* Center both horizontally and vertically */
+  justify-content: center;
+}
+
 .record-panel-container > *,
 .chat-composer-container > * {
   pointer-events: auto;

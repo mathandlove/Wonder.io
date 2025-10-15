@@ -64,7 +64,7 @@ export const RecordPanel: React.FC<RecordPanelProps> = ({
   const buttonsDisabled = isWaiting || disabled;
 
   return (
-    <div className="record-panel-container">
+    <div className={`record-panel-container ${isQuestOffer ? 'quest-offer-centered' : ''}`}>
       {/* Main Frame - matching Figma exactly */}
       <div className="frame">
         {/* Stop Recording Button - only visible during recording */}
