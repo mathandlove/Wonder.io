@@ -373,11 +373,16 @@
   flex: 0 0 auto;
   flex-direction: column;
   gap: 34px;
-  padding: 18px 20px 32px 20px; /* Added 32px bottom padding for breathing room */
+  padding: 18px 20px 32px 20px; /* Button padding: 18px top, 32px bottom */
   position: relative;
   width: 100%; /* Expand to fill frame width instead of fixed 620px */
   min-width: 540px; /* Minimum to fit buttons: 192+15+59+40+192+40 = 538px, rounded to 540px */
   box-sizing: border-box; /* Include padding and borders in width calculation */
+}
+
+/* Remove padding from frame-wrapper when containing answer text (padding is on child instead) */
+.frame .frame-wrapper:has(.answer-text-display) {
+  padding: 0;
 }
 
 .frame .div {
