@@ -83,8 +83,7 @@ export const RecordPanel: React.FC<RecordPanelProps> = ({
               {isQuestOffer ? (
                 <>
                   <span className="quest-label">Quest:</span>
-                  <span>&nbsp;</span>
-                  <span> </span>
+                  <br />
                   <span className="quest-description">{questText}</span>
                 </>
               ) : (
