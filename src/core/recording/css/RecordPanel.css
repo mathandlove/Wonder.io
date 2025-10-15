@@ -423,7 +423,7 @@
   align-self: stretch;
   display: flex;
   justify-content: flex-start; /* Left justify */
-  padding: 21px 20px; /* Match quest section padding */
+  padding: 21px 20px 42px 20px; /* Top 21px matches quest, bottom 42px (21+21) accounts for off-screen positioning */
   position: relative;
   width: 100%;
 }
