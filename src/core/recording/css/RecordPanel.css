@@ -37,14 +37,16 @@
   border-color: #49301d;
   border-left-style: solid;
   border-left-width: 7px;
-  border-radius: 32px 32px 0px 0px;
+  border-radius: 32px;
   border-right-style: solid;
   border-right-width: 7px;
   border-top-style: solid;
   border-top-width: 7px;
+  border-bottom-style: solid;
+  border-bottom-width: 7px;
   display: inline-flex;
   flex-direction: column;
-  padding: 10px 10px 0px; /* Reduced from 32px to 10px for tighter cardboard frame */
+  padding: 10px; /* Equal padding on all sides for rounded frame */
   position: relative;
   max-width: 90vw; /* Never wider than 90% of viewport width */
   min-width: 560px; /* Minimum width to fit all buttons: 192+15+59+40+192+40+20+2 = 560px */
@@ -171,11 +173,13 @@
   border-color: #49301d;
   border-left-style: solid;
   border-left-width: 1px;
-  border-radius: 16px 16px 0px 0px;
+  border-radius: 16px;
   border-right-style: solid;
   border-right-width: 1px;
   border-top-style: solid;
   border-top-width: 1px;
+  border-bottom-style: solid;
+  border-bottom-width: 1px;
   box-shadow: inset 0px -2px 4px 0px #000000; /* Added spread radius of 0 to prevent horizontal shadow */
   display: flex;
   flex: 0 0 auto;
@@ -240,6 +244,7 @@
   border-left-width: 1px;
   border-right-style: solid;
   border-right-width: 1px;
+  border-radius: 16px;
   display: flex;
   flex: 0 0 auto;
   flex-direction: column;
