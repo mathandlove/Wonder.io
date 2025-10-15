@@ -173,7 +173,7 @@
   border-color: #49301d;
   border-left-style: solid;
   border-left-width: 1px;
-  border-radius: 16px;
+  border-radius: 16px 16px 0px 0px; /* Rounded top corners only - bottom meets button rail */
   border-right-style: solid;
   border-right-width: 1px;
   border-top-style: solid;
@@ -244,7 +244,7 @@
   border-left-width: 1px;
   border-right-style: solid;
   border-right-width: 1px;
-  border-radius: 16px;
+  border-radius: 0px 0px 16px 16px; /* Rounded bottom corners only - top meets quest box */
   display: flex;
   flex: 0 0 auto;
   flex-direction: column;
