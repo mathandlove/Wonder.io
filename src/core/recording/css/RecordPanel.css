@@ -66,7 +66,7 @@
   animation: breathingGlow 10s ease-in-out infinite !important;
 }
 
-/* Breathing glow animation - smooth golden glow effect for quest announcement */
+/* Breathing glow animation - smooth golden glow with inward depth */
 @keyframes breathingGlow {
   0%, 100% {
     filter:
@@ -77,6 +77,9 @@
       hue-rotate(-5deg)
       brightness(1.03)
       saturate(1.1);
+    box-shadow:
+      inset 0 0 20px rgba(255, 190, 60, 0.15),
+      inset 0 0 10px rgba(255, 200, 80, 0.2);
   }
   50% {
     filter:
@@ -87,6 +90,10 @@
       hue-rotate(-3deg)
       brightness(1.06)
       saturate(1.15);
+    box-shadow:
+      inset 0 0 30px rgba(255, 190, 60, 0.25),
+      inset 0 0 15px rgba(255, 200, 80, 0.35),
+      inset 0 0 5px rgba(255, 230, 120, 0.4);
   }
 }
 
