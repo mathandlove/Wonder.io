@@ -62,8 +62,8 @@
 }
 
 /* Quest Offer State - glowing yellow effect */
-.quest-offer-centered .frame {
-  animation: breathingGlow 10s ease-in-out infinite;
+.record-panel-container.quest-offer-centered .frame {
+  animation: breathingGlow 10s ease-in-out infinite !important;
 }
 
 /* Breathing glow animation - yellow glow effect for quest announcement */
