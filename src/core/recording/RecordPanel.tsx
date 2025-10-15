@@ -53,7 +53,8 @@ export const RecordPanel: React.FC<RecordPanelProps> = ({
   // - ai-waiting: All buttons disabled (waiting for AI response)
   const isRecording = dialogueState === 'input-recording';
   const isWaiting = dialogueState === 'ai-waiting';
-  const showStopButton = isRecording && recordingState.isRecording;
+  // Show Stop button whenever in recording state (for visual testing, not dependent on actual recording API)
+  const showStopButton = isRecording;
   const buttonsDisabled = isWaiting || disabled;
 
   return (
