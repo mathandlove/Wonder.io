@@ -96,7 +96,7 @@ export const RecordPanel: React.FC<RecordPanelProps> = ({
           </div>
         </div>
 
-        {/* Button Rail - white background with buttons */}
+        {/* Button Rail - white background with buttons OR answer text */}
         <div className="frame-wrapper">
           {isQuestOffer ? (
             /* Quest Offer: Single Accept button centered */
@@ -104,6 +104,11 @@ export const RecordPanel: React.FC<RecordPanelProps> = ({
               <button className="button" onClick={onNext} disabled={disabled}>
                 <div className="answer">Accept</div>
               </button>
+            </div>
+          ) : isAnswerRecording ? (
+            /* Answer Recording: Display answer text instead of buttons */
+            <div className="answer-text-display">
+              <p className="answer-text">Someone stole your cookies.</p>
             </div>
           ) : (
             /* Normal State: Ask, Hint, Answer buttons */
