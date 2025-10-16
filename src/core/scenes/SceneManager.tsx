@@ -78,6 +78,8 @@ export interface SceneManagerType {
   setScenes: (scenes: Scene[]) => void;
   insertScene: (scene: Scene, index: number) => void;
   insertNavigationItem: (item: NavigationItem, index: number) => void; // Insert directly without rebuild
+  deleteNavigationItem: (index: number) => void; // Delete navigation item at index
+  addNavigationStateToCurrentScene: (newState: SceneState, insertAfterCurrent?: boolean) => number; // Add new state to current scene
   updateNavigationItemState: (index: number, newState: SceneState) => void; // Update state of navigation item (locks auto-recalculated)
   updateSceneTextByRecordingId: (recordingId: string, newText: string) => void; // Update scene text during recording
   hideScene: (sceneId: string) => void;
@@ -117,6 +119,9 @@ export function SceneManagerProvider({ children, initialIndex = 0 }: SceneManage
   const [navigationIndex, setNavigationIndex] = useState(0);
   const [allScenes, setAllScenes] = useState<Scene[]>([]);
 
+  // Ref to access latest navigationArray without causing dependency changes
+  const navigationArrayRef = React.useRef<NavigationItem[]>([]);
+
   // Build navigation array directly from allScenes
   const baseNavigationArray = useMemo(() => {
     return buildNavigationArray(allScenes);
@@ -135,13 +140,22 @@ export function SceneManagerProvider({ children, initialIndex = 0 }: SceneManage
   // Sync navigationArray with baseNavigationArray when scenes change
   React.useEffect(() => {
     setNavigationArray(baseNavigationArray);
+    navigationArrayRef.current = baseNavigationArray;
     // Do NOT touch navigationIndex - let it stay where it is
   }, [baseNavigationArray]);
 
+  // Keep ref in sync with state
+  React.useEffect(() => {
+    navigationArrayRef.current = navigationArray;
+  }, [navigationArray]);
+
   // Helper functions for navigation array access
+  // Note: Uses navigationArrayRef to avoid triggering cascading re-renders
+  // Components that need to react to navigationArray changes should depend on
+  // navigationIndex or navigationArray directly, not on this function's return value
   const getCurrentNavigationItem = useCallback((): NavigationItem | null => {
-    return navigationArray[navigationIndex] || null;
-  }, [navigationArray, navigationIndex]);
+    return navigationArrayRef.current[navigationIndex] || null;
+  }, [navigationIndex]);
 
   const getCurrentScene = useCallback((): Scene | null => {
     const item = getCurrentNavigationItem();
@@ -194,6 +208,72 @@ export function SceneManagerProvider({ children, initialIndex = 0 }: SceneManage
       return newArray;
     });
   }, []);
+
+  // Delete a navigation item at the specified index
+  const deleteNavigationItem = useCallback((index: number) => {
+    setNavigationArray(prevArray => {
+      const newArray = [...prevArray];
+      newArray.splice(index, 1); // Remove 1 item at index
+      return newArray;
+    });
+  }, []);
+
+  /**
+   * Add a new navigation state to the current scene
+   * This creates a new NavigationItem for the same scene but with a different state
+   * Useful for transitions like: input-showInput → record-answer → answer-waiting → answer-right/wrong
+   *
+   * @param newState - The new state to add
+   * @param insertAfterCurrent - If true, inserts after current index. If false, replaces current.
+   * @returns The index of the newly added navigation item
+   */
+  const addNavigationStateToCurrentScene = useCallback((
+    newState: SceneState,
+    insertAfterCurrent: boolean = true
+  ): number => {
+    const currentItem = getCurrentNavigationItem();
+    if (!currentItem) {
+      console.warn('⚠️ SceneManager.addNavigationStateToCurrentScene: No current navigation item');
+      return navigationIndex;
+    }
+
+    const locks = getLocksForState(newState);
+    const newItem: NavigationItem = {
+      scene: currentItem.scene, // Same scene
+      sceneId: currentItem.sceneId, // Same sceneId
+      sceneState: newState, // New state
+      lockForward: locks.lockForward,
+      lockBackward: locks.lockBackward,
+      index: insertAfterCurrent ? navigationIndex + 1 : navigationIndex,
+    };
+
+    console.log('➕ SceneManager.addNavigationStateToCurrentScene:', {
+      sceneId: currentItem.sceneId,
+      oldState: currentItem.sceneState,
+      newState,
+      insertAfterCurrent,
+      currentIndex: navigationIndex,
+      newIndex: newItem.index
+    });
+
+    if (insertAfterCurrent) {
+      // Insert after current position
+      setNavigationArray(prevArray => {
+        const newArray = [...prevArray];
+        newArray.splice(navigationIndex + 1, 0, newItem);
+        return newArray;
+      });
+      return navigationIndex + 1;
+    } else {
+      // Replace current item
+      setNavigationArray(prevArray => {
+        const newArray = [...prevArray];
+        newArray[navigationIndex] = newItem;
+        return newArray;
+      });
+      return navigationIndex;
+    }
+  }, [navigationIndex, getCurrentNavigationItem]);
 
   // Update the state of a navigation item at a specific index
   // Locks are automatically recalculated based on the new state (no lock memory)
@@ -277,21 +357,23 @@ export function SceneManagerProvider({ children, initialIndex = 0 }: SceneManage
   }, [currentIndex, hideScene]);
 
   // Force advance navigation (bypasses locks but still collapses states)
+  // Note: Uses navigationArrayRef to avoid dependency on navigationArray
   const forceAdvanceNavigation = useCallback((direction: 'forward' | 'backward') => {
+    const currentArray = navigationArrayRef.current;
     const delta = direction === 'forward' ? 1 : -1;
     const next = navigationIndex + delta;
-    const clamped = Math.max(0, Math.min(next, navigationArray.length - 1));
+    const clamped = Math.max(0, Math.min(next, currentArray.length - 1));
 
     if (clamped === navigationIndex) return;
 
     // When moving FORWARD, collapse previous states of the same scene
-    if (direction === 'forward' && clamped < navigationArray.length) {
-      const targetItem = navigationArray[clamped];
-      const currentItem = navigationArray[navigationIndex];
+    if (direction === 'forward' && clamped < currentArray.length) {
+      const targetItem = currentArray[clamped];
+      const currentItem = currentArray[navigationIndex];
 
       // Check if we're moving to next state of same scene
       if (targetItem && currentItem && targetItem.sceneId === currentItem.sceneId) {
-        const newArray = navigationArray.filter((item, idx) => {
+        const newArray = currentArray.filter((item, idx) => {
           return item.sceneId !== targetItem.sceneId || idx >= clamped;
         });
 
@@ -307,7 +389,7 @@ export function SceneManagerProvider({ children, initialIndex = 0 }: SceneManage
     }
 
     // Also update currentIndex for backward compatibility
-    const item = navigationArray[clamped];
+    const item = currentArray[clamped];
     if (item) {
       const sceneIndex = visibleScenes.findIndex(s => {
         const sceneWithId = s as Scene & { sceneId?: string };
@@ -317,12 +399,13 @@ export function SceneManagerProvider({ children, initialIndex = 0 }: SceneManage
         setCurrentIndex(sceneIndex);
       }
     }
-  }, [navigationIndex, navigationArray, setNavigationIndex, setNavigationArray, visibleScenes, setCurrentIndex]);
+  }, [navigationIndex, setNavigationIndex, setNavigationArray, visibleScenes, setCurrentIndex]);
 
   // Navigation array-based navigation with state collapse
+  // Note: We use navigationArrayRef to access the latest array without causing dependency changes
   const advanceNavigation = useCallback((direction: 'forward' | 'backward') => {
     // Check if current navigation item locks this direction
-    const currentItem = navigationArray[navigationIndex];
+    const currentItem = navigationArrayRef.current[navigationIndex];
     if (currentItem) {
       if (direction === 'forward' && currentItem.lockForward) {
         console.log('🔒 Navigation locked forward at', currentItem.sceneId, currentItem.sceneState);
@@ -336,7 +419,7 @@ export function SceneManagerProvider({ children, initialIndex = 0 }: SceneManage
 
     // Delegate to forceAdvanceNavigation for the actual logic
     forceAdvanceNavigation(direction);
-  }, [navigationIndex, navigationArray, forceAdvanceNavigation]);
+  }, [navigationIndex, forceAdvanceNavigation]);
 
 
   const contextValue = useMemo((): SceneManagerType => ({
@@ -358,6 +441,8 @@ export function SceneManagerProvider({ children, initialIndex = 0 }: SceneManage
     setScenes,
     insertScene,
     insertNavigationItem,
+    deleteNavigationItem,
+    addNavigationStateToCurrentScene,
     updateNavigationItemState,
     updateSceneTextByRecordingId,
     hideScene,
@@ -391,6 +476,8 @@ export function SceneManagerProvider({ children, initialIndex = 0 }: SceneManage
     setScenes,
     insertScene,
     insertNavigationItem,
+    deleteNavigationItem,
+    addNavigationStateToCurrentScene,
     updateNavigationItemState,
     updateSceneTextByRecordingId,
     hideScene,

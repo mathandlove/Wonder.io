@@ -53,14 +53,32 @@ function hasFlowId(scene: Scene | undefined | null): scene is SceneWithFlowId {
 }
 
 export function RecordingOrchestrator() {
-  const { getCurrentNavigationItem, insertNavigationItem, addNavigationStateToCurrentScene, updateNavigationItemState, updateSceneTextByRecordingId, navigationIndex, setNavigationIndex, forceAdvanceNavigation, advanceNavigation } = useSceneManager();
+  const { getCurrentNavigationItem, insertNavigationItem, deleteNavigationItem, addNavigationStateToCurrentScene, updateNavigationItemState, updateSceneTextByRecordingId, navigationIndex, setNavigationIndex, forceAdvanceNavigation, navigationArray } = useSceneManager();
   const { createRecordingScene } = usePageFactory();
   const recording = useRecording();
 
+  // Track pending deletions to prevent duplicate deletion attempts
+  const pendingDeletionRef = React.useRef<number | null>(null);
+
   // Get current scene state to understand context
-  const currentNavItem = getCurrentNavigationItem();
+  // We extract just the current item from navigationArray so we react to changes,
+  // but we memoize based on the actual content we care about (sceneId and state type/state)
+  // to prevent unnecessary re-renders when unrelated properties change
+  const currentNavItem = React.useMemo(() => {
+    return navigationArray[navigationIndex] || null;
+  }, [navigationArray, navigationIndex]);
+
   const currentScene = currentNavItem?.scene;
-  const sceneState = currentNavItem?.sceneState;
+
+  // Memoize sceneState based on its actual content to prevent unnecessary re-renders
+  const sceneState = React.useMemo(() => {
+    return currentNavItem?.sceneState || null;
+  }, [
+    currentNavItem?.sceneState?.type,
+    currentNavItem?.sceneState && 'state' in currentNavItem.sceneState ? currentNavItem.sceneState.state : null,
+    currentNavItem?.sceneState && 'questionText' in currentNavItem.sceneState ? currentNavItem.sceneState.questionText : null,
+    currentNavItem?.sceneState && 'answerText' in currentNavItem.sceneState ? currentNavItem.sceneState.answerText : null,
+  ]);
 
   // Get flow metadata for quest text
   const flowMetadata = useSceneFlowMetadata(hasFlowId(currentScene) ? currentScene : null);
@@ -82,6 +100,13 @@ export function RecordingOrchestrator() {
     dialogueState === 'answer-right' ||
     dialogueState === 'answer-wrong' ||
     dialogueState === 'ai-waiting';
+
+  console.log('🎮 RecordPanelOrchestrator:', {
+    currentNavItem: currentNavItem?.sceneId,
+    sceneState,
+    dialogueState,
+    shouldShowPanel
+  });
 
   // Track the active recording ID in state (reactive, not ref)
   const [activeRecordingId, setActiveRecordingId] = React.useState<string | null>(null);
@@ -128,13 +153,44 @@ export function RecordingOrchestrator() {
     }
   }, [sceneState, recording, currentNavItem]);
 
-  // Sync recording transcript to scene text in real-time
+  // Sync recording transcript in real-time
+  // - For Ask recording (input-recording): Update scene text (for speech bubble) AND scene state questionText (for persistence)
+  // - For Answer recording (record-answer): Update scene state answerText (for answer input box)
+  // Extract displayText as a primitive value so effect only runs when the actual text changes
+  const displayText = recording.getDisplayText();
+  const isRecording = recording.isRecording();
+
   React.useEffect(() => {
-    if (recording.isRecording() && activeRecordingId) {
-      const displayText = recording.getDisplayText();
-      updateSceneTextByRecordingId(activeRecordingId, displayText || '...');
+    if (isRecording && activeRecordingId) {
+      // Read fresh state on each transcript update (not from dependencies)
+      const freshNavItem = getCurrentNavigationItem();
+      const currentState = freshNavItem?.sceneState?.type === 'dialogue' ? freshNavItem.sceneState : null;
+
+      if (currentState?.state === 'input-recording') {
+        // Only update if text actually changed (prevents infinite loop)
+        if (currentState.questionText !== displayText) {
+          // Ask recording: Update both scene text (for speech bubble) and scene state (for persistence)
+          updateSceneTextByRecordingId(activeRecordingId, displayText || '...');
+          updateNavigationItemState(navigationIndex, {
+            type: 'dialogue',
+            state: 'input-recording',
+            questionText: displayText || ''
+          });
+        }
+      } else if (currentState?.state === 'record-answer') {
+        // Only update if text actually changed (prevents infinite loop)
+        if (currentState.answerText !== displayText) {
+          // Answer recording: Update scene state answerText (for answer input box)
+          updateNavigationItemState(navigationIndex, {
+            type: 'dialogue',
+            state: 'record-answer',
+            answerText: displayText || '',
+            questionText: currentState.questionText // Preserve existing questionText
+          });
+        }
+      }
     }
-  }, [recording.state.displayText, recording, activeRecordingId, updateSceneTextByRecordingId]);
+  }, [displayText, isRecording, activeRecordingId, navigationIndex, updateSceneTextByRecordingId, updateNavigationItemState, getCurrentNavigationItem]);
 
   /**
    * Handle recording start - creates new page, navigates, and starts recording
@@ -185,31 +241,93 @@ export function RecordingOrchestrator() {
   }, [createRecordingScene, insertNavigationItem, updateNavigationItemState, navigationIndex, setNavigationIndex, currentNavItem]);
 
   /**
-   * Handle recording stop - transitions to waiting state based on current recording type
-   * - input-recording → ai-waiting (for Ask button)
-   * - record-answer → answer-waiting (for Answer button)
+   * Handle recording stop - transitions based on current recording type and whether text was captured
+   * - If text recorded:
+   *   - input-recording → ai-waiting (for Ask button) - preserves questionText
+   *   - record-answer → answer-waiting (for Answer button) - preserves answerText
+   * - If no text recorded:
+   *   - input-recording → collapse back to previous scene (back to ready state)
+   *   - record-answer → input-showInput (back to ready state on same scene)
    */
   const handleRecordStop = useCallback(() => {
-    const currentState = sceneState?.type === 'dialogue' ? sceneState.state : null;
+    const currentState = sceneState?.type === 'dialogue' ? sceneState : null;
 
-    if (currentState === 'record-answer') {
-      // Answer recording: Add answer-waiting state to current scene
-      console.log('💜 Transitioning from record-answer to answer-waiting');
-      addNavigationStateToCurrentScene(
-        { type: 'dialogue', state: 'answer-waiting' },
-        true  // Insert after current
-      );
-      // Use forceAdvanceNavigation to collapse the record-answer state
-      forceAdvanceNavigation('forward');
-    } else if (currentState === 'input-recording') {
-      // Ask recording: Transition to ai-waiting
-      console.log('🤖 Transitioning from input-recording to ai-waiting');
-      updateNavigationItemState(navigationIndex, { type: 'dialogue', state: 'ai-waiting' });
+    if (currentState?.state === 'record-answer') {
+      // Answer recording: Get final transcript
+      const finalAnswerText = (currentState.answerText || recording.getDisplayText() || '').trim();
+
+      if (!finalAnswerText) {
+        // No text recorded: Go back to ready state (input-showInput)
+        console.log('💜 No answer text recorded, returning to input-showInput');
+        updateNavigationItemState(navigationIndex, {
+          type: 'dialogue',
+          state: 'input-showInput',
+          questionText: currentState.questionText // Preserve question text
+        });
+      } else {
+        // Text recorded: Proceed to answer-waiting
+        console.log('💜 Transitioning from record-answer to answer-waiting, answerText:', finalAnswerText);
+        addNavigationStateToCurrentScene(
+          {
+            type: 'dialogue',
+            state: 'answer-waiting',
+            answerText: finalAnswerText,
+            questionText: currentState.questionText // Preserve question text
+          },
+          true  // Insert after current
+        );
+        // Use forceAdvanceNavigation to collapse the record-answer state
+        forceAdvanceNavigation('forward');
+      }
+    } else if (currentState?.state === 'input-recording') {
+      // Ask recording: Get final transcript
+      const finalQuestionText = (currentState.questionText || recording.getDisplayText() || '').trim();
+
+      if (!finalQuestionText) {
+        // No text recorded: Navigate back to previous scene first, then delete after animations complete
+        console.log('🤖 No question text recorded, navigating to previous scene first');
+        const currentIndex = navigationIndex;
+        const targetSceneIndex = currentIndex - 1;
+
+        // Check if we've already initiated deletion for this index
+        if (pendingDeletionRef.current === currentIndex) {
+          console.log('⚠️ Deletion already pending for index:', currentIndex);
+          return;
+        }
+
+        // Mark this index as pending deletion
+        pendingDeletionRef.current = currentIndex;
+
+        // Navigate back to previous scene (this will trigger character animations)
+        setNavigationIndex(targetSceneIndex);
+
+        // Wait for character animations to complete before deleting
+        // Character entrance animations typically take 300-500ms
+        setTimeout(() => {
+          console.log('🎭 Character animations should be complete, now deleting recording scene');
+          deleteNavigationItem(currentIndex);
+          // Clear the pending deletion ref
+          pendingDeletionRef.current = null;
+        }, 600); // 600ms should be enough for character animations to settle
+      } else {
+        // Text recorded: Proceed to ai-waiting
+        console.log('🤖 Transitioning from input-recording to ai-waiting, questionText:', finalQuestionText);
+        addNavigationStateToCurrentScene(
+          {
+            type: 'dialogue',
+            state: 'ai-waiting',
+            questionText: finalQuestionText // Persist question text in scene state
+          },
+          true  // Insert after current
+        );
+        // Use forceAdvanceNavigation to collapse the input-recording state
+        forceAdvanceNavigation('forward');
+      }
     }
 
     // Recording will stop automatically via the effect
     // ChatFlowOrchestrator should observe ai-waiting state and process transcript
-  }, [navigationIndex, sceneState, updateNavigationItemState, addNavigationStateToCurrentScene, forceAdvanceNavigation]);
+  }, [navigationIndex, sceneState, recording, updateNavigationItemState, addNavigationStateToCurrentScene, forceAdvanceNavigation, setNavigationIndex, deleteNavigationItem]);
 
   /**
    * Handle Accept button click (quest-showing state)
@@ -271,12 +389,22 @@ export function RecordingOrchestrator() {
   const isQuestShowing = presentationState === 'quest-showing';
   const primaryActionHandler = isQuestShowing ? handleAcceptQuest : handleAnswerClick;
 
+  // Get answer text from scene state (persisted across state transitions)
+  // Falls back to recording context for real-time display during recording
+  const answerText = (presentationState === 'record-answer' ||
+                      presentationState === 'answer-waiting' ||
+                      presentationState === 'answer-right' ||
+                      presentationState === 'answer-wrong')
+    ? (sceneState?.type === 'dialogue' ? sceneState.answerText : undefined) || recording.getDisplayText()
+    : undefined;
+
   return (
     <RecordPanel
       disabled={false}  // Recording is always enabled when this panel shows
       questState={questState}
       dialogueState={presentationState}
       questText={flowMetadata?.questText}
+      answerText={answerText}
       onNext={primaryActionHandler}
       onRecordStart={handleRecordStart}
       onRecordStop={handleRecordStop}
