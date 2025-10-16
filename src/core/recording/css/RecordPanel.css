@@ -6,24 +6,52 @@
 .record-panel-container,
 .chat-composer-container {
   position: fixed;
-  bottom: -32px; /* Lowered 32px to hide bottom corners below screen */
+  top: 50%; /* Default: centered anchor point */
   left: 50%;
-  transform: translateX(-50%);
+  transform: translate(-50%, -50%); /* Default: centered positioning */
   display: flex;
   flex-direction: column;
   align-items: center;
-  justify-content: flex-end;
+  justify-content: center;
   gap: 0;
   z-index: 1100;
   background: transparent;
   pointer-events: none;
+  /* Smooth transitions for transform, top, and bottom (handles all position changes) */
+  transition: transform 0.6s cubic-bezier(0.34, 1.56, 0.64, 1),
+              top 0.6s cubic-bezier(0.34, 1.56, 0.64, 1),
+              bottom 0.6s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+/* Hidden state - completely below screen, top of panel at bottom of viewport */
+.record-panel-container.hidden {
+  top: 100vh; /* Anchor at bottom of viewport */
+  transform: translate(-50%, 0); /* Top edge at 100vh, panel extends down */
+}
+
+/* Rest state - bottom anchored with 32px hidden below screen */
+.record-panel-container.bottom-anchored {
+  top: auto; /* Remove top positioning */
+  bottom: -32px; /* 32px hidden below screen */
+  transform: translateX(-50%); /* Only center horizontally */
+  justify-content: flex-end;
 }
 
 /* Quest Offer State - centered on screen */
 .record-panel-container.quest-offer-centered {
-  bottom: auto; /* Remove bottom positioning */
-  top: 50%; /* Center vertically */
-  transform: translate(-50%, -50%); /* Center both horizontally and vertically */
+  transform: translate(-50%, -50%); /* Perfectly centered */
+  justify-content: center;
+}
+
+/* Answer Right State - centered on screen with green glow */
+.record-panel-container.answer-right-centered {
+  transform: translate(-50%, -50%); /* Perfectly centered */
+  justify-content: center;
+}
+
+/* Answer Wrong State - centered on screen with red glow */
+.record-panel-container.answer-wrong-centered {
+  transform: translate(-50%, -50%); /* Perfectly centered */
   justify-content: center;
 }
 
@@ -63,8 +91,9 @@
 
 /* Quest Offer State - glowing yellow effect */
 .record-panel-container.quest-offer-centered .frame {
-  animation: breathingGlow 10s ease-in-out infinite !important;
+  animation: breathingGlow 10s ease-in-out 0.2s infinite !important; /* 200ms delay after color transition */
   position: relative; /* Ensure pseudo-element positioning works */
+  transition: filter 1.5s ease-in-out; /* Smooth transition when glow changes */
 }
 
 /* Inward glow overlay using ::before pseudo-element */
@@ -74,7 +103,7 @@
   inset: 0; /* Cover entire frame */
   border-radius: 32px; /* Match frame's border-radius */
   pointer-events: none; /* Don't block clicks */
-  animation: breathingGlowInset 10s ease-in-out infinite;
+  animation: breathingGlowInset 10s ease-in-out 0.2s infinite; /* 200ms delay after color transition */
   z-index: 1; /* Above background, below content */
 }
 
@@ -121,6 +150,162 @@
 }
 
 /* ===================================
+   ANSWER-RIGHT STATE - GREEN GLOW
+   =================================== */
+
+/* Answer Right State - glowing green success effect */
+.record-panel-container.answer-right-centered .frame {
+  animation: breathingGlowGreen 10s ease-in-out 0.2s infinite !important; /* 200ms delay after color transition */
+  position: relative;
+  transition: filter 1.5s ease-in-out; /* Smooth transition when glow changes */
+  /* Initial golden glow (matches end of answer-waiting) - holds during 200ms delay */
+  filter:
+    drop-shadow(0 0 25px rgba(255, 190, 60, 0.5))
+    drop-shadow(0 0 15px rgba(255, 200, 80, 0.6))
+    drop-shadow(0 0 10px rgba(255, 215, 100, 0.7))
+    drop-shadow(0 0 5px rgba(255, 230, 120, 0.3))
+    hue-rotate(-5deg)
+    brightness(1.03)
+    saturate(1.1);
+}
+
+.record-panel-container.answer-right-centered .frame::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: 32px;
+  pointer-events: none;
+  animation: breathingGlowInsetGreen 10s ease-in-out 0.2s infinite; /* 200ms delay after color transition */
+  z-index: 1;
+  /* Initial golden inset glow - holds during 200ms delay */
+  box-shadow:
+    inset 0 0 40px rgba(255, 190, 60, 0.25),
+    inset 0 0 25px rgba(255, 200, 80, 0.3),
+    inset 0 0 15px rgba(255, 215, 100, 0.35),
+    inset 0 0 8px rgba(255, 230, 120, 0.25);
+}
+
+/* Breathing glow animation - outward green success aura */
+@keyframes breathingGlowGreen {
+  0%, 100% {
+    filter:
+      drop-shadow(0 0 25px rgba(60, 255, 100, 0.35))
+      drop-shadow(0 0 15px rgba(80, 255, 120, 0.4))
+      drop-shadow(0 0 10px rgba(100, 255, 140, 0.45))
+      drop-shadow(0 0 5px rgba(120, 255, 160, 0.2))
+      hue-rotate(5deg)
+      brightness(1.02)
+      saturate(1.05);
+  }
+  50% {
+    filter:
+      drop-shadow(0 0 40px rgba(60, 255, 100, 0.5))
+      drop-shadow(0 0 25px rgba(80, 255, 120, 0.55))
+      drop-shadow(0 0 15px rgba(100, 255, 140, 0.6))
+      drop-shadow(0 0 8px rgba(120, 255, 160, 0.4))
+      hue-rotate(3deg)
+      brightness(1.04)
+      saturate(1.1);
+  }
+}
+
+/* Breathing inset glow animation - subtle inward green depth */
+@keyframes breathingGlowInsetGreen {
+  0%, 100% {
+    box-shadow:
+      inset 0 0 40px rgba(60, 255, 100, 0.15),
+      inset 0 0 25px rgba(80, 255, 120, 0.2),
+      inset 0 0 15px rgba(100, 255, 140, 0.22),
+      inset 0 0 8px rgba(120, 255, 160, 0.15);
+  }
+  50% {
+    box-shadow:
+      inset 0 0 60px rgba(60, 255, 100, 0.25),
+      inset 0 0 40px rgba(80, 255, 120, 0.3),
+      inset 0 0 25px rgba(100, 255, 140, 0.35),
+      inset 0 0 12px rgba(120, 255, 160, 0.3);
+  }
+}
+
+/* ===================================
+   ANSWER-WRONG STATE - RED GLOW
+   =================================== */
+
+/* Answer Wrong State - glowing red error effect */
+.record-panel-container.answer-wrong-centered .frame {
+  animation: breathingGlowRed 10s ease-in-out 0.2s infinite !important; /* 200ms delay after color transition */
+  position: relative;
+  transition: filter 1.5s ease-in-out; /* Smooth transition when glow changes */
+  /* Initial golden glow (matches end of answer-waiting) - holds during 200ms delay */
+  filter:
+    drop-shadow(0 0 25px rgba(255, 190, 60, 0.5))
+    drop-shadow(0 0 15px rgba(255, 200, 80, 0.6))
+    drop-shadow(0 0 10px rgba(255, 215, 100, 0.7))
+    drop-shadow(0 0 5px rgba(255, 230, 120, 0.3))
+    hue-rotate(-5deg)
+    brightness(1.03)
+    saturate(1.1);
+}
+
+.record-panel-container.answer-wrong-centered .frame::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: 32px;
+  pointer-events: none;
+  animation: breathingGlowInsetRed 10s ease-in-out 0.2s infinite; /* 200ms delay after color transition */
+  z-index: 1;
+  /* Initial golden inset glow - holds during 200ms delay */
+  box-shadow:
+    inset 0 0 40px rgba(255, 190, 60, 0.25),
+    inset 0 0 25px rgba(255, 200, 80, 0.3),
+    inset 0 0 15px rgba(255, 215, 100, 0.35),
+    inset 0 0 8px rgba(255, 230, 120, 0.25);
+}
+
+/* Breathing glow animation - outward red error aura */
+@keyframes breathingGlowRed {
+  0%, 100% {
+    filter:
+      drop-shadow(0 0 25px rgba(255, 60, 60, 0.35))
+      drop-shadow(0 0 15px rgba(255, 80, 80, 0.4))
+      drop-shadow(0 0 10px rgba(255, 100, 100, 0.45))
+      drop-shadow(0 0 5px rgba(255, 120, 120, 0.2))
+      hue-rotate(-5deg)
+      brightness(1.02)
+      saturate(1.05);
+  }
+  50% {
+    filter:
+      drop-shadow(0 0 40px rgba(255, 60, 60, 0.5))
+      drop-shadow(0 0 25px rgba(255, 80, 80, 0.55))
+      drop-shadow(0 0 15px rgba(255, 100, 100, 0.6))
+      drop-shadow(0 0 8px rgba(255, 120, 120, 0.4))
+      hue-rotate(-3deg)
+      brightness(1.04)
+      saturate(1.1);
+  }
+}
+
+/* Breathing inset glow animation - subtle inward red depth */
+@keyframes breathingGlowInsetRed {
+  0%, 100% {
+    box-shadow:
+      inset 0 0 40px rgba(255, 60, 60, 0.15),
+      inset 0 0 25px rgba(255, 80, 80, 0.2),
+      inset 0 0 15px rgba(255, 100, 100, 0.22),
+      inset 0 0 8px rgba(255, 120, 120, 0.15);
+  }
+  50% {
+    box-shadow:
+      inset 0 0 60px rgba(255, 60, 60, 0.25),
+      inset 0 0 40px rgba(255, 80, 80, 0.3),
+      inset 0 0 25px rgba(255, 100, 100, 0.35),
+      inset 0 0 12px rgba(255, 120, 120, 0.3);
+  }
+}
+
+/* ===================================
    RECORD BUTTON (STOP)
    =================================== */
 
@@ -131,12 +316,21 @@
   gap: 5px; /* Reduced from 12px to 5px - space between microphone and "Stop" text */
   height: 196px;
   left: 50%; /* Center horizontally */
-  transform: translateX(-50%); /* Center horizontally */
   padding: 32px 0px;
   position: absolute;
-  top: -94.5px; /* Lowered by 5px from -99.5px - circle overlaps quest box slightly */
   width: 192px; /* Same width as Ask button */
   cursor: pointer;
+  opacity: 1; /* Always 100% opacity, always visible */
+  pointer-events: auto;
+  /* Default position: ready state - only 8px visible above quest box */
+  top: 0px; /* Only top 8px of button visible above quest box */
+  /* Transition handled by global .record-button transition at bottom of file */
+  transform: translateX(-50%); /* Always center horizontally */
+}
+
+/* Recording state - button slides down to overlap quest box */
+.frame .record-button.recording {
+  top: -94.5px; /* Slides down to overlap quest box slightly */
 }
 
 .frame .ellipse {
@@ -160,8 +354,12 @@
   clip-path: inset(0 0 50% 0); /* Crop bottom half - show only top 50% */
   overflow: hidden;
   transition: all 0.2s ease-in-out;
-  /* Pulsing animation to indicate active recording */
-  animation: recordingPulse 1.2s ease-in-out infinite; /* Faster, more urgent pulse */
+  /* No animation in ready state */
+}
+
+/* Pulsing animation when recording - indicates active recording */
+.frame .record-button.recording .ellipse {
+  animation: recordingPulse 1.2s ease-in-out infinite;
 }
 
 /* Recording pulse animation - dramatic brightness pulse */
@@ -247,7 +445,7 @@
   border-top-width: 1px;
   border-bottom-style: solid;
   border-bottom-width: 1px;
-  box-shadow: inset 0px -2px 4px 0px #000000; /* Added spread radius of 0 to prevent horizontal shadow */
+  box-shadow: inset 0px -1px 8px -3px #000000; /* Bottom-only shadow: negative spread clips sides, vertical offset down */
   display: flex;
   flex: 0 0 auto;
   flex-direction: column;
@@ -417,9 +615,9 @@
   width: 100%;
 }
 
-/* Answer Recording: Text display instead of buttons */
+/* Answer Recording/Waiting: Text display instead of buttons */
 .frame .answer-text-display {
-  align-items: flex-start; /* Top align for less spacing */
+  align-items: flex-start; /* Top align */
   align-self: stretch;
   display: flex;
   justify-content: flex-start; /* Left justify */
@@ -428,13 +626,27 @@
   width: 100%;
 }
 
+/* Answer Waiting: Optional subtle animation to indicate processing */
+.frame .answer-text-display.answer-waiting {
+  animation: subtleBreathing 2s ease-in-out infinite;
+}
+
+@keyframes subtleBreathing {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.85;
+  }
+}
+
 .frame .answer-text-with-label {
   color: transparent; /* Base transparent, colors on spans */
   font-family: "Inter", Helvetica, sans-serif;
   font-size: 24px;
   font-weight: 400;
   line-height: normal;
-  text-align: left; /* Left justified */
+  text-align: left; /* Left-justified for readability */
   margin: 0;
   padding: 0;
   width: 100%;
@@ -729,6 +941,67 @@
 }
 
 /* ===================================
+   ANSWER SEAL STAMP (CORRECT STATE)
+   =================================== */
+
+/* Answer Stamp Container - unified container for hand and seal to scale together */
+.answer-stamp-container {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  height: 400px; /* Master size control - adjust this single value to scale everything */
+  width: auto;
+  aspect-ratio: 1; /* Keep square aspect ratio */
+  pointer-events: none;
+  z-index: 1102;
+}
+
+/* Answer Seal Stamp - positioned within container, scales with container */
+.answer-seal-stamp {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  height: 65%; /* 70% of container height - seal size relative to container */
+  width: auto;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  /* No transition - seal appears immediately, not animated */
+  pointer-events: none;
+}
+
+.answer-seal-stamp.stamp-visible {
+  opacity: 1;
+}
+
+/* Force hide seal for answer-waiting state */
+.answer-seal-stamp.seal-hidden {
+  opacity: 0 !important;
+}
+
+.answer-seal-image {
+  height: 100%;
+  width: auto;
+  object-fit: contain;
+  filter: drop-shadow(2px 4px 8px rgba(0, 0, 0, 0.3));
+}
+
+/* Hand stamp video - positioned within container, scales with container */
+.answer-hand-stamp-video {
+  position: absolute;
+  top: -90%; /* Offset upward so hand enters from above */
+  left: -10%; /* Offset slightly left for natural hand angle */
+  width: 350%; /* Slightly larger than container for hand to come from off-screen */
+  height: auto;
+  object-fit: contain;
+  opacity: 1;
+  pointer-events: none;
+}
+
+/* ===================================
    ACCESSIBILITY
    =================================== */
 
@@ -738,6 +1011,74 @@
   width: 1px;
   height: 1px;
   overflow: hidden;
+}
+
+/* ===================================
+   SMOOTH STATE TRANSITIONS
+   =================================== */
+
+/* Frame transitions for padding, size, and filter changes */
+.frame {
+  transition: padding 0.5s cubic-bezier(0.34, 1.56, 0.64, 1),
+              filter 1.5s ease-in-out,
+              transform 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+/* Quest box transitions */
+.frame .whiteframe {
+  transition: padding 0.4s ease-in-out,
+              gap 0.4s ease-in-out,
+              transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+/* Quest text transitions */
+.frame .quest {
+  transition: padding 0.4s ease-in-out,
+              transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.frame .quest-find-out-what {
+  transition: font-size 0.4s ease-in-out,
+              text-align 0.4s ease-in-out,
+              transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+/* Button rail transitions */
+.frame .frame-wrapper {
+  transition: padding 0.4s ease-in-out,
+              gap 0.4s ease-in-out,
+              opacity 0.3s ease-out,
+              transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+/* Button transitions (Ask, Hint, Answer) */
+.frame .button,
+.frame .hint-btn,
+.next-btn {
+  transition: opacity 0.3s ease-out,
+              transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1),
+              background 0.3s ease-in-out,
+              box-shadow 0.15s ease;
+}
+
+/* Answer text transitions */
+.frame .answer-text-display {
+  transition: opacity 0.4s ease-in-out,
+              padding 0.4s ease-in-out,
+              transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+/* Record button transitions */
+.frame .record-button {
+  transition: top 0.4s cubic-bezier(0.34, 1.56, 0.64, 1),
+              opacity 0.3s ease-out,
+              transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+/* Glow pseudo-element transitions */
+.record-panel-container .frame::before {
+  transition: box-shadow 1.5s ease-in-out,
+              opacity 1.2s ease-in-out;
 }
 
 /* ===================================

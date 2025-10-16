@@ -33,6 +33,64 @@ export const RecordPanel: React.FC<RecordPanelProps> = ({
 }) => {
   const { state: recordingState } = useRecording();
   const { toast, hideToast } = useToast();
+  const [showStamp, setShowStamp] = React.useState(false);
+  const [playVideo, setPlayVideo] = React.useState(false);
+  const videoRef = React.useRef<HTMLVideoElement>(null);
+
+  // Determine visual state based on dialogueState (must be before effects that use these)
+  // - basic: No panel shown
+  // - show-quest: Quest offered, panel visible with Accept button
+  // - input-showInput: Panel shown, all buttons enabled and ready
+  // - input-recording: Recording active, Stop button visible, Ask button appears pressed
+  // - show-hint: Hint displayed, Hint button appears pressed
+  // - record-answer: Recording answer, Stop button visible, Answer button appears pressed
+  // - answer-waiting: Waiting for answer validation, show answer text with all buttons disabled
+  // - answer-right: Correct answer, show answer text centered, no stop button
+  // - answer-wrong: Wrong answer, show answer text with error indication
+  // - ai-waiting: All buttons disabled (waiting for AI response)
+  const isBasic = dialogueState === 'basic';
+  const isQuestOffer = dialogueState === 'show-quest';
+  const isInputReady = dialogueState === 'input-showInput';
+  const isAskRecording = dialogueState === 'input-recording';
+  const isAnswerRecording = dialogueState === 'record-answer';
+  const isAnswerWaiting = dialogueState === 'answer-waiting';
+  const isAnswerRight = dialogueState === 'answer-right';
+  const isAnswerWrong = dialogueState === 'answer-wrong';
+  const isHintShowing = dialogueState === 'show-hint';
+  const isWaiting = dialogueState === 'ai-waiting';
+
+  // Hidden state (basic) should use quest-offer visual styling
+  const useQuestOfferStyling = isQuestOffer || isBasic;
+
+  // Reset stamp visibility when leaving answer feedback states
+  React.useEffect(() => {
+    if (!isAnswerWaiting && !isAnswerRight && !isAnswerWrong) {
+      setShowStamp(false);
+      setPlayVideo(false);
+    }
+  }, [isAnswerWaiting, isAnswerRight, isAnswerWrong]);
+
+  // Handle video playback with delay for answer-waiting
+  React.useEffect(() => {
+    if (isAnswerWaiting) {
+      // Wait 500ms before starting video in answer-waiting state
+      const timer = setTimeout(() => {
+        setPlayVideo(true);
+        if (videoRef.current) {
+          videoRef.current.playbackRate = 0.7; // Play at 70% speed
+          videoRef.current.play();
+        }
+      }, 500);
+      return () => clearTimeout(timer);
+    } else if (isAnswerRight || isAnswerWrong) {
+      // Play immediately for right/wrong states
+      setPlayVideo(true);
+      if (videoRef.current) {
+        videoRef.current.playbackRate = 0.7; // Play at 70% speed
+        videoRef.current.play();
+      }
+    }
+  }, [isAnswerWaiting, isAnswerRight, isAnswerWrong]);
 
   const handleHintClick = () => {
     if (disabled) return;
@@ -45,42 +103,46 @@ export const RecordPanel: React.FC<RecordPanelProps> = ({
       onAskClick();
     }
   };
+  // Apply 'recording' class only when actively recording (triggers slide-down animation)
+  const isRecording = isAskRecording || isAnswerRecording;
+  const buttonsDisabled = isWaiting || isAnswerWaiting || disabled;
 
-  // Determine visual state based on dialogueState
-  // - basic: No panel shown
-  // - show-quest: Quest offered, panel visible with Accept button
-  // - input-showInput: Panel shown, all buttons enabled and ready
-  // - input-recording: Recording active, Stop button visible, Ask button appears pressed
-  // - show-hint: Hint displayed, Hint button appears pressed
-  // - record-answer: Recording answer, Stop button visible, Answer button appears pressed
-  // - ai-waiting: All buttons disabled (waiting for AI response)
-  const isQuestOffer = dialogueState === 'show-quest';
-  const isAskRecording = dialogueState === 'input-recording';
-  const isAnswerRecording = dialogueState === 'record-answer';
-  const isHintShowing = dialogueState === 'show-hint';
-  const isWaiting = dialogueState === 'ai-waiting';
-  // Show Stop button whenever in any recording state
-  const showStopButton = isAskRecording || isAnswerRecording;
-  const buttonsDisabled = isWaiting || disabled;
+  // Show answer text for record-answer, answer-waiting, answer-right, and answer-wrong states
+  const showAnswerText = isAnswerRecording || isAnswerWaiting || isAnswerRight || isAnswerWrong;
+
+  // Determine which positioning class to apply based on state
+  const getContainerClass = () => {
+    // Centered states (important moments)
+    if (isAnswerRight) return 'answer-right-centered';
+    if (isAnswerWrong) return 'answer-wrong-centered';
+    if (isAnswerWaiting) return 'quest-offer-centered'; // Golden glow for waiting
+    if (isQuestOffer) return 'quest-offer-centered'; // Golden glow for quest
+
+    // Hidden state (completely off-screen)
+    if (isBasic) return 'hidden';
+
+    // Rest position - bottom anchored for interactive states
+    // (input-showInput, input-recording, show-hint, record-answer, ai-waiting)
+    return 'bottom-anchored';
+  };
+
 
   return (
-    <div className={`record-panel-container ${isQuestOffer ? 'quest-offer-centered' : ''}`}>
+    <div className={`record-panel-container ${getContainerClass()}`}>
       {/* Main Frame - matching Figma exactly */}
       <div className="frame">
-        {/* Stop Recording Button - only visible during recording */}
-        {showStopButton && (
-          <div className="record-button" onClick={onRecordStop}>
-            <div className="ellipse" />
-            <img className="vector" alt="Stop recording" src="/VisualAssets/recordIcon.svg" />
-            <div className="text-wrapper">Stop</div>
-          </div>
-        )}
+        {/* Stop Recording Button - always visible, animates between ready and recording positions */}
+        <div className={`record-button ${isRecording ? 'recording' : ''}`} onClick={onRecordStop}>
+          <div className="ellipse" />
+          <img className="vector" alt="Stop recording" src="/VisualAssets/recordIcon.svg" />
+          <div className="text-wrapper">Stop</div>
+        </div>
 
         {/* Quest Section - white card with shadow */}
-        <div className={`whiteframe ${isQuestOffer ? 'quest-offer' : ''}`}>
+        <div className={`whiteframe ${useQuestOfferStyling ? 'quest-offer' : ''}`}>
           <div className="quest">
-            <p className={`quest-find-out-what ${isQuestOffer ? 'quest-offer' : ''}`}>
-              {isQuestOffer ? (
+            <p className={`quest-find-out-what ${useQuestOfferStyling ? 'quest-offer' : ''}`}>
+              {useQuestOfferStyling ? (
                 <>
                   <span className="quest-label">Quest:</span>
                   <br />
@@ -98,16 +160,16 @@ export const RecordPanel: React.FC<RecordPanelProps> = ({
 
         {/* Button Rail - white background with buttons OR answer text */}
         <div className="frame-wrapper">
-          {isQuestOffer ? (
+          {useQuestOfferStyling ? (
             /* Quest Offer: Single Accept button centered */
             <div className="button-wrapper">
               <button className="button" onClick={onNext} disabled={disabled}>
                 <div className="answer">Accept</div>
               </button>
             </div>
-          ) : isAnswerRecording ? (
-            /* Answer Recording: Display answer text instead of buttons */
-            <div className="answer-text-display">
+          ) : showAnswerText ? (
+            /* Answer States: Display answer text (recording, waiting, right, or wrong) */
+            <div className={`answer-text-display ${isAnswerWaiting ? 'answer-waiting' : ''} ${isAnswerWrong ? 'answer-wrong' : ''}`}>
               <p className="answer-text-with-label">
                 <span className="quest-label">Answer:</span>
                 <br />
@@ -161,6 +223,45 @@ export const RecordPanel: React.FC<RecordPanelProps> = ({
         visible={toast.visible}
         onHide={hideToast}
       />
+
+      {/* Hand stamp video and seal for answer-waiting, answer-right, and answer-wrong states */}
+      {(isAnswerWaiting || isAnswerRight || isAnswerWrong) && (
+        <div className="answer-stamp-container">
+          <div className={`answer-seal-stamp ${showStamp ? 'stamp-visible' : ''} ${isAnswerWaiting ? 'seal-hidden' : ''}`}>
+            <img
+              src={isAnswerWrong ? '/VisualAssets/angrySeal.png' : '/VisualAssets/happySeal.png'}
+              alt="Answer Seal"
+              className="answer-seal-image"
+            />
+          </div>
+          <video
+            ref={videoRef}
+            className="answer-hand-stamp-video"
+            src="/VisualAssets/hand-stamp.webm"
+            muted
+            playsInline
+            onTimeUpdate={(e) => {
+              const video = e.target as HTMLVideoElement;
+              // At halfway point
+              if (video.currentTime >= video.duration / 2) {
+                // Show seal for right/wrong states
+                if (!showStamp && (isAnswerRight || isAnswerWrong)) {
+                  setShowStamp(true);
+                  // For right/wrong, let video continue playing (no pause)
+                }
+                // Pause only for answer-waiting state
+                if (isAnswerWaiting && !video.paused) {
+                  video.pause();
+                }
+              }
+            }}
+            onEnded={(e) => {
+              // Hide video after it ends
+              (e.target as HTMLVideoElement).style.display = 'none';
+            }}
+          />
+        </div>
+      )}
     </div>
   );
 };
