@@ -38,8 +38,8 @@ export const RecordPanel: React.FC<RecordPanelProps> = ({
   const videoRef = React.useRef<HTMLVideoElement>(null);
 
   // Determine visual state based on dialogueState (must be before effects that use these)
-  // - basic: No panel shown
-  // - show-quest: Quest offered, panel visible with Accept button
+  // - basic: Panel hidden below screen
+  // - quest-showing: Quest offered, panel visible with Accept button
   // - input-showInput: Panel shown, all buttons enabled and ready
   // - input-recording: Recording active, Stop button visible, Ask button appears pressed
   // - show-hint: Hint displayed, Hint button appears pressed
@@ -49,7 +49,7 @@ export const RecordPanel: React.FC<RecordPanelProps> = ({
   // - answer-wrong: Wrong answer, show answer text with error indication
   // - ai-waiting: All buttons disabled (waiting for AI response)
   const isBasic = dialogueState === 'basic';
-  const isQuestOffer = dialogueState === 'show-quest';
+  const isQuestOffer = dialogueState === 'quest-showing';
   const isInputReady = dialogueState === 'input-showInput';
   const isAskRecording = dialogueState === 'input-recording';
   const isAnswerRecording = dialogueState === 'record-answer';
@@ -105,7 +105,14 @@ export const RecordPanel: React.FC<RecordPanelProps> = ({
   };
   // Apply 'recording' class only when actively recording (triggers slide-down animation)
   const isRecording = isAskRecording || isAnswerRecording;
-  const buttonsDisabled = isWaiting || isAnswerWaiting || disabled;
+
+  // Disable logic:
+  // - When Ask is recording: Hint and Answer are disabled, but Ask is enabled (so user can stop)
+  // - When Answer is recording: Ask and Hint are disabled, but Answer is enabled (so user can stop)
+  // - When waiting: all buttons disabled
+  const askButtonDisabled = isAnswerRecording || isWaiting || isAnswerWaiting || disabled; // Disabled when Answer recording or waiting
+  const hintButtonDisabled = isRecording || isWaiting || isAnswerWaiting || disabled; // Disabled when any recording or waiting
+  const answerButtonDisabled = isAskRecording || isWaiting || isAnswerWaiting || disabled; // Disabled when Ask recording or waiting
 
   // Show answer text for record-answer, answer-waiting, answer-right, and answer-wrong states
   const showAnswerText = isAnswerRecording || isAnswerWaiting || isAnswerRight || isAnswerWrong;
@@ -131,13 +138,6 @@ export const RecordPanel: React.FC<RecordPanelProps> = ({
     <div className={`record-panel-container ${getContainerClass()}`}>
       {/* Main Frame - matching Figma exactly */}
       <div className="frame">
-        {/* Stop Recording Button - always visible, animates between ready and recording positions */}
-        <div className={`record-button ${isRecording ? 'recording' : ''}`} onClick={onRecordStop}>
-          <div className="ellipse" />
-          <img className="vector" alt="Stop recording" src="/VisualAssets/recordIcon.svg" />
-          <div className="text-wrapper">Stop</div>
-        </div>
-
         {/* Quest Section - white card with shadow */}
         <div className={`whiteframe ${useQuestOfferStyling ? 'quest-offer' : ''}`}>
           <div className="quest">
@@ -158,7 +158,25 @@ export const RecordPanel: React.FC<RecordPanelProps> = ({
           </div>
         </div>
 
-        {/* Button Rail - white background with buttons OR answer text */}
+        {/* Answer Display Frame - middle white box (only visible during answer states) */}
+        {showAnswerText && (
+          <div className="whiteframe answer-frame">
+            <div className={`quest ${isAnswerWaiting ? 'answer-waiting' : ''} ${isAnswerWrong ? 'answer-wrong' : ''}`}>
+              <p className="quest-find-out-what">
+                <span className="quest-label">Answer:</span>
+              </p>
+              <div className="answer-input-box">
+                {isAnswerRecording ? (
+                  <span className="answer-placeholder">Listening...</span>
+                ) : (
+                  <span className="quest-description">Someone stole your cookies.</span>
+                )}
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Button Rail - white background with buttons */}
         <div className="frame-wrapper">
           {useQuestOfferStyling ? (
             /* Quest Offer: Single Accept button centered */
@@ -167,46 +185,46 @@ export const RecordPanel: React.FC<RecordPanelProps> = ({
                 <div className="answer">Accept</div>
               </button>
             </div>
-          ) : showAnswerText ? (
-            /* Answer States: Display answer text (recording, waiting, right, or wrong) */
-            <div className={`answer-text-display ${isAnswerWaiting ? 'answer-waiting' : ''} ${isAnswerWrong ? 'answer-wrong' : ''}`}>
-              <p className="answer-text-with-label">
-                <span className="quest-label">Answer:</span>
-                <br />
-                <span className="quest-description">Someone stole your cookies.</span>
-              </p>
-            </div>
           ) : (
             /* Normal State: Ask, Hint, Answer buttons */
             <div className="div">
               <div className="div-2">
-                {/* Ask Button - with red overlay when recording */}
+                {/* Ask Button - transforms to Stop when recording */}
                 <button
-                  className={`button ${isAskRecording ? 'recording' : ''} ${buttonsDisabled ? 'disabled' : ''}`}
-                  onClick={handleAskClick}
-                  disabled={buttonsDisabled}
-                  title="Ask a question"
+                  className={`button ${isAskRecording ? 'recording-active' : ''} ${askButtonDisabled ? 'disabled' : ''}`}
+                  onClick={isAskRecording ? onRecordStop : handleAskClick}
+                  disabled={askButtonDisabled}
+                  title={isAskRecording ? "Stop recording" : "Ask a question"}
                 >
-                  <div className="answer">Ask</div>
+                  <img className="button-icon" src="/VisualAssets/recordIcon.svg" alt="" />
+                  {isAskRecording ? (
+                    <>
+                      <div className="stop-square" />
+                      <div className="button-text">Stop</div>
+                    </>
+                  ) : (
+                    <div className="button-text">Ask</div>
+                  )}
                 </button>
 
                 {/* Hint Button - cardboard button with lightbulb, pressed when hint showing */}
                 <button
-                  className={`hint-btn ${isHintShowing ? 'recording' : ''} ${buttonsDisabled ? 'disabled' : ''}`}
+                  className={`hint-btn ${isHintShowing ? 'recording' : ''} ${hintButtonDisabled ? 'disabled' : ''}`}
                   onClick={handleHintClick}
-                  disabled={buttonsDisabled}
+                  disabled={hintButtonDisabled}
                   title="Get a hint"
                 >
                   <img className="img" alt="" src="/VisualAssets/lightbulb.svg" />
                 </button>
               </div>
 
-              {/* Answer Button - locked state controlled by quest completion, pressed when recording answer */}
+              {/* Answer Button - locked state controlled by quest completion, transforms when recording answer */}
               <NextButton
                 locked={questState !== 'complete'}
                 onClick={onNext}
+                onRecordStop={onRecordStop}
                 label="Answer"
-                disabled={buttonsDisabled}
+                disabled={answerButtonDisabled}
                 isRecording={isAnswerRecording}
               />
             </div>

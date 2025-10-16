@@ -306,117 +306,42 @@
 }
 
 /* ===================================
-   RECORD BUTTON (STOP)
+   BUTTON ICON & TEXT LAYOUT
    =================================== */
 
-.frame .record-button {
-  align-items: center;
-  display: flex;
-  flex-direction: column;
-  gap: 5px; /* Reduced from 12px to 5px - space between microphone and "Stop" text */
-  height: 196px;
-  left: 50%; /* Center horizontally */
-  padding: 32px 0px;
-  position: absolute;
-  width: 192px; /* Same width as Ask button */
-  cursor: pointer;
-  opacity: 1; /* Always 100% opacity, always visible */
-  pointer-events: auto;
-  /* Default position: ready state - only 8px visible above quest box */
-  top: 0px; /* Only top 8px of button visible above quest box */
-  /* Transition handled by global .record-button transition at bottom of file */
-  transform: translateX(-50%); /* Always center horizontally */
-}
-
-/* Recording state - button slides down to overlap quest box */
-.frame .record-button.recording {
-  top: -94.5px; /* Slides down to overlap quest box slightly */
-}
-
-.frame .ellipse {
-  aspect-ratio: 1;
-  background-color: #d81919;
-  border: 4px solid;
-  border-color: #ffffff;
-  border-radius: 94.5px;
-  box-shadow: inset 11px 11px 4px #00000040;
-  height: 189px;
-  left: 50%;
-  transform: translateX(-50%); /* Center the circle */
-  position: absolute;
-  top: 15px;
-  width: 189px;
-  /* Figma noise: size 0.5 (baseFrequency 0.5), density 100%, color #431b1b at 43% opacity */
-  background-image: linear-gradient(0deg, rgba(67, 27, 27, 0.43) 0%, rgba(67, 27, 27, 0.43) 100%),
-    url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.5' numOctaves='1' /%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' /%3E%3C/svg%3E");
-  background-blend-mode: normal, overlay;
-  /* Crop to show only top half with straight horizontal cut at diameter midline */
-  clip-path: inset(0 0 50% 0); /* Crop bottom half - show only top 50% */
-  overflow: hidden;
-  transition: all 0.2s ease-in-out;
-  /* No animation in ready state */
-}
-
-/* Pulsing animation when recording - indicates active recording */
-.frame .record-button.recording .ellipse {
-  animation: recordingPulse 1.2s ease-in-out infinite;
-}
-
-/* Recording pulse animation - dramatic brightness pulse */
-@keyframes recordingPulse {
-  0%, 100% {
-    background-color: #d81919; /* Dark red */
-    box-shadow: inset 11px 11px 4px #00000040;
-    filter: brightness(1);
-  }
-  50% {
-    background-color: #ff4444; /* Bright vibrant red */
-    box-shadow: inset 11px 11px 2px #00000010; /* Much lighter shadow for intense glow */
-    filter: brightness(1.3); /* Extra brightness boost */
-  }
-}
-
-/* Hover state - make it pop! Pauses animation and shows inverted shadow */
-.frame .record-button:hover .ellipse {
-  animation-play-state: paused; /* Freeze the pulse animation on hover */
-  background-color: #ff3333 !important; /* Lighter, brighter red - override animation */
-  box-shadow: inset 0px 2px 6px 0px rgba(0, 0, 0, 0.5) !important; /* Inverted shadow from top - opposite of quest box */
-  filter: brightness(1.4) !important; /* Extra bright on hover */
-  background-image: linear-gradient(0deg, rgba(255, 80, 80, 0.3) 0%, rgba(255, 80, 80, 0.3) 100%),
-    url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.5' numOctaves='1' /%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' /%3E%3C/svg%3E");
-}
-
-/* Hover effect on text and icon */
-.frame .record-button:hover .vector,
-.frame .record-button:hover .text-wrapper {
-  transform: scale(1.05);
-}
-
-.frame .vector,
-.frame .text-wrapper {
-  transition: transform 0.2s ease-in-out;
-}
-
-.frame .vector {
-  height: 37.5px; /* 25px * 1.5 = 37.5px (50% increase) */
-  position: relative;
-  width: 37.5px; /* 25px * 1.5 = 37.5px (50% increase) */
-  z-index: 1;
+/* Microphone icon on left side of buttons */
+.button-icon {
+  height: 25px;
+  width: 25px;
+  object-fit: contain;
   filter: brightness(0) invert(1); /* Make microphone white */
+  margin-right: 8px;
+  z-index: 2;
 }
 
-.frame .text-wrapper {
+/* Button text */
+.button-text {
   color: #ffffff;
   font-family: "Inter", Helvetica, sans-serif;
-  font-size: 20px;
+  font-size: 32px;
   font-weight: 700;
   letter-spacing: 0;
   line-height: normal;
-  position: relative;
   text-align: center;
   white-space: nowrap;
-  width: fit-content;
-  z-index: 1;
+  z-index: 2;
+}
+
+/* Stop square indicator (shows when recording) */
+.stop-square {
+  width: 25px;
+  height: 25px;
+  background-color: #ffffff; /* Pure white */
+  border-radius: 4px;
+  margin-right: 8px;
+  z-index: 2;
+  /* Add subtle shadow for crisp definition against red background */
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.4);
 }
 
 /* ===================================
@@ -553,6 +478,42 @@
 }
 
 /* ===================================
+   ANSWER DISPLAY FRAME (MIDDLE WHITE BOX)
+   =================================== */
+
+.frame .whiteframe.answer-frame {
+  align-items: center;
+  background: #ffffff !important; /* Plain white background - override grey tint from .whiteframe */
+  border-color: #49301d;
+  border-left-style: solid;
+  border-left-width: 1px;
+  border-radius: 0px; /* No rounded corners - middle box */
+  border-right-style: solid;
+  border-right-width: 1px;
+  border-top-style: solid;
+  border-top-width: 1px;
+  border-bottom-style: solid;
+  border-bottom-width: 1px;
+  box-shadow: inset 0px -1px 8px -3px #000000; /* Bottom-only shadow */
+  display: flex;
+  flex: 0 0 auto;
+  flex-direction: column;
+  gap: 34px;
+  justify-content: center;
+  padding: 0px 20px;
+  position: relative;
+  width: 100%;
+  min-width: 540px;
+  box-sizing: border-box;
+}
+
+/* Answer frame's quest container - stack label and input box vertically */
+.frame .whiteframe.answer-frame .quest {
+  flex-direction: column; /* Stack children vertically instead of horizontally */
+  align-items: flex-start; /* Align items to the left */
+}
+
+/* ===================================
    BUTTON RAIL (FRAME WRAPPER)
    =================================== */
 
@@ -566,7 +527,7 @@
   border-left-width: 1px;
   border-right-style: solid;
   border-right-width: 1px;
-  border-radius: 0px 0px 16px 16px; /* Rounded bottom corners only - top meets quest box */
+  border-radius: 0px 0px 16px 16px; /* Rounded bottom corners only */
   display: flex;
   flex: 0 0 auto;
   flex-direction: column;
@@ -576,11 +537,6 @@
   width: 100%; /* Expand to fill frame width instead of fixed 620px */
   min-width: 540px; /* Minimum to fit buttons: 192+15+59+40+192+40 = 538px, rounded to 540px */
   box-sizing: border-box; /* Include padding and borders in width calculation */
-}
-
-/* Remove padding from frame-wrapper when containing answer text (padding is on child instead) */
-.frame .frame-wrapper:has(.answer-text-display) {
-  padding: 0;
 }
 
 .frame .div {
@@ -615,19 +571,101 @@
   width: 100%;
 }
 
-/* Answer Recording/Waiting: Text display instead of buttons */
-.frame .answer-text-display {
-  align-items: flex-start; /* Top align */
-  align-self: stretch;
+/* Answer Input Box - styled to look like a text input field */
+.frame .answer-input-box {
+  /* Background with subtle gradient for depth */
+  background: linear-gradient(
+    180deg,
+    #fafafa 0%,
+    #ffffff 100%
+  );
+
+  /* Multi-layer border for realistic input appearance */
+  border: 1px solid #d4d4d4; /* Light grey outer border */
+  box-shadow:
+    inset 0px 1px 3px rgba(0, 0, 0, 0.12),  /* Inner shadow for recessed look */
+    0px 1px 0px rgba(255, 255, 255, 0.8),   /* Bottom highlight for 3D effect */
+    0px 0px 0px 1px rgba(73, 48, 29, 0.1);  /* Subtle brown tint border */
+
+  border-radius: 6px;
+  padding: 12px 16px;
+  min-height: 48px;
   display: flex;
-  justify-content: flex-start; /* Left justify */
-  padding: 21px 20px 42px 20px; /* Top 21px matches quest, bottom 42px (21+21) accounts for off-screen positioning */
-  position: relative;
-  width: 100%;
+  align-items: center;
+  margin-top: 8px; /* Space between "Answer:" label and input box */
+
+  /* Text styling */
+  font-family: "Inter", Helvetica, sans-serif;
+  font-size: 18px;
+  font-weight: 400;
+  color: #3d3d3d; /* Darker text for better readability */
+  line-height: 1.5;
+  word-wrap: break-word;
+  box-sizing: border-box;
+  width: 100%; /* Span full width of parent container */
+
+  /* Smooth transitions for any state changes */
+  transition: all 0.2s ease-in-out;
+
+  /* Cursor style to indicate it's a text field (even if read-only) */
+  cursor: text;
 }
 
-/* Answer Waiting: Optional subtle animation to indicate processing */
-.frame .answer-text-display.answer-waiting {
+/* Placeholder text styling - grey color to indicate it's not real content yet */
+.frame .answer-input-box .answer-placeholder {
+  color: #9ca3af; /* Medium grey - clearly different from real text */
+  font-style: italic; /* Italic to further distinguish from real content */
+  font-weight: 400;
+}
+
+/* Optional hover state for input box (subtle interaction feedback) */
+.frame .answer-input-box:hover {
+  border-color: #b8b8b8; /* Slightly darker border on hover */
+  box-shadow:
+    inset 0px 1px 3px rgba(0, 0, 0, 0.15),  /* Slightly stronger inner shadow */
+    0px 1px 0px rgba(255, 255, 255, 0.9),   /* Brighter bottom highlight */
+    0px 0px 0px 1px rgba(73, 48, 29, 0.15); /* Slightly stronger brown tint */
+}
+
+/* Answer Waiting state: Add a subtle pulsing glow to indicate processing */
+.frame .quest.answer-waiting .answer-input-box {
+  animation: inputPulse 2s ease-in-out infinite;
+  border-color: #b2652a; /* Orange border to match quest theme */
+}
+
+@keyframes inputPulse {
+  0%, 100% {
+    box-shadow:
+      inset 0px 1px 3px rgba(0, 0, 0, 0.12),
+      0px 1px 0px rgba(255, 255, 255, 0.8),
+      0px 0px 0px 1px rgba(178, 101, 42, 0.3),
+      0px 0px 8px rgba(178, 101, 42, 0.2); /* Subtle orange glow */
+  }
+  50% {
+    box-shadow:
+      inset 0px 1px 3px rgba(0, 0, 0, 0.12),
+      0px 1px 0px rgba(255, 255, 255, 0.8),
+      0px 0px 0px 1px rgba(178, 101, 42, 0.5),
+      0px 0px 12px rgba(178, 101, 42, 0.4); /* Stronger orange glow */
+  }
+}
+
+/* Answer Wrong state: Red border to indicate error */
+.frame .quest.answer-wrong .answer-input-box {
+  border-color: #d81919; /* Red border */
+  background: linear-gradient(
+    180deg,
+    #fff5f5 0%,
+    #ffffff 100%
+  ); /* Subtle red tint in background */
+  box-shadow:
+    inset 0px 1px 3px rgba(216, 25, 25, 0.1),
+    0px 1px 0px rgba(255, 255, 255, 0.8),
+    0px 0px 0px 1px rgba(216, 25, 25, 0.2);
+}
+
+/* Legacy breathing animation for quest container (kept for backward compatibility) */
+.frame .quest.answer-waiting {
   animation: subtleBreathing 2s ease-in-out infinite;
 }
 
@@ -638,19 +676,6 @@
   50% {
     opacity: 0.85;
   }
-}
-
-.frame .answer-text-with-label {
-  color: transparent; /* Base transparent, colors on spans */
-  font-family: "Inter", Helvetica, sans-serif;
-  font-size: 24px;
-  font-weight: 400;
-  line-height: normal;
-  text-align: left; /* Left-justified for readability */
-  margin: 0;
-  padding: 0;
-  width: 100%;
-  word-wrap: break-word;
 }
 
 /* ===================================
@@ -672,11 +697,11 @@
   border-radius: 16px;
   box-sizing: border-box;
   display: flex;
-  flex-direction: column;
-  gap: 10px;
+  flex-direction: row; /* Horizontal layout for icon + text */
+  gap: 0; /* No gap, margins handled on elements */
   height: 55px; /* Reduced from 75px by 20px */
   justify-content: center;
-  padding: 8px 38px; /* Reduced vertical padding from 18px to 8px */
+  padding: 8px 20px; /* Reduced padding to fit icon + text */
   position: relative;
   cursor: pointer;
   transition: all 0.15s ease;
@@ -685,6 +710,17 @@
 /* Ask button specific width */
 .frame .button {
   width: 192px;
+}
+
+/* Ask button green overlay - all non-recording states */
+.frame .button::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: rgba(87, 127, 87, 0.5);
+  border-radius: 12px;
+  pointer-events: none;
+  z-index: 1;
 }
 
 /* Hint button specific width - tight */
@@ -698,34 +734,49 @@
   width: 192px;
 }
 
-/* Hover state - red tint like pressed state */
-.frame .button:hover::after,
-.frame .hint-btn:hover::after,
+/* Answer button purple overlay - all non-recording states */
+.next-btn::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: rgba(54, 7, 88, 0.5);
+  border-radius: 12px;
+  pointer-events: none;
+  z-index: 1;
+}
+
+/* Hover state - Ask button darkens the green */
+.frame .button:hover::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    0deg,
+    rgba(0, 0, 0, 0.15) 0%,
+    rgba(0, 0, 0, 0.15) 100%
+  ); /* Darken effect on hover */
+  border-radius: 16px;
+  pointer-events: none;
+  z-index: 2; /* Above green overlay */
+}
+
+/* Hover state - Answer button darkens the purple */
 .next-btn:hover::after {
   content: '';
   position: absolute;
   inset: 0;
   background: linear-gradient(
     0deg,
-    rgba(216, 25, 25, 0.17) 0%,
-    rgba(216, 25, 25, 0.17) 100%
-  ); /* Same red overlay as pressed state */
+    rgba(0, 0, 0, 0.15) 0%,
+    rgba(0, 0, 0, 0.15) 100%
+  ); /* Darken effect on hover */
   border-radius: 16px;
   pointer-events: none;
-  z-index: 1;
+  z-index: 2; /* Above purple overlay */
 }
 
-/* Active/Pressed state - red overlay + inset shadow */
-.frame .button:active,
-.frame .hint-btn:active,
-.next-btn:active {
-  box-shadow: inset 8px 8px 4px rgba(0, 0, 0, 0.25);
-}
-
-/* Red tint overlay on press (overrides hover) */
-.frame .button:active::after,
-.frame .hint-btn:active::after,
-.next-btn:active::after {
+/* Hover state - Hint button keeps red tint */
+.frame .hint-btn:hover::after {
   content: '';
   position: absolute;
   inset: 0;
@@ -733,7 +784,59 @@
     0deg,
     rgba(216, 25, 25, 0.17) 0%,
     rgba(216, 25, 25, 0.17) 100%
-  ) !important; /* Override hover state */
+  ); /* Red overlay for hint button */
+  border-radius: 16px;
+  pointer-events: none;
+  z-index: 1;
+}
+
+/* Active/Pressed state - inset shadow for all buttons */
+.frame .button:active,
+.frame .hint-btn:active,
+.next-btn:active {
+  box-shadow: inset 8px 8px 4px rgba(0, 0, 0, 0.25);
+}
+
+/* Active state - Ask button darkens more */
+.frame .button:active::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    0deg,
+    rgba(0, 0, 0, 0.25) 0%,
+    rgba(0, 0, 0, 0.25) 100%
+  ) !important; /* Darker overlay on press */
+  border-radius: 16px;
+  pointer-events: none;
+  z-index: 2;
+}
+
+/* Active state - Answer button darkens more */
+.next-btn:active::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    0deg,
+    rgba(0, 0, 0, 0.25) 0%,
+    rgba(0, 0, 0, 0.25) 100%
+  ) !important; /* Darker overlay on press */
+  border-radius: 16px;
+  pointer-events: none;
+  z-index: 2;
+}
+
+/* Active state - Hint button keeps red tint */
+.frame .hint-btn:active::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    0deg,
+    rgba(216, 25, 25, 0.17) 0%,
+    rgba(216, 25, 25, 0.17) 100%
+  ) !important; /* Red overlay on press */
   border-radius: 16px;
   pointer-events: none;
   z-index: 1;
@@ -743,23 +846,98 @@
    BUTTON STATE CLASSES
    =================================== */
 
-/* Recording state - Ask button appears pressed with red overlay */
-.frame .button.recording::after {
-  content: '';
-  position: absolute;
-  inset: 0;
-  background: linear-gradient(
-    0deg,
-    rgba(216, 25, 25, 0.17) 0%,
-    rgba(216, 25, 25, 0.17) 100%
-  );
-  border-radius: 16px;
-  pointer-events: none;
-  z-index: 1;
+/* Recording Active state - Ask button (red) */
+.frame .button.recording-active {
+  /* Solid red base color - completely replaces cardboard */
+  background-color: #d81919 !important;
+  /* Layered texture from top to bottom: visible noise texture over dark semi-transparent overlay */
+  background-image:
+    url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.4' numOctaves='3' /%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.6' /%3E%3C/svg%3E"),
+    linear-gradient(0deg, rgba(0, 0, 0, 0.3) 0%, rgba(0, 0, 0, 0.2) 100%) !important;
+  background-blend-mode: overlay, normal !important;
+  background-size: 150px 150px, cover !important; /* Noise tiles at fixed size, gradient covers */
+  background-position: center, center !important;
+  background-repeat: repeat, no-repeat !important; /* Noise repeats for texture, gradient doesn't */
+  /* Brown border matching other buttons */
+  border-color: #49301d !important;
+  border-width: 3px !important;
+  /* Inset shadow like old circle */
+  box-shadow: inset 0px 0px 15px 0px #ff7c7c !important;
+  /* Pulse animation */
+  animation: recordingPulseRed 1.2s ease-in-out infinite;
 }
 
-.frame .button.recording {
-  box-shadow: inset 8px 8px 4px rgba(0, 0, 0, 0.25);
+/* Recording Active state - Answer button (dark purple) */
+.next-btn.recording-active {
+  /* Solid dark purple base color - completely replaces cardboard */
+  background-color: #6b3a8f !important;
+  /* Layered texture from top to bottom: visible noise texture over dark semi-transparent overlay */
+  background-image:
+    url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.4' numOctaves='3' /%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.6' /%3E%3C/svg%3E"),
+    linear-gradient(0deg, rgba(0, 0, 0, 0.3) 0%, rgba(0, 0, 0, 0.2) 100%) !important;
+  background-blend-mode: overlay, normal !important;
+  background-size: 150px 150px, cover !important; /* Noise tiles at fixed size, gradient covers */
+  background-position: center, center !important;
+  background-repeat: repeat, no-repeat !important; /* Noise repeats for texture, gradient doesn't */
+  /* Dark border matching other buttons */
+  border-color: #49301d !important;
+  border-width: 3px !important;
+  /* Inset shadow with purple glow */
+  box-shadow: inset 0px 0px 15px 0px rgba(180, 120, 255, 0.5) !important;
+  /* Pulse animation - purple variant */
+  animation: recordingPulsePurple 1.2s ease-in-out infinite;
+}
+
+/* Hide microphone icon when recording */
+.frame .button.recording-active .button-icon,
+.next-btn.recording-active .button-icon {
+  display: none;
+}
+
+/* Hide green overlay when Ask button is recording (recording state has its own red background) */
+.frame .button.recording-active::before {
+  display: none;
+}
+
+/* Hide purple overlay when Answer button is recording (recording state has its own purple background) */
+.next-btn.recording-active::before {
+  display: none;
+}
+
+/* Disable hover/active overlays when recording - they create unwanted color shifts */
+.frame .button.recording-active:hover::after,
+.frame .button.recording-active:active::after,
+.next-btn.recording-active:hover::after,
+.next-btn.recording-active:active::after {
+  display: none !important;
+}
+
+/* Recording pulse animation - Red (Ask button) */
+@keyframes recordingPulseRed {
+  0%, 100% {
+    background-color: #d81919;
+    box-shadow: inset 0px 0px 15px 0px rgba(255, 124, 124, 0.8);
+    filter: brightness(1);
+  }
+  50% {
+    background-color: #ff4444; /* Bright vibrant red */
+    box-shadow: inset 0px 0px 20px 0px rgba(255, 124, 124, 1); /* Stronger glow for intense pulse */
+    filter: brightness(1.3); /* Extra brightness boost */
+  }
+}
+
+/* Recording pulse animation - Purple (Answer button) */
+@keyframes recordingPulsePurple {
+  0%, 100% {
+    background-color: #6b3a8f;
+    box-shadow: inset 0px 0px 15px 0px rgba(180, 120, 255, 0.5);
+    filter: brightness(1);
+  }
+  50% {
+    background-color: #caa3e5; /* Brighter vibrant purple */
+    box-shadow: inset 0px 0px 20px 0px rgba(180, 120, 255, 0.8); /* Stronger glow for intense pulse */
+    filter: brightness(1.5); /* Extra brightness boost */
+  }
 }
 
 /* Disabled state - all buttons are dimmed and non-interactive */
@@ -879,7 +1057,7 @@
   position: relative;
   text-align: center;
   width: fit-content;
-  z-index: 1;
+  z-index: 2; /* Above purple overlay (z-index: 1) */
 }
 
 .next-label-background {
@@ -890,7 +1068,7 @@
   text-transform: uppercase;
   letter-spacing: 1px;
   position: absolute;
-  z-index: 1;
+  z-index: 2; /* Above purple overlay */
 }
 
 .lock-image-overlay {
@@ -898,7 +1076,7 @@
   height: 24px;
   object-fit: contain;
   position: absolute;
-  z-index: 2;
+  z-index: 3; /* Above overlay and text */
 }
 
 .next-btn .arrow {
@@ -906,7 +1084,7 @@
   font-weight: bold;
   color: white;
   position: relative;
-  z-index: 1;
+  z-index: 2; /* Above purple overlay */
 }
 
 /* ===================================
@@ -1068,12 +1246,6 @@
               transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
 }
 
-/* Record button transitions */
-.frame .record-button {
-  transition: top 0.4s cubic-bezier(0.34, 1.56, 0.64, 1),
-              opacity 0.3s ease-out,
-              transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
-}
 
 /* Glow pseudo-element transitions */
 .record-panel-container .frame::before {
