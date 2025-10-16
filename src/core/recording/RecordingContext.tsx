@@ -1,5 +1,4 @@
 import React, { createContext, useContext, useReducer, useCallback, useRef, useEffect } from "react";
-import { useDialogue } from '@core/dialogue/DialogueContext';
 import { Recording } from "./RecordingAPI";
 
 // Recording state
@@ -131,7 +130,6 @@ const RecordingContext = createContext<RecordingContextValue | null>(null);
 
 export function RecordingProvider({ children }: { children: React.ReactNode }) {
   const [state, dispatch] = useReducer(recordingReducer, initialState);
-  const { beginRecording, updateRecording, endRecording } = useDialogue();
   const recognitionRef = useRef<any>(null);
   const restartTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const currentSessionIdRef = useRef<string | null>(null);
@@ -206,7 +204,7 @@ export function RecordingProvider({ children }: { children: React.ReactNode }) {
     };
 
     return recognition;
-  }, [updateRecording]);
+  }, []);
 
   const start = useCallback(() => {
     if (!hasWebSpeechAPI()) {
@@ -224,12 +222,9 @@ export function RecordingProvider({ children }: { children: React.ReactNode }) {
       const sessionId = `session_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
       currentSessionIdRef.current = sessionId;
 
-      // Start recording in dialogue context
-      const dialogueId = beginRecording('default-scene');
-
       dispatch({ type: 'START', sessionId });
 
-      const recognition = createRecognition(dialogueId);
+      const recognition = createRecognition(sessionId);
       if (recognition) {
         recognitionRef.current = recognition;
         recognition.start();
@@ -237,7 +232,7 @@ export function RecordingProvider({ children }: { children: React.ReactNode }) {
     } catch (error) {
       dispatch({ type: 'ABORT' });
     }
-  }, [beginRecording, createRecognition]);
+  }, [createRecognition]);
 
   const stop = useCallback(() => {
     dispatch({ type: 'SET_KEEP_LISTENING', value: false });
@@ -252,18 +247,12 @@ export function RecordingProvider({ children }: { children: React.ReactNode }) {
       recognitionRef.current = null;
     }
 
-    // End recording with complete accumulated transcript only when manually stopped
-    const currentSessionId = currentSessionIdRef.current;
-    if (currentSessionId) {
-      const completeText = state.displayText.trim();
-      if (completeText) {
-        endRecording(currentSessionId, completeText);
-      }
-    }
+    // Recording text is now managed entirely by scene state (RecordPanelOrchestrator)
+    // No need to sync with DialogueContext anymore
 
     currentSessionIdRef.current = null;
     dispatch({ type: 'STOP' });
-  }, [state.finalTranscript, state.interimTranscript, endRecording]);
+  }, []);
 
   const abort = useCallback(() => {
     dispatch({ type: 'SET_KEEP_LISTENING', value: false });

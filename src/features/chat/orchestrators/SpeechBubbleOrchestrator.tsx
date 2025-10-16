@@ -176,8 +176,9 @@ export function SpeechBubbleOrchestrator({ scenes, currentIndex = 0 }: SpeechBub
         const characterScene = scene as CharacterScene;
         const sceneId = (characterScene as SceneWithId).sceneId;
 
-        // Check if this scene has dialogue states
-        const sceneState = sceneId ? sceneStates.getSceneState(sceneId) : undefined;
+        // Get the navigation item to access scene state (more reliable than sceneStates context)
+        const navItem = navigationArray[sceneIndex];
+        const sceneState = navItem?.sceneState;
         const dialogueState = sceneState?.type === 'dialogue' ? sceneState.state : null;
 
         // Determine speaker and side
@@ -190,8 +191,15 @@ export function SpeechBubbleOrchestrator({ scenes, currentIndex = 0 }: SpeechBub
         const side = characterScene.speaker === 'left' ? 'left' :
                characterScene.speaker === 'right' ? 'right' : 'center';
 
-        // Always show the scene text
-        const bubbleContent = characterScene.text;
+        // Show "Listening..." placeholder when in input-recording state
+        const isRecording = dialogueState === 'input-recording';
+
+        // During recording, show transcript from scene state or default to "Listening..."
+        // The scene text might be default placeholder like "Test words", so we check scene state for actual transcript
+        const hasTranscript = sceneState?.type === 'dialogue' && sceneState.questionText && sceneState.questionText.trim();
+        const bubbleContent = isRecording
+          ? (hasTranscript ? sceneState.questionText : 'Listening...')
+          : characterScene.text;
 
         // Show waiting bubble based solely on dialogue state
         // When state is 'ai-waiting', show the animated ellipses bubble
@@ -267,6 +275,7 @@ export function SpeechBubbleOrchestrator({ scenes, currentIndex = 0 }: SpeechBub
               side={side}
               speakerLabel={speakerLabel}
               showWaitingBubble={shouldShowWaitingBubble}
+              isPlaceholder={isRecording && !hasTranscript}
             >
               {bubbleContent}
             </CardboardBubble>

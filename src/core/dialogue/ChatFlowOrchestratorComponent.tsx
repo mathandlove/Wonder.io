@@ -12,15 +12,19 @@ import { useSceneManager } from '@core/scenes/SceneManager';
 import { useChatFlowOrchestrator } from './ChatFlowOrchestrator';
 
 export function ChatFlowOrchestratorComponent() {
-  const sceneManager = useSceneManager();
+  const { navigationArray, navigationIndex, getCurrentNavigationItem } = useSceneManager();
   const chatFlow = useChatFlowOrchestrator();
 
   // Track if we're currently processing to avoid duplicate calls
   const [processingRecordingId, setProcessingRecordingId] = React.useState<string | null>(null);
 
+  // Get current navigation item - reactive to navigationArray changes
+  const currentNavItem = React.useMemo(() => {
+    return navigationArray[navigationIndex] || null;
+  }, [navigationArray, navigationIndex]);
+
   // Auto-trigger AI response when scene enters ai-waiting state
   React.useEffect(() => {
-    const currentNavItem = sceneManager.getCurrentNavigationItem();
     const sceneState = currentNavItem?.sceneState;
     const currentScene = currentNavItem?.scene;
 
@@ -28,10 +32,14 @@ export function ChatFlowOrchestratorComponent() {
 
     if (isAiWaiting && currentScene && 'recordingId' in currentScene) {
       const recordingId = (currentScene as any).recordingId;
-      const transcript = (currentScene as any).text;
+      // Read transcript from scene state (persistent) or fallback to scene.text
+      const transcript = (sceneState?.type === 'dialogue' && sceneState.questionText)
+        ? sceneState.questionText
+        : (currentScene as any).text;
 
       // Only process if we haven't already processed this recording
       if (recordingId && transcript && recordingId !== processingRecordingId) {
+        console.log('🤖 ChatFlowOrchestrator processing transcript from scene state:', transcript);
         setProcessingRecordingId(recordingId);
 
         // Process the transcript and get AI response
@@ -44,7 +52,7 @@ export function ChatFlowOrchestratorComponent() {
         });
       }
     }
-  }, [sceneManager, chatFlow, processingRecordingId]);
+  }, [currentNavItem, chatFlow, processingRecordingId]);
 
   // This is a logic-only component, renders nothing
   return null;

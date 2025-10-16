@@ -130,7 +130,7 @@ export function RecordingOrchestrator() {
   // ===================================
 
   // Auto-start recording when entering recording states (state-driven)
-  // Handles both input-recording (Ask button) and record-answer (Answer button)
+  // Handles record-answer (Answer button) - input-recording is started immediately in handleRecordStart
   React.useEffect(() => {
     const isRecordingState = sceneState?.type === 'dialogue' &&
       (sceneState.state === 'input-recording' || sceneState.state === 'record-answer');
@@ -139,10 +139,11 @@ export function RecordingOrchestrator() {
 
     if (isRecordingState && !recording.isRecording()) {
       // For record-answer, we might not have a recordingId, so generate one
+      // For input-recording, this is a fallback in case immediate start failed
       const recordingId = sceneRecordingId || `answer-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
       setActiveRecordingId(recordingId);
       Recording.start();
-      console.log('🎤 Recording started for state:', sceneState.state, 'recordingId:', recordingId);
+      console.log('🎤 Recording started via effect for state:', sceneState.state, 'recordingId:', recordingId);
     }
 
     // Auto-stop recording when leaving recording states
@@ -235,6 +236,11 @@ export function RecordingOrchestrator() {
 
       insertNavigationItem(newNavItem, navigationIndex + 1);
       setNavigationIndex(navigationIndex + 1);
+
+      // Start recording immediately for better UX (don't wait for effect to detect state change)
+      setActiveRecordingId(recordingId);
+      Recording.start();
+      console.log('🎤 Recording started immediately for recordingId:', recordingId);
     } catch (error) {
       console.error('Error in handleRecordStart:', error);
     }

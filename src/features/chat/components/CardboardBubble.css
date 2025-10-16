@@ -74,6 +74,13 @@
   white-space: normal; /* Allow natural text wrapping */
 }
 
+/* Placeholder text styling - italic gray for "Listening..." */
+.cardboard-bubble-text.placeholder {
+  color: #9ca3af; /* Medium grey - same as RecordPanel placeholder */
+  font-style: italic; /* Italic to indicate it's not real content yet */
+  font-weight: 400;
+}
+
 /* Speech tail - Left side */
 .cardboard-bubble-tail-left {
   position: absolute;

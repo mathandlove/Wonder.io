@@ -9,6 +9,7 @@ interface CardboardBubbleProps {
   onViewportExit?: () => void; // Callback when bubble leaves viewport
   onViewportEnter?: () => void; // Callback when bubble enters viewport
   showWaitingBubble?: boolean; // Show waiting bubble 20px below main text
+  isPlaceholder?: boolean; // Show as placeholder text (italic, gray) for "Listening..."
 }
 
 export const CardboardBubble: React.FC<CardboardBubbleProps> = ({
@@ -17,7 +18,8 @@ export const CardboardBubble: React.FC<CardboardBubbleProps> = ({
   speakerLabel,
   onViewportExit,
   onViewportEnter,
-  showWaitingBubble = false
+  showWaitingBubble = false,
+  isPlaceholder = false
 }) => {
   const bubbleRef = useRef<HTMLDivElement>(null);
 
@@ -78,7 +80,9 @@ export const CardboardBubble: React.FC<CardboardBubbleProps> = ({
               <div className={`cardboard-bubble-tail-${side}`}></div>
             )}
             <div className="cardboard-bubble-inner">
-              <p className="cardboard-bubble-text">{children}</p>
+              <p className={`cardboard-bubble-text ${isPlaceholder ? 'placeholder' : ''}`}>
+                {children}
+              </p>
             </div>
           </div>
         </div>
