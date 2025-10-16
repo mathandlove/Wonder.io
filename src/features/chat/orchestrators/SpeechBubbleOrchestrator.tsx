@@ -7,6 +7,7 @@ import { CardboardBubble } from '@features/chat/components/CardboardBubble';
 import { useSceneStates } from '@core/scenes/SceneStates';
 import { useSceneManager } from '@core/scenes/SceneManager';
 import type { Scene, CharacterScene } from '@core/types/scene';
+import type { NavigationItem } from '@core/navigation/types';
 
 // Extended scene types that include commonly accessed properties
 type SceneWithId = Scene & {
@@ -64,26 +65,95 @@ export function SpeechBubbleOrchestrator({ scenes, currentIndex = 0 }: SpeechBub
 
   // Find character scenes to render bubbles for
   // IMPORTANT: Use navigationArray to get the actual scene objects (including dynamically created ones)
+  // STRATEGY: Group navigation items by sceneId to prevent unwanted animations when states change
+  // within the same scene (e.g., input-showInput → record-answer → answer-waiting)
   const speechBubbles = useMemo(() => {
 
     const bubbles: Array<{
       scene: CharacterScene;
       sceneIndex: number;
+      firstSceneIndex: number; // The first index where this scene appeared (stable position)
       transform: string;
     }> = [];
 
-    // Use navigationArray which contains the actual scenes being rendered
-    navigationArray.forEach((navItem, index) => {
+    // Group navigation items by sceneId, tracking both first and latest appearances
+    // firstIndex = where the scene first appeared (used for positioning)
+    // latestIndex = the most recent state (used for getting current content)
+    const sceneIdToNavItem = new Map<string, {
+      navItem: NavigationItem,
+      firstIndex: number,
+      latestIndex: number
+    }>();
+
+    // Build a map of sceneId -> array of indices for that scene
+    const sceneIdToIndices = new Map<string, number[]>();
+
+    // Process all navigation items
+    for (let i = 0; i < navigationArray.length; i++) {
+      const navItem = navigationArray[i];
       const scene = navItem.scene;
 
       if (scene?.type === 'character') {
-        const transform = translateForSpeechBubble(index, scrollOffset);
-        bubbles.push({
-          scene: scene as CharacterScene,
-          sceneIndex: index,
-          transform
-        });
+        const sceneId = navItem.sceneId || `unknown-${i}`;
+
+        // Track all indices for this scene
+        if (!sceneIdToIndices.has(sceneId)) {
+          sceneIdToIndices.set(sceneId, []);
+        }
+        sceneIdToIndices.get(sceneId)!.push(i);
+
+        const existing = sceneIdToNavItem.get(sceneId);
+        if (!existing) {
+          // First time seeing this scene - track its first position
+          sceneIdToNavItem.set(sceneId, {
+            navItem,
+            firstIndex: i,
+            latestIndex: i
+          });
+        } else if (i > existing.latestIndex) {
+          // Update to latest state, but keep the first position
+          sceneIdToNavItem.set(sceneId, {
+            navItem,
+            firstIndex: existing.firstIndex, // Keep original position
+            latestIndex: i
+          });
+        }
       }
+    }
+
+    // Custom transform function that understands same-scene ranges
+    const translateForSameScene = (sceneId: string, firstIndex: number): string => {
+      const indices = sceneIdToIndices.get(sceneId) || [firstIndex];
+      const minIndex = Math.min(...indices);
+      const maxIndex = Math.max(...indices);
+
+      const tolerance = 0.1;
+
+      // Check if scrollOffset is within this scene's range
+      if (scrollOffset >= minIndex - tolerance && scrollOffset <= maxIndex + tolerance) {
+        // We're within this scene (any of its states) - show the bubble
+        return 'translateY(0)';
+      } else if (scrollOffset < minIndex - tolerance) {
+        // Bubble is waiting below (not reached yet)
+        const distance = minIndex - scrollOffset;
+        const translateY = Math.abs(distance - 1) < 0.02 ? 100 : distance * 100;
+        return `translateY(${translateY}vh)`;
+      } else {
+        // Bubble has scrolled up and away
+        return `translateY(${(maxIndex - scrollOffset) * 100}vh)`;
+      }
+    };
+
+    // Now convert our scene-based map to bubbles array
+    sceneIdToNavItem.forEach(({ navItem, firstIndex, latestIndex }, sceneId) => {
+      // Use custom transform that understands scene ranges
+      const transform = translateForSameScene(sceneId, firstIndex);
+      bubbles.push({
+        scene: navItem.scene as CharacterScene,
+        sceneIndex: latestIndex, // For other logic that needs to know current index
+        firstSceneIndex: firstIndex, // The stable position
+        transform
+      });
     });
 
     return bubbles;
@@ -102,7 +172,7 @@ export function SpeechBubbleOrchestrator({ scenes, currentIndex = 0 }: SpeechBub
       pointerEvents: 'none'
     }}>
       {/* Main speech bubbles */}
-      {speechBubbles.map(({ scene, sceneIndex, transform }) => {
+      {speechBubbles.map(({ scene, sceneIndex, firstSceneIndex, transform }) => {
         const characterScene = scene as CharacterScene;
         const sceneId = (characterScene as SceneWithId).sceneId;
 
@@ -190,7 +260,7 @@ export function SpeechBubbleOrchestrator({ scenes, currentIndex = 0 }: SpeechBub
 
         return (
           <div
-            key={`bubble-${sceneIndex}-${sceneId || 'unknown'}`}
+            key={`bubble-${sceneId || `fallback-${sceneIndex}`}`}
             style={bubbleStyle}
           >
             <CardboardBubble
