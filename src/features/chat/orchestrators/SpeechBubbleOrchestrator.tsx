@@ -4,7 +4,6 @@
  */
 import React, { useMemo } from 'react';
 import { CardboardBubble } from '@features/chat/components/CardboardBubble';
-import { useSceneStates } from '@core/scenes/SceneStates';
 import { useSceneManager } from '@core/scenes/SceneManager';
 import type { Scene, CharacterScene } from '@core/types/scene';
 import type { NavigationItem } from '@core/navigation/types';
@@ -18,32 +17,7 @@ type SceneWithId = Scene & {
   "right-character"?: string;
 };
 
-interface SpeechBubbleOrchestratorProps {
-  scenes: Scene[];
-  currentIndex?: number;
-}
-
-// Speech bubble positioning logic - each bubble only visible for its own scene
-function translateForSpeechBubble(sceneIndex: number, scrollOffset: number): string {
-  const tolerance = 0.1;
-
-  if (scrollOffset < sceneIndex - tolerance) {
-    // Bubble is waiting below (not reached yet)
-    const distance = sceneIndex - scrollOffset;
-    const translateY = Math.abs(distance - 1) < 0.02 ? 100 : distance * 100;
-    return `translateY(${translateY}vh)`;
-  } else if (scrollOffset > sceneIndex + tolerance) {
-    // Bubble has scrolled up and away (exits immediately after its scene)
-    return `translateY(${(sceneIndex - scrollOffset) * 100}vh)`;
-  } else {
-    // Bubble is visible only during its own scene
-    return 'translateY(0)';
-  }
-}
-
-export function SpeechBubbleOrchestrator({ scenes, currentIndex = 0 }: SpeechBubbleOrchestratorProps) {
-  // Get scene states for dialogue state management
-  const sceneStates = useSceneStates();
+export function SpeechBubbleOrchestrator() {
 
   // IMPORTANT: Get navigationArray to access modified scenes (like recording scenes)
   // navigationArray contains ALL scene items including dynamically created ones
@@ -172,7 +146,7 @@ export function SpeechBubbleOrchestrator({ scenes, currentIndex = 0 }: SpeechBub
       pointerEvents: 'none'
     }}>
       {/* Main speech bubbles */}
-      {speechBubbles.map(({ scene, sceneIndex, firstSceneIndex, transform }) => {
+      {speechBubbles.map(({ scene, sceneIndex, transform }) => {
         const characterScene = scene as CharacterScene;
         const sceneId = (characterScene as SceneWithId).sceneId;
 

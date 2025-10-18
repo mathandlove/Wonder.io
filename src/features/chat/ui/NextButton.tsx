@@ -13,7 +13,7 @@ export default function NextButton({ locked, onClick, onRecordStop, label = "Nex
   return (
     <button
       className={`next-btn ${locked ? "locked" : "enabled"} ${disabled ? "disabled" : ""} ${isRecording ? "recording-active" : ""}`}
-      onClick={(e) => {
+      onClick={() => {
         // When recording, clicking stops the recording
         if (isRecording && onRecordStop) {
           onRecordStop();

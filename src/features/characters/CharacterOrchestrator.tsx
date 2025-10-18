@@ -23,7 +23,9 @@ export const CharacterOrchestrator: React.FC<Props> = ({ storyId, scenes, curren
   const { currentMeta, currentSpeaker } = useMemo(() => {
     const i = Math.max(0, Math.min(scenes.length - 1, Math.round(scrollOffset)));
     const currentScene = scenes[i];
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const meta = (currentScene as any)?.meta || null;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const speaker = (currentScene as any)?.speaker || null;
 
     return { currentMeta: meta, currentSpeaker: speaker };

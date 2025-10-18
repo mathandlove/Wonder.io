@@ -14,7 +14,7 @@
  * - SceneManager (inserting scenes into navigation)
  */
 
-import React, { useCallback } from 'react';
+import { useCallback } from 'react';
 import { useChatGateway, type ChatInput } from '@features/chat/gateway/ChatGateway';
 import { usePageFactory } from '@core/navigation/PageFactory';
 import { useSceneManager, getLocksForState } from '@core/scenes/SceneManager';

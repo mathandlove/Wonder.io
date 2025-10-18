@@ -21,6 +21,7 @@ import type { NavigationItem, SceneState } from '@core/navigation/types';
  *
  * Export this so dynamically created navigation items can use it
  */
+// eslint-disable-next-line react-refresh/only-export-components
 export function getLocksForState(state: SceneState): { lockForward: boolean; lockBackward: boolean } {
   // Default: no locks
   if (state.type === 'static') {
@@ -380,6 +381,7 @@ export function SceneManagerProvider({ children, initialIndex = 0 }: SceneManage
         setNavigationArray(newArray);
         const newIndex = newArray.findIndex(item => item === targetItem);
         setNavigationIndex(newIndex);
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         console.log(`🗑️ Collapsed ${currentItem.sceneState.type}:${(currentItem.sceneState as any).state || 'static'}`);
       } else {
         setNavigationIndex(clamped);

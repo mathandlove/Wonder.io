@@ -187,6 +187,7 @@ export const ChatGatewayProvider: React.FC<ChatGatewayProviderProps> = ({
 /**
  * Hook to access ChatGateway functionality
  */
+// eslint-disable-next-line react-refresh/only-export-components
 export function useChatGateway() {
   const ctx = useContext(ChatGatewayContext);
   if (!ctx) {

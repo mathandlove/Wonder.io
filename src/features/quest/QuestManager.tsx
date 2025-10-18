@@ -67,7 +67,7 @@ const initialState: QuestState = {
 
 function questReducer(state: QuestState, action: QuestAction): QuestState {
   switch (action.type) {
-    case 'OFFER':
+    case 'OFFER': {
       // Ensure we don't nest objects
       const cleanPayload = {
         id: String(action.payload.id),
@@ -81,6 +81,7 @@ function questReducer(state: QuestState, action: QuestAction): QuestState {
         currentQuest: cleanPayload,
         questionsAsked: 0, // Reset counter when new quest is offered
       };
+    }
 
     case 'ACCEPT':
       return {
@@ -201,6 +202,7 @@ export function QuestProvider({ children }: QuestProviderProps) {
 
   // Dev-only global helpers for quick console testing
   useEffect(() => {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     (window as any).__quest = {
       state,
       offer,
@@ -211,7 +213,9 @@ export function QuestProvider({ children }: QuestProviderProps) {
       incrementQuestions,
     };
     return () => {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       if ((window as any).__quest) {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         delete (window as any).__quest;
       }
     };
@@ -236,11 +240,13 @@ function useQuestContext(): QuestContextValue {
   return context;
 }
 
+// eslint-disable-next-line react-refresh/only-export-components
 export function useQuest(): QuestHook {
   const { state, offer, accept, complete, clear, reset, incrementQuestions } = useQuestContext();
   return { state, offer, accept, complete, clear, reset, incrementQuestions };
 }
 
+// eslint-disable-next-line react-refresh/only-export-components
 export function useQuestStatus(): QuestStatus {
   const { state } = useQuestContext();
   return {

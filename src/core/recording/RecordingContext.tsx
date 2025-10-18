@@ -72,20 +72,21 @@ function recordingReducer(state: RecordingState, action: RecordingEvent): Record
         displayText: '',
         keepListening: false
       };
-    case 'INTERIM':
+    case 'INTERIM': {
       const interimDisplayText = state.accumulatedText + ' ' + action.text;
       return {
         ...state,
         interimTranscript: action.text,
         displayText: interimDisplayText
       };
+    }
     case 'FINAL':
       return {
         ...state,
         finalTranscript: action.text,
         interimTranscript: ''
       };
-    case 'ACCUMULATE':
+    case 'ACCUMULATE': {
       const newAccumulated = (state.accumulatedText + ' ' + action.finalText).trim();
       const newDisplayText = action.interimText
         ? newAccumulated + ' ' + action.interimText
@@ -97,6 +98,7 @@ function recordingReducer(state: RecordingState, action: RecordingEvent): Record
         finalTranscript: action.finalText,
         interimTranscript: action.interimText || ''
       };
+    }
     case 'UNSUPPORTED':
       return {
         ...state,
@@ -122,8 +124,15 @@ const isSafari = () => {
   return /Safari/.test(navigator.userAgent) && !/Chrome/.test(navigator.userAgent);
 };
 
+// Type definitions for Web Speech API
+interface WindowWithSpeechRecognition extends Window {
+  SpeechRecognition?: typeof SpeechRecognition;
+  webkitSpeechRecognition?: typeof SpeechRecognition;
+}
+
 const hasWebSpeechAPI = () => {
-  return !!(window as any).SpeechRecognition || !!(window as any).webkitSpeechRecognition;
+  const win = window as WindowWithSpeechRecognition;
+  return !!win.SpeechRecognition || !!win.webkitSpeechRecognition;
 };
 
 interface RecordingContextValue {
@@ -142,6 +151,7 @@ const RecordingContext = createContext<RecordingContextValue | null>(null);
 
 export function RecordingProvider({ children }: { children: React.ReactNode }) {
   const [state, dispatch] = useReducer(recordingReducer, initialState);
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const recognitionRef = useRef<any>(null);
   const restartTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const currentSessionIdRef = useRef<string | null>(null);
@@ -165,13 +175,16 @@ export function RecordingProvider({ children }: { children: React.ReactNode }) {
     },
   });
 
-  const createRecognition = useCallback((_sessionId: string) => {
+  const createRecognition = useCallback(() => {
     if (!hasWebSpeechAPI()) {
       dispatch({ type: 'UNSUPPORTED' });
       return null;
     }
 
-    const SpeechRecognition = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
+    const win = window as WindowWithSpeechRecognition;
+    const SpeechRecognition = win.SpeechRecognition || win.webkitSpeechRecognition;
+    if (!SpeechRecognition) return null;
+
     const recognition = new SpeechRecognition();
 
     recognition.continuous = true;
@@ -183,18 +196,19 @@ export function RecordingProvider({ children }: { children: React.ReactNode }) {
         // Use a flag check instead of state to avoid circular dependency
         if (currentSessionIdRef.current && (isChrome() || /Edge/.test(navigator.userAgent))) {
           try {
-            const newRecognition = createRecognition(currentSessionIdRef.current);
+            const newRecognition = createRecognition();
             if (newRecognition) {
               recognitionRef.current = newRecognition;
               newRecognition.start();
             }
-          } catch (e) {
+          } catch {
             // Silent fail for restart attempts
           }
         }
       }, 100);
     };
 
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     recognition.onresult = (event: any) => {
       let interimText = '';
       let finalText = '';
@@ -220,7 +234,7 @@ export function RecordingProvider({ children }: { children: React.ReactNode }) {
       }
     };
 
-    recognition.onerror = (_event: any) => {
+    recognition.onerror = () => {
       // Auto-restart on Chrome/Edge after error
       if (isChrome() || /Edge/.test(navigator.userAgent)) {
         scheduleRestart();
@@ -263,12 +277,12 @@ export function RecordingProvider({ children }: { children: React.ReactNode }) {
       }
 
       try {
-        const recognition = createRecognition(sessionId);
+        const recognition = createRecognition();
         if (recognition) {
           recognitionRef.current = recognition;
           recognition.start();
         }
-      } catch (error) {
+      } catch {
         dispatch({ type: 'ABORT' });
       }
     }
@@ -343,6 +357,7 @@ export function RecordingProvider({ children }: { children: React.ReactNode }) {
   );
 }
 
+// eslint-disable-next-line react-refresh/only-export-components
 export function useRecording() {
   const context = useContext(RecordingContext);
   if (!context) {

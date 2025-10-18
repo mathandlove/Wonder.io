@@ -25,6 +25,7 @@ interface SceneStatesType {
 
 const SceneStatesContext = createContext<SceneStatesType | null>(null);
 
+// eslint-disable-next-line react-refresh/only-export-components
 export function useSceneStates(): SceneStatesType {
   const context = useContext(SceneStatesContext);
   if (!context) {

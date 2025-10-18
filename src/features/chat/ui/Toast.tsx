@@ -27,6 +27,7 @@ export const Toast: React.FC<ToastProps> = ({ message, visible, onHide }) => {
 };
 
 // Toast hook for easy usage
+// eslint-disable-next-line react-refresh/only-export-components
 export const useToast = () => {
   const [toast, setToast] = useState<{ message: string; visible: boolean }>({
     message: '',

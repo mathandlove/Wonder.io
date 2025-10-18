@@ -9,6 +9,7 @@ import type { SceneOrchestratorHook } from './useSceneOrchestrator';
 
 const SceneOrchestratorContext = createContext<SceneOrchestratorHook | null>(null);
 
+// eslint-disable-next-line react-refresh/only-export-components
 export function useSceneOrchestratorContext(): SceneOrchestratorHook | null {
   return useContext(SceneOrchestratorContext);
 }

@@ -42,7 +42,6 @@ export interface ScrollControlProps {
 export function ScrollControl({
   scenes,
   currentIndex,
-  onIndexChange,
   scrollConfig = {},
   children,
   className = 'scroll-control',

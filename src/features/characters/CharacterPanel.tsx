@@ -169,6 +169,7 @@ export const CharacterPanel: React.FC<CharacterPanelProps> = ({
       {displayCharacter ? (
         <div className="story-character-content">
           {/* Debug text above character - DISABLED */}
+          {/* eslint-disable-next-line no-constant-binary-expression */}
           {false && (
             <div style={{
               position: 'absolute',

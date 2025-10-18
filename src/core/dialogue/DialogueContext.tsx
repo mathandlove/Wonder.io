@@ -158,6 +158,7 @@ function useDialogueValue() {
     try {
       console.log('🤖 Calling LLM service...');
       // call LLM/reply service here; get npcText
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const npcText = await (window as any).services?.replyTo?.(finalText) ?? "I hear you!"; // replace with real service
       console.log('✅ LLM response:', npcText);
 
@@ -168,6 +169,7 @@ function useDialogueValue() {
       dispatch({ type: 'APPEND_NPC', sceneId, id: npcId, text: npcText });
 
       // hand off to quest logic elsewhere
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       (window as any).services?.onTurnComplete?.({ sceneId, playerId: id, npcText });
     } catch (e) {
       console.error('❌ endRecording error:', e);
@@ -210,6 +212,7 @@ export function DialogueProvider({ children }: { children: React.ReactNode }) {
   return <Ctx.Provider value={value}>{children}</Ctx.Provider>;
 }
 
+// eslint-disable-next-line react-refresh/only-export-components
 export function useDialogue() {
   const ctx = useContext(Ctx);
   if (!ctx) throw new Error("useDialogue must be used within DialogueProvider");

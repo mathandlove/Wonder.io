@@ -1,5 +1,4 @@
 import React, { createContext, useState, useCallback, type ReactNode } from 'react';
-import { useDialogue as useOldDialogue } from '@core/dialogue/DialogueContext';
 
 export interface Message {
   id: string;
@@ -26,6 +25,7 @@ interface DialogueContextType {
   markGoalNotMet: () => void;
 }
 
+// eslint-disable-next-line react-refresh/only-export-components
 export const DialogueContext = createContext<DialogueContextType | undefined>(undefined);
 
 interface DialogueProviderProps {
@@ -33,13 +33,11 @@ interface DialogueProviderProps {
 }
 
 export const ChatDialogueProvider: React.FC<DialogueProviderProps> = ({ children }) => {
-  const oldDialogue = useOldDialogue();
   const [messages, setMessages] = useState<Message[]>([]);
   const [isPlayerTurn, setIsPlayerTurn] = useState(false);
   const [waiting, setWaiting] = useState(false);
   const [suggestions, setSuggestions] = useState<string[]>([]);
   const [questState, setQuestState] = useState<'active' | 'complete' | 'failed'>('active');
-  const [currentQuestId, setCurrentQuestId] = useState<string | undefined>();
   const [turnBannerText, setTurnBannerText] = useState<string | undefined>();
   const [bannerHidden, setBannerHidden] = useState(() => {
     // Clear localStorage on page load to ensure banner shows on refresh
@@ -51,14 +49,13 @@ export const ChatDialogueProvider: React.FC<DialogueProviderProps> = ({ children
     return false; // Always start with banner visible on refresh
   });
 
-  const grantPlayerTurn = useCallback((questId?: string) => {
-    setCurrentQuestId(questId);
+  const grantPlayerTurn = useCallback(() => {
     setIsPlayerTurn(true);
     setQuestState('active');
     // Reset messages for new input scene
     setMessages([]);
     // Keep banner hidden state persistent - don't reset it
-  }, [bannerHidden]);
+  }, []);
 
   const mockLLMCall = async (playerText: string): Promise<string> => {
     // Simulate network delay
@@ -117,7 +114,7 @@ export const ChatDialogueProvider: React.FC<DialogueProviderProps> = ({ children
     } finally {
       setWaiting(false);
     }
-  }, [isPlayerTurn, waiting, currentQuestId, oldDialogue]);
+  }, [isPlayerTurn, waiting]);
 
   const markGoalMet = useCallback(() => {
     setQuestState('complete');

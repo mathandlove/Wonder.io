@@ -7,7 +7,6 @@
 import React from 'react';
 import NextButton from '../../features/chat/ui/NextButton';
 import { Toast, useToast } from '../../features/chat/ui/Toast';
-import { useRecording } from '@core/recording/RecordingContext';
 import './css/RecordPanel.css';
 
 interface RecordPanelProps {
@@ -17,7 +16,6 @@ interface RecordPanelProps {
   questText?: string;
   answerText?: string; // The recorded answer text
   onNext: () => void;
-  onRecordStart: () => void;
   onRecordStop: () => void;
   onAskClick?: () => void;
 }
@@ -29,14 +27,11 @@ export const RecordPanel: React.FC<RecordPanelProps> = ({
   questText = "Find out what going on.",
   answerText,
   onNext,
-  onRecordStart,
   onRecordStop,
   onAskClick
 }) => {
-  const { state: recordingState } = useRecording();
   const { toast, hideToast } = useToast();
   const [showStamp, setShowStamp] = React.useState(false);
-  const [playVideo, setPlayVideo] = React.useState(false);
   const videoRef = React.useRef<HTMLVideoElement>(null);
 
   // Determine visual state based on dialogueState (must be before effects that use these)
@@ -52,7 +47,6 @@ export const RecordPanel: React.FC<RecordPanelProps> = ({
   // - ai-waiting: All buttons disabled (waiting for AI response)
   const isBasic = dialogueState === 'basic';
   const isQuestOffer = dialogueState === 'quest-showing';
-  const isInputReady = dialogueState === 'input-showInput';
   const isAskRecording = dialogueState === 'input-recording';
   const isAnswerRecording = dialogueState === 'record-answer';
   const isAnswerWaiting = dialogueState === 'answer-waiting';

@@ -321,7 +321,7 @@ export function useDeepgram(callbacks?: UseDeepgramCallbacks): UseDeepgram {
       setStatus('error');
       cleanup();
     }
-  }, [calculateRMS, cleanup, convertFloat32ToInt16, status]);
+  }, [calculateRMS, cleanup, convertFloat32ToInt16, status, stop]);
 
   // ──────────────────────────────────────────────────────────────────────────────
   // Stop Recording

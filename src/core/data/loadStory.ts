@@ -88,8 +88,10 @@ function flattenScenes(rawScenes: RawScene[]): FlattenResult {
             const prevScene = out[i];
             if (prevScene.type === "character") {
               // Add "input" to the States array
+              // eslint-disable-next-line @typescript-eslint/no-explicit-any
               const currentStates = (prevScene as any).States || [];
               if (!currentStates.includes("input")) {
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
                 (prevScene as any).States = [...currentStates, "input"];
               }
               break; // Found and updated the previous dialogue scene
@@ -105,8 +107,10 @@ function flattenScenes(rawScenes: RawScene[]): FlattenResult {
             const prevScene = out[i];
             if (prevScene.type === "character") {
               // Add "giveQuest" to the States array
+              // eslint-disable-next-line @typescript-eslint/no-explicit-any
               const currentStates = (prevScene as any).States || [];
               if (!currentStates.includes("giveQuest")) {
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
                 (prevScene as any).States = [...currentStates, "giveQuest"];
               }
               break; // Found and updated the previous dialogue scene
@@ -135,11 +139,13 @@ function flattenScenes(rawScenes: RawScene[]): FlattenResult {
 
         // Attach flowId reference if this flow has metadata
         if (flowId) {
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
           (flattened as any).flowId = flowId;
         }
 
         // Preserve States field if present
         if (f.States) {
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
           (flattened as any).States = f.States;
         }
 

@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useRef } from 'react';
 import './CardboardBubble.css';
 import { WaitingBubble } from './WaitingBubble';
 
@@ -15,7 +15,6 @@ interface CardboardBubbleProps {
 export const CardboardBubble: React.FC<CardboardBubbleProps> = ({
   side = 'center',
   children,
-  speakerLabel,
   onViewportExit,
   onViewportEnter,
   showWaitingBubble = false,

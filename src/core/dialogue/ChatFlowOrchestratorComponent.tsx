@@ -12,7 +12,7 @@ import { useSceneManager } from '@core/scenes/SceneManager';
 import { useChatFlowOrchestrator } from './ChatFlowOrchestrator';
 
 export function ChatFlowOrchestratorComponent() {
-  const { navigationArray, navigationIndex, getCurrentNavigationItem } = useSceneManager();
+  const { navigationArray, navigationIndex } = useSceneManager();
   const chatFlow = useChatFlowOrchestrator();
 
   // Track if we're currently processing to avoid duplicate calls
@@ -31,10 +31,12 @@ export function ChatFlowOrchestratorComponent() {
     const isAiWaiting = sceneState?.type === 'dialogue' && sceneState.state === 'ai-waiting';
 
     if (isAiWaiting && currentScene && 'recordingId' in currentScene) {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const recordingId = (currentScene as any).recordingId;
       // Read transcript from scene state (persistent) or fallback to scene.text
       const transcript = (sceneState?.type === 'dialogue' && sceneState.questionText)
         ? sceneState.questionText
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         : (currentScene as any).text;
 
       // Only process if we haven't already processed this recording

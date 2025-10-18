@@ -10,7 +10,6 @@ interface AdvanceBarProps {
 export const AdvanceBar: React.FC<AdvanceBarProps> = ({
   canAdvance,
   onNext,
-  onKeepChatting
 }) => {
   return (
     <button

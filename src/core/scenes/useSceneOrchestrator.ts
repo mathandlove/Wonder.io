@@ -43,7 +43,6 @@ interface UseSceneOrchestratorParams {
 
 export function useSceneOrchestrator({
   scenes,
-  currentIndex,
 }: UseSceneOrchestratorParams): SceneOrchestratorHook {
   // Runtime state storage - persists across renders
   const stateMapRef = useRef<SceneStateMap>(new Map());

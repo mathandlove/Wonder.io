@@ -4,6 +4,7 @@
 import { useQuestStatus, useQuest } from './QuestManager';
 import './QuestLayer.css';
 
+// eslint-disable-next-line @typescript-eslint/no-empty-object-type
 export interface QuestLayerProps {
   // Props can be added later
 }

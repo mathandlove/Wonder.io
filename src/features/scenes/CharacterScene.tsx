@@ -19,6 +19,7 @@ export default function CharacterScene({ scene, sceneIndex }: SceneProps<Charact
       }}
     >
       {/* Debug info for scroll target - DISABLED */}
+      {/* eslint-disable-next-line no-constant-binary-expression */}
       {false && (
         <div style={{
           position: 'absolute',

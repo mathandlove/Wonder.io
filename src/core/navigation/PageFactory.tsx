@@ -72,6 +72,7 @@ export function PageFactoryProvider({ children }: PageFactoryProviderProps) {
 }
 
 // Hook to use PageFactory functionality
+// eslint-disable-next-line react-refresh/only-export-components
 export function usePageFactory() {
   const ctx = useContext(PageFactoryContext);
   if (!ctx) throw new Error("usePageFactory must be used within PageFactoryProvider");

@@ -73,12 +73,7 @@ export function RecordingOrchestrator() {
   // Memoize sceneState based on its actual content to prevent unnecessary re-renders
   const sceneState = React.useMemo(() => {
     return currentNavItem?.sceneState || null;
-  }, [
-    currentNavItem?.sceneState?.type,
-    currentNavItem?.sceneState && 'state' in currentNavItem.sceneState ? currentNavItem.sceneState.state : null,
-    currentNavItem?.sceneState && 'questionText' in currentNavItem.sceneState ? currentNavItem.sceneState.questionText : null,
-    currentNavItem?.sceneState && 'answerText' in currentNavItem.sceneState ? currentNavItem.sceneState.answerText : null,
-  ]);
+  }, [currentNavItem?.sceneState]);
 
   // Get flow metadata for quest text
   const flowMetadata = useSceneFlowMetadata(hasFlowId(currentScene) ? currentScene : null);
@@ -112,7 +107,7 @@ export function RecordingOrchestrator() {
   const [activeRecordingId, setActiveRecordingId] = React.useState<string | null>(null);
 
   // Track question count - resets when panel becomes hidden (basic state)
-  const [questionCount, setQuestionCount] = React.useState<number>(0);
+  const [, setQuestionCount] = React.useState<number>(0);
 
   // ===================================
   // QUESTION TRACKING LOGIC
@@ -219,6 +214,7 @@ export function RecordingOrchestrator() {
 
       // Copy flowId from the original scene to the recording scene
       if (flowId) {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         (newScene as any).flowId = flowId;
       }
 

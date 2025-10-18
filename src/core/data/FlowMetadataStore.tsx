@@ -62,6 +62,7 @@ export function FlowMetadataProvider({ children }: { children: React.ReactNode }
   );
 }
 
+// eslint-disable-next-line react-refresh/only-export-components
 export function useFlowMetadata() {
   const context = useContext(FlowMetadataContext);
   if (!context) {
@@ -77,6 +78,7 @@ export function useFlowMetadata() {
  * @param scene - Scene object that may contain a flowId reference
  * @returns InputMetadata or undefined
  */
+// eslint-disable-next-line react-refresh/only-export-components
 export function useSceneFlowMetadata(scene: { flowId?: string } | null | undefined): InputMetadata | undefined {
   const { getFlowMetadata } = useFlowMetadata();
 

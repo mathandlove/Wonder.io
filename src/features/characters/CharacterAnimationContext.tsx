@@ -38,6 +38,7 @@ export const CharacterAnimationProvider: React.FC<{ children: React.ReactNode }>
   );
 };
 
+// eslint-disable-next-line react-refresh/only-export-components
 export const useCharacterAnimation = () => {
   const context = useContext(CharacterAnimationContext);
   if (!context) {
