@@ -1,7 +1,15 @@
 import express from 'express';
 import cors from 'cors';
+import 'dotenv/config';
+import { WebSocketServer } from 'ws';
+import { IncomingMessage } from 'http';
+
 import { SelectionStore } from './store';
 import { Point } from './types';
+import { handleDeepgramProxy } from './deepgram-proxy';
+
+const key = process.env.DEEPGRAM_API_KEY;
+if (!key) throw new Error('Missing DEEPGRAM_API_KEY');
 
 const app = express();
 const port = process.env.PORT || 3001;
@@ -153,7 +161,25 @@ app.get('/api/health', (req, res) => {
   res.json({ status: 'OK', timestamp: new Date().toISOString() });
 });
 
-app.listen(port, () => {
+// Create HTTP server for WebSocket upgrade
+const server = app.listen(port, () => {
   console.log(`🚀 Backend server running on port ${port}`);
   console.log(`📊 API endpoints available at http://localhost:${port}/api`);
+  console.log(`🎤 WebSocket STT endpoint: ws://localhost:${port}/api/stt/socket`);
+});
+
+// Create WebSocket server
+const wss = new WebSocketServer({ noServer: true });
+
+// Handle WebSocket upgrade
+server.on('upgrade', (request: IncomingMessage, socket, head) => {
+  const pathname = new URL(request.url || '', `http://${request.headers.host}`).pathname;
+
+  if (pathname === '/api/stt/socket') {
+    wss.handleUpgrade(request, socket, head, (ws) => {
+      handleDeepgramProxy(ws, request);
+    });
+  } else {
+    socket.destroy();
+  }
 });

@@ -1,5 +1,17 @@
 import React, { createContext, useContext, useReducer, useCallback, useRef, useEffect } from "react";
 import { Recording } from "./RecordingAPI";
+import { useDeepgram } from "./hooks/useDeepgram";
+
+// ──────────────────────────────────────────────────────────────────────────────
+// Feature Flags
+// ──────────────────────────────────────────────────────────────────────────────
+
+/**
+ * USE_DEEPGRAM: Enable Deepgram STT via WebSocket proxy
+ * - true: Use Deepgram (recommended, more reliable)
+ * - false: Use Web Speech API (Chrome/Edge only, auto-restart on errors)
+ */
+const USE_DEEPGRAM = true;
 
 // Recording state
 export interface RecordingState {
@@ -134,6 +146,25 @@ export function RecordingProvider({ children }: { children: React.ReactNode }) {
   const restartTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const currentSessionIdRef = useRef<string | null>(null);
 
+  // Deepgram hook with callbacks (only used if USE_DEEPGRAM is true)
+  const deepgram = useDeepgram({
+    onPartial: (text: string) => {
+      dispatch({ type: 'INTERIM', text });
+    },
+    onFinal: (text: string, confidence?: number) => {
+      console.log('[RecordingContext] Final transcript:', text, confidence);
+      dispatch({
+        type: 'ACCUMULATE',
+        finalText: text,
+        interimText: '', // Clear interim after final
+      });
+    },
+    onError: (error: string) => {
+      console.error('[RecordingContext] Deepgram error:', error);
+      dispatch({ type: 'UNSUPPORTED' });
+    },
+  });
+
   const createRecognition = useCallback((_sessionId: string) => {
     if (!hasWebSpeechAPI()) {
       dispatch({ type: 'UNSUPPORTED' });
@@ -207,44 +238,59 @@ export function RecordingProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   const start = useCallback(() => {
-    if (!hasWebSpeechAPI()) {
-      dispatch({ type: 'UNSUPPORTED' });
-      return;
-    }
+    // Generate session ID
+    const sessionId = `session_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+    currentSessionIdRef.current = sessionId;
 
-    if (isSafari()) {
-      dispatch({ type: 'UNSUPPORTED' });
-      return;
-    }
+    dispatch({ type: 'START', sessionId });
 
-    try {
-      // Generate session ID
-      const sessionId = `session_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
-      currentSessionIdRef.current = sessionId;
-
-      dispatch({ type: 'START', sessionId });
-
-      const recognition = createRecognition(sessionId);
-      if (recognition) {
-        recognitionRef.current = recognition;
-        recognition.start();
+    if (USE_DEEPGRAM) {
+      // Use Deepgram STT
+      deepgram.start().catch((error) => {
+        console.error('[RecordingContext] Failed to start Deepgram:', error);
+        dispatch({ type: 'ABORT' });
+      });
+    } else {
+      // Use Web Speech API (Chrome/Edge only)
+      if (!hasWebSpeechAPI()) {
+        dispatch({ type: 'UNSUPPORTED' });
+        return;
       }
-    } catch (error) {
-      dispatch({ type: 'ABORT' });
+
+      if (isSafari()) {
+        dispatch({ type: 'UNSUPPORTED' });
+        return;
+      }
+
+      try {
+        const recognition = createRecognition(sessionId);
+        if (recognition) {
+          recognitionRef.current = recognition;
+          recognition.start();
+        }
+      } catch (error) {
+        dispatch({ type: 'ABORT' });
+      }
     }
-  }, [createRecognition]);
+  }, [createRecognition, deepgram]);
 
   const stop = useCallback(() => {
     dispatch({ type: 'SET_KEEP_LISTENING', value: false });
 
-    if (restartTimeoutRef.current) {
-      clearTimeout(restartTimeoutRef.current);
-      restartTimeoutRef.current = null;
-    }
+    if (USE_DEEPGRAM) {
+      // Stop Deepgram
+      deepgram.stop();
+    } else {
+      // Stop Web Speech API
+      if (restartTimeoutRef.current) {
+        clearTimeout(restartTimeoutRef.current);
+        restartTimeoutRef.current = null;
+      }
 
-    if (recognitionRef.current) {
-      recognitionRef.current.stop();
-      recognitionRef.current = null;
+      if (recognitionRef.current) {
+        recognitionRef.current.stop();
+        recognitionRef.current = null;
+      }
     }
 
     // Recording text is now managed entirely by scene state (RecordPanelOrchestrator)
@@ -252,23 +298,29 @@ export function RecordingProvider({ children }: { children: React.ReactNode }) {
 
     currentSessionIdRef.current = null;
     dispatch({ type: 'STOP' });
-  }, []);
+  }, [deepgram]);
 
   const abort = useCallback(() => {
     dispatch({ type: 'SET_KEEP_LISTENING', value: false });
 
-    if (restartTimeoutRef.current) {
-      clearTimeout(restartTimeoutRef.current);
-      restartTimeoutRef.current = null;
-    }
+    if (USE_DEEPGRAM) {
+      // Stop Deepgram
+      deepgram.stop();
+    } else {
+      // Stop Web Speech API
+      if (restartTimeoutRef.current) {
+        clearTimeout(restartTimeoutRef.current);
+        restartTimeoutRef.current = null;
+      }
 
-    if (recognitionRef.current) {
-      recognitionRef.current.stop();
-      recognitionRef.current = null;
+      if (recognitionRef.current) {
+        recognitionRef.current.stop();
+        recognitionRef.current = null;
+      }
     }
 
     dispatch({ type: 'ABORT' });
-  }, []);
+  }, [deepgram]);
 
   // Register with global Recording API
   useEffect(() => {
