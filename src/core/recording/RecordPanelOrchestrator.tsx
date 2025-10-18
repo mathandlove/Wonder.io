@@ -304,17 +304,39 @@ export function RecordingOrchestrator() {
         // Mark this index as pending deletion
         pendingDeletionRef.current = currentIndex;
 
-        // Navigate back to previous scene (this will trigger character animations)
+        // Disable animations on the target scene before navigating back
+        // This prevents character entrance animations from playing when we're just going back to delete
+        const prevNavItem = navigationArray[targetSceneIndex];
+        if (prevNavItem && prevNavItem.sceneState?.type === 'dialogue') {
+          updateNavigationItemState(targetSceneIndex, {
+            ...prevNavItem.sceneState,
+            allowAnimate: false
+          });
+        }
+
+        // Navigate back to previous scene (with animations disabled)
         setNavigationIndex(targetSceneIndex);
 
         // Wait for character animations to complete before deleting
-        // Character entrance animations typically take 300-500ms
+        // Character entrance animations are 1600ms (see CharacterPanel.css)
+        // TEMPORARY: Testing with 300ms to observe scroll behavior issues
         setTimeout(() => {
-          console.log('🎭 Character animations should be complete, now deleting recording scene');
+          console.log('🎭 [TEST] Deleting at 300ms to observe scroll issues');
           deleteNavigationItem(currentIndex);
+
+          // Re-enable animations on the target scene after deletion
+          // This ensures animations work normally when scrolling forward again
+          const prevNavItem = navigationArray[targetSceneIndex];
+          if (prevNavItem && prevNavItem.sceneState?.type === 'dialogue') {
+            updateNavigationItemState(targetSceneIndex, {
+              ...prevNavItem.sceneState,
+              allowAnimate: true
+            });
+          }
+
           // Clear the pending deletion ref
           pendingDeletionRef.current = null;
-        }, 600); // 600ms should be enough for character animations to settle
+        }, 2300); // TEMPORARY: Reduced from 1800ms for testing
       } else {
         // Text recorded: Proceed to ai-waiting
         console.log('🤖 Transitioning from input-recording to ai-waiting, questionText:', finalQuestionText);
@@ -333,7 +355,7 @@ export function RecordingOrchestrator() {
 
     // Recording will stop automatically via the effect
     // ChatFlowOrchestrator should observe ai-waiting state and process transcript
-  }, [navigationIndex, sceneState, recording, updateNavigationItemState, addNavigationStateToCurrentScene, forceAdvanceNavigation, setNavigationIndex, deleteNavigationItem]);
+  }, [navigationIndex, navigationArray, sceneState, recording, updateNavigationItemState, addNavigationStateToCurrentScene, forceAdvanceNavigation, setNavigationIndex, deleteNavigationItem]);
 
   /**
    * Handle Accept button click (quest-showing state)
@@ -344,14 +366,6 @@ export function RecordingOrchestrator() {
     forceAdvanceNavigation('forward');
   }, [forceAdvanceNavigation]);
 
-  /**
-   * Handle continue button - navigates to next scene
-   * Uses forceAdvanceNavigation for proper state collapse
-   */
-  const handleContinue = useCallback(() => {
-    // Use forceAdvanceNavigation to ensure proper state collapse
-    forceAdvanceNavigation('forward');
-  }, [forceAdvanceNavigation]);
 
   /**
    * Handle Answer button click - adds record-answer state and starts recording

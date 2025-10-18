@@ -15,6 +15,7 @@ interface RecordPanelProps {
   questState: 'active' | 'complete' | 'failed';
   dialogueState: string; // The scene's dialogue state (basic, input-recording, ai-waiting, etc.)
   questText?: string;
+  answerText?: string; // The recorded answer text
   onNext: () => void;
   onRecordStart: () => void;
   onRecordStop: () => void;
@@ -26,6 +27,7 @@ export const RecordPanel: React.FC<RecordPanelProps> = ({
   questState,
   dialogueState,
   questText = "Find out what going on.",
+  answerText,
   onNext,
   onRecordStart,
   onRecordStop,
@@ -160,16 +162,16 @@ export const RecordPanel: React.FC<RecordPanelProps> = ({
 
         {/* Answer Display Frame - middle white box (only visible during answer states) */}
         {showAnswerText && (
-          <div className="whiteframe answer-frame">
-            <div className={`quest ${isAnswerWaiting ? 'answer-waiting' : ''} ${isAnswerWrong ? 'answer-wrong' : ''}`}>
+          <div className={`whiteframe answer-frame ${(isAnswerWaiting || isAnswerRight || isAnswerWrong) ? 'answer-feedback-state' : ''}`}>
+            <div className={`quest ${isAnswerWaiting ? 'answer-waiting' : ''} ${isAnswerRight ? 'answer-right' : ''} ${isAnswerWrong ? 'answer-wrong' : ''}`}>
               <p className="quest-find-out-what">
                 <span className="quest-label">Answer:</span>
               </p>
               <div className="answer-input-box">
                 {isAnswerRecording ? (
-                  <span className="answer-placeholder">Listening...</span>
+                  <span className="answer-placeholder">{answerText || 'Listening...'}</span>
                 ) : (
-                  <span className="quest-description">Someone stole your cookies.</span>
+                  <span className="quest-description">{answerText || 'Someone stole your cookies.'}</span>
                 )}
               </div>
             </div>
@@ -177,59 +179,62 @@ export const RecordPanel: React.FC<RecordPanelProps> = ({
         )}
 
         {/* Button Rail - white background with buttons */}
-        <div className="frame-wrapper">
-          {useQuestOfferStyling ? (
-            /* Quest Offer: Single Accept button centered */
-            <div className="button-wrapper">
-              <button className="button" onClick={onNext} disabled={disabled}>
-                <div className="answer">Accept</div>
-              </button>
-            </div>
-          ) : (
-            /* Normal State: Ask, Hint, Answer buttons */
-            <div className="div">
-              <div className="div-2">
-                {/* Ask Button - transforms to Stop when recording */}
-                <button
-                  className={`button ${isAskRecording ? 'recording-active' : ''} ${askButtonDisabled ? 'disabled' : ''}`}
-                  onClick={isAskRecording ? onRecordStop : handleAskClick}
-                  disabled={askButtonDisabled}
-                  title={isAskRecording ? "Stop recording" : "Ask a question"}
-                >
-                  <img className="button-icon" src="/VisualAssets/recordIcon.svg" alt="" />
-                  {isAskRecording ? (
-                    <>
-                      <div className="stop-square" />
-                      <div className="button-text">Stop</div>
-                    </>
-                  ) : (
-                    <div className="button-text">Ask</div>
-                  )}
-                </button>
-
-                {/* Hint Button - cardboard button with lightbulb, pressed when hint showing */}
-                <button
-                  className={`hint-btn ${isHintShowing ? 'recording' : ''} ${hintButtonDisabled ? 'disabled' : ''}`}
-                  onClick={handleHintClick}
-                  disabled={hintButtonDisabled}
-                  title="Get a hint"
-                >
-                  <img className="img" alt="" src="/VisualAssets/lightbulb.svg" />
+        {/* Hide button rail for answer feedback states (answer-waiting, answer-right, answer-wrong) */}
+        {!isAnswerWaiting && !isAnswerRight && !isAnswerWrong && (
+          <div className="frame-wrapper">
+            {useQuestOfferStyling ? (
+              /* Quest Offer: Single Accept button centered */
+              <div className="button-wrapper">
+                <button className="button accept-btn" onClick={onNext} disabled={disabled}>
+                  <div className="answer">Accept</div>
                 </button>
               </div>
+            ) : (
+              /* Normal State: Ask, Hint, Answer buttons */
+              <div className="div">
+                <div className="div-2">
+                  {/* Ask Button - transforms to Stop when recording */}
+                  <button
+                    className={`button ${isAskRecording ? 'recording-active' : ''} ${askButtonDisabled ? 'disabled' : ''}`}
+                    onClick={isAskRecording ? onRecordStop : handleAskClick}
+                    disabled={askButtonDisabled}
+                    title={isAskRecording ? "Stop recording" : "Ask a question"}
+                  >
+                    <img className="button-icon" src="/VisualAssets/recordIcon.svg" alt="" />
+                    {isAskRecording ? (
+                      <>
+                        <div className="stop-square" />
+                        <div className="button-text">Stop</div>
+                      </>
+                    ) : (
+                      <div className="button-text">Ask</div>
+                    )}
+                  </button>
 
-              {/* Answer Button - locked state controlled by quest completion, transforms when recording answer */}
-              <NextButton
-                locked={questState !== 'complete'}
-                onClick={onNext}
-                onRecordStop={onRecordStop}
-                label="Answer"
-                disabled={answerButtonDisabled}
-                isRecording={isAnswerRecording}
-              />
-            </div>
-          )}
-        </div>
+                  {/* Hint Button - cardboard button with lightbulb, pressed when hint showing */}
+                  <button
+                    className={`hint-btn ${isHintShowing ? 'recording' : ''} ${hintButtonDisabled ? 'disabled' : ''}`}
+                    onClick={handleHintClick}
+                    disabled={hintButtonDisabled}
+                    title="Get a hint"
+                  >
+                    <img className="img" alt="" src="/VisualAssets/lightbulb.svg" />
+                  </button>
+                </div>
+
+                {/* Answer Button - locked state controlled by quest completion, transforms when recording answer */}
+                <NextButton
+                  locked={questState !== 'complete'}
+                  onClick={onNext}
+                  onRecordStop={onRecordStop}
+                  label="Answer"
+                  disabled={answerButtonDisabled}
+                  isRecording={isAnswerRecording}
+                />
+              </div>
+            )}
+          </div>
+        )}
       </div>
 
       {/* Accessibility hint for locked state */}

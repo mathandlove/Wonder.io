@@ -513,6 +513,11 @@
   align-items: flex-start; /* Align items to the left */
 }
 
+/* Answer frame in feedback states - rounded bottom corners when button rail is hidden */
+.frame .whiteframe.answer-frame.answer-feedback-state {
+  border-radius: 0px 0px 16px 16px; /* Rounded bottom corners to match where button rail would be */
+}
+
 /* ===================================
    BUTTON RAIL (FRAME WRAPPER)
    =================================== */
@@ -627,8 +632,10 @@
     0px 0px 0px 1px rgba(73, 48, 29, 0.15); /* Slightly stronger brown tint */
 }
 
-/* Answer Waiting state: Add a subtle pulsing glow to indicate processing */
-.frame .quest.answer-waiting .answer-input-box {
+/* Answer feedback states (waiting, right, wrong): Add subtle pulsing glow to indicate processing/result */
+.frame .quest.answer-waiting .answer-input-box,
+.frame .quest.answer-right .answer-input-box,
+.frame .quest.answer-wrong .answer-input-box {
   animation: inputPulse 2s ease-in-out infinite;
   border-color: #b2652a; /* Orange border to match quest theme */
 }
@@ -648,20 +655,6 @@
       0px 0px 0px 1px rgba(178, 101, 42, 0.5),
       0px 0px 12px rgba(178, 101, 42, 0.4); /* Stronger orange glow */
   }
-}
-
-/* Answer Wrong state: Red border to indicate error */
-.frame .quest.answer-wrong .answer-input-box {
-  border-color: #d81919; /* Red border */
-  background: linear-gradient(
-    180deg,
-    #fff5f5 0%,
-    #ffffff 100%
-  ); /* Subtle red tint in background */
-  box-shadow:
-    inset 0px 1px 3px rgba(216, 25, 25, 0.1),
-    0px 1px 0px rgba(255, 255, 255, 0.8),
-    0px 0px 0px 1px rgba(216, 25, 25, 0.2);
 }
 
 /* Legacy breathing animation for quest container (kept for backward compatibility) */
@@ -721,6 +714,11 @@
   border-radius: 12px;
   pointer-events: none;
   z-index: 1;
+}
+
+/* Accept button purple overlay - same as Answer button */
+.frame .button.accept-btn::before {
+  background: rgba(54, 7, 88, 0.5);
 }
 
 /* Hint button specific width - tight */
@@ -1128,7 +1126,7 @@
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
-  height: 400px; /* Master size control - adjust this single value to scale everything */
+  height: 100%; /* Master size control - adjust this single value to scale everything */
   width: auto;
   aspect-ratio: 1; /* Keep square aspect ratio */
   pointer-events: none;
@@ -1141,7 +1139,7 @@
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
-  height: 65%; /* 70% of container height - seal size relative to container */
+  height: 100%; 
   width: auto;
   display: flex;
   align-items: center;
@@ -1170,9 +1168,9 @@
 /* Hand stamp video - positioned within container, scales with container */
 .answer-hand-stamp-video {
   position: absolute;
-  top: -90%; /* Offset upward so hand enters from above */
-  left: -10%; /* Offset slightly left for natural hand angle */
-  width: 350%; /* Slightly larger than container for hand to come from off-screen */
+  top: -130%; /* Offset upward so hand enters from above */
+  left: -40%; /* Offset slightly left for natural hand angle */
+  width: 450%; /* Slightly larger than container for hand to come from off-screen */
   height: auto;
   object-fit: contain;
   opacity: 1;

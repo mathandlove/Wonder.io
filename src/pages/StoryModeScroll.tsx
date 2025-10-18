@@ -17,7 +17,6 @@ import { CharacterAnimationProvider } from '@features/characters/CharacterAnimat
 import TurnCueBanner from '@features/chat/components/TurnCueBanner';
 import { useDialogue } from '@features/chat/context/useChatDialogue';
 import type { Scene } from '@core/types/scene';
-import type { QuestHook } from '@features/quest/QuestManager';
 
 // Extended scene type for dynamic properties
 type SceneWithId = Scene & {
@@ -28,15 +27,12 @@ type SceneWithId = Scene & {
 // Type extension for debugging window object
 declare global {
   interface Window {
-    __quest?: QuestHook;
     __hideScene?: (sceneId: string) => void;
     __showScene?: (sceneId: string) => void;
     __allScenes?: Scene[];
     __visibleScenes?: Scene[];
   }
 }
-import { QuestProvider, useQuest } from '@features/quest/QuestManager'
-import { QuestOrchestrator } from '@features/quest/QuestOrchestrator'
 import { UIOverlayRoot } from '@core/uiLayout/UIOverlayRoot'
 import { StepScrollDebug } from '@core/scroll/StepScrollDebug'
 import { SceneStatesProvider } from '@core/scenes/SceneStates'
@@ -58,23 +54,6 @@ function FullScreen({ children }: { children: React.ReactNode }) {
   );
 }
 
-// Debug probe to expose quest controls in console
-const QuestDebugProbe: React.FC = () => {
-  const quest = useQuest();
-  React.useEffect(() => {
-    // Log every state change
-    // Expose quest controls in the console for manual testing
-    window.__quest = {
-      state: quest.state,
-      offer: quest.offer,
-      accept: quest.accept,
-      complete: quest.complete,
-      clear: quest.clear,
-      reset: quest.reset,
-    };
-  }, [quest.state, quest.offer, quest.accept, quest.complete, quest.clear, quest.reset]);
-  return null;
-};
 
 // StoryModeScrollV2 is the main screen that renders scenes as full-screen snap sections
 const StoryModeScroll: React.FC = () => {
@@ -115,12 +94,12 @@ const StoryContent: React.FC = () => {
     const seenSceneIds = new Set<string>();
     const unique: Scene[] = [];
 
-    navigationArray.forEach(item => {
+    navigationArray.forEach((item, index) => {
       const sceneId = item.sceneId;
       if (!seenSceneIds.has(sceneId)) {
         seenSceneIds.add(sceneId);
-        // Use the scene from allNavigationScenes (with meta injected)
-        const sceneWithMeta = allNavigationScenes[navigationArray.indexOf(item)];
+        // Use the scene from allNavigationScenes at the correct index
+        const sceneWithMeta = allNavigationScenes[index];
         unique.push(sceneWithMeta);
       }
     });
@@ -203,17 +182,13 @@ const StoryContent: React.FC = () => {
   // RENDER PATH #3: story loaded → render each scene in a vertical, snap-scrolling layout
 
   return (
-    <QuestProvider>
-      <PageFactoryProvider>
-        <ChatGatewayProvider>
-          <SceneStatesProvider>
+    <PageFactoryProvider>
+      <ChatGatewayProvider>
+        <SceneStatesProvider>
+          <CharacterAnimationProvider>
             {/* ChatFlow orchestrator watches for ai-waiting state and triggers responses */}
             <ChatFlowOrchestratorComponent />
 
-            {/* Quest orchestrator watches for quest-showing state and offers quests */}
-            <QuestOrchestrator />
-
-            <CharacterAnimationProvider>
             {/* Unified scroll control component - uses uniqueScenes from navigationArray */}
             <ScrollControl
             scenes={uniqueScenes}
@@ -276,15 +251,13 @@ const StoryContent: React.FC = () => {
             {/* Debug display - inside ScrollControl to access SceneOrchestrator context */}
             <StepScrollDebug />
           </ScrollControl>
-          </CharacterAnimationProvider>
 
-            {/* UI Overlays - must be inside SceneStatesProvider for RecordingOrchestrator */}
-            <UIOverlayRoot />
-          </SceneStatesProvider>
-        </ChatGatewayProvider>
-      </PageFactoryProvider>
-      <QuestDebugProbe />
-    </QuestProvider>
+          {/* UI Overlays - must be inside SceneStatesProvider for RecordingOrchestrator */}
+          <UIOverlayRoot />
+          </CharacterAnimationProvider>
+        </SceneStatesProvider>
+      </ChatGatewayProvider>
+    </PageFactoryProvider>
   );
 };
 

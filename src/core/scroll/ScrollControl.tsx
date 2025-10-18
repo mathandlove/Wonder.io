@@ -65,6 +65,8 @@ export function ScrollControl({
 
   // Update SceneStates whenever navigationIndex changes
   // This keeps a persistent cache of scene states that survives navigation
+  // Note: We deliberately don't include navigationArray in dependencies to avoid loops
+  // when the array is modified. We only care about the current index changing.
   useEffect(() => {
     const currentNavItem = navigationArray[navigationIndex];
     if (!currentNavItem) return;
@@ -73,7 +75,8 @@ export function ScrollControl({
     sceneStates.updateSceneState(sceneId, sceneState);
 
     console.log(`🗃️ SceneStates updated: ${sceneId} -> ${sceneState.type}${sceneState.type === 'image' ? `:${sceneState.state}` : ''}`);
-  }, [navigationIndex, navigationArray, sceneStates]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [navigationIndex, sceneStates.updateSceneState]);
 
   // Check if input is focused
   const isInputFocused = useCallback(() => {
@@ -93,18 +96,34 @@ export function ScrollControl({
   // Watch for scene index changes and perform scroll animations
   // (Scene index changes when navigation advances to a different physical scene)
   const prevSceneIndexRef = React.useRef(currentIndex);
+  const isInitialMount = React.useRef(true);
+
   useLayoutEffect(() => {
     const el = containerRef.current;
     if (!el) return;
 
-    // Only scroll if scene changed (not just state within same scene)
+    // Skip scroll on initial mount
+    if (isInitialMount.current) {
+      isInitialMount.current = false;
+      prevSceneIndexRef.current = currentIndex;
+      return;
+    }
+
+    // Only scroll if scene index actually changed (not just recalculated to same value)
     if (currentIndex !== prevSceneIndexRef.current) {
       const section = el.querySelectorAll<HTMLElement>('.scene')[currentIndex];
       if (section) {
-        console.log(`📜 Scrolling to scene ${currentIndex}`);
-        section.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        // Use instant scroll when going backward (e.g., cancelling recording)
+        // to prevent visual glitches during DOM restructuring
+        const isGoingBackward = currentIndex < prevSceneIndexRef.current;
+        const behavior = isGoingBackward ? 'auto' : 'smooth';
+
+        console.log(`📜 Scrolling to scene ${currentIndex} (from ${prevSceneIndexRef.current}) - ${behavior}`);
+        section.scrollIntoView({ behavior, block: 'start' });
       }
       prevSceneIndexRef.current = currentIndex;
+    } else {
+      console.log(`📜 Skip scroll - same scene index ${currentIndex}`);
     }
   }, [currentIndex]);
 

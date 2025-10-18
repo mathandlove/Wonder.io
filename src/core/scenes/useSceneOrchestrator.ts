@@ -48,6 +48,9 @@ export function useSceneOrchestrator({
   // Runtime state storage - persists across renders
   const stateMapRef = useRef<SceneStateMap>(new Map());
 
+  // Track scene IDs to detect actual changes (not just array reference changes)
+  const sceneIdsRef = useRef<string>('');
+
   // Force re-render when state map changes
   const [, forceUpdate] = useState({});
 
@@ -74,6 +77,18 @@ export function useSceneOrchestrator({
 
   // Initialize input states when scenes change
   useEffect(() => {
+    // Create a stable key from scene IDs to detect real changes
+    const currentSceneIds = scenes
+      .map(s => (s as Scene & { sceneId?: string }).sceneId)
+      .filter(Boolean)
+      .join(',');
+
+    // Skip if scene IDs haven't actually changed
+    if (sceneIdsRef.current === currentSceneIds) {
+      return;
+    }
+
+    sceneIdsRef.current = currentSceneIds;
     console.log('🔄 Initializing scene states for', scenes.length, 'scenes');
     let needsUpdate = false;
 

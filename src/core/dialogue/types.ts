@@ -16,19 +16,21 @@ export type ImageState =
 
 // State machine for dialogue scenes with interactive features (quest/input)
 export type DialogueState =
-  | 'basic'           // 1. Just dialogue, no features visible
-  | 'pre-feature'     // 2. Feature about to appear (scroll blocked down)
-  | 'show-quest'      // 3. Quest UI visible (scroll blocked up & down)
-  | 'input-ready'     // 4. Input UI ready for user (scroll blocked down)
+  | 'basic'           // 1. Just dialogue, no features visible (panel hidden below screen)
+  | 'pre-feature'     // 2. Feature about to appear (scroll blocked down) - DEPRECATED, not currently used
+  | 'input-ready'     // 4. Input UI ready for user (scroll blocked down) - DEPRECATED, not currently used
   | 'input-recording' // 5. User speaking (scroll blocked down)
   | 'ai-waiting'      // 6. Waiting for AI response (scroll blocked down)
   | 'quest-basic'     // Quest state 1: Show dialogue with quest pending
-  | 'quest-showing'   // Quest state 2: Quest UI visible
+  | 'quest-showing'   // Quest state 2: Quest UI visible (panel centered with Accept button)
   | 'quest-accepted'  // Quest state 3: Quest accepted, can continue
   | 'input-basic'     // Input state 1: Show dialogue with input pending
-  | 'input-showInput' // Input state 2: Show input UI (microphone button)
+  | 'input-showInput' // Input state 2: Show input UI (microphone button, panel at bottom)
   | 'show-hint'       // Show hint overlay/modal
-  | 'record-answer';  // Recording answer (like input-recording but for Answer button)
+  | 'record-answer'   // Recording answer (like input-recording but for Answer button)
+  | 'answer-waiting'  // Waiting for answer validation/AI processing (scroll blocked, panel centered)
+  | 'answer-right'    // Correct answer feedback - show answer text centered with green glow
+  | 'answer-wrong';   // Wrong answer feedback - show answer text centered with red glow
 
 export type Sender = 'player' | 'npc';
 

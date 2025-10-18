@@ -13,7 +13,6 @@ import { useEffect, useState } from 'react';
 import { useSceneManager } from '@core/scenes/SceneManager';
 import { useDialogue } from '@core/dialogue/DialogueContext';
 import { useSceneFlowMetadata } from '@core/data/FlowMetadataStore';
-import { useQuest } from '@features/quest/QuestManager';
 import type { Scene } from '@core/types/scene';
 import type { ImageState } from '@core/dialogue/types';
 
@@ -60,9 +59,6 @@ export function StepScrollDebug() {
   const currentNavItem = navigationArray[navigationIndex];
   const currentScene = currentNavItem?.scene as (Scene & { sceneId?: string, flowId?: string }) | undefined;
   const flowMetadata = useSceneFlowMetadata(currentScene);
-
-  // Get quest state for Answer button control
-  const quest = useQuest();
 
   // Try to get dialogue context, may be undefined if not in provider tree
   let dialogue;
@@ -153,7 +149,7 @@ export function StepScrollDebug() {
   };
 
   const setRecordPanelShowQuest = () => {
-    sceneManager.updateNavigationItemState(navigationIndex, { type: 'dialogue', state: 'show-quest' });
+    sceneManager.updateNavigationItemState(navigationIndex, { type: 'dialogue', state: 'quest-showing' });
   };
 
   const setRecordPanelShowInput = () => {
@@ -170,8 +166,19 @@ export function StepScrollDebug() {
   };
 
   const setRecordPanelRecordAnswer = () => {
-    // Using a new state for recording answer - will need to be added to DialogueState type
-    sceneManager.updateNavigationItemState(navigationIndex, { type: 'dialogue', state: 'record-answer' as any });
+    sceneManager.updateNavigationItemState(navigationIndex, { type: 'dialogue', state: 'record-answer' });
+  };
+
+  const setRecordPanelAnswerWaiting = () => {
+    sceneManager.updateNavigationItemState(navigationIndex, { type: 'dialogue', state: 'answer-waiting' });
+  };
+
+  const setRecordPanelAnswerRight = () => {
+    sceneManager.updateNavigationItemState(navigationIndex, { type: 'dialogue', state: 'answer-right' });
+  };
+
+  const setRecordPanelAnswerWrong = () => {
+    sceneManager.updateNavigationItemState(navigationIndex, { type: 'dialogue', state: 'answer-wrong' });
   };
 
   const setRecordPanelAiWaiting = () => {
@@ -365,8 +372,8 @@ export function StepScrollDebug() {
             onClick={setRecordPanelShowQuest}
             style={{
               padding: '8px',
-              background: currentNavItem?.sceneState.type === 'dialogue' && currentNavItem?.sceneState.state === 'show-quest' ? '#FFD700' : '#333',
-              color: currentNavItem?.sceneState.type === 'dialogue' && currentNavItem?.sceneState.state === 'show-quest' ? '#000' : '#fff',
+              background: currentNavItem?.sceneState.type === 'dialogue' && currentNavItem?.sceneState.state === 'quest-showing' ? '#FFD700' : '#333',
+              color: currentNavItem?.sceneState.type === 'dialogue' && currentNavItem?.sceneState.state === 'quest-showing' ? '#000' : '#fff',
               border: '2px solid #FFD700',
               borderRadius: '4px',
               cursor: 'pointer',
@@ -437,6 +444,51 @@ export function StepScrollDebug() {
             🟣 Answer Rec
           </button>
           <button
+            onClick={setRecordPanelAnswerWaiting}
+            style={{
+              padding: '8px',
+              background: currentNavItem?.sceneState.type === 'dialogue' && currentNavItem?.sceneState.state === 'answer-waiting' ? '#FFB84D' : '#333',
+              color: '#fff',
+              border: '2px solid #FFB84D',
+              borderRadius: '4px',
+              cursor: 'pointer',
+              fontSize: '10px',
+              fontWeight: 'bold'
+            }}
+          >
+            ⏳ Ans Wait
+          </button>
+          <button
+            onClick={setRecordPanelAnswerRight}
+            style={{
+              padding: '8px',
+              background: currentNavItem?.sceneState.type === 'dialogue' && currentNavItem?.sceneState.state === 'answer-right' ? '#0f0' : '#333',
+              color: '#fff',
+              border: '2px solid #0f0',
+              borderRadius: '4px',
+              cursor: 'pointer',
+              fontSize: '10px',
+              fontWeight: 'bold'
+            }}
+          >
+            ✅ Right
+          </button>
+          <button
+            onClick={setRecordPanelAnswerWrong}
+            style={{
+              padding: '8px',
+              background: currentNavItem?.sceneState.type === 'dialogue' && currentNavItem?.sceneState.state === 'answer-wrong' ? '#f00' : '#333',
+              color: '#fff',
+              border: '2px solid #f00',
+              borderRadius: '4px',
+              cursor: 'pointer',
+              fontSize: '10px',
+              fontWeight: 'bold'
+            }}
+          >
+            ❌ Wrong
+          </button>
+          <button
             onClick={setRecordPanelAiWaiting}
             style={{
               padding: '8px',
@@ -454,50 +506,7 @@ export function StepScrollDebug() {
           </button>
         </div>
         <div style={{ marginTop: '8px', fontSize: '9px', color: '#888', fontStyle: 'italic' }}>
-          Seven visual states for RecordPanel testing
-        </div>
-      </div>
-
-      {/* Quest Controls Section - Answer Button Lock State */}
-      <div style={{ marginTop: '10px', paddingTop: '8px', borderTop: '1px solid #ff0' }}>
-        <div style={{ color: '#ff0', marginBottom: '8px', fontWeight: 'bold' }}>🎯 Quest & Answer Button</div>
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '6px' }}>
-          <button
-            onClick={() => quest.complete()}
-            style={{
-              padding: '8px',
-              background: quest.state.phase === 'complete' ? '#0f0' : '#333',
-              color: '#fff',
-              border: '1px solid #0f0',
-              borderRadius: '4px',
-              cursor: 'pointer',
-              fontSize: '10px',
-              fontWeight: 'bold'
-            }}
-          >
-            ✅ Answer Unlocked
-          </button>
-          <button
-            onClick={() => quest.reset()}
-            style={{
-              padding: '8px',
-              background: quest.state.phase !== 'complete' ? '#f00' : '#333',
-              color: '#fff',
-              border: '1px solid #f00',
-              borderRadius: '4px',
-              cursor: 'pointer',
-              fontSize: '10px',
-              fontWeight: 'bold'
-            }}
-          >
-            🔒 Answer Locked
-          </button>
-        </div>
-        <div style={{ marginTop: '4px', fontSize: '10px', color: '#ff0' }}>
-          Quest Phase: <strong>{quest.state.phase}</strong>
-        </div>
-        <div style={{ marginTop: '4px', fontSize: '9px', color: '#888', fontStyle: 'italic' }}>
-          Quest completion controls Answer button lock state
+          Ten visual states for RecordPanel testing
         </div>
       </div>
 

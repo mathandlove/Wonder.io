@@ -1,5 +1,6 @@
 /**
  * QuestManager - React Context + reducer implementation
+ * Tracks quest state and question count for unlocking Answer button
  */
 import { createContext, useContext, useReducer, useMemo, useCallback, useEffect } from 'react';
 import type { ReactNode } from 'react';
@@ -19,6 +20,7 @@ export interface Quest {
 export interface QuestState {
   phase: QuestPhase;
   currentQuest?: Quest;
+  questionsAsked: number; // NEW: Track how many questions user has asked
 }
 
 export type QuestAction =
@@ -26,7 +28,8 @@ export type QuestAction =
   | { type: 'ACCEPT' }
   | { type: 'COMPLETE' }
   | { type: 'CLEAR' }
-  | { type: 'RESET' };
+  | { type: 'RESET' }
+  | { type: 'INCREMENT_QUESTIONS' }; // NEW: Increment question counter
 
 export interface QuestProviderProps {
   children: ReactNode;
@@ -35,8 +38,8 @@ export interface QuestProviderProps {
 export interface QuestStatus {
   phase: QuestPhase;
   currentQuest?: Quest;
+  questionsAsked: number;
 }
-
 
 export interface QuestHook {
   state: QuestState;
@@ -45,6 +48,7 @@ export interface QuestHook {
   complete: () => void;
   clear: () => void;
   reset: () => void;
+  incrementQuestions: () => void; // NEW: Track question asked
 }
 
 // ============================================================================
@@ -54,6 +58,7 @@ export interface QuestHook {
 const initialState: QuestState = {
   phase: 'idle',
   currentQuest: undefined,
+  questionsAsked: 0, // NEW: Start with zero questions
 };
 
 // ============================================================================
@@ -63,7 +68,6 @@ const initialState: QuestState = {
 function questReducer(state: QuestState, action: QuestAction): QuestState {
   switch (action.type) {
     case 'OFFER':
-
       // Ensure we don't nest objects
       const cleanPayload = {
         id: String(action.payload.id),
@@ -71,11 +75,11 @@ function questReducer(state: QuestState, action: QuestAction): QuestState {
         text: typeof action.payload.text === 'string' ? action.payload.text : undefined,
       };
 
-
       return {
         ...state,
         phase: 'offered',
         currentQuest: cleanPayload,
+        questionsAsked: 0, // Reset counter when new quest is offered
       };
 
     case 'ACCEPT':
@@ -101,6 +105,13 @@ function questReducer(state: QuestState, action: QuestAction): QuestState {
         ...state,
         phase: 'idle',
         currentQuest: undefined,
+        questionsAsked: 0, // Reset counter on full reset
+      };
+
+    case 'INCREMENT_QUESTIONS':
+      return {
+        ...state,
+        questionsAsked: state.questionsAsked + 1,
       };
 
     default:
@@ -119,6 +130,7 @@ interface QuestContextValue {
   complete: () => void;
   clear: () => void;
   reset: () => void;
+  incrementQuestions: () => void;
 }
 
 const QuestContext = createContext<QuestContextValue | null>(null);
@@ -135,13 +147,8 @@ export function QuestProvider({ children }: QuestProviderProps) {
     console.debug('[Quest]', state);
   }, [state]);
 
-  // Initial mount log
-  useEffect(() => {
-  }, []);
-
   // Action creators
   const offer = useCallback((id: string | Quest, title?: string, text?: string) => {
-
     // Handle both calling patterns: offer(id, title, text) or offer(questObject)
     let cleanId: string;
     let cleanTitle: string | undefined;
@@ -158,7 +165,6 @@ export function QuestProvider({ children }: QuestProviderProps) {
       cleanTitle = typeof title === 'string' ? title : undefined;
       cleanText = typeof text === 'string' ? text : undefined;
     }
-
 
     dispatch({ type: 'OFFER', payload: { id: cleanId, title: cleanTitle, text: cleanText } });
   }, []);
@@ -179,6 +185,10 @@ export function QuestProvider({ children }: QuestProviderProps) {
     dispatch({ type: 'RESET' });
   }, []);
 
+  const incrementQuestions = useCallback(() => {
+    dispatch({ type: 'INCREMENT_QUESTIONS' });
+  }, []);
+
   const contextValue: QuestContextValue = useMemo(() => ({
     state,
     offer,
@@ -186,7 +196,8 @@ export function QuestProvider({ children }: QuestProviderProps) {
     complete,
     clear,
     reset,
-  }), [state, offer, accept, complete, clear, reset]);
+    incrementQuestions,
+  }), [state, offer, accept, complete, clear, reset, incrementQuestions]);
 
   // Dev-only global helpers for quick console testing
   useEffect(() => {
@@ -197,13 +208,14 @@ export function QuestProvider({ children }: QuestProviderProps) {
       complete,
       clear,
       reset,
+      incrementQuestions,
     };
     return () => {
       if ((window as any).__quest) {
         delete (window as any).__quest;
       }
     };
-  }, [state, offer, accept, complete, clear, reset]);
+  }, [state, offer, accept, complete, clear, reset, incrementQuestions]);
 
   return (
     <QuestContext.Provider value={contextValue}>
@@ -225,8 +237,8 @@ function useQuestContext(): QuestContextValue {
 }
 
 export function useQuest(): QuestHook {
-  const { state, offer, accept, complete, clear, reset } = useQuestContext();
-  return { state, offer, accept, complete, clear, reset };
+  const { state, offer, accept, complete, clear, reset, incrementQuestions } = useQuestContext();
+  return { state, offer, accept, complete, clear, reset, incrementQuestions };
 }
 
 export function useQuestStatus(): QuestStatus {
@@ -234,5 +246,6 @@ export function useQuestStatus(): QuestStatus {
   return {
     phase: state.phase,
     currentQuest: state.currentQuest,
+    questionsAsked: state.questionsAsked,
   };
 }

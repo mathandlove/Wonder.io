@@ -1,5 +1,6 @@
 import React, { useEffect, useMemo, useState, useLayoutEffect } from "react";
 import { useCharacterAnimation } from '@features/characters/CharacterAnimationContext';
+import { useSceneManager } from '@core/scenes/SceneManager';
 import type { Scene } from '@core/types/scene';
 import { CharacterPanel } from "./CharacterPanel";
 
@@ -13,6 +14,7 @@ type Props = {
 
 export const CharacterOrchestrator: React.FC<Props> = ({ storyId, scenes, currentIndex = 0 }) => {
   const { notifyEntranceComplete } = useCharacterAnimation();
+  const { navigationArray } = useSceneManager();
 
   // Use currentIndex directly (always passed from ScrollControl)
   const scrollOffset = currentIndex;
@@ -72,18 +74,38 @@ export const CharacterOrchestrator: React.FC<Props> = ({ storyId, scenes, curren
 
     // Check if we've moved to a different scene
     if (currentSceneIndex !== prevSceneIndex) {
+      const isMovingForward = currentSceneIndex > prevSceneIndex;
+
+      // Get current navigation item to check allowAnimate flag
+      const currentNavItem = navigationArray[currentSceneIndex];
+      const allowAnimate = currentNavItem?.sceneState?.type === 'dialogue'
+        ? currentNavItem.sceneState.allowAnimate !== false  // Default to true if not specified
+        : true;
+
+      console.log(`🎭 CharacterOrchestrator: Scene change ${prevSceneIndex} → ${currentSceneIndex}, forward: ${isMovingForward}, allowAnimate: ${allowAnimate}, left.newChar: ${leftPanel?.newCharacter}, right.newChar: ${rightPanel?.newCharacter}`);
       setPrevSceneIndex(currentSceneIndex);
 
-      // Increment animNonce when scene changes to force animation restart
-      // Only trigger animation restart when character is new
-      if (leftPanel?.newCharacter) {
-        setLeftEnterNonce(n => n + 1);
-      }
-      if (rightPanel?.newCharacter) {
-        setRightEnterNonce(n => n + 1);
+      // Only trigger entrance animations when:
+      // 1. Moving forward (not backward)
+      // 2. allowAnimate is true (scene allows animations)
+      // Skip animations when going backward (e.g., cancelling recording, scrolling back)
+      // Also skip animations when allowAnimate is false (e.g., when returning to delete a scene)
+      if (isMovingForward && allowAnimate) {
+        // Increment animNonce when scene changes to force animation restart
+        // Only trigger animation restart when character is new
+        if (leftPanel?.newCharacter) {
+          console.log(`🎭 Incrementing LEFT animNonce (was ${leftEnterNonce})`);
+          setLeftEnterNonce(n => n + 1);
+        }
+        if (rightPanel?.newCharacter) {
+          console.log(`🎭 Incrementing RIGHT animNonce (was ${rightEnterNonce})`);
+          setRightEnterNonce(n => n + 1);
+        }
+      } else {
+        console.log(`🎭 Skipping animations - ${!isMovingForward ? 'moving backward' : 'allowAnimate is false'}`);
       }
     }
-  }, [scrollOffset, prevSceneIndex, leftPanel?.newCharacter, rightPanel?.newCharacter]);
+  }, [scrollOffset, prevSceneIndex, leftPanel?.newCharacter, rightPanel?.newCharacter, leftEnterNonce, rightEnterNonce, navigationArray]);
 
 
   // Publish panel widths as CSS variables to constrain main content
