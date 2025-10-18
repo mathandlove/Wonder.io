@@ -184,9 +184,61 @@ export function RecordingOrchestrator() {
             questionText: currentState.questionText // Preserve existing questionText
           });
         }
+      } else if (currentState?.state === 'ai-waiting' && !currentState.transcriptFinalized) {
+        // ai-waiting but waiting for final transcripts - continue updating questionText
+        if (currentState.questionText !== displayText) {
+          updateNavigationItemState(navigationIndex, {
+            type: 'dialogue',
+            state: 'ai-waiting',
+            questionText: displayText || '',
+            transcriptFinalized: false // Keep waiting
+          });
+        }
       }
     }
   }, [displayText, isRecording, activeRecordingId, navigationIndex, updateSceneTextByRecordingId, updateNavigationItemState, getCurrentNavigationItem]);
+
+  // Register onFinalized callback when recording
+  // This needs to be registered BEFORE we stop recording, so it's ready for the finalized event
+  React.useEffect(() => {
+    const currentState = sceneState?.type === 'dialogue' ? sceneState : null;
+
+    // Register callback during input-recording (before stop) OR during ai-waiting (if not finalized)
+    const shouldRegisterCallback =
+      (currentState?.state === 'input-recording' && isRecording) ||
+      (currentState?.state === 'ai-waiting' && !currentState.transcriptFinalized);
+
+    if (shouldRegisterCallback) {
+      console.log('📋 Registering onFinalized callback for state:', currentState?.state);
+
+      // Register callback that will fire when all transcripts are received
+      recording.setOnFinalized(() => {
+        console.log('✅ Transcripts finalized - updating scene state to allow AI processing');
+        const finalText = recording.getDisplayText();
+
+        // Find the current navigation index at the time this callback fires
+        // (it may have changed since registration)
+        const freshNavItem = getCurrentNavigationItem();
+        const freshState = freshNavItem?.sceneState?.type === 'dialogue' ? freshNavItem.sceneState : null;
+
+        // Only update if we're in ai-waiting state (we may have already moved on)
+        if (freshState?.state === 'ai-waiting' && !freshState.transcriptFinalized) {
+          updateNavigationItemState(navigationIndex, {
+            type: 'dialogue',
+            state: 'ai-waiting',
+            questionText: finalText,
+            transcriptFinalized: true // Signal ChatFlowOrchestrator to process
+          });
+        }
+      });
+
+      // Cleanup: unregister when leaving these states
+      return () => {
+        console.log('🧹 Cleaning up onFinalized callback');
+        recording.setOnFinalized(null);
+      };
+    }
+  }, [sceneState, isRecording, recording, navigationIndex, updateNavigationItemState, getCurrentNavigationItem]);
 
   /**
    * Handle recording start - creates new page, navigates, and starts recording
@@ -340,7 +392,8 @@ export function RecordingOrchestrator() {
           {
             type: 'dialogue',
             state: 'ai-waiting',
-            questionText: finalQuestionText // Persist question text in scene state
+            questionText: finalQuestionText, // Persist question text in scene state
+            transcriptFinalized: false // Wait for final transcripts before AI call
           },
           true  // Insert after current
         );
@@ -350,7 +403,8 @@ export function RecordingOrchestrator() {
     }
 
     // Recording will stop automatically via the effect
-    // ChatFlowOrchestrator should observe ai-waiting state and process transcript
+    // Recording will send 'finalize' to get final transcripts
+    // ChatFlowOrchestrator will wait for transcriptFinalized before processing
   }, [navigationIndex, navigationArray, sceneState, recording, updateNavigationItemState, addNavigationStateToCurrentScene, forceAdvanceNavigation, setNavigationIndex, deleteNavigationItem]);
 
   /**

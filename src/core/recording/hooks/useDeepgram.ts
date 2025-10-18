@@ -14,14 +14,17 @@ import { useState, useRef, useCallback, useEffect } from 'react';
 export type SttStatus = 'idle' | 'recording' | 'processing' | 'error';
 
 export type NormalizedSttEvent =
+  | { type: 'ready' } // Backend signals Deepgram is ready
   | { type: 'partial'; text: string }
   | { type: 'final'; text: string; confidence?: number }
+  | { type: 'finalized' } // Backend signals all final transcripts received
   | { type: 'error'; code?: string; message: string }
   | { type: 'close' };
 
 export type UseDeepgramCallbacks = {
   onPartial?: (text: string) => void;
   onFinal?: (text: string, confidence?: number) => void;
+  onFinalized?: () => void; // Called when all final transcripts have been received
   onError?: (error: string) => void;
 };
 
@@ -70,8 +73,17 @@ export function useDeepgram(callbacks?: UseDeepgramCallbacks): UseDeepgram {
   const processorRef = useRef<ScriptProcessorNode | null>(null);
   const silenceTimerRef = useRef<NodeJS.Timeout | null>(null);
 
-  // Audio buffer for early speech (before WebSocket is ready)
+  // Audio buffer for early speech (before Deepgram is ready)
   const audioBufferRef = useRef<ArrayBuffer[]>([]);
+
+  // Track if Deepgram is ready to receive audio (use ref so onaudioprocess callback has latest value)
+  const isDeepgramReadyRef = useRef<boolean>(false);
+
+  // Track if we flushed the buffer (for logging purposes)
+  const bufferWasFlushedRef = useRef<boolean>(false);
+
+  // Timer to delay buffer flush after 'ready' (to catch early speech)
+  const flushDelayTimerRef = useRef<NodeJS.Timeout | null>(null);
 
   // ──────────────────────────────────────────────────────────────────────────────
   // Audio Processing: Convert Float32 → Int16 PCM
@@ -99,6 +111,25 @@ export function useDeepgram(callbacks?: UseDeepgramCallbacks): UseDeepgram {
   }, []);
 
   // ──────────────────────────────────────────────────────────────────────────────
+  // Buffer Flushing Helper
+  // ──────────────────────────────────────────────────────────────────────────────
+
+  const flushBuffer = useCallback((ws: WebSocket) => {
+    if (audioBufferRef.current.length > 0) {
+      console.log(`[useDeepgram] 🔊 Flushing ${audioBufferRef.current.length} buffered chunks`);
+      audioBufferRef.current.forEach(chunk => {
+        if (ws.readyState === WebSocket.OPEN) {
+          ws.send(chunk);
+        }
+      });
+      audioBufferRef.current = [];
+      bufferWasFlushedRef.current = true;
+    } else {
+      console.log('[useDeepgram] ℹ️ Buffer is empty (no audio captured yet)');
+    }
+  }, []);
+
+  // ──────────────────────────────────────────────────────────────────────────────
   // Cleanup
   // ──────────────────────────────────────────────────────────────────────────────
 
@@ -108,10 +139,18 @@ export function useDeepgram(callbacks?: UseDeepgramCallbacks): UseDeepgram {
     // Clear audio buffer
     audioBufferRef.current = [];
 
-    // Clear silence timer
+    // Reset Deepgram ready state
+    isDeepgramReadyRef.current = false;
+
+    // Clear timers
     if (silenceTimerRef.current) {
       clearTimeout(silenceTimerRef.current);
       silenceTimerRef.current = null;
+    }
+
+    if (flushDelayTimerRef.current) {
+      clearTimeout(flushDelayTimerRef.current);
+      flushDelayTimerRef.current = null;
     }
 
     // Close WebSocket
@@ -168,18 +207,9 @@ export function useDeepgram(callbacks?: UseDeepgramCallbacks): UseDeepgram {
       wsRef.current = ws;
 
       ws.onopen = () => {
-        console.log('[useDeepgram] WebSocket connected');
-
-        // Flush any buffered audio that was captured during connection
-        if (audioBufferRef.current.length > 0) {
-          console.log(`[useDeepgram] Flushing ${audioBufferRef.current.length} buffered audio chunks`);
-          audioBufferRef.current.forEach((buffer) => {
-            if (ws.readyState === WebSocket.OPEN) {
-              ws.send(buffer);
-            }
-          });
-          audioBufferRef.current = [];
-        }
+        console.log('[useDeepgram] ✅ WebSocket connected to backend proxy:', CONFIG.WS_URL);
+        console.log('[useDeepgram] ⏳ Waiting for Deepgram to be ready...');
+        // Note: We don't flush the buffer here anymore - we wait for the 'ready' signal
       };
 
       ws.onmessage = (event) => {
@@ -187,6 +217,22 @@ export function useDeepgram(callbacks?: UseDeepgramCallbacks): UseDeepgram {
           const message: NormalizedSttEvent = JSON.parse(event.data);
 
           switch (message.type) {
+            case 'ready':
+              console.log('[useDeepgram] ✅ Deepgram is ready!');
+              console.log('[useDeepgram] ⏳ Continuing to buffer for 500ms to catch early speech...');
+
+              // Don't mark as ready immediately - wait for delayed flush
+              // This ensures we buffer any speech that starts right after mic permission is granted
+
+              // Schedule delayed flush to catch early speech
+              flushDelayTimerRef.current = setTimeout(() => {
+                console.log('[useDeepgram] ⏰ Delay period over - flushing buffer and switching to direct send');
+                isDeepgramReadyRef.current = true;
+                flushBuffer(ws);
+                flushDelayTimerRef.current = null;
+              }, 500); // Wait 500ms to catch early speech
+              break;
+
             case 'partial':
               console.log('[useDeepgram] Partial:', message.text);
               setPartial(message.text);
@@ -212,6 +258,17 @@ export function useDeepgram(callbacks?: UseDeepgramCallbacks): UseDeepgram {
               }
               break;
 
+            case 'finalized':
+              console.log('[useDeepgram] ✅ All final transcripts received');
+              // Invoke callback to signal that all transcripts are done
+              if (callbacksRef.current?.onFinalized) {
+                callbacksRef.current.onFinalized();
+              }
+              // Now safe to cleanup and transition to idle
+              cleanup();
+              setStatus('idle');
+              break;
+
             case 'error':
               console.error('[useDeepgram] Error:', message.message);
               setError(message.message);
@@ -235,7 +292,9 @@ export function useDeepgram(callbacks?: UseDeepgramCallbacks): UseDeepgram {
 
       ws.onerror = (event) => {
         console.error('[useDeepgram] WebSocket error:', event);
-        setError('WebSocket connection failed');
+        console.error('[useDeepgram] Make sure backend is running: cd backend && pnpm dev');
+        console.error('[useDeepgram] Expected WebSocket URL:', CONFIG.WS_URL);
+        setError('WebSocket connection failed - is backend running on port 3001?');
         setStatus('error');
         cleanup();
       };
@@ -296,12 +355,24 @@ export function useDeepgram(callbacks?: UseDeepgramCallbacks): UseDeepgram {
         // Convert and send audio data
         const int16Data = convertFloat32ToInt16(inputData);
 
-        if (ws.readyState === WebSocket.OPEN) {
-          // WebSocket is ready - send directly
+        if (ws.readyState === WebSocket.OPEN && isDeepgramReadyRef.current) {
+          // Deepgram is ready - send directly
           ws.send(int16Data.buffer);
-        } else if (ws.readyState === WebSocket.CONNECTING) {
-          // Still connecting - buffer the audio for later
+
+          // Log first direct send after buffering
+          if (audioBufferRef.current.length === 0 && bufferWasFlushedRef.current) {
+            console.log('[useDeepgram] 📡 Now sending audio directly to Deepgram');
+            bufferWasFlushedRef.current = false;
+          }
+        } else if (ws.readyState === WebSocket.OPEN || ws.readyState === WebSocket.CONNECTING) {
+          // WebSocket open but Deepgram not ready yet, or still connecting - buffer the audio
+          const bufferLength = audioBufferRef.current.length;
           audioBufferRef.current.push(int16Data.buffer);
+
+          // Log when we start buffering
+          if (bufferLength === 0) {
+            console.log('[useDeepgram] 🎤 Started buffering audio (Deepgram not ready yet)');
+          }
 
           // Limit buffer size to prevent memory issues (max 2 seconds = ~125 chunks at 4096 buffer size)
           if (audioBufferRef.current.length > 125) {
@@ -321,7 +392,7 @@ export function useDeepgram(callbacks?: UseDeepgramCallbacks): UseDeepgram {
       setStatus('error');
       cleanup();
     }
-  }, [calculateRMS, cleanup, convertFloat32ToInt16, status, stop]);
+  }, [calculateRMS, cleanup, convertFloat32ToInt16, status]); // stop is defined below, not a dependency
 
   // ──────────────────────────────────────────────────────────────────────────────
   // Stop Recording
@@ -330,13 +401,38 @@ export function useDeepgram(callbacks?: UseDeepgramCallbacks): UseDeepgram {
   const stop = useCallback(() => {
     console.log('[useDeepgram] Stopping recording...');
     setStatus('processing');
-    cleanup();
 
-    // Transition to idle after a brief moment
-    setTimeout(() => {
-      setStatus('idle');
-    }, 500);
-  }, [cleanup]);
+    // Send finalize message to backend to get final transcripts before closing
+    if (wsRef.current && wsRef.current.readyState === WebSocket.OPEN) {
+      console.log('[useDeepgram] 📤 Sending finalize request to backend');
+      wsRef.current.send(JSON.stringify({ type: 'finalize' }));
+    }
+
+    // Stop audio capture immediately (but keep WebSocket open for final transcripts)
+    if (processorRef.current) {
+      processorRef.current.disconnect();
+      processorRef.current = null;
+    }
+
+    if (sourceNodeRef.current) {
+      sourceNodeRef.current.disconnect();
+      sourceNodeRef.current = null;
+    }
+
+    if (mediaStreamRef.current) {
+      mediaStreamRef.current.getTracks().forEach((track) => track.stop());
+      mediaStreamRef.current = null;
+    }
+
+    // Clear silence timer
+    if (silenceTimerRef.current) {
+      clearTimeout(silenceTimerRef.current);
+      silenceTimerRef.current = null;
+    }
+
+    // Don't call full cleanup yet - wait for 'finalized' event
+    // The 'finalized' event handler or a timeout will call cleanup
+  }, []);
 
   // ──────────────────────────────────────────────────────────────────────────────
   // Cleanup on unmount

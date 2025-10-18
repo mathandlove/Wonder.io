@@ -76,7 +76,7 @@ const StoryContent: React.FC = () => {
   const hasPopulatedMetadata = React.useRef(false);
 
   // Navigation context
-  const { scenes, currentIndex, setScenes, setCurrentIndex, hideScene, showScene, allScenes, navigationArray, navigationIndex } = useSceneManager();
+  const { scenes, setScenes, setCurrentIndex, hideScene, showScene, allScenes, navigationArray, navigationIndex } = useSceneManager();
 
   // Dialogue context for turn banners
   const { showTurnBanner, turnBannerText } = useDialogue();
@@ -203,7 +203,7 @@ const StoryContent: React.FC = () => {
               <CharacterOrchestrator storyId="gingerbread" scenes={allNavigationScenes} currentIndex={navigationIndex} />
 
               {/* Layer 1.8: Speech bubbles - already uses navigationArray internally */}
-              <SpeechBubbleOrchestrator scenes={scenes} currentIndex={currentIndex} />
+              <SpeechBubbleOrchestrator />
 
               {/* Layer 1.9: Turn cue banner */}
               <TurnCueBanner show={showTurnBanner} text={turnBannerText} />

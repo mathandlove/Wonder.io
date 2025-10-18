@@ -2,11 +2,11 @@
  * BackgroundOrchestrator - Hybrid background system that combines range-based logic
  * from the original main branch with optimized rendering
  */
-import React, { useMemo } from 'react';
+import { useMemo } from 'react';
 import { buildBackgroundRanges } from './buildBackgroundRanges';
 import { resolveBackgroundUrl } from './resolveBackgroundUrl';
 import { translateForRange } from './positionBackground';
-import type { SceneContent } from 'oldReferenceOnly/background';
+import type { SceneContent } from './types';
 
 interface BackgroundOrchestratorProps {
   storyId?: string;

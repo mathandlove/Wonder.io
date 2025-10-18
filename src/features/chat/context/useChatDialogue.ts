@@ -8,11 +8,3 @@ export const useDialogue = () => {
   }
   return context;
 };
-
-export const useIsPlayerTurn = () => {
-  const context = useContext(DialogueContext);
-  if (!context) {
-    throw new Error('useIsPlayerTurn must be used within DialogueProvider');
-  }
-  return context.isPlayerTurn;
-};

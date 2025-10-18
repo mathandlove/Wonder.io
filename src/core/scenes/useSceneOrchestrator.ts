@@ -31,9 +31,6 @@ export interface SceneOrchestratorHook {
 
   // Update input state
   setInputState: (sceneId: string, state: InputState) => void;
-
-  // Dialogue-to-scene conversion orchestration
-  convertDialogueToScenes: (playerMessageId: string, npcMessageId: string) => Promise<void>;
 }
 
 interface UseSceneOrchestratorParams {
@@ -101,9 +98,11 @@ export function useSceneOrchestrator({
         return;
       }
 
-      // Initialize INPUT scenes with idle state
-      if (scene.type === 'input') {
-        console.log(`  Scene ${index}:`, { type: scene.type, sceneId });
+      // Initialize scenes with "input" state (character-flow scenes with States: ["input"])
+      // NOTE: "input" is not a scene type - it's a feature state in character-flow scenes
+      const sceneWithStates = scene as Scene & { States?: string[] };
+      if (sceneWithStates.States?.includes('input')) {
+        console.log(`  Scene ${index}:`, { type: scene.type, states: sceneWithStates.States, sceneId });
 
         // Initialize to 'idle' if not already set
         if (!stateMapRef.current.has(sceneId)) {
@@ -129,32 +128,9 @@ export function useSceneOrchestrator({
     }
   }, [scenes]);
 
-  // Orchestrate conversion from dialogue messages to permanent scenes
-  const convertDialogueToScenes = useCallback(async (playerMessageId: string, npcMessageId: string) => {
-    console.log('🎬 SceneOrchestrator: Starting dialogue-to-scene conversion', {
-      playerMessageId,
-      npcMessageId
-    });
-
-    // TODO: Implementation steps:
-    // 1. Get player and NPC messages from DialogueContext
-    // 2. Create 3 new scenes:
-    //    - CharacterScene with player message (left side)
-    //    - CharacterScene with NPC response (right side)
-    //    - New InputScene for next turn
-    // 3. Insert scenes after the current interactive-bubble scene
-    // 4. Mark messages as 'converting' in DialogueContext
-    // 5. Update SceneManager with new scenes
-    // 6. Navigate to NPC scene
-    // 7. Mark messages as 'converted' in DialogueContext
-
-    console.log('⚠️ convertDialogueToScenes: Not yet implemented');
-  }, []);
-
   return {
     getSceneState,
     getInputState,
     setInputState,
-    convertDialogueToScenes,
   };
 }

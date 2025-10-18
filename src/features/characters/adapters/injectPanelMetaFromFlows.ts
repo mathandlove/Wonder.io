@@ -24,8 +24,14 @@ export function injectPanelMetaFromFlows(scenes: Scene[]): Scene[] {
       const sceneLeft = (s as any)["left-character"];
       const sceneRight = (s as any)["right-character"];
 
-      // For non-character scenes that need character rendering (like input and interactive-bubble), also inject meta
-      if (s.type !== "character" && s.type !== "input" && s.type !== "interactive-bubble") {
+      // Check if this scene has "input" or "interactive-bubble" in States array
+      // NOTE: These are not scene types - they're feature states in character-flow scenes
+      const sceneStates = (s as any).States as string[] | undefined;
+      const hasInputState = sceneStates?.includes('input');
+      const hasInteractiveBubble = sceneStates?.includes('interactive-bubble');
+
+      // For non-character scenes that don't have character-related states, skip processing
+      if (s.type !== "character" && !hasInputState && !hasInteractiveBubble) {
         currentLeft = sceneLeft || currentLeft;
         currentRight = sceneRight || currentRight;
         return s; // Return unchanged for scenes that don't need character rendering
@@ -59,9 +65,10 @@ export function injectPanelMetaFromFlows(scenes: Scene[]): Scene[] {
       }
       inFlow = true;
 
-      // For character and input scenes, determine speaking state based on speaker and whether character was already present
-      if (s.type === "character" || s.type === "input") {
-        const speaker = (s as any).speaker;
+      // For character scenes and scenes with input state, determine speaking state
+      if (s.type === "character" || hasInputState) {
+        // @ts-expect-error - Reserved for future use
+        const _speaker = (s as any).speaker; // Unused - reserved for future use
         const meta = { ...(s as any).meta };
 
         // Helper function to create panel state
@@ -70,10 +77,13 @@ export function injectPanelMetaFromFlows(scenes: Scene[]): Scene[] {
 
           const nextScene = scenes[i + 1];
           const nextCharacterKey = side === 'left' ? 'left-character' : 'right-character';
+          const nextSceneStates = nextScene ? (nextScene as any).States as string[] | undefined : undefined;
+          const hasQuestState = nextSceneStates?.includes('quest');
+
           const nextCharacter = nextScene?.type === "character" ?
             (nextScene as any)[nextCharacterKey] ||
             nextScene?.meta?.[side === 'left' ? 'panelLeft' : 'panelRight']?.character :
-            nextScene?.type === "quest" ? current :
+            hasQuestState ? current : // Quest scenes keep current character
             // If no next scene exists, assume character continues (for dynamically created scenes)
             !nextScene ? current : NOCHARACTER;
 

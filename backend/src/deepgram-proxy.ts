@@ -6,10 +6,18 @@ import { z } from 'zod';
  * Provides a consistent interface regardless of underlying STT provider
  */
 export type NormalizedSttEvent =
+  | { type: 'ready' } // Signals that Deepgram is connected and ready to receive audio
   | { type: 'partial'; text: string }
   | { type: 'final'; text: string; confidence?: number }
+  | { type: 'finalized' } // Signals all final transcripts have been sent after CloseStream
   | { type: 'error'; code?: string; message: string }
   | { type: 'close' };
+
+/**
+ * Client control messages - sent from frontend to backend
+ */
+export type ClientControlMessage =
+  | { type: 'finalize' }; // Request graceful finalization (send CloseStream to Deepgram)
 
 /**
  * Deepgram response schema validation
@@ -214,6 +222,15 @@ export function handleDeepgramProxy(clientWs: WebSocket, request: any) {
       console.log(`✅ [${requestId}] Connected to Deepgram`);
       resetIdleTimer();
 
+      // Notify client that Deepgram is ready to receive audio
+      if (clientWs.readyState === WebSocket.OPEN) {
+        const readyEvent: NormalizedSttEvent = {
+          type: 'ready',
+        };
+        clientWs.send(JSON.stringify(readyEvent));
+        console.log(`📤 [${requestId}] Sent 'ready' signal to client`);
+      }
+
       // Start heartbeat
       heartbeatInterval = setInterval(() => {
         if (deepgramWs && deepgramWs.readyState === WebSocket.OPEN) {
@@ -264,10 +281,42 @@ export function handleDeepgramProxy(clientWs: WebSocket, request: any) {
   connectToDeepgram();
 
   /**
-   * Handle messages from client (audio data)
+   * Handle messages from client (audio data or control messages)
    */
   clientWs.on('message', (data: RawData) => {
     resetIdleTimer(); // Reset on activity
+
+    // Check if this is a text message (control command)
+    if (typeof data === 'string' || (data instanceof Buffer && data[0] === 0x7b)) { // 0x7b is '{'
+      try {
+        const message: ClientControlMessage = JSON.parse(data.toString());
+
+        if (message.type === 'finalize') {
+          console.log(`🏁 [${requestId}] Client requested finalization`);
+
+          // Send CloseStream to Deepgram to get final transcripts
+          if (deepgramWs && deepgramWs.readyState === WebSocket.OPEN) {
+            console.log(`📤 [${requestId}] Sending CloseStream to Deepgram`);
+            deepgramWs.send(JSON.stringify({ type: 'CloseStream' }));
+
+            // Wait a bit for final transcripts, then send 'finalized' and cleanup
+            setTimeout(() => {
+              if (clientWs.readyState === WebSocket.OPEN) {
+                const finalizedEvent: NormalizedSttEvent = {
+                  type: 'finalized',
+                };
+                clientWs.send(JSON.stringify(finalizedEvent));
+                console.log(`✅ [${requestId}] Sent 'finalized' event to client`);
+              }
+              cleanup('Finalization complete');
+            }, 1000); // Wait 1 second for Deepgram to send finals
+          }
+          return;
+        }
+      } catch (err) {
+        console.warn(`⚠️ [${requestId}] Failed to parse control message:`, err);
+      }
+    }
 
     // Only accept binary frames (audio data)
     if (!(data instanceof Buffer)) {

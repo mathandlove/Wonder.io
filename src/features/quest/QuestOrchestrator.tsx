@@ -59,6 +59,12 @@ export function QuestOrchestrator() {
       return;
     }
 
+    // Null check for currentNavItem
+    if (!currentNavItem) {
+      console.warn('⚠️ QuestOrchestrator: No current navigation item');
+      return;
+    }
+
     // Only offer if quest is not already offered/active
     if (quest.state.phase === 'idle' || quest.state.phase === 'clear') {
       console.log('🎯 QuestOrchestrator: Offering quest', {

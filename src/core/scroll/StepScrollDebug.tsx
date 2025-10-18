@@ -28,7 +28,8 @@ interface DebugState {
 }
 
 export function StepScrollDebug() {
-  const [state, setState] = useState<DebugState>({
+  // Unused state - kept for future debugging features
+  const [, _setState] = useState<DebugState>({
     wheelAccum: 0,
     debounceActive: false,
     lastEvent: '',
@@ -51,7 +52,17 @@ export function StepScrollDebug() {
   const [position, setPosition] = useState<{ top: number | null; right: number | null; left: number | null; bottom: number | null }>(getInitialPosition);
   const [isDragging, setIsDragging] = useState(false);
   const [dragStart, setDragStart] = useState({ x: 0, y: 0 });
-  const [isVisible, setIsVisible] = useState(true);
+
+  // Load visibility state from localStorage, default to true if not set
+  const getInitialVisibility = () => {
+    const saved = localStorage.getItem('debugPanel:visible');
+    if (saved !== null) {
+      return saved === 'true';
+    }
+    return true; // Default to visible
+  };
+
+  const [isVisible, setIsVisible] = useState(getInitialVisibility);
 
   // Get scene manager for additional context (single source of truth)
   const sceneManager = useSceneManager();
@@ -62,21 +73,24 @@ export function StepScrollDebug() {
   // Get flow metadata for current scene
   const currentNavItem = navigationArray[navigationIndex];
   const currentScene = currentNavItem?.scene as (Scene & { sceneId?: string, flowId?: string }) | undefined;
-  const flowMetadata = useSceneFlowMetadata(currentScene);
+  // @ts-expect-error - Used in future debugging features
+  const _flowMetadata = useSceneFlowMetadata(currentScene); // Unused - kept for future debugging
 
   // Try to get dialogue context, may be undefined if not in provider tree
-  let dialogue;
+  // Unused but kept for future debugging features
+  // @ts-expect-error - Used in future debugging features
+  let _dialogue;
   try {
-    dialogue = useDialogue();
+    _dialogue = useDialogue();
   } catch (e) {
     // DialogueProvider not available
-    dialogue = null;
+    _dialogue = null;
   }
 
   useEffect(() => {
     // Listen for custom debug events from useStepScroll
     const handleDebug = (e: CustomEvent) => {
-      setState(e.detail);
+      _setState(e.detail);
     };
 
     window.addEventListener('stepscroll:debug' as any, handleDebug);
@@ -95,6 +109,9 @@ export function StepScrollDebug() {
 
         setIsVisible(prev => {
           const newVisible = !prev;
+
+          // Save visibility state to localStorage
+          localStorage.setItem('debugPanel:visible', String(newVisible));
 
           // If showing the panel, recenter it to default position
           if (newVisible) {
@@ -124,7 +141,10 @@ export function StepScrollDebug() {
     currentNavItem?.sceneState.type === 'image'
       ? currentNavItem.sceneState.state
       : 'hidden';
-  const hasCaption = sceneType === 'image' && ((currentScene?.caption || currentScene?.text)?.trim() || false);
+  // Type-safe caption check - only ImageScene has caption/text properties
+  const hasCaption = sceneType === 'image' && currentScene && 'caption' in currentScene
+    ? ((currentScene.caption || currentScene.text)?.trim() || false)
+    : false;
 
   // Get dialogue messages for current scene (safely) - currently unused but available for future debugging
   // const messages = dialogue?.getMessagesForScene(sceneId) ?? [];

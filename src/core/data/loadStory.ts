@@ -40,7 +40,8 @@ type RawStory = {
   [k: string]: unknown;
 };
 
-export interface FlattenResult {
+// Internal type - not exported as it's only used within this file
+interface FlattenResult {
   scenes: Scene[];
   flowMetadata: FlowMetadataMap;
 }

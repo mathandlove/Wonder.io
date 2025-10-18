@@ -45,7 +45,8 @@ export function buildPanelRangesFromScenes(scenes: Scene[]): PanelRange[] {
     const speaker = s?.speaker || null;
 
     // Check if this is a NEW flow (should reset character state)
-    const isNewFlow = s?.newFlow === true;
+    // @ts-expect-error - Reserved for future use
+    const _isNewFlow = s?.newFlow === true; // Unused - reserved for future use
 
     // If this is not a character-type scene AND doesn't have NOCHARACTER metadata, skip panel creation entirely
     if (!isCharacterTypeScene && !hasNoCharacterMeta) {
@@ -103,7 +104,7 @@ export function buildPanelRangesFromScenes(scenes: Scene[]): PanelRange[] {
 
 
 
-    if (shouldContinueRange) {
+    if (shouldContinueRange && current) {
       current.endIndex = i;
     } else {
       if (current) {

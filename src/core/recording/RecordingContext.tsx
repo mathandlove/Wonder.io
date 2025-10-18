@@ -125,9 +125,21 @@ const isSafari = () => {
 };
 
 // Type definitions for Web Speech API
+interface SpeechRecognitionInstance {
+  continuous: boolean;
+  interimResults: boolean;
+  lang: string;
+  start(): void;
+  stop(): void;
+  abort(): void;
+  onresult: ((event: any) => void) | null;
+  onerror: ((event: any) => void) | null;
+  onend: (() => void) | null;
+}
+
 interface WindowWithSpeechRecognition extends Window {
-  SpeechRecognition?: typeof SpeechRecognition;
-  webkitSpeechRecognition?: typeof SpeechRecognition;
+  SpeechRecognition?: new () => SpeechRecognitionInstance;
+  webkitSpeechRecognition?: new () => SpeechRecognitionInstance;
 }
 
 const hasWebSpeechAPI = () => {
@@ -142,6 +154,7 @@ interface RecordingContextValue {
   abort: () => void;
   getDisplayText: () => string;
   isRecording: () => boolean;
+  setOnFinalized: (callback: (() => void) | null) => void; // Register callback for when transcripts are finalized
   onInterim?: (text: string) => void;
   onFinal?: (text: string) => void;
   onStateChange?: (state: RecordingState) => void;
@@ -156,6 +169,9 @@ export function RecordingProvider({ children }: { children: React.ReactNode }) {
   const restartTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const currentSessionIdRef = useRef<string | null>(null);
 
+  // Track finalization callback - parent can register to know when all transcripts are done
+  const onFinalizedCallbackRef = React.useRef<(() => void) | null>(null);
+
   // Deepgram hook with callbacks (only used if USE_DEEPGRAM is true)
   const deepgram = useDeepgram({
     onPartial: (text: string) => {
@@ -168,6 +184,12 @@ export function RecordingProvider({ children }: { children: React.ReactNode }) {
         finalText: text,
         interimText: '', // Clear interim after final
       });
+    },
+    onFinalized: () => {
+      console.log('[RecordingContext] All transcripts finalized');
+      if (onFinalizedCallbackRef.current) {
+        onFinalizedCallbackRef.current();
+      }
     },
     onError: (error: string) => {
       console.error('[RecordingContext] Deepgram error:', error);
@@ -336,6 +358,11 @@ export function RecordingProvider({ children }: { children: React.ReactNode }) {
     dispatch({ type: 'ABORT' });
   }, [deepgram]);
 
+  // Setter for finalized callback
+  const setOnFinalized = useCallback((callback: (() => void) | null) => {
+    onFinalizedCallbackRef.current = callback;
+  }, []);
+
   // Register with global Recording API
   useEffect(() => {
     Recording.register(start, stop, abort);
@@ -347,7 +374,8 @@ export function RecordingProvider({ children }: { children: React.ReactNode }) {
     stop,
     abort,
     getDisplayText: () => state.displayText,
-    isRecording: () => state.isRecording
+    isRecording: () => state.isRecording,
+    setOnFinalized
   };
 
   return (

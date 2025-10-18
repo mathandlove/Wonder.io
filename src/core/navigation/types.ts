@@ -19,11 +19,12 @@ import type { ImageState, DialogueState } from '@core/dialogue/types';
  * Dialogue states can optionally carry data:
  * - questionText: Persists Ask recording transcript across input-recording and ai-waiting states
  * - answerText: Persists Answer recording transcript across answer states (record-answer, answer-waiting, answer-right/wrong)
+ * - transcriptFinalized: Signals that all STT transcripts have been received (used in ai-waiting state to delay AI call)
  * - allowAnimate: Controls whether character entrance animations should play (default: true, set false when deleting scenes)
  */
 export type SceneState =
   | { type: 'image'; state: ImageState }
-  | { type: 'dialogue'; state: DialogueState; questionText?: string; answerText?: string; allowAnimate?: boolean }
+  | { type: 'dialogue'; state: DialogueState; questionText?: string; answerText?: string; transcriptFinalized?: boolean; allowAnimate?: boolean }
   | { type: 'static' }  // For text, full, caption - scenes with no state variations
   | { type: 'quest'; state: 'idle' | 'active' | 'completed' | 'failed' };
 
@@ -48,18 +49,4 @@ export interface NavigationItem {
 
   // Metadata
   index: number;  // Position in the navigation array
-}
-
-/**
- * Helper type to check if two navigation items are the same scene
- */
-export function isSameScene(a: NavigationItem, b: NavigationItem): boolean {
-  return a.sceneId === b.sceneId;
-}
-
-/**
- * Helper to determine if navigation should trigger scroll animation
- */
-export function shouldScroll(from: NavigationItem, to: NavigationItem): boolean {
-  return !isSameScene(from, to);
 }

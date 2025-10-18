@@ -24,21 +24,7 @@ export type CharacterScene = {
   };
 };
 
-export type QuestScene = {
-  type: "quest";
-  sceneId?: string;
-  text: string;
-  background?: string;
-  "left-character"?: string;
-  "right-character"?: string;
-  flowSequence?: boolean;
-  isFirstInFlow?: boolean;
-  hidden?: boolean;
-  meta?: {
-    panelLeft?: { character: string; previousCharacter?: string; nextCharacter?: string; newCharacter?: boolean; aboutToSwap?: boolean };
-    panelRight?: { character: string; previousCharacter?: string; nextCharacter?: string; newCharacter?: boolean; aboutToSwap?: boolean };
-  };
-};
+// QuestScene removed - quest functionality is now part of character-flow scenes via States field
 
 export type ImageScene = {
   type: "image";
@@ -100,24 +86,14 @@ export type TextScene = {
   hidden?: boolean;
 };
 
-export type CaptionScene = {
-  type: "caption";
-  sceneId?: string;
-  caption: string;
-  align?: "center" | "bottom";
-  flowSequence?: boolean;
-  isFirstInFlow?: boolean;
-  hidden?: boolean;
-};
+// CaptionScene removed - captions are now handled within ImageScene
 
 export type Scene =
   | CharacterScene
-  | QuestScene
   | ImageScene
   | CharacterFlowScene
   | FullScene
-  | TextScene
-  | CaptionScene;
+  | TextScene;
 
 export type Story = {
   scenes: Scene[];

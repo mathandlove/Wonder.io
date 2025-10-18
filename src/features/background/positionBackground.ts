@@ -1,7 +1,7 @@
 /**
  * Position background ranges using 3-state transform logic from original main branch
  */
-import type { BackgroundRange } from 'oldReferenceOnly/background';
+import type { BackgroundRange } from './types';
 
 export function translateForRange(range: BackgroundRange, scrollOffset: number): string {
   // Add tolerance for small scroll offsets near boundaries to prevent jitter

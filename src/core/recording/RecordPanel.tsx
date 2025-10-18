@@ -17,6 +17,7 @@ interface RecordPanelProps {
   answerText?: string; // The recorded answer text
   onNext: () => void;
   onRecordStop: () => void;
+  onRecordStart?: () => void; // Called when recording starts
   onAskClick?: () => void;
 }
 
@@ -32,6 +33,8 @@ export const RecordPanel: React.FC<RecordPanelProps> = ({
 }) => {
   const { toast, hideToast } = useToast();
   const [showStamp, setShowStamp] = React.useState(false);
+  // @ts-expect-error - playVideo used in future features
+  const [playVideo, setPlayVideo] = React.useState(false);
   const videoRef = React.useRef<HTMLVideoElement>(null);
 
   // Determine visual state based on dialogueState (must be before effects that use these)

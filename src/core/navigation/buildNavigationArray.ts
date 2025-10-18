@@ -68,7 +68,6 @@ function expandScene(scene: Scene, sceneId: string, startIndex: number): Navigat
     // Simple scenes with no substates
     case 'text':
     case 'full':
-    case 'caption':
       return [createSimpleNavigationItem(scene, sceneId, startIndex)];
 
     default:
