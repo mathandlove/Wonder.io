@@ -70,6 +70,9 @@ export function useDeepgram(callbacks?: UseDeepgramCallbacks): UseDeepgram {
   const processorRef = useRef<ScriptProcessorNode | null>(null);
   const silenceTimerRef = useRef<NodeJS.Timeout | null>(null);
 
+  // Audio buffer for early speech (before WebSocket is ready)
+  const audioBufferRef = useRef<ArrayBuffer[]>([]);
+
   // ──────────────────────────────────────────────────────────────────────────────
   // Audio Processing: Convert Float32 → Int16 PCM
   // ──────────────────────────────────────────────────────────────────────────────
@@ -101,6 +104,9 @@ export function useDeepgram(callbacks?: UseDeepgramCallbacks): UseDeepgram {
 
   const cleanup = useCallback(() => {
     console.log('[useDeepgram] Cleaning up resources...');
+
+    // Clear audio buffer
+    audioBufferRef.current = [];
 
     // Clear silence timer
     if (silenceTimerRef.current) {
@@ -154,12 +160,26 @@ export function useDeepgram(callbacks?: UseDeepgramCallbacks): UseDeepgram {
       setTranscript('');
       setError(undefined);
 
+      // Clear audio buffer from any previous session
+      audioBufferRef.current = [];
+
       // 1. Connect to WebSocket proxy
       const ws = new WebSocket(CONFIG.WS_URL);
       wsRef.current = ws;
 
       ws.onopen = () => {
         console.log('[useDeepgram] WebSocket connected');
+
+        // Flush any buffered audio that was captured during connection
+        if (audioBufferRef.current.length > 0) {
+          console.log(`[useDeepgram] Flushing ${audioBufferRef.current.length} buffered audio chunks`);
+          audioBufferRef.current.forEach((buffer) => {
+            if (ws.readyState === WebSocket.OPEN) {
+              ws.send(buffer);
+            }
+          });
+          audioBufferRef.current = [];
+        }
       };
 
       ws.onmessage = (event) => {
@@ -274,10 +294,21 @@ export function useDeepgram(callbacks?: UseDeepgramCallbacks): UseDeepgram {
         }
 
         // Convert and send audio data
+        const int16Data = convertFloat32ToInt16(inputData);
+
         if (ws.readyState === WebSocket.OPEN) {
-          const int16Data = convertFloat32ToInt16(inputData);
+          // WebSocket is ready - send directly
           ws.send(int16Data.buffer);
+        } else if (ws.readyState === WebSocket.CONNECTING) {
+          // Still connecting - buffer the audio for later
+          audioBufferRef.current.push(int16Data.buffer);
+
+          // Limit buffer size to prevent memory issues (max 2 seconds = ~125 chunks at 4096 buffer size)
+          if (audioBufferRef.current.length > 125) {
+            audioBufferRef.current.shift(); // Remove oldest chunk
+          }
         }
+        // If WebSocket is CLOSING or CLOSED, we just drop the audio
       };
 
       source.connect(processor);
