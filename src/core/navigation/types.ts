@@ -17,14 +17,13 @@ import type { ImageState, DialogueState } from '@core/dialogue/types';
  * Different scene types have different possible states
  *
  * Dialogue states can optionally carry data:
- * - questionText: Persists Ask recording transcript across input-recording and ai-waiting states
+ * - questionText: Persists Ask recording transcript across waiting-for-finalize and ai-waiting states
  * - answerText: Persists Answer recording transcript across answer states (record-answer, answer-waiting, answer-right/wrong)
- * - transcriptFinalized: Signals that all STT transcripts have been received (used in ai-waiting state to delay AI call)
  * - allowAnimate: Controls whether character entrance animations should play (default: true, set false when deleting scenes)
  */
 export type SceneState =
   | { type: 'image'; state: ImageState }
-  | { type: 'dialogue'; state: DialogueState; questionText?: string; answerText?: string; transcriptFinalized?: boolean; allowAnimate?: boolean }
+  | { type: 'dialogue'; state: DialogueState; questionText?: string; answerText?: string; allowAnimate?: boolean }
   | { type: 'static' }  // For text, full, caption - scenes with no state variations
   | { type: 'quest'; state: 'idle' | 'active' | 'completed' | 'failed' };
 

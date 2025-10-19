@@ -23,16 +23,15 @@ export function ChatFlowOrchestratorComponent() {
     return navigationArray[navigationIndex] || null;
   }, [navigationArray, navigationIndex]);
 
-  // Auto-trigger AI response when scene enters ai-waiting state WITH finalized transcripts
+  // Auto-trigger AI response when scene enters ai-waiting state
   React.useEffect(() => {
     const sceneState = currentNavItem?.sceneState;
     const currentScene = currentNavItem?.scene;
 
     const isAiWaiting = sceneState?.type === 'dialogue' && sceneState.state === 'ai-waiting';
-    const isTranscriptFinalized = sceneState?.type === 'dialogue' && sceneState.transcriptFinalized === true;
 
-    // Only process when BOTH ai-waiting AND transcripts are finalized
-    if (isAiWaiting && isTranscriptFinalized && currentScene && 'recordingId' in currentScene) {
+    // Process when in ai-waiting state (transcripts are already finalized at this point)
+    if (isAiWaiting && currentScene && 'recordingId' in currentScene) {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const recordingId = (currentScene as any).recordingId;
       // Read transcript from scene state (persistent) or fallback to scene.text
@@ -43,7 +42,7 @@ export function ChatFlowOrchestratorComponent() {
 
       // Only process if we haven't already processed this recording
       if (recordingId && transcript && recordingId !== processingRecordingId) {
-        console.log('🤖 ChatFlowOrchestrator processing finalized transcript:', transcript);
+        console.log('🤖 ChatFlowOrchestrator processing transcript:', transcript);
         setProcessingRecordingId(recordingId);
 
         // Process the transcript and get AI response
@@ -55,8 +54,6 @@ export function ChatFlowOrchestratorComponent() {
           setProcessingRecordingId(null);
         });
       }
-    } else if (isAiWaiting && !isTranscriptFinalized) {
-      console.log('⏳ In ai-waiting state, waiting for transcripts to finalize...');
     }
   }, [currentNavItem, chatFlow, processingRecordingId]);
 

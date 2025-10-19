@@ -143,6 +143,7 @@ export function handleDeepgramProxy(clientWs: WebSocket, request: any) {
   let idleTimer: NodeJS.Timeout | null = null;
   let heartbeatInterval: NodeJS.Timeout | null = null;
   let isClosed = false;
+  let isFinalizing = false; // Track if we're waiting to send 'finalized' event
 
   /**
    * Cleanup function - ensures both sockets are closed
@@ -269,6 +270,15 @@ export function handleDeepgramProxy(clientWs: WebSocket, request: any) {
 
     deepgramWs.on('close', (code, reason) => {
       console.log(`🔌 [${requestId}] Deepgram closed: ${code} - ${reason}`);
+
+      // If we're finalizing, don't send close event or cleanup yet
+      // The finalization timer will send 'finalized' and let client close
+      if (isFinalizing) {
+        console.log(`⏳ [${requestId}] Deepgram closed during finalization - waiting for timer to send 'finalized'`);
+        return;
+      }
+
+      // Normal close - not during finalization
       const closeEvent: NormalizedSttEvent = { type: 'close' };
       if (clientWs.readyState === WebSocket.OPEN) {
         clientWs.send(JSON.stringify(closeEvent));
@@ -297,19 +307,23 @@ export function handleDeepgramProxy(clientWs: WebSocket, request: any) {
           // Send CloseStream to Deepgram to get final transcripts
           if (deepgramWs && deepgramWs.readyState === WebSocket.OPEN) {
             console.log(`📤 [${requestId}] Sending CloseStream to Deepgram`);
+            isFinalizing = true; // Set flag to prevent early cleanup when Deepgram closes
             deepgramWs.send(JSON.stringify({ type: 'CloseStream' }));
 
-            // Wait a bit for final transcripts, then send 'finalized' and cleanup
+            // Wait a bit for final transcripts, then send 'finalized'
+            // Client will close the connection after receiving this
             setTimeout(() => {
               if (clientWs.readyState === WebSocket.OPEN) {
                 const finalizedEvent: NormalizedSttEvent = {
                   type: 'finalized',
                 };
                 clientWs.send(JSON.stringify(finalizedEvent));
-                console.log(`✅ [${requestId}] Sent 'finalized' event to client`);
+                console.log(`✅ [${requestId}] Sent 'finalized' event to client (client will close)`);
+                // Don't cleanup here - let client close trigger cleanup via 'close' event handler
+              } else {
+                cleanup('Client already disconnected');
               }
-              cleanup('Finalization complete');
-            }, 1000); // Wait 1 second for Deepgram to send finals
+            }, 300); // Wait 300ms for Deepgram to send finals (reduced from 1000ms)
           }
           return;
         }

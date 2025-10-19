@@ -215,6 +215,7 @@ export function useDeepgram(callbacks?: UseDeepgramCallbacks): UseDeepgram {
       ws.onmessage = (event) => {
         try {
           const message: NormalizedSttEvent = JSON.parse(event.data);
+          console.log('[useDeepgram] 📨 Received message:', message.type);
 
           switch (message.type) {
             case 'ready':
@@ -264,8 +265,11 @@ export function useDeepgram(callbacks?: UseDeepgramCallbacks): UseDeepgram {
               if (callbacksRef.current?.onFinalized) {
                 callbacksRef.current.onFinalized();
               }
-              // Now safe to cleanup and transition to idle
-              cleanup();
+              // Close WebSocket (will trigger cleanup via onclose handler)
+              if (wsRef.current && wsRef.current.readyState === WebSocket.OPEN) {
+                console.log('[useDeepgram] 🔌 Closing WebSocket after finalized');
+                wsRef.current.close(1000, 'Finalized');
+              }
               setStatus('idle');
               break;
 

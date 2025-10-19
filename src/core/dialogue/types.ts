@@ -20,6 +20,7 @@ export type DialogueState =
   | 'pre-feature'     // 2. Feature about to appear (scroll blocked down) - DEPRECATED, not currently used
   | 'input-ready'     // 4. Input UI ready for user (scroll blocked down) - DEPRECATED, not currently used
   | 'input-recording' // 5. User speaking (scroll blocked down)
+  | 'waiting-for-finalize' // 5b. Waiting for final transcripts from STT (scroll blocked down)
   | 'ai-waiting'      // 6. Waiting for AI response (scroll blocked down)
   | 'quest-basic'     // Quest state 1: Show dialogue with quest pending
   | 'quest-showing'   // Quest state 2: Quest UI visible (panel centered with Accept button)

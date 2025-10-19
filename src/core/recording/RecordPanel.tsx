@@ -47,6 +47,7 @@ export const RecordPanel: React.FC<RecordPanelProps> = ({
   // - answer-waiting: Waiting for answer validation, show answer text with all buttons disabled
   // - answer-right: Correct answer, show answer text centered, no stop button
   // - answer-wrong: Wrong answer, show answer text with error indication
+  // - waiting-for-finalize: Waiting for final transcripts from STT
   // - ai-waiting: All buttons disabled (waiting for AI response)
   const isBasic = dialogueState === 'basic';
   const isQuestOffer = dialogueState === 'quest-showing';
@@ -56,7 +57,8 @@ export const RecordPanel: React.FC<RecordPanelProps> = ({
   const isAnswerRight = dialogueState === 'answer-right';
   const isAnswerWrong = dialogueState === 'answer-wrong';
   const isHintShowing = dialogueState === 'show-hint';
-  const isWaiting = dialogueState === 'ai-waiting';
+  const isWaitingForFinalize = dialogueState === 'waiting-for-finalize';
+  const isWaiting = dialogueState === 'ai-waiting' || isWaitingForFinalize;
 
   // Hidden state (basic) should use quest-offer visual styling
   const useQuestOfferStyling = isQuestOffer || isBasic;
