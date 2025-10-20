@@ -163,9 +163,7 @@ app.get('/api/health', (req, res) => {
 
 // Create HTTP server for WebSocket upgrade
 const server = app.listen(port, () => {
-  console.log(`🚀 Backend server running on port ${port}`);
-  console.log(`📊 API endpoints available at http://localhost:${port}/api`);
-  console.log(`🎤 WebSocket STT endpoint: ws://localhost:${port}/api/stt/socket`);
+  // Server started
 });
 
 // Create WebSocket server

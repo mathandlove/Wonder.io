@@ -35,6 +35,7 @@ export const RecordPanel: React.FC<RecordPanelProps> = ({
   const [showStamp, setShowStamp] = React.useState(false);
   // @ts-expect-error - playVideo used in future features
   const [playVideo, setPlayVideo] = React.useState(false);
+  const [videoComplete, setVideoComplete] = React.useState(false);
   const videoRef = React.useRef<HTMLVideoElement>(null);
 
   // Determine visual state based on dialogueState (must be before effects that use these)
@@ -70,6 +71,7 @@ export const RecordPanel: React.FC<RecordPanelProps> = ({
     if (!isAnswerWaiting && !isAnswerRight && !isAnswerWrong) {
       setShowStamp(false);
       setPlayVideo(false);
+      setVideoComplete(false);
     }
   }, [isAnswerWaiting, isAnswerRight, isAnswerWrong]);
 
@@ -123,8 +125,10 @@ export const RecordPanel: React.FC<RecordPanelProps> = ({
   // Determine which positioning class to apply based on state
   const getContainerClass = () => {
     // Centered states (important moments)
-    if (isAnswerRight) return 'answer-right-centered';
-    if (isAnswerWrong) return 'answer-wrong-centered';
+    // For answer-right: only show green glow after stamp appears, otherwise show golden glow
+    if (isAnswerRight) return videoComplete ? 'answer-right-centered' : 'quest-offer-centered';
+    // For answer-wrong: only show red glow after stamp appears, otherwise show golden glow
+    if (isAnswerWrong) return videoComplete ? 'answer-wrong-centered' : 'quest-offer-centered';
     if (isAnswerWaiting) return 'quest-offer-centered'; // Golden glow for waiting
     if (isQuestOffer) return 'quest-offer-centered'; // Golden glow for quest
 
@@ -296,6 +300,8 @@ export const RecordPanel: React.FC<RecordPanelProps> = ({
                 // Show seal for right/wrong states
                 if (!showStamp && (isAnswerRight || isAnswerWrong)) {
                   setShowStamp(true);
+                  // Trigger color glow transition when stamp appears (synchronized timing)
+                  setVideoComplete(true);
                   // For right/wrong, let video continue playing (no pause)
                 }
                 // Pause only for answer-waiting state
@@ -305,6 +311,8 @@ export const RecordPanel: React.FC<RecordPanelProps> = ({
               }
             }}
             onEnded={(e) => {
+              // Mark video as complete (triggers red glow for answer-wrong)
+              setVideoComplete(true);
               // Hide video after it ends
               (e.target as HTMLVideoElement).style.display = 'none';
             }}

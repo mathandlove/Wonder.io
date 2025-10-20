@@ -24,6 +24,7 @@ export type UseDeepgramCallbacks = {
   onPartial?: (text: string) => void;
   onFinal?: (text: string, confidence?: number) => void;
   onFinalized?: () => void; // Called when all final transcripts have been received
+  onAutoStop?: () => void; // Called when auto-stop timeout fires (silence detection)
   onError?: (error: string) => void;
 };
 
@@ -44,7 +45,7 @@ const CONFIG = {
   WS_URL: 'ws://localhost:3001/api/stt/socket',
   SAMPLE_RATE: 16000, // Deepgram expects 16kHz
   SILENCE_THRESHOLD: 0.01, // RMS threshold for silence detection
-  SILENCE_DURATION_MS: 5000, // Auto-stop after 5s of silence
+  SILENCE_DURATION_MS: 1000, // Auto-stop after 20s of silence
   BUFFER_SIZE: 4096, // AudioWorklet buffer size
 } as const;
 
@@ -71,6 +72,12 @@ export function useDeepgram(callbacks?: UseDeepgramCallbacks): UseDeepgram {
   const sourceNodeRef = useRef<MediaStreamAudioSourceNode | null>(null);
   const processorRef = useRef<ScriptProcessorNode | null>(null);
   const silenceTimerRef = useRef<NodeJS.Timeout | null>(null);
+
+  // Track if stop has been called to prevent duplicate stop calls
+  const isStoppingRef = useRef<boolean>(false);
+
+  // Track if a silence timer is currently pending (prevents race condition)
+  const silenceTimerPendingRef = useRef<boolean>(false);
 
   // Audio buffer for early speech (before Deepgram is ready)
   const audioBufferRef = useRef<ArrayBuffer[]>([]);
@@ -115,7 +122,6 @@ export function useDeepgram(callbacks?: UseDeepgramCallbacks): UseDeepgram {
 
   const flushBuffer = useCallback((ws: WebSocket) => {
     if (audioBufferRef.current.length > 0) {
-      console.log(`[useDeepgram] 🔊 Flushing ${audioBufferRef.current.length} buffered chunks`);
       audioBufferRef.current.forEach(chunk => {
         if (ws.readyState === WebSocket.OPEN) {
           ws.send(chunk);
@@ -123,8 +129,6 @@ export function useDeepgram(callbacks?: UseDeepgramCallbacks): UseDeepgram {
       });
       audioBufferRef.current = [];
       bufferWasFlushedRef.current = true;
-    } else {
-      console.log('[useDeepgram] ℹ️ Buffer is empty (no audio captured yet)');
     }
   }, []);
 
@@ -133,7 +137,8 @@ export function useDeepgram(callbacks?: UseDeepgramCallbacks): UseDeepgram {
   // ──────────────────────────────────────────────────────────────────────────────
 
   const cleanup = useCallback(() => {
-    console.log('[useDeepgram] Cleaning up resources...');
+    // Reset stopping flag
+    isStoppingRef.current = false;
 
     // Clear audio buffer
     audioBufferRef.current = [];
@@ -141,11 +146,12 @@ export function useDeepgram(callbacks?: UseDeepgramCallbacks): UseDeepgram {
     // Reset Deepgram ready state
     isDeepgramReadyRef.current = false;
 
-    // Clear timers
+    // Clear timers and pending flags
     if (silenceTimerRef.current) {
       clearTimeout(silenceTimerRef.current);
       silenceTimerRef.current = null;
     }
+    silenceTimerPendingRef.current = false;
 
     if (flushDelayTimerRef.current) {
       clearTimeout(flushDelayTimerRef.current);
@@ -182,8 +188,6 @@ export function useDeepgram(callbacks?: UseDeepgramCallbacks): UseDeepgram {
       audioContextRef.current.close();
       audioContextRef.current = null;
     }
-
-    console.log('[useDeepgram] Cleanup complete');
   }, []);
 
   // ──────────────────────────────────────────────────────────────────────────────
@@ -192,7 +196,7 @@ export function useDeepgram(callbacks?: UseDeepgramCallbacks): UseDeepgram {
 
   const start = useCallback(async () => {
     try {
-      console.log('[useDeepgram] Starting recording...');
+      isStoppingRef.current = false; // Reset stopping flag when starting new recording
       setStatus('recording');
       setPartial('');
       setTranscript('');
@@ -206,27 +210,20 @@ export function useDeepgram(callbacks?: UseDeepgramCallbacks): UseDeepgram {
       wsRef.current = ws;
 
       ws.onopen = () => {
-        console.log('[useDeepgram] ✅ WebSocket connected to backend proxy:', CONFIG.WS_URL);
-        console.log('[useDeepgram] ⏳ Waiting for Deepgram to be ready...');
         // Note: We don't flush the buffer here anymore - we wait for the 'ready' signal
       };
 
       ws.onmessage = (event) => {
         try {
           const message: NormalizedSttEvent = JSON.parse(event.data);
-          console.log('[useDeepgram] 📨 Received message:', message.type);
 
           switch (message.type) {
             case 'ready':
-              console.log('[useDeepgram] ✅ Deepgram is ready!');
-              console.log('[useDeepgram] ⏳ Continuing to buffer for 500ms to catch early speech...');
-
               // Don't mark as ready immediately - wait for delayed flush
               // This ensures we buffer any speech that starts right after mic permission is granted
 
               // Schedule delayed flush to catch early speech
               flushDelayTimerRef.current = setTimeout(() => {
-                console.log('[useDeepgram] ⏰ Delay period over - flushing buffer and switching to direct send');
                 isDeepgramReadyRef.current = true;
                 flushBuffer(ws);
                 flushDelayTimerRef.current = null;
@@ -234,7 +231,6 @@ export function useDeepgram(callbacks?: UseDeepgramCallbacks): UseDeepgram {
               break;
 
             case 'partial':
-              console.log('[useDeepgram] Partial:', message.text);
               setPartial(message.text);
               // Invoke callback
               if (callbacksRef.current?.onPartial) {
@@ -248,7 +244,6 @@ export function useDeepgram(callbacks?: UseDeepgramCallbacks): UseDeepgram {
               break;
 
             case 'final':
-              console.log('[useDeepgram] Final:', message.text, `(confidence: ${message.confidence})`);
               // Don't accumulate in the hook - let the parent handle it via callback
               setTranscript(message.text); // Store only the latest final text
               setPartial(''); // Clear partial after final
@@ -259,7 +254,6 @@ export function useDeepgram(callbacks?: UseDeepgramCallbacks): UseDeepgram {
               break;
 
             case 'error':
-              console.error('[useDeepgram] Error:', message.message);
               setError(message.message);
               setStatus('error');
               // Invoke callback
@@ -270,7 +264,6 @@ export function useDeepgram(callbacks?: UseDeepgramCallbacks): UseDeepgram {
               break;
 
             case 'close':
-              console.log('[useDeepgram] ✅ Connection closed - finals received');
               // Invoke callback to signal that all transcripts are done
               if (callbacksRef.current?.onFinalized) {
                 callbacksRef.current.onFinalized();
@@ -279,22 +272,18 @@ export function useDeepgram(callbacks?: UseDeepgramCallbacks): UseDeepgram {
               setStatus('idle');
               break;
           }
-        } catch (err) {
-          console.error('[useDeepgram] Failed to parse message:', err);
+        } catch {
+          // Silently handle parse errors
         }
       };
 
-      ws.onerror = (event) => {
-        console.error('[useDeepgram] WebSocket error:', event);
-        console.error('[useDeepgram] Make sure backend is running: cd backend && pnpm dev');
-        console.error('[useDeepgram] Expected WebSocket URL:', CONFIG.WS_URL);
+      ws.onerror = () => {
         setError('WebSocket connection failed - is backend running on port 3001?');
         setStatus('error');
         cleanup();
       };
 
       ws.onclose = () => {
-        console.log('[useDeepgram] WebSocket closed');
         if (status === 'recording') {
           setStatus('idle');
         }
@@ -324,6 +313,11 @@ export function useDeepgram(callbacks?: UseDeepgramCallbacks): UseDeepgram {
       processorRef.current = processor;
 
       processor.onaudioprocess = (event) => {
+        // Don't process audio if we're already stopping
+        if (isStoppingRef.current) {
+          return;
+        }
+
         const inputData = event.inputBuffer.getChannelData(0);
 
         // VAD: Check if speaking
@@ -331,10 +325,19 @@ export function useDeepgram(callbacks?: UseDeepgramCallbacks): UseDeepgram {
         const isSilence = rms < CONFIG.SILENCE_THRESHOLD;
 
         if (isSilence) {
-          // Start silence timer if not already running
-          if (!silenceTimerRef.current) {
+          // Start silence timer if not already pending AND not stopping
+          // Use pending flag to prevent race condition where multiple audio chunks
+          // create multiple timers before the first one sets silenceTimerRef
+          if (!silenceTimerPendingRef.current && !isStoppingRef.current) {
+            // Set pending flag IMMEDIATELY to prevent concurrent timer creation
+            silenceTimerPendingRef.current = true;
+
             silenceTimerRef.current = setTimeout(() => {
-              console.log('[useDeepgram] Auto-stop: 5s silence detected');
+              // Call onAutoStop callback if registered (allows orchestrator to handle state transition)
+              if (callbacksRef.current?.onAutoStop) {
+                callbacksRef.current.onAutoStop();
+              }
+              // Then stop the recording
               stop();
             }, CONFIG.SILENCE_DURATION_MS);
           }
@@ -343,6 +346,7 @@ export function useDeepgram(callbacks?: UseDeepgramCallbacks): UseDeepgram {
           if (silenceTimerRef.current) {
             clearTimeout(silenceTimerRef.current);
             silenceTimerRef.current = null;
+            silenceTimerPendingRef.current = false;
           }
         }
 
@@ -353,20 +357,13 @@ export function useDeepgram(callbacks?: UseDeepgramCallbacks): UseDeepgram {
           // Deepgram is ready - send directly
           ws.send(int16Data.buffer);
 
-          // Log first direct send after buffering
+          // Reset flag after first direct send
           if (audioBufferRef.current.length === 0 && bufferWasFlushedRef.current) {
-            console.log('[useDeepgram] 📡 Now sending audio directly to Deepgram');
             bufferWasFlushedRef.current = false;
           }
         } else if (ws.readyState === WebSocket.OPEN || ws.readyState === WebSocket.CONNECTING) {
           // WebSocket open but Deepgram not ready yet, or still connecting - buffer the audio
-          const bufferLength = audioBufferRef.current.length;
           audioBufferRef.current.push(int16Data.buffer);
-
-          // Log when we start buffering
-          if (bufferLength === 0) {
-            console.log('[useDeepgram] 🎤 Started buffering audio (Deepgram not ready yet)');
-          }
 
           // Limit buffer size to prevent memory issues (max 2 seconds = ~125 chunks at 4096 buffer size)
           if (audioBufferRef.current.length > 125) {
@@ -378,10 +375,7 @@ export function useDeepgram(callbacks?: UseDeepgramCallbacks): UseDeepgram {
 
       source.connect(processor);
       processor.connect(audioContext.destination);
-
-      console.log('[useDeepgram] Recording started successfully');
     } catch (err) {
-      console.error('[useDeepgram] Failed to start recording:', err);
       setError(err instanceof Error ? err.message : 'Failed to start recording');
       setStatus('error');
       cleanup();
@@ -393,12 +387,30 @@ export function useDeepgram(callbacks?: UseDeepgramCallbacks): UseDeepgram {
   // ──────────────────────────────────────────────────────────────────────────────
 
   const stop = useCallback(() => {
-    console.log('[useDeepgram] Stopping recording...');
+    // Guard: If already stopping, don't stop again
+    if (isStoppingRef.current) {
+      return;
+    }
+
+    isStoppingRef.current = true;
+
+    // CRITICAL: Clear silence timer AND pending flag FIRST to prevent it from firing during cleanup
+    if (silenceTimerRef.current) {
+      clearTimeout(silenceTimerRef.current);
+      silenceTimerRef.current = null;
+    }
+    silenceTimerPendingRef.current = false;
+
+    // Clear flush delay timer too
+    if (flushDelayTimerRef.current) {
+      clearTimeout(flushDelayTimerRef.current);
+      flushDelayTimerRef.current = null;
+    }
+
     setStatus('processing');
 
     // Send finalize message to backend to get final transcripts before closing
     if (wsRef.current && wsRef.current.readyState === WebSocket.OPEN) {
-      console.log('[useDeepgram] 📤 Sending finalize request to backend');
       wsRef.current.send(JSON.stringify({ type: 'finalize' }));
     }
 
@@ -416,12 +428,6 @@ export function useDeepgram(callbacks?: UseDeepgramCallbacks): UseDeepgram {
     if (mediaStreamRef.current) {
       mediaStreamRef.current.getTracks().forEach((track) => track.stop());
       mediaStreamRef.current = null;
-    }
-
-    // Clear silence timer
-    if (silenceTimerRef.current) {
-      clearTimeout(silenceTimerRef.current);
-      silenceTimerRef.current = null;
     }
 
     // Don't call full cleanup yet - wait for 'finalized' event

@@ -80,16 +80,17 @@ function normalizeDeepgramMessage(message: any): NormalizedSttEvent | null {
         return null; // Ignore empty strings
       }
 
-      // Prefer speech_final over is_final for better contextual accuracy
-      // speech_final means Deepgram has refined the transcript with full utterance context
-      if (transcript.speech_final) {
+      // Use is_final for accumulation - this fires for each finalized segment during speech
+      // speech_final only fires after endpointing (500ms silence), which is too late
+      // We need to accumulate as the user speaks, not wait for long pauses
+      if (transcript.is_final) {
         return {
           type: 'final',
           text,
           confidence: alternative.confidence,
         };
       } else {
-        // Show as partial even if is_final, until speech_final arrives
+        // Interim results (partial transcripts that may change)
         return {
           type: 'partial',
           text,
@@ -98,8 +99,7 @@ function normalizeDeepgramMessage(message: any): NormalizedSttEvent | null {
     }
 
     return null;
-  } catch (error) {
-    console.error('❌ Failed to normalize Deepgram message:', error);
+  } catch {
     return null;
   }
 }
@@ -111,11 +111,8 @@ export function handleDeepgramProxy(clientWs: WebSocket, request: any) {
   const requestId = `req_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
   const origin = request.headers.origin || request.headers.referer || 'unknown';
 
-  console.log(`🎤 [${requestId}] New STT connection from ${origin}`);
-
   // Validate origin
   if (origin !== ALLOWED_ORIGIN && origin !== 'unknown') {
-    console.warn(`⚠️ [${requestId}] Rejected connection from unauthorized origin: ${origin}`);
     clientWs.send(JSON.stringify({
       type: 'error',
       code: 'UNAUTHORIZED_ORIGIN',
@@ -126,7 +123,6 @@ export function handleDeepgramProxy(clientWs: WebSocket, request: any) {
   }
 
   if (!DEEPGRAM_API_KEY) {
-    console.error(`❌ [${requestId}] DEEPGRAM_API_KEY not configured`);
     clientWs.send(JSON.stringify({
       type: 'error',
       code: 'SERVER_CONFIG_ERROR',
@@ -151,8 +147,6 @@ export function handleDeepgramProxy(clientWs: WebSocket, request: any) {
     if (isClosed) return;
     isClosed = true;
 
-    console.log(`🧹 [${requestId}] Cleanup: ${reason}`);
-
     if (idleTimer) {
       clearTimeout(idleTimer);
       idleTimer = null;
@@ -171,8 +165,6 @@ export function handleDeepgramProxy(clientWs: WebSocket, request: any) {
     if (clientWs.readyState === WebSocket.OPEN) {
       clientWs.close(1000, reason);
     }
-
-    console.log(`✅ [${requestId}] Connection closed: ${reason}`);
   }
 
   /**
@@ -184,7 +176,6 @@ export function handleDeepgramProxy(clientWs: WebSocket, request: any) {
     }
 
     idleTimer = setTimeout(() => {
-      console.log(`⏱️ [${requestId}] Idle timeout (${IDLE_TIMEOUT}ms)`);
       const errorEvent: NormalizedSttEvent = {
         type: 'error',
         code: 'IDLE_TIMEOUT',
@@ -201,16 +192,16 @@ export function handleDeepgramProxy(clientWs: WebSocket, request: any) {
   function connectToDeepgram() {
     const deepgramUrl =
       'wss://api.deepgram.com/v1/listen?' +
-      'model=nova-2&' +
+      'model=nova-2-general&' +   // Nova-2 General model - best accuracy for varied speakers
       'punctuate=true&' +
       'smart_format=true&' +
       'encoding=linear16&' +
       'sample_rate=16000&' +
       'channels=1&' +
       'interim_results=true&' +
-      'vad_events=true';
-
-    console.log(`🔌 [${requestId}] Connecting to Deepgram...`);
+      'vad_events=true&' +
+      'endpointing=500&' +         // 500ms of silence to finalize utterances quickly
+      'language=en';                // Explicitly set language for better accuracy
 
     deepgramWs = new WebSocket(deepgramUrl, {
       headers: {
@@ -219,7 +210,6 @@ export function handleDeepgramProxy(clientWs: WebSocket, request: any) {
     });
 
     deepgramWs.on('open', () => {
-      console.log(`✅ [${requestId}] Connected to Deepgram`);
       resetIdleTimer();
 
       // Notify client that Deepgram is ready to receive audio
@@ -228,7 +218,6 @@ export function handleDeepgramProxy(clientWs: WebSocket, request: any) {
           type: 'ready',
         };
         clientWs.send(JSON.stringify(readyEvent));
-        console.log(`📤 [${requestId}] Sent 'ready' signal to client`);
       }
 
       // Start heartbeat
@@ -249,13 +238,12 @@ export function handleDeepgramProxy(clientWs: WebSocket, request: any) {
           clientWs.send(JSON.stringify(normalized));
           resetIdleTimer(); // Reset on activity
         }
-      } catch (error) {
-        console.error(`❌ [${requestId}] Error processing Deepgram message:`, error);
+      } catch {
+        // Silently handle parse errors
       }
     });
 
-    deepgramWs.on('error', (error) => {
-      console.error(`❌ [${requestId}] Deepgram WebSocket error:`, error);
+    deepgramWs.on('error', () => {
       const errorEvent: NormalizedSttEvent = {
         type: 'error',
         code: 'UPSTREAM_ERROR',
@@ -267,13 +255,10 @@ export function handleDeepgramProxy(clientWs: WebSocket, request: any) {
       cleanup('Deepgram error');
     });
 
-    deepgramWs.on('close', (code, reason) => {
-      console.log(`🔌 [${requestId}] Deepgram closed: ${code} - ${reason}`);
-
+    deepgramWs.on('close', () => {
       if (isFinalizing) {
         // Expected close after CloseStream - finals have been sent
         // Send close to client so it can transition to ai-waiting
-        console.log(`✅ [${requestId}] Finalization complete - sending close to client`);
         const closeEvent: NormalizedSttEvent = { type: 'close' };
         if (clientWs.readyState === WebSocket.OPEN) {
           clientWs.send(JSON.stringify(closeEvent));
@@ -305,31 +290,26 @@ export function handleDeepgramProxy(clientWs: WebSocket, request: any) {
         const message: ClientControlMessage = JSON.parse(data.toString());
 
         if (message.type === 'finalize') {
-          console.log(`🏁 [${requestId}] Client requested finalization`);
-
           // Send CloseStream to Deepgram to get final transcripts
           // Deepgram will send finals then close - we'll forward the close to client
           if (deepgramWs && deepgramWs.readyState === WebSocket.OPEN) {
-            console.log(`📤 [${requestId}] Sending CloseStream to Deepgram`);
             isFinalizing = true; // Mark that we're finalizing (close will be sent to client)
             deepgramWs.send(JSON.stringify({ type: 'CloseStream' }));
           }
           return;
         }
-      } catch (err) {
-        console.warn(`⚠️ [${requestId}] Failed to parse control message:`, err);
+      } catch {
+        // Silently handle parse errors
       }
     }
 
     // Only accept binary frames (audio data)
     if (!(data instanceof Buffer)) {
-      console.warn(`⚠️ [${requestId}] Received non-binary frame, ignoring`);
       return;
     }
 
     // Check frame size
     if (data.length > MAX_FRAME_SIZE) {
-      console.error(`❌ [${requestId}] Frame too large: ${data.length} bytes`);
       const errorEvent: NormalizedSttEvent = {
         type: 'error',
         code: 'FRAME_TOO_LARGE',
@@ -343,7 +323,6 @@ export function handleDeepgramProxy(clientWs: WebSocket, request: any) {
     // Check total bytes
     totalBytesReceived += data.length;
     if (totalBytesReceived > MAX_TOTAL_BYTES) {
-      console.error(`❌ [${requestId}] Total bytes exceeded: ${totalBytesReceived}`);
       const errorEvent: NormalizedSttEvent = {
         type: 'error',
         code: 'TOTAL_BYTES_EXCEEDED',
@@ -357,25 +336,20 @@ export function handleDeepgramProxy(clientWs: WebSocket, request: any) {
     // Forward to Deepgram if connected
     if (deepgramWs && deepgramWs.readyState === WebSocket.OPEN) {
       deepgramWs.send(data);
-    } else {
-      // Queue is not implemented - just log warning
-      console.warn(`⚠️ [${requestId}] Deepgram not ready, dropping ${data.length} bytes`);
     }
   });
 
   /**
    * Handle client disconnect
    */
-  clientWs.on('close', (code, reason) => {
-    console.log(`👋 [${requestId}] Client disconnected: ${code} - ${reason}`);
+  clientWs.on('close', () => {
     cleanup('Client disconnected');
   });
 
   /**
    * Handle client errors
    */
-  clientWs.on('error', (error) => {
-    console.error(`❌ [${requestId}] Client WebSocket error:`, error);
+  clientWs.on('error', () => {
     cleanup('Client error');
   });
 }

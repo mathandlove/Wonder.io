@@ -62,18 +62,21 @@ function recordingReducer(state: RecordingState, action: RecordingEvent): Record
       };
     case 'STOP':
     case 'ABORT':
+      // IMPORTANT: Preserve accumulatedText and displayText when stopping!
+      // We only want to clear these when starting a NEW recording session (START action)
+      // This allows text to persist across pauses in the same recording session
       return {
         ...state,
         isRecording: false,
         sessionId: null,
-        interimTranscript: '',
-        finalTranscript: '',
-        accumulatedText: '',
-        displayText: '',
+        interimTranscript: '',  // Clear interim (it's temporary)
+        finalTranscript: '',     // Clear last final (we have it in accumulated)
+        // accumulatedText: PRESERVED
+        // displayText: PRESERVED
         keepListening: false
       };
     case 'INTERIM': {
-      const interimDisplayText = state.accumulatedText + ' ' + action.text;
+      const interimDisplayText = (state.accumulatedText + ' ' + action.text).trim();
       return {
         ...state,
         interimTranscript: action.text,
@@ -87,20 +90,30 @@ function recordingReducer(state: RecordingState, action: RecordingEvent): Record
         interimTranscript: ''
       };
     case 'ACCUMULATE': {
-      const newAccumulated = (state.accumulatedText + ' ' + action.finalText).trim();
+      // Deepgram sends speech_final events that contain NEW finalized segments
+      // We should append them to accumul ated text (not replace)
+      // The final text should ALWAYS be appended unless it's empty
+      const trimmedFinal = action.finalText.trim();
+
+      if (!trimmedFinal) {
+        // Empty final - ignore it
+        return state;
+      }
+
+      // Always append the new final segment to accumulated text
+      const newAccumulated = state.accumulatedText
+        ? (state.accumulatedText + ' ' + trimmedFinal).trim()
+        : trimmedFinal;
+
       const newDisplayText = action.interimText
-        ? newAccumulated + ' ' + action.interimText
+        ? (newAccumulated + ' ' + action.interimText).trim()
         : newAccumulated;
-      console.log('🔄 ACCUMULATE action:');
-      console.log('   Previous accumulated:', state.accumulatedText);
-      console.log('   New final text:', action.finalText);
-      console.log('   New accumulated:', newAccumulated);
-      console.log('   Display text:', newDisplayText.trim());
+
       return {
         ...state,
         accumulatedText: newAccumulated,
-        displayText: newDisplayText.trim(),
-        finalTranscript: action.finalText,
+        displayText: newDisplayText,
+        finalTranscript: trimmedFinal,
         interimTranscript: action.interimText || ''
       };
     }
@@ -160,6 +173,7 @@ interface RecordingContextValue {
   getDisplayText: () => string;
   isRecording: () => boolean;
   setOnFinalized: (callback: (() => void) | null) => void; // Register callback for when transcripts are finalized
+  setOnAutoStop: (callback: (() => void) | null) => void; // Register callback for when auto-stop timeout fires
   onInterim?: (text: string) => void;
   onFinal?: (text: string) => void;
   onStateChange?: (state: RecordingState) => void;
@@ -174,16 +188,24 @@ export function RecordingProvider({ children }: { children: React.ReactNode }) {
   const restartTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const currentSessionIdRef = useRef<string | null>(null);
 
+  // Store state in a ref so getDisplayText always reads the latest value
+  const stateRef = useRef(state);
+  useEffect(() => {
+    stateRef.current = state;
+  }, [state]);
+
   // Track finalization callback - parent can register to know when all transcripts are done
   const onFinalizedCallbackRef = React.useRef<(() => void) | null>(null);
+
+  // Track auto-stop callback - parent can register to know when auto-stop timeout fires
+  const onAutoStopCallbackRef = React.useRef<(() => void) | null>(null);
 
   // Deepgram hook with callbacks (only used if USE_DEEPGRAM is true)
   const deepgram = useDeepgram({
     onPartial: (text: string) => {
       dispatch({ type: 'INTERIM', text });
     },
-    onFinal: (text: string, confidence?: number) => {
-      console.log('[RecordingContext] Final transcript:', text, confidence);
+    onFinal: (text: string) => {
       dispatch({
         type: 'ACCUMULATE',
         finalText: text,
@@ -191,13 +213,16 @@ export function RecordingProvider({ children }: { children: React.ReactNode }) {
       });
     },
     onFinalized: () => {
-      console.log('[RecordingContext] All transcripts finalized');
       if (onFinalizedCallbackRef.current) {
         onFinalizedCallbackRef.current();
       }
     },
-    onError: (error: string) => {
-      console.error('[RecordingContext] Deepgram error:', error);
+    onAutoStop: () => {
+      if (onAutoStopCallbackRef.current) {
+        onAutoStopCallbackRef.current();
+      }
+    },
+    onError: () => {
       dispatch({ type: 'UNSUPPORTED' });
     },
   });
@@ -287,8 +312,7 @@ export function RecordingProvider({ children }: { children: React.ReactNode }) {
 
     if (USE_DEEPGRAM) {
       // Use Deepgram STT
-      deepgram.start().catch((error) => {
-        console.error('[RecordingContext] Failed to start Deepgram:', error);
+      deepgram.start().catch(() => {
         dispatch({ type: 'ABORT' });
       });
     } else {
@@ -368,6 +392,11 @@ export function RecordingProvider({ children }: { children: React.ReactNode }) {
     onFinalizedCallbackRef.current = callback;
   }, []);
 
+  // Setter for auto-stop callback
+  const setOnAutoStop = useCallback((callback: (() => void) | null) => {
+    onAutoStopCallbackRef.current = callback;
+  }, []);
+
   // Register with global Recording API
   useEffect(() => {
     Recording.register(start, stop, abort);
@@ -378,9 +407,12 @@ export function RecordingProvider({ children }: { children: React.ReactNode }) {
     start,
     stop,
     abort,
-    getDisplayText: () => state.displayText,
-    isRecording: () => state.isRecording,
-    setOnFinalized
+    getDisplayText: () => {
+      return stateRef.current.displayText;
+    },
+    isRecording: () => stateRef.current.isRecording,
+    setOnFinalized,
+    setOnAutoStop
   };
 
   return (
