@@ -13,9 +13,7 @@ class RecordingAPI {
   }
 
   start() {
-    console.log('📞 Recording.start() called');
     if (this.startFn) {
-      console.log('✅ Calling registered start function');
       this.startFn();
     } else {
       console.warn('❌ Recording API not initialized - ensure RecordingProvider is mounted');
@@ -23,9 +21,7 @@ class RecordingAPI {
   }
 
   stop() {
-    console.log('📞 Recording.stop() called');
     if (this.stopFn) {
-      console.log('✅ Calling registered stop function');
       this.stopFn();
     } else {
       console.warn('❌ Recording API not initialized - ensure RecordingProvider is mounted');

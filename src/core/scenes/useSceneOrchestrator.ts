@@ -67,7 +67,7 @@ export function useSceneOrchestrator({
       ...existing,
       inputState: state,
     });
-    console.log(`🎯 setInputState: ${sceneId} → ${state}`, stateMapRef.current.get(sceneId));
+
     forceUpdate({}); // Trigger re-render so components see the new state
   }, []);
 
@@ -85,7 +85,7 @@ export function useSceneOrchestrator({
     }
 
     sceneIdsRef.current = currentSceneIds;
-    console.log('🔄 Initializing scene states for', scenes.length, 'scenes');
+
     let needsUpdate = false;
 
     scenes.forEach((scene, index) => {
@@ -102,28 +102,26 @@ export function useSceneOrchestrator({
       // NOTE: "input" is not a scene type - it's a feature state in character-flow scenes
       const sceneWithStates = scene as Scene & { States?: string[] };
       if (sceneWithStates.States?.includes('input')) {
-        console.log(`  Scene ${index}:`, { type: scene.type, states: sceneWithStates.States, sceneId });
+
 
         // Initialize to 'idle' if not already set
         if (!stateMapRef.current.has(sceneId)) {
           stateMapRef.current.set(sceneId, { inputState: 'idle' });
-          console.log(`  ✅ Initialized input state for ${sceneId}: idle`);
+
           needsUpdate = true;
         } else if (!stateMapRef.current.get(sceneId)?.inputState) {
           const existing = stateMapRef.current.get(sceneId) || {};
           stateMapRef.current.set(sceneId, { ...existing, inputState: 'idle' });
-          console.log(`  ✅ Added input state to existing scene ${sceneId}: idle`);
+
           needsUpdate = true;
-        } else {
-          console.log(`  ℹ️ Input scene ${sceneId} already has input state:`, stateMapRef.current.get(sceneId));
-        }
+        } 
       }
     });
-    console.log('📊 Final state map:', Array.from(stateMapRef.current.entries()));
+
 
     // Trigger re-render if we initialized any new states
     if (needsUpdate) {
-      console.log('🔄 Triggering re-render after initialization');
+
       forceUpdate({});
     }
   }, [scenes]);

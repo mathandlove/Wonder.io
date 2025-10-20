@@ -243,7 +243,7 @@ async function cutoutBorderOnly(input, output, tolerance = 220, feather = 2, pre
     .toFile(output);
 
   const componentInfo = largestComponent ? ` (kept largest: ${largestComponent.size} pixels of ${components.length} components)` : '';
-  console.log(`✔ Border-only cutout: ${input} -> ${output} (tol=${tolerance}, feather=${feather}, blur=${preblur})${componentInfo}`);
+
 }
 
 /**
@@ -306,7 +306,7 @@ async function findCharacterFolders() {
  * Process all images in character folders
  */
 async function processAllCharacters(tolerance = 220, feather = 2, preblur = 0.6) {
-  console.log('🎭 Processing all character images with border cutout...\n');
+
   
   const characterFolders = await findCharacterFolders();
   
@@ -321,7 +321,7 @@ async function processAllCharacters(tolerance = 220, feather = 2, preblur = 0.6)
   
   for (const folder of characterFolders) {
     const relativePath = path.relative(process.cwd(), folder);
-    console.log(`📁 Processing: ${relativePath}`);
+
     
     let folderProcessed = 0;
     let folderSkipped = 0;
@@ -347,11 +347,11 @@ async function processAllCharacters(tolerance = 220, feather = 2, preblur = 0.6)
           // File doesn't exist, proceed
         }
         
-        console.log(`  ⚙️  Processing: ${file}...`);
+
         
         try {
           await cutoutBorderOnly(inputPath, outputPath, tolerance, feather, preblur);
-          console.log(`  ✅ Generated: ${path.basename(outputPath)}`);
+
           folderProcessed++;
           totalProcessed++;
         } catch (error) {

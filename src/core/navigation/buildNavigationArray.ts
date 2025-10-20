@@ -125,7 +125,7 @@ function expandCharacterWithStates(scene: Scene & { States: string[] }, sceneId:
   const hasQuest = states.includes('quest') || states.includes('giveQuest');
   const hasInput = states.includes('input');
 
-  console.log('🔍 expandCharacterWithStates:', { sceneId, states, hasQuest, hasInput });
+
 
   return expandDialogueStates(scene, sceneId, startIndex, { hasQuest, hasInput });
 }
@@ -146,7 +146,6 @@ function expandCharacterFlowScene(scene: CharacterFlowScene, sceneId: string, st
     const hasQuest = states.includes('quest') || states.includes('giveQuest');
     const hasInput = states.includes('input');
 
-    console.log('✅ Found States:', { states, hasQuest, hasInput });
     return expandDialogueStates(scene, sceneId, startIndex, { hasQuest, hasInput });
   }
 

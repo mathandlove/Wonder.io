@@ -59,7 +59,7 @@ export function useStepScroll(
 
     // Emit navigation direction and start debounce
     const handleNavigation = (direction: ScrollDirection) => {
-      console.log(`🎯 Gesture detected: ${direction}`);
+
       onNavigate(direction);
       emitDebug(`navigation ${direction}`);
       startDebounce();

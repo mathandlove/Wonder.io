@@ -73,7 +73,7 @@ export function ScrollControl({
     const { sceneId, sceneState } = currentNavItem;
     sceneStates.updateSceneState(sceneId, sceneState);
 
-    console.log(`🗃️ SceneStates updated: ${sceneId} -> ${sceneState.type}${sceneState.type === 'image' ? `:${sceneState.state}` : ''}`);
+
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [navigationIndex, sceneStates.updateSceneState]);
 
@@ -117,13 +117,11 @@ export function ScrollControl({
         const isGoingBackward = currentIndex < prevSceneIndexRef.current;
         const behavior = isGoingBackward ? 'auto' : 'smooth';
 
-        console.log(`📜 Scrolling to scene ${currentIndex} (from ${prevSceneIndexRef.current}) - ${behavior}`);
+
         section.scrollIntoView({ behavior, block: 'start' });
       }
       prevSceneIndexRef.current = currentIndex;
-    } else {
-      console.log(`📜 Skip scroll - same scene index ${currentIndex}`);
-    }
+    } 
   }, [currentIndex]);
 
   // Focus management for accessibility

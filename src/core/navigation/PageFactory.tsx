@@ -47,15 +47,7 @@ export function PageFactoryProvider({ children }: PageFactoryProviderProps) {
       background: currentBackground, // Inherit background from current scene
     };
 
-    console.log('📄 PageFactory.createRecordingScene:', {
-      sceneId,
-      recordingId,
-      text: newScene.text,
-      speaker: newScene.speaker,
-      background: newScene.background,
-      leftCharacter: newScene['left-character'],
-      rightCharacter: newScene['right-character']
-    });
+
 
     return newScene;
   };

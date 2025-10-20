@@ -3,13 +3,11 @@
  * A production-ready bridge component that:
  * 1) Accepts input events from a Recorder (text and optional audio transcript)
  * 2) Builds a minimal, privacy-aware chat payload for your backend
- * 3) Gets a response back (non-streaming for now)
+ * 3) Gets a streaming response back from Claude API
  * 4) Returns the response text to the caller (orchestrator handles scene creation)
- *
- * For now we will be fake calling ChatGPT
  */
 
-import React, { createContext, useContext, useCallback, type ReactNode } from 'react';
+import React, { createContext, useContext, useCallback, useRef, type ReactNode } from 'react';
 
 // ============================================================================
 // Types
@@ -79,38 +77,84 @@ export const ChatGatewayProvider: React.FC<ChatGatewayProviderProps> = ({
 }) => {
   const [isProcessing, setIsProcessing] = React.useState(false);
   const [lastError, setLastError] = React.useState<string | undefined>();
+  const wsRef = useRef<WebSocket | null>(null);
+  const accumulatedTextRef = useRef<string>('');
 
   /**
-   * Mock ChatGPT API call
-   * In production, this would be a real API call to your backend
+   * Claude Streaming API call via WebSocket
    */
-  const mockChatGPTCall = async (payload: ChatPayload): Promise<string> => {
-    // Simulate network delay (500ms - 2s)
-    const delay = Math.random() * 1500 + 500;
-    await new Promise(resolve => setTimeout(resolve, delay));
+  const streamClaudeResponse = async (payload: ChatPayload): Promise<string> => {
+    return new Promise((resolve, reject) => {
+      accumulatedTextRef.current = '';
 
-    // Generate a mock response
-    const responses = [
-      "That's a great question! Let me think about that...",
-      "I understand what you mean. Here's what I think...",
-      "Interesting perspective! My response is...",
-      "Thanks for sharing that with me. Let me respond...",
-      "I appreciate your input. Here's my take on it..."
-    ];
+      // Connect to Claude WebSocket endpoint
+      const ws = new WebSocket('ws://localhost:3001/api/claude/socket');
+      wsRef.current = ws;
 
-    const randomResponse = responses[Math.floor(Math.random() * responses.length)];
+      ws.onopen = () => {
+        console.log('🟢 Connected to Claude WebSocket');
 
-    // Build response with echo and character description (if present)
-    let response = `${randomResponse} [Echo: "${payload.message}"]`;
+        // Build the message with character context
+        let message = payload.message;
+        if (payload.context?.characterDescription) {
+          message = `${payload.context.characterDescription}\n\nUser: ${payload.message}`;
+        }
 
-    if (payload.context?.characterDescription) {
-      // Extract first line (up to first period or first 80 chars)
-      const firstLine = payload.context.characterDescription.split('.')[0] + '.';
-      const truncated = firstLine.length > 80 ? firstLine.substring(0, 80) + '...' : firstLine;
-      response += ` [Character: ${truncated}]`;
-    }
+        // Send message to Claude
+        ws.send(JSON.stringify({
+          type: 'message',
+          text: message,
+          context: payload.context?.characterDescription
+        }));
+      };
 
-    return response;
+      ws.onmessage = (event) => {
+        try {
+          const data = JSON.parse(event.data);
+
+          switch (data.type) {
+            case 'debug':
+              // Log debug information to console
+              console.log('🔍 DEBUG:', data.event, data.data);
+              break;
+
+            case 'content_delta':
+              // Accumulate text as it streams in
+              accumulatedTextRef.current += data.text;
+              console.log('📝 Delta:', data.text);
+              break;
+
+            case 'content_complete':
+              console.log('✅ Content block complete');
+              break;
+
+            case 'message_complete':
+              console.log('🏁 Message complete');
+              ws.close();
+              resolve(accumulatedTextRef.current);
+              break;
+
+            case 'error':
+              console.error('❌ Claude error:', data.message);
+              ws.close();
+              reject(new Error(data.message));
+              break;
+          }
+        } catch (error) {
+          console.error('❌ Failed to parse WebSocket message:', error);
+        }
+      };
+
+      ws.onerror = (error) => {
+        console.error('❌ WebSocket error:', error);
+        reject(new Error('WebSocket connection failed'));
+      };
+
+      ws.onclose = () => {
+        console.log('🔴 Claude WebSocket closed');
+        wsRef.current = null;
+      };
+    });
   };
 
   /**
@@ -141,8 +185,8 @@ export const ChatGatewayProvider: React.FC<ChatGatewayProviderProps> = ({
       // Build privacy-aware payload
       const payload = buildPayload(input);
 
-      // Call mock ChatGPT (in production, this would be your backend)
-      const responseText = await mockChatGPTCall(payload);
+      // Call Claude streaming API
+      const responseText = await streamClaudeResponse(payload);
 
       return {
         text: responseText,

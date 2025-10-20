@@ -35,12 +35,12 @@ export function AnswerValidationOrchestrator() {
 
       // Only process if we have an answer
       if (answerText) {
-        console.log('🔍 AnswerValidationOrchestrator validating answer:', answerText);
+
         setProcessingSceneIndex(navigationIndex);
 
         // Validate the answer
         validateAnswer(answerText, questionText).then((result: AnswerValidationResult) => {
-          console.log(`✅ Answer validation complete: ${result}`);
+
 
           // Transition to right or wrong state based on result
           const newState = result === 'pass' ? 'answer-right' : 'answer-wrong';

@@ -2,20 +2,20 @@
  * ChatFlowOrchestrator.tsx
  * Orchestrates the chat conversation flow:
  * 1) Listens for transcript completion from recording
- * 2) Calls ChatGateway to get AI response
+ * 2) Calls AI module to get AI response
  * 3) Creates response scenes using PageFactory
  * 4) Manages scene insertion via SceneManager
  * 5) Handles errors and state transitions
  *
  * This component coordinates between:
  * - Recording system (getting transcript)
- * - ChatGateway (getting AI response)
+ * - AI Module (getting AI response)
  * - PageFactory (creating scenes)
  * - SceneManager (inserting scenes into navigation)
  */
 
 import { useCallback } from 'react';
-import { useChatGateway, type ChatInput } from '@features/chat/gateway/ChatGateway';
+import { useAIModule } from '@features/ai/AIModule';
 import { usePageFactory } from '@core/navigation/PageFactory';
 import { useSceneManager, getLocksForState } from '@core/scenes/SceneManager';
 import { useSceneFlowMetadata } from '@core/data/FlowMetadataStore';
@@ -47,10 +47,23 @@ export interface ChatFlowOrchestratorProps {
   onSceneCreated?: (scene: CharacterScene) => void;
 }
 
+export interface UserInput {
+  text: string;
+  recordingId?: string;
+  metadata?: {
+    timestamp?: Date;
+    speaker?: 'left' | 'right';
+    currentBackground?: string;
+    leftCharacter?: string;
+    rightCharacter?: string;
+    characterDescription?: string;
+  };
+}
+
 export function useChatFlowOrchestrator(props?: ChatFlowOrchestratorProps) {
   const { onError, onResponseReceived, onSceneCreated } = props || {};
 
-  const chatGateway = useChatGateway();
+  const aiModule = useAIModule();
   const pageFactory = usePageFactory();
   const sceneManager = useSceneManager();
 
@@ -63,7 +76,7 @@ export function useChatFlowOrchestrator(props?: ChatFlowOrchestratorProps) {
    * Main orchestration function:
    * Takes user input, gets AI response, creates and inserts scenes
    */
-  const processUserInput = useCallback(async (input: ChatInput): Promise<void> => {
+  const processUserInput = useCallback(async (input: UserInput): Promise<void> => {
 
 
     try {
@@ -82,13 +95,18 @@ export function useChatFlowOrchestrator(props?: ChatFlowOrchestratorProps) {
 
 
 
-      // Step 2: Call ChatGateway to get AI response
+      // Step 2: Call AI module to get AI response
 
-      const response = await chatGateway.submitChat(input);
+      const response = await aiModule.getResponse({
+        text: input.text,
+        context: {
+          characterDescription: input.metadata?.characterDescription
+        }
+      });
 
       if (!response.success) {
-        const errorMsg = response.error || 'Failed to get chat response';
-        console.error('❌ ChatGateway failed:', errorMsg);
+        const errorMsg = response.error || 'Failed to get AI response';
+        console.error('❌ AI Module failed:', errorMsg);
         onError?.(errorMsg);
         return;
       }
@@ -109,7 +127,7 @@ export function useChatFlowOrchestrator(props?: ChatFlowOrchestratorProps) {
       const finalScene: CharacterScene = {
         ...responseScene,
         text: response.text,
-        speaker: response.speaker || 'right',
+        speaker: 'right',
         isRecording: false,
         recordingId: undefined
       };
@@ -151,7 +169,7 @@ export function useChatFlowOrchestrator(props?: ChatFlowOrchestratorProps) {
       console.error('❌ ChatFlowOrchestrator error:', errorMessage);
       onError?.(errorMessage);
     }
-  }, [chatGateway, pageFactory, sceneManager, onError, onResponseReceived, onSceneCreated]);
+  }, [aiModule, pageFactory, sceneManager, onError, onResponseReceived, onSceneCreated]);
 
   /**
    * Convenience function for processing transcript completion
@@ -161,7 +179,7 @@ export function useChatFlowOrchestrator(props?: ChatFlowOrchestratorProps) {
     transcript: string,
     recordingId?: string
   ): Promise<void> => {
-    const input: ChatInput = {
+    const input: UserInput = {
       text: transcript,
       recordingId,
       metadata: {
@@ -180,7 +198,7 @@ export function useChatFlowOrchestrator(props?: ChatFlowOrchestratorProps) {
   return {
     processUserInput,
     processTranscript,
-    isProcessing: chatGateway.isProcessing,
-    lastError: chatGateway.lastError
+    isProcessing: aiModule.isProcessing,
+    lastError: aiModule.lastError
   };
 }

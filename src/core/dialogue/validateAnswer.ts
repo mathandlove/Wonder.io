@@ -11,12 +11,15 @@ export async function validateAnswer(
   answer: string,
   questionText?: string
 ): Promise<AnswerValidationResult> {
-  console.log('🔍 Validating answer:', answer, 'for question:', questionText);
+
+  // Suppress unused variable warnings - these will be used when AI validation is implemented
+  void answer;
+  void questionText;
 
   // TODO: Call AI to validate the answer
   // For now, always return fail
   await new Promise(resolve => setTimeout(resolve, 500)); // Simulate AI call delay
 
-  console.log('❌ Answer validation result: fail (stub)');
+
   return 'fail';
 }

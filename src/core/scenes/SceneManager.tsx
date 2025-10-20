@@ -257,14 +257,7 @@ export function SceneManagerProvider({ children, initialIndex = 0 }: SceneManage
       index: insertAfterCurrent ? navigationIndex + 1 : navigationIndex,
     };
 
-    console.log('➕ SceneManager.addNavigationStateToCurrentScene:', {
-      sceneId: currentItem.sceneId,
-      oldState: currentItem.sceneState,
-      newState,
-      insertAfterCurrent,
-      currentIndex: navigationIndex,
-      newIndex: newItem.index
-    });
+
 
     if (insertAfterCurrent) {
       // Insert after current position
@@ -286,17 +279,13 @@ export function SceneManagerProvider({ children, initialIndex = 0 }: SceneManage
   }, [navigationIndex, getCurrentNavigationItem]);
 
   // Update the state of a navigation item at a specific index
-  // Locks are automatically recalculated based on the new state (no lock memory)
+  // Locks are automatically recalculated based on the new state (no lock memoryconsole.log)
   const updateNavigationItemState = useCallback((index: number, newState: SceneState) => {
     setNavigationArray(prevArray => {
       const newArray = [...prevArray];
       if (newArray[index]) {
         const locks = getLocksForState(newState);
-        console.log(`🔧 updateNavigationItemState at index ${index}:`, {
-          newState,
-          calculatedLocks: locks,
-          sceneId: newArray[index].sceneId
-        });
+
         newArray[index] = {
           ...newArray[index],
           sceneState: newState,
@@ -400,7 +389,7 @@ export function SceneManagerProvider({ children, initialIndex = 0 }: SceneManage
         setNavigationIndex(newIndex);
         finalNavigationIndex = newIndex;
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        console.log(`🗑️ Collapsed ${currentItem.sceneState.type}:${(currentItem.sceneState as any).state || 'static'}`);
+
       } else {
         setNavigationIndex(clamped);
       }
@@ -418,12 +407,12 @@ export function SceneManagerProvider({ children, initialIndex = 0 }: SceneManage
         }
 
         if (backwardIndex >= 0) {
-          console.log(`⏪ Skipping same-scene states, jumping from index ${navigationIndex} to ${backwardIndex}`);
+
           setNavigationIndex(backwardIndex);
           finalNavigationIndex = backwardIndex;
         } else {
           // No different scene found, stay at current position
-          console.log(`⏪ Cannot go backward - already at first scene`);
+
           return; // Don't update anything
         }
       } else {
@@ -451,13 +440,7 @@ export function SceneManagerProvider({ children, initialIndex = 0 }: SceneManage
   const advanceNavigation = useCallback((direction: 'forward' | 'backward') => {
     // Check if current navigation item locks this direction
     const currentItem = navigationArrayRef.current[navigationIndex];
-    console.log(`🚦 advanceNavigation(${direction}) at index ${navigationIndex}:`, {
-      sceneId: currentItem?.sceneId,
-      state: currentItem?.sceneState,
-      lockForward: currentItem?.lockForward,
-      lockBackward: currentItem?.lockBackward
-    });
-
+   
     if (currentItem) {
       if (direction === 'forward' && currentItem.lockForward) {
         console.log('🔒 Navigation locked forward at', currentItem.sceneId, currentItem.sceneState);

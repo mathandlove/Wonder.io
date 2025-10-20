@@ -146,7 +146,7 @@ export function RecordingOrchestrator() {
     transcript: string,
     recordingId: string
   ) => {
-    console.log('🎤 Recording complete, processing chat...');
+
 
     // Let ChatFlowOrchestrator handle the rest
     await chatFlow.processTranscript(transcript, recordingId);

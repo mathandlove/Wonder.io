@@ -67,11 +67,7 @@ export function QuestOrchestrator() {
 
     // Only offer if quest is not already offered/active
     if (quest.state.phase === 'idle' || quest.state.phase === 'clear') {
-      console.log('🎯 QuestOrchestrator: Offering quest', {
-        questText: flowMetadata.questText,
-        successPhrase: flowMetadata.successCharacterSays,
-        sceneId: currentNavItem.sceneId
-      });
+     
 
       quest.offer({
         id: currentNavItem.sceneId, // Use sceneId as quest ID

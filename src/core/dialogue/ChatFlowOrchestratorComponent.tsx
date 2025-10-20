@@ -42,7 +42,7 @@ export function ChatFlowOrchestratorComponent() {
 
       // Only process if we haven't already processed this recording
       if (recordingId && transcript && recordingId !== processingRecordingId) {
-        console.log('🤖 ChatFlowOrchestrator processing transcript:', transcript);
+
         setProcessingRecordingId(recordingId);
 
         // Process the transcript and get AI response

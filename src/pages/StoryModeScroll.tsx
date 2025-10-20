@@ -36,7 +36,7 @@ declare global {
 import { UIOverlayRoot } from '@core/uiLayout/UIOverlayRoot'
 import { StepScrollDebug } from '@core/scroll/StepScrollDebug'
 import { SceneStatesProvider } from '@core/scenes/SceneStates'
-import { ChatGatewayProvider } from '@features/chat/gateway'
+import { AIModuleProvider } from '@features/ai/AIModule'
 import { ChatFlowOrchestratorComponent } from '@core/dialogue/ChatFlowOrchestratorComponent'
 import { AnswerValidationOrchestrator } from '@core/dialogue/AnswerValidationOrchestrator'
 import { FlowMetadataProvider, useFlowMetadata } from '@core/data/FlowMetadataStore'
@@ -184,7 +184,7 @@ const StoryContent: React.FC = () => {
 
   return (
     <PageFactoryProvider>
-      <ChatGatewayProvider>
+      <AIModuleProvider>
         <SceneStatesProvider>
           <CharacterAnimationProvider>
             {/* ChatFlow orchestrator watches for ai-waiting state and triggers responses */}
@@ -260,7 +260,7 @@ const StoryContent: React.FC = () => {
           <UIOverlayRoot />
           </CharacterAnimationProvider>
         </SceneStatesProvider>
-      </ChatGatewayProvider>
+      </AIModuleProvider>
     </PageFactoryProvider>
   );
 };

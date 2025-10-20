@@ -84,7 +84,7 @@ export const CharacterOrchestrator: React.FC<Props> = ({ storyId, scenes, curren
         ? currentNavItem.sceneState.allowAnimate !== false  // Default to true if not specified
         : true;
 
-      console.log(`🎭 CharacterOrchestrator: Scene change ${prevSceneIndex} → ${currentSceneIndex}, forward: ${isMovingForward}, allowAnimate: ${allowAnimate}, left.newChar: ${leftPanel?.newCharacter}, right.newChar: ${rightPanel?.newCharacter}`);
+
       setPrevSceneIndex(currentSceneIndex);
 
       // Only trigger entrance animations when:
@@ -96,16 +96,14 @@ export const CharacterOrchestrator: React.FC<Props> = ({ storyId, scenes, curren
         // Increment animNonce when scene changes to force animation restart
         // Only trigger animation restart when character is new
         if (leftPanel?.newCharacter) {
-          console.log(`🎭 Incrementing LEFT animNonce (was ${leftEnterNonce})`);
+
           setLeftEnterNonce(n => n + 1);
         }
         if (rightPanel?.newCharacter) {
-          console.log(`🎭 Incrementing RIGHT animNonce (was ${rightEnterNonce})`);
+
           setRightEnterNonce(n => n + 1);
         }
-      } else {
-        console.log(`🎭 Skipping animations - ${!isMovingForward ? 'moving backward' : 'allowAnimate is false'}`);
-      }
+      } 
     }
   }, [scrollOffset, prevSceneIndex, leftPanel?.newCharacter, rightPanel?.newCharacter, leftEnterNonce, rightEnterNonce, navigationArray]);
 

@@ -7,6 +7,7 @@ import { IncomingMessage } from 'http';
 import { SelectionStore } from './store';
 import { Point } from './types';
 import { handleDeepgramProxy } from './deepgram-proxy';
+import { handleClaudeProxy } from './claude-proxy';
 
 const key = process.env.DEEPGRAM_API_KEY;
 if (!key) throw new Error('Missing DEEPGRAM_API_KEY');
@@ -176,6 +177,10 @@ server.on('upgrade', (request: IncomingMessage, socket, head) => {
   if (pathname === '/api/stt/socket') {
     wss.handleUpgrade(request, socket, head, (ws) => {
       handleDeepgramProxy(ws, request);
+    });
+  } else if (pathname === '/api/claude/socket') {
+    wss.handleUpgrade(request, socket, head, (ws) => {
+      handleClaudeProxy(ws);
     });
   } else {
     socket.destroy();

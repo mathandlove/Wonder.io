@@ -70,7 +70,7 @@ export function useDeepgram(callbacks?: UseDeepgramCallbacks): UseDeepgram {
   const audioContextRef = useRef<AudioContext | null>(null);
   const mediaStreamRef = useRef<MediaStream | null>(null);
   const sourceNodeRef = useRef<MediaStreamAudioSourceNode | null>(null);
-  const processorRef = useRef<ScriptProcessorNode | null>(null);
+  const workletNodeRef = useRef<AudioWorkletNode | null>(null);
   const silenceTimerRef = useRef<NodeJS.Timeout | null>(null);
 
   // Track if stop has been called to prevent duplicate stop calls
@@ -90,31 +90,6 @@ export function useDeepgram(callbacks?: UseDeepgramCallbacks): UseDeepgram {
 
   // Timer to delay buffer flush after 'ready' (to catch early speech)
   const flushDelayTimerRef = useRef<NodeJS.Timeout | null>(null);
-
-  // ──────────────────────────────────────────────────────────────────────────────
-  // Audio Processing: Convert Float32 → Int16 PCM
-  // ──────────────────────────────────────────────────────────────────────────────
-
-  const convertFloat32ToInt16 = useCallback((float32Array: Float32Array): Int16Array => {
-    const int16Array = new Int16Array(float32Array.length);
-    for (let i = 0; i < float32Array.length; i++) {
-      const s = Math.max(-1, Math.min(1, float32Array[i]));
-      int16Array[i] = s < 0 ? s * 0x8000 : s * 0x7fff;
-    }
-    return int16Array;
-  }, []);
-
-  // ──────────────────────────────────────────────────────────────────────────────
-  // VAD: Voice Activity Detection (RMS-based)
-  // ──────────────────────────────────────────────────────────────────────────────
-
-  const calculateRMS = useCallback((audioData: Float32Array): number => {
-    let sum = 0;
-    for (let i = 0; i < audioData.length; i++) {
-      sum += audioData[i] * audioData[i];
-    }
-    return Math.sqrt(sum / audioData.length);
-  }, []);
 
   // ──────────────────────────────────────────────────────────────────────────────
   // Buffer Flushing Helper
@@ -167,9 +142,9 @@ export function useDeepgram(callbacks?: UseDeepgramCallbacks): UseDeepgram {
     }
 
     // Stop audio processing
-    if (processorRef.current) {
-      processorRef.current.disconnect();
-      processorRef.current = null;
+    if (workletNodeRef.current) {
+      workletNodeRef.current.disconnect();
+      workletNodeRef.current = null;
     }
 
     if (sourceNodeRef.current) {
@@ -307,80 +282,90 @@ export function useDeepgram(callbacks?: UseDeepgramCallbacks): UseDeepgram {
       const source = audioContext.createMediaStreamSource(stream);
       sourceNodeRef.current = source;
 
-      // 4. Process audio with ScriptProcessorNode
-      // Note: AudioWorklet is preferred but requires separate file setup
-      const processor = audioContext.createScriptProcessor(CONFIG.BUFFER_SIZE, 1, 1);
-      processorRef.current = processor;
+      // 4. Load and setup AudioWorklet processor
+      await audioContext.audioWorklet.addModule('/audio-processor.worklet.js');
 
-      processor.onaudioprocess = (event) => {
+      const workletNode = new AudioWorkletNode(audioContext, 'audio-processor');
+      workletNodeRef.current = workletNode;
+
+      // Configure silence detection parameters
+      workletNode.port.postMessage({
+        type: 'updateConfig',
+        silenceThreshold: CONFIG.SILENCE_THRESHOLD,
+        silenceDurationMs: CONFIG.SILENCE_DURATION_MS,
+      });
+
+      // Handle messages from the AudioWorklet processor
+      workletNode.port.onmessage = (event) => {
         // Don't process audio if we're already stopping
         if (isStoppingRef.current) {
           return;
         }
 
-        const inputData = event.inputBuffer.getChannelData(0);
+        switch (event.data.type) {
+          case 'audiodata': {
+            // Received processed audio data from worklet
+            const audioBuffer = event.data.buffer;
 
-        // VAD: Check if speaking
-        const rms = calculateRMS(inputData);
-        const isSilence = rms < CONFIG.SILENCE_THRESHOLD;
+            if (ws.readyState === WebSocket.OPEN && isDeepgramReadyRef.current) {
+              // Deepgram is ready - send directly
+              ws.send(audioBuffer);
 
-        if (isSilence) {
-          // Start silence timer if not already pending AND not stopping
-          // Use pending flag to prevent race condition where multiple audio chunks
-          // create multiple timers before the first one sets silenceTimerRef
-          if (!silenceTimerPendingRef.current && !isStoppingRef.current) {
-            // Set pending flag IMMEDIATELY to prevent concurrent timer creation
-            silenceTimerPendingRef.current = true;
-
-            silenceTimerRef.current = setTimeout(() => {
-              // Call onAutoStop callback if registered (allows orchestrator to handle state transition)
-              if (callbacksRef.current?.onAutoStop) {
-                callbacksRef.current.onAutoStop();
+              // Reset flag after first direct send
+              if (audioBufferRef.current.length === 0 && bufferWasFlushedRef.current) {
+                bufferWasFlushedRef.current = false;
               }
-              // Then stop the recording
-              stop();
-            }, CONFIG.SILENCE_DURATION_MS);
+            } else if (ws.readyState === WebSocket.OPEN || ws.readyState === WebSocket.CONNECTING) {
+              // WebSocket open but Deepgram not ready yet, or still connecting - buffer the audio
+              audioBufferRef.current.push(audioBuffer);
+
+              // Limit buffer size to prevent memory issues (max 2 seconds = ~125 chunks at 4096 buffer size)
+              if (audioBufferRef.current.length > 125) {
+                audioBufferRef.current.shift(); // Remove oldest chunk
+              }
+            }
+            // If WebSocket is CLOSING or CLOSED, we just drop the audio
+            break;
           }
-        } else {
-          // Reset silence timer on speech
-          if (silenceTimerRef.current) {
-            clearTimeout(silenceTimerRef.current);
-            silenceTimerRef.current = null;
-            silenceTimerPendingRef.current = false;
+
+          case 'silence': {
+            // Start silence timer if not already pending AND not stopping
+            if (!silenceTimerPendingRef.current && !isStoppingRef.current) {
+              // Set pending flag IMMEDIATELY to prevent concurrent timer creation
+              silenceTimerPendingRef.current = true;
+
+              silenceTimerRef.current = setTimeout(() => {
+                // Call onAutoStop callback if registered (allows orchestrator to handle state transition)
+                if (callbacksRef.current?.onAutoStop) {
+                  callbacksRef.current.onAutoStop();
+                }
+                // Then stop the recording
+                stop();
+              }, CONFIG.SILENCE_DURATION_MS);
+            }
+            break;
+          }
+
+          case 'speech': {
+            // Reset silence timer on speech
+            if (silenceTimerRef.current) {
+              clearTimeout(silenceTimerRef.current);
+              silenceTimerRef.current = null;
+              silenceTimerPendingRef.current = false;
+            }
+            break;
           }
         }
-
-        // Convert and send audio data
-        const int16Data = convertFloat32ToInt16(inputData);
-
-        if (ws.readyState === WebSocket.OPEN && isDeepgramReadyRef.current) {
-          // Deepgram is ready - send directly
-          ws.send(int16Data.buffer);
-
-          // Reset flag after first direct send
-          if (audioBufferRef.current.length === 0 && bufferWasFlushedRef.current) {
-            bufferWasFlushedRef.current = false;
-          }
-        } else if (ws.readyState === WebSocket.OPEN || ws.readyState === WebSocket.CONNECTING) {
-          // WebSocket open but Deepgram not ready yet, or still connecting - buffer the audio
-          audioBufferRef.current.push(int16Data.buffer);
-
-          // Limit buffer size to prevent memory issues (max 2 seconds = ~125 chunks at 4096 buffer size)
-          if (audioBufferRef.current.length > 125) {
-            audioBufferRef.current.shift(); // Remove oldest chunk
-          }
-        }
-        // If WebSocket is CLOSING or CLOSED, we just drop the audio
       };
 
-      source.connect(processor);
-      processor.connect(audioContext.destination);
+      source.connect(workletNode);
+      workletNode.connect(audioContext.destination);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to start recording');
       setStatus('error');
       cleanup();
     }
-  }, [calculateRMS, cleanup, convertFloat32ToInt16, status]); // stop is defined below, not a dependency
+  }, [cleanup, flushBuffer, status]); // stop is defined below, not a dependency
 
   // ──────────────────────────────────────────────────────────────────────────────
   // Stop Recording
@@ -415,9 +400,9 @@ export function useDeepgram(callbacks?: UseDeepgramCallbacks): UseDeepgram {
     }
 
     // Stop audio capture immediately (but keep WebSocket open for final transcripts)
-    if (processorRef.current) {
-      processorRef.current.disconnect();
-      processorRef.current = null;
+    if (workletNodeRef.current) {
+      workletNodeRef.current.disconnect();
+      workletNodeRef.current = null;
     }
 
     if (sourceNodeRef.current) {
