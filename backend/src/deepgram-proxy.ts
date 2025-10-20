@@ -9,9 +9,8 @@ export type NormalizedSttEvent =
   | { type: 'ready' } // Signals that Deepgram is connected and ready to receive audio
   | { type: 'partial'; text: string }
   | { type: 'final'; text: string; confidence?: number }
-  | { type: 'finalized' } // Signals all final transcripts have been sent after CloseStream
   | { type: 'error'; code?: string; message: string }
-  | { type: 'close' };
+  | { type: 'close' }; // Signals Deepgram closed after sending finals
 
 /**
  * Client control messages - sent from frontend to backend
@@ -271,19 +270,23 @@ export function handleDeepgramProxy(clientWs: WebSocket, request: any) {
     deepgramWs.on('close', (code, reason) => {
       console.log(`🔌 [${requestId}] Deepgram closed: ${code} - ${reason}`);
 
-      // If we're finalizing, don't send close event or cleanup yet
-      // The finalization timer will send 'finalized' and let client close
       if (isFinalizing) {
-        console.log(`⏳ [${requestId}] Deepgram closed during finalization - waiting for timer to send 'finalized'`);
-        return;
+        // Expected close after CloseStream - finals have been sent
+        // Send close to client so it can transition to ai-waiting
+        console.log(`✅ [${requestId}] Finalization complete - sending close to client`);
+        const closeEvent: NormalizedSttEvent = { type: 'close' };
+        if (clientWs.readyState === WebSocket.OPEN) {
+          clientWs.send(JSON.stringify(closeEvent));
+        }
+        // Client will close its connection, triggering cleanup via client close handler
+      } else {
+        // Unexpected close - send close and cleanup
+        const closeEvent: NormalizedSttEvent = { type: 'close' };
+        if (clientWs.readyState === WebSocket.OPEN) {
+          clientWs.send(JSON.stringify(closeEvent));
+        }
+        cleanup('Deepgram closed unexpectedly');
       }
-
-      // Normal close - not during finalization
-      const closeEvent: NormalizedSttEvent = { type: 'close' };
-      if (clientWs.readyState === WebSocket.OPEN) {
-        clientWs.send(JSON.stringify(closeEvent));
-      }
-      cleanup('Deepgram closed');
     });
   }
 
@@ -305,25 +308,11 @@ export function handleDeepgramProxy(clientWs: WebSocket, request: any) {
           console.log(`🏁 [${requestId}] Client requested finalization`);
 
           // Send CloseStream to Deepgram to get final transcripts
+          // Deepgram will send finals then close - we'll forward the close to client
           if (deepgramWs && deepgramWs.readyState === WebSocket.OPEN) {
             console.log(`📤 [${requestId}] Sending CloseStream to Deepgram`);
-            isFinalizing = true; // Set flag to prevent early cleanup when Deepgram closes
+            isFinalizing = true; // Mark that we're finalizing (close will be sent to client)
             deepgramWs.send(JSON.stringify({ type: 'CloseStream' }));
-
-            // Wait a bit for final transcripts, then send 'finalized'
-            // Client will close the connection after receiving this
-            setTimeout(() => {
-              if (clientWs.readyState === WebSocket.OPEN) {
-                const finalizedEvent: NormalizedSttEvent = {
-                  type: 'finalized',
-                };
-                clientWs.send(JSON.stringify(finalizedEvent));
-                console.log(`✅ [${requestId}] Sent 'finalized' event to client (client will close)`);
-                // Don't cleanup here - let client close trigger cleanup via 'close' event handler
-              } else {
-                cleanup('Client already disconnected');
-              }
-            }, 300); // Wait 300ms for Deepgram to send finals (reduced from 1000ms)
           }
           return;
         }

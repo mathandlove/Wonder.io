@@ -47,7 +47,8 @@ export const RecordPanel: React.FC<RecordPanelProps> = ({
   // - answer-waiting: Waiting for answer validation, show answer text with all buttons disabled
   // - answer-right: Correct answer, show answer text centered, no stop button
   // - answer-wrong: Wrong answer, show answer text with error indication
-  // - waiting-for-finalize: Waiting for final transcripts from STT
+  // - waiting-for-finalize: Waiting for final transcripts from STT (Ask)
+  // - waiting-for-answer-finalize: Waiting for final transcripts from STT (Answer)
   // - ai-waiting: All buttons disabled (waiting for AI response)
   const isBasic = dialogueState === 'basic';
   const isQuestOffer = dialogueState === 'quest-showing';
@@ -58,7 +59,8 @@ export const RecordPanel: React.FC<RecordPanelProps> = ({
   const isAnswerWrong = dialogueState === 'answer-wrong';
   const isHintShowing = dialogueState === 'show-hint';
   const isWaitingForFinalize = dialogueState === 'waiting-for-finalize';
-  const isWaiting = dialogueState === 'ai-waiting' || isWaitingForFinalize;
+  const isWaitingForAnswerFinalize = dialogueState === 'waiting-for-answer-finalize';
+  const isWaiting = dialogueState === 'ai-waiting' || isWaitingForFinalize || isWaitingForAnswerFinalize || isAnswerWaiting;
 
   // Hidden state (basic) should use quest-offer visual styling
   const useQuestOfferStyling = isQuestOffer || isBasic;
@@ -115,8 +117,8 @@ export const RecordPanel: React.FC<RecordPanelProps> = ({
   const hintButtonDisabled = isRecording || isWaiting || isAnswerWaiting || disabled; // Disabled when any recording or waiting
   const answerButtonDisabled = isAskRecording || isWaiting || isAnswerWaiting || disabled; // Disabled when Ask recording or waiting
 
-  // Show answer text for record-answer, answer-waiting, answer-right, and answer-wrong states
-  const showAnswerText = isAnswerRecording || isAnswerWaiting || isAnswerRight || isAnswerWrong;
+  // Show answer text for answer recording and all answer-related states
+  const showAnswerText = isAnswerRecording || isWaitingForAnswerFinalize || isAnswerWaiting || isAnswerRight || isAnswerWrong;
 
   // Determine which positioning class to apply based on state
   const getContainerClass = () => {
@@ -135,8 +137,33 @@ export const RecordPanel: React.FC<RecordPanelProps> = ({
   };
 
 
+  // Allow scroll events to pass through to the underlying scene scroll container
+  // This is needed because the panel has pointer-events: auto for button clicks,
+  // but we still want wheel/scroll events to bubble up to scroll the scenes
+  const handleWheel = (e: React.WheelEvent) => {
+    // Re-dispatch the wheel event to the parent scroll container
+    // This allows users to scroll scenes even when the cursor is over the panel
+    const scrollContainer = document.querySelector('.story-scroll');
+    if (scrollContainer && e.target instanceof HTMLElement) {
+      // Only pass through if not scrolling within a scrollable element in the panel
+      const isScrollableContent = e.target.scrollHeight > e.target.clientHeight;
+      if (!isScrollableContent) {
+        // Create and dispatch a new wheel event to the scroll container
+        const wheelEvent = new WheelEvent('wheel', {
+          deltaX: e.deltaX,
+          deltaY: e.deltaY,
+          deltaZ: e.deltaZ,
+          deltaMode: e.deltaMode,
+          bubbles: true,
+          cancelable: true
+        });
+        scrollContainer.dispatchEvent(wheelEvent);
+      }
+    }
+  };
+
   return (
-    <div className={`record-panel-container ${getContainerClass()}`}>
+    <div className={`record-panel-container ${getContainerClass()}`} onWheel={handleWheel}>
       {/* Main Frame - matching Figma exactly */}
       <div className="frame">
         {/* Quest Section - white card with shadow */}
@@ -167,7 +194,7 @@ export const RecordPanel: React.FC<RecordPanelProps> = ({
                 <span className="quest-label">Answer:</span>
               </p>
               <div className="answer-input-box">
-                {isAnswerRecording ? (
+                {(isAnswerRecording || isWaitingForAnswerFinalize) ? (
                   <span className="answer-placeholder">{answerText || 'Listening...'}</span>
                 ) : (
                   <span className="quest-description">{answerText || 'Someone stole your cookies.'}</span>

@@ -91,6 +91,11 @@ function recordingReducer(state: RecordingState, action: RecordingEvent): Record
       const newDisplayText = action.interimText
         ? newAccumulated + ' ' + action.interimText
         : newAccumulated;
+      console.log('🔄 ACCUMULATE action:');
+      console.log('   Previous accumulated:', state.accumulatedText);
+      console.log('   New final text:', action.finalText);
+      console.log('   New accumulated:', newAccumulated);
+      console.log('   Display text:', newDisplayText.trim());
       return {
         ...state,
         accumulatedText: newAccumulated,

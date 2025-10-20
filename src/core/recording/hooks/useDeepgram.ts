@@ -17,9 +17,8 @@ export type NormalizedSttEvent =
   | { type: 'ready' } // Backend signals Deepgram is ready
   | { type: 'partial'; text: string }
   | { type: 'final'; text: string; confidence?: number }
-  | { type: 'finalized' } // Backend signals all final transcripts received
   | { type: 'error'; code?: string; message: string }
-  | { type: 'close' };
+  | { type: 'close' }; // Backend signals Deepgram closed (finals already sent)
 
 export type UseDeepgramCallbacks = {
   onPartial?: (text: string) => void;
@@ -259,20 +258,6 @@ export function useDeepgram(callbacks?: UseDeepgramCallbacks): UseDeepgram {
               }
               break;
 
-            case 'finalized':
-              console.log('[useDeepgram] ✅ All final transcripts received');
-              // Invoke callback to signal that all transcripts are done
-              if (callbacksRef.current?.onFinalized) {
-                callbacksRef.current.onFinalized();
-              }
-              // Close WebSocket (will trigger cleanup via onclose handler)
-              if (wsRef.current && wsRef.current.readyState === WebSocket.OPEN) {
-                console.log('[useDeepgram] 🔌 Closing WebSocket after finalized');
-                wsRef.current.close(1000, 'Finalized');
-              }
-              setStatus('idle');
-              break;
-
             case 'error':
               console.error('[useDeepgram] Error:', message.message);
               setError(message.message);
@@ -285,8 +270,13 @@ export function useDeepgram(callbacks?: UseDeepgramCallbacks): UseDeepgram {
               break;
 
             case 'close':
-              console.log('[useDeepgram] Connection closed by server');
+              console.log('[useDeepgram] ✅ Connection closed - finals received');
+              // Invoke callback to signal that all transcripts are done
+              if (callbacksRef.current?.onFinalized) {
+                callbacksRef.current.onFinalized();
+              }
               cleanup();
+              setStatus('idle');
               break;
           }
         } catch (err) {

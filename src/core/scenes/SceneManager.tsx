@@ -51,6 +51,11 @@ export function getLocksForState(state: SceneState): { lockForward: boolean; loc
       case 'ai-waiting':
         return { lockForward: true, lockBackward: true }; // Cannot navigate during recording/waiting
 
+      // Answer recording states
+      case 'record-answer':
+      case 'waiting-for-answer-finalize':
+        return { lockForward: true, lockBackward: true }; // Cannot navigate during answer recording
+
       // Default dialogue states (basic, quest-basic, quest-accepted, etc.)
       default:
         return { lockForward: false, lockBackward: false };
@@ -283,6 +288,11 @@ export function SceneManagerProvider({ children, initialIndex = 0 }: SceneManage
       const newArray = [...prevArray];
       if (newArray[index]) {
         const locks = getLocksForState(newState);
+        console.log(`🔧 updateNavigationItemState at index ${index}:`, {
+          newState,
+          calculatedLocks: locks,
+          sceneId: newArray[index].sceneId
+        });
         newArray[index] = {
           ...newArray[index],
           sceneState: newState,
@@ -358,56 +368,90 @@ export function SceneManagerProvider({ children, initialIndex = 0 }: SceneManage
   }, [currentIndex, hideScene]);
 
   // Force advance navigation (bypasses locks but still collapses states)
-  // Note: Uses navigationArrayRef to avoid dependency on navigationArray
+  // Uses functional state update to ensure we always read the latest navigationArray
   const forceAdvanceNavigation = useCallback((direction: 'forward' | 'backward') => {
-    const currentArray = navigationArrayRef.current;
-    const delta = direction === 'forward' ? 1 : -1;
-    const next = navigationIndex + delta;
-    const clamped = Math.max(0, Math.min(next, currentArray.length - 1));
+    setNavigationArray(prevArray => {
+      const currentArray = prevArray;
+      const delta = direction === 'forward' ? 1 : -1;
+      const next = navigationIndex + delta;
+      const clamped = Math.max(0, Math.min(next, currentArray.length - 1));
 
-    if (clamped === navigationIndex) return;
+      if (clamped === navigationIndex) return prevArray;
 
-    // When moving FORWARD, collapse previous states of the same scene
-    if (direction === 'forward' && clamped < currentArray.length) {
-      const targetItem = currentArray[clamped];
-      const currentItem = currentArray[navigationIndex];
+      // Track the actual navigation index we ended up at (for currentIndex sync below)
+      let finalNavigationIndex = clamped;
+      let newArray = currentArray;
 
-      // Check if we're moving to next state of same scene
-      if (targetItem && currentItem && targetItem.sceneId === currentItem.sceneId) {
-        const newArray = currentArray.filter((item, idx) => {
-          return item.sceneId !== targetItem.sceneId || idx >= clamped;
+      // When moving FORWARD, collapse previous states of the same scene
+      if (direction === 'forward' && clamped < currentArray.length) {
+        const targetItem = currentArray[clamped];
+        const currentItem = currentArray[navigationIndex];
+
+        // Check if we're moving to next state of same scene
+        if (targetItem && currentItem && targetItem.sceneId === currentItem.sceneId) {
+          newArray = currentArray.filter((item, idx) => {
+            return item.sceneId !== targetItem.sceneId || idx >= clamped;
+          });
+
+          finalNavigationIndex = newArray.findIndex(item => item === targetItem);
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          console.log(`🗑️ Collapsed ${currentItem.sceneState.type}:${(currentItem.sceneState as any).state || 'static'}`);
+        }
+      } else if (direction === 'backward') {
+        // When moving BACKWARD, skip over previous states of the same scene
+        // Jump directly to a different scene
+        const currentItem = currentArray[navigationIndex];
+        const targetItem = currentArray[clamped];
+
+        if (targetItem && currentItem && targetItem.sceneId === currentItem.sceneId) {
+          // Same scene - keep going backward until we find a different scene
+          let backwardIndex = clamped - 1;
+          while (backwardIndex >= 0 && currentArray[backwardIndex].sceneId === currentItem.sceneId) {
+            backwardIndex--;
+          }
+
+          if (backwardIndex >= 0) {
+            console.log(`⏪ Skipping same-scene states, jumping from index ${navigationIndex} to ${backwardIndex}`);
+            finalNavigationIndex = backwardIndex;
+          } else {
+            // No different scene found, stay at current position
+            console.log(`⏪ Cannot go backward - already at first scene`);
+            return prevArray; // Don't update anything
+          }
+        }
+      }
+
+      // Update navigationIndex after computing finalNavigationIndex
+      setNavigationIndex(finalNavigationIndex);
+
+      // Also update currentIndex for backward compatibility
+      const item = newArray[finalNavigationIndex];
+      if (item) {
+        const sceneIndex = visibleScenes.findIndex(s => {
+          const sceneWithId = s as Scene & { sceneId?: string };
+          return sceneWithId.sceneId === item.sceneId;
         });
-
-        setNavigationArray(newArray);
-        const newIndex = newArray.findIndex(item => item === targetItem);
-        setNavigationIndex(newIndex);
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        console.log(`🗑️ Collapsed ${currentItem.sceneState.type}:${(currentItem.sceneState as any).state || 'static'}`);
-      } else {
-        setNavigationIndex(clamped);
+        if (sceneIndex !== -1) {
+          setCurrentIndex(sceneIndex);
+        }
       }
-    } else {
-      setNavigationIndex(clamped);
-    }
 
-    // Also update currentIndex for backward compatibility
-    const item = currentArray[clamped];
-    if (item) {
-      const sceneIndex = visibleScenes.findIndex(s => {
-        const sceneWithId = s as Scene & { sceneId?: string };
-        return sceneWithId.sceneId === item.sceneId;
-      });
-      if (sceneIndex !== -1) {
-        setCurrentIndex(sceneIndex);
-      }
-    }
-  }, [navigationIndex, setNavigationIndex, setNavigationArray, visibleScenes, setCurrentIndex]);
+      return newArray;
+    });
+  }, [navigationIndex, setNavigationIndex, visibleScenes, setCurrentIndex]);
 
   // Navigation array-based navigation with state collapse
   // Note: We use navigationArrayRef to access the latest array without causing dependency changes
   const advanceNavigation = useCallback((direction: 'forward' | 'backward') => {
     // Check if current navigation item locks this direction
     const currentItem = navigationArrayRef.current[navigationIndex];
+    console.log(`🚦 advanceNavigation(${direction}) at index ${navigationIndex}:`, {
+      sceneId: currentItem?.sceneId,
+      state: currentItem?.sceneState,
+      lockForward: currentItem?.lockForward,
+      lockBackward: currentItem?.lockBackward
+    });
+
     if (currentItem) {
       if (direction === 'forward' && currentItem.lockForward) {
         console.log('🔒 Navigation locked forward at', currentItem.sceneId, currentItem.sceneState);

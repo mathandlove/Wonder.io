@@ -38,6 +38,7 @@ import { StepScrollDebug } from '@core/scroll/StepScrollDebug'
 import { SceneStatesProvider } from '@core/scenes/SceneStates'
 import { ChatGatewayProvider } from '@features/chat/gateway'
 import { ChatFlowOrchestratorComponent } from '@core/dialogue/ChatFlowOrchestratorComponent'
+import { AnswerValidationOrchestrator } from '@core/dialogue/AnswerValidationOrchestrator'
 import { FlowMetadataProvider, useFlowMetadata } from '@core/data/FlowMetadataStore'
 // Path to the story JSON bundle we want to load. In demo mode we keep this fixed
 // so the experience is deterministic for the presentation.
@@ -188,6 +189,9 @@ const StoryContent: React.FC = () => {
           <CharacterAnimationProvider>
             {/* ChatFlow orchestrator watches for ai-waiting state and triggers responses */}
             <ChatFlowOrchestratorComponent />
+
+            {/* AnswerValidation orchestrator watches for answer-waiting state and validates */}
+            <AnswerValidationOrchestrator />
 
             {/* Unified scroll control component - uses uniqueScenes from navigationArray */}
             <ScrollControl

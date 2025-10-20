@@ -58,6 +58,8 @@
 .record-panel-container > *,
 .chat-composer-container > * {
   pointer-events: auto;
+  /* Allow touch scrolling to pass through */
+  touch-action: pan-y pan-x;
 }
 
 /* ===================================
