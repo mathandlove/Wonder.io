@@ -8,7 +8,7 @@ import { z } from 'zod';
 export type NormalizedSttEvent =
   | { type: 'ready' } // Signals that Deepgram is connected and ready to receive audio
   | { type: 'partial'; text: string }
-  | { type: 'final'; text: string; confidence?: number }
+  | { type: 'final'; text: string; confidence?: number; start?: number; duration?: number }
   | { type: 'error'; code?: string; message: string }
   | { type: 'close' }; // Signals Deepgram closed after sending finals
 
@@ -88,6 +88,8 @@ function normalizeDeepgramMessage(message: any): NormalizedSttEvent | null {
           type: 'final',
           text,
           confidence: alternative.confidence,
+          start: parsed.start, // Include timing for replacement detection
+          duration: parsed.duration,
         };
       } else {
         // Interim results (partial transcripts that may change)
@@ -232,14 +234,33 @@ export function handleDeepgramProxy(clientWs: WebSocket, request: any) {
     deepgramWs.on('message', (data: RawData) => {
       try {
         const message = JSON.parse(data.toString());
+
+        // ════════════════════════════════════════════════════════════════════
+        // DEBUG LOGGING - Show ALL variables
+        // ════════════════════════════════════════════════════════════════════
+        if (message.type === 'Results' && message.channel) {
+          const transcript = message.channel.alternatives?.[0]?.transcript || '';
+
+          if (transcript.trim()) {
+            // Show ALL top-level properties
+            const props = [];
+            for (const key in message) {
+              if (key !== 'channel' && key !== 'type' && Object.prototype.hasOwnProperty.call(message, key)) {
+                props.push(`${key}=${JSON.stringify(message[key])}`);
+              }
+            }
+            console.log(`[DEEPGRAM] ${props.join(' ')} text="${transcript}"`);
+          }
+        }
+
         const normalized = normalizeDeepgramMessage(message);
 
         if (normalized && clientWs.readyState === WebSocket.OPEN) {
           clientWs.send(JSON.stringify(normalized));
           resetIdleTimer(); // Reset on activity
         }
-      } catch {
-        // Silently handle parse errors
+      } catch (error) {
+        console.error('❌ Parse error:', error);
       }
     });
 

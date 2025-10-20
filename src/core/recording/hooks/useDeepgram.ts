@@ -16,13 +16,13 @@ export type SttStatus = 'idle' | 'recording' | 'processing' | 'error';
 export type NormalizedSttEvent =
   | { type: 'ready' } // Backend signals Deepgram is ready
   | { type: 'partial'; text: string }
-  | { type: 'final'; text: string; confidence?: number }
+  | { type: 'final'; text: string; confidence?: number; start?: number; duration?: number }
   | { type: 'error'; code?: string; message: string }
   | { type: 'close' }; // Backend signals Deepgram closed (finals already sent)
 
 export type UseDeepgramCallbacks = {
   onPartial?: (text: string) => void;
-  onFinal?: (text: string, confidence?: number) => void;
+  onFinal?: (text: string, confidence?: number, start?: number, duration?: number) => void;
   onFinalized?: () => void; // Called when all final transcripts have been received
   onAutoStop?: () => void; // Called when auto-stop timeout fires (silence detection)
   onError?: (error: string) => void;
@@ -45,7 +45,7 @@ const CONFIG = {
   WS_URL: 'ws://localhost:3001/api/stt/socket',
   SAMPLE_RATE: 16000, // Deepgram expects 16kHz
   SILENCE_THRESHOLD: 0.01, // RMS threshold for silence detection
-  SILENCE_DURATION_MS: 1000, // Auto-stop after 20s of silence
+  SILENCE_DURATION_MS: 20000, // Auto-stop after 20s of silence
   BUFFER_SIZE: 4096, // AudioWorklet buffer size
 } as const;
 
@@ -192,8 +192,13 @@ export function useDeepgram(callbacks?: UseDeepgramCallbacks): UseDeepgram {
         try {
           const message: NormalizedSttEvent = JSON.parse(event.data);
 
+          // ════════════════════════════════════════════════════════════════════
+          // DEBUG LOGGING - Essential info only
+          // ════════════════════════════════════════════════════════════════════
+
           switch (message.type) {
             case 'ready':
+              console.log('✅ Deepgram READY signal received');
               // Don't mark as ready immediately - wait for delayed flush
               // This ensures we buffer any speech that starts right after mic permission is granted
 
@@ -206,6 +211,7 @@ export function useDeepgram(callbacks?: UseDeepgramCallbacks): UseDeepgram {
               break;
 
             case 'partial':
+              console.log(`[FRONTEND] PARTIAL: "${message.text}"`);
               setPartial(message.text);
               // Invoke callback
               if (callbacksRef.current?.onPartial) {
@@ -219,6 +225,7 @@ export function useDeepgram(callbacks?: UseDeepgramCallbacks): UseDeepgram {
               break;
 
             case 'final':
+              console.log(`[FRONTEND] FINAL: "${message.text}" (confidence: ${message.confidence})`);
               // Don't accumulate in the hook - let the parent handle it via callback
               setTranscript(message.text); // Store only the latest final text
               setPartial(''); // Clear partial after final
@@ -229,6 +236,7 @@ export function useDeepgram(callbacks?: UseDeepgramCallbacks): UseDeepgram {
               break;
 
             case 'error':
+              console.error(`[FRONTEND] ERROR: ${message.message} (code: ${message.code})`);
               setError(message.message);
               setStatus('error');
               // Invoke callback
@@ -239,6 +247,7 @@ export function useDeepgram(callbacks?: UseDeepgramCallbacks): UseDeepgram {
               break;
 
             case 'close':
+              console.log('[FRONTEND] CLOSE signal received');
               // Invoke callback to signal that all transcripts are done
               if (callbacksRef.current?.onFinalized) {
                 callbacksRef.current.onFinalized();
@@ -247,8 +256,8 @@ export function useDeepgram(callbacks?: UseDeepgramCallbacks): UseDeepgram {
               setStatus('idle');
               break;
           }
-        } catch {
-          // Silently handle parse errors
+        } catch (error) {
+          console.error('[FRONTEND] Parse error:', error);
         }
       };
 
