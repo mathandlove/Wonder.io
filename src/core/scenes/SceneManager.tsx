@@ -141,19 +141,23 @@ export function SceneManagerProvider({ children, initialIndex = 0 }: SceneManage
   );
 
   // Mutable navigation array that can be collapsed as we progress forward
-  const [navigationArray, setNavigationArray] = useState<NavigationItem[]>([]);
+  const [navigationArray, _setNavigationArray] = useState<NavigationItem[]>([]);
+
+  // Wrapper for setNavigationArray that keeps ref in sync synchronously
+  const setNavigationArray = React.useCallback((update: NavigationItem[] | ((prev: NavigationItem[]) => NavigationItem[])) => {
+    _setNavigationArray(prev => {
+      const newArray = typeof update === 'function' ? update(prev) : update;
+      // Update ref synchronously so it's immediately available
+      navigationArrayRef.current = newArray;
+      return newArray;
+    });
+  }, []);
 
   // Sync navigationArray with baseNavigationArray when scenes change
   React.useEffect(() => {
     setNavigationArray(baseNavigationArray);
-    navigationArrayRef.current = baseNavigationArray;
     // Do NOT touch navigationIndex - let it stay where it is
-  }, [baseNavigationArray]);
-
-  // Keep ref in sync with state
-  React.useEffect(() => {
-    navigationArrayRef.current = navigationArray;
-  }, [navigationArray]);
+  }, [baseNavigationArray, setNavigationArray]);
 
   // Helper functions for navigation array access
   // Note: Uses navigationArrayRef to avoid triggering cascading re-renders
@@ -368,77 +372,79 @@ export function SceneManagerProvider({ children, initialIndex = 0 }: SceneManage
   }, [currentIndex, hideScene]);
 
   // Force advance navigation (bypasses locks but still collapses states)
-  // Uses functional state update to ensure we always read the latest navigationArray
+  // Note: Uses navigationArrayRef which is kept in sync synchronously via setNavigationArray wrapper
   const forceAdvanceNavigation = useCallback((direction: 'forward' | 'backward') => {
-    setNavigationArray(prevArray => {
-      const currentArray = prevArray;
-      const delta = direction === 'forward' ? 1 : -1;
-      const next = navigationIndex + delta;
-      const clamped = Math.max(0, Math.min(next, currentArray.length - 1));
+    const currentArray = navigationArrayRef.current;
+    const delta = direction === 'forward' ? 1 : -1;
+    const next = navigationIndex + delta;
+    const clamped = Math.max(0, Math.min(next, currentArray.length - 1));
 
-      if (clamped === navigationIndex) return prevArray;
+    if (clamped === navigationIndex) return;
 
-      // Track the actual navigation index we ended up at (for currentIndex sync below)
-      let finalNavigationIndex = clamped;
-      let newArray = currentArray;
+    // Track the actual navigation index we ended up at (for currentIndex sync below)
+    let finalNavigationIndex = clamped;
 
-      // When moving FORWARD, collapse previous states of the same scene
-      if (direction === 'forward' && clamped < currentArray.length) {
-        const targetItem = currentArray[clamped];
-        const currentItem = currentArray[navigationIndex];
+    // When moving FORWARD, collapse previous states of the same scene
+    if (direction === 'forward' && clamped < currentArray.length) {
+      const targetItem = currentArray[clamped];
+      const currentItem = currentArray[navigationIndex];
 
-        // Check if we're moving to next state of same scene
-        if (targetItem && currentItem && targetItem.sceneId === currentItem.sceneId) {
-          newArray = currentArray.filter((item, idx) => {
-            return item.sceneId !== targetItem.sceneId || idx >= clamped;
-          });
-
-          finalNavigationIndex = newArray.findIndex(item => item === targetItem);
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          console.log(`🗑️ Collapsed ${currentItem.sceneState.type}:${(currentItem.sceneState as any).state || 'static'}`);
-        }
-      } else if (direction === 'backward') {
-        // When moving BACKWARD, skip over previous states of the same scene
-        // Jump directly to a different scene
-        const currentItem = currentArray[navigationIndex];
-        const targetItem = currentArray[clamped];
-
-        if (targetItem && currentItem && targetItem.sceneId === currentItem.sceneId) {
-          // Same scene - keep going backward until we find a different scene
-          let backwardIndex = clamped - 1;
-          while (backwardIndex >= 0 && currentArray[backwardIndex].sceneId === currentItem.sceneId) {
-            backwardIndex--;
-          }
-
-          if (backwardIndex >= 0) {
-            console.log(`⏪ Skipping same-scene states, jumping from index ${navigationIndex} to ${backwardIndex}`);
-            finalNavigationIndex = backwardIndex;
-          } else {
-            // No different scene found, stay at current position
-            console.log(`⏪ Cannot go backward - already at first scene`);
-            return prevArray; // Don't update anything
-          }
-        }
-      }
-
-      // Update navigationIndex after computing finalNavigationIndex
-      setNavigationIndex(finalNavigationIndex);
-
-      // Also update currentIndex for backward compatibility
-      const item = newArray[finalNavigationIndex];
-      if (item) {
-        const sceneIndex = visibleScenes.findIndex(s => {
-          const sceneWithId = s as Scene & { sceneId?: string };
-          return sceneWithId.sceneId === item.sceneId;
+      // Check if we're moving to next state of same scene
+      if (targetItem && currentItem && targetItem.sceneId === currentItem.sceneId) {
+        const newArray = currentArray.filter((item, idx) => {
+          return item.sceneId !== targetItem.sceneId || idx >= clamped;
         });
-        if (sceneIndex !== -1) {
-          setCurrentIndex(sceneIndex);
-        }
-      }
 
-      return newArray;
-    });
-  }, [navigationIndex, setNavigationIndex, visibleScenes, setCurrentIndex]);
+        setNavigationArray(newArray);
+        const newIndex = newArray.findIndex(item => item === targetItem);
+        setNavigationIndex(newIndex);
+        finalNavigationIndex = newIndex;
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        console.log(`🗑️ Collapsed ${currentItem.sceneState.type}:${(currentItem.sceneState as any).state || 'static'}`);
+      } else {
+        setNavigationIndex(clamped);
+      }
+    } else if (direction === 'backward') {
+      // When moving BACKWARD, skip over previous states of the same scene
+      // Jump directly to a different scene
+      const currentItem = currentArray[navigationIndex];
+      const targetItem = currentArray[clamped];
+
+      if (targetItem && currentItem && targetItem.sceneId === currentItem.sceneId) {
+        // Same scene - keep going backward until we find a different scene
+        let backwardIndex = clamped - 1;
+        while (backwardIndex >= 0 && currentArray[backwardIndex].sceneId === currentItem.sceneId) {
+          backwardIndex--;
+        }
+
+        if (backwardIndex >= 0) {
+          console.log(`⏪ Skipping same-scene states, jumping from index ${navigationIndex} to ${backwardIndex}`);
+          setNavigationIndex(backwardIndex);
+          finalNavigationIndex = backwardIndex;
+        } else {
+          // No different scene found, stay at current position
+          console.log(`⏪ Cannot go backward - already at first scene`);
+          return; // Don't update anything
+        }
+      } else {
+        setNavigationIndex(clamped);
+      }
+    } else {
+      setNavigationIndex(clamped);
+    }
+
+    // Also update currentIndex for backward compatibility
+    const item = currentArray[finalNavigationIndex];
+    if (item) {
+      const sceneIndex = visibleScenes.findIndex(s => {
+        const sceneWithId = s as Scene & { sceneId?: string };
+        return sceneWithId.sceneId === item.sceneId;
+      });
+      if (sceneIndex !== -1) {
+        setCurrentIndex(sceneIndex);
+      }
+    }
+  }, [navigationIndex, setNavigationIndex, setNavigationArray, visibleScenes, setCurrentIndex]);
 
   // Navigation array-based navigation with state collapse
   // Note: We use navigationArrayRef to access the latest array without causing dependency changes
