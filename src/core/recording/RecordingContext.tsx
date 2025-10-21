@@ -83,7 +83,7 @@ function recordingReducer(state: RecordingState, action: RecordingEvent): Record
 
 interface RecordingContextValue {
   state: RecordingState;
-  start: () => void;
+  start: () => Promise<void>;
   stop: () => void;
   abort: () => void;
   getDisplayText: () => string;
@@ -139,18 +139,25 @@ export function RecordingProvider({ children }: { children: React.ReactNode }) {
     },
   });
 
-  const start = useCallback(() => {
+  const start = useCallback(async () => {
     // Generate session ID
     const sessionId = `session_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
 
-    dispatch({ type: 'START', sessionId });
+    // CRITICAL FIX: Wait for audio initialization BEFORE dispatching START
+    // This ensures the UI doesn't show "recording" until audio is actually flowing
+    console.log('[RecordingContext] 🚀 Initializing audio (await before START dispatch)...');
 
-    // Start backend STT (GPT-4o Transcribe via WebSocket)
-    console.log('[RecordingContext] Starting backend recording');
-    stt.start().catch(() => {
-      console.error('[RecordingContext] Backend STT failed to start');
+    try {
+      // Wait for microphone, AudioWorklet loading, and audio graph connection
+      await stt.start();
+      console.log('[RecordingContext] ✅ Audio initialized - NOW dispatching START');
+
+      // NOW dispatch START - audio is actually flowing
+      dispatch({ type: 'START', sessionId });
+    } catch (error) {
+      console.error('[RecordingContext] ❌ Backend STT failed to start:', error);
       dispatch({ type: 'ABORT' });
-    });
+    }
   }, [stt]);
 
   const stop = useCallback(() => {

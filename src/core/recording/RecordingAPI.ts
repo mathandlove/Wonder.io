@@ -1,20 +1,20 @@
 // Global Recording API singleton
 class RecordingAPI {
-  private startFn: (() => void) | null = null;
+  private startFn: (() => Promise<void>) | null = null;
   private stopFn: (() => void) | null = null;
   private abortFn: (() => void) | null = null;
 
   // Called by RecordingProvider to register the functions
-  register(start: () => void, stop: () => void, abort: () => void) {
+  register(start: () => Promise<void>, stop: () => void, abort: () => void) {
 
     this.startFn = start;
     this.stopFn = stop;
     this.abortFn = abort;
   }
 
-  start() {
+  async start() {
     if (this.startFn) {
-      this.startFn();
+      await this.startFn();
     } else {
       console.warn('❌ Recording API not initialized - ensure RecordingProvider is mounted');
     }

@@ -106,13 +106,19 @@ export function useSTT(callbacks?: UseSTTCallbacks): UseSTT {
 
   const flushBuffer = useCallback((ws: WebSocket) => {
     if (audioBufferRef.current.length > 0) {
+      console.log(`[flushBuffer] 🚀 Flushing ${audioBufferRef.current.length} buffered chunks to WebSocket`);
+      let sentCount = 0;
       audioBufferRef.current.forEach(chunk => {
         if (ws.readyState === WebSocket.OPEN) {
           ws.send(chunk);
+          sentCount++;
         }
       });
+      console.log(`[flushBuffer] ✅ Successfully sent ${sentCount}/${audioBufferRef.current.length} chunks`);
       audioBufferRef.current = [];
       bufferWasFlushedRef.current = true;
+    } else {
+      console.log('[flushBuffer] ℹ️  No buffered chunks to flush');
     }
   }, []);
 
@@ -276,11 +282,17 @@ export function useSTT(callbacks?: UseSTTCallbacks): UseSTT {
       // Clear audio buffer from any previous session
       audioBufferRef.current = [];
 
-      // 1. Connect to WebSocket proxy
+      // ═══════════════════════════════════════════════════════════════════════
+      // PARALLELIZED INITIALIZATION
+      // Start WebSocket AND audio capture simultaneously to minimize latency
+      // ═══════════════════════════════════════════════════════════════════════
+
+      console.log('[START] 🚀 Starting PARALLEL initialization (WebSocket + Audio)...');
+
+      // 1. Start WebSocket connection (non-blocking)
       console.log(`[START] 🌐 Connecting to WebSocket: ${CONFIG.WS_URL}`);
       const ws = new WebSocket(CONFIG.WS_URL);
       wsRef.current = ws;
-      console.log('[START] ✓ WebSocket ref set');
 
       // Track if we've sent start_session
       let sessionStartSent = false;
@@ -289,7 +301,7 @@ export function useSTT(callbacks?: UseSTTCallbacks): UseSTT {
         // Signal to backend that a new session is starting (reset accumulation)
         ws.send(JSON.stringify({ type: 'start_session' }));
         sessionStartSent = true;
-        console.log('[FRONTEND] Sent start_session signal to backend on WebSocket open');
+        console.log('[FRONTEND] ✅ WebSocket OPEN - Sent start_session signal');
       };
 
       ws.onmessage = (event) => {
@@ -312,6 +324,7 @@ export function useSTT(callbacks?: UseSTTCallbacks): UseSTT {
               isSttReadyRef.current = true;
 
               // Flush any buffered audio immediately
+              console.log(`[FRONTEND] Flushing ${audioBufferRef.current.length} buffered chunks`);
               flushBuffer(ws);
               break;
 
@@ -372,8 +385,8 @@ export function useSTT(callbacks?: UseSTTCallbacks): UseSTT {
         }
       };
 
-      // 2. Capture microphone
-      console.log('[START] 🎤 Requesting microphone access...');
+      // 2. Capture microphone IN PARALLEL (this may block on user permission)
+      console.log('[START] 🎤 Requesting microphone access (parallel with WebSocket)...');
       const stream = await navigator.mediaDevices.getUserMedia({
         audio: {
           noiseSuppression: true,
@@ -451,10 +464,12 @@ export function useSTT(callbacks?: UseSTTCallbacks): UseSTT {
             } else if (ws.readyState === WebSocket.OPEN || ws.readyState === WebSocket.CONNECTING) {
               // WebSocket open but STT not ready yet, or still connecting - buffer the audio
               audioBufferRef.current.push(audioBuffer);
+              console.log(`[useSTT] 📦 BUFFERING audio chunk (total buffered: ${audioBufferRef.current.length}) - WS state: ${ws.readyState}, STT ready: ${isSttReadyRef.current}`);
 
               // Limit buffer size to prevent memory issues (max 2 seconds = ~125 chunks at 4096 buffer size)
               if (audioBufferRef.current.length > 125) {
                 audioBufferRef.current.shift(); // Remove oldest chunk
+                console.log('[useSTT] ⚠️  Buffer overflow - dropped oldest chunk');
               }
             }
             // If WebSocket is CLOSING or CLOSED, we just drop the audio
