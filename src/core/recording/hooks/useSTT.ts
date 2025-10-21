@@ -88,6 +88,9 @@ export function useSTT(callbacks?: UseSTTCallbacks): UseSTT {
   // Audio buffer for early speech (before STT is ready)
   const audioBufferRef = useRef<ArrayBuffer[]>([]);
 
+  // Ref to store stop function to avoid circular dependency in useCallback
+  const stopRef = useRef<(() => void) | null>(null);
+
   // Track if STT backend is ready to receive audio (use ref so onaudioprocess callback has latest value)
   const isSttReadyRef = useRef<boolean>(false);
 
@@ -268,6 +271,13 @@ export function useSTT(callbacks?: UseSTTCallbacks): UseSTT {
     // This prevents resource leaks if start() is called multiple times
     console.log('[START] 🧹 Cleaning up any existing resources first...');
     cleanup();
+
+    // CRITICAL FIX: Wait for WebSocket close to complete before creating new connection
+    // This prevents race condition where two WebSockets are open simultaneously
+    // causing audio from old session to leak into new session
+    console.log('[START] ⏳ Waiting 100ms for WebSocket close handshake to complete...');
+    await new Promise(resolve => setTimeout(resolve, 100));
+    console.log('[START] ✓ WebSocket cleanup grace period complete');
 
     try {
       isStoppingRef.current = false; // Reset stopping flag when starting new recording
@@ -493,7 +503,7 @@ export function useSTT(callbacks?: UseSTTCallbacks): UseSTT {
                   callbacksRef.current.onAutoStop();
                 }
                 // Then stop the recording
-                stop();
+                stopRef.current?.();
               }, CONFIG.SILENCE_DURATION_MS);
             }
             break;
@@ -551,7 +561,7 @@ export function useSTT(callbacks?: UseSTTCallbacks): UseSTT {
       setStatus('error');
       cleanup();
     }
-  }, [cleanup, flushBuffer, status]); // stop is defined below, not a dependency
+  }, [cleanup, flushBuffer, status]);
 
   // ──────────────────────────────────────────────────────────────────────────────
   // Stop Recording
@@ -728,6 +738,14 @@ export function useSTT(callbacks?: UseSTTCallbacks): UseSTT {
     console.log('═══════════════════════════════════════════════════════');
     console.log('');
   }, [cleanup]);
+
+  // ──────────────────────────────────────────────────────────────────────────────
+  // Update stopRef when stop changes
+  // ──────────────────────────────────────────────────────────────────────────────
+
+  useEffect(() => {
+    stopRef.current = stop;
+  }, [stop]);
 
   // ──────────────────────────────────────────────────────────────────────────────
   // Cleanup on unmount

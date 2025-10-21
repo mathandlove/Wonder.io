@@ -726,7 +726,7 @@
 /* Hint button specific width - tight */
 .frame .hint-btn {
   width: 59px;
-  padding: 9px 20px; /* Reduced vertical padding from 19px to 9px (10px reduction) */
+  padding: 8px 20px; /* Match Ask/Answer button padding exactly */
 }
 
 /* Answer button specific width */
@@ -990,12 +990,15 @@
 
 /* Hint button uses shared styles above, this is just for the icon */
 .frame .img {
-  height: 35px;
-  width: 35px;
+  height: 30px;
+  width: 30px;
   object-fit: contain;
   position: relative;
   filter: brightness(0) invert(1); /* Makes the icon white */
   z-index: 2; /* Above any overlays */
+  /* Compensate for lightbulb SVG's bottom-heavy viewBox (content extends to y=97.5 in 0-100 viewBox) */
+  /* Shift up by 2px to visually align with Ask button text baseline */
+  transform: translateY(-2px);
 }
 
 /* ===================================
