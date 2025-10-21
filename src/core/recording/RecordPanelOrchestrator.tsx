@@ -485,24 +485,34 @@ export function RecordingOrchestrator() {
   /**
    * Handle Answer button click - EVENT DRIVEN APPROACH
    * Starts recording IMMEDIATELY, then updates states
+   * Pattern matches handleRecordStart for consistency
    */
   const handleAnswerClick = useCallback(async () => {
     try {
+      // Generate unique recording ID
+      const recordingId = `answer-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+
       console.log('[RecordPanelOrchestrator] 🎙️ EVENT-DRIVEN: Starting ANSWER recording IMMEDIATELY on click');
 
-      // STEP 1: START RECORDING IMMEDIATELY (event-driven)
-      // NOTE: For answer recording, we don't create a new scene with recordingId
-      // The recordingId will be derived from the existing scene if it has one
-
-      // Start recording - this will await audio initialization
+      // STEP 1: START RECORDING IMMEDIATELY (event-driven, not state-driven)
+      // This happens FIRST, before any state changes or navigation
       await Recording.start().catch((err) => {
         console.error('[RecordPanelOrchestrator] Failed to start answer recording:', err);
-        throw err;
+        throw err; // Re-throw to prevent state updates on failure
       });
 
       console.log('[RecordPanelOrchestrator] ✅ Answer recording started, NOW updating states');
 
-      // STEP 2: NOW update states (happens AFTER recording is flowing)
+      // STEP 2: NOW update UI states (happens AFTER recording is flowing)
+      // CRITICAL: Add recordingId to the current scene so activeRecordingId can be derived
+      const currentItem = getCurrentNavigationItem();
+      if (currentItem?.scene) {
+        // Add recordingId property to the scene (type assertion needed)
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        (currentItem.scene as any).recordingId = recordingId;
+        console.log('[RecordPanelOrchestrator] ✅ Added recordingId to current scene:', recordingId);
+      }
+
       // Add record-answer state to current scene (same scene, new state)
       addNavigationStateToCurrentScene(
         { type: 'dialogue', state: 'record-answer' },
@@ -515,7 +525,7 @@ export function RecordingOrchestrator() {
     } catch {
       // Silent error handling - recording failed to start
     }
-  }, [addNavigationStateToCurrentScene, forceAdvanceNavigation]);
+  }, [addNavigationStateToCurrentScene, forceAdvanceNavigation, getCurrentNavigationItem]);
 
   // Don't render if panel shouldn't be visible
   if (!shouldShowPanel) {
