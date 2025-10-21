@@ -79,6 +79,9 @@ export function useSTT(callbacks?: UseSTTCallbacks): UseSTT {
   // Track if we're waiting for a flush chunk (allows final chunk through when stopping)
   const expectingFlushRef = useRef<boolean>(false);
 
+  // Callback to execute when flush chunk is received
+  const onFlushCompleteRef = useRef<(() => void) | null>(null);
+
   // Track if a silence timer is currently pending (prevents race condition)
   const silenceTimerPendingRef = useRef<boolean>(false);
 
@@ -134,9 +137,10 @@ export function useSTT(callbacks?: UseSTTCallbacks): UseSTT {
     isStoppingRef.current = false;
     console.log('[Cleanup] ✓ Reset isStoppingRef = false');
 
-    // Reset flush expectation flag
+    // Reset flush expectation flag and callback
     expectingFlushRef.current = false;
-    console.log('[Cleanup] ✓ Reset expectingFlushRef = false');
+    onFlushCompleteRef.current = null;
+    console.log('[Cleanup] ✓ Reset expectingFlushRef = false and cleared onFlushCompleteRef');
 
     // Clear audio buffer
     audioBufferRef.current = [];
@@ -428,10 +432,16 @@ export function useSTT(callbacks?: UseSTTCallbacks): UseSTT {
               ws.send(audioBuffer);
               console.log('[useSTT] Sent audio chunk to backend, size:', audioBuffer.byteLength);
 
-              // If we were expecting a flush, we just received it - clear the flag
+              // If we were expecting a flush, we just received it - execute the post-flush callback
               if (expectingFlushRef.current) {
-                console.log('[useSTT] Received expected flush chunk');
+                console.log('[useSTT] ✅ Received expected flush chunk - executing onFlushComplete callback');
                 expectingFlushRef.current = false;
+
+                // Execute the callback that was set up when we sent the flush command
+                if (onFlushCompleteRef.current) {
+                  onFlushCompleteRef.current();
+                  onFlushCompleteRef.current = null;
+                }
               }
 
               // Reset flag after first direct send
@@ -579,48 +589,45 @@ export function useSTT(callbacks?: UseSTTCallbacks): UseSTT {
     setStatus('processing');
     console.log('[useSTT] ✓ Status set to: processing');
 
-    // CRITICAL: Stop capturing new audio IMMEDIATELY to prevent new chunks
-    // This stops the microphone but keeps the worklet alive to flush
-    console.log('[useSTT] 🎤 Stopping MediaStream tracks...');
-    if (mediaStreamRef.current) {
-      const tracks = mediaStreamRef.current.getTracks();
-      console.log(`  → Found ${tracks.length} track(s)`);
-      tracks.forEach((track, i) => {
-        console.log(`  → Track ${i}: ${track.kind}, readyState BEFORE: "${track.readyState}", enabled: ${track.enabled}`);
-        track.stop();
-        console.log(`  → Track ${i}: ${track.kind}, readyState AFTER: "${track.readyState}"`);
-      });
-      mediaStreamRef.current = null;
-      console.log('[useSTT] ✅ MediaStream ref cleared');
-    } else {
-      console.log('[useSTT] ⚠️  No MediaStream to stop!');
-    }
-
-    // Disconnect the source node to stop audio flowing to the worklet
-    console.log('[useSTT] 🔌 Disconnecting source node...');
-    if (sourceNodeRef.current) {
-      sourceNodeRef.current.disconnect();
-      sourceNodeRef.current = null;
-      console.log('[useSTT] ✅ Source node disconnected and ref cleared');
-    } else {
-      console.log('[useSTT] ⚠️  No source node to disconnect');
-    }
-
-    // IMPORTANT: Flush any remaining audio from the AudioWorklet buffer, then disconnect everything
-    // The worklet accumulates audio in 4096-sample chunks, so there might be a partial chunk
-    // that hasn't been sent yet. We need to flush it before finalizing.
-    console.log('[useSTT] 📤 Flushing worklet buffer...');
+    // CRITICAL FIX: Flush the worklet buffer BEFORE stopping the audio pipeline
+    // This ensures we capture any remaining audio in the worklet's partial buffer
+    console.log('[useSTT] 📤 Flushing worklet buffer FIRST (before stopping audio)...');
     if (workletNodeRef.current) {
       console.log('[useSTT] ✓ Worklet exists, sending flush message');
       // Set flag to allow the final flush chunk through (and ONLY that chunk)
       expectingFlushRef.current = true;
-      workletNodeRef.current.port.postMessage({ type: 'flush' });
 
-      // Wait briefly for the flush message to process, then disconnect and close
-      setTimeout(() => {
-        console.log('[useSTT] ⏰ Flush timeout fired (20ms elapsed)');
+      // Set up the callback to execute when flush chunk arrives
+      onFlushCompleteRef.current = () => {
+        console.log('[useSTT] 🎯 EVENT-DRIVEN: Flush chunk received - now stopping audio pipeline');
 
-        // Disconnect the worklet FIRST
+        // NOW stop capturing new audio
+        console.log('[useSTT] 🎤 Stopping MediaStream tracks...');
+        if (mediaStreamRef.current) {
+          const tracks = mediaStreamRef.current.getTracks();
+          console.log(`  → Found ${tracks.length} track(s)`);
+          tracks.forEach((track, i) => {
+            console.log(`  → Track ${i}: ${track.kind}, readyState BEFORE: "${track.readyState}", enabled: ${track.enabled}`);
+            track.stop();
+            console.log(`  → Track ${i}: ${track.kind}, readyState AFTER: "${track.readyState}"`);
+          });
+          mediaStreamRef.current = null;
+          console.log('[useSTT] ✅ MediaStream ref cleared');
+        } else {
+          console.log('[useSTT] ⚠️  No MediaStream to stop!');
+        }
+
+        // Disconnect the source node to stop audio flowing to the worklet
+        console.log('[useSTT] 🔌 Disconnecting source node...');
+        if (sourceNodeRef.current) {
+          sourceNodeRef.current.disconnect();
+          sourceNodeRef.current = null;
+          console.log('[useSTT] ✅ Source node disconnected and ref cleared');
+        } else {
+          console.log('[useSTT] ⚠️  No source node to disconnect');
+        }
+
+        // Disconnect the worklet
         if (workletNodeRef.current) {
           console.log('[useSTT] 🔌 Disconnecting worklet...');
           workletNodeRef.current.disconnect();
@@ -630,7 +637,7 @@ export function useSTT(callbacks?: UseSTTCallbacks): UseSTT {
           console.log('[useSTT] ⚠️  Worklet already gone');
         }
 
-        // Then IMMEDIATELY close AudioContext to release microphone
+        // Close AudioContext to release microphone
         console.log('[useSTT] 🔊 Closing AudioContext...');
         if (audioContextRef.current) {
           const context = audioContextRef.current;
@@ -677,7 +684,10 @@ export function useSTT(callbacks?: UseSTTCallbacks): UseSTT {
 
         // Start checking the WebSocket buffer
         checkBufferAndFinalize();
-      }, 20); // Just 20ms to let the flush message process
+      };
+
+      // Now send the flush command - the callback will execute when the chunk arrives
+      workletNodeRef.current.port.postMessage({ type: 'flush' });
     } else {
       // No worklet (already disconnected somehow), just send finalize
       if (wsRef.current && wsRef.current.readyState === WebSocket.OPEN) {
