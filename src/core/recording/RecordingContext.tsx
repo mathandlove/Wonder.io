@@ -15,6 +15,7 @@ export interface RecordingState {
   accumulatedText: string; // Final accurate text from backend (triggers state changes)
   displayText: string; // What should be shown in bubbles (final transcript from backend)
   isSupported: boolean;
+  audioLevel: number; // Current audio level (0-1) for visualization
 }
 
 // Recording events
@@ -30,7 +31,8 @@ const initialState: RecordingState = {
   sessionId: null,
   accumulatedText: '',
   displayText: '',
-  isSupported: true
+  isSupported: true,
+  audioLevel: 0
 };
 
 function recordingReducer(state: RecordingState, action: RecordingEvent): RecordingState {
@@ -97,6 +99,7 @@ const RecordingContext = createContext<RecordingContextValue | null>(null);
 
 export function RecordingProvider({ children }: { children: React.ReactNode }) {
   const [state, dispatch] = useReducer(recordingReducer, initialState);
+  const [audioLevel, setAudioLevel] = React.useState(0);
 
   // Store state in a ref so getDisplayText always reads the latest value
   const stateRef = useRef(state);
@@ -180,8 +183,13 @@ export function RecordingProvider({ children }: { children: React.ReactNode }) {
     Recording.register(start, stop, abort);
   }, [start, stop, abort]);
 
+  // Sync audioLevel from STT hook into state
+  useEffect(() => {
+    setAudioLevel(stt.audioLevel);
+  }, [stt.audioLevel]);
+
   const value: RecordingContextValue = {
-    state,
+    state: { ...state, audioLevel },
     start,
     stop,
     abort,

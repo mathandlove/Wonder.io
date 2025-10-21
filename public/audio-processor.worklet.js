@@ -27,8 +27,34 @@ class AudioProcessor extends AudioWorkletProcessor {
         this.silenceDurationSamples = event.data.silenceDurationMs
           ? (event.data.silenceDurationMs * sampleRate) / 1000
           : this.silenceDurationSamples;
+      } else if (event.data.type === 'flush') {
+        // Flush any remaining audio in the buffer
+        this.flushBuffer();
       }
     };
+  }
+
+  /**
+   * Flush any remaining audio in the buffer
+   * Called when recording stops to ensure the last partial chunk is sent
+   */
+  flushBuffer() {
+    if (this.bufferIndex > 0) {
+      // Create a trimmed buffer with only the accumulated samples
+      const partialBuffer = this.buffer.slice(0, this.bufferIndex);
+      const int16Data = this.convertFloat32ToInt16(partialBuffer);
+
+      // Send the final partial chunk
+      this.port.postMessage({
+        type: 'audiodata',
+        buffer: int16Data.buffer,
+        rms: this.calculateRMS(partialBuffer)
+      }, [int16Data.buffer]);
+
+      // Reset buffer
+      this.bufferIndex = 0;
+      this.buffer = new Float32Array(this.bufferSize);
+    }
   }
 
   /**
@@ -88,6 +114,12 @@ class AudioProcessor extends AudioWorkletProcessor {
         this.silenceCounter = 0;
       }
     }
+
+    // Send RMS level updates for visualization (every quantum)
+    this.port.postMessage({
+      type: 'volumeLevel',
+      level: rms
+    });
 
     // Accumulate audio into buffer
     for (let i = 0; i < inputChannel.length; i++) {

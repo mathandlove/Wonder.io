@@ -80,17 +80,19 @@ export function RecordingOrchestrator() {
 
   // Determine if panel should be visible based on dialogue state
   // Show for: basic (hidden below screen), quest-showing (quest offer), input-showInput (ready to record),
-  // input-recording (actively recording), show-hint (hint display), record-answer (answer recording),
-  // answer-waiting (waiting for answer validation), answer-right (correct answer feedback),
-  // answer-wrong (wrong answer feedback), ai-waiting (waiting for AI response)
+  // input-recording (actively recording), input-processing (processing audio), show-hint (hint display),
+  // record-answer (answer recording), waiting-for-answer-finalize, answer-waiting (waiting for answer validation),
+  // answer-right (correct answer feedback), answer-wrong (wrong answer feedback), ai-waiting (waiting for AI response)
   const dialogueState = sceneState?.type === 'dialogue' ? sceneState.state : null;
   const shouldShowPanel =
     dialogueState === 'basic' ||
     dialogueState === 'quest-showing' ||
     dialogueState === 'input-showInput' ||
     dialogueState === 'input-recording' ||
+    dialogueState === 'input-processing' ||
     dialogueState === 'show-hint' ||
     dialogueState === 'record-answer' ||
+    dialogueState === 'waiting-for-answer-finalize' ||
     dialogueState === 'answer-waiting' ||
     dialogueState === 'answer-right' ||
     dialogueState === 'answer-wrong' ||
@@ -105,6 +107,12 @@ export function RecordingOrchestrator() {
 
   // Ref to store handleRecordStop so it can be used in effects before it's defined
   const handleRecordStopRef = React.useRef<(() => void) | null>(null);
+
+  // Track the last recording state we started for (prevents duplicate starts from effect re-runs)
+  const lastStartedStateRef = React.useRef<string | null>(null);
+
+  // Track if we're currently stopping to prevent duplicate stop calls
+  const isStoppingRef = React.useRef<boolean>(false);
 
   // ===================================
   // QUESTION TRACKING LOGIC
@@ -163,29 +171,45 @@ export function RecordingOrchestrator() {
     const isRecordingState = sceneState?.type === 'dialogue' &&
       (sceneState.state === 'input-recording' || sceneState.state === 'record-answer');
     const isWaitingState = sceneState?.type === 'dialogue' &&
-      (sceneState.state === 'ai-waiting' || sceneState.state === 'answer-waiting');
+      (sceneState.state === 'input-processing' || sceneState.state === 'ai-waiting' || sceneState.state === 'answer-waiting');
     const currentScene = currentNavItem?.scene;
     const sceneRecordingId = hasRecordingId(currentScene) ? currentScene.recordingId : undefined;
 
-    if (isRecordingState && !recording.isRecording()) {
+    // Create a unique key for this recording state to prevent duplicate starts
+    const stateKey = sceneState ? `${sceneState.type}-${sceneState.state}-${navigationIndex}` : null;
+
+    if (isRecordingState && !recording.isRecording() && stateKey !== lastStartedStateRef.current) {
       // For record-answer, we might not have a recordingId, so generate one
-      // For input-recording, this is a fallback in case immediate start failed
+      // For input-recording, this starts recording when entering the state
       const recordingId = sceneRecordingId || `answer-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
       setActiveRecordingId(recordingId);
+      lastStartedStateRef.current = stateKey; // Mark this state as started
+      isStoppingRef.current = false; // Reset stopping flag when starting new recording
+      console.log(`[RecordPanelOrchestrator] Starting recording for state: ${stateKey}`);
       Recording.start(); // This dispatches START action which clears accumulatedText and displayText
     }
 
     // Auto-stop recording when leaving recording states
-    if (!isRecordingState && recording.isRecording()) {
+    if (!isRecordingState && recording.isRecording() && !isStoppingRef.current) {
+      console.log('[RecordPanelOrchestrator] Auto-stopping recording (leaving recording state)');
+      isStoppingRef.current = true; // Mark that we're stopping to prevent duplicate calls
       Recording.stop();
+      lastStartedStateRef.current = null; // Reset so we can start again later
+
+      // Reset stopping flag after a brief delay to allow for state propagation
+      setTimeout(() => {
+        isStoppingRef.current = false;
+      }, 100);
     }
 
     // Clear activeRecordingId when leaving waiting states (no longer need it)
     // Don't clear during waiting states (still need it for transcript updates)
+    // IMPORTANT: Keep activeRecordingId during input-processing so we can transition to ai-waiting
     if (!isRecordingState && !isWaitingState && activeRecordingId) {
       setActiveRecordingId(null);
+      lastStartedStateRef.current = null; // Reset so we can start again later
     }
-  }, [sceneState, recording, currentNavItem, activeRecordingId]);
+  }, [sceneState, recording, currentNavItem, activeRecordingId, navigationIndex]);
 
   // Sync recording transcript - simplified for batch processing
   // During recording, we don't get real-time updates anymore
@@ -224,14 +248,27 @@ export function RecordingOrchestrator() {
       }
     }
 
-    // Update ai-waiting and answer-waiting states when final transcript arrives from backend
+    // Update input-processing, ai-waiting, and answer-waiting states when final transcript arrives from backend
     // This effect updates the text as soon as it arrives (before 'close' signal)
     if (!isRecording && activeRecordingId && displayText.trim()) {
       const freshNavItem = getCurrentNavigationItem();
       const currentState = freshNavItem?.sceneState?.type === 'dialogue' ? freshNavItem.sceneState : null;
 
-      if (currentState?.state === 'ai-waiting') {
-        // Final transcript arrived from backend
+      if (currentState?.state === 'input-processing') {
+        // Final transcript arrived from backend - transition to ai-waiting
+        const finalText = displayText.trim();
+        console.log('[RecordPanelOrchestrator] Final transcript arrived in input-processing:', finalText);
+
+        // Valid transcript - update questionText and transition to ai-waiting
+        console.log('[RecordPanelOrchestrator] ✅ Transitioning from input-processing to ai-waiting with final text:', finalText);
+        updateSceneTextByRecordingId(activeRecordingId, finalText);
+        updateNavigationItemState(navigationIndex, {
+          type: 'dialogue',
+          state: 'ai-waiting',
+          questionText: finalText
+        });
+      } else if (currentState?.state === 'ai-waiting') {
+        // Final transcript arrived from backend (fallback if we somehow skipped input-processing)
         const finalText = displayText.trim();
         console.log('[RecordPanelOrchestrator] Final transcript arrived:', finalText);
 
@@ -357,10 +394,8 @@ export function RecordingOrchestrator() {
       insertNavigationItem(newNavItem, navigationIndex + 1);
       setNavigationIndex(navigationIndex + 1);
 
-      // Start recording immediately for better UX (don't wait for effect to detect state change)
-      // This will clear accumulated text via the START action in RecordingContext
+      // Set the recording ID - the effect will auto-start recording when it sees the 'input-recording' state
       setActiveRecordingId(recordingId);
-      Recording.start();
     } catch {
       // Silent error handling
     }
@@ -369,9 +404,9 @@ export function RecordingOrchestrator() {
   /**
    * Handle recording stop - NEW BATCH PROCESSING FLOW
    * - User pushes stop button
-   * - Transition directly to ai-waiting (or answer-waiting) state
+   * - Transition to input-processing state (shows "Processing...")
    * - Backend will process the entire audio buffer and return ONE final transcript
-   * - When final transcript arrives, update the text in ai-waiting state
+   * - When final transcript arrives, transition to ai-waiting state
    * - ChatFlowOrchestrator will trigger AI processing on ai-waiting state
    */
   const handleRecordStop = useCallback(() => {
@@ -392,13 +427,11 @@ export function RecordingOrchestrator() {
         questionText: currentState.questionText // Preserve question text
       });
     } else if (currentState?.state === 'input-recording') {
-      // Ask recording: ALWAYS transition to ai-waiting immediately
-      // We don't know if there's valid speech until backend processes the audio
-      // Backend will send final transcript which will either:
-      //   - Update questionText if valid speech detected
-      //   - Trigger scene collapse if empty/no speech (handled in transcript sync effect)
+      // Ask recording: Transition to input-processing to show "Processing..."
+      // Backend will process audio and send final transcript
+      // When transcript arrives, we'll transition to ai-waiting
       const currentQuestionText = currentState.questionText || '';
-      console.log('[RecordPanelOrchestrator] 🛑 Stop recording, transitioning to ai-waiting with text:', currentQuestionText);
+      console.log('[RecordPanelOrchestrator] 🛑 Stop recording, transitioning to input-processing with text:', currentQuestionText);
 
       // Update scene text (for speech bubble) before transitioning state
       if (activeRecordingId && currentQuestionText) {
@@ -407,7 +440,7 @@ export function RecordingOrchestrator() {
 
       updateNavigationItemState(navigationIndex, {
         type: 'dialogue',
-        state: 'ai-waiting',
+        state: 'input-processing',
         questionText: currentQuestionText // Will be updated when final transcript arrives
       });
     }
@@ -415,8 +448,8 @@ export function RecordingOrchestrator() {
     // Recording will stop automatically via the effect
     // Recording will send 'finalize' to backend
     // Backend will process complete audio and send ONE final transcript
-    // onFinal callback will update the text in ai-waiting/answer-waiting state
-    // If transcript is empty, the transcript sync effect will handle scene collapse
+    // onFinal callback will update the text in input-processing state
+    // When transcript arrives, transcript sync effect will transition to ai-waiting
     // ChatFlowOrchestrator will trigger AI processing when in ai-waiting state
   }, [navigationIndex, sceneState, updateNavigationItemState, activeRecordingId, updateSceneTextByRecordingId]);
 

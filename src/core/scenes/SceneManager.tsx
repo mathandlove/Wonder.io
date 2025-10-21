@@ -48,8 +48,9 @@ export function getLocksForState(state: SceneState): { lockForward: boolean; loc
       case 'input-showInput':
         return { lockForward: true, lockBackward: false }; // Must record to continue, can go back
       case 'input-recording':
+      case 'input-processing':
       case 'ai-waiting':
-        return { lockForward: true, lockBackward: true }; // Cannot navigate during recording/waiting
+        return { lockForward: true, lockBackward: true }; // Cannot navigate during recording/processing/waiting
 
       // Answer recording states
       case 'record-answer':

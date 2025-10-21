@@ -7,6 +7,8 @@
 import React from 'react';
 import NextButton from '../../features/chat/ui/NextButton';
 import { Toast, useToast } from '../../features/chat/ui/Toast';
+import { AudioVisualizer } from './AudioVisualizer';
+import { useRecording } from './RecordingContext';
 import './css/RecordPanel.css';
 
 interface RecordPanelProps {
@@ -32,6 +34,7 @@ export const RecordPanel: React.FC<RecordPanelProps> = ({
   onAskClick
 }) => {
   const { toast, hideToast } = useToast();
+  const { state: recordingState } = useRecording();
   const [showStamp, setShowStamp] = React.useState(false);
   // @ts-expect-error - playVideo used in future features
   const [playVideo, setPlayVideo] = React.useState(false);
@@ -43,6 +46,7 @@ export const RecordPanel: React.FC<RecordPanelProps> = ({
   // - quest-showing: Quest offered, panel visible with Accept button
   // - input-showInput: Panel shown, all buttons enabled and ready
   // - input-recording: Recording active, Stop button visible, Ask button appears pressed
+  // - input-processing: Processing audio after stop, all buttons disabled
   // - show-hint: Hint displayed, Hint button appears pressed
   // - record-answer: Recording answer, Stop button visible, Answer button appears pressed
   // - answer-waiting: Waiting for answer validation, show answer text with all buttons disabled
@@ -54,6 +58,7 @@ export const RecordPanel: React.FC<RecordPanelProps> = ({
   const isBasic = dialogueState === 'basic';
   const isQuestOffer = dialogueState === 'quest-showing';
   const isAskRecording = dialogueState === 'input-recording';
+  const isProcessing = dialogueState === 'input-processing';
   const isAnswerRecording = dialogueState === 'record-answer';
   const isAnswerWaiting = dialogueState === 'answer-waiting';
   const isAnswerRight = dialogueState === 'answer-right';
@@ -61,7 +66,7 @@ export const RecordPanel: React.FC<RecordPanelProps> = ({
   const isHintShowing = dialogueState === 'show-hint';
   const isWaitingForFinalize = dialogueState === 'waiting-for-finalize';
   const isWaitingForAnswerFinalize = dialogueState === 'waiting-for-answer-finalize';
-  const isWaiting = dialogueState === 'ai-waiting' || isWaitingForFinalize || isWaitingForAnswerFinalize || isAnswerWaiting;
+  const isWaiting = dialogueState === 'ai-waiting' || isWaitingForFinalize || isWaitingForAnswerFinalize || isAnswerWaiting || isProcessing;
 
   // Hidden state (basic) should use quest-offer visual styling
   const useQuestOfferStyling = isQuestOffer || isBasic;
@@ -199,7 +204,11 @@ export const RecordPanel: React.FC<RecordPanelProps> = ({
               </p>
               <div className="answer-input-box">
                 {(isAnswerRecording || isWaitingForAnswerFinalize) ? (
-                  <span className="answer-placeholder">{answerText || 'Listening...'}</span>
+                  answerText ? (
+                    <span className="answer-placeholder">{answerText}</span>
+                  ) : (
+                    <AudioVisualizer audioLevel={recordingState.audioLevel} className="answer-variant" />
+                  )
                 ) : (
                   <span className="quest-description">{answerText || 'Someone stole your cookies.'}</span>
                 )}

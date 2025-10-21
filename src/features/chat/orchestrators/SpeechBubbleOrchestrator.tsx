@@ -5,6 +5,8 @@
 import React, { useMemo } from 'react';
 import { CardboardBubble } from '@features/chat/components/CardboardBubble';
 import { useSceneManager } from '@core/scenes/SceneManager';
+import { AudioVisualizer } from '@core/recording/AudioVisualizer';
+import { useRecording } from '@core/recording/RecordingContext';
 import type { Scene, CharacterScene } from '@core/types/scene';
 import type { NavigationItem } from '@core/navigation/types';
 
@@ -23,6 +25,7 @@ export function SpeechBubbleOrchestrator() {
   // navigationArray contains ALL scene items including dynamically created ones
   const sceneManager = useSceneManager();
   const { navigationArray, navigationIndex } = sceneManager;
+  const { state: recordingState } = useRecording();
 
   // Use navigationIndex for scroll offset since we're working with navigationArray
   // NOT currentIndex which is based on visible scenes array
@@ -165,22 +168,26 @@ export function SpeechBubbleOrchestrator() {
         const side = characterScene.speaker === 'left' ? 'left' :
                characterScene.speaker === 'right' ? 'right' : 'center';
 
-        // Show "Listening..." placeholder when in input-recording state
+        // Show AudioVisualizer placeholder when in input-recording state
         const isRecording = dialogueState === 'input-recording';
+        const isProcessing = dialogueState === 'input-processing';
 
-        // During recording, show transcript from scene state or default to "Listening..."
+        // During recording, show transcript from scene state or AudioVisualizer
+        // During processing, show "Processing..." text
         // The scene text might be default placeholder like "Test words", so we check scene state for actual transcript
         const hasTranscript = sceneState?.type === 'dialogue' && sceneState.questionText && sceneState.questionText.trim();
         const bubbleContent = isRecording
-          ? (hasTranscript ? sceneState.questionText : 'Listening...')
+          ? (hasTranscript ? sceneState.questionText : null) // null will trigger AudioVisualizer rendering
+          : isProcessing
+          ? "Processing..." // Show "Processing..." in same style as "Listening..."
           : characterScene.text;
 
         // Show waiting bubble based solely on dialogue state
         // When state is 'ai-waiting', show the animated ellipses bubble
         const shouldShowWaitingBubble = dialogueState === 'ai-waiting';
 
-        // Skip rendering if no content
-        if (!bubbleContent) return null;
+        // Skip rendering if no content (unless recording without transcript - show AudioVisualizer)
+        if (!bubbleContent && !(isRecording && !hasTranscript)) return null;
 
         // Detect if bubble is entering (visible)
         const isVisible = transform === 'translateY(0)';
@@ -249,9 +256,11 @@ export function SpeechBubbleOrchestrator() {
               side={side}
               speakerLabel={speakerLabel}
               showWaitingBubble={shouldShowWaitingBubble}
-              isPlaceholder={isRecording && !hasTranscript}
+              isPlaceholder={(isRecording && !hasTranscript) || isProcessing}
             >
-              {bubbleContent}
+              {bubbleContent || (isRecording && !hasTranscript ? (
+                <AudioVisualizer audioLevel={recordingState.audioLevel} className="bubble-variant" />
+              ) : null)}
             </CardboardBubble>
           </div>
         );
