@@ -81,8 +81,9 @@ export function RecordingOrchestrator() {
   // Determine if panel should be visible based on dialogue state
   // Show for: basic (hidden below screen), quest-showing (quest offer), input-showInput (ready to record),
   // input-recording (actively recording), input-processing (processing audio), show-hint (hint display),
-  // record-answer (answer recording), waiting-for-answer-finalize, answer-waiting (waiting for answer validation),
-  // answer-right (correct answer feedback), answer-wrong (wrong answer feedback), ai-waiting (waiting for AI response)
+  // record-answer (answer recording), answer-processing (processing answer audio), waiting-for-answer-finalize,
+  // answer-waiting (waiting for answer validation), answer-right (correct answer feedback),
+  // answer-wrong (wrong answer feedback), ai-waiting (waiting for AI response)
   const dialogueState = sceneState?.type === 'dialogue' ? sceneState.state : null;
   const shouldShowPanel =
     dialogueState === 'basic' ||
@@ -92,6 +93,7 @@ export function RecordingOrchestrator() {
     dialogueState === 'input-processing' ||
     dialogueState === 'show-hint' ||
     dialogueState === 'record-answer' ||
+    dialogueState === 'answer-processing' ||
     dialogueState === 'waiting-for-answer-finalize' ||
     dialogueState === 'answer-waiting' ||
     dialogueState === 'answer-right' ||
@@ -171,7 +173,7 @@ export function RecordingOrchestrator() {
     const isRecordingState = sceneState?.type === 'dialogue' &&
       (sceneState.state === 'input-recording' || sceneState.state === 'record-answer');
     const isWaitingState = sceneState?.type === 'dialogue' &&
-      (sceneState.state === 'input-processing' || sceneState.state === 'ai-waiting' || sceneState.state === 'answer-waiting');
+      (sceneState.state === 'input-processing' || sceneState.state === 'answer-processing' || sceneState.state === 'ai-waiting' || sceneState.state === 'answer-waiting');
     const currentScene = currentNavItem?.scene;
     const sceneRecordingId = hasRecordingId(currentScene) ? currentScene.recordingId : undefined;
 
@@ -284,8 +286,21 @@ export function RecordingOrchestrator() {
         } else {
           console.log('[RecordPanelOrchestrator] ⏭️  Skipping update - text unchanged');
         }
+      } else if (currentState?.state === 'answer-processing') {
+        // Final transcript arrived from backend - transition to answer-waiting
+        const finalText = displayText.trim();
+        console.log('[RecordPanelOrchestrator] Final transcript arrived in answer-processing:', finalText);
+
+        // Valid transcript - update answerText and transition to answer-waiting
+        console.log('[RecordPanelOrchestrator] ✅ Transitioning from answer-processing to answer-waiting with final text:', finalText);
+        updateNavigationItemState(navigationIndex, {
+          type: 'dialogue',
+          state: 'answer-waiting',
+          answerText: finalText,
+          questionText: currentState.questionText
+        });
       } else if (currentState?.state === 'answer-waiting') {
-        // Final transcript arrived for answer
+        // Final transcript arrived for answer (fallback if we somehow skipped answer-processing)
         const finalText = displayText.trim();
 
         if (currentState.answerText !== finalText) {
@@ -326,10 +341,12 @@ export function RecordingOrchestrator() {
   React.useEffect(() => {
     const currentState = sceneState?.type === 'dialogue' ? sceneState : null;
 
-    // Register callback during recording or in ai-waiting/answer-waiting states
+    // Register callback during recording or in processing/waiting states
     const shouldRegisterCallback =
       (currentState?.state === 'input-recording' && isRecording) ||
       (currentState?.state === 'record-answer' && isRecording) ||
+      currentState?.state === 'input-processing' ||
+      currentState?.state === 'answer-processing' ||
       currentState?.state === 'ai-waiting' ||
       currentState?.state === 'answer-waiting';
 
@@ -413,16 +430,15 @@ export function RecordingOrchestrator() {
     const currentState = sceneState?.type === 'dialogue' ? sceneState : null;
 
     if (currentState?.state === 'record-answer') {
-      // Answer recording: ALWAYS transition to answer-waiting immediately
-      // We don't know if there's valid speech until backend processes the audio
-      // Backend will send final transcript which will either:
-      //   - Update answerText if valid speech detected
-      //   - Revert to input-showInput if empty/no speech (handled in transcript sync effect)
+      // Answer recording: Transition to answer-processing to show "Processing..."
+      // Backend will process audio and send final transcript
+      // When transcript arrives, we'll transition to answer-waiting
       const currentAnswerText = currentState.answerText || '';
+      console.log('[RecordPanelOrchestrator] 🛑 Stop answer recording, transitioning to answer-processing with text:', currentAnswerText);
 
       updateNavigationItemState(navigationIndex, {
         type: 'dialogue',
-        state: 'answer-waiting',
+        state: 'answer-processing',
         answerText: currentAnswerText, // Will be updated when final transcript arrives
         questionText: currentState.questionText // Preserve question text
       });
@@ -509,6 +525,7 @@ export function RecordingOrchestrator() {
   // Get answer text from scene state (persisted across state transitions)
   // Falls back to recording context for real-time display during recording
   const answerText = (presentationState === 'record-answer' ||
+                      presentationState === 'answer-processing' ||
                       presentationState === 'waiting-for-answer-finalize' ||
                       presentationState === 'answer-waiting' ||
                       presentationState === 'answer-right' ||

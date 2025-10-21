@@ -173,21 +173,23 @@ export function SpeechBubbleOrchestrator() {
         const isProcessing = dialogueState === 'input-processing';
 
         // During recording, show transcript from scene state or AudioVisualizer
-        // During processing, show "Processing..." text
+        // During processing, ALWAYS show AudioVisualizer with "Processing..." (ignore any text)
         // The scene text might be default placeholder like "Test words", so we check scene state for actual transcript
         const hasTranscript = sceneState?.type === 'dialogue' && sceneState.questionText && sceneState.questionText.trim();
-        const bubbleContent = isRecording
-          ? (hasTranscript ? sceneState.questionText : null) // null will trigger AudioVisualizer rendering
-          : isProcessing
-          ? "Processing..." // Show "Processing..." in same style as "Listening..."
-          : characterScene.text;
+
+        // Priority: processing > recording > normal text
+        const bubbleContent = isProcessing
+          ? null // Always null during processing - will show AudioVisualizer with "Processing..."
+          : isRecording
+          ? (hasTranscript ? sceneState.questionText : null) // During recording: show transcript or AudioVisualizer
+          : characterScene.text; // Normal state: show scene text
 
         // Show waiting bubble based solely on dialogue state
         // When state is 'ai-waiting', show the animated ellipses bubble
         const shouldShowWaitingBubble = dialogueState === 'ai-waiting';
 
-        // Skip rendering if no content (unless recording without transcript - show AudioVisualizer)
-        if (!bubbleContent && !(isRecording && !hasTranscript)) return null;
+        // Skip rendering if no content (unless recording/processing - show AudioVisualizer)
+        if (!bubbleContent && !(isRecording && !hasTranscript) && !isProcessing) return null;
 
         // Detect if bubble is entering (visible)
         const isVisible = transform === 'translateY(0)';
@@ -258,9 +260,13 @@ export function SpeechBubbleOrchestrator() {
               showWaitingBubble={shouldShowWaitingBubble}
               isPlaceholder={(isRecording && !hasTranscript) || isProcessing}
             >
-              {bubbleContent || (isRecording && !hasTranscript ? (
-                <AudioVisualizer audioLevel={recordingState.audioLevel} className="bubble-variant" />
-              ) : null)}
+              {bubbleContent ? (
+                bubbleContent
+              ) : (isRecording && !hasTranscript) ? (
+                <AudioVisualizer audioLevel={recordingState.audioLevel} className="bubble-variant" mode="listening" />
+              ) : isProcessing ? (
+                <AudioVisualizer audioLevel={0} className="bubble-variant" mode="processing" />
+              ) : null}
             </CardboardBubble>
           </div>
         );

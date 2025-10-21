@@ -30,7 +30,8 @@ export type DialogueState =
   | 'input-showInput' // Input state 2: Show input UI (microphone button, panel at bottom)
   | 'show-hint'       // Show hint overlay/modal
   | 'record-answer'   // Recording answer (like input-recording but for Answer button)
-  | 'waiting-for-answer-finalize' // Waiting for final transcripts from STT (for Answer recording)
+  | 'answer-processing' // Processing audio after answer stop (scroll blocked, shows "Processing...")
+  | 'waiting-for-answer-finalize' // DEPRECATED - merged into answer-processing
   | 'answer-waiting'  // Waiting for answer validation/AI processing (scroll blocked, panel centered)
   | 'answer-right'    // Correct answer feedback - show answer text centered with green glow
   | 'answer-wrong';   // Wrong answer feedback - show answer text centered with red glow

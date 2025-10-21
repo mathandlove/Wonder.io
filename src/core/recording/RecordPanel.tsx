@@ -49,6 +49,7 @@ export const RecordPanel: React.FC<RecordPanelProps> = ({
   // - input-processing: Processing audio after stop, all buttons disabled
   // - show-hint: Hint displayed, Hint button appears pressed
   // - record-answer: Recording answer, Stop button visible, Answer button appears pressed
+  // - answer-processing: Processing answer audio after stop, show answer text with all buttons disabled
   // - answer-waiting: Waiting for answer validation, show answer text with all buttons disabled
   // - answer-right: Correct answer, show answer text centered, no stop button
   // - answer-wrong: Wrong answer, show answer text with error indication
@@ -60,13 +61,14 @@ export const RecordPanel: React.FC<RecordPanelProps> = ({
   const isAskRecording = dialogueState === 'input-recording';
   const isProcessing = dialogueState === 'input-processing';
   const isAnswerRecording = dialogueState === 'record-answer';
+  const isAnswerProcessing = dialogueState === 'answer-processing';
   const isAnswerWaiting = dialogueState === 'answer-waiting';
   const isAnswerRight = dialogueState === 'answer-right';
   const isAnswerWrong = dialogueState === 'answer-wrong';
   const isHintShowing = dialogueState === 'show-hint';
   const isWaitingForFinalize = dialogueState === 'waiting-for-finalize';
   const isWaitingForAnswerFinalize = dialogueState === 'waiting-for-answer-finalize';
-  const isWaiting = dialogueState === 'ai-waiting' || isWaitingForFinalize || isWaitingForAnswerFinalize || isAnswerWaiting || isProcessing;
+  const isWaiting = dialogueState === 'ai-waiting' || isWaitingForFinalize || isWaitingForAnswerFinalize || isAnswerWaiting || isProcessing || isAnswerProcessing;
 
   // Hidden state (basic) should use quest-offer visual styling
   const useQuestOfferStyling = isQuestOffer || isBasic;
@@ -125,7 +127,7 @@ export const RecordPanel: React.FC<RecordPanelProps> = ({
   const answerButtonDisabled = isAskRecording || isWaiting || isAnswerWaiting || disabled; // Disabled when Ask recording or waiting
 
   // Show answer text for answer recording and all answer-related states
-  const showAnswerText = isAnswerRecording || isWaitingForAnswerFinalize || isAnswerWaiting || isAnswerRight || isAnswerWrong;
+  const showAnswerText = isAnswerRecording || isAnswerProcessing || isWaitingForAnswerFinalize || isAnswerWaiting || isAnswerRight || isAnswerWrong;
 
   // Determine which positioning class to apply based on state
   const getContainerClass = () => {
@@ -207,8 +209,10 @@ export const RecordPanel: React.FC<RecordPanelProps> = ({
                   answerText ? (
                     <span className="answer-placeholder">{answerText}</span>
                   ) : (
-                    <AudioVisualizer audioLevel={recordingState.audioLevel} className="answer-variant" />
+                    <AudioVisualizer audioLevel={recordingState.audioLevel} className="answer-variant" mode="listening" />
                   )
+                ) : isAnswerProcessing ? (
+                  <AudioVisualizer audioLevel={0} className="answer-variant" mode="processing" />
                 ) : (
                   <span className="quest-description">{answerText || 'Someone stole your cookies.'}</span>
                 )}

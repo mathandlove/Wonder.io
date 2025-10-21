@@ -12,6 +12,8 @@ interface AudioVisualizerProps {
   audioLevel: number;
   /** Optional className for custom styling */
   className?: string;
+  /** Mode: 'listening' shows "Listening...", 'processing' shows "Processing..." */
+  mode?: 'listening' | 'processing';
   /** Number of dots to display */
   dotCount?: number;
   /** Maximum amplitude in pixels */
@@ -36,6 +38,7 @@ const RELEASE_DURATION_MS = 200; // How long below release threshold before stop
 export const AudioVisualizer: React.FC<AudioVisualizerProps> = ({
   audioLevel,
   className = '',
+  mode = 'listening',
   dotCount = 5,
   maxAmplitudePx = 16, // Increased by ~30% (12 * 1.33 ≈ 16)
   dotDelaySec = 0.08, // 80ms between dots
@@ -188,10 +191,17 @@ export const AudioVisualizer: React.FC<AudioVisualizerProps> = ({
     };
   }, [hasSoundDetected, audioLevel, dotCount, maxAmplitudePx, dotDelaySec, omega, dotRadius, color, reseedMs]);
 
+  // Determine text to display based on mode
+  const placeholderText = mode === 'processing' ? 'Processing...' : 'Listening...';
+
+  // In processing mode, always show text (never show dots)
+  // In listening mode, show text until sound is detected, then show dots
+  const showText = mode === 'processing' || !hasSoundDetected;
+
   return (
     <span className={`audio-visualizer ${className}`}>
-      {!hasSoundDetected ? (
-        <span className="audio-visualizer-listening">Listening...</span>
+      {showText ? (
+        <span className="audio-visualizer-listening">{placeholderText}</span>
       ) : (
         <canvas
           ref={canvasRef}
