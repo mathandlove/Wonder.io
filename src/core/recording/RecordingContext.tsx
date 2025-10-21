@@ -6,23 +6,15 @@ import { useSTT } from "./hooks/useSTT";
 // Feature Flags
 // ──────────────────────────────────────────────────────────────────────────────
 
-/**
- * USE_STT_BACKEND: Enable backend STT (GPT-4o Transcribe) via WebSocket proxy
- * - true: Use backend STT with GPT-4o (recommended, state-of-the-art accuracy)
- * - false: Use Web Speech API (Chrome/Edge only, auto-restart on errors)
- */
-const USE_STT_BACKEND = true;
+// Backend STT mode: Uses GPT-4o Transcribe via WebSocket proxy for high accuracy
 
 // Recording state
 export interface RecordingState {
   isRecording: boolean;
   sessionId: string | null;
-  interimTranscript: string;
-  finalTranscript: string;
-  accumulatedText: string; // Global accumulated text across all speech results
-  displayText: string; // What should be shown in bubbles (accumulated + current interim)
+  accumulatedText: string; // Final accurate text from backend (triggers state changes)
+  displayText: string; // What should be shown in bubbles (final transcript from backend)
   isSupported: boolean;
-  keepListening: boolean;
 }
 
 // Recording events
@@ -30,21 +22,15 @@ type RecordingEvent =
   | { type: 'START'; sessionId: string }
   | { type: 'STOP' }
   | { type: 'ABORT' }
-  | { type: 'INTERIM'; text: string }
-  | { type: 'FINAL'; text: string }
-  | { type: 'ACCUMULATE'; finalText: string; interimText?: string }
-  | { type: 'UNSUPPORTED' }
-  | { type: 'SET_KEEP_LISTENING'; value: boolean };
+  | { type: 'ACCUMULATE'; finalText: string } // Backend final transcript
+  | { type: 'UNSUPPORTED' };
 
 const initialState: RecordingState = {
   isRecording: false,
   sessionId: null,
-  interimTranscript: '',
-  finalTranscript: '',
   accumulatedText: '',
   displayText: '',
-  isSupported: true,
-  keepListening: false
+  isSupported: true
 };
 
 function recordingReducer(state: RecordingState, action: RecordingEvent): RecordingState {
@@ -54,75 +40,32 @@ function recordingReducer(state: RecordingState, action: RecordingEvent): Record
         ...state,
         isRecording: true,
         sessionId: action.sessionId,
-        interimTranscript: '',
-        finalTranscript: '',
         accumulatedText: '',
-        displayText: '',
-        keepListening: true
+        displayText: ''
       };
     case 'STOP':
     case 'ABORT':
-      // IMPORTANT: Preserve accumulatedText and displayText when stopping!
-      // We only want to clear these when starting a NEW recording session (START action)
-      // This allows text to persist across pauses in the same recording session
+      // Preserve accumulatedText and displayText - backend final transcript will update them
       return {
         ...state,
         isRecording: false,
-        sessionId: null,
-        interimTranscript: '',  // Clear interim (it's temporary)
-        finalTranscript: '',     // Clear last final (we have it in accumulated)
-        // accumulatedText: PRESERVED
-        // displayText: PRESERVED
-        keepListening: false
-      };
-    case 'INTERIM': {
-      const interimDisplayText = (state.accumulatedText + ' ' + action.text).trim();
-      return {
-        ...state,
-        interimTranscript: action.text,
-        displayText: interimDisplayText
-      };
-    }
-    case 'FINAL':
-      return {
-        ...state,
-        finalTranscript: action.text,
-        interimTranscript: ''
+        sessionId: null
       };
     case 'ACCUMULATE': {
-      // Batch processing: Receive ONE final transcript from backend
+      // Backend sends complete, accurate final transcript
       const trimmedFinal = action.finalText.trim();
 
-      console.log('[RecordingReducer] ACCUMULATE action:', {
-        finalText: action.finalText,
-        trimmedFinal,
-        currentAccumulated: state.accumulatedText,
-        currentDisplayText: state.displayText,
-        isRecording: state.isRecording
-      });
+      console.log('[RecordingReducer] ACCUMULATE:', { finalText: trimmedFinal });
 
       if (!trimmedFinal) {
-        // Empty final - ignore it
-        console.log('[RecordingReducer] ACCUMULATE: Empty final text, ignoring');
+        console.log('[RecordingReducer] Empty final text, ignoring');
         return state;
       }
 
-      // For batch processing, replace accumulated text (not append)
-      // Backend sends complete transcript, not incremental segments
-      const newAccumulated = trimmedFinal;
-      const newDisplayText = trimmedFinal;
-
-      console.log('[RecordingReducer] ACCUMULATE: Updated state:', {
-        newAccumulated,
-        newDisplayText
-      });
-
       return {
         ...state,
-        accumulatedText: newAccumulated,
-        displayText: newDisplayText,
-        finalTranscript: trimmedFinal,
-        interimTranscript: ''
+        accumulatedText: trimmedFinal,
+        displayText: trimmedFinal
       };
     }
     case 'UNSUPPORTED':
@@ -131,47 +74,10 @@ function recordingReducer(state: RecordingState, action: RecordingEvent): Record
         isSupported: false,
         isRecording: false
       };
-    case 'SET_KEEP_LISTENING':
-      return {
-        ...state,
-        keepListening: action.value
-      };
     default:
       return state;
   }
 }
-
-// Browser detection utilities
-const isChrome = () => {
-  return /Chrome/.test(navigator.userAgent) && /Google Inc/.test(navigator.vendor);
-};
-
-const isSafari = () => {
-  return /Safari/.test(navigator.userAgent) && !/Chrome/.test(navigator.userAgent);
-};
-
-// Type definitions for Web Speech API
-interface SpeechRecognitionInstance {
-  continuous: boolean;
-  interimResults: boolean;
-  lang: string;
-  start(): void;
-  stop(): void;
-  abort(): void;
-  onresult: ((event: any) => void) | null;
-  onerror: ((event: any) => void) | null;
-  onend: (() => void) | null;
-}
-
-interface WindowWithSpeechRecognition extends Window {
-  SpeechRecognition?: new () => SpeechRecognitionInstance;
-  webkitSpeechRecognition?: new () => SpeechRecognitionInstance;
-}
-
-const hasWebSpeechAPI = () => {
-  const win = window as WindowWithSpeechRecognition;
-  return !!win.SpeechRecognition || !!win.webkitSpeechRecognition;
-};
 
 interface RecordingContextValue {
   state: RecordingState;
@@ -191,10 +97,6 @@ const RecordingContext = createContext<RecordingContextValue | null>(null);
 
 export function RecordingProvider({ children }: { children: React.ReactNode }) {
   const [state, dispatch] = useReducer(recordingReducer, initialState);
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const recognitionRef = useRef<any>(null);
-  const restartTimeoutRef = useRef<NodeJS.Timeout | null>(null);
-  const currentSessionIdRef = useRef<string | null>(null);
 
   // Store state in a ref so getDisplayText always reads the latest value
   const stateRef = useRef(state);
@@ -213,11 +115,9 @@ export function RecordingProvider({ children }: { children: React.ReactNode }) {
     onFinal: (text: string) => {
       // Receive the complete, finalized transcript from backend after stop
       console.log('[RecordingContext] onFinal callback received:', text);
-      console.log('[RecordingContext] Current state before dispatch:', stateRef.current);
       dispatch({
         type: 'ACCUMULATE',
-        finalText: text,
-        interimText: '', // No interim text in batch processing mode
+        finalText: text
       });
     },
     onFinalized: () => {
@@ -236,163 +136,32 @@ export function RecordingProvider({ children }: { children: React.ReactNode }) {
     },
   });
 
-  const createRecognition = useCallback(() => {
-    if (!hasWebSpeechAPI()) {
-      dispatch({ type: 'UNSUPPORTED' });
-      return null;
-    }
-
-    const win = window as WindowWithSpeechRecognition;
-    const SpeechRecognition = win.SpeechRecognition || win.webkitSpeechRecognition;
-    if (!SpeechRecognition) return null;
-
-    const recognition = new SpeechRecognition();
-
-    recognition.continuous = true;
-    recognition.interimResults = true;
-    recognition.lang = 'en-US';
-
-    const scheduleRestart = () => {
-      restartTimeoutRef.current = setTimeout(() => {
-        // Use a flag check instead of state to avoid circular dependency
-        if (currentSessionIdRef.current && (isChrome() || /Edge/.test(navigator.userAgent))) {
-          try {
-            const newRecognition = createRecognition();
-            if (newRecognition) {
-              recognitionRef.current = newRecognition;
-              newRecognition.start();
-            }
-          } catch {
-            // Silent fail for restart attempts
-          }
-        }
-      }, 100);
-    };
-
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    recognition.onresult = (event: any) => {
-      let interimText = '';
-      let finalText = '';
-
-      for (let i = event.resultIndex; i < event.results.length; i++) {
-        const transcript = event.results[i][0].transcript;
-        if (event.results[i].isFinal) {
-          finalText += transcript + ' ';
-        } else {
-          interimText += transcript;
-        }
-      }
-
-      // Use ACCUMULATE to build up the global recording state
-      if (finalText.trim()) {
-        dispatch({
-          type: 'ACCUMULATE',
-          finalText: finalText.trim(),
-          interimText: interimText
-        });
-      } else if (interimText) {
-        dispatch({ type: 'INTERIM', text: interimText });
-      }
-    };
-
-    recognition.onerror = () => {
-      // Auto-restart on Chrome/Edge after error
-      if (isChrome() || /Edge/.test(navigator.userAgent)) {
-        scheduleRestart();
-      }
-    };
-
-    recognition.onend = () => {
-      // Auto-restart on Chrome/Edge when recognition ends naturally
-      if (isChrome() || /Edge/.test(navigator.userAgent)) {
-        scheduleRestart();
-      }
-    };
-
-    return recognition;
-  }, []);
-
   const start = useCallback(() => {
     // Generate session ID
     const sessionId = `session_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
-    currentSessionIdRef.current = sessionId;
 
     dispatch({ type: 'START', sessionId });
 
-    if (USE_STT_BACKEND) {
-      // Use backend STT (GPT-4o Transcribe)
-      stt.start().catch(() => {
-        dispatch({ type: 'ABORT' });
-      });
-    } else {
-      // Use Web Speech API (Chrome/Edge only)
-      if (!hasWebSpeechAPI()) {
-        dispatch({ type: 'UNSUPPORTED' });
-        return;
-      }
-
-      if (isSafari()) {
-        dispatch({ type: 'UNSUPPORTED' });
-        return;
-      }
-
-      try {
-        const recognition = createRecognition();
-        if (recognition) {
-          recognitionRef.current = recognition;
-          recognition.start();
-        }
-      } catch {
-        dispatch({ type: 'ABORT' });
-      }
-    }
-  }, [createRecognition, stt]);
+    // Start backend STT (GPT-4o Transcribe via WebSocket)
+    console.log('[RecordingContext] Starting backend recording');
+    stt.start().catch(() => {
+      console.error('[RecordingContext] Backend STT failed to start');
+      dispatch({ type: 'ABORT' });
+    });
+  }, [stt]);
 
   const stop = useCallback(() => {
-    dispatch({ type: 'SET_KEEP_LISTENING', value: false });
+    console.log('[RecordingContext] Stopping recording');
 
-    if (USE_STT_BACKEND) {
-      // Stop backend STT
-      stt.stop();
-    } else {
-      // Stop Web Speech API
-      if (restartTimeoutRef.current) {
-        clearTimeout(restartTimeoutRef.current);
-        restartTimeoutRef.current = null;
-      }
+    // Stop backend WebSocket (will process and send final transcript)
+    stt.stop();
 
-      if (recognitionRef.current) {
-        recognitionRef.current.stop();
-        recognitionRef.current = null;
-      }
-    }
-
-    // Recording text is now managed entirely by scene state (RecordPanelOrchestrator)
-    // No need to sync with DialogueContext anymore
-
-    currentSessionIdRef.current = null;
     dispatch({ type: 'STOP' });
   }, [stt]);
 
   const abort = useCallback(() => {
-    dispatch({ type: 'SET_KEEP_LISTENING', value: false });
-
-    if (USE_STT_BACKEND) {
-      // Stop backend STT
-      stt.stop();
-    } else {
-      // Stop Web Speech API
-      if (restartTimeoutRef.current) {
-        clearTimeout(restartTimeoutRef.current);
-        restartTimeoutRef.current = null;
-      }
-
-      if (recognitionRef.current) {
-        recognitionRef.current.stop();
-        recognitionRef.current = null;
-      }
-    }
-
+    // Stop backend STT
+    stt.stop();
     dispatch({ type: 'ABORT' });
   }, [stt]);
 
