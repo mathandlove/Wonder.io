@@ -1,17 +1,17 @@
 import React, { createContext, useContext, useReducer, useCallback, useRef, useEffect } from "react";
 import { Recording } from "./RecordingAPI";
-import { useDeepgram } from "./hooks/useDeepgram";
+import { useSTT } from "./hooks/useSTT";
 
 // ──────────────────────────────────────────────────────────────────────────────
 // Feature Flags
 // ──────────────────────────────────────────────────────────────────────────────
 
 /**
- * USE_DEEPGRAM: Enable Deepgram STT via WebSocket proxy
- * - true: Use Deepgram (recommended, more reliable)
+ * USE_STT_BACKEND: Enable backend STT (GPT-4o Transcribe) via WebSocket proxy
+ * - true: Use backend STT with GPT-4o (recommended, state-of-the-art accuracy)
  * - false: Use Web Speech API (Chrome/Edge only, auto-restart on errors)
  */
-const USE_DEEPGRAM = true;
+const USE_STT_BACKEND = true;
 
 // Recording state
 export interface RecordingState {
@@ -90,31 +90,39 @@ function recordingReducer(state: RecordingState, action: RecordingEvent): Record
         interimTranscript: ''
       };
     case 'ACCUMULATE': {
-      // Deepgram sends speech_final events that contain NEW finalized segments
-      // We should append them to accumul ated text (not replace)
-      // The final text should ALWAYS be appended unless it's empty
+      // Batch processing: Receive ONE final transcript from backend
       const trimmedFinal = action.finalText.trim();
+
+      console.log('[RecordingReducer] ACCUMULATE action:', {
+        finalText: action.finalText,
+        trimmedFinal,
+        currentAccumulated: state.accumulatedText,
+        currentDisplayText: state.displayText,
+        isRecording: state.isRecording
+      });
 
       if (!trimmedFinal) {
         // Empty final - ignore it
+        console.log('[RecordingReducer] ACCUMULATE: Empty final text, ignoring');
         return state;
       }
 
-      // Always append the new final segment to accumulated text
-      const newAccumulated = state.accumulatedText
-        ? (state.accumulatedText + ' ' + trimmedFinal).trim()
-        : trimmedFinal;
+      // For batch processing, replace accumulated text (not append)
+      // Backend sends complete transcript, not incremental segments
+      const newAccumulated = trimmedFinal;
+      const newDisplayText = trimmedFinal;
 
-      const newDisplayText = action.interimText
-        ? (newAccumulated + ' ' + action.interimText).trim()
-        : newAccumulated;
+      console.log('[RecordingReducer] ACCUMULATE: Updated state:', {
+        newAccumulated,
+        newDisplayText
+      });
 
       return {
         ...state,
         accumulatedText: newAccumulated,
         displayText: newDisplayText,
         finalTranscript: trimmedFinal,
-        interimTranscript: action.interimText || ''
+        interimTranscript: ''
       };
     }
     case 'UNSUPPORTED':
@@ -200,19 +208,20 @@ export function RecordingProvider({ children }: { children: React.ReactNode }) {
   // Track auto-stop callback - parent can register to know when auto-stop timeout fires
   const onAutoStopCallbackRef = React.useRef<(() => void) | null>(null);
 
-  // Deepgram hook with callbacks (only used if USE_DEEPGRAM is true)
-  const deepgram = useDeepgram({
-    onPartial: (text: string) => {
-      dispatch({ type: 'INTERIM', text });
-    },
+  // STT backend hook with callbacks (only used if USE_STT_BACKEND is true)
+  const stt = useSTT({
     onFinal: (text: string) => {
+      // Receive the complete, finalized transcript from backend after stop
+      console.log('[RecordingContext] onFinal callback received:', text);
+      console.log('[RecordingContext] Current state before dispatch:', stateRef.current);
       dispatch({
         type: 'ACCUMULATE',
         finalText: text,
-        interimText: '', // Clear interim after final
+        interimText: '', // No interim text in batch processing mode
       });
     },
     onFinalized: () => {
+      // Called when backend sends 'close' signal (transcription complete)
       if (onFinalizedCallbackRef.current) {
         onFinalizedCallbackRef.current();
       }
@@ -310,9 +319,9 @@ export function RecordingProvider({ children }: { children: React.ReactNode }) {
 
     dispatch({ type: 'START', sessionId });
 
-    if (USE_DEEPGRAM) {
-      // Use Deepgram STT
-      deepgram.start().catch(() => {
+    if (USE_STT_BACKEND) {
+      // Use backend STT (GPT-4o Transcribe)
+      stt.start().catch(() => {
         dispatch({ type: 'ABORT' });
       });
     } else {
@@ -337,14 +346,14 @@ export function RecordingProvider({ children }: { children: React.ReactNode }) {
         dispatch({ type: 'ABORT' });
       }
     }
-  }, [createRecognition, deepgram]);
+  }, [createRecognition, stt]);
 
   const stop = useCallback(() => {
     dispatch({ type: 'SET_KEEP_LISTENING', value: false });
 
-    if (USE_DEEPGRAM) {
-      // Stop Deepgram
-      deepgram.stop();
+    if (USE_STT_BACKEND) {
+      // Stop backend STT
+      stt.stop();
     } else {
       // Stop Web Speech API
       if (restartTimeoutRef.current) {
@@ -363,14 +372,14 @@ export function RecordingProvider({ children }: { children: React.ReactNode }) {
 
     currentSessionIdRef.current = null;
     dispatch({ type: 'STOP' });
-  }, [deepgram]);
+  }, [stt]);
 
   const abort = useCallback(() => {
     dispatch({ type: 'SET_KEEP_LISTENING', value: false });
 
-    if (USE_DEEPGRAM) {
-      // Stop Deepgram
-      deepgram.stop();
+    if (USE_STT_BACKEND) {
+      // Stop backend STT
+      stt.stop();
     } else {
       // Stop Web Speech API
       if (restartTimeoutRef.current) {
@@ -385,7 +394,7 @@ export function RecordingProvider({ children }: { children: React.ReactNode }) {
     }
 
     dispatch({ type: 'ABORT' });
-  }, [deepgram]);
+  }, [stt]);
 
   // Setter for finalized callback
   const setOnFinalized = useCallback((callback: (() => void) | null) => {
@@ -408,7 +417,8 @@ export function RecordingProvider({ children }: { children: React.ReactNode }) {
     stop,
     abort,
     getDisplayText: () => {
-      return stateRef.current.displayText;
+      // Return from actual state, not ref, to avoid stale closure issues
+      return state.displayText;
     },
     isRecording: () => stateRef.current.isRecording,
     setOnFinalized,

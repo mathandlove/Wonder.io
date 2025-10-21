@@ -80,20 +80,17 @@ export function RecordingOrchestrator() {
 
   // Determine if panel should be visible based on dialogue state
   // Show for: basic (hidden below screen), quest-showing (quest offer), input-showInput (ready to record),
-  // input-recording (actively recording), waiting-for-finalize (waiting for Ask final transcripts),
-  // show-hint (hint display), record-answer (answer recording), waiting-for-answer-finalize (waiting for Answer final transcripts),
+  // input-recording (actively recording), show-hint (hint display), record-answer (answer recording),
   // answer-waiting (waiting for answer validation), answer-right (correct answer feedback),
-  // answer-wrong (wrong answer feedback), ai-waiting (waiting for response)
+  // answer-wrong (wrong answer feedback), ai-waiting (waiting for AI response)
   const dialogueState = sceneState?.type === 'dialogue' ? sceneState.state : null;
   const shouldShowPanel =
     dialogueState === 'basic' ||
     dialogueState === 'quest-showing' ||
     dialogueState === 'input-showInput' ||
     dialogueState === 'input-recording' ||
-    dialogueState === 'waiting-for-finalize' ||
     dialogueState === 'show-hint' ||
     dialogueState === 'record-answer' ||
-    dialogueState === 'waiting-for-answer-finalize' ||
     dialogueState === 'answer-waiting' ||
     dialogueState === 'answer-right' ||
     dialogueState === 'answer-wrong' ||
@@ -165,8 +162,8 @@ export function RecordingOrchestrator() {
   React.useEffect(() => {
     const isRecordingState = sceneState?.type === 'dialogue' &&
       (sceneState.state === 'input-recording' || sceneState.state === 'record-answer');
-    const isWaitingForFinalize = sceneState?.type === 'dialogue' &&
-      (sceneState.state === 'waiting-for-finalize' || sceneState.state === 'waiting-for-answer-finalize');
+    const isWaitingState = sceneState?.type === 'dialogue' &&
+      (sceneState.state === 'ai-waiting' || sceneState.state === 'answer-waiting');
     const currentScene = currentNavItem?.scene;
     const sceneRecordingId = hasRecordingId(currentScene) ? currentScene.recordingId : undefined;
 
@@ -183,34 +180,30 @@ export function RecordingOrchestrator() {
       Recording.stop();
     }
 
-    // Clear activeRecordingId when leaving finalization states (no longer need it)
-    // Don't clear during finalization states (still need it for transcript updates)
-    if (!isRecordingState && !isWaitingForFinalize && activeRecordingId) {
+    // Clear activeRecordingId when leaving waiting states (no longer need it)
+    // Don't clear during waiting states (still need it for transcript updates)
+    if (!isRecordingState && !isWaitingState && activeRecordingId) {
       setActiveRecordingId(null);
     }
   }, [sceneState, recording, currentNavItem, activeRecordingId]);
 
-  // Sync recording transcript in real-time
-  // - For Ask recording (input-recording): Update scene text (for speech bubble) AND scene state questionText (for persistence)
-  // - For Answer recording (record-answer): Update scene state answerText (for answer input box)
-  // Extract displayText as a primitive value so effect only runs when the actual text changes
+  // Sync recording transcript - simplified for batch processing
+  // During recording, we don't get real-time updates anymore
+  // After stop, we receive ONE final transcript which updates ai-waiting or answer-waiting state
   const displayText = recording.getDisplayText();
   const isRecording = recording.isRecording();
 
   React.useEffect(() => {
-    // Update transcript if recording OR waiting for finalization (still receiving final transcripts)
-    const isWaitingForFinalization = sceneState?.type === 'dialogue' &&
-      (sceneState.state === 'waiting-for-finalize' || sceneState.state === 'waiting-for-answer-finalize');
-
-    if ((isRecording || isWaitingForFinalization) && activeRecordingId) {
-      // Read fresh state on each transcript update (not from dependencies)
+    // Only sync during active recording (no partial updates, but keep UI responsive)
+    if (isRecording && activeRecordingId) {
+      // Read fresh state on each update
       const freshNavItem = getCurrentNavigationItem();
       const currentState = freshNavItem?.sceneState?.type === 'dialogue' ? freshNavItem.sceneState : null;
 
       if (currentState?.state === 'input-recording') {
-        // Only update if text actually changed (prevents infinite loop)
+        // Ask recording: Update scene text minimally (backend will provide final on stop)
+        // We don't get real-time transcripts anymore, but keep state synced
         if (currentState.questionText !== displayText && displayText) {
-          // Ask recording: Update both scene text (for speech bubble) and scene state (for persistence)
           updateSceneTextByRecordingId(activeRecordingId, displayText);
           updateNavigationItemState(navigationIndex, {
             type: 'dialogue',
@@ -219,44 +212,58 @@ export function RecordingOrchestrator() {
           });
         }
       } else if (currentState?.state === 'record-answer') {
-        // Only update if text actually changed (prevents infinite loop)
+        // Answer recording: Update answerText minimally
         if (currentState.answerText !== displayText && displayText) {
-          // Answer recording: Update scene state answerText (for answer input box)
           updateNavigationItemState(navigationIndex, {
             type: 'dialogue',
             state: 'record-answer',
             answerText: displayText,
-            questionText: currentState.questionText // Preserve existing questionText
-          });
-        }
-      } else if (currentState?.state === 'waiting-for-finalize') {
-        // Waiting for final Ask transcripts - continue updating text (not recording anymore but still receiving finals)
-        // IMPORTANT: Don't overwrite existing text with empty string (happens when recording stops)
-        const newQuestionText = displayText || currentState.questionText || '';
-        if (currentState.questionText !== newQuestionText && newQuestionText.trim() !== '') {
-          // Update both scene text (for speech bubble) and scene state (for persistence)
-          updateSceneTextByRecordingId(activeRecordingId, newQuestionText);
-          updateNavigationItemState(navigationIndex, {
-            type: 'dialogue',
-            state: 'waiting-for-finalize',
-            questionText: newQuestionText
-          });
-        }
-      } else if (currentState?.state === 'waiting-for-answer-finalize') {
-        // Waiting for final Answer transcripts - continue updating answerText
-        // IMPORTANT: Don't overwrite existing text with empty string (happens when recording stops)
-        const newAnswerText = displayText || currentState.answerText || '';
-        if (currentState.answerText !== newAnswerText && newAnswerText.trim() !== '') {
-          updateNavigationItemState(navigationIndex, {
-            type: 'dialogue',
-            state: 'waiting-for-answer-finalize',
-            answerText: newAnswerText,
-            questionText: currentState.questionText // Preserve existing questionText
+            questionText: currentState.questionText
           });
         }
       }
     }
-  }, [displayText, isRecording, sceneState, activeRecordingId, navigationIndex, updateSceneTextByRecordingId, updateNavigationItemState, getCurrentNavigationItem]);
+
+    // Update ai-waiting and answer-waiting states when final transcript arrives from backend
+    // This effect updates the text as soon as it arrives (before 'close' signal)
+    if (!isRecording && activeRecordingId && displayText.trim()) {
+      const freshNavItem = getCurrentNavigationItem();
+      const currentState = freshNavItem?.sceneState?.type === 'dialogue' ? freshNavItem.sceneState : null;
+
+      if (currentState?.state === 'ai-waiting') {
+        // Final transcript arrived from backend
+        const finalText = displayText.trim();
+        console.log('[RecordPanelOrchestrator] Final transcript arrived:', finalText);
+
+        if (currentState.questionText !== finalText) {
+          // Valid transcript - update questionText in ai-waiting state
+          console.log('[RecordPanelOrchestrator] ✅ Updating ai-waiting state with final text:', finalText);
+          updateSceneTextByRecordingId(activeRecordingId, finalText);
+          updateNavigationItemState(navigationIndex, {
+            type: 'dialogue',
+            state: 'ai-waiting',
+            questionText: finalText
+          });
+        } else {
+          console.log('[RecordPanelOrchestrator] ⏭️  Skipping update - text unchanged');
+        }
+      } else if (currentState?.state === 'answer-waiting') {
+        // Final transcript arrived for answer
+        const finalText = displayText.trim();
+
+        if (currentState.answerText !== finalText) {
+          // Valid answer - update answerText in answer-waiting state
+          console.log('[RecordPanelOrchestrator] ✅ Updating answer-waiting state with final text:', finalText);
+          updateNavigationItemState(navigationIndex, {
+            type: 'dialogue',
+            state: 'answer-waiting',
+            answerText: finalText,
+            questionText: currentState.questionText
+          });
+        }
+      }
+    }
+  }, [displayText, isRecording, sceneState, activeRecordingId, navigationIndex, updateSceneTextByRecordingId, updateNavigationItemState, getCurrentNavigationItem, navigationArray, setNavigationIndex, deleteNavigationItem]);
 
   // Register onAutoStop callback when in recording states
   // This allows the auto-stop timeout to call handleRecordStop and transition state properly
@@ -277,50 +284,22 @@ export function RecordingOrchestrator() {
     }
   }, [sceneState, isRecording, recording]);
 
-  // Register onFinalized callback when recording or waiting for finalize
-  // This needs to be registered BEFORE we stop recording, so it's ready for the finalized event
+  // Register onFinalized callback - triggers when backend sends 'close' signal
+  // Just log for debugging - ChatFlowOrchestrator will handle empty transcripts
   React.useEffect(() => {
     const currentState = sceneState?.type === 'dialogue' ? sceneState : null;
 
-    // Register callback during recording (before stop) OR during waiting-for-finalize states
+    // Register callback during recording or in ai-waiting/answer-waiting states
     const shouldRegisterCallback =
       (currentState?.state === 'input-recording' && isRecording) ||
       (currentState?.state === 'record-answer' && isRecording) ||
-      currentState?.state === 'waiting-for-finalize' ||
-      currentState?.state === 'waiting-for-answer-finalize';
+      currentState?.state === 'ai-waiting' ||
+      currentState?.state === 'answer-waiting';
 
     if (shouldRegisterCallback) {
-      // Register callback that will fire when all transcripts are received
+      // Register callback that will fire when backend sends 'close' signal
       recording.setOnFinalized(() => {
-        // Find the current navigation index at the time this callback fires
-        const freshNavItem = getCurrentNavigationItem();
-        const freshState = freshNavItem?.sceneState?.type === 'dialogue' ? freshNavItem.sceneState : null;
-
-        // Transition based on which finalization state we're in
-        if (freshState?.state === 'waiting-for-finalize') {
-          // Get text from scene state (more reliable than recording.getDisplayText())
-          const finalText = freshState.questionText || recording.getDisplayText();
-          updateNavigationItemState(navigationIndex, {
-            type: 'dialogue',
-            state: 'ai-waiting',
-            questionText: finalText
-          });
-        } else if (freshState?.state === 'waiting-for-answer-finalize') {
-          // Get text from scene state (more reliable than recording.getDisplayText())
-          const finalText = freshState.answerText || recording.getDisplayText();
-
-          // Ensure we have text before transitioning
-          if (!finalText || finalText.trim() === '') {
-            return;
-          }
-
-          updateNavigationItemState(navigationIndex, {
-            type: 'dialogue',
-            state: 'answer-waiting',
-            answerText: finalText,
-            questionText: freshState.questionText // Preserve question
-          });
-        }
+        console.log('[RecordPanelOrchestrator] ✅ Transcription finalized - backend processing complete');
       });
 
       // Cleanup: unregister when leaving these states
@@ -331,7 +310,7 @@ export function RecordingOrchestrator() {
       // Not in a state that needs callback - make sure it's cleared
       recording.setOnFinalized(null);
     }
-  }, [sceneState, isRecording, recording, navigationIndex, updateNavigationItemState, getCurrentNavigationItem]);
+  }, [sceneState, isRecording, recording]);
 
   /**
    * Handle recording start - creates new page, navigates, and starts recording
@@ -388,116 +367,58 @@ export function RecordingOrchestrator() {
   }, [createRecordingScene, insertNavigationItem, updateNavigationItemState, navigationIndex, setNavigationIndex, currentNavItem]);
 
   /**
-   * Handle recording stop - transitions based on current recording type and whether text was captured
-   * - If text recorded:
-   *   - input-recording → ai-waiting (for Ask button) - preserves questionText
-   *   - record-answer → answer-waiting (for Answer button) - preserves answerText
-   * - If no text recorded:
-   *   - input-recording → collapse back to previous scene (back to ready state)
-   *   - record-answer → input-showInput (back to ready state on same scene)
+   * Handle recording stop - NEW BATCH PROCESSING FLOW
+   * - User pushes stop button
+   * - Transition directly to ai-waiting (or answer-waiting) state
+   * - Backend will process the entire audio buffer and return ONE final transcript
+   * - When final transcript arrives, update the text in ai-waiting state
+   * - ChatFlowOrchestrator will trigger AI processing on ai-waiting state
    */
   const handleRecordStop = useCallback(() => {
     const currentState = sceneState?.type === 'dialogue' ? sceneState : null;
 
     if (currentState?.state === 'record-answer') {
-      // Answer recording: Get final transcript from recording context (most reliable source)
-      // The recording context maintains accumulated text across pauses
-      const recordingDisplayText = recording.getDisplayText();
-      const stateAnswerText = currentState.answerText;
+      // Answer recording: ALWAYS transition to answer-waiting immediately
+      // We don't know if there's valid speech until backend processes the audio
+      // Backend will send final transcript which will either:
+      //   - Update answerText if valid speech detected
+      //   - Revert to input-showInput if empty/no speech (handled in transcript sync effect)
+      const currentAnswerText = currentState.answerText || '';
 
-      // Prefer displayText from recording context as it has full accumulation
-      const finalAnswerText = (recordingDisplayText || stateAnswerText || '').trim();
-
-      if (!finalAnswerText) {
-        // No text recorded: Go back to ready state (input-showInput)
-        updateNavigationItemState(navigationIndex, {
-          type: 'dialogue',
-          state: 'input-showInput',
-          questionText: currentState.questionText // Preserve question text
-        });
-      } else {
-        // Text recorded: Transition to waiting-for-answer-finalize (wait for final transcripts)
-        updateNavigationItemState(navigationIndex, {
-          type: 'dialogue',
-          state: 'waiting-for-answer-finalize',
-          answerText: finalAnswerText,
-          questionText: currentState.questionText // Preserve question text
-        });
-      }
+      updateNavigationItemState(navigationIndex, {
+        type: 'dialogue',
+        state: 'answer-waiting',
+        answerText: currentAnswerText, // Will be updated when final transcript arrives
+        questionText: currentState.questionText // Preserve question text
+      });
     } else if (currentState?.state === 'input-recording') {
-      // Ask recording: Get final transcript from recording context (most reliable source)
-      // The recording context maintains accumulated text across pauses
-      const recordingDisplayText = recording.getDisplayText();
-      const stateQuestionText = currentState.questionText;
+      // Ask recording: ALWAYS transition to ai-waiting immediately
+      // We don't know if there's valid speech until backend processes the audio
+      // Backend will send final transcript which will either:
+      //   - Update questionText if valid speech detected
+      //   - Trigger scene collapse if empty/no speech (handled in transcript sync effect)
+      const currentQuestionText = currentState.questionText || '';
+      console.log('[RecordPanelOrchestrator] 🛑 Stop recording, transitioning to ai-waiting with text:', currentQuestionText);
 
-      // Prefer displayText from recording context as it has full accumulation
-      const finalQuestionText = (recordingDisplayText || stateQuestionText || '').trim();
-
-      if (!finalQuestionText) {
-        // No text recorded: Navigate back to previous scene first, then delete after animations complete
-        const currentIndex = navigationIndex;
-        const targetSceneIndex = currentIndex - 1;
-
-        // Check if we've already initiated deletion for this index
-        if (pendingDeletionRef.current === currentIndex) {
-          return;
-        }
-
-        // Mark this index as pending deletion
-        pendingDeletionRef.current = currentIndex;
-
-        // Disable animations on the target scene before navigating back
-        // This prevents character entrance animations from playing when we're just going back to delete
-        const prevNavItem = navigationArray[targetSceneIndex];
-        if (prevNavItem && prevNavItem.sceneState?.type === 'dialogue') {
-          updateNavigationItemState(targetSceneIndex, {
-            ...prevNavItem.sceneState,
-            allowAnimate: false
-          });
-        }
-
-        // Navigate back to previous scene (with animations disabled)
-        setNavigationIndex(targetSceneIndex);
-
-        // Wait for character animations to complete before deleting
-        // Character entrance animations are 1600ms (see CharacterPanel.css)
-        // TEMPORARY: Testing with 300ms to observe scroll behavior issues
-        setTimeout(() => {
-          deleteNavigationItem(currentIndex);
-
-          // Re-enable animations on the target scene after deletion
-          // This ensures animations work normally when scrolling forward again
-          const prevNavItem = navigationArray[targetSceneIndex];
-          if (prevNavItem && prevNavItem.sceneState?.type === 'dialogue') {
-            updateNavigationItemState(targetSceneIndex, {
-              ...prevNavItem.sceneState,
-              allowAnimate: true
-            });
-          }
-
-          // Clear the pending deletion ref
-          pendingDeletionRef.current = null;
-        }, 2300); // TEMPORARY: Reduced from 1800ms for testing
-      } else {
-        // Text recorded: Transition to waiting-for-finalize (wait for final transcripts)
-        // Update scene text (for speech bubble) before transitioning state
-        if (activeRecordingId) {
-          updateSceneTextByRecordingId(activeRecordingId, finalQuestionText);
-        }
-
-        updateNavigationItemState(navigationIndex, {
-          type: 'dialogue',
-          state: 'waiting-for-finalize',
-          questionText: finalQuestionText // Persist question text in scene state
-        });
+      // Update scene text (for speech bubble) before transitioning state
+      if (activeRecordingId && currentQuestionText) {
+        updateSceneTextByRecordingId(activeRecordingId, currentQuestionText);
       }
+
+      updateNavigationItemState(navigationIndex, {
+        type: 'dialogue',
+        state: 'ai-waiting',
+        questionText: currentQuestionText // Will be updated when final transcript arrives
+      });
     }
 
     // Recording will stop automatically via the effect
-    // Recording will send 'finalize' to get final transcripts
-    // onFinalized callback will transition waiting-for-finalize -> ai-waiting
-    // ChatFlowOrchestrator will trigger on ai-waiting
-  }, [navigationIndex, navigationArray, sceneState, recording, updateNavigationItemState, addNavigationStateToCurrentScene, forceAdvanceNavigation, setNavigationIndex, deleteNavigationItem]);
+    // Recording will send 'finalize' to backend
+    // Backend will process complete audio and send ONE final transcript
+    // onFinal callback will update the text in ai-waiting/answer-waiting state
+    // If transcript is empty, the transcript sync effect will handle scene collapse
+    // ChatFlowOrchestrator will trigger AI processing when in ai-waiting state
+  }, [navigationIndex, sceneState, updateNavigationItemState, activeRecordingId, updateSceneTextByRecordingId]);
 
   // Update ref when handleRecordStop changes (so effects can use it)
   React.useEffect(() => {

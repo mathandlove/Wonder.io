@@ -1,7 +1,7 @@
 /**
  * AIModule.tsx
  * Simple AI module interface that returns responses to user input.
- * Currently a dummy implementation that returns "fail" for all requests.
+ * Mock implementation that returns "Processed: [input text]" after a 2-second delay.
  */
 
 import React, { createContext, useContext, useCallback, type ReactNode } from 'react';
@@ -50,19 +50,20 @@ export const AIModuleProvider: React.FC<AIModuleProviderProps> = ({
   const [lastError, setLastError] = React.useState<string | undefined>();
 
   /**
-   * Dummy AI implementation - always returns "fail"
+   * Mock AI implementation - returns "Processed: [text]" after 2 seconds
    */
-  const getResponse = useCallback(async (_input: AIInput): Promise<AIResponse> => {
+  const getResponse = useCallback(async (input: AIInput): Promise<AIResponse> => {
     setIsProcessing(true);
     setLastError(undefined);
 
     try {
-      // Simulate a tiny delay
-      await new Promise(resolve => setTimeout(resolve, 100));
+      // Simulate AI processing delay (2 seconds)
+      await new Promise(resolve => setTimeout(resolve, 2000));
 
-      // Return "fail" as the response
+      // Return processed text with "Processed:" prefix
+      const processedText = `Processed: ${input.text}`;
       return {
-        text: 'fail',
+        text: processedText,
         success: true
       };
 

@@ -11,6 +11,7 @@ import type { Scene } from '@core/types/scene';
 import CharacterScene from "./CharacterScene";
 import ImageScene from "./ImageScene";
 import FullScene from "./FullScene";
+import TextScene from "./TextScene";
 
 export type SceneProps<T extends Scene = Scene> = {
   scene: T;
@@ -23,6 +24,6 @@ export const sceneRegistry: Record<string, ComponentType<SceneProps>> = {
   "character-flow": CharacterScene as ComponentType<SceneProps>, // Uses States field for quest/input features
   image: ImageScene as ComponentType<SceneProps>,
   full: FullScene as ComponentType<SceneProps>,
-  // text: removed - text scenes are not used in any stories
+  text: TextScene as ComponentType<SceneProps>,
   // caption: removed - captions are now handled within ImageScene
 };
