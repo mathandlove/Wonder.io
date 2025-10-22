@@ -9,8 +9,8 @@ export type CharacterScene = {
   text: string; // Empty string during recording, filled when transcript arrives
   speaker?: "left" | "right";
   background?: string;
-  "left-character"?: string;
-  "right-character"?: string;
+  "left-character"?: string | null;
+  "right-character"?: string | null;
   flowSequence?: boolean;
   isFirstInFlow?: boolean;
   hidden?: boolean;
@@ -46,8 +46,8 @@ export type CharacterFlowScene = {
   type: "character-flow";
   sceneId?: string;
   background?: string;
-  "left-character"?: string;
-  "right-character"?: string;
+  "left-character"?: string | null;
+  "right-character"?: string | null;
   hidden?: boolean;
   flow: Array<{
     side?: "left" | "right";
@@ -86,6 +86,25 @@ export type TextScene = {
   hidden?: boolean;
 };
 
+export type FailDanceScene = {
+  type: "fail-dance";
+  sceneId?: string;
+  background?: string;
+  character: string; // The regular character name (e.g., "bakerMom")
+  angryCharacter: string; // The angry version (e.g., "angrybakerMom")
+  side?: "left" | "right"; // Which side the character is on (the one that dances)
+  "left-character"?: string; // Left character (e.g., "leo") - shown normally
+  "right-character"?: string | null; // Right character - set to null to trigger exit animation
+  duration?: number; // Animation duration in ms (default: 3500)
+  flowSequence?: boolean;
+  isFirstInFlow?: boolean;
+  hidden?: boolean;
+  meta?: {
+    panelLeft?: { character: string; previousCharacter?: string; nextCharacter?: string; newCharacter?: boolean; aboutToSwap?: boolean };
+    panelRight?: { character: string; previousCharacter?: string; nextCharacter?: string; newCharacter?: boolean; aboutToSwap?: boolean };
+  };
+};
+
 // CaptionScene removed - captions are now handled within ImageScene
 
 export type Scene =
@@ -93,7 +112,8 @@ export type Scene =
   | ImageScene
   | CharacterFlowScene
   | FullScene
-  | TextScene;
+  | TextScene
+  | FailDanceScene;
 
 export type Story = {
   scenes: Scene[];

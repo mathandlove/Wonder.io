@@ -39,7 +39,7 @@ export function buildPanelRangesFromScenes(scenes: Scene[]): PanelRange[] {
     const s: any = scenes[i];
 
     // Determine if this scene type should show panels
-    const characterSceneTypes = ['character', 'quest', 'input'];
+    const characterSceneTypes = ['character', 'quest', 'input', 'fail-dance'];
     const isCharacterTypeScene = characterSceneTypes.includes(s?.type) || s?.flowSequence === true;
     const hasNoCharacterMeta = s?.meta?.panelLeft?.character === NOCHARACTER || s?.meta?.panelRight?.character === NOCHARACTER;
     const speaker = s?.speaker || null;

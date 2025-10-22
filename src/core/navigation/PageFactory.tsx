@@ -3,7 +3,8 @@
  * that can be scrolled to and navigated within the story.
  */
 import React, { createContext, useContext } from "react";
-import type { CharacterScene, Scene } from "@core/types/scene";
+import type { CharacterScene, Scene, FailDanceScene } from "@core/types/scene";
+import { NOCHARACTER } from "@features/characters/buildPanelRangesFromScenes";
 
 type PageFactoryContextType = {
   createRecordingScene: (
@@ -12,6 +13,12 @@ type PageFactoryContextType = {
     leftCharacter?: string,
     rightCharacter?: string
   ) => CharacterScene;
+  createFailDanceScene: (
+    character: string,
+    currentBackground?: string,
+    leftCharacter?: string,
+    rightCharacter?: string
+  ) => FailDanceScene;
 };
 
 const PageFactoryContext = createContext<PageFactoryContextType | null>(null);
@@ -52,8 +59,39 @@ export function PageFactoryProvider({ children }: PageFactoryProviderProps) {
     return newScene;
   };
 
+  /**
+   * Create a fail-dance scene - overlay animation for wrong answers
+   * Creates a scene with left character visible and animated overlay on right
+   *
+   * Meta will be automatically injected by injectPanelMetaFromFlows
+   */
+  const createFailDanceScene = (
+    character: string,
+    currentBackground?: string,
+    leftCharacter?: string,
+    rightCharacter?: string
+  ): FailDanceScene => {
+    const sceneId = `fail-dance-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+
+    const newScene: FailDanceScene = {
+      type: "fail-dance",
+      sceneId,
+      character: character,
+      angryCharacter: `angry${character}`,
+      side: "right",
+      "left-character": leftCharacter || "leo", // Inherit or fallback
+      "right-character": rightCharacter || NOCHARACTER, // Use NOCHARACTER to trigger exit animation
+      background: currentBackground,
+      duration: 3500
+      // NOTE: meta will be injected automatically by injectPanelMetaFromFlows in StoryModeScroll
+    };
+
+    return newScene;
+  };
+
   const contextValue: PageFactoryContextType = {
-    createRecordingScene
+    createRecordingScene,
+    createFailDanceScene
   };
 
   return (

@@ -17,8 +17,10 @@ import { useEffect, useState } from 'react';
 import { useSceneManager } from '@core/scenes/SceneManager';
 import { useDialogue } from '@core/dialogue/DialogueContext';
 import { useSceneFlowMetadata } from '@core/data/FlowMetadataStore';
+import { usePageFactory } from '@core/navigation/PageFactory';
 import type { Scene } from '@core/types/scene';
 import type { ImageState } from '@core/dialogue/types';
+import { NOCHARACTER } from '@features/characters/buildPanelRangesFromScenes';
 
 interface DebugState {
   wheelAccum: number;
@@ -35,6 +37,8 @@ export function StepScrollDebug() {
     lastEvent: '',
     timestamp: 0,
   });
+
+  const pageFactory = usePageFactory();
 
   // Draggable position state - load from localStorage or default to top-right
   const getInitialPosition = () => {
@@ -207,6 +211,37 @@ export function StepScrollDebug() {
 
   const setRecordPanelAiWaiting = () => {
     sceneManager.updateNavigationItemState(navigationIndex, { type: 'dialogue', state: 'ai-waiting' });
+  };
+
+  const triggerFailDance = () => {
+    // Extract current scene info
+    const scene = currentNavItem?.scene;
+    const rightCharacterName = (scene && 'right-character' in scene && scene['right-character']);
+    const leftCharacterName = (scene && 'left-character' in scene && scene['left-character']) ;
+    const background = scene && 'background' in scene ? scene.background : undefined;
+
+    // Use PageFactory to create the fail-dance scene
+    const failDanceScene = pageFactory.createFailDanceScene(
+      rightCharacterName,
+      background,
+      leftCharacterName,
+      NOCHARACTER // right-character set to NOCHARACTER to trigger exit animation
+    );
+
+    // Insert scene
+    const newNavItem = {
+      scene: failDanceScene,
+      sceneId: failDanceScene.sceneId!,
+      sceneState: { type: 'static' as const },
+      lockForward: false,
+      lockBackward: false,
+      index: navigationIndex + 1
+    };
+
+    sceneManager.insertNavigationItem(newNavItem, navigationIndex + 1);
+
+    // Navigate to it
+    sceneManager.forceAdvanceNavigation('forward');
   };
 
 
@@ -531,6 +566,31 @@ export function StepScrollDebug() {
         </div>
         <div style={{ marginTop: '8px', fontSize: '9px', color: '#888', fontStyle: 'italic' }}>
           Ten visual states for RecordPanel testing
+        </div>
+      </div>
+
+      {/* Fail Dance Section */}
+      <div style={{ marginTop: '10px', paddingTop: '8px', borderTop: '1px solid #ff0' }}>
+        <div style={{ color: '#ff0', marginBottom: '8px', fontWeight: 'bold' }}>💃 Fail Dance Animation</div>
+        <button
+          onClick={triggerFailDance}
+          style={{
+            padding: '12px',
+            background: 'linear-gradient(135deg, #ff0000 0%, #ff6600 100%)',
+            color: '#fff',
+            border: '2px solid #ff0',
+            borderRadius: '6px',
+            cursor: 'pointer',
+            fontSize: '12px',
+            fontWeight: 'bold',
+            width: '100%',
+            boxShadow: '0 4px 8px rgba(255,0,0,0.3)'
+          }}
+        >
+          🤬 Trigger Fail Dance
+        </button>
+        <div style={{ marginTop: '6px', fontSize: '9px', color: '#888', fontStyle: 'italic' }}>
+          Plays angry character tantrum animation (3.5s)
         </div>
       </div>
 

@@ -45,7 +45,7 @@ function hasFlowId(scene: Scene | undefined | null): scene is SceneWithFlowId {
 
 export function RecordingOrchestrator() {
   const { getCurrentNavigationItem, insertNavigationItem, deleteNavigationItem, addNavigationStateToCurrentScene, updateNavigationItemState, updateSceneTextByRecordingId, navigationIndex, setNavigationIndex, forceAdvanceNavigation, navigationArray } = useSceneManager();
-  const { createRecordingScene } = usePageFactory();
+  const { createRecordingScene, createFailDanceScene } = usePageFactory();
   const recording = useRecording();
 
   // Track pending deletions to prevent duplicate deletion attempts
@@ -122,25 +122,79 @@ export function RecordingOrchestrator() {
     }
   }, [dialogueState]);
 
-  // Effect: Auto-transition from answer-wrong back to ready state (allow retry)
+  // Effect: Auto-transition from answer-wrong to fail-dance scene, then back to ready state
   useEffect(() => {
     if (dialogueState === 'answer-wrong') {
-      // Wait 4 seconds to show the angry seal animation and wrong feedback, then return to ready state
+      // Wait 2 seconds to show the red glow feedback, then insert fail-dance scene
       const timerId = setTimeout(() => {
         const currentState = sceneState?.type === 'dialogue' ? sceneState : null;
         if (currentState?.state === 'answer-wrong') {
-          // Transition to input-showInput state (panel at bottom, ready to try again)
+          // Extract character information from current scene
+          const scene = currentNavItem?.scene;
+          let character = 'bakerMom'; // default - the one who gets angry
+          let leftCharacter: string | undefined;
+          let background: string | undefined;
+
+          if (hasCharacterProperties(scene)) {
+            // For quest failures, always use the right character (NPC/questgiver)
+            // They're the one who gets upset when you give the wrong answer!
+            const rightCharacter = scene['right-character'];
+            leftCharacter = scene['left-character'];
+
+            if (rightCharacter) {
+              character = rightCharacter;
+            } else if (leftCharacter) {
+              character = leftCharacter;
+            }
+          }
+
+          if (scene && 'background' in scene) {
+            background = scene.background;
+          }
+
+          // Use PageFactory to create fail-dance scene
+          const failDanceScene = createFailDanceScene(
+            character,
+            background,
+            leftCharacter,
+            null // right-character set to null to trigger exit animation
+          );
+
+          // Insert the fail-dance scene after current scene
+          const newNavItem = {
+            scene: failDanceScene,
+            sceneId: failDanceScene.sceneId!,
+            sceneState: { type: 'static' as const },
+            lockForward: false,
+            lockBackward: false,
+            index: navigationIndex + 1
+          };
+
+          insertNavigationItem(newNavItem, navigationIndex + 1);
+
+          // Immediately transition current scene to input-showInput state (ready for retry)
+          // This will be visible when we return from the fail-dance scene
           updateNavigationItemState(navigationIndex, {
             type: 'dialogue',
             state: 'input-showInput',
             questionText: currentState.questionText // Preserve question for retry
           });
+
+          // Auto-advance to fail-dance scene after a brief moment
+          setTimeout(() => {
+            forceAdvanceNavigation('forward');
+
+            // After fail-dance completes (3.5s), go back to the ready state scene
+            setTimeout(() => {
+              forceAdvanceNavigation('backward');
+            }, 3600); // Slightly longer than animation to ensure it completes
+          }, 100);
         }
-      }, 4000);
+      }, 2000); // Reduced from 4000 to 2000 since we're adding 3.5s animation
 
       return () => clearTimeout(timerId);
     }
-  }, [dialogueState, sceneState, navigationIndex, updateNavigationItemState]);
+  }, [dialogueState, sceneState, navigationIndex, updateNavigationItemState, currentNavItem, insertNavigationItem, forceAdvanceNavigation]);
 
   // Effect: Auto-advance forward after showing answer-right feedback
   useEffect(() => {
