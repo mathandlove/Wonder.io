@@ -92,7 +92,7 @@ export function injectPanelMetaFromFlows(scenes: Scene[]): Scene[] {
           const nextSceneStates = nextScene ? (nextScene as any).States as string[] | undefined : undefined;
           const hasQuestState = nextSceneStates?.includes('quest');
 
-          const nextCharacter = nextScene?.type === "character" ?
+          const nextCharacter = (nextScene?.type === "character" || nextScene?.type === "fail-dance") ?
             (nextScene as any)[nextCharacterKey] ||
             nextScene?.meta?.[side === 'left' ? 'panelLeft' : 'panelRight']?.character :
             hasQuestState ? current : // Quest scenes keep current character

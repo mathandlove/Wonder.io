@@ -160,10 +160,15 @@ export function SceneManagerProvider({ children, initialIndex = 0 }: SceneManage
     // Do NOT touch navigationIndex - let it stay where it is
   }, [baseNavigationArray, setNavigationArray]);
 
+  // Update ref to always have the latest navigationArray
+  React.useEffect(() => {
+    navigationArrayRef.current = navigationArray;
+  }, [navigationArray]);
+
   // Helper functions for navigation array access
   // Note: Uses navigationArrayRef to avoid triggering cascading re-renders
   // Components that need to react to navigationArray changes should depend on
-  // navigationIndex or navigationArray directly, not on this function's return value
+  // navigationIndex or navigationArrayWithMeta directly, not on this function's return value
   const getCurrentNavigationItem = useCallback((): NavigationItem | null => {
     return navigationArrayRef.current[navigationIndex] || null;
   }, [navigationIndex]);
@@ -466,7 +471,7 @@ export function SceneManagerProvider({ children, initialIndex = 0 }: SceneManage
     scenes: visibleScenes, // Backward compatibility alias
 
     // New navigation array system
-    navigationArray,
+    navigationArray, // Raw navigation array - components check neighbors directly
     navigationIndex,
     setNavigationIndex,
     getCurrentNavigationItem,

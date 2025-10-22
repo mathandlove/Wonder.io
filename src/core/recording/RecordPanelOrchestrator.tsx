@@ -161,6 +161,8 @@ export function RecordingOrchestrator() {
           );
 
           // Insert the fail-dance scene after current scene
+          // Panel metadata (newCharacter, previousCharacter, etc.) will be automatically
+          // injected by SceneManager's reactive effect when navigationArray changes
           const newNavItem = {
             scene: failDanceScene,
             sceneId: failDanceScene.sceneId!,

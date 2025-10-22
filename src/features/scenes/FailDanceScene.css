@@ -53,32 +53,16 @@
   animation: fail-dance-fade-in 0.5s ease-out forwards;
 }
 
-@keyframes fail-dance-angry-shake {
-  0% {
-    transform: translateY(-200px) rotate(-5deg);
-  }
-  25% {
-    transform: translateY(-200px) rotate(5deg);
-  }
-  50% {
-    transform: translateY(-200px) rotate(-3deg);
-  }
-  75% {
-    transform: translateY(-200px) rotate(3deg);
-  }
-  100% {
-    transform: translateY(-200px) rotate(0deg);
-  }
+
+
+/* Right side: Shake while off-screen right */
+.fail-dance-right.fail-dance-phase-angry {
+  animation: fail-dance-angry-shake-right 0.5s ease-out forwards;
 }
 
-@keyframes fail-dance-fade-in {
-  0% {
-    opacity: 0;
-  }
-  100% {
-    opacity: 1;
-  }
-}
+
+
+
 
 /* ================================================
    PHASE 2: DANCING (0.5-2.5s, 2 seconds)
@@ -91,7 +75,7 @@
 /* Left side: Jump while moving right */
 @keyframes fail-dance-jump-and-move {
   0% {
-    transform: translateX(0) translateY(-200px);
+    transform: translateX(0vw) translateY(-200px);
   }
   5% {
     transform: translateX(2.5vw) translateY(-240px) rotate(-2deg);
@@ -151,178 +135,113 @@
     transform: translateX(47.5vw) translateY(-240px) rotate(-2deg);
   }
   100% {
-    transform: translateX(50vw) translateY(-200px) rotate(0deg);
+    transform: translateX(70vw) translateY(-200px) rotate(0deg);
   }
 }
 
-/* Right side: Jump while moving left */
+/* Right side: 3 jumps to peak, flip, 3 jumps back */
 .fail-dance-right.fail-dance-phase-dancing {
-  animation: fail-dance-jump-and-move-right 2s linear forwards;
+  animation: fail-dance-jump-and-move-right 3.5s ease-in-out forwards;
 }
 
 @keyframes fail-dance-jump-and-move-right {
+  /* Container positioned at right: -35vw (fully off-screen) */
+  /* To reach peak (30vw from right edge): need translateX(-65vw) */
+  /* Total journey: 0 → -65vw → +95vw (160vw total travel) */
+
+  /* Start off-screen right at position -35vw from right edge */
   0% {
-    transform: translateX(0) translateY(-200px);
+    transform: translateX(0) scaleX(1);
   }
-  5% {
-    transform: translateX(-2.5vw) translateY(-240px) rotate(2deg);
+
+  /* FIRST HALF: 3 jumps to peak position (30vw from right edge) */
+
+  /* Jump 1 - up */
+  7% {
+    transform: translateX(-10.8vw) translateY(-60px) rotate(-3deg) scaleX(1);
   }
-  10% {
-    transform: translateX(-5vw) translateY(-200px) rotate(-2deg);
+  /* Jump 1 - down */
+  14% {
+    transform: translateX(-21.6vw) translateY(0) rotate(2deg) scaleX(1);
   }
-  15% {
-    transform: translateX(-7.5vw) translateY(-240px) rotate(2deg);
+
+  /* Jump 2 - up */
+  21% {
+    transform: translateX(-32.5vw) translateY(-60px) rotate(-3deg) scaleX(1);
   }
-  20% {
-    transform: translateX(-10vw) translateY(-200px) rotate(-2deg);
+  /* Jump 2 - down */
+  28% {
+    transform: translateX(-43.3vw) translateY(0) rotate(2deg) scaleX(1);
   }
-  25% {
-    transform: translateX(-12.5vw) translateY(-240px) rotate(2deg);
-  }
-  30% {
-    transform: translateX(-15vw) translateY(-200px) rotate(-2deg);
-  }
+
+  /* Jump 3 - up */
   35% {
-    transform: translateX(-17.5vw) translateY(-240px) rotate(2deg);
+    transform: translateX(-54.2vw) translateY(-60px) rotate(-3deg) scaleX(1);
   }
-  40% {
-    transform: translateX(-20vw) translateY(-200px) rotate(-2deg);
+  /* Jump 3 - down */
+  42% {
+    transform: translateX(-65vw) translateY(0) rotate(2deg) scaleX(1);
   }
-  45% {
-    transform: translateX(-22.5vw) translateY(-240px) rotate(2deg);
-  }
+
+  /* Arrive at peak position and FLIP */
   50% {
-    transform: translateX(-25vw) translateY(-200px) rotate(-2deg);
+    transform: translateX(-65vw) translateY(0) rotate(0deg) scaleX(-1);
   }
-  55% {
-    transform: translateX(-27.5vw) translateY(-240px) rotate(2deg);
+
+  /* SECOND HALF: 3 jumps back off-screen right (65vw + 60vw = 125vw total) */
+
+  /* Jump 1 back - up */
+  57% {
+    transform: translateX(-52.2vw) translateY(-60px) rotate(-3deg) scaleX(-1);
   }
-  60% {
-    transform: translateX(-30vw) translateY(-200px) rotate(-2deg);
+  /* Jump 1 back - down */
+  64% {
+    transform: translateX(-39.3vw) translateY(0) rotate(2deg) scaleX(-1);
   }
-  65% {
-    transform: translateX(-32.5vw) translateY(-240px) rotate(2deg);
+
+  /* Jump 2 back - up */
+  71% {
+    transform: translateX(-26.5vw) translateY(-60px) rotate(-3deg) scaleX(-1);
   }
-  70% {
-    transform: translateX(-35vw) translateY(-200px) rotate(-2deg);
+  /* Jump 2 back - down */
+  78% {
+    transform: translateX(-13.6vw) translateY(0) rotate(2deg) scaleX(-1);
   }
-  75% {
-    transform: translateX(-37.5vw) translateY(-240px) rotate(2deg);
-  }
-  80% {
-    transform: translateX(-40vw) translateY(-200px) rotate(-2deg);
-  }
+
+  /* Jump 3 back - up */
   85% {
-    transform: translateX(-42.5vw) translateY(-240px) rotate(2deg);
+    transform: translateX(-0.8vw) translateY(-60px) rotate(-3deg) scaleX(-1);
   }
-  90% {
-    transform: translateX(-45vw) translateY(-200px) rotate(-2deg);
+  /* Jump 3 back - down */
+  92% {
+    transform: translateX(12vw) translateY(0) rotate(2deg) scaleX(-1);
   }
-  95% {
-    transform: translateX(-47.5vw) translateY(-240px) rotate(2deg);
-  }
+
+  /* Exit fully off-screen right */
   100% {
-    transform: translateX(-50vw) translateY(-200px) rotate(0deg);
+    transform: translateX(60vw) translateY(0) rotate(0deg) scaleX(-1);
   }
 }
 
 /* ================================================
    PHASE 3: EXITING (2.5-3s, 0.5 seconds)
-   ENTIRE CONTAINER moves off-screen with spin
+   Right character: continues dancing animation, no separate exit
+   Left character: separate exit animation
    ================================================ */
+
+/* Right side: NO separate exiting animation - dancing phase completes the journey */
+.fail-dance-right.fail-dance-phase-exiting {
+  /* Keep final position from dancing animation - fully off-screen */
+  animation: none;
+  transform: translateX(60vw) scaleX(-1);
+  opacity: 0;
+}
+
+/* Left side exits to the right (keep original behavior) */
 .fail-dance-phase-exiting {
   animation: fail-dance-exit 0.5s cubic-bezier(0.6, 0, 0.8, 1) forwards;
 }
 
 .fail-dance-phase-exiting .fail-dance-angry-character {
   animation: fail-dance-fade-out 0.5s ease-in forwards;
-}
-
-/* Left side exits to the right */
-@keyframes fail-dance-exit {
-  0% {
-    transform: translateX(50vw) translateY(-200px) rotate(0deg);
-    opacity: 1;
-  }
-  100% {
-    transform: translateX(100vw) translateY(50vh) rotate(180deg) scale(0.5);
-    opacity: 0;
-  }
-}
-
-/* Right side exits to the left */
-.fail-dance-right.fail-dance-phase-exiting {
-  animation: fail-dance-exit-right 0.5s cubic-bezier(0.6, 0, 0.8, 1) forwards;
-}
-
-@keyframes fail-dance-exit-right {
-  0% {
-    transform: translateX(-50vw) translateY(-200px) rotate(0deg);
-    opacity: 1;
-  }
-  100% {
-    transform: translateX(-100vw) translateY(50vh) rotate(-180deg) scale(0.5);
-    opacity: 0;
-  }
-}
-
-@keyframes fail-dance-fade-out {
-  0% {
-    opacity: 1;
-  }
-  100% {
-    opacity: 0;
-  }
-}
-
-/* ================================================
-   PHASE 4: RETURNING (3-3.5s, 0.5 seconds)
-   ENTIRE CONTAINER swings back in
-   ================================================ */
-.fail-dance-phase-returning {
-  animation: fail-dance-return 0.5s cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
-}
-
-.fail-dance-phase-returning .fail-dance-regular-character {
-  animation: fail-dance-fade-in 0.5s cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
-}
-
-/* Left side returns from the left */
-@keyframes fail-dance-return {
-  0% {
-    transform: translateX(-30vw) translateY(-200px) rotate(-15deg);
-    opacity: 0;
-  }
-  60% {
-    transform: translateX(0) translateY(-200px) rotate(8deg);
-    opacity: 1;
-  }
-  80% {
-    transform: translateX(0) translateY(-200px) rotate(-4deg);
-  }
-  100% {
-    transform: translateX(0) translateY(-200px) rotate(0deg);
-  }
-}
-
-/* Right side returns from the right */
-.fail-dance-right.fail-dance-phase-returning {
-  animation: fail-dance-return-right 0.5s cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
-}
-
-@keyframes fail-dance-return-right {
-  0% {
-    transform: translateX(30vw) translateY(-200px) rotate(15deg);
-    opacity: 0;
-  }
-  60% {
-    transform: translateX(0) translateY(-200px) rotate(-8deg);
-    opacity: 1;
-  }
-  80% {
-    transform: translateX(0) translateY(-200px) rotate(4deg);
-  }
-  100% {
-    transform: translateX(0) translateY(-200px) rotate(0deg);
-  }
 }

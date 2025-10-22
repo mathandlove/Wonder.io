@@ -70,6 +70,12 @@ export const CharacterOrchestrator: React.FC<Props> = ({ storyId, scenes, curren
 
 
 
+  // Helper function to get character from a scene
+  const getCharacterFromScene = (scene: any, side: 'left' | 'right'): string | null => {
+    const key = side === 'left' ? 'left-character' : 'right-character';
+    return scene?.[key] || scene?.meta?.[side === 'left' ? 'panelLeft' : 'panelRight']?.character || null;
+  };
+
   // Track when we've scrolled to a new scene and trigger animation restart
   useEffect(() => {
     const currentSceneIndex = Math.round(scrollOffset);
@@ -78,34 +84,38 @@ export const CharacterOrchestrator: React.FC<Props> = ({ storyId, scenes, curren
     if (currentSceneIndex !== prevSceneIndex) {
       const isMovingForward = currentSceneIndex > prevSceneIndex;
 
-      // Get current navigation item to check allowAnimate flag
+      // Get current, previous, and next navigation items
       const currentNavItem = navigationArray[currentSceneIndex];
+      const previousNavItem = navigationArray[currentSceneIndex - 1];
+
+      // Check allowAnimate flag
       const allowAnimate = currentNavItem?.sceneState?.type === 'dialogue'
         ? currentNavItem.sceneState.allowAnimate !== false  // Default to true if not specified
         : true;
 
-
       setPrevSceneIndex(currentSceneIndex);
 
-      // Only trigger entrance animations when:
-      // 1. Moving forward (not backward)
-      // 2. allowAnimate is true (scene allows animations)
-      // Skip animations when going backward (e.g., cancelling recording, scrolling back)
-      // Also skip animations when allowAnimate is false (e.g., when returning to delete a scene)
-      if (isMovingForward && allowAnimate) {
-        // Increment animNonce when scene changes to force animation restart
-        // Only trigger animation restart when character is new
-        if (leftPanel?.newCharacter) {
+      // Only trigger entrance animations when moving forward and allowed
+      if (isMovingForward && allowAnimate && currentNavItem) {
+        // Check if LEFT character is new (different from previous scene)
+        const currentLeftChar = getCharacterFromScene(currentNavItem.scene, 'left');
+        const previousLeftChar = previousNavItem ? getCharacterFromScene(previousNavItem.scene, 'left') : null;
+        const leftCharacterIsNew = currentLeftChar !== previousLeftChar && currentLeftChar !== null;
 
+        // Check if RIGHT character is new (different from previous scene)
+        const currentRightChar = getCharacterFromScene(currentNavItem.scene, 'right');
+        const previousRightChar = previousNavItem ? getCharacterFromScene(previousNavItem.scene, 'right') : null;
+        const rightCharacterIsNew = currentRightChar !== previousRightChar && currentRightChar !== null;
+
+        if (leftCharacterIsNew) {
           setLeftEnterNonce(n => n + 1);
         }
-        if (rightPanel?.newCharacter) {
-
+        if (rightCharacterIsNew) {
           setRightEnterNonce(n => n + 1);
         }
-      } 
+      }
     }
-  }, [scrollOffset, prevSceneIndex, leftPanel?.newCharacter, rightPanel?.newCharacter, leftEnterNonce, rightEnterNonce, navigationArray]);
+  }, [scrollOffset, prevSceneIndex, leftEnterNonce, rightEnterNonce, navigationArray]);
 
 
   // Publish panel widths as CSS variables to constrain main content
