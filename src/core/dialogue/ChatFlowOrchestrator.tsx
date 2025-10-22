@@ -19,6 +19,7 @@ import { useAIModule } from '@features/ai/AIModule';
 import { usePageFactory } from '@core/navigation/PageFactory';
 import { useSceneManager, getLocksForState } from '@core/scenes/SceneManager';
 import { useSceneFlowMetadata } from '@core/data/FlowMetadataStore';
+import { useAIMemory } from '@core/ai/AIMemoryStore';
 import type { CharacterScene, Scene } from '@core/types/scene';
 
 // Type guard for scenes with character properties
@@ -66,6 +67,7 @@ export function useChatFlowOrchestrator(props?: ChatFlowOrchestratorProps) {
   const aiModule = useAIModule();
   const pageFactory = usePageFactory();
   const sceneManager = useSceneManager();
+  const aiMemory = useAIMemory();
 
   // Get current scene to access flow metadata
   const currentNavItem = sceneManager.getCurrentNavigationItem();
@@ -95,10 +97,27 @@ export function useChatFlowOrchestrator(props?: ChatFlowOrchestratorProps) {
 
 
 
-      // Step 2: Call AI module to get AI response
+      // Step 2: Get conversation history and call AI module
+      // Use flowId from current scene to maintain character-specific conversations
+      const flowId = hasFlowId(currentScene) ? currentScene.flowId : undefined;
+      const conversationHistory = flowId ? aiMemory.getHistory(flowId) : [];
+
+      console.log('[ChatFlowOrchestrator] Current flowId:', flowId);
+
+      console.log('[ChatFlowOrchestrator] Processing with conversation history:', {
+        flowId,
+        historyLength: conversationHistory.length,
+        question: input.text.substring(0, 50)
+      });
+
+      // Add user message to conversation history BEFORE calling AI
+      if (flowId) {
+        aiMemory.addUserMessage(flowId, input.text);
+      }
 
       const response = await aiModule.getResponse({
         text: input.text,
+        conversationHistory,
         context: {
           characterDescription: input.metadata?.characterDescription
         }
@@ -114,7 +133,13 @@ export function useChatFlowOrchestrator(props?: ChatFlowOrchestratorProps) {
 
       onResponseReceived?.(response.text);
 
+      // Add assistant response to conversation history AFTER receiving it
+      if (flowId) {
+        aiMemory.addAssistantMessage(flowId, response.text);
+      }
+
       // Step 3: Create a new scene with the AI response
+      // IMPORTANT: Preserve flowId so subsequent questions maintain conversation context
 
       const responseScene = pageFactory.createRecordingScene(
         `chat-response-${Date.now()}`,
@@ -129,7 +154,8 @@ export function useChatFlowOrchestrator(props?: ChatFlowOrchestratorProps) {
         text: response.text,
         speaker: 'right',
         isRecording: false,
-        recordingId: undefined
+        recordingId: undefined,
+        flowId: flowId // Preserve flowId for next question in conversation
       };
 
 

@@ -10,9 +10,11 @@
 import React from 'react';
 import { useSceneManager } from '@core/scenes/SceneManager';
 import { validateAnswer, type AnswerValidationResult } from './validateAnswer';
+import { useAIMemory } from '@core/ai/AIMemoryStore';
 
 export function AnswerValidationOrchestrator() {
   const { navigationArray, navigationIndex, updateNavigationItemState } = useSceneManager();
+  const aiMemory = useAIMemory();
 
   // Track if we're currently processing to avoid duplicate calls
   const [processingSceneIndex, setProcessingSceneIndex] = React.useState<number | null>(null);
@@ -52,6 +54,17 @@ export function AnswerValidationOrchestrator() {
             questionText
           });
 
+          // Clear conversation history when quest is completed successfully
+          if (result === 'pass') {
+            const currentScene = currentNavItem?.scene;
+            const flowId = currentScene && 'flowId' in currentScene ? (currentScene as { flowId?: string }).flowId : undefined;
+
+            if (flowId) {
+              console.log('[AnswerValidation] ✅ Quest completed! Clearing conversation history for flowId:', flowId);
+              aiMemory.clearHistory(flowId);
+            }
+          }
+
           // Clear processing flag after completion
           setProcessingSceneIndex(null);
         }).catch((error) => {
@@ -67,7 +80,7 @@ export function AnswerValidationOrchestrator() {
         });
       }
     }
-  }, [currentNavItem, navigationIndex, processingSceneIndex, updateNavigationItemState]);
+  }, [currentNavItem, navigationIndex, processingSceneIndex, updateNavigationItemState, aiMemory]);
 
   // This is a logic-only component, renders nothing
   return null;

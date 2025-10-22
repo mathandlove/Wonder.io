@@ -37,6 +37,7 @@ import { UIOverlayRoot } from '@core/uiLayout/UIOverlayRoot'
 import { StepScrollDebug } from '@core/scroll/StepScrollDebug'
 import { SceneStatesProvider } from '@core/scenes/SceneStates'
 import { AIModuleProvider } from '@features/ai/AIModule'
+import { AIMemoryStoreProvider } from '@core/ai/AIMemoryStore'
 import { ChatFlowOrchestratorComponent } from '@core/dialogue/ChatFlowOrchestratorComponent'
 import { AnswerValidationOrchestrator } from '@core/dialogue/AnswerValidationOrchestrator'
 import { FlowMetadataProvider, useFlowMetadata } from '@core/data/FlowMetadataStore'
@@ -184,9 +185,10 @@ const StoryContent: React.FC = () => {
 
   return (
     <PageFactoryProvider>
-      <AIModuleProvider>
-        <SceneStatesProvider>
-          <CharacterAnimationProvider>
+      <AIMemoryStoreProvider maxMessagesPerFlow={10}>
+        <AIModuleProvider>
+          <SceneStatesProvider>
+            <CharacterAnimationProvider>
             {/* ChatFlow orchestrator watches for ai-waiting state and triggers responses */}
             <ChatFlowOrchestratorComponent />
 
@@ -261,6 +263,7 @@ const StoryContent: React.FC = () => {
           </CharacterAnimationProvider>
         </SceneStatesProvider>
       </AIModuleProvider>
+      </AIMemoryStoreProvider>
     </PageFactoryProvider>
   );
 };

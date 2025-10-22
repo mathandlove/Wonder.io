@@ -8,6 +8,7 @@ import { SelectionStore } from './store';
 import { Point } from './types';
 import { handleWhisperProxy } from './whisper-proxy-single'; // Using single-send approach
 import { handleClaudeProxy } from './claude-proxy';
+import { handleAIChat } from './ai-conversation';
 
 const key = process.env.OPENAI_API_KEY;
 if (!key) throw new Error('Missing OPENAI_API_KEY');
@@ -156,6 +157,9 @@ app.delete('/api/hotspots/:id', async (req, res) => {
     res.status(500).json({ error: 'Failed to delete hotspot' });
   }
 });
+
+// AI Chat route
+app.post('/api/ai/chat', handleAIChat);
 
 // Health check
 app.get('/api/health', (req, res) => {

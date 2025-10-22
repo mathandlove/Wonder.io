@@ -10,8 +10,14 @@ import React, { createContext, useContext, useCallback, type ReactNode } from 'r
 // Types
 // ============================================================================
 
+export interface ConversationMessage {
+  role: 'user' | 'assistant';
+  content: string;
+}
+
 export interface AIInput {
   text: string;
+  conversationHistory?: ConversationMessage[];
   context?: {
     characterDescription?: string;
   };
@@ -50,30 +56,70 @@ export const AIModuleProvider: React.FC<AIModuleProviderProps> = ({
   const [lastError, setLastError] = React.useState<string | undefined>();
 
   /**
-   * Mock AI implementation - returns "Processed: [text]" after 2 seconds
+   * Real AI implementation - calls backend API with conversation context
    */
   const getResponse = useCallback(async (input: AIInput): Promise<AIResponse> => {
     setIsProcessing(true);
     setLastError(undefined);
 
     try {
-      // Simulate AI processing delay (2 seconds)
-      await new Promise(resolve => setTimeout(resolve, 2000));
+      // Validate required fields
+      if (!input.text?.trim()) {
+        throw new Error('Question text is required');
+      }
 
-      // Return processed text with "Processed:" prefix
-      const processedText = `Processed: ${input.text}`;
+      if (!input.context?.characterDescription?.trim()) {
+        throw new Error('Character description is required');
+      }
+
+      // Build request body
+      const requestBody = {
+        question: input.text,
+        characterDescription: input.context.characterDescription,
+        conversationHistory: input.conversationHistory || []
+      };
+
+      console.log('[AIModule] Calling backend API with:', {
+        questionLength: input.text.length,
+        historyLength: requestBody.conversationHistory.length,
+        characterDescriptionLength: input.context.characterDescription.length
+      });
+
+      // Call backend API
+      const response = await fetch('http://localhost:3001/api/ai/chat', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(requestBody)
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({ error: 'Unknown error' }));
+        throw new Error(errorData.error || `HTTP ${response.status}: ${response.statusText}`);
+      }
+
+      const data = await response.json();
+
+      if (!data.response || !data.response.trim()) {
+        throw new Error('Received empty response from AI');
+      }
+
+      console.log('[AIModule] ✅ Received AI response:', data.response.substring(0, 100));
+
       return {
-        text: processedText,
+        text: data.response,
         success: true
       };
 
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred';
+      console.error('[AIModule] ❌ Error:', errorMessage);
       setLastError(errorMessage);
 
       return {
         text: '',
-        success: true,
+        success: false,
         error: errorMessage
       };
 
