@@ -76,6 +76,9 @@
   background-size: 20px 100%;
   background-repeat: repeat-y;
   z-index: 1;
+  /* Default to hidden - only visible through animations or when in idle phase */
+  opacity: 0;
+  visibility: hidden;
 }
 
 .story-character-inner {
@@ -235,13 +238,13 @@
 }
 
 @keyframes first-half-visibility {
-  0% { opacity: 1; }
-  30%, 100% { opacity: 0; }
+  0%, 29% { opacity: 1; visibility: visible; }
+  30%, 100% { opacity: 0; visibility: hidden; }
 }
 
 @keyframes second-half-visibility {
-  0%, 30% { opacity: 0; }
-  50%, 100% { opacity: 1; }
+  0%, 29% { opacity: 0; visibility: hidden; }
+  30%, 100% { opacity: 1; visibility: visible; }
 }
 
 /* Complex entrance animations with exit-switch-enter sequence */

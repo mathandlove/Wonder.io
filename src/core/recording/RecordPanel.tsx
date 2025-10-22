@@ -63,6 +63,7 @@ export const RecordPanel: React.FC<RecordPanelProps> = ({
   // - success-dance: Success celebration animation, show answer text below screen (hidden position)
   // - fail-dance: Fail animation, show answer text with answer-wrong styling (red glow, seal visible)
   const isBasic = dialogueState === 'basic';
+  const isInputBasic = dialogueState === 'input-basic';
   const isQuestOffer = dialogueState === 'quest-showing';
   const isAskRecording = dialogueState === 'input-recording';
   const isProcessing = dialogueState === 'input-processing';
@@ -78,8 +79,8 @@ export const RecordPanel: React.FC<RecordPanelProps> = ({
   const isFailDance = dialogueState === 'fail-dance';
   const isWaiting = dialogueState === 'ai-waiting' || isWaitingForFinalize || isWaitingForAnswerFinalize || isAnswerWaiting || isProcessing || isAnswerProcessing;
 
-  // Hidden state (basic) should use quest-offer visual styling
-  const useQuestOfferStyling = isQuestOffer || isBasic;
+  // Hidden state (basic or input-basic) should use quest-offer visual styling
+  const useQuestOfferStyling = isQuestOffer || isBasic || isInputBasic;
 
   // Reset stamp visibility when leaving answer feedback states
   React.useEffect(() => {
@@ -158,9 +159,9 @@ export const RecordPanel: React.FC<RecordPanelProps> = ({
     if (isAnswerWaiting) return 'quest-offer-centered'; // Golden glow for waiting
     if (isQuestOffer) return 'quest-offer-centered'; // Golden glow for quest
 
-    // Hidden state (completely off-screen) - includes fail-dance
+    // Hidden state (completely off-screen) - includes basic, input-basic, and fail-dance
     // For fail-dance: position off-screen but keep all answer-wrong styling (seal, text, red glow)
-    if (isBasic || isFailDance) return 'hidden';
+    if (isBasic || isInputBasic || isFailDance) return 'hidden';
 
     // Rest position - bottom anchored for interactive states
     // (input-showInput, input-recording, show-hint, record-answer, ai-waiting)

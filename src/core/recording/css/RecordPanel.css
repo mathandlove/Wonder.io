@@ -25,8 +25,10 @@
 
 /* Hidden state - completely below screen, top of panel at bottom of viewport */
 .record-panel-container.hidden {
-  top: 100vh; /* Anchor at bottom of viewport */
-  transform: translate(-50%, 0); /* Top edge at 100vh, panel extends down */
+  top: auto; /* Use bottom positioning for consistency */
+  bottom: -100vh; /* Position completely below screen */
+  transform: translateX(-50%); /* Only center horizontally */
+  justify-content: flex-end;
 }
 
 /* Rest state - bottom anchored with 32px hidden below screen */
@@ -39,18 +41,24 @@
 
 /* Quest Offer State - centered on screen */
 .record-panel-container.quest-offer-centered {
+  top: 50%; /* Explicitly set top positioning for centered states */
+  bottom: auto; /* Clear bottom positioning */
   transform: translate(-50%, -50%); /* Perfectly centered */
   justify-content: center;
 }
 
 /* Answer Right State - centered on screen with green glow */
 .record-panel-container.answer-right-centered {
+  top: 50%; /* Explicitly set top positioning for centered states */
+  bottom: auto; /* Clear bottom positioning */
   transform: translate(-50%, -50%); /* Perfectly centered */
   justify-content: center;
 }
 
 /* Answer Wrong State - centered on screen with red glow */
 .record-panel-container.answer-wrong-centered {
+  top: 50%; /* Explicitly set top positioning for centered states */
+  bottom: auto; /* Clear bottom positioning */
   transform: translate(-50%, -50%); /* Perfectly centered */
   justify-content: center;
 }

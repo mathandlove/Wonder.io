@@ -229,14 +229,14 @@ Speaking: ${phase === 'speaking'}`}
               {/* Dowel visibility logic */}
               {phase === 'entering' ? (
                 <>
-                  {/* First half dowel (hidden) */}
+                  {/* First half dowel (exits) - hidden when coming from NOCHARACTER */}
                   <div className="story-wooden-dowel" style={{
                     animation: 'first-half-visibility 1600ms ease-in-out forwards',
                     display: (scrollDirection === 'forward' && previousCharacter === 'NOCHARACTER') ||
                              (scrollDirection === 'backward' && nextCharacter === 'NOCHARACTER') ? 'none' : 'block'
                   }}></div>
 
-                  {/* Second half dowel (visible) */}
+                  {/* Second half dowel (enters) - always uses visibility animation to sync with character */}
                   {characterName !== 'NOCHARACTER' && (
                     <div className="story-wooden-dowel" style={{
                       animation: 'second-half-visibility 1600ms ease-in-out forwards'
@@ -244,8 +244,11 @@ Speaking: ${phase === 'speaking'}`}
                   )}
                 </>
               ) : (
-                /* Normal dowel for non-entering phases */
-                characterName !== 'NOCHARACTER' && <div className="story-wooden-dowel"></div>
+                /* Normal dowel for non-entering phases - explicitly visible */
+                characterName !== 'NOCHARACTER' && <div className="story-wooden-dowel" style={{
+                  opacity: 1,
+                  visibility: 'visible'
+                }}></div>
               )}
 
               {/* First half character (visible during exit phase) */}

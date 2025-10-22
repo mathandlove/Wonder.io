@@ -70,18 +70,21 @@ export function RecordingOrchestrator() {
   const flowMetadata = useSceneFlowMetadata(hasFlowId(currentScene) ? currentScene : null);
 
   // Determine if panel should be visible based on dialogue state or scene type
-  // Show for: basic (hidden below screen), quest-showing (quest offer), input-showInput (ready to record),
-  // input-recording (actively recording), input-processing (processing audio), show-hint (hint display),
-  // record-answer (answer recording), answer-processing (processing answer audio), waiting-for-answer-finalize,
-  // answer-waiting (waiting for answer validation), answer-right (correct answer feedback),
+  // Show for: basic (hidden below screen), input-basic (hidden below screen), quest-showing (quest offer),
+  // input-showInput (ready to record), input-recording (actively recording), input-processing (processing audio),
+  // show-hint (hint display), record-answer (answer recording), answer-processing (processing answer audio),
+  // waiting-for-answer-finalize, answer-waiting (waiting for answer validation), answer-right (correct answer feedback),
   // answer-wrong (wrong answer feedback), ai-waiting (waiting for AI response)
   // Also show for success-dance scenes (with answer text visible, positioned below screen)
   // Also show for fail-dance scenes (with answer-wrong styling: answer text, quest, and seal visible)
+  // Also show for static scenes (positioned below screen, ready to animate in if state changes)
   const dialogueState = sceneState?.type === 'dialogue' ? sceneState.state : null;
+  const isStaticScene = sceneState?.type === 'static';
   const isSuccessDanceScene = currentScene?.type === 'success-dance';
   const isFailDanceScene = currentScene?.type === 'fail-dance';
   const shouldShowPanel =
     dialogueState === 'basic' ||
+    dialogueState === 'input-basic' ||
     dialogueState === 'quest-showing' ||
     dialogueState === 'input-showInput' ||
     dialogueState === 'input-recording' ||
@@ -94,6 +97,7 @@ export function RecordingOrchestrator() {
     dialogueState === 'answer-right' ||
     dialogueState === 'answer-wrong' ||
     dialogueState === 'ai-waiting' ||
+    isStaticScene ||
     isSuccessDanceScene ||
     isFailDanceScene;
 
@@ -699,11 +703,14 @@ export function RecordingOrchestrator() {
   // Get dialogue state for visual presentation
   // For success-dance scenes, use 'success-dance' (mirrors fail-dance pattern)
   // For fail-dance scenes, use 'fail-dance' to show answer-wrong styling (answer + quest + seal)
+  // For static scenes or when dialogueState is null, use 'basic' (panel hidden below screen)
   const presentationState = isSuccessDanceScene
     ? 'success-dance'
     : isFailDanceScene
       ? 'fail-dance'
-      : (dialogueState || 'basic');
+      : isStaticScene
+        ? 'basic'
+        : (dialogueState || 'basic');
 
   // Determine which handler to use for the primary action button
   // - quest-showing state: Accept button triggers quest acceptance
