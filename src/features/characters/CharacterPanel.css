@@ -211,14 +211,26 @@
 }
 
 /* Character transition animations - moved to panel level for coordinated movement */
-.story-character-panel.story-character-left.entering {
+/* Version 1 - default */
+.story-character-panel.story-character-left.entering-left {
   transform-origin: center calc(100% + 300px);
   animation: character-entrance-settle-left 1600ms ease-in-out forwards;
 }
 
-.story-character-panel.story-character-right.entering {
+.story-character-panel.story-character-right.entering-right {
   transform-origin: center calc(100% + 300px);
   animation: character-entrance-settle-right 1600ms ease-in-out forwards;
+}
+
+/* Version 2 - identical animation with different name to force browser restart */
+.story-character-panel.story-character-left.entering-left-2 {
+  transform-origin: center calc(100% + 300px);
+  animation: character-entrance-settle-left-2 1600ms ease-in-out forwards;
+}
+
+.story-character-panel.story-character-right.entering-right-2 {
+  transform-origin: center calc(100% + 300px);
+  animation: character-entrance-settle-right-2 1600ms ease-in-out forwards;
 }
 
 .story-character-cardboard.idle {
@@ -229,11 +241,15 @@
 /* Character image visibility during animation phases */
 .story-character-first-half {
   position: absolute;
+  opacity: 1;
+  visibility: visible;
   animation: first-half-visibility 1600ms ease-in-out forwards;
 }
 
 .story-character-second-half {
   position: absolute;
+  opacity: 0;
+  visibility: hidden;
   animation: second-half-visibility 1600ms ease-in-out forwards;
 }
 
@@ -308,6 +324,81 @@
   }
 
   /* Enter phase - character swings in */
+  50% {
+    transform: translateY(20vh) translateX(40vw) rotate(15deg) scale(0.9);
+    opacity: 1;
+  }
+  65% {
+    transform: translateY(0) translateX(0) rotate(0deg) scale(1);
+  }
+  75% {
+    transform: translateY(0) translateX(0) rotate(-12deg) scale(1);
+  }
+  82% {
+    transform: translateY(0) translateX(0) rotate(10deg) scale(1);
+  }
+  88% {
+    transform: translateY(0) translateX(0) rotate(-4deg) scale(1);
+  }
+  94% {
+    transform: translateY(0) translateX(0) rotate(2deg) scale(1);
+  }
+  100% {
+    transform: translateY(0) translateX(0) rotate(0deg) scale(1);
+  }
+}
+
+/* Duplicate animations with -2 suffix - identical to force browser restart */
+@keyframes character-entrance-settle-left-2 {
+  0% {
+    transform: translateY(0) translateX(0) rotate(0deg) scale(1);
+    opacity: 1;
+  }
+  20% {
+    transform: translateY(20vh) translateX(-40vw) rotate(-15deg) scale(0.9);
+    opacity: 0;
+  }
+  30% {
+    transform: translateY(20vh) translateX(-40vw) rotate(-15deg) scale(0.9);
+    opacity: 0;
+  }
+  50% {
+    transform: translateY(20vh) translateX(-40vw) rotate(-15deg) scale(0.9);
+    opacity: 1;
+  }
+  65% {
+    transform: translateY(0) translateX(0) rotate(0deg) scale(1);
+  }
+  75% {
+    transform: translateY(0) translateX(0) rotate(12deg) scale(1);
+  }
+  82% {
+    transform: translateY(0) translateX(0) rotate(-10deg) scale(1);
+  }
+  88% {
+    transform: translateY(0) translateX(0) rotate(4deg) scale(1);
+  }
+  94% {
+    transform: translateY(0) translateX(0) rotate(-2deg) scale(1);
+  }
+  100% {
+    transform: translateY(0) translateX(0) rotate(0deg) scale(1);
+  }
+}
+
+@keyframes character-entrance-settle-right-2 {
+  0% {
+    transform: translateY(0) translateX(0) rotate(0deg) scale(1);
+    opacity: 1;
+  }
+  20% {
+    transform: translateY(20vh) translateX(40vw) rotate(15deg) scale(0.9);
+    opacity: 0;
+  }
+  30% {
+    transform: translateY(20vh) translateX(40vw) rotate(15deg) scale(0.9);
+    opacity: 0;
+  }
   50% {
     transform: translateY(20vh) translateX(40vw) rotate(15deg) scale(0.9);
     opacity: 1;

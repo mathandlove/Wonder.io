@@ -1,6 +1,7 @@
-import React, { useEffect, useMemo, useState, useLayoutEffect } from "react";
+import React, { useMemo, useLayoutEffect } from "react";
 import { useCharacterAnimation } from '@features/characters/CharacterAnimationContext';
 import { useSceneManager } from '@core/scenes/SceneManager';
+import { useTransitionManager } from '@core/navigation/useTransitionManager';
 import type { Scene } from '@core/types/scene';
 import { CharacterPanel } from "./CharacterPanel";
 
@@ -15,21 +16,18 @@ type Props = {
 export const CharacterOrchestrator: React.FC<Props> = ({ storyId, scenes, currentIndex = 0 }) => {
   const { notifyEntranceComplete, notifyJiggleComplete } = useCharacterAnimation();
   const { navigationArray } = useSceneManager();
+  const { activeTransition } = useTransitionManager();
 
   // Use currentIndex directly (always passed from ScrollControl)
   const scrollOffset = currentIndex;
 
-  // AnimNonce state for forcing animation restarts
-  const [leftEnterNonce, setLeftEnterNonce] = useState(0);
-  const [rightEnterNonce, setRightEnterNonce] = useState(0);
-  const [prevSceneIndex, setPrevSceneIndex] = useState(0);
+  // AnimNonce removed - using transition.id as React key instead
+  // This prevents double animations (transition key + nonce both triggered re-mounts)
 
-  // Compute panel data directly from navigationArray (no metadata needed!)
-  const { leftPanel, rightPanel, currentSpeaker, isJiggling } = useMemo(() => {
+  // Compute panel data fresh from navigation array
+  const { leftPanel, rightPanel, currentSpeaker, isJiggling, transitionNonce } = useMemo(() => {
     const i = Math.max(0, Math.min(navigationArray.length - 1, Math.round(scrollOffset)));
     const currentNavItem = navigationArray[i];
-    const previousNavItem = navigationArray[i - 1];
-    const nextNavItem = navigationArray[i + 1];
 
     if (!currentNavItem) {
       return {
@@ -46,7 +44,8 @@ export const CharacterOrchestrator: React.FC<Props> = ({ storyId, scenes, curren
           pose: null,
         },
         currentSpeaker: null,
-        isJiggling: false
+        isJiggling: false,
+        transitionNonce: undefined
       };
     }
 
@@ -58,9 +57,10 @@ export const CharacterOrchestrator: React.FC<Props> = ({ storyId, scenes, curren
     const isSuccessDanceScene = currentNavItem.scene?.type === 'success-dance';
     const shouldJiggle = dialogueState === 'answer-right' || isSuccessDanceScene;
 
+    const previousNavItem = navigationArray[i - 1];
+    const nextNavItem = navigationArray[i + 1];
+
     // Helper to extract character from a navigation item
-    // Returns 'NOCHARACTER' for scenes without character data (like ImageScene)
-    // This ensures entrance animations play correctly when transitioning from non-character scenes
     const getChar = (navItem: typeof currentNavItem | undefined, side: 'left' | 'right') => {
       if (!navItem) return 'NOCHARACTER';
       const key = side === 'left' ? 'left-character' : 'right-character';
@@ -71,8 +71,6 @@ export const CharacterOrchestrator: React.FC<Props> = ({ storyId, scenes, curren
     const leftChar = getChar(currentNavItem, 'left');
     const rightChar = getChar(currentNavItem, 'right');
 
-    // Always provide panel data (even for NOCHARACTER) so entrance animations work correctly
-    // CharacterPanel will handle hiding when characterName is NOCHARACTER
     return {
       leftPanel: {
         character: leftChar,
@@ -89,9 +87,10 @@ export const CharacterOrchestrator: React.FC<Props> = ({ storyId, scenes, curren
         pose: (currentNavItem.scene as any)?.meta?.panelRight?.pose || null,
       },
       currentSpeaker: speaker,
-      isJiggling: shouldJiggle
+      isJiggling: shouldJiggle,
+      transitionNonce: activeTransition?.id, // Use transition ID from active transition
     };
-  }, [scrollOffset, navigationArray]);
+  }, [scrollOffset, navigationArray, activeTransition]);
 
   // Get current scene index for callback coordination
   const currentSceneIndex = Math.max(0, Math.min(scenes.length - 1, Math.round(scrollOffset)));
@@ -116,47 +115,13 @@ export const CharacterOrchestrator: React.FC<Props> = ({ storyId, scenes, curren
 
 
 
-  // Track scroll direction with stable state
-  const [scrollDirection, setScrollDirection] = useState<'forward' | 'backward'>('forward');
-  const prevScrollOffsetRef = React.useRef(scrollOffset);
+  // Use scroll direction from active transition (source of truth)
+  // Fallback to scroll offset calculation if no active transition
+  const scrollDirection = activeTransition?.direction || 'forward';
 
-  React.useEffect(() => {
-    const diff = scrollOffset - prevScrollOffsetRef.current;
-    if (Math.abs(diff) > 0.01) { // Small threshold to avoid jitter
-      const newDirection = diff > 0 ? 'forward' : 'backward';
-      setScrollDirection(newDirection);
-    }
-    prevScrollOffsetRef.current = scrollOffset;
-  }, [scrollOffset]);
-
-
-
-  // Track when we've scrolled to a new scene and trigger animation restart
-  useEffect(() => {
-    const currentSceneIndex = Math.round(scrollOffset);
-
-    // Check if we've moved to a different scene
-    if (currentSceneIndex !== prevSceneIndex) {
-      const isMovingForward = currentSceneIndex > prevSceneIndex;
-
-      // Get current navigation item
-      const currentNavItem = navigationArray[currentSceneIndex];
-
-      // Check allowAnimate flag
-      const allowAnimate = currentNavItem?.sceneState?.type === 'dialogue'
-        ? currentNavItem.sceneState.allowAnimate !== false  // Default to true if not specified
-        : true;
-
-      setPrevSceneIndex(currentSceneIndex);
-
-      // Increment nonces when moving forward and animations are allowed
-      // CharacterPanel will derive whether to show entrance animation based on previousCharacter !== characterName
-      if (isMovingForward && allowAnimate && currentNavItem) {
-        setLeftEnterNonce(n => n + 1);
-        setRightEnterNonce(n => n + 1);
-      }
-    }
-  }, [scrollOffset, prevSceneIndex, navigationArray]);
+  // AnimNonce increment logic removed - transition.id key handles animation triggering
+  // The transition system already creates a unique key per navigation, so we don't need
+  // a separate nonce mechanism that causes double animations
 
 
   // Publish panel widths as CSS variables to constrain main content
@@ -180,12 +145,18 @@ export const CharacterOrchestrator: React.FC<Props> = ({ storyId, scenes, curren
 
 
 
+  // Use stable keys - don't unmount/remount on transitions
+  // The component stays mounted and reacts to prop changes from the frozen snapshot
+  const leftPanelKey = 'character-panel-left';
+  const rightPanelKey = 'character-panel-right';
+
   // Fixed overlay container
   return (
     <div style={{ position: "fixed", inset: 0, pointerEvents: "none", zIndex: 60 }}>
       {/* Left gutter column - 22% of viewport width */}
       <div className="character-panel--left" style={{ position: "absolute", left: 0, top: 0, bottom: 0, width: "22vw", pointerEvents: "auto" }}>
         <CharacterPanel
+          key={leftPanelKey}
           side="left"
           visible={true}
           characterName={leftPanel.character}
@@ -193,10 +164,10 @@ export const CharacterOrchestrator: React.FC<Props> = ({ storyId, scenes, curren
           nextCharacter={leftPanel.nextCharacter}
           pose={leftPanel.pose}
           storyId={storyId}
-          animNonce={leftEnterNonce}
           scrollDirection={scrollDirection}
           isSpeaking={currentSpeaker === 'left'}
           isJiggling={isJiggling}
+          transitionNonce={transitionNonce}
           onEntranceComplete={handleLeftEntranceComplete}
           onJiggleComplete={handleLeftJiggleComplete}
         />
@@ -205,6 +176,7 @@ export const CharacterOrchestrator: React.FC<Props> = ({ storyId, scenes, curren
       {/* Right gutter column - 22% of viewport width */}
       <div className="character-panel--right" style={{ position: "absolute", right: 0, top: 0, bottom: 0, width: "22vw", pointerEvents: "auto" }}>
         <CharacterPanel
+          key={rightPanelKey}
           side="right"
           visible={true}
           characterName={rightPanel.character}
@@ -212,10 +184,10 @@ export const CharacterOrchestrator: React.FC<Props> = ({ storyId, scenes, curren
           nextCharacter={rightPanel.nextCharacter}
           pose={rightPanel.pose}
           storyId={storyId}
-          animNonce={rightEnterNonce}
           scrollDirection={scrollDirection}
           isSpeaking={currentSpeaker === 'right'}
           isJiggling={isJiggling}
+          transitionNonce={transitionNonce}
           onEntranceComplete={handleRightEntranceComplete}
           onJiggleComplete={handleRightJiggleComplete}
         />

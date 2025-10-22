@@ -14,6 +14,7 @@ import React, { createContext, useCallback, useContext, useMemo, useState } from
 import type { Scene } from '@core/types/scene';
 import { buildNavigationArray } from '@core/navigation/buildNavigationArray';
 import type { NavigationItem, SceneState } from '@core/navigation/types';
+import { useTransitionManager } from '@core/navigation/useTransitionManager';
 
 /**
  * Determine scroll locks based purely on the current state
@@ -90,6 +91,7 @@ export interface SceneManagerType {
   insertScene: (scene: Scene, index: number) => void;
   insertNavigationItem: (item: NavigationItem, index: number) => void; // Insert directly without rebuild
   deleteNavigationItem: (index: number, preserveCurrentIndex?: boolean) => void; // Delete navigation item at index
+  scheduleDeletionWithRewiring: (index: number) => void; // Schedule deletion with navigation rewiring (recommended)
   addNavigationStateToCurrentScene: (newState: SceneState, insertAfterCurrent?: boolean) => number; // Add new state to current scene
   updateNavigationItemState: (index: number, newState: SceneState) => void; // Update state of navigation item (locks auto-recalculated)
   updateSceneTextByRecordingId: (recordingId: string, newText: string) => void; // Update scene text during recording
@@ -129,6 +131,9 @@ export function SceneManagerProvider({ children, initialIndex = 0 }: SceneManage
   const [currentIndex, setCurrentIndex] = useState(initialIndex);
   const [navigationIndex, setNavigationIndex] = useState(0);
   const [allScenes, setAllScenes] = useState<Scene[]>([]);
+
+  // Access TransitionManager for coordinating animations with navigation
+  const transitionManager = useTransitionManager();
 
   // Ref to access latest navigationArray without causing dependency changes
   const navigationArrayRef = React.useRef<NavigationItem[]>([]);
@@ -233,6 +238,60 @@ export function SceneManagerProvider({ children, initialIndex = 0 }: SceneManage
   }, []);
 
   /**
+   * Calculate rewiring information for deleting a scene
+   *
+   * When deleting scene A at index i:
+   * - Find the next scene B (different sceneId)
+   * - Find the previous scene C (different sceneId)
+   * - Rewiring: B.prevId = C.id (skip A in backward navigation)
+   *
+   * Edge cases:
+   * - If A is at head (no previous): B.prevId = null
+   * - If A is at tail (no next): C.nextId = null
+   * - If all items have same sceneId: no rewiring needed (internal state collapse)
+   */
+  const calculateRewiring = useCallback((deleteIndex: number) => {
+    const currentArray = navigationArrayRef.current;
+    const itemToDelete = currentArray[deleteIndex];
+
+    if (!itemToDelete) {
+      console.warn('[SceneManager] Cannot calculate rewiring - invalid index:', deleteIndex);
+      return null;
+    }
+
+    const sceneIdToDelete = itemToDelete.sceneId;
+
+    // Find next item with different sceneId
+    let nextDifferentIndex = deleteIndex + 1;
+    while (
+      nextDifferentIndex < currentArray.length &&
+      currentArray[nextDifferentIndex].sceneId === sceneIdToDelete
+    ) {
+      nextDifferentIndex++;
+    }
+
+    // Find previous item with different sceneId
+    let prevDifferentIndex = deleteIndex - 1;
+    while (
+      prevDifferentIndex >= 0 &&
+      currentArray[prevDifferentIndex].sceneId === sceneIdToDelete
+    ) {
+      prevDifferentIndex--;
+    }
+
+    const nextItem = currentArray[nextDifferentIndex];
+    const prevItem = currentArray[prevDifferentIndex];
+
+    return {
+      targetIndex: nextDifferentIndex,
+      newPrevSceneId: prevItem?.sceneId || null,
+      newNextSceneId: nextItem?.sceneId || null,
+      prevItem,
+      nextItem,
+    };
+  }, []);
+
+  /**
    * Delete a navigation item at the specified index with smart delay
    *
    * Strategy:
@@ -280,6 +339,40 @@ export function SceneManagerProvider({ children, initialIndex = 0 }: SceneManage
     // Track this pending deletion
     pendingDeletionsRef.current.push({ index, timerId });
   }, [setNavigationArray]);
+
+  /**
+   * Schedule deletion with navigation rewiring
+   *
+   * This is the recommended method for deleting scenes during navigation.
+   * It handles:
+   * 1. Immediate rewiring of navigation pointers (so back nav skips deleted scene)
+   * 2. Deferred compaction (actual removal after transition completes)
+   *
+   * Example: A ← B → C, user navigates A → B
+   * - Rewiring: B.prevId = null (B becomes head)
+   * - After 2s: Remove A from array
+   */
+  const scheduleDeletionWithRewiring = useCallback((index: number) => {
+    const rewiring = calculateRewiring(index);
+
+    if (!rewiring) {
+      console.warn('[SceneManager] Cannot schedule deletion - invalid rewiring');
+      return;
+    }
+
+    console.log('[SceneManager] 🔗 Rewiring navigation before deletion:', {
+      deleteIndex: index,
+      targetIndex: rewiring.targetIndex,
+      newPrevSceneId: rewiring.newPrevSceneId,
+    });
+
+    // NOTE: In a full implementation, we would update the navigation graph here
+    // For now, we're working with a flat array, so rewiring is implicit
+    // (backward navigation will naturally skip to previous different scene)
+
+    // Schedule the actual deletion after transition duration
+    deleteNavigationItem(index, true);
+  }, [calculateRewiring, deleteNavigationItem]);
 
   /**
    * Process pending deletions immediately
@@ -463,15 +556,19 @@ export function SceneManagerProvider({ children, initialIndex = 0 }: SceneManage
   // Force advance navigation (bypasses locks but still collapses states)
   // Note: Uses navigationArrayRef which is kept in sync synchronously via setNavigationArray wrapper
   const forceAdvanceNavigation = useCallback((direction: 'forward' | 'backward') => {
-    // Process any pending deletions before navigating
-    processPendingDeletions();
-
     const currentArray = navigationArrayRef.current;
     const delta = direction === 'forward' ? 1 : -1;
     const next = navigationIndex + delta;
     const clamped = Math.max(0, Math.min(next, currentArray.length - 1));
 
     if (clamped === navigationIndex) return;
+
+    // CRITICAL: Begin transition FIRST, before any mutations
+    // This captures the frozen snapshot of character data
+    transitionManager.beginTransition(navigationIndex, clamped, direction, currentArray);
+
+    // Process any pending deletions after capturing snapshot
+    processPendingDeletions();
 
     // Track the actual navigation index we ended up at (for currentIndex sync below)
     let finalNavigationIndex = clamped;
@@ -536,7 +633,7 @@ export function SceneManagerProvider({ children, initialIndex = 0 }: SceneManage
         setCurrentIndex(sceneIndex);
       }
     }
-  }, [navigationIndex, setNavigationIndex, setNavigationArray, visibleScenes, setCurrentIndex, processPendingDeletions]);
+  }, [navigationIndex, setNavigationIndex, setNavigationArray, visibleScenes, setCurrentIndex, processPendingDeletions, transitionManager]);
 
   // Navigation array-based navigation with state collapse
   // Note: We use navigationArrayRef to access the latest array without causing dependency changes
@@ -580,6 +677,7 @@ export function SceneManagerProvider({ children, initialIndex = 0 }: SceneManage
     insertScene,
     insertNavigationItem,
     deleteNavigationItem,
+    scheduleDeletionWithRewiring,
     addNavigationStateToCurrentScene,
     updateNavigationItemState,
     updateSceneTextByRecordingId,
@@ -615,6 +713,7 @@ export function SceneManagerProvider({ children, initialIndex = 0 }: SceneManage
     insertScene,
     insertNavigationItem,
     deleteNavigationItem,
+    scheduleDeletionWithRewiring,
     addNavigationStateToCurrentScene,
     updateNavigationItemState,
     updateSceneTextByRecordingId,

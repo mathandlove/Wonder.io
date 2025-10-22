@@ -18,7 +18,21 @@
       "text": "Test"
       
 
-    },                
+    },    {
+          "side": "right",
+          "text": "Somebody please help me!",
+          "right-character": "fox"
+        },
+                    {
+        
+      "side": "right",
+      "text": "Works"
+
+    }, 
+            {
+          "side": "right",
+          "text": "Somebody please help me!"
+        },            
 
      {
       "type":"input",
