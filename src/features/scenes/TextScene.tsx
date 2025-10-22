@@ -1,33 +1,18 @@
 /**
  * TextScene Component
- * Displays simple text scenes with optional character and background
+ * Displays simple text scenes with cardboard bubble styling matching speech bubbles
  */
-import React from 'react';
 import type { TextScene } from '@core/types/scene';
 import type { SceneProps } from './registry';
+import './TextScene.css';
 
 export default function TextScene({ scene }: SceneProps<TextScene>) {
   return (
-    <div
-      style={{
-        minHeight: '60vh',
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        padding: '32px',
-        background: scene.background || 'transparent',
-      }}
-    >
-      <div
-        style={{
-          maxWidth: '800px',
-          fontSize: '1.5rem',
-          lineHeight: '1.8',
-          textAlign: 'center',
-          color: '#333',
-        }}
-      >
-        {scene.text}
+    <div className="text-scene-container">
+      <div className="text-bubble">
+        <div className="text-bubble-inner">
+          <p className="scene-text">{scene.text}</p>
+        </div>
       </div>
     </div>
   );

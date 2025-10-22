@@ -3,8 +3,8 @@
   /* Remove white background to let BackgroundOrchestrator show through */
   display: flex;
   flex-direction: column;
-  justify-content: center;
-  align-items: center;
+  justify-content: center; /* Centers content vertically at 50% */
+  align-items: center; /* Centers content horizontally */
   padding: 2rem;
   cursor: pointer;
   position: relative;
