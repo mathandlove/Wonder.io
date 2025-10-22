@@ -21,5 +21,5 @@ export async function validateAnswer(
   await new Promise(resolve => setTimeout(resolve, 500)); // Simulate AI call delay
 
 
-  return 'fail';
+  return 'pass';
 }

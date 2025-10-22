@@ -143,6 +143,21 @@ export function RecordingOrchestrator() {
     setAnswerWrongVideoComplete(true);
   }, []);
 
+  // Track when answer-right video completes
+  const [answerRightVideoComplete, setAnswerRightVideoComplete] = React.useState(false);
+
+  // Reset video complete flag when leaving answer-right state
+  React.useEffect(() => {
+    if (dialogueState !== 'answer-right') {
+      setAnswerRightVideoComplete(false);
+    }
+  }, [dialogueState]);
+
+  // Callback for when answer-right video completes
+  const handleAnswerRightVideoComplete = React.useCallback(() => {
+    setAnswerRightVideoComplete(true);
+  }, []);
+
   // Effect: Auto-transition from answer-wrong to fail-dance scene, triggered 1 second AFTER video ends
   useEffect(() => {
     if (dialogueState === 'answer-wrong' && answerWrongVideoComplete) {
@@ -225,11 +240,11 @@ export function RecordingOrchestrator() {
     }
   }, [dialogueState, answerWrongVideoComplete, sceneState, navigationIndex, updateNavigationItemState, currentNavItem, insertNavigationItem, forceAdvanceNavigation, createFailDanceScene]);
 
-  // Effect: Auto-transition from answer-right to success-dance scene, then back to next story scene
+  // Effect: Auto-transition from answer-right to success-dance scene, triggered AFTER video ends
   useEffect(() => {
-    if (dialogueState === 'answer-right') {
-      // Wait 5 seconds to show the seal animation and correct feedback, then insert success-dance scene
-      // (3 seconds for seal + 2 second delay before transitioning to dance)
+    if (dialogueState === 'answer-right' && answerRightVideoComplete) {
+      // Transition to success-dance scene immediately after video completes
+      // The record panel will maintain the same appearance during success-dance
       const timerId = setTimeout(() => {
         const currentState = sceneState?.type === 'dialogue' ? sceneState : null;
         if (currentState?.state === 'answer-right') {
@@ -237,14 +252,15 @@ export function RecordingOrchestrator() {
           const scene = currentNavItem?.scene;
           let character = 'bakerMom'; // default - the one who celebrates
           let leftCharacter: string | undefined;
+          let rightCharacter: string | undefined;
           let background: string | undefined;
 
           if (hasCharacterProperties(scene)) {
-            // For quest success, always use the right character (NPC/questgiver)
-            // They're the one who celebrates when you give the right answer!
-            const rightCharacter = scene['right-character'];
+            // Preserve BOTH characters exactly as they are in the current scene
             leftCharacter = scene['left-character'];
+            rightCharacter = scene['right-character'];
 
+            // Character is used for the old success-dance animation (will be removed later)
             if (rightCharacter) {
               character = rightCharacter;
             } else if (leftCharacter) {
@@ -260,12 +276,13 @@ export function RecordingOrchestrator() {
           const answerText = currentState.answerText || '';
 
           // Use PageFactory to create success-dance scene
+          // IMPORTANT: Pass BOTH left and right characters to keep them in their panels
           const successDanceScene = createSuccessDanceScene(
             character,
             answerText,
             background,
             leftCharacter,
-            null // right-character set to null to trigger exit animation
+            rightCharacter // Keep the right character (don't set to null)
           );
 
           // Insert the success-dance scene after current scene
@@ -280,27 +297,25 @@ export function RecordingOrchestrator() {
 
           insertNavigationItem(newNavItem, navigationIndex + 1);
 
-          // Transition current scene to basic state (ready to continue story)
-          updateNavigationItemState(navigationIndex, {
-            type: 'dialogue',
-            state: 'basic'
-          });
+          // Auto-advance to success-dance scene immediately
+          // Note: We don't update the current scene state to 'basic' before navigating
+          // This prevents visual flicker/unwanted navigation during the transition
+          forceAdvanceNavigation('forward');
 
-          // Auto-advance to success-dance scene after a brief moment
+          // After navigating away, update the previous scene to basic state
+          // This ensures if user scrolls back, the answer-right scene is in basic state
           setTimeout(() => {
-            forceAdvanceNavigation('forward');
-
-            // After success-dance completes (3.5s), go forward to next story scene
-            setTimeout(() => {
-              forceAdvanceNavigation('forward');
-            }, 3600); // Slightly longer than animation to ensure it completes
+            updateNavigationItemState(navigationIndex, {
+              type: 'dialogue',
+              state: 'basic'
+            });
           }, 100);
         }
-      }, 5000);
+      }, 100); // Minimal delay, just enough for state to settle
 
       return () => clearTimeout(timerId);
     }
-  }, [dialogueState, sceneState, navigationIndex, updateNavigationItemState, currentNavItem, insertNavigationItem, forceAdvanceNavigation, createSuccessDanceScene]);
+  }, [dialogueState, answerRightVideoComplete, sceneState, navigationIndex, updateNavigationItemState, currentNavItem, insertNavigationItem, forceAdvanceNavigation, createSuccessDanceScene]);
 
   // ===================================
   // RECORDING FLOW LOGIC
@@ -682,7 +697,7 @@ export function RecordingOrchestrator() {
   const questState = answerUnlocked ? 'complete' : 'active';
 
   // Get dialogue state for visual presentation
-  // For success-dance scenes, use a special state 'success-dance' to show answer text below screen
+  // For success-dance scenes, use 'success-dance' (mirrors fail-dance pattern)
   // For fail-dance scenes, use 'fail-dance' to show answer-wrong styling (answer + quest + seal)
   const presentationState = isSuccessDanceScene
     ? 'success-dance'
@@ -729,6 +744,7 @@ export function RecordingOrchestrator() {
       onRecordStop={handleRecordStop}
       onAskClick={handleRecordStart} // Ask button triggers recording start
       onAnswerWrongVideoComplete={handleAnswerWrongVideoComplete} // Callback when answer-wrong video ends
+      onAnswerRightVideoComplete={handleAnswerRightVideoComplete} // Callback when answer-right video ends
     />
   );
 }

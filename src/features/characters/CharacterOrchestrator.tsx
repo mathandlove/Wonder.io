@@ -13,7 +13,7 @@ type Props = {
 };
 
 export const CharacterOrchestrator: React.FC<Props> = ({ storyId, scenes, currentIndex = 0 }) => {
-  const { notifyEntranceComplete } = useCharacterAnimation();
+  const { notifyEntranceComplete, notifyJiggleComplete } = useCharacterAnimation();
   const { navigationArray } = useSceneManager();
 
   // Use currentIndex directly (always passed from ScrollControl)
@@ -25,18 +25,23 @@ export const CharacterOrchestrator: React.FC<Props> = ({ storyId, scenes, curren
   const [prevSceneIndex, setPrevSceneIndex] = useState(0);
 
   // Compute panel data directly from navigationArray (no metadata needed!)
-  const { leftPanel, rightPanel, currentSpeaker } = useMemo(() => {
+  const { leftPanel, rightPanel, currentSpeaker, isJiggling } = useMemo(() => {
     const i = Math.max(0, Math.min(navigationArray.length - 1, Math.round(scrollOffset)));
     const currentNavItem = navigationArray[i];
     const previousNavItem = navigationArray[i - 1];
     const nextNavItem = navigationArray[i + 1];
 
     if (!currentNavItem) {
-      return { leftPanel: null, rightPanel: null, currentSpeaker: null };
+      return { leftPanel: null, rightPanel: null, currentSpeaker: null, isJiggling: false };
     }
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const speaker = (currentNavItem.scene as any)?.speaker || null;
+
+    // Check if we're in answer-right state or success-dance scene (should trigger jiggle dance)
+    const dialogueState = currentNavItem.sceneState?.type === 'dialogue' ? currentNavItem.sceneState.state : null;
+    const isSuccessDanceScene = currentNavItem.scene?.type === 'success-dance';
+    const shouldJiggle = dialogueState === 'answer-right' || isSuccessDanceScene;
 
     // Helper to extract character from a navigation item
     const getChar = (navItem: typeof currentNavItem | undefined, side: 'left' | 'right') => {
@@ -64,7 +69,8 @@ export const CharacterOrchestrator: React.FC<Props> = ({ storyId, scenes, curren
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         pose: (currentNavItem.scene as any)?.meta?.panelRight?.pose || null,
       } : null,
-      currentSpeaker: speaker
+      currentSpeaker: speaker,
+      isJiggling: shouldJiggle
     };
   }, [scrollOffset, navigationArray]);
 
@@ -78,6 +84,15 @@ export const CharacterOrchestrator: React.FC<Props> = ({ storyId, scenes, curren
 
   const handleRightEntranceComplete = () => {
     notifyEntranceComplete(currentSceneIndex, 'right');
+  };
+
+  // Create callbacks to notify when jiggle completes
+  const handleLeftJiggleComplete = () => {
+    notifyJiggleComplete(currentSceneIndex, 'left');
+  };
+
+  const handleRightJiggleComplete = () => {
+    notifyJiggleComplete(currentSceneIndex, 'right');
   };
 
 
@@ -162,7 +177,9 @@ export const CharacterOrchestrator: React.FC<Props> = ({ storyId, scenes, curren
           animNonce={leftEnterNonce}
           scrollDirection={scrollDirection}
           isSpeaking={currentSpeaker === 'left'}
+          isJiggling={isJiggling}
           onEntranceComplete={handleLeftEntranceComplete}
+          onJiggleComplete={handleLeftJiggleComplete}
         />
       </div>
 
@@ -179,7 +196,9 @@ export const CharacterOrchestrator: React.FC<Props> = ({ storyId, scenes, curren
           animNonce={rightEnterNonce}
           scrollDirection={scrollDirection}
           isSpeaking={currentSpeaker === 'right'}
+          isJiggling={isJiggling}
           onEntranceComplete={handleRightEntranceComplete}
+          onJiggleComplete={handleRightJiggleComplete}
         />
       </div>
     </div>

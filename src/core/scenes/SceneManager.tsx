@@ -136,6 +136,9 @@ export function SceneManagerProvider({ children, initialIndex = 0 }: SceneManage
   // Ref to access latest navigationArray without causing dependency changes
   const navigationArrayRef = React.useRef<NavigationItem[]>([]);
 
+  // Pending deletions: { index: number, timerId: number }[]
+  const pendingDeletionsRef = React.useRef<{ index: number; timerId: number }[]>([]);
+
   // Build navigation array directly from allScenes
   const baseNavigationArray = useMemo(() => {
     return buildNavigationArray(allScenes);
@@ -232,14 +235,100 @@ export function SceneManagerProvider({ children, initialIndex = 0 }: SceneManage
     });
   }, []);
 
-  // Delete a navigation item at the specified index
+  /**
+   * Delete a navigation item at the specified index with smart delay
+   *
+   * Strategy:
+   * - Schedules deletion for 3 seconds in the future
+   * - If user navigates (forward/backward) before timer expires, delete immediately
+   * - This prevents deletion from interfering with ongoing animations/transitions
+   * - Safe to call multiple times - won't create duplicate deletions
+   */
   const deleteNavigationItem = useCallback((index: number) => {
+    // Check if this index is already pending deletion
+    const existingPending = pendingDeletionsRef.current.find(p => p.index === index);
+    if (existingPending) {
+      console.log('[SceneManager] ⏭️  Deletion already pending for index', index);
+      return;
+    }
+
+    console.log('[SceneManager] ⏰ Scheduling deletion for index', index, 'in 3 seconds');
+
+    // Schedule deletion for 3 seconds from now
+    const timerId = window.setTimeout(() => {
+      console.log('[SceneManager] 🗑️  Timer expired, deleting index', index);
+
+      // Remove from pending list
+      pendingDeletionsRef.current = pendingDeletionsRef.current.filter(p => p.index !== index);
+
+      // Perform the actual deletion
+      setNavigationArray(prevArray => {
+        const newArray = [...prevArray];
+        newArray.splice(index, 1);
+        return newArray;
+      });
+
+      // Adjust navigationIndex if we deleted a scene before the current position
+      // This keeps navigationIndex pointing at the same scene after deletion
+      setNavigationIndex(prevIndex => {
+        if (index < prevIndex) {
+          console.log('[SceneManager] 📍 Adjusting navigationIndex from', prevIndex, 'to', prevIndex - 1);
+          return prevIndex - 1;
+        }
+        return prevIndex;
+      });
+    }, 3000);
+
+    // Track this pending deletion
+    pendingDeletionsRef.current.push({ index, timerId });
+  }, [setNavigationArray]);
+
+  /**
+   * Process pending deletions immediately
+   * Called during navigation to clean up before moving
+   */
+  const processPendingDeletions = useCallback(() => {
+    if (pendingDeletionsRef.current.length === 0) return;
+
+    console.log('[SceneManager] 🧹 Processing', pendingDeletionsRef.current.length, 'pending deletions');
+
+    // Cancel all timers
+    pendingDeletionsRef.current.forEach(pending => {
+      clearTimeout(pending.timerId);
+    });
+
+    // Sort deletions by index (descending) to delete from end to start
+    // This prevents index shifting issues during the deletion loop
+    const sortedDeletions = [...pendingDeletionsRef.current].sort((a, b) => b.index - a.index);
+
+    // Count how many deletions are before the current navigationIndex
+    // We need to decrement navigationIndex by this amount
+    const currentNavIndex = navigationIndex;
+    const deletionsBeforeCurrent = sortedDeletions.filter(d => d.index < currentNavIndex).length;
+
+    // Perform all deletions
     setNavigationArray(prevArray => {
-      const newArray = [...prevArray];
-      newArray.splice(index, 1); // Remove 1 item at index
+      let newArray = [...prevArray];
+      sortedDeletions.forEach(({ index }) => {
+        console.log('[SceneManager] 🗑️  Deleting index', index);
+        newArray.splice(index, 1);
+      });
       return newArray;
     });
-  }, []);
+
+    // Adjust navigationIndex to keep it pointing at the same scene
+    if (deletionsBeforeCurrent > 0) {
+      setNavigationIndex(prevIndex => {
+        const newIndex = prevIndex - deletionsBeforeCurrent;
+        console.log('[SceneManager] 📍 Adjusting navigationIndex from', prevIndex, 'to', newIndex,
+                    `(${deletionsBeforeCurrent} deletions before current)`);
+        return newIndex;
+      });
+    }
+
+    // Clear pending list
+    pendingDeletionsRef.current = [];
+  }, [setNavigationArray, navigationIndex, setNavigationIndex]);
 
   /**
    * Add a new navigation state to the current scene
@@ -376,6 +465,9 @@ export function SceneManagerProvider({ children, initialIndex = 0 }: SceneManage
   // Force advance navigation (bypasses locks but still collapses states)
   // Note: Uses navigationArrayRef which is kept in sync synchronously via setNavigationArray wrapper
   const forceAdvanceNavigation = useCallback((direction: 'forward' | 'backward') => {
+    // Process any pending deletions before navigating
+    processPendingDeletions();
+
     const currentArray = navigationArrayRef.current;
     const delta = direction === 'forward' ? 1 : -1;
     const next = navigationIndex + delta;
@@ -446,7 +538,7 @@ export function SceneManagerProvider({ children, initialIndex = 0 }: SceneManage
         setCurrentIndex(sceneIndex);
       }
     }
-  }, [navigationIndex, setNavigationIndex, setNavigationArray, visibleScenes, setCurrentIndex]);
+  }, [navigationIndex, setNavigationIndex, setNavigationArray, visibleScenes, setCurrentIndex, processPendingDeletions]);
 
   // Navigation array-based navigation with state collapse
   // Note: We use navigationArrayRef to access the latest array without causing dependency changes

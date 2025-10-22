@@ -213,25 +213,27 @@ export function StepScrollDebug() {
     sceneManager.updateNavigationItemState(navigationIndex, { type: 'dialogue', state: 'ai-waiting' });
   };
 
-  const triggerFailDance = () => {
+  const triggerSuccessDance = () => {
     // Extract current scene info
     const scene = currentNavItem?.scene;
     const rightCharacterName = (scene && 'right-character' in scene && scene['right-character']);
     const leftCharacterName = (scene && 'left-character' in scene && scene['left-character']) ;
     const background = scene && 'background' in scene ? scene.background : undefined;
 
-    // Use PageFactory to create the fail-dance scene
-    const failDanceScene = pageFactory.createFailDanceScene(
-      rightCharacterName,
+    // Use PageFactory to create the success-dance scene
+    // Keep BOTH characters (don't set to NOCHARACTER - we want them to stay and jiggle)
+    const successDanceScene = pageFactory.createSuccessDanceScene(
+      rightCharacterName || 'bakerMom', // character parameter (for old animation)
+      'Test answer text', // answerText
       background,
-      leftCharacterName,
-      NOCHARACTER // right-character set to NOCHARACTER to trigger exit animation
+      leftCharacterName, // Keep left character
+      rightCharacterName // Keep right character (don't set to null)
     );
 
     // Insert scene
     const newNavItem = {
-      scene: failDanceScene,
-      sceneId: failDanceScene.sceneId!,
+      scene: successDanceScene,
+      sceneId: successDanceScene.sceneId!,
       sceneState: { type: 'static' as const },
       lockForward: false,
       lockBackward: false,
@@ -569,28 +571,28 @@ export function StepScrollDebug() {
         </div>
       </div>
 
-      {/* Fail Dance Section */}
-      <div style={{ marginTop: '10px', paddingTop: '8px', borderTop: '1px solid #ff0' }}>
-        <div style={{ color: '#ff0', marginBottom: '8px', fontWeight: 'bold' }}>💃 Fail Dance Animation</div>
+      {/* Success Dance Section */}
+      <div style={{ marginTop: '10px', paddingTop: '8px', borderTop: '1px solid #0f0' }}>
+        <div style={{ color: '#0f0', marginBottom: '8px', fontWeight: 'bold' }}>🎉 Success Dance Animation</div>
         <button
-          onClick={triggerFailDance}
+          onClick={triggerSuccessDance}
           style={{
             padding: '12px',
-            background: 'linear-gradient(135deg, #ff0000 0%, #ff6600 100%)',
+            background: 'linear-gradient(135deg, #00ff00 0%, #00cc00 100%)',
             color: '#fff',
-            border: '2px solid #ff0',
+            border: '2px solid #0f0',
             borderRadius: '6px',
             cursor: 'pointer',
             fontSize: '12px',
             fontWeight: 'bold',
             width: '100%',
-            boxShadow: '0 4px 8px rgba(255,0,0,0.3)'
+            boxShadow: '0 4px 8px rgba(0,255,0,0.3)'
           }}
         >
-          🤬 Trigger Fail Dance
+          🎊 Trigger Success Dance
         </button>
         <div style={{ marginTop: '6px', fontSize: '9px', color: '#888', fontStyle: 'italic' }}>
-          Plays angry character tantrum animation (3.5s)
+          Characters jiggle together in celebration (1.5s)
         </div>
       </div>
 

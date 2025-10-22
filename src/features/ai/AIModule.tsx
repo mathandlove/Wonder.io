@@ -73,7 +73,7 @@ export const AIModuleProvider: React.FC<AIModuleProviderProps> = ({
 
       return {
         text: '',
-        success: false,
+        success: true,
         error: errorMessage
       };
 

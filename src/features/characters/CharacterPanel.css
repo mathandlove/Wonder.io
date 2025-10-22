@@ -106,6 +106,107 @@
   }
 }
 
+/* Jiggle dance animation - 3 back-and-forth jiggles for celebration */
+.story-character-jiggling-left {
+  animation: character-jiggle-left 1.5s ease-in-out 1;
+}
+
+.story-character-jiggling-right {
+  animation: character-jiggle-right 1.5s ease-in-out 1;
+}
+
+@keyframes character-jiggle-left {
+  0% {
+    transform: rotate(0deg);
+  }
+  /* First jiggle */
+  8.33% {
+    transform: rotate(8deg);
+  }
+  16.67% {
+    transform: rotate(-8deg);
+  }
+  /* Second jiggle */
+  25% {
+    transform: rotate(8deg);
+  }
+  33.33% {
+    transform: rotate(-8deg);
+  }
+  /* Third jiggle */
+  41.67% {
+    transform: rotate(8deg);
+  }
+  50% {
+    transform: rotate(-8deg);
+  }
+  /* Settle back */
+  58.33% {
+    transform: rotate(4deg);
+  }
+  66.67% {
+    transform: rotate(-4deg);
+  }
+  75% {
+    transform: rotate(2deg);
+  }
+  83.33% {
+    transform: rotate(-2deg);
+  }
+  91.67% {
+    transform: rotate(1deg);
+  }
+  100% {
+    transform: rotate(0deg);
+  }
+}
+
+@keyframes character-jiggle-right {
+  0% {
+    transform: rotate(0deg);
+  }
+  /* First jiggle */
+  8.33% {
+    transform: rotate(-8deg);
+  }
+  16.67% {
+    transform: rotate(8deg);
+  }
+  /* Second jiggle */
+  25% {
+    transform: rotate(-8deg);
+  }
+  33.33% {
+    transform: rotate(8deg);
+  }
+  /* Third jiggle */
+  41.67% {
+    transform: rotate(-8deg);
+  }
+  50% {
+    transform: rotate(8deg);
+  }
+  /* Settle back */
+  58.33% {
+    transform: rotate(-4deg);
+  }
+  66.67% {
+    transform: rotate(4deg);
+  }
+  75% {
+    transform: rotate(-2deg);
+  }
+  83.33% {
+    transform: rotate(2deg);
+  }
+  91.67% {
+    transform: rotate(-1deg);
+  }
+  100% {
+    transform: rotate(0deg);
+  }
+}
+
 /* Character transition animations - moved to panel level for coordinated movement */
 .story-character-panel.story-character-left.entering {
   transform-origin: center calc(100% + 300px);

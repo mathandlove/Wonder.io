@@ -22,6 +22,7 @@ interface RecordPanelProps {
   onRecordStart?: () => void; // Called when recording starts
   onAskClick?: () => void;
   onAnswerWrongVideoComplete?: () => void; // Called when answer-wrong video ends
+  onAnswerRightVideoComplete?: () => void; // Called when answer-right video ends
 }
 
 export const RecordPanel: React.FC<RecordPanelProps> = ({
@@ -33,7 +34,8 @@ export const RecordPanel: React.FC<RecordPanelProps> = ({
   onNext,
   onRecordStop,
   onAskClick,
-  onAnswerWrongVideoComplete
+  onAnswerWrongVideoComplete,
+  onAnswerRightVideoComplete
 }) => {
   const { toast, hideToast } = useToast();
   const { state: recordingState } = useRecording();
@@ -100,8 +102,9 @@ export const RecordPanel: React.FC<RecordPanelProps> = ({
         }
       }, 500);
       return () => clearTimeout(timer);
-    } else if (isAnswerRight || isAnswerWrong) {
-      // Play immediately for right/wrong states
+    } else if ((isAnswerRight || isAnswerWrong) && !videoComplete) {
+      // Play immediately for right/wrong states, but only if video hasn't already completed
+      // This prevents replay when transitioning to success-dance (which uses answer-right styling)
       setPlayVideo(true);
       if (videoRef.current) {
         videoRef.current.playbackRate = 0.7; // Play at 70% speed
@@ -111,8 +114,12 @@ export const RecordPanel: React.FC<RecordPanelProps> = ({
       // For fail-dance, show stamp immediately without video
       setShowStamp(true);
       setVideoComplete(true);
+    } else if (isSuccessDance) {
+      // For success-dance, show stamp immediately without video (same as fail-dance)
+      setShowStamp(true);
+      setVideoComplete(true);
     }
-  }, [isAnswerWaiting, isAnswerRight, isAnswerWrong, isFailDance]);
+  }, [isAnswerWaiting, isAnswerRight, isAnswerWrong, isFailDance, isSuccessDance, videoComplete]);
 
   const handleHintClick = () => {
     if (disabled) return;
@@ -144,14 +151,16 @@ export const RecordPanel: React.FC<RecordPanelProps> = ({
     // Centered states (important moments)
     // For answer-right: only show green glow after stamp appears, otherwise show golden glow
     if (isAnswerRight) return videoComplete ? 'answer-right-centered' : 'quest-offer-centered';
+    // For success-dance: same styling as answer-right (green glow with seal)
+    if (isSuccessDance) return 'answer-right-centered';
     // For answer-wrong: only show red glow after stamp appears, otherwise show golden glow
     if (isAnswerWrong) return videoComplete ? 'answer-wrong-centered' : 'quest-offer-centered';
     if (isAnswerWaiting) return 'quest-offer-centered'; // Golden glow for waiting
     if (isQuestOffer) return 'quest-offer-centered'; // Golden glow for quest
 
-    // Hidden state (completely off-screen) - includes success-dance and fail-dance
+    // Hidden state (completely off-screen) - includes fail-dance
     // For fail-dance: position off-screen but keep all answer-wrong styling (seal, text, red glow)
-    if (isBasic || isSuccessDance || isFailDance) return 'hidden';
+    if (isBasic || isFailDance) return 'hidden';
 
     // Rest position - bottom anchored for interactive states
     // (input-showInput, input-recording, show-hint, record-answer, ai-waiting)
@@ -335,13 +344,16 @@ export const RecordPanel: React.FC<RecordPanelProps> = ({
               }
             }}
             onEnded={(e) => {
-              // Mark video as complete (triggers red glow for answer-wrong)
+              // Mark video as complete (triggers green/red glow for answer-right/wrong)
               setVideoComplete(true);
               // Hide video after it ends
               (e.target as HTMLVideoElement).style.display = 'none';
-              // Notify orchestrator that answer-wrong video has completed
+              // Notify orchestrator that video has completed
               if (isAnswerWrong && onAnswerWrongVideoComplete) {
                 onAnswerWrongVideoComplete();
+              }
+              if (isAnswerRight && onAnswerRightVideoComplete) {
+                onAnswerRightVideoComplete();
               }
             }}
           />

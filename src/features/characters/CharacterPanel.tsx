@@ -13,10 +13,12 @@ interface CharacterPanelProps {
   storyId: string;
   animNonce?: number; // Forces animation restart when incremented
   onEntranceComplete?: () => void; // Callback when entrance animation completes
+  onJiggleComplete?: () => void; // Callback when jiggle animation completes
   isSpeaking?: boolean; // true if this character is currently the speaker
+  isJiggling?: boolean; // true if this character should play the jiggle dance animation
 }
 
-type Phase = 'hidden' | 'entering' | 'idle' | 'speaking';
+type Phase = 'hidden' | 'entering' | 'idle' | 'speaking' | 'jiggling';
 
 export const CharacterPanel: React.FC<CharacterPanelProps> = ({
   side,
@@ -29,7 +31,9 @@ export const CharacterPanel: React.FC<CharacterPanelProps> = ({
   storyId,
   animNonce = 0,
   onEntranceComplete,
-  isSpeaking = false
+  onJiggleComplete,
+  isSpeaking = false,
+  isJiggling = false
 }) => {
   const [version] = useState(`v${Date.now()}`);
 
@@ -54,12 +58,17 @@ export const CharacterPanel: React.FC<CharacterPanelProps> = ({
       }
     }
 
-    // Priority 2: Speaking animations (only when NOT entering)
+    // Priority 2: Jiggling dance animation (celebration for correct answers)
+    if (isJiggling) {
+      return 'jiggling';
+    }
+
+    // Priority 3: Speaking animations (only when NOT entering or jiggling)
     if (isSpeaking) {
       return 'speaking';
     }
 
-    // Priority 3: Default idle state
+    // Priority 4: Default idle state
     return 'idle';
   };
 
@@ -81,6 +90,13 @@ export const CharacterPanel: React.FC<CharacterPanelProps> = ({
         // Call the entrance completion callback
         onEntranceComplete?.();
       }
+
+      // Trigger callback for jiggle animations
+      if (event.animationName.includes('character-jiggle-left') ||
+          event.animationName.includes('character-jiggle-right')) {
+        console.log('[CharacterPanel] 🎉 Jiggle animation ended', { side, characterName });
+        onJiggleComplete?.();
+      }
     };
 
     const handleAnimationStart = (event: AnimationEvent) => {
@@ -99,7 +115,7 @@ export const CharacterPanel: React.FC<CharacterPanelProps> = ({
       panelElement.removeEventListener('animationend', handleAnimationEnd);
       panelElement.removeEventListener('animationstart', handleAnimationStart);
     };
-  }, [side, characterName, onEntranceComplete]); // Only re-setup when essential props change
+  }, [side, characterName, onEntranceComplete, onJiggleComplete]); // Only re-setup when essential props change
 
   // Panel container always renders as independent layer
 
@@ -114,8 +130,11 @@ export const CharacterPanel: React.FC<CharacterPanelProps> = ({
 
   const cardStyle = {};
 
-  // Get speaking animation class for character inner div
+  // Get animation class for character inner div
   const getInnerClasses = () => {
+    if (phase === 'jiggling') {
+      return side === 'left' ? 'story-character-jiggling-left' : 'story-character-jiggling-right';
+    }
     if (phase === 'speaking') {
       return side === 'left' ? 'story-character-speaking' : 'story-character-speaking-right';
     }

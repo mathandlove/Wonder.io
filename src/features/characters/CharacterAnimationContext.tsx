@@ -1,8 +1,14 @@
 import React, { createContext, useContext, useState, useCallback } from 'react';
 
+type AnimationEventType = 'entrance-complete' | 'jiggle-complete';
+type AnimationEventListener = (sceneIndex: number) => void;
+
 interface CharacterAnimationContextType {
   registerEntranceCallback: (sceneIndex: number, side: 'left' | 'right', callback: () => void) => void;
   notifyEntranceComplete: (sceneIndex: number, side: 'left' | 'right') => void;
+  notifyJiggleComplete: (sceneIndex: number, side: 'left' | 'right') => void;
+  addEventListener: (eventType: AnimationEventType, listener: AnimationEventListener) => void;
+  removeEventListener: (eventType: AnimationEventType, listener: AnimationEventListener) => void;
 }
 
 const CharacterAnimationContext = createContext<CharacterAnimationContextType | null>(null);
@@ -12,6 +18,13 @@ export const CharacterAnimationProvider: React.FC<{ children: React.ReactNode }>
   const [callbacks, setCallbacks] = useState<Record<number, Record<string, () => void>>>({});
   // Track which animations have already completed
   const [completedAnimations, setCompletedAnimations] = useState<Record<number, Record<string, boolean>>>({});
+  // Track jiggle completion per scene per side
+  const [jiggleCompletions, setJiggleCompletions] = useState<Record<number, Record<string, boolean>>>({});
+  // Event listeners for animation events
+  const [eventListeners, setEventListeners] = useState<Record<AnimationEventType, AnimationEventListener[]>>({
+    'entrance-complete': [],
+    'jiggle-complete': []
+  });
 
   const registerEntranceCallback = useCallback((sceneIndex: number, side: 'left' | 'right', callback: () => void) => {
     console.log('[CharacterAnimation] 📝 Registering callback', { sceneIndex, side });
@@ -55,10 +68,71 @@ export const CharacterAnimationProvider: React.FC<{ children: React.ReactNode }>
     }
   }, [callbacks]);
 
+  const notifyJiggleComplete = useCallback((sceneIndex: number, side: 'left' | 'right') => {
+    console.log('[CharacterAnimation] 🎉 Jiggle complete notification', { sceneIndex, side });
+
+    setJiggleCompletions(prev => {
+      const newCompletions = {
+        ...prev,
+        [sceneIndex]: {
+          ...prev[sceneIndex],
+          [side]: true
+        }
+      };
+
+      // Check if BOTH sides have completed (or if only one side has a character)
+      const sceneCompletions = newCompletions[sceneIndex];
+      const leftDone = sceneCompletions?.left === true;
+      const rightDone = sceneCompletions?.right === true;
+
+      console.log('[CharacterAnimation] Jiggle status check', {
+        sceneIndex,
+        leftDone,
+        rightDone,
+        bothDone: leftDone && rightDone
+      });
+
+      // If both sides are done, fire the jiggle-complete event
+      if (leftDone && rightDone) {
+        console.log('[CharacterAnimation] 🎊 Both sides jiggled! Firing jiggle-complete event', { sceneIndex });
+
+        // Fire all listeners for this event
+        eventListeners['jiggle-complete'].forEach(listener => {
+          listener(sceneIndex);
+        });
+
+        // Clean up this scene's jiggle state
+        const { [sceneIndex]: _, ...rest } = newCompletions;
+        return rest;
+      }
+
+      return newCompletions;
+    });
+  }, [eventListeners]);
+
+  const addEventListener = useCallback((eventType: AnimationEventType, listener: AnimationEventListener) => {
+    console.log('[CharacterAnimation] 📡 Adding event listener', { eventType });
+    setEventListeners(prev => ({
+      ...prev,
+      [eventType]: [...prev[eventType], listener]
+    }));
+  }, []);
+
+  const removeEventListener = useCallback((eventType: AnimationEventType, listener: AnimationEventListener) => {
+    console.log('[CharacterAnimation] 🔌 Removing event listener', { eventType });
+    setEventListeners(prev => ({
+      ...prev,
+      [eventType]: prev[eventType].filter(l => l !== listener)
+    }));
+  }, []);
+
   return (
     <CharacterAnimationContext.Provider value={{
       registerEntranceCallback,
-      notifyEntranceComplete
+      notifyEntranceComplete,
+      notifyJiggleComplete,
+      addEventListener,
+      removeEventListener
     }}>
       {children}
     </CharacterAnimationContext.Provider>
