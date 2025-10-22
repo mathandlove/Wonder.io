@@ -8,35 +8,103 @@
  * - Phase 2 (3.5s+): Character stays hidden off-screen
  */
 
-import { useEffect, useState } from 'react';
+import { useCallback, useState, useEffect, useRef } from 'react';
 import type { SceneProps } from './registry';
 import type { FailDanceScene as FailDanceSceneType } from '@core/types/scene';
 import { useSceneManager } from '@core/scenes/SceneManager';
 import './FailDanceScene.css';
 
 export default function FailDanceScene({ scene }: SceneProps<FailDanceSceneType>) {
-  const [animationPhase, setAnimationPhase] = useState<'dancing' | 'exiting'>('dancing');
   const [storyId] = useState(() => {
     // Extract storyId from current URL or use default
     const pathParts = window.location.pathname.split('/');
     return pathParts[pathParts.length - 1] || 'gingerbread';
   });
 
-  const { advanceNavigation } = useSceneManager();
+  const { advanceNavigation, deleteNavigationItem, navigationIndex, getCurrentSceneId } = useSceneManager();
   const side = scene.side || 'right';
+  const currentSceneId = getCurrentSceneId();
 
+  // Track deletion state across renders
+  const pendingDeletionRef = useRef<{
+    failDanceIndex: number;
+    navigatedBackTo: number;
+    deleted: boolean;
+  } | null>(null);
+
+  // Handle animation completion - navigate back and schedule deletion
+  const handleAnimationEnd = useCallback((e: React.AnimationEvent) => {
+    // Only respond to the character container's animation ending (not sub-elements)
+    if (!e.currentTarget.classList.contains('fail-dance-character-container')) return;
+
+    console.log('[FailDance] 🎬 Animation ended', {
+      currentSceneId,
+      sceneSceneId: scene.sceneId,
+      navigationIndex
+    });
+
+    // Only act if we're still on THIS fail-dance scene (prevents double-trigger if user navigated away)
+    if (currentSceneId !== scene.sceneId) {
+      console.log('[FailDance] ⏭️  Skipping - already navigated away');
+      return;
+    }
+
+    // Remember our current position before navigating
+    const failDanceIndex = navigationIndex;
+    const previousSceneIndex = navigationIndex - 1;
+
+    console.log('[FailDance] ⬅️  Navigating backward', {
+      from: failDanceIndex,
+      to: previousSceneIndex
+    });
+
+    // Navigate back first
+    advanceNavigation('backward');
+
+    // Set up pending deletion tracking
+    pendingDeletionRef.current = {
+      failDanceIndex,
+      navigatedBackTo: previousSceneIndex,
+      deleted: false
+    };
+
+    console.log('[FailDance] 📋 Deletion tracking set up', pendingDeletionRef.current);
+
+    // Schedule deletion after 3 seconds
+    setTimeout(() => {
+      if (pendingDeletionRef.current && !pendingDeletionRef.current.deleted) {
+        console.log('[FailDance] ⏰ DELETING via timeout (3s)', {
+          deletingIndex: failDanceIndex
+        });
+        pendingDeletionRef.current.deleted = true;
+        deleteNavigationItem(failDanceIndex);
+      }
+    }, 3000);
+  }, [currentSceneId, scene.sceneId, navigationIndex, advanceNavigation, deleteNavigationItem]);
+
+  // Watch for user scrolling forward - immediate deletion
   useEffect(() => {
-    // Phase timing - start dancing immediately, then navigate back after animation completes
-    const timers = [
-      setTimeout(() => setAnimationPhase('exiting'), 3500), // Hide after 3.5s dancing animation
-      setTimeout(() => {
-        // Navigate back one step
-        advanceNavigation('backward');
-      }, 3600) // 100ms after exiting phase starts
-    ];
+    if (!pendingDeletionRef.current || pendingDeletionRef.current.deleted) return;
 
-    return () => timers.forEach(clearTimeout);
-  }, [advanceNavigation]);
+    const { failDanceIndex, navigatedBackTo } = pendingDeletionRef.current;
+
+    console.log('[FailDance] 📊 Navigation change detected', {
+      currentNavigationIndex: navigationIndex,
+      navigatedBackTo,
+      shouldDelete: navigationIndex > navigatedBackTo
+    });
+
+    // If user scrolled forward PAST where we navigated back to, delete immediately
+    if (navigationIndex > navigatedBackTo) {
+      console.log('[FailDance] ✅ DELETING via forward scroll', {
+        deletingIndex: failDanceIndex,
+        userScrolledTo: navigationIndex,
+        wasWaitingAt: navigatedBackTo
+      });
+      pendingDeletionRef.current.deleted = true;
+      deleteNavigationItem(failDanceIndex);
+    }
+  }, [navigationIndex, deleteNavigationItem]);
 
   // Image paths with cache busting
   const version = `v${Date.now()}`;
@@ -62,7 +130,8 @@ export default function FailDanceScene({ scene }: SceneProps<FailDanceSceneType>
       {/* Animated character container - ONLY the right side character that moves */}
       {/* The container itself moves with the dowel and character as one unit */}
       <div
-        className={`fail-dance-character-container fail-dance-${side} fail-dance-phase-${animationPhase}`}
+        className={`fail-dance-character-container fail-dance-${side} fail-dance-phase-dancing`}
+        onAnimationEnd={handleAnimationEnd}
         style={{
           position: 'absolute',
           top: '30vh',
@@ -77,20 +146,18 @@ export default function FailDanceScene({ scene }: SceneProps<FailDanceSceneType>
         {/* Wooden dowel - moves with the container */}
         <div className="fail-dance-dowel" />
 
-        {/* Angry character - shows only during dancing phase */}
-        {animationPhase === 'dancing' && (
-          <img
-            src={getCharacterImage(scene.angryCharacter)}
-            alt={`${scene.angryCharacter} Character`}
-            className="fail-dance-character fail-dance-angry-character"
-            onError={(e) => {
-              const target = e.target as HTMLImageElement;
-              if (target.src.includes(`${storyId}.bundle`)) {
-                target.src = getFallbackImage(scene.angryCharacter);
-              }
-            }}
-          />
-        )}
+        {/* Angry character */}
+        <img
+          src={getCharacterImage(scene.angryCharacter)}
+          alt={`${scene.angryCharacter} Character`}
+          className="fail-dance-character fail-dance-angry-character"
+          onError={(e) => {
+            const target = e.target as HTMLImageElement;
+            if (target.src.includes(`${storyId}.bundle`)) {
+              target.src = getFallbackImage(scene.angryCharacter);
+            }
+          }}
+        />
       </div>
     </div>
   );

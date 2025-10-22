@@ -8,8 +8,6 @@ interface CharacterPanelProps {
   characterName: string | null;
   previousCharacter?: string | null;
   nextCharacter?: string | null;
-  newCharacter?: boolean; // true if previousCharacter !== currentCharacter
-  aboutToSwap?: boolean; // boolean modifier flag
   scrollDirection?: 'forward' | 'backward';
   pose?: string | null;
   storyId: string;
@@ -26,8 +24,6 @@ export const CharacterPanel: React.FC<CharacterPanelProps> = ({
   characterName,
   previousCharacter,
   nextCharacter,
-  newCharacter = false,
-  aboutToSwap = false,
   scrollDirection = 'forward',
   pose,
   storyId,
@@ -36,6 +32,10 @@ export const CharacterPanel: React.FC<CharacterPanelProps> = ({
   isSpeaking = false
 }) => {
   const [version] = useState(`v${Date.now()}`);
+
+  // Derive whether character is new based on navigationArray comparison
+  const newCharacter = previousCharacter !== characterName && characterName !== null;
+  const aboutToSwap = nextCharacter !== characterName && characterName !== null;
 
   // Pure renderer - determine phase based on scroll direction and character state
   const getCurrentPhase = (): Phase => {

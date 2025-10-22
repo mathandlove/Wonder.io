@@ -10,8 +10,20 @@ const CharacterAnimationContext = createContext<CharacterAnimationContextType | 
 export const CharacterAnimationProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   // Map of sceneIndex -> side -> callback
   const [callbacks, setCallbacks] = useState<Record<number, Record<string, () => void>>>({});
+  // Track which animations have already completed
+  const [completedAnimations, setCompletedAnimations] = useState<Record<number, Record<string, boolean>>>({});
 
   const registerEntranceCallback = useCallback((sceneIndex: number, side: 'left' | 'right', callback: () => void) => {
+    console.log('[CharacterAnimation] 📝 Registering callback', { sceneIndex, side });
+
+    // Check if animation already completed
+    if (completedAnimations[sceneIndex]?.[side]) {
+      console.log('[CharacterAnimation] ⚡ Animation already complete - firing callback immediately', { sceneIndex, side });
+      callback();
+      return;
+    }
+
+    // Store callback for later
     setCallbacks(prev => ({
       ...prev,
       [sceneIndex]: {
@@ -19,12 +31,27 @@ export const CharacterAnimationProvider: React.FC<{ children: React.ReactNode }>
         [side]: callback
       }
     }));
-  }, []);
+  }, [completedAnimations]);
 
   const notifyEntranceComplete = useCallback((sceneIndex: number, side: 'left' | 'right') => {
+    console.log('[CharacterAnimation] ✨ Animation complete notification', { sceneIndex, side });
+
+    // Mark as completed
+    setCompletedAnimations(prev => ({
+      ...prev,
+      [sceneIndex]: {
+        ...prev[sceneIndex],
+        [side]: true
+      }
+    }));
+
+    // Fire callback if one exists
     const callback = callbacks[sceneIndex]?.[side];
     if (callback) {
+      console.log('[CharacterAnimation] 🔔 Firing registered callback', { sceneIndex, side });
       callback();
+    } else {
+      console.log('[CharacterAnimation] 📭 No callback registered yet', { sceneIndex, side });
     }
   }, [callbacks]);
 

@@ -19,27 +19,54 @@ export const CharacterOrchestrator: React.FC<Props> = ({ storyId, scenes, curren
   // Use currentIndex directly (always passed from ScrollControl)
   const scrollOffset = currentIndex;
 
-  // Get current scene meta and speaker info
-  const { currentMeta, currentSpeaker } = useMemo(() => {
-    const i = Math.max(0, Math.min(scenes.length - 1, Math.round(scrollOffset)));
-    const currentScene = scenes[i];
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const meta = (currentScene as any)?.meta || null;
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const speaker = (currentScene as any)?.speaker || null;
-
-    return { currentMeta: meta, currentSpeaker: speaker };
-  }, [scrollOffset, scenes]);
-
-
   // AnimNonce state for forcing animation restarts
   const [leftEnterNonce, setLeftEnterNonce] = useState(0);
   const [rightEnterNonce, setRightEnterNonce] = useState(0);
   const [prevSceneIndex, setPrevSceneIndex] = useState(0);
 
-  // Extract panel data from meta
-  const leftPanel = currentMeta?.panelLeft;
-  const rightPanel = currentMeta?.panelRight;
+  // Compute panel data directly from navigationArray (no metadata needed!)
+  const { leftPanel, rightPanel, currentSpeaker } = useMemo(() => {
+    const i = Math.max(0, Math.min(navigationArray.length - 1, Math.round(scrollOffset)));
+    const currentNavItem = navigationArray[i];
+    const previousNavItem = navigationArray[i - 1];
+    const nextNavItem = navigationArray[i + 1];
+
+    if (!currentNavItem) {
+      return { leftPanel: null, rightPanel: null, currentSpeaker: null };
+    }
+
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const speaker = (currentNavItem.scene as any)?.speaker || null;
+
+    // Helper to extract character from a navigation item
+    const getChar = (navItem: typeof currentNavItem | undefined, side: 'left' | 'right') => {
+      if (!navItem) return null;
+      const key = side === 'left' ? 'left-character' : 'right-character';
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      return (navItem.scene as any)?.[key] || null;
+    };
+
+    const leftChar = getChar(currentNavItem, 'left');
+    const rightChar = getChar(currentNavItem, 'right');
+
+    return {
+      leftPanel: leftChar ? {
+        character: leftChar,
+        previousCharacter: getChar(previousNavItem, 'left'),
+        nextCharacter: getChar(nextNavItem, 'left'),
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        pose: (currentNavItem.scene as any)?.meta?.panelLeft?.pose || null,
+      } : null,
+      rightPanel: rightChar ? {
+        character: rightChar,
+        previousCharacter: getChar(previousNavItem, 'right'),
+        nextCharacter: getChar(nextNavItem, 'right'),
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        pose: (currentNavItem.scene as any)?.meta?.panelRight?.pose || null,
+      } : null,
+      currentSpeaker: speaker
+    };
+  }, [scrollOffset, navigationArray]);
 
   // Get current scene index for callback coordination
   const currentSceneIndex = Math.max(0, Math.min(scenes.length - 1, Math.round(scrollOffset)));
@@ -70,12 +97,6 @@ export const CharacterOrchestrator: React.FC<Props> = ({ storyId, scenes, curren
 
 
 
-  // Helper function to get character from a scene
-  const getCharacterFromScene = (scene: any, side: 'left' | 'right'): string | null => {
-    const key = side === 'left' ? 'left-character' : 'right-character';
-    return scene?.[key] || scene?.meta?.[side === 'left' ? 'panelLeft' : 'panelRight']?.character || null;
-  };
-
   // Track when we've scrolled to a new scene and trigger animation restart
   useEffect(() => {
     const currentSceneIndex = Math.round(scrollOffset);
@@ -84,9 +105,8 @@ export const CharacterOrchestrator: React.FC<Props> = ({ storyId, scenes, curren
     if (currentSceneIndex !== prevSceneIndex) {
       const isMovingForward = currentSceneIndex > prevSceneIndex;
 
-      // Get current, previous, and next navigation items
+      // Get current navigation item
       const currentNavItem = navigationArray[currentSceneIndex];
-      const previousNavItem = navigationArray[currentSceneIndex - 1];
 
       // Check allowAnimate flag
       const allowAnimate = currentNavItem?.sceneState?.type === 'dialogue'
@@ -95,27 +115,14 @@ export const CharacterOrchestrator: React.FC<Props> = ({ storyId, scenes, curren
 
       setPrevSceneIndex(currentSceneIndex);
 
-      // Only trigger entrance animations when moving forward and allowed
+      // Increment nonces when moving forward and animations are allowed
+      // CharacterPanel will derive whether to show entrance animation based on previousCharacter !== characterName
       if (isMovingForward && allowAnimate && currentNavItem) {
-        // Check if LEFT character is new (different from previous scene)
-        const currentLeftChar = getCharacterFromScene(currentNavItem.scene, 'left');
-        const previousLeftChar = previousNavItem ? getCharacterFromScene(previousNavItem.scene, 'left') : null;
-        const leftCharacterIsNew = currentLeftChar !== previousLeftChar && currentLeftChar !== null;
-
-        // Check if RIGHT character is new (different from previous scene)
-        const currentRightChar = getCharacterFromScene(currentNavItem.scene, 'right');
-        const previousRightChar = previousNavItem ? getCharacterFromScene(previousNavItem.scene, 'right') : null;
-        const rightCharacterIsNew = currentRightChar !== previousRightChar && currentRightChar !== null;
-
-        if (leftCharacterIsNew) {
-          setLeftEnterNonce(n => n + 1);
-        }
-        if (rightCharacterIsNew) {
-          setRightEnterNonce(n => n + 1);
-        }
+        setLeftEnterNonce(n => n + 1);
+        setRightEnterNonce(n => n + 1);
       }
     }
-  }, [scrollOffset, prevSceneIndex, leftEnterNonce, rightEnterNonce, navigationArray]);
+  }, [scrollOffset, prevSceneIndex, navigationArray]);
 
 
   // Publish panel widths as CSS variables to constrain main content
@@ -152,8 +159,6 @@ export const CharacterOrchestrator: React.FC<Props> = ({ storyId, scenes, curren
           nextCharacter={leftPanel?.nextCharacter ?? null}
           pose={leftPanel?.pose ?? null}
           storyId={storyId}
-          newCharacter={leftPanel?.newCharacter ?? false}
-          aboutToSwap={leftPanel?.aboutToSwap ?? false}
           animNonce={leftEnterNonce}
           scrollDirection={scrollDirection}
           isSpeaking={currentSpeaker === 'left'}
@@ -171,8 +176,6 @@ export const CharacterOrchestrator: React.FC<Props> = ({ storyId, scenes, curren
           nextCharacter={rightPanel?.nextCharacter ?? null}
           pose={rightPanel?.pose ?? null}
           storyId={storyId}
-          newCharacter={rightPanel?.newCharacter ?? false}
-          aboutToSwap={rightPanel?.aboutToSwap ?? false}
           animNonce={rightEnterNonce}
           scrollDirection={scrollDirection}
           isSpeaking={currentSpeaker === 'right'}
