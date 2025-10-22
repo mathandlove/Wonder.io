@@ -90,7 +90,7 @@ function expandImageScene(scene: Scene & { caption?: string; text?: string }, sc
         scene,
         sceneId,
         sceneState: { type: 'image', state: 'hidden' },
-        lockForward: true,
+        lockForward: false, // Allow scroll down to reveal caption
         lockBackward: false,
         index: startIndex,
       },

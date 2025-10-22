@@ -4,7 +4,11 @@
   "scenes": [
 
  
-
+      {
+      "type":"image",
+      "image":"story/dragonFight.png",
+      "text":"Sometimes I have to fight the monsters."
+    },
           
       
       {
@@ -55,11 +59,7 @@
               ]
       },
 
-      {
-      "type":"image",
-      "image":"story/dragonFight.png",
-      "text":"Sometimes I have to fight the monsters."
-    },
+
         {
       "type":"image",
       "image":"story/cheers.png",

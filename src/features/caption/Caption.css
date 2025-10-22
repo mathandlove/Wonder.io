@@ -5,7 +5,6 @@
   left: 0;
   right: 0;
   height: 35vh; /* Match the background height */
-
   pointer-events: none;
   z-index: 50; /* Above image content and other elements */
   will-change: transform;

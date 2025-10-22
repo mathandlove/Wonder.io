@@ -29,10 +29,7 @@ export function getLocksForState(state: SceneState): { lockForward: boolean; loc
   }
 
   if (state.type === 'image') {
-    // Image hidden state blocks forward scroll until image is revealed
-    if (state.state === 'hidden') {
-      return { lockForward: true, lockBackward: false };
-    }
+    // Image states allow free scrolling to reveal caption
     return { lockForward: false, lockBackward: false };
   }
 

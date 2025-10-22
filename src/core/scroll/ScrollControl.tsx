@@ -63,19 +63,19 @@ export function ScrollControl({
   });
 
   // Update SceneStates whenever navigationIndex changes
-  // This keeps a persistent cache of scene states that survives navigation
-  // Note: We deliberately don't include navigationArray in dependencies to avoid loops
-  // when the array is modified. We only care about the current index changing.
+  // This keeps a persistent cache of scene states that persists even when scrolling past scenes
+  // Required for ImageScene captions to remember their state after scrolling past
   useEffect(() => {
     const currentNavItem = navigationArray[navigationIndex];
-    if (!currentNavItem) return;
+    if (!currentNavItem) {
+      console.log('[ScrollControl] ⚠️ No current navigation item at index', navigationIndex);
+      return;
+    }
 
     const { sceneId, sceneState } = currentNavItem;
+    console.log('[ScrollControl] 🔄 Updating SceneStates for sceneId:', sceneId, 'state:', sceneState);
     sceneStates.updateSceneState(sceneId, sceneState);
-
-
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [navigationIndex, sceneStates.updateSceneState]);
+  }, [navigationIndex, navigationArray, sceneStates]);
 
   // Check if input is focused
   const isInputFocused = useCallback(() => {

@@ -6,7 +6,7 @@
  * current state for that scene. Components can then look up their state by sceneId
  * and it will persist even after navigation moves past the scene.
  */
-import React, { createContext, useContext, useState, useCallback } from 'react';
+import React, { createContext, useContext, useState, useCallback, useEffect, useRef } from 'react';
 import type { SceneState } from '@core/navigation/types';
 
 interface SceneStatesType {
@@ -42,6 +42,14 @@ export function SceneStatesProvider({ children }: SceneStatesProviderProps) {
   // Use state to store states - components will re-render when this changes
   const [states, setStates] = useState<Record<string, SceneState>>({});
 
+  // Use ref to always access the latest states without dependency issues
+  const statesRef = useRef(states);
+
+  // Keep ref in sync with state
+  useEffect(() => {
+    statesRef.current = states;
+  }, [states]);
+
   const updateSceneState = useCallback((sceneId: string, state: SceneState) => {
     setStates(prev => {
       // Only update if state actually changed
@@ -52,6 +60,7 @@ export function SceneStatesProvider({ children }: SceneStatesProviderProps) {
         return prev; // Return same reference to prevent re-render
       }
 
+      console.log('[SceneStates] 📝 Updating state for', sceneId, ':', state);
       return {
         ...prev,
         [sceneId]: state,
@@ -60,8 +69,9 @@ export function SceneStatesProvider({ children }: SceneStatesProviderProps) {
   }, []);
 
   const getSceneState = useCallback((sceneId: string): SceneState | undefined => {
-    return states[sceneId];
-  }, [states]);
+    // Use ref to always get the latest state, avoiding stale closures
+    return statesRef.current[sceneId];
+  }, []); // No dependencies - always uses latest via ref
 
   const clearStates = useCallback(() => {
     setStates({});
