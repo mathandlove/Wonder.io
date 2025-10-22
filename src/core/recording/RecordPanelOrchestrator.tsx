@@ -45,7 +45,7 @@ function hasFlowId(scene: Scene | undefined | null): scene is SceneWithFlowId {
 
 export function RecordingOrchestrator() {
   const { getCurrentNavigationItem, insertNavigationItem, deleteNavigationItem, addNavigationStateToCurrentScene, updateNavigationItemState, updateSceneTextByRecordingId, navigationIndex, setNavigationIndex, forceAdvanceNavigation, navigationArray } = useSceneManager();
-  const { createRecordingScene, createFailDanceScene } = usePageFactory();
+  const { createRecordingScene, createFailDanceScene, createSuccessDanceScene } = usePageFactory();
   const recording = useRecording();
 
   // Track pending deletions to prevent duplicate deletion attempts
@@ -69,13 +69,17 @@ export function RecordingOrchestrator() {
   // Get flow metadata for quest text
   const flowMetadata = useSceneFlowMetadata(hasFlowId(currentScene) ? currentScene : null);
 
-  // Determine if panel should be visible based on dialogue state
+  // Determine if panel should be visible based on dialogue state or scene type
   // Show for: basic (hidden below screen), quest-showing (quest offer), input-showInput (ready to record),
   // input-recording (actively recording), input-processing (processing audio), show-hint (hint display),
   // record-answer (answer recording), answer-processing (processing answer audio), waiting-for-answer-finalize,
   // answer-waiting (waiting for answer validation), answer-right (correct answer feedback),
   // answer-wrong (wrong answer feedback), ai-waiting (waiting for AI response)
+  // Also show for success-dance scenes (with answer text visible, positioned below screen)
+  // Also show for fail-dance scenes (with answer-wrong styling: answer text, quest, and seal visible)
   const dialogueState = sceneState?.type === 'dialogue' ? sceneState.state : null;
+  const isSuccessDanceScene = currentScene?.type === 'success-dance';
+  const isFailDanceScene = currentScene?.type === 'fail-dance';
   const shouldShowPanel =
     dialogueState === 'basic' ||
     dialogueState === 'quest-showing' ||
@@ -89,7 +93,9 @@ export function RecordingOrchestrator() {
     dialogueState === 'answer-waiting' ||
     dialogueState === 'answer-right' ||
     dialogueState === 'answer-wrong' ||
-    dialogueState === 'ai-waiting';
+    dialogueState === 'ai-waiting' ||
+    isSuccessDanceScene ||
+    isFailDanceScene;
 
 
   // Get the active recording ID from the CURRENT SCENE (survives navigation!)
@@ -122,10 +128,25 @@ export function RecordingOrchestrator() {
     }
   }, [dialogueState]);
 
-  // Effect: Auto-transition from answer-wrong to fail-dance scene, then back to ready state
+  // Track when answer-wrong video completes
+  const [answerWrongVideoComplete, setAnswerWrongVideoComplete] = React.useState(false);
+
+  // Reset video complete flag when leaving answer-wrong state
+  React.useEffect(() => {
+    if (dialogueState !== 'answer-wrong') {
+      setAnswerWrongVideoComplete(false);
+    }
+  }, [dialogueState]);
+
+  // Callback for when answer-wrong video completes
+  const handleAnswerWrongVideoComplete = React.useCallback(() => {
+    setAnswerWrongVideoComplete(true);
+  }, []);
+
+  // Effect: Auto-transition from answer-wrong to fail-dance scene, triggered 1 second AFTER video ends
   useEffect(() => {
-    if (dialogueState === 'answer-wrong') {
-      // Wait 2 seconds to show the red glow feedback, then insert fail-dance scene
+    if (dialogueState === 'answer-wrong' && answerWrongVideoComplete) {
+      // Wait 1 second after video completes to show the red glow feedback, then insert fail-dance scene
       const timerId = setTimeout(() => {
         const currentState = sceneState?.type === 'dialogue' ? sceneState : null;
         if (currentState?.state === 'answer-wrong') {
@@ -152,9 +173,15 @@ export function RecordingOrchestrator() {
             background = scene.background;
           }
 
+          // Get the answer and question text to display in the record panel during fail-dance
+          const answerText = currentState.answerText || '';
+          const questionText = currentState.questionText || '';
+
           // Use PageFactory to create fail-dance scene
           const failDanceScene = createFailDanceScene(
             character,
+            answerText,
+            questionText,
             background,
             leftCharacter,
             null // right-character set to null to trigger exit animation
@@ -167,52 +194,113 @@ export function RecordingOrchestrator() {
             scene: failDanceScene,
             sceneId: failDanceScene.sceneId!,
             sceneState: { type: 'static' as const },
-            lockForward: false,
-            lockBackward: false,
+            lockForward: true, // Lock navigation during fail-dance animation
+            lockBackward: true,
             index: navigationIndex + 1
           };
 
           insertNavigationItem(newNavItem, navigationIndex + 1);
 
-          // Immediately transition current scene to input-showInput state (ready for retry)
-          // This will be visible when we return from the fail-dance scene
-          updateNavigationItemState(navigationIndex, {
-            type: 'dialogue',
-            state: 'input-showInput',
-            questionText: currentState.questionText // Preserve question for retry
-          });
+          // Wait 2 seconds before transitioning current scene to input-showInput state
+          // This keeps the answer-wrong visual feedback visible longer before conversion
+          setTimeout(() => {
+            // Transition current scene to input-showInput state (ready for retry)
+            // This will be visible when we return from the fail-dance scene
+            updateNavigationItemState(navigationIndex, {
+              type: 'dialogue',
+              state: 'input-showInput',
+              questionText: currentState.questionText // Preserve question for retry
+            });
+          }, 2000);
 
           // Auto-advance to fail-dance scene after a brief moment
+          // Note: FailDanceScene will handle navigating back when animation completes
           setTimeout(() => {
             forceAdvanceNavigation('forward');
-
-            // After fail-dance completes (3.5s), go back to the ready state scene
-            setTimeout(() => {
-              forceAdvanceNavigation('backward');
-            }, 3600); // Slightly longer than animation to ensure it completes
           }, 100);
         }
-      }, 2000); // Reduced from 4000 to 2000 since we're adding 3.5s animation
+      }, 1000); // Wait 1 second after video ends
 
       return () => clearTimeout(timerId);
     }
-  }, [dialogueState, sceneState, navigationIndex, updateNavigationItemState, currentNavItem, insertNavigationItem, forceAdvanceNavigation]);
+  }, [dialogueState, answerWrongVideoComplete, sceneState, navigationIndex, updateNavigationItemState, currentNavItem, insertNavigationItem, forceAdvanceNavigation, createFailDanceScene]);
 
-  // Effect: Auto-advance forward after showing answer-right feedback
+  // Effect: Auto-transition from answer-right to success-dance scene, then back to next story scene
   useEffect(() => {
     if (dialogueState === 'answer-right') {
-      // Wait 3 seconds to show the seal animation and correct feedback, then scroll forward
+      // Wait 5 seconds to show the seal animation and correct feedback, then insert success-dance scene
+      // (3 seconds for seal + 2 second delay before transitioning to dance)
       const timerId = setTimeout(() => {
         const currentState = sceneState?.type === 'dialogue' ? sceneState : null;
         if (currentState?.state === 'answer-right') {
-          // Advance to next scene
-          forceAdvanceNavigation('forward');
+          // Extract character information from current scene
+          const scene = currentNavItem?.scene;
+          let character = 'bakerMom'; // default - the one who celebrates
+          let leftCharacter: string | undefined;
+          let background: string | undefined;
+
+          if (hasCharacterProperties(scene)) {
+            // For quest success, always use the right character (NPC/questgiver)
+            // They're the one who celebrates when you give the right answer!
+            const rightCharacter = scene['right-character'];
+            leftCharacter = scene['left-character'];
+
+            if (rightCharacter) {
+              character = rightCharacter;
+            } else if (leftCharacter) {
+              character = leftCharacter;
+            }
+          }
+
+          if (scene && 'background' in scene) {
+            background = scene.background;
+          }
+
+          // Get the answer text to display in the record panel
+          const answerText = currentState.answerText || '';
+
+          // Use PageFactory to create success-dance scene
+          const successDanceScene = createSuccessDanceScene(
+            character,
+            answerText,
+            background,
+            leftCharacter,
+            null // right-character set to null to trigger exit animation
+          );
+
+          // Insert the success-dance scene after current scene
+          const newNavItem = {
+            scene: successDanceScene,
+            sceneId: successDanceScene.sceneId!,
+            sceneState: { type: 'static' as const },
+            lockForward: true, // Lock navigation during success-dance animation
+            lockBackward: true,
+            index: navigationIndex + 1
+          };
+
+          insertNavigationItem(newNavItem, navigationIndex + 1);
+
+          // Transition current scene to basic state (ready to continue story)
+          updateNavigationItemState(navigationIndex, {
+            type: 'dialogue',
+            state: 'basic'
+          });
+
+          // Auto-advance to success-dance scene after a brief moment
+          setTimeout(() => {
+            forceAdvanceNavigation('forward');
+
+            // After success-dance completes (3.5s), go forward to next story scene
+            setTimeout(() => {
+              forceAdvanceNavigation('forward');
+            }, 3600); // Slightly longer than animation to ensure it completes
+          }, 100);
         }
-      }, 3000);
+      }, 5000);
 
       return () => clearTimeout(timerId);
     }
-  }, [dialogueState, sceneState, forceAdvanceNavigation]);
+  }, [dialogueState, sceneState, navigationIndex, updateNavigationItemState, currentNavItem, insertNavigationItem, forceAdvanceNavigation, createSuccessDanceScene]);
 
   // ===================================
   // RECORDING FLOW LOGIC
@@ -594,7 +682,13 @@ export function RecordingOrchestrator() {
   const questState = answerUnlocked ? 'complete' : 'active';
 
   // Get dialogue state for visual presentation
-  const presentationState = dialogueState || 'basic';
+  // For success-dance scenes, use a special state 'success-dance' to show answer text below screen
+  // For fail-dance scenes, use 'fail-dance' to show answer-wrong styling (answer + quest + seal)
+  const presentationState = isSuccessDanceScene
+    ? 'success-dance'
+    : isFailDanceScene
+      ? 'fail-dance'
+      : (dialogueState || 'basic');
 
   // Determine which handler to use for the primary action button
   // - quest-showing state: Accept button triggers quest acceptance
@@ -604,26 +698,37 @@ export function RecordingOrchestrator() {
 
   // Get answer text from scene state (persisted across state transitions)
   // Falls back to recording context for real-time display during recording
-  const answerText = (presentationState === 'record-answer' ||
-                      presentationState === 'answer-processing' ||
-                      presentationState === 'waiting-for-answer-finalize' ||
-                      presentationState === 'answer-waiting' ||
-                      presentationState === 'answer-right' ||
-                      presentationState === 'answer-wrong')
-    ? (sceneState?.type === 'dialogue' ? sceneState.answerText : undefined) || recording.getDisplayText()
-    : undefined;
+  // For success-dance and fail-dance scenes, get the answer text from the scene
+  const answerText = isSuccessDanceScene
+    ? (currentScene as { answerText?: string }).answerText
+    : isFailDanceScene
+      ? (currentScene as { answerText?: string }).answerText
+      : (presentationState === 'record-answer' ||
+         presentationState === 'answer-processing' ||
+         presentationState === 'waiting-for-answer-finalize' ||
+         presentationState === 'answer-waiting' ||
+         presentationState === 'answer-right' ||
+         presentationState === 'answer-wrong')
+        ? (sceneState?.type === 'dialogue' ? sceneState.answerText : undefined) || recording.getDisplayText()
+        : undefined;
+
+  // Get quest text - for fail-dance scenes, use the questionText stored in the scene
+  const questText = isFailDanceScene
+    ? (currentScene as { questionText?: string }).questionText || flowMetadata?.questText
+    : flowMetadata?.questText;
 
   return (
     <RecordPanel
       disabled={false}  // Recording is always enabled when this panel shows
       questState={questState}
       dialogueState={presentationState}
-      questText={flowMetadata?.questText}
+      questText={questText}
       answerText={answerText}
       onNext={primaryActionHandler}
       onRecordStart={handleRecordStart}
       onRecordStop={handleRecordStop}
       onAskClick={handleRecordStart} // Ask button triggers recording start
+      onAnswerWrongVideoComplete={handleAnswerWrongVideoComplete} // Callback when answer-wrong video ends
     />
   );
 }

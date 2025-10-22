@@ -96,6 +96,28 @@ export type FailDanceScene = {
   "left-character"?: string; // Left character (e.g., "leo") - shown normally
   "right-character"?: string | null; // Right character - set to null to trigger exit animation
   duration?: number; // Animation duration in ms (default: 3500)
+  answerText?: string; // The wrong answer text to display in the record panel
+  questionText?: string; // The question text for the quest display
+  flowSequence?: boolean;
+  isFirstInFlow?: boolean;
+  hidden?: boolean;
+  meta?: {
+    panelLeft?: { character: string; previousCharacter?: string; nextCharacter?: string; newCharacter?: boolean; aboutToSwap?: boolean };
+    panelRight?: { character: string; previousCharacter?: string; nextCharacter?: string; newCharacter?: boolean; aboutToSwap?: boolean };
+  };
+};
+
+export type SuccessDanceScene = {
+  type: "success-dance";
+  sceneId?: string;
+  background?: string;
+  character: string; // The regular character name (e.g., "bakerMom")
+  happyCharacter: string; // The happy/celebrating version (e.g., "happybakerMom")
+  side?: "left" | "right"; // Which side the character is on (the one that dances)
+  "left-character"?: string; // Left character (e.g., "leo") - shown normally
+  "right-character"?: string | null; // Right character - set to null to trigger exit animation
+  duration?: number; // Animation duration in ms (default: 3500)
+  answerText?: string; // The correct answer text to display in the record panel
   flowSequence?: boolean;
   isFirstInFlow?: boolean;
   hidden?: boolean;
@@ -113,7 +135,8 @@ export type Scene =
   | CharacterFlowScene
   | FullScene
   | TextScene
-  | FailDanceScene;
+  | FailDanceScene
+  | SuccessDanceScene;
 
 export type Story = {
   scenes: Scene[];

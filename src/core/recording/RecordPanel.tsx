@@ -21,6 +21,7 @@ interface RecordPanelProps {
   onRecordStop: () => void;
   onRecordStart?: () => void; // Called when recording starts
   onAskClick?: () => void;
+  onAnswerWrongVideoComplete?: () => void; // Called when answer-wrong video ends
 }
 
 export const RecordPanel: React.FC<RecordPanelProps> = ({
@@ -31,7 +32,8 @@ export const RecordPanel: React.FC<RecordPanelProps> = ({
   answerText,
   onNext,
   onRecordStop,
-  onAskClick
+  onAskClick,
+  onAnswerWrongVideoComplete
 }) => {
   const { toast, hideToast } = useToast();
   const { state: recordingState } = useRecording();
@@ -56,6 +58,8 @@ export const RecordPanel: React.FC<RecordPanelProps> = ({
   // - waiting-for-finalize: Waiting for final transcripts from STT (Ask)
   // - waiting-for-answer-finalize: Waiting for final transcripts from STT (Answer)
   // - ai-waiting: All buttons disabled (waiting for AI response)
+  // - success-dance: Success celebration animation, show answer text below screen (hidden position)
+  // - fail-dance: Fail animation, show answer text with answer-wrong styling (red glow, seal visible)
   const isBasic = dialogueState === 'basic';
   const isQuestOffer = dialogueState === 'quest-showing';
   const isAskRecording = dialogueState === 'input-recording';
@@ -68,6 +72,8 @@ export const RecordPanel: React.FC<RecordPanelProps> = ({
   const isHintShowing = dialogueState === 'show-hint';
   const isWaitingForFinalize = dialogueState === 'waiting-for-finalize';
   const isWaitingForAnswerFinalize = dialogueState === 'waiting-for-answer-finalize';
+  const isSuccessDance = dialogueState === 'success-dance';
+  const isFailDance = dialogueState === 'fail-dance';
   const isWaiting = dialogueState === 'ai-waiting' || isWaitingForFinalize || isWaitingForAnswerFinalize || isAnswerWaiting || isProcessing || isAnswerProcessing;
 
   // Hidden state (basic) should use quest-offer visual styling
@@ -75,12 +81,12 @@ export const RecordPanel: React.FC<RecordPanelProps> = ({
 
   // Reset stamp visibility when leaving answer feedback states
   React.useEffect(() => {
-    if (!isAnswerWaiting && !isAnswerRight && !isAnswerWrong) {
+    if (!isAnswerWaiting && !isAnswerRight && !isAnswerWrong && !isFailDance) {
       setShowStamp(false);
       setPlayVideo(false);
       setVideoComplete(false);
     }
-  }, [isAnswerWaiting, isAnswerRight, isAnswerWrong]);
+  }, [isAnswerWaiting, isAnswerRight, isAnswerWrong, isFailDance]);
 
   // Handle video playback with delay for answer-waiting
   React.useEffect(() => {
@@ -101,8 +107,12 @@ export const RecordPanel: React.FC<RecordPanelProps> = ({
         videoRef.current.playbackRate = 0.7; // Play at 70% speed
         videoRef.current.play();
       }
+    } else if (isFailDance) {
+      // For fail-dance, show stamp immediately without video
+      setShowStamp(true);
+      setVideoComplete(true);
     }
-  }, [isAnswerWaiting, isAnswerRight, isAnswerWrong]);
+  }, [isAnswerWaiting, isAnswerRight, isAnswerWrong, isFailDance]);
 
   const handleHintClick = () => {
     if (disabled) return;
@@ -126,8 +136,8 @@ export const RecordPanel: React.FC<RecordPanelProps> = ({
   const hintButtonDisabled = isRecording || isWaiting || isAnswerWaiting || disabled; // Disabled when any recording or waiting
   const answerButtonDisabled = isAskRecording || isWaiting || isAnswerWaiting || disabled; // Disabled when Ask recording or waiting
 
-  // Show answer text for answer recording and all answer-related states
-  const showAnswerText = isAnswerRecording || isAnswerProcessing || isWaitingForAnswerFinalize || isAnswerWaiting || isAnswerRight || isAnswerWrong;
+  // Show answer text for answer recording and all answer-related states (including success-dance and fail-dance)
+  const showAnswerText = isAnswerRecording || isAnswerProcessing || isWaitingForAnswerFinalize || isAnswerWaiting || isAnswerRight || isAnswerWrong || isSuccessDance || isFailDance;
 
   // Determine which positioning class to apply based on state
   const getContainerClass = () => {
@@ -139,8 +149,9 @@ export const RecordPanel: React.FC<RecordPanelProps> = ({
     if (isAnswerWaiting) return 'quest-offer-centered'; // Golden glow for waiting
     if (isQuestOffer) return 'quest-offer-centered'; // Golden glow for quest
 
-    // Hidden state (completely off-screen)
-    if (isBasic) return 'hidden';
+    // Hidden state (completely off-screen) - includes success-dance and fail-dance
+    // For fail-dance: position off-screen but keep all answer-wrong styling (seal, text, red glow)
+    if (isBasic || isSuccessDance || isFailDance) return 'hidden';
 
     // Rest position - bottom anchored for interactive states
     // (input-showInput, input-recording, show-hint, record-answer, ai-waiting)
@@ -222,8 +233,8 @@ export const RecordPanel: React.FC<RecordPanelProps> = ({
         )}
 
         {/* Button Rail - white background with buttons */}
-        {/* Hide button rail for answer feedback states (answer-waiting, answer-right, answer-wrong) */}
-        {!isAnswerWaiting && !isAnswerRight && !isAnswerWrong && (
+        {/* Hide button rail for answer feedback states (answer-waiting, answer-right, answer-wrong, success-dance, fail-dance) */}
+        {!isAnswerWaiting && !isAnswerRight && !isAnswerWrong && !isSuccessDance && !isFailDance && (
           <div className="frame-wrapper">
             {useQuestOfferStyling ? (
               /* Quest Offer: Single Accept button centered */
@@ -290,12 +301,12 @@ export const RecordPanel: React.FC<RecordPanelProps> = ({
         onHide={hideToast}
       />
 
-      {/* Hand stamp video and seal for answer-waiting, answer-right, and answer-wrong states */}
-      {(isAnswerWaiting || isAnswerRight || isAnswerWrong) && (
+      {/* Hand stamp video and seal for answer-waiting, answer-right, answer-wrong, and fail-dance states */}
+      {(isAnswerWaiting || isAnswerRight || isAnswerWrong || isFailDance) && (
         <div className="answer-stamp-container">
           <div className={`answer-seal-stamp ${showStamp ? 'stamp-visible' : ''} ${isAnswerWaiting ? 'seal-hidden' : ''}`}>
             <img
-              src={isAnswerWrong ? '/VisualAssets/angrySeal.png' : '/VisualAssets/happySeal.png'}
+              src={(isAnswerWrong || isFailDance) ? '/VisualAssets/angrySeal.png' : '/VisualAssets/happySeal.png'}
               alt="Answer Seal"
               className="answer-seal-image"
             />
@@ -328,6 +339,10 @@ export const RecordPanel: React.FC<RecordPanelProps> = ({
               setVideoComplete(true);
               // Hide video after it ends
               (e.target as HTMLVideoElement).style.display = 'none';
+              // Notify orchestrator that answer-wrong video has completed
+              if (isAnswerWrong && onAnswerWrongVideoComplete) {
+                onAnswerWrongVideoComplete();
+              }
             }}
           />
         </div>

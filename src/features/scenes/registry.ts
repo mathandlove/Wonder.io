@@ -13,6 +13,7 @@ import ImageScene from "./ImageScene";
 import FullScene from "./FullScene";
 import TextScene from "./TextScene";
 import FailDanceScene from "./FailDanceScene";
+import SuccessDanceScene from "./SuccessDanceScene";
 
 export type SceneProps<T extends Scene = Scene> = {
   scene: T;
@@ -27,5 +28,6 @@ export const sceneRegistry: Record<string, ComponentType<SceneProps>> = {
   full: FullScene as ComponentType<SceneProps>,
   text: TextScene as ComponentType<SceneProps>,
   "fail-dance": FailDanceScene as ComponentType<SceneProps>,
+  "success-dance": SuccessDanceScene as ComponentType<SceneProps>,
   // caption: removed - captions are now handled within ImageScene
 };

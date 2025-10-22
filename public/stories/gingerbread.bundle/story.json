@@ -20,6 +20,10 @@
       "text": "Test"
 
     }, 
+     {
+      "type":"input",
+      "CharacterDescription":"Ms. Baker is a friendly baker at dreary lane bakery. She made a giant cookie last night and is worried about it. She does not want to talk about why it is so important that her cookie is found, but it's urgent. The last time she saw her cookie was when it was cooling on a baking pan, hot out of the oven."
+     },
                     {
         
       "side": "right",
@@ -28,25 +32,23 @@
     }, 
             {
           "side": "right",
-          "text": "Somebody please help me!",
-          "right-character": "fox"
+          "text": "Somebody please help me!"
         },
-    {
-      "type":"input",
-      "CharacterDescription":"Ms. Baker is a friendly baker at dreary lane bakery. She made a giant cookie last night and is worried about it. She does not want to talk about why it is so important that her cookie is found, but it's urgent. The last time she saw her cookie was when it was cooling on a baking pan, hot out of the oven."
+                     {
+      "type":"quest",
+      "text":"Figure out what happened.",
+      "successCharacterSays":"My cookie was stolen."   
      },
+   
+
 
         {
         
       "side": "right",
       "text": "Tell me about your last adventure Ms. Baker. What happened? Look I added a sthirsa line here. HOpefully I can see it."
 
-    },
-        {
-      "type":"quest",
-      "text":"Figure out what happened.",
-      "successCharacterSays":"My cookie was stolen."   
-     }
+    }
+
 
 
 

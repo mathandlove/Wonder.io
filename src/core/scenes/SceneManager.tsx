@@ -57,6 +57,13 @@ export function getLocksForState(state: SceneState): { lockForward: boolean; loc
       case 'waiting-for-answer-finalize':
         return { lockForward: true, lockBackward: true }; // Cannot navigate during answer recording
 
+      // Answer feedback states - lock both directions during validation and feedback
+      case 'answer-processing':
+      case 'answer-waiting':
+      case 'answer-right':
+      case 'answer-wrong':
+        return { lockForward: true, lockBackward: true }; // Cannot navigate during answer feedback
+
       // Default dialogue states (basic, quest-basic, quest-accepted, etc.)
       default:
         return { lockForward: false, lockBackward: false };
