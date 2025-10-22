@@ -152,7 +152,7 @@ export const RecordPanel: React.FC<RecordPanelProps> = ({
     // Centered states (important moments)
     // For answer-right: only show green glow after stamp appears, otherwise show golden glow
     if (isAnswerRight) return videoComplete ? 'answer-right-centered' : 'quest-offer-centered';
-    // For success-dance: same styling as answer-right (green glow with seal)
+    // For success-dance: keep panel centered with green glow (same as answer-right after stamp)
     if (isSuccessDance) return 'answer-right-centered';
     // For answer-wrong: only show red glow after stamp appears, otherwise show golden glow
     if (isAnswerWrong) return videoComplete ? 'answer-wrong-centered' : 'quest-offer-centered';
@@ -311,8 +311,8 @@ export const RecordPanel: React.FC<RecordPanelProps> = ({
         onHide={hideToast}
       />
 
-      {/* Hand stamp video and seal for answer-waiting, answer-right, answer-wrong, and fail-dance states */}
-      {(isAnswerWaiting || isAnswerRight || isAnswerWrong || isFailDance) && (
+      {/* Hand stamp video and seal for answer-waiting, answer-right, answer-wrong, success-dance, and fail-dance states */}
+      {(isAnswerWaiting || isAnswerRight || isAnswerWrong || isSuccessDance || isFailDance) && (
         <div className="answer-stamp-container">
           <div className={`answer-seal-stamp ${showStamp ? 'stamp-visible' : ''} ${isAnswerWaiting ? 'seal-hidden' : ''}`}>
             <img

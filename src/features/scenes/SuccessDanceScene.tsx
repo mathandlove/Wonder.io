@@ -45,9 +45,14 @@ export default function SuccessDanceScene() {
           forceAdvanceNavigation('forward');
 
           // Now that we've navigated away, schedule deletion of the success-dance scene
-          // This will delete in 3 seconds OR on the next user navigation (whichever comes first)
-          console.log('[SuccessDance] 🗑️  Scheduling deletion of index', currentIndex);
-          deleteNavigationItem(currentIndex);
+          // IMPORTANT: Use preserveCurrentIndex=true to prevent navigationIndex adjustment
+          // We navigated FROM currentIndex TO currentIndex+1, then we're deleting currentIndex
+          // We want to stay at currentIndex+1 (which becomes currentIndex after splice)
+          // NOT have it decremented by the deletion logic
+          setTimeout(() => {
+            console.log('[SuccessDance] 🗑️  Scheduling deletion of index', currentIndex, '(preserving current position)');
+            deleteNavigationItem(currentIndex, true); // preserveCurrentIndex = true
+          }, 50);
         }, 100);
       }
     };

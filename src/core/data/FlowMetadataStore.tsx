@@ -3,7 +3,7 @@
  *
  * Stores metadata for character-flow scenes, such as:
  * - characterDescription: Used for AI chat context
- * - successCharacterSays: Expected phrase for quest completion
+ * - successAnswer: Expected phrase for quest completion
  *
  * Each character-flow gets a unique flowId, and scenes reference it.
  * This avoids data duplication across multiple scenes in the same flow.
@@ -14,7 +14,7 @@ import React, { createContext, useContext, useState, useCallback } from 'react';
 export interface InputMetadata {
   characterDescription?: string; // For input items
   questText?: string; // For quest items
-  successCharacterSays: string; // Success phrase for both
+  successAnswer: string; // Success phrase for both
 }
 
 export interface FlowMetadataMap {

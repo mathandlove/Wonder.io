@@ -46,8 +46,8 @@
         },
                      {
       "type":"quest",
-      "text":"Figure out what happened.",
-      "successCharacterSays":"My cookie was stolen."   
+      "text":"Figure out what is wrong.",
+      "successAnswer":"Mrs. Baker's cookie was stolen."
      },
    
 

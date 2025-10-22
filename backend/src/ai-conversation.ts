@@ -98,8 +98,25 @@ export async function handleAIChat(req: Request, res: Response): Promise<void> {
       characterDescriptionLength: characterDescription.length
     });
 
+    // Log the full conversation history being sent
+    console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+    console.log('📝 CONVERSATION HISTORY (' + conversationHistory.length + ' messages)');
+    console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+    conversationHistory.forEach((msg, idx) => {
+      console.log(`${idx + 1}. [${msg.role.toUpperCase()}]: ${msg.content}`);
+    });
+    console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+    console.log(`➕ NEW QUESTION: ${question}`);
+    console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n');
+
     // Build the system prompt with character description
     const systemPrompt = buildSystemPrompt(characterDescription);
+
+    // Log the system prompt to see how character is being instructed
+    console.log('🎭 CHARACTER SYSTEM PROMPT:');
+    console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+    console.log(systemPrompt);
+    console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n');
 
     // Build messages array for OpenAI API
     // Format: [system, ...history, new user message]
@@ -120,7 +137,7 @@ export async function handleAIChat(req: Request, res: Response): Promise<void> {
       }
     ];
 
-    console.log('🤖 Calling OpenAI with', messages.length, 'messages');
+    console.log('🤖 Calling OpenAI with', messages.length, 'total messages (1 system + ' + conversationHistory.length + ' history + 1 new)');
 
     // Call OpenAI Chat Completions API
     const completion = await openai.chat.completions.create({
@@ -143,7 +160,13 @@ export async function handleAIChat(req: Request, res: Response): Promise<void> {
       return;
     }
 
-    console.log('✅ AI Response:', responseText.substring(0, 100));
+    // Log the full AI response
+    console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+    console.log('✅ AI RESPONSE:');
+    console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+    console.log(responseText);
+    console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+    console.log(`📊 Token usage: ${completion.usage?.total_tokens || 'unknown'} tokens\n`);
 
     // Send successful response
     res.json({

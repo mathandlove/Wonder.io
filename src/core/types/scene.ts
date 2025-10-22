@@ -17,7 +17,7 @@ export type CharacterScene = {
   States?: string[]; // Array of feature states: "quest", "input" (from character-flow flattening)
   recordingId?: string; // Links to active recording session - used to update text when recording completes
   isRecording?: boolean; // Visual flag: true during recording, false when text is filled in
-  flowId?: string; // Reference to flow metadata (characterDescription, successCharacterSays)
+  flowId?: string; // Reference to flow metadata (characterDescription, successAnswer)
   meta?: {
     panelLeft?: { character: string; previousCharacter?: string; nextCharacter?: string; newCharacter?: boolean; aboutToSwap?: boolean };
     panelRight?: { character: string; previousCharacter?: string; nextCharacter?: string; newCharacter?: boolean; aboutToSwap?: boolean };
@@ -56,7 +56,7 @@ export type CharacterFlowScene = {
     input?: string;
     type?: "input" | "quest"; // Marks this flow item as metadata
     CharacterDescription?: string; // AI chat context (for input)
-    successCharacterSays?: string; // Expected phrase for quest completion
+    successAnswer?: string; // Expected phrase for quest completion
     States?: string[]; // Array of feature states: "quest", "input"
   }>;
 };

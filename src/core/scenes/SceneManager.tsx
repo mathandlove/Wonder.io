@@ -89,7 +89,7 @@ export interface SceneManagerType {
   setScenes: (scenes: Scene[]) => void;
   insertScene: (scene: Scene, index: number) => void;
   insertNavigationItem: (item: NavigationItem, index: number) => void; // Insert directly without rebuild
-  deleteNavigationItem: (index: number) => void; // Delete navigation item at index
+  deleteNavigationItem: (index: number, preserveCurrentIndex?: boolean) => void; // Delete navigation item at index
   addNavigationStateToCurrentScene: (newState: SceneState, insertAfterCurrent?: boolean) => number; // Add new state to current scene
   updateNavigationItemState: (index: number, newState: SceneState) => void; // Update state of navigation item (locks auto-recalculated)
   updateSceneTextByRecordingId: (recordingId: string, newText: string) => void; // Update scene text during recording
@@ -241,7 +241,7 @@ export function SceneManagerProvider({ children, initialIndex = 0 }: SceneManage
    * - This prevents deletion from interfering with ongoing animations/transitions
    * - Safe to call multiple times - won't create duplicate deletions
    */
-  const deleteNavigationItem = useCallback((index: number) => {
+  const deleteNavigationItem = useCallback((index: number, preserveCurrentIndex: boolean = false) => {
     // Check if this index is already pending deletion
     const existingPending = pendingDeletionsRef.current.find(p => p.index === index);
     if (existingPending) {
@@ -249,7 +249,7 @@ export function SceneManagerProvider({ children, initialIndex = 0 }: SceneManage
       return;
     }
 
-    console.log('[SceneManager] ⏰ Scheduling deletion for index', index, 'in 3 seconds');
+    console.log('[SceneManager] ⏰ Scheduling deletion for index', index, 'in 3 seconds', preserveCurrentIndex ? '(preserve current index)' : '');
 
     // Schedule deletion for 3 seconds from now
     const timerId = window.setTimeout(() => {
@@ -266,9 +266,10 @@ export function SceneManagerProvider({ children, initialIndex = 0 }: SceneManage
       });
 
       // Adjust navigationIndex if we deleted a scene before the current position
+      // UNLESS preserveCurrentIndex is true (when we just navigated away from the deleted scene)
       // This keeps navigationIndex pointing at the same scene after deletion
       setNavigationIndex(prevIndex => {
-        if (index < prevIndex) {
+        if (!preserveCurrentIndex && index < prevIndex) {
           console.log('[SceneManager] 📍 Adjusting navigationIndex from', prevIndex, 'to', prevIndex - 1);
           return prevIndex - 1;
         }

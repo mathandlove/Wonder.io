@@ -17,7 +17,7 @@ type RawFlowItem = {
   input?: string;
   type?: "input" | "quest"; // Marks this as metadata item
   CharacterDescription?: string; // AI chat context (for input)
-  successCharacterSays?: string; // Expected phrase for quest completion
+  successAnswer?: string; // Expected phrase for quest completion
   States?: string[]; // New: array of feature states like ["quest", "input"]
   "left-character"?: string;
   "right-character"?: string;
@@ -61,7 +61,7 @@ function flattenScenes(rawScenes: RawScene[]): FlattenResult {
 
       // Scan for quest metadata in this flow
       const questMetadataItem = scene.flow.find(
-        f => f.type === "quest" && f.text && f.successCharacterSays
+        f => f.type === "quest" && f.text && f.successAnswer
       );
 
       // Generate unique flowId if this flow has either input or quest metadata
@@ -73,7 +73,7 @@ function flattenScenes(rawScenes: RawScene[]): FlattenResult {
         flowMetadata[flowId] = {
           characterDescription: inputMetadataItem?.CharacterDescription,
           questText: questMetadataItem?.text,
-          successCharacterSays: (questMetadataItem?.successCharacterSays || inputMetadataItem?.successCharacterSays)!
+          successAnswer: (questMetadataItem?.successAnswer || inputMetadataItem?.successAnswer)!
         };
       }
 
