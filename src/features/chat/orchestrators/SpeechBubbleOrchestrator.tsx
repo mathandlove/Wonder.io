@@ -221,10 +221,12 @@ export function SpeechBubbleOrchestrator() {
 
         let transition;
         if (isEntering) {
-          if ((hasEnteringAnimation && scrollDirection === 'forward') || (scrollDirection === 'backward' && hasSwapAnimation)) {
+          // Only delay for FORWARD scrolling with character entrance animations
+          // Never delay for backward scrolling - kids will re-read the line
+          if (hasEnteringAnimation && scrollDirection === 'forward') {
             transition = 'transform 0.4s ease-out 1.6s'; // Forward + character entrance: delay
           } else {
-            transition = 'transform 0.4s ease-out 0s'; // Forward + no character entrance: immediate
+            transition = 'transform 0.4s ease-out 0s'; // No delay for backward or no entrance animation
           }
         } else {
           transition = 'transform 0.3s ease-out 0s'; // Default/waiting

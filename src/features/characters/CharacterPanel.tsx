@@ -41,9 +41,7 @@ export const CharacterPanel: React.FC<CharacterPanelProps> = ({
   const getCurrentPhase = (): Phase => {
     if (!visible || !characterName) return 'hidden';
 
-    // Check if character is actively speaking first
-
-
+    // Priority 1: Entrance animations (highest priority - don't interrupt swaps)
     if (scrollDirection === 'forward') {
       // Forward scroll: character enters when new
       if (newCharacter) {
@@ -56,11 +54,12 @@ export const CharacterPanel: React.FC<CharacterPanelProps> = ({
       }
     }
 
-        if (isSpeaking) {
+    // Priority 2: Speaking animations (only when NOT entering)
+    if (isSpeaking) {
       return 'speaking';
     }
 
-    // Default to idle (no animation needed)
+    // Priority 3: Default idle state
     return 'idle';
   };
 
