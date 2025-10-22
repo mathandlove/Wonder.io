@@ -43,7 +43,7 @@ export type UseSTT = {
 const CONFIG = {
   WS_URL: 'ws://localhost:3001/api/stt/socket',
   SAMPLE_RATE: 16000, // 16kHz audio for STT
-  SILENCE_THRESHOLD: 0.01, // RMS threshold for silence detection
+  SILENCE_THRESHOLD: 0.005, // Lower threshold for soft-spoken children (was 0.01)
   SILENCE_DURATION_MS: 20000, // Auto-stop after 20s of silence
   BUFFER_SIZE: 4096, // AudioWorklet buffer size
 } as const;
@@ -483,6 +483,19 @@ export function useSTT(callbacks?: UseSTTCallbacks): UseSTT {
               }
             }
             // If WebSocket is CLOSING or CLOSED, we just drop the audio
+            break;
+          }
+
+          case 'flush_complete': {
+            // Worklet buffer was empty, but flush was acknowledged
+            console.log('[useSTT] ✅ Received flush_complete (buffer was empty) - executing onFlushComplete callback');
+            expectingFlushRef.current = false;
+
+            // Execute the callback that was set up when we sent the flush command
+            if (onFlushCompleteRef.current) {
+              onFlushCompleteRef.current();
+              onFlushCompleteRef.current = null;
+            }
             break;
           }
 
