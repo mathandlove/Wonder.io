@@ -96,6 +96,7 @@ export function ScrollControl({
   // (Scene index changes when navigation advances to a different physical scene)
   const prevSceneIndexRef = React.useRef(currentIndex);
   const isInitialMount = React.useRef(true);
+  const animationFrameRef = React.useRef<number | null>(null);
 
   useLayoutEffect(() => {
     const el = containerRef.current;
@@ -112,17 +113,54 @@ export function ScrollControl({
     if (currentIndex !== prevSceneIndexRef.current) {
       const section = el.querySelectorAll<HTMLElement>('.scene')[currentIndex];
       if (section) {
-        // Use instant scroll when going backward (e.g., cancelling recording)
-        // to prevent visual glitches during DOM restructuring
-        const isGoingBackward = currentIndex < prevSceneIndexRef.current;
-        const behavior = isGoingBackward ? 'auto' : 'smooth';
+        // Custom smooth scroll with 600ms duration to match background transition
+        const startPosition = el.scrollTop;
+        const targetPosition = section.offsetTop;
+        const distance = targetPosition - startPosition;
+        const duration = 600; // Match background transition duration
+        const startTime = performance.now();
 
+        // Cancel any existing animation
+        if (animationFrameRef.current) {
+          cancelAnimationFrame(animationFrameRef.current);
+        }
 
-        section.scrollIntoView({ behavior, block: 'start' });
+        // Temporarily disable scroll-snap to allow smooth animation
+        const originalScrollSnapType = el.style.scrollSnapType;
+        el.style.scrollSnapType = 'none';
+
+        // Easing function (ease-out) to match background
+        const easeOut = (t: number) => 1 - Math.pow(1 - t, 3);
+
+        const animate = (currentTime: number) => {
+          const elapsed = currentTime - startTime;
+          const progress = Math.min(elapsed / duration, 1);
+          const easedProgress = easeOut(progress);
+
+          el.scrollTop = startPosition + (distance * easedProgress);
+
+          if (progress < 1) {
+            animationFrameRef.current = requestAnimationFrame(animate);
+          } else {
+            // Re-enable scroll-snap after animation completes
+            el.style.scrollSnapType = originalScrollSnapType;
+          }
+        };
+
+        animationFrameRef.current = requestAnimationFrame(animate);
       }
       prevSceneIndexRef.current = currentIndex;
-    } 
+    }
   }, [currentIndex]);
+
+  // Cleanup animation on unmount
+  React.useEffect(() => {
+    return () => {
+      if (animationFrameRef.current) {
+        cancelAnimationFrame(animationFrameRef.current);
+      }
+    };
+  }, []);
 
   // Focus management for accessibility
   useLayoutEffect(() => {

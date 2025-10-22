@@ -32,7 +32,22 @@ export const CharacterOrchestrator: React.FC<Props> = ({ storyId, scenes, curren
     const nextNavItem = navigationArray[i + 1];
 
     if (!currentNavItem) {
-      return { leftPanel: null, rightPanel: null, currentSpeaker: null, isJiggling: false };
+      return {
+        leftPanel: {
+          character: 'NOCHARACTER',
+          previousCharacter: 'NOCHARACTER',
+          nextCharacter: 'NOCHARACTER',
+          pose: null,
+        },
+        rightPanel: {
+          character: 'NOCHARACTER',
+          previousCharacter: 'NOCHARACTER',
+          nextCharacter: 'NOCHARACTER',
+          pose: null,
+        },
+        currentSpeaker: null,
+        isJiggling: false
+      };
     }
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -44,31 +59,35 @@ export const CharacterOrchestrator: React.FC<Props> = ({ storyId, scenes, curren
     const shouldJiggle = dialogueState === 'answer-right' || isSuccessDanceScene;
 
     // Helper to extract character from a navigation item
+    // Returns 'NOCHARACTER' for scenes without character data (like ImageScene)
+    // This ensures entrance animations play correctly when transitioning from non-character scenes
     const getChar = (navItem: typeof currentNavItem | undefined, side: 'left' | 'right') => {
-      if (!navItem) return null;
+      if (!navItem) return 'NOCHARACTER';
       const key = side === 'left' ? 'left-character' : 'right-character';
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      return (navItem.scene as any)?.[key] || null;
+      return (navItem.scene as any)?.[key] || 'NOCHARACTER';
     };
 
     const leftChar = getChar(currentNavItem, 'left');
     const rightChar = getChar(currentNavItem, 'right');
 
+    // Always provide panel data (even for NOCHARACTER) so entrance animations work correctly
+    // CharacterPanel will handle hiding when characterName is NOCHARACTER
     return {
-      leftPanel: leftChar ? {
+      leftPanel: {
         character: leftChar,
         previousCharacter: getChar(previousNavItem, 'left'),
         nextCharacter: getChar(nextNavItem, 'left'),
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         pose: (currentNavItem.scene as any)?.meta?.panelLeft?.pose || null,
-      } : null,
-      rightPanel: rightChar ? {
+      },
+      rightPanel: {
         character: rightChar,
         previousCharacter: getChar(previousNavItem, 'right'),
         nextCharacter: getChar(nextNavItem, 'right'),
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         pose: (currentNavItem.scene as any)?.meta?.panelRight?.pose || null,
-      } : null,
+      },
       currentSpeaker: speaker,
       isJiggling: shouldJiggle
     };
@@ -169,10 +188,10 @@ export const CharacterOrchestrator: React.FC<Props> = ({ storyId, scenes, curren
         <CharacterPanel
           side="left"
           visible={true}
-          characterName={leftPanel?.character ?? null}
-          previousCharacter={leftPanel?.previousCharacter ?? null}
-          nextCharacter={leftPanel?.nextCharacter ?? null}
-          pose={leftPanel?.pose ?? null}
+          characterName={leftPanel.character}
+          previousCharacter={leftPanel.previousCharacter}
+          nextCharacter={leftPanel.nextCharacter}
+          pose={leftPanel.pose}
           storyId={storyId}
           animNonce={leftEnterNonce}
           scrollDirection={scrollDirection}
@@ -188,10 +207,10 @@ export const CharacterOrchestrator: React.FC<Props> = ({ storyId, scenes, curren
         <CharacterPanel
           side="right"
           visible={true}
-          characterName={rightPanel?.character ?? null}
-          previousCharacter={rightPanel?.previousCharacter ?? null}
-          nextCharacter={rightPanel?.nextCharacter ?? null}
-          pose={rightPanel?.pose ?? null}
+          characterName={rightPanel.character}
+          previousCharacter={rightPanel.previousCharacter}
+          nextCharacter={rightPanel.nextCharacter}
+          pose={rightPanel.pose}
           storyId={storyId}
           animNonce={rightEnterNonce}
           scrollDirection={scrollDirection}

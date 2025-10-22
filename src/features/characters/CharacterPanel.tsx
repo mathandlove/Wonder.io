@@ -5,9 +5,9 @@ import './CharacterPanel.css';
 interface CharacterPanelProps {
   side: PanelSide;
   visible: boolean;
-  characterName: string | null;
-  previousCharacter?: string | null;
-  nextCharacter?: string | null;
+  characterName: string; // Can be 'NOCHARACTER' for empty panels
+  previousCharacter?: string; // Can be 'NOCHARACTER' for previous empty panels
+  nextCharacter?: string; // Can be 'NOCHARACTER' for next empty panels
   scrollDirection?: 'forward' | 'backward';
   pose?: string | null;
   storyId: string;
@@ -38,12 +38,14 @@ export const CharacterPanel: React.FC<CharacterPanelProps> = ({
   const [version] = useState(`v${Date.now()}`);
 
   // Derive whether character is new based on navigationArray comparison
-  const newCharacter = previousCharacter !== characterName && characterName !== null;
-  const aboutToSwap = nextCharacter !== characterName && characterName !== null;
+  // Treat 'NOCHARACTER' as "no character" for comparison purposes
+  const hasCharacter = characterName !== 'NOCHARACTER';
+  const newCharacter = previousCharacter !== characterName && hasCharacter;
+  const aboutToSwap = nextCharacter !== characterName && hasCharacter;
 
   // Pure renderer - determine phase based on scroll direction and character state
   const getCurrentPhase = (): Phase => {
-    if (!visible || !characterName) return 'hidden';
+    if (!visible || !hasCharacter) return 'hidden';
 
     // Priority 1: Entrance animations (highest priority - don't interrupt swaps)
     if (scrollDirection === 'forward') {

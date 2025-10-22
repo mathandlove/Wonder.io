@@ -4,12 +4,11 @@
   "scenes": [
 
  
-      {
+{
       "type":"image",
       "image":"story/dragonFight.png",
       "text":"Sometimes I have to fight the monsters."
     },
-          
       
       {
       "type": "character-flow",
@@ -22,8 +21,20 @@
         
       "side": "left",
       "text": "Test"
+      
+
+    },                  {
+        
+      "side": "right",
+      "text": "Works"
 
     }, 
+            {
+          "side": "right",
+          "text": "Somebody please help me!",
+          "right-character": "fox"
+        },
+
      {
       "type":"input",
       "CharacterDescription":"Ms. Baker is a friendly baker at dreary lane bakery. She made a giant cookie last night and is worried about it. She does not want to talk about why it is so important that her cookie is found, but it's urgent. The last time she saw her cookie was when it was cooling on a baking pan, hot out of the oven."
@@ -58,7 +69,8 @@
 
               ]
       },
-
+      
+          
 
         {
       "type":"image",

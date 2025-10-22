@@ -6,7 +6,6 @@
  * ImageScene stays in the DOM and needs to remember its state after navigationIndex moves past.
  * This is why we use SceneStates - it maintains a persistent cache keyed by sceneId.
  */
-import React, { useEffect } from "react";
 import type { SceneProps } from "./registry";
 import type { ImageScene } from "@core/types/scene";
 import { resolveStoryImage } from "@core/data/imageResolver";
@@ -43,19 +42,6 @@ export default function ImageScene({ scene }: SceneProps<ImageScene>) {
       ? currentNavItem.sceneState.state
       : 'hidden';
 
-  // Debug logging
-  useEffect(() => {
-    console.log('[ImageScene]', sceneId, {
-      sceneState,
-      isCurrentScene,
-      captionState,
-      hasCaption,
-      captionText,
-      'sceneState.type': sceneState?.type,
-      'sceneState.state': sceneState?.type === 'image' ? sceneState.state : 'N/A'
-    });
-  }, [sceneId, sceneState, isCurrentScene, captionState, hasCaption, captionText]);
-
   return (
     <div style={{
       position: 'relative',
@@ -74,27 +60,6 @@ export default function ImageScene({ scene }: SceneProps<ImageScene>) {
           objectFit: 'contain',
         }}
       />
-
-      {/* Debug overlay */}
-      <div style={{
-        position: 'absolute',
-        top: '10px',
-        right: '10px',
-        background: 'rgba(0,0,0,0.8)',
-        color: 'white',
-        padding: '10px',
-        fontSize: '12px',
-        zIndex: 9999,
-        fontFamily: 'monospace',
-        maxWidth: '300px',
-        pointerEvents: 'none'
-      }}>
-        <div>sceneId: {sceneId}</div>
-        <div>hasCaption: {String(hasCaption)}</div>
-        <div>captionState: {captionState}</div>
-        <div>sceneState: {sceneState ? JSON.stringify(sceneState) : 'undefined'}</div>
-        <div>isCurrentScene: {String(isCurrentScene)}</div>
-      </div>
 
       {/* Show caption when scene has caption text and state allows it */}
       {hasCaption && (

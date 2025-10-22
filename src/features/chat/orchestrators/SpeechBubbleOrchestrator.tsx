@@ -202,8 +202,9 @@ export function SpeechBubbleOrchestrator() {
         // Check previous scene in navigationArray to see if characters changed (indicating entrance)
         const prevNavItem = sceneIndex > 0 ? navigationArray[sceneIndex - 1] : null;
         const prevScene = prevNavItem?.scene;
-        const prevLeftChar = prevScene && 'left-character' in prevScene ? prevScene["left-character"] : null;
-        const prevRightChar = prevScene && 'right-character' in prevScene ? prevScene["right-character"] : null;
+        // Treat missing character properties as 'NOCHARACTER' to match CharacterOrchestrator behavior
+        const prevLeftChar = prevScene && 'left-character' in prevScene ? prevScene["left-character"] : 'NOCHARACTER';
+        const prevRightChar = prevScene && 'right-character' in prevScene ? prevScene["right-character"] : 'NOCHARACTER';
 
         const leftCharEntering = leftCharacter && leftCharacter !== prevLeftChar;
         const rightCharEntering = rightCharacter && rightCharacter !== prevRightChar;
@@ -212,8 +213,9 @@ export function SpeechBubbleOrchestrator() {
         // Check next scene in navigationArray to see if characters will change (indicating swap for backwards scroll)
         const nextNavItem = sceneIndex < navigationArray.length - 1 ? navigationArray[sceneIndex + 1] : null;
         const nextSceneForSwap = nextNavItem?.scene;
-        const nextLeftChar = nextSceneForSwap && 'left-character' in nextSceneForSwap ? nextSceneForSwap["left-character"] : null;
-        const nextRightChar = nextSceneForSwap && 'right-character' in nextSceneForSwap ? nextSceneForSwap["right-character"] : null;
+        // Treat missing character properties as 'NOCHARACTER' to match CharacterOrchestrator behavior
+        const nextLeftChar = nextSceneForSwap && 'left-character' in nextSceneForSwap ? nextSceneForSwap["left-character"] : 'NOCHARACTER';
+        const nextRightChar = nextSceneForSwap && 'right-character' in nextSceneForSwap ? nextSceneForSwap["right-character"] : 'NOCHARACTER';
 
         const leftCharSwapping = leftCharacter && (leftCharacter !== nextLeftChar || nextLeftChar === 'NOCHARACTER');
         const rightCharSwapping = rightCharacter && (rightCharacter !== nextRightChar || nextRightChar === 'NOCHARACTER');

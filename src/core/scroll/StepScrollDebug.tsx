@@ -17,10 +17,8 @@ import { useEffect, useState } from 'react';
 import { useSceneManager } from '@core/scenes/SceneManager';
 import { useDialogue } from '@core/dialogue/DialogueContext';
 import { useSceneFlowMetadata } from '@core/data/FlowMetadataStore';
-import { usePageFactory } from '@core/navigation/PageFactory';
 import type { Scene } from '@core/types/scene';
 import type { ImageState } from '@core/dialogue/types';
-import { NOCHARACTER } from '@features/characters/buildPanelRangesFromScenes';
 
 interface DebugState {
   wheelAccum: number;
@@ -37,8 +35,6 @@ export function StepScrollDebug() {
     lastEvent: '',
     timestamp: 0,
   });
-
-  const pageFactory = usePageFactory();
 
   // Draggable position state - load from localStorage or default to top-right
   const getInitialPosition = () => {
@@ -169,81 +165,6 @@ export function StepScrollDebug() {
       return `quest: ${sceneState.state}`;
     }
     return 'unknown';
-  };
-
-  // RecordPanel state control handlers
-  const setRecordPanelHidden = () => {
-    sceneManager.updateNavigationItemState(navigationIndex, { type: 'dialogue', state: 'basic' });
-  };
-
-  const setRecordPanelShowQuest = () => {
-    sceneManager.updateNavigationItemState(navigationIndex, { type: 'dialogue', state: 'quest-showing' });
-  };
-
-  const setRecordPanelShowInput = () => {
-    sceneManager.updateNavigationItemState(navigationIndex, { type: 'dialogue', state: 'input-showInput' });
-  };
-
-  const setRecordPanelRecording = () => {
-    sceneManager.updateNavigationItemState(navigationIndex, { type: 'dialogue', state: 'input-recording' });
-  };
-
-  const setRecordPanelShowHint = () => {
-    // Using a new state for showing hint - will need to be added to DialogueState type
-    sceneManager.updateNavigationItemState(navigationIndex, { type: 'dialogue', state: 'show-hint' as any });
-  };
-
-  const setRecordPanelRecordAnswer = () => {
-    sceneManager.updateNavigationItemState(navigationIndex, { type: 'dialogue', state: 'record-answer' });
-  };
-
-  const setRecordPanelAnswerWaiting = () => {
-    sceneManager.updateNavigationItemState(navigationIndex, { type: 'dialogue', state: 'answer-waiting' });
-  };
-
-  const setRecordPanelAnswerRight = () => {
-    sceneManager.updateNavigationItemState(navigationIndex, { type: 'dialogue', state: 'answer-right' });
-  };
-
-  const setRecordPanelAnswerWrong = () => {
-    sceneManager.updateNavigationItemState(navigationIndex, { type: 'dialogue', state: 'answer-wrong' });
-  };
-
-  const setRecordPanelAiWaiting = () => {
-    sceneManager.updateNavigationItemState(navigationIndex, { type: 'dialogue', state: 'ai-waiting' });
-  };
-
-  const triggerSuccessDance = () => {
-    // Extract current scene info
-    const scene = currentNavItem?.scene;
-    const rightCharacterName = (scene && 'right-character' in scene && scene['right-character']);
-    const leftCharacterName = (scene && 'left-character' in scene && scene['left-character']) ;
-    const background = scene && 'background' in scene ? scene.background : undefined;
-
-    // Use PageFactory to create the success-dance scene
-    // Keep BOTH characters (don't set to NOCHARACTER - we want them to stay and jiggle)
-    const successDanceScene = pageFactory.createSuccessDanceScene(
-      rightCharacterName || 'bakerMom', // character parameter (for old animation)
-      'Test answer text', // answerText
-      background,
-      leftCharacterName, // Keep left character
-      rightCharacterName // Keep right character (don't set to null)
-    );
-
-    // Insert scene
-    const newNavItem = {
-      scene: successDanceScene,
-      sceneId: successDanceScene.sceneId!,
-      sceneState: { type: 'static' as const },
-      lockForward: false,
-      lockBackward: false,
-      index: navigationIndex + 1
-    };
-
-    sceneManager.insertNavigationItem(newNavItem, navigationIndex + 1);
-
-    // Navigate to it
-    sceneManager.forceAdvanceNavigation('forward');
   };
 
 
@@ -410,190 +331,106 @@ export function StepScrollDebug() {
         )}
       </div>
 
-      {/* RecordPanel Controls Section */}
+      {/* Character Information Section */}
       <div style={{ marginTop: '10px', paddingTop: '8px', borderTop: '1px solid #f90' }}>
-        <div style={{ color: '#f90', marginBottom: '8px', fontWeight: 'bold' }}>🎙️ RecordPanel Visual States</div>
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '6px' }}>
-          <button
-            onClick={setRecordPanelHidden}
-            style={{
-              padding: '8px',
-              background: currentNavItem?.sceneState.type === 'dialogue' && currentNavItem?.sceneState.state === 'basic' ? '#666' : '#333',
-              color: '#fff',
-              border: '2px solid #666',
-              borderRadius: '4px',
-              cursor: 'pointer',
-              fontSize: '10px',
-              fontWeight: 'bold'
-            }}
-          >
-            ❌ Hidden
-          </button>
-          <button
-            onClick={setRecordPanelShowQuest}
-            style={{
-              padding: '8px',
-              background: currentNavItem?.sceneState.type === 'dialogue' && currentNavItem?.sceneState.state === 'quest-showing' ? '#FFD700' : '#333',
-              color: currentNavItem?.sceneState.type === 'dialogue' && currentNavItem?.sceneState.state === 'quest-showing' ? '#000' : '#fff',
-              border: '2px solid #FFD700',
-              borderRadius: '4px',
-              cursor: 'pointer',
-              fontSize: '10px',
-              fontWeight: 'bold'
-            }}
-          >
-            🎯 Quest
-          </button>
-          <button
-            onClick={setRecordPanelShowInput}
-            style={{
-              padding: '8px',
-              background: currentNavItem?.sceneState.type === 'dialogue' && currentNavItem?.sceneState.state === 'input-showInput' ? '#0f0' : '#333',
-              color: '#fff',
-              border: '2px solid #0f0',
-              borderRadius: '4px',
-              cursor: 'pointer',
-              fontSize: '10px',
-              fontWeight: 'bold'
-            }}
-          >
-            ✅ Ready
-          </button>
-          <button
-            onClick={setRecordPanelRecording}
-            style={{
-              padding: '8px',
-              background: currentNavItem?.sceneState.type === 'dialogue' && currentNavItem?.sceneState.state === 'input-recording' ? '#d81919' : '#333',
-              color: '#fff',
-              border: '2px solid #d81919',
-              borderRadius: '4px',
-              cursor: 'pointer',
-              fontSize: '10px',
-              fontWeight: 'bold'
-            }}
-          >
-            🔴 Ask Rec
-          </button>
-          <button
-            onClick={setRecordPanelShowHint}
-            style={{
-              padding: '8px',
-              background: currentNavItem?.sceneState.type === 'dialogue' && currentNavItem?.sceneState.state === 'show-hint' ? '#FFA500' : '#333',
-              color: '#fff',
-              border: '2px solid #FFA500',
-              borderRadius: '4px',
-              cursor: 'pointer',
-              fontSize: '10px',
-              fontWeight: 'bold'
-            }}
-          >
-            💡 Hint
-          </button>
-          <button
-            onClick={setRecordPanelRecordAnswer}
-            style={{
-              padding: '8px',
-              background: currentNavItem?.sceneState.type === 'dialogue' && currentNavItem?.sceneState.state === 'record-answer' ? '#9370DB' : '#333',
-              color: '#fff',
-              border: '2px solid #9370DB',
-              borderRadius: '4px',
-              cursor: 'pointer',
-              fontSize: '10px',
-              fontWeight: 'bold'
-            }}
-          >
-            🟣 Answer Rec
-          </button>
-          <button
-            onClick={setRecordPanelAnswerWaiting}
-            style={{
-              padding: '8px',
-              background: currentNavItem?.sceneState.type === 'dialogue' && currentNavItem?.sceneState.state === 'answer-waiting' ? '#FFB84D' : '#333',
-              color: '#fff',
-              border: '2px solid #FFB84D',
-              borderRadius: '4px',
-              cursor: 'pointer',
-              fontSize: '10px',
-              fontWeight: 'bold'
-            }}
-          >
-            ⏳ Ans Wait
-          </button>
-          <button
-            onClick={setRecordPanelAnswerRight}
-            style={{
-              padding: '8px',
-              background: currentNavItem?.sceneState.type === 'dialogue' && currentNavItem?.sceneState.state === 'answer-right' ? '#0f0' : '#333',
-              color: '#fff',
-              border: '2px solid #0f0',
-              borderRadius: '4px',
-              cursor: 'pointer',
-              fontSize: '10px',
-              fontWeight: 'bold'
-            }}
-          >
-            ✅ Right
-          </button>
-          <button
-            onClick={setRecordPanelAnswerWrong}
-            style={{
-              padding: '8px',
-              background: currentNavItem?.sceneState.type === 'dialogue' && currentNavItem?.sceneState.state === 'answer-wrong' ? '#f00' : '#333',
-              color: '#fff',
-              border: '2px solid #f00',
-              borderRadius: '4px',
-              cursor: 'pointer',
-              fontSize: '10px',
-              fontWeight: 'bold'
-            }}
-          >
-            ❌ Wrong
-          </button>
-          <button
-            onClick={setRecordPanelAiWaiting}
-            style={{
-              padding: '8px',
-              background: currentNavItem?.sceneState.type === 'dialogue' && currentNavItem?.sceneState.state === 'ai-waiting' ? '#666' : '#333',
-              color: '#fff',
-              border: '2px solid #999',
-              borderRadius: '4px',
-              cursor: 'pointer',
-              fontSize: '10px',
-              fontWeight: 'bold',
-              gridColumn: 'span 2'
-            }}
-          >
-            ⏳ AI Waiting
-          </button>
-        </div>
-        <div style={{ marginTop: '8px', fontSize: '9px', color: '#888', fontStyle: 'italic' }}>
-          Ten visual states for RecordPanel testing
-        </div>
-      </div>
+        <div style={{ color: '#f90', marginBottom: '8px', fontWeight: 'bold' }}>👥 Characters</div>
 
-      {/* Success Dance Section */}
-      <div style={{ marginTop: '10px', paddingTop: '8px', borderTop: '1px solid #0f0' }}>
-        <div style={{ color: '#0f0', marginBottom: '8px', fontWeight: 'bold' }}>🎉 Success Dance Animation</div>
-        <button
-          onClick={triggerSuccessDance}
-          style={{
-            padding: '12px',
-            background: 'linear-gradient(135deg, #00ff00 0%, #00cc00 100%)',
-            color: '#fff',
-            border: '2px solid #0f0',
-            borderRadius: '6px',
-            cursor: 'pointer',
-            fontSize: '12px',
-            fontWeight: 'bold',
-            width: '100%',
-            boxShadow: '0 4px 8px rgba(0,255,0,0.3)'
-          }}
-        >
-          🎊 Trigger Success Dance
-        </button>
-        <div style={{ marginTop: '6px', fontSize: '9px', color: '#888', fontStyle: 'italic' }}>
-          Characters jiggle together in celebration (1.5s)
-        </div>
+        {/* Helper function to get character name from navigation item */}
+        {(() => {
+          const getCharacter = (navItem: any, side: 'left' | 'right') => {
+            if (!navItem?.scene) return 'none';
+            const key = side === 'left' ? 'left-character' : 'right-character';
+            return navItem.scene[key] || 'none';
+          };
+
+          const prevNavItem = navigationArray[navigationIndex - 1];
+          const nextNavItem = navigationArray[navigationIndex + 1];
+
+          return (
+            <>
+              {/* Previous Scene Characters */}
+              <div style={{
+                marginBottom: '8px',
+                padding: '8px',
+                background: 'rgba(100, 100, 100, 0.2)',
+                borderRadius: '4px',
+                border: '1px solid #666'
+              }}>
+                <div style={{ color: '#888', fontSize: '10px', marginBottom: '4px', fontWeight: 'bold' }}>
+                  ⬆️ Previous Scene (idx: {navigationIndex - 1})
+                </div>
+                <div style={{ display: 'flex', gap: '8px' }}>
+                  <div style={{ flex: 1 }}>
+                    <div style={{ color: '#0ff', fontSize: '9px' }}>Left:</div>
+                    <div style={{ color: '#fff', fontSize: '11px', fontWeight: 'bold' }}>
+                      {prevNavItem ? getCharacter(prevNavItem, 'left') : 'N/A'}
+                    </div>
+                  </div>
+                  <div style={{ flex: 1 }}>
+                    <div style={{ color: '#0ff', fontSize: '9px' }}>Right:</div>
+                    <div style={{ color: '#fff', fontSize: '11px', fontWeight: 'bold' }}>
+                      {prevNavItem ? getCharacter(prevNavItem, 'right') : 'N/A'}
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Current Scene Characters */}
+              <div style={{
+                marginBottom: '8px',
+                padding: '8px',
+                background: 'rgba(0, 255, 0, 0.15)',
+                borderRadius: '4px',
+                border: '2px solid #0f0'
+              }}>
+                <div style={{ color: '#0f0', fontSize: '10px', marginBottom: '4px', fontWeight: 'bold' }}>
+                  ▶️ Current Scene (idx: {navigationIndex})
+                </div>
+                <div style={{ display: 'flex', gap: '8px' }}>
+                  <div style={{ flex: 1 }}>
+                    <div style={{ color: '#0ff', fontSize: '9px' }}>Left:</div>
+                    <div style={{ color: '#0f0', fontSize: '11px', fontWeight: 'bold' }}>
+                      {currentNavItem ? getCharacter(currentNavItem, 'left') : 'N/A'}
+                    </div>
+                  </div>
+                  <div style={{ flex: 1 }}>
+                    <div style={{ color: '#0ff', fontSize: '9px' }}>Right:</div>
+                    <div style={{ color: '#0f0', fontSize: '11px', fontWeight: 'bold' }}>
+                      {currentNavItem ? getCharacter(currentNavItem, 'right') : 'N/A'}
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Next Scene Characters */}
+              <div style={{
+                marginBottom: '8px',
+                padding: '8px',
+                background: 'rgba(100, 100, 100, 0.2)',
+                borderRadius: '4px',
+                border: '1px solid #666'
+              }}>
+                <div style={{ color: '#888', fontSize: '10px', marginBottom: '4px', fontWeight: 'bold' }}>
+                  ⬇️ Next Scene (idx: {navigationIndex + 1})
+                </div>
+                <div style={{ display: 'flex', gap: '8px' }}>
+                  <div style={{ flex: 1 }}>
+                    <div style={{ color: '#0ff', fontSize: '9px' }}>Left:</div>
+                    <div style={{ color: '#fff', fontSize: '11px', fontWeight: 'bold' }}>
+                      {nextNavItem ? getCharacter(nextNavItem, 'left') : 'N/A'}
+                    </div>
+                  </div>
+                  <div style={{ flex: 1 }}>
+                    <div style={{ color: '#0ff', fontSize: '9px' }}>Right:</div>
+                    <div style={{ color: '#fff', fontSize: '11px', fontWeight: 'bold' }}>
+                      {nextNavItem ? getCharacter(nextNavItem, 'right') : 'N/A'}
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </>
+          );
+        })()}
       </div>
 
       {/* Stats Footer */}
