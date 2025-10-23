@@ -136,7 +136,14 @@ export async function handleAIChat(req: Request, res: Response): Promise<void> {
       return;
     }
 
-    // Log the full AI response
+    // Log the full AI response being sent back to user
+    console.log('✅ AI Response being sent to user:', {
+      characterDescription: characterDescription.substring(0, 50) + '...',
+      userQuestion: question,
+      aiResponse: responseText,
+      conversationLength: conversationHistory.length,
+      timestamp: new Date().toISOString()
+    });
 
     // Send successful response
     res.json({

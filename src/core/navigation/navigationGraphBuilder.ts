@@ -125,7 +125,7 @@ export function expandSceneToNodes(scene: Scene, sceneId: SceneId): Node[] {
       return expandImageScene(scene, sceneId);
 
     case 'character': {
-      // Check if this character scene has States field (from character-flow flattening)
+      // Check if this character scene has States field (from character-flow flattening or dynamically assigned)
       const characterScene = scene as Scene & { States?: string[] };
       if (characterScene.States && characterScene.States.length > 0) {
         return expandCharacterWithStates(characterScene as Scene & { States: string[] }, sceneId);
@@ -193,12 +193,18 @@ function expandImageScene(scene: Scene & { caption?: string; text?: string }, sc
 
 /**
  * Character scene with States expansion - for flattened character-flow scenes
- * States field controls which interactive features appear (quest/input)
+ * States field controls which interactive features appear (quest/input/recording)
  */
 function expandCharacterWithStates(scene: Scene & { States: string[] }, sceneId: SceneId): Node[] {
   const states = scene.States;
   const hasQuest = states.includes('quest') || states.includes('giveQuest');
   const hasInput = states.includes('input');
+  const isRecording = states.includes('recording');
+
+  // Recording scenes are always in input-recording state (single node)
+  if (isRecording) {
+    return [createSimpleNode(scene, sceneId, 'dialogue:input-recording', { type: 'dialogue', state: 'input-recording' })];
+  }
 
   return expandDialogueStates(scene, sceneId, { hasQuest, hasInput });
 }

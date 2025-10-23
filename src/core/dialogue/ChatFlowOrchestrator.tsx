@@ -173,6 +173,14 @@ export function useChatFlowOrchestrator(props?: ChatFlowOrchestratorProps) {
     transcript: string,
     recordingId?: string
   ): Promise<void> => {
+    console.log('📝 [ChatFlowOrchestrator] processTranscript called:', {
+      transcript,
+      recordingId,
+      characterDescription: flowMetadata?.characterDescription,
+      leftCharacter: hasCharacterProperties(currentScene) ? currentScene['left-character'] : undefined,
+      rightCharacter: hasCharacterProperties(currentScene) ? currentScene['right-character'] : undefined,
+    });
+
     const input: UserInput = {
       text: transcript,
       recordingId,
@@ -186,6 +194,7 @@ export function useChatFlowOrchestrator(props?: ChatFlowOrchestratorProps) {
       }
     };
 
+    console.log('🎯 [ChatFlowOrchestrator] About to call processUserInput with:', input);
     await processUserInput(input);
   }, [currentScene, flowMetadata, processUserInput]);
 

@@ -158,6 +158,17 @@ class AudioProcessor extends AudioWorkletProcessor {
 
     const inputChannel = input[0]; // Get first (mono) channel
 
+    // DEBUG: Log first few samples to verify we're getting audio data
+    if (!this.hasLoggedSamples) {
+      console.log('🎤 [AudioWorklet] First audio samples:', {
+        sampleCount: inputChannel.length,
+        firstFewSamples: Array.from(inputChannel.slice(0, 10)),
+        min: Math.min(...inputChannel),
+        max: Math.max(...inputChannel),
+      });
+      this.hasLoggedSamples = true;
+    }
+
     // Calculate RMS for silence detection
     const rms = this.calculateRMS(inputChannel);
     const isSilence = rms < this.silenceThreshold;

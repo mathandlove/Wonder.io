@@ -1,6 +1,6 @@
 import { WebSocket, RawData } from 'ws';
 import OpenAI from 'openai';
-import { createReadStream, unlinkSync, writeFileSync } from 'fs';
+import { createReadStream, unlinkSync, writeFileSync, mkdirSync, existsSync } from 'fs';
 import { tmpdir } from 'os';
 import { join } from 'path';
 import { exec } from 'child_process';
@@ -32,8 +32,17 @@ const MAX_TOTAL_BYTES = 50 * 1024 * 1024; // 50MB total per connection
 const IDLE_TIMEOUT = 90 * 1000; // 90 seconds
 const SAMPLE_RATE = 16000; // 16kHz audio
 const DEBUG_PLAYBACK = process.env.DEBUG_PLAYBACK === 'true'; // Set to 'true' to hear received audio
-const DEBUG_SAVE_CHUNKS = process.env.DEBUG_SAVE_CHUNKS === 'true'; // Set to 'true' to save chunks to /tmp
+const DEBUG_SAVE_CHUNKS = process.env.DEBUG_SAVE_CHUNKS === 'true'; // Set to 'true' to save audio files
 let debugChunkCounter = 0; // Counter for saved debug chunks
+
+// Debug audio storage directory - relative to backend folder
+const DEBUG_AUDIO_DIR = join(__dirname, '..', 'debug-audio');
+
+// Create debug directory if it doesn't exist
+if (DEBUG_SAVE_CHUNKS && !existsSync(DEBUG_AUDIO_DIR)) {
+  mkdirSync(DEBUG_AUDIO_DIR, { recursive: true });
+  console.log('📁 [DEBUG] Created debug audio directory:', DEBUG_AUDIO_DIR);
+}
 
 /**
  * Initialize OpenAI client
@@ -85,6 +94,7 @@ function playAudioDebug(wavFilePath: string): Promise<void> {
     return Promise.resolve();
   }
 
+  console.log('🔊 [DEBUG] Playing received audio:', wavFilePath);
 
   return new Promise((resolve) => {
     exec(`afplay "${wavFilePath}"`, (error, _stdout, stderr) => {
@@ -92,6 +102,7 @@ function playAudioDebug(wavFilePath: string): Promise<void> {
         console.error('🔊 [DEBUG] ❌ Failed to play audio:', error.message);
         if (stderr) console.error('🔊 [DEBUG] stderr:', stderr);
       } else {
+        console.log('🔊 [DEBUG] ✅ Audio playback completed');
       }
       resolve();
     });
@@ -109,11 +120,14 @@ async function transcribeCompleteAudio(audioBuffer: Buffer): Promise<string> {
     // Convert PCM to WAV
     const wavBuffer = pcmToWav(audioBuffer, SAMPLE_RATE);
 
-    // Debug: Save chunk to disk for manual inspection
-    if (DEBUG_SAVE_CHUNKS && debugChunkCounter < 5) {
-      const debugPath = join(tmpdir(), `debug_chunk_${debugChunkCounter}.wav`);
+    // Debug: Save audio to disk for manual inspection (overwrites previous recording)
+    if (DEBUG_SAVE_CHUNKS) {
+      const debugPath = join(DEBUG_AUDIO_DIR, 'latest-recording.wav');
       writeFileSync(debugPath, wavBuffer);
-      debugChunkCounter++;
+      const durationSeconds = (audioBuffer.length / (SAMPLE_RATE * 2)).toFixed(2);
+      console.log('💾 [DEBUG] Saved audio file (overwritten):', debugPath);
+      console.log('💾 [DEBUG] Duration:', durationSeconds + 's');
+      console.log('💾 [DEBUG] You can play this file with: afplay backend/debug-audio/latest-recording.wav');
     }
 
     // Write to temporary file
@@ -122,6 +136,19 @@ async function transcribeCompleteAudio(audioBuffer: Buffer): Promise<string> {
 
     // Create file stream
     const fileStream = createReadStream(tempFilePath);
+
+    // Log what we're sending to OpenAI
+    const durationSeconds = (audioBuffer.length / (SAMPLE_RATE * 2)).toFixed(2); // 16-bit = 2 bytes per sample
+    console.log('🎙️  Sending audio to OpenAI Transcription API:', {
+      model: 'gpt-4o-transcribe',
+      audioFormat: 'WAV (16kHz, mono, 16-bit PCM)',
+      originalPcmSize: `${audioBuffer.length} bytes`,
+      wavFileSize: `${wavBuffer.length} bytes`,
+      duration: `${durationSeconds}s`,
+      tempFilePath: tempFilePath,
+      language: 'en',
+      timestamp: new Date().toISOString()
+    });
 
     // Call GPT-4o Transcribe API with complete audio
     const response = await openai.audio.transcriptions.create({
@@ -138,6 +165,15 @@ async function transcribeCompleteAudio(audioBuffer: Buffer): Promise<string> {
     }
 
     const transcription = response.text.trim();
+
+    // Log the transcription result received from OpenAI
+    console.log('✅ Transcription received from OpenAI:', {
+      transcribedText: transcription,
+      textLength: transcription.length,
+      wordCount: transcription.split(/\s+/).filter(w => w.length > 0).length,
+      timestamp: new Date().toISOString()
+    });
+
     return transcription;
   } catch (error) {
     console.error('❌ GPT-4o Transcribe API error:', error);
@@ -264,12 +300,19 @@ export function handleWhisperProxy(clientWs: WebSocket, request: any) {
 
         if (message.type === 'finalize') {
           console.log('🎤 [Finalize] Received finalize command');
-          console.log(`📊 [Audio Buffer] Size: ${audioBuffer.length} bytes (${(audioBuffer.length / 32000).toFixed(2)}s at 16kHz mono)`);
+          const durationSeconds = (audioBuffer.length / 32000).toFixed(2);
+          console.log(`📊 [Audio Buffer] Size: ${audioBuffer.length} bytes (${durationSeconds}s at 16kHz mono)`);
+          console.log(`🔊 [Audio Buffer] DEBUG_PLAYBACK is ${DEBUG_PLAYBACK ? 'ENABLED' : 'DISABLED'} - ${DEBUG_PLAYBACK ? 'Audio will play after transcription' : 'Set DEBUG_PLAYBACK=true in .env to enable'}`);
 
           // Process complete audio buffer
           if (audioBuffer.length > 0) {
             try {
               const transcription = await transcribeCompleteAudio(audioBuffer);
+
+              // CRITICAL: Check WebSocket state BEFORE and AFTER transcription
+              const readyStateNames = ['CONNECTING', 'OPEN', 'CLOSING', 'CLOSED'];
+              const stateName = readyStateNames[clientWs.readyState] || 'UNKNOWN';
+              console.log(`🔍 [WebSocket] State after transcription: ${stateName} (${clientWs.readyState})`);
 
               // Send final transcript
               if (clientWs.readyState === WebSocket.OPEN) {
@@ -277,9 +320,20 @@ export function handleWhisperProxy(clientWs: WebSocket, request: any) {
                   type: 'final',
                   text: transcription,
                 };
+                console.log('📤 [WebSocket] Sending transcription to frontend:', {
+                  transcription: transcription,
+                  textLength: transcription.length,
+                  wordCount: transcription.split(/\s+/).filter(w => w.length > 0).length,
+                  timestamp: new Date().toISOString()
+                });
                 clientWs.send(JSON.stringify(finalEvent));
+                console.log('✅ [WebSocket] Transcription sent successfully');
+              } else {
+                console.error(`❌ [WebSocket] CANNOT SEND - WebSocket is ${stateName}! Transcription lost:`, transcription);
+                console.error('💡 [WebSocket] This usually means the frontend closed the connection while waiting for transcription');
               }
             } catch (error) {
+              console.error('❌ [Transcription] Error during transcription:', error);
               if (clientWs.readyState === WebSocket.OPEN) {
                 const errorEvent: NormalizedSttEvent = {
                   type: 'error',
@@ -290,18 +344,35 @@ export function handleWhisperProxy(clientWs: WebSocket, request: any) {
               }
             }
           } else {
+            console.warn('⚠️ [Audio Buffer] No audio data to transcribe');
           }
 
           // Send close signal and wait for messages to flush before cleanup
           if (clientWs.readyState === WebSocket.OPEN) {
             const closeEvent: NormalizedSttEvent = { type: 'close' };
+            console.log('🔚 [WebSocket] Sending close event to frontend');
             clientWs.send(JSON.stringify(closeEvent));
+            console.log('✅ [WebSocket] Close event sent, checking buffer...');
 
-            // Wait 100ms for WebSocket to flush the send buffer before closing
-            // This prevents the race condition where close() cuts off pending messages
-            setTimeout(() => {
-              cleanup('Finalized');
-            }, 100);
+            // CRITICAL FIX: Wait for WebSocket send buffer to actually be empty
+            // The bufferedAmount property tells us how many bytes are still queued
+            const waitForBufferFlush = () => {
+              const bufferedAmount = clientWs.bufferedAmount;
+              console.log(`📊 [WebSocket] Buffer status: ${bufferedAmount} bytes remaining`);
+
+              if (bufferedAmount === 0) {
+                // Buffer is empty - all messages have been sent
+                console.log('✅ [WebSocket] Buffer is empty, safe to cleanup');
+                cleanup('Finalized');
+              } else {
+                // Buffer still has data - wait a bit longer
+                console.log(`⏳ [WebSocket] Waiting for ${bufferedAmount} bytes to flush...`);
+                setTimeout(waitForBufferFlush, 10);
+              }
+            };
+
+            // Start checking the buffer
+            waitForBufferFlush();
           } else {
             cleanup('Finalized');
           }

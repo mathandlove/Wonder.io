@@ -7,11 +7,13 @@
  * - NodeManager's buildNavigationGraph() converts scenes to nodes automatically
  *
  * Scene → Node Conversion (happens automatically in navigationGraphBuilder):
- * - CharacterScene (recording/AI response) → Node with state: dialogue:basic or dialogue:input-recording
+ * - CharacterScene with States=['recording'] → Node with state: dialogue:input-recording
+ * - CharacterScene with States=['input'] → Nodes with states: input-basic → input-showInput
+ * - CharacterScene (no States) → Node with state: dialogue:basic
  * - FailDanceScene → Node with state: dance:fail (answer-wrong)
  * - SuccessDanceScene → Node with state: dance:success (answer-right)
  *
- * The factory creates scenes with initial data, and the graph builder
+ * The factory creates scenes with initial data and States field, and the graph builder
  * expands them into their constituent nodes with proper states.
  */
 import React, { createContext, useContext } from "react";
@@ -27,7 +29,7 @@ import { NOCHARACTER } from "@features/characters/buildPanelRangesFromScenes";
 type SceneFactoryContextType = {
   /**
    * Creates a recording scene (user is speaking)
-   * Converts to: Node with state dialogue:input-recording
+   * Sets States=['recording'] which converts to: Node with state dialogue:input-recording
    */
   createRecordingScene: (
     recordingId: string,
@@ -38,7 +40,7 @@ type SceneFactoryContextType = {
 
   /**
    * Creates an AI response scene (NPC speaking)
-   * Converts to: Node with state dialogue:basic
+   * Sets States=['input'] which converts to: Nodes with states input-basic → input-showInput
    */
   createAIResponseScene: (
     responseText: string,
@@ -88,9 +90,9 @@ export function SceneFactoryProvider({ children }: SceneFactoryProviderProps) {
    *
    * Flow:
    * 1. User clicks Ask/Record button
-   * 2. This scene is created with unique recordingId
+   * 2. This scene is created with unique recordingId and States=['recording']
    * 3. Added to navigation graph via insertScene()
-   * 4. Expands to Node with initial state: dialogue:input-recording
+   * 4. Graph builder expands to Node with state: dialogue:input-recording
    * 5. RecordPanelOrchestrator manages state transitions:
    *    - input-recording → input-processing → ai-waiting → (AI response)
    *
@@ -114,13 +116,14 @@ export function SceneFactoryProvider({ children }: SceneFactoryProviderProps) {
       text: "Test words", // Debug text for visibility - will be replaced by transcript
       speaker: "left", // User is speaking
       recordingId,
-      isRecording: true,
       "left-character": leftCharacter || "leo", // Inherit or fallback
       "right-character": rightCharacter || "bakerMom", // Inherit or fallback
       background: currentBackground, // Inherit background from current scene
     };
 
-
+    // Assign States to declare that this scene should be in input-recording state
+    // This is cleaner than having conditional logic in the graph builder
+    (newScene as any).States = ['recording'];
 
     return newScene;
   };
@@ -130,10 +133,10 @@ export function SceneFactoryProvider({ children }: SceneFactoryProviderProps) {
    *
    * Flow:
    * 1. AI processes user's question from recording scene
-   * 2. This scene is created with AI's response text
+   * 2. This scene is created with AI's response text and States=['input']
    * 3. Added to navigation graph via insertScene()
-   * 4. Expands to Node with initial state: dialogue:basic
-   * 5. User can then ask follow-up questions
+   * 4. Graph builder expands to Nodes: input-basic → input-showInput
+   * 5. User can then ask follow-up questions from input-showInput state
    *
    * @param responseText - AI's response to display
    * @param flowId - Conversation flow ID for continuity
@@ -160,10 +163,11 @@ export function SceneFactoryProvider({ children }: SceneFactoryProviderProps) {
       "left-character": leftCharacter || "leo", // User's character
       "right-character": rightCharacter || "bakerMom", // AI character
       background: currentBackground,
-      // This scene shows the response and allows for next input
-      isRecording: false,
-      recordingId: undefined
     };
+
+    // Assign States to declare that this scene should show input UI
+    // This follows the same pattern as character-flow scenes with input
+    (newScene as any).States = ['input'];
 
     return newScene;
   };
@@ -321,7 +325,9 @@ export const usePageFactory = useSceneFactory;
  * 4. **Automatic state management** - initial states handled by expansion logic
  *
  * The Scene → Node conversion happens in navigationGraphBuilder.ts:
- * - `character` type → `dialogue:basic` or multi-state nodes (if has States field)
+ * - `character` type with States=['recording'] → `dialogue:input-recording` node
+ * - `character` type with States=['input'] → multi-state nodes (input-basic → input-showInput)
+ * - `character` type (no States) → `dialogue:basic` node
  * - `fail-dance` type → `dance:fail` node with answer-wrong state
  * - `success-dance` type → `dance:success` node with answer-right state
  *

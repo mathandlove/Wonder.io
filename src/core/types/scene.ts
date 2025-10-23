@@ -14,9 +14,8 @@ export type CharacterScene = {
   flowSequence?: boolean;
   isFirstInFlow?: boolean;
   hidden?: boolean;
-  States?: string[]; // Array of feature states: "quest", "input" (from character-flow flattening)
+  States?: string[]; // Array of feature states: "quest", "input", "recording" (from character-flow flattening or dynamically assigned)
   recordingId?: string; // Links to active recording session - used to update text when recording completes
-  isRecording?: boolean; // Visual flag: true during recording, false when text is filled in
   flowId?: string; // Reference to flow metadata (characterDescription, successAnswer)
   meta?: {
     panelLeft?: { character: string; previousCharacter?: string; nextCharacter?: string; newCharacter?: boolean; aboutToSwap?: boolean };

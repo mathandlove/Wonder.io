@@ -32,20 +32,38 @@ export function ChatFlowOrchestratorComponent() {
   React.useEffect(() => {
     const isAiWaiting = dialogueState === 'ai-waiting';
 
+    console.log('🔍 [ChatFlowOrchestrator] State Check:', {
+      dialogueState,
+      isAiWaiting,
+      recordingId,
+      questionText,
+      hasQuestionText: !!questionText,
+      questionTextTrimmed: questionText?.trim(),
+      processingRecordingId,
+      willProcess: isAiWaiting && recordingId && questionText && questionText.trim() && recordingId !== processingRecordingId
+    });
+
     // Process when in ai-waiting state with valid transcript
     if (isAiWaiting && recordingId && questionText && questionText.trim()) {
       // Only process if we haven't already processed this recording
       if (recordingId !== processingRecordingId) {
+        console.log('🚀 [ChatFlowOrchestrator] Triggering AI processing for:', {
+          recordingId,
+          questionText
+        });
         setProcessingRecordingId(recordingId);
 
         // Process the transcript and get AI response
         chatFlow.processTranscript(questionText, recordingId).then(() => {
+          console.log('✅ [ChatFlowOrchestrator] AI processing completed');
           // Clear processing flag after completion
           setProcessingRecordingId(null);
         }).catch((error) => {
           console.error('[ChatFlowOrchestrator] ❌ Error processing transcript:', error);
           setProcessingRecordingId(null);
         });
+      } else {
+        console.log('⏭️  [ChatFlowOrchestrator] Already processing this recording, skipping');
       }
     }
   }, [dialogueState, questionText, recordingId, chatFlow, processingRecordingId]);

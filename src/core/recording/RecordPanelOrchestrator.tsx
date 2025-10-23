@@ -571,12 +571,13 @@ export function RecordingOrchestrator() {
       });
     }
 
-    // Recording will stop automatically via the effect
-    // Recording will send 'finalize' to backend
+    // CRITICAL: Actually stop the recording!
+    // This will send 'finalize' to backend
     // Backend will process complete audio and send ONE final transcript
     // onFinal callback will update the text in input-processing state
     // When transcript arrives, transcript sync effect will transition to ai-waiting
     // ChatFlowOrchestrator will trigger AI processing when in ai-waiting state
+    Recording.stop();
   }, [sceneState, activeRecordingId]);
 
   // Update ref when handleRecordStop changes (so effects can use it)
