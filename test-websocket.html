@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>WebSocket Test</title>
+</head>
+<body>
+    <h1>WebSocket Connection Test</h1>
+    <div id="status">Testing...</div>
+    <div id="log"></div>
+
+    <script>
+        const log = document.getElementById('log');
+        const status = document.getElementById('status');
+
+        function addLog(message, color = 'black') {
+            const p = document.createElement('p');
+            p.textContent = `${new Date().toISOString()}: ${message}`;
+            p.style.color = color;
+            log.appendChild(p);
+        }
+
+        addLog('Attempting to connect to ws://localhost:3001/api/stt/socket');
+
+        const ws = new WebSocket('ws://localhost:3001/api/stt/socket');
+
+        ws.onopen = () => {
+            addLog('✅ WebSocket connection opened!', 'green');
+            status.textContent = 'Connected!';
+            status.style.color = 'green';
+
+            // Send a test message
+            ws.send(JSON.stringify({ type: 'start_session' }));
+            addLog('Sent start_session message');
+        };
+
+        ws.onmessage = (event) => {
+            addLog(`📨 Received message: ${event.data}`, 'blue');
+        };
+
+        ws.onerror = (error) => {
+            addLog(`❌ WebSocket error: ${JSON.stringify(error)}`, 'red');
+            status.textContent = 'Connection failed!';
+            status.style.color = 'red';
+        };
+
+        ws.onclose = (event) => {
+            addLog(`🔌 Connection closed: code=${event.code}, reason=${event.reason}`, 'orange');
+            if (status.textContent === 'Testing...') {
+                status.textContent = 'Connection failed to open';
+                status.style.color = 'red';
+            }
+        };
+    </script>
+</body>
+</html>

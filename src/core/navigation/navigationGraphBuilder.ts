@@ -48,12 +48,8 @@ export function buildNavigationGraph(scenes: Scene[]): NavigationGraph {
 
   let previousNodeId: NodeId | null = null;
 
-
   // Process each scene
   for (const scene of scenes) {
-    // Skip hidden scenes
-    if (scene.hidden) continue;
-
     // Ensure scene has an ID
     const sceneId: SceneId = scene.sceneId || ulid();
 
@@ -122,7 +118,7 @@ export function buildNavigationGraph(scenes: Scene[]): NavigationGraph {
  * @param sceneId - Stable scene identifier
  * @returns Array of state nodes (not yet linked)
  */
-function expandSceneToNodes(scene: Scene, sceneId: SceneId): Node[] {
+export function expandSceneToNodes(scene: Scene, sceneId: SceneId): Node[] {
   switch (scene.type) {
     case 'image':
       return expandImageScene(scene, sceneId);

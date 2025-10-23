@@ -7,7 +7,6 @@ import { IncomingMessage } from 'http';
 import { SelectionStore } from './store';
 import { Point } from './types';
 import { handleWhisperProxy } from './whisper-proxy-single'; // Using single-send approach
-import { handleClaudeProxy } from './claude-proxy';
 import { handleAIChat } from './ai-conversation';
 
 const key = process.env.OPENAI_API_KEY;
@@ -168,7 +167,9 @@ app.get('/api/health', (req, res) => {
 
 // Create HTTP server for WebSocket upgrade
 const server = app.listen(port, () => {
-  // Server started
+  console.log(`🚀 Server running on http://localhost:${port}`);
+  console.log(`🔌 WebSocket endpoint: ws://localhost:${port}/api/stt/socket`);
+  console.log(`🔑 OpenAI API Key: ${key ? '✅ Loaded' : '❌ Missing'}`);
 });
 
 // Create WebSocket server
@@ -181,10 +182,6 @@ server.on('upgrade', (request: IncomingMessage, socket, head) => {
   if (pathname === '/api/stt/socket') {
     wss.handleUpgrade(request, socket, head, (ws) => {
       handleWhisperProxy(ws, request);
-    });
-  } else if (pathname === '/api/claude/socket') {
-    wss.handleUpgrade(request, socket, head, (ws) => {
-      handleClaudeProxy(ws);
     });
   } else {
     socket.destroy();

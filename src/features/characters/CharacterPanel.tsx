@@ -41,37 +41,7 @@ export const CharacterPanel: React.FC<CharacterPanelProps> = ({
 
   // Ref for animation event detection - only need cardboard now
   const cardboardRef = useRef<HTMLDivElement>(null);
-  const secondImageRef = useRef<HTMLImageElement>(null);
 
-  // Lifecycle logging to detect remounts
-  useEffect(() => {
-    console.log(`[CharacterPanel ${side}] 🟢 MOUNTED`, {
-      currentCharacter,
-      previousCharacter,
-      currentSceneId,
-      previousSceneId,
-      transitionNonce
-    });
-
-    return () => {
-      console.log(`[CharacterPanel ${side}] 🔴 UNMOUNTED`, {
-        currentCharacter,
-        currentSceneId
-      });
-    };
-  }, []); // Empty deps = only runs on mount/unmount
-
-  // Render logging to track why component re-renders
-  useEffect(() => {
-    console.log(`[CharacterPanel ${side}] 🔄 RENDER`, {
-      currentCharacter,
-      previousCharacter,
-      currentSceneId,
-      previousSceneId,
-      transitionNonce,
-      visible
-    });
-  });
 
   // Single source of truth: compute phase and related state once
   const { phase, variant, hasCurrent, hasPrevious, isSameScene, isNewCharacter } = useMemo(() => {
@@ -108,28 +78,6 @@ export const CharacterPanel: React.FC<CharacterPanelProps> = ({
     // else: idle (default)
     // Note: When scene changes but character stays same (scene-0→scene-1, leo→leo),
     // we stay in idle/speaking mode - no entrance animation
-
-    // Debug logging
-    console.log(`[CharacterPanel ${side}] Phase Computation:`, {
-      currentCharacter,
-      previousCharacter,
-      currentSceneId,
-      previousSceneId,
-      transitionNonce,
-      computed: {
-        hasCurrent,
-        hasPrevious,
-        isSameScene,
-        isNewCharacter,
-        phase,
-        variant: animationVariantRef.current,
-        wasVariantToggled
-      },
-      flags: {
-        isSpeaking,
-        isJiggling
-      }
-    });
 
     return {
       phase,
@@ -200,15 +148,6 @@ export const CharacterPanel: React.FC<CharacterPanelProps> = ({
       };
     }
 
-    console.log(`[CharacterPanel ${side}] 🖼️ IMAGE RENDER LOGIC:`, {
-      phase,
-      currentCharacter,
-      previousCharacter,
-      hasCurrent,
-      hasPrevious,
-      result
-    });
-
     return result;
   }, [phase, currentCharacter, previousCharacter, hasCurrent, hasPrevious, side]);
 
@@ -223,38 +162,6 @@ export const CharacterPanel: React.FC<CharacterPanelProps> = ({
     return `/assets.core/images/characters/${char}.sticker-cardboard-3d.webp?v=${assetVersion}`;
   };
 
-  // Log when data-attributes change (potential CSS animation triggers)
-  // MUST be before any conditional returns (Rules of Hooks)
-  useEffect(() => {
-    if (!hasCurrent && !shouldRenderFirst) {
-      console.log(`[CharacterPanel ${side}] ⚠️ NO CONTENT TO RENDER`, {
-        hasCurrent,
-        shouldRenderFirst,
-        currentCharacter,
-        previousCharacter
-      });
-      return;
-    }
-
-    console.log(`[CharacterPanel ${side}] 📊 DATA-ATTRIBUTES:`, {
-      'data-phase': phase,
-      'data-side': side,
-      'data-variant': variant,
-      'data-transition-nonce': transitionNonce || 'none',
-      'data-character': currentCharacter
-    });
-  }, [phase, side, variant, transitionNonce, currentCharacter, hasCurrent, shouldRenderFirst, previousCharacter]);
-
-  // Track when second-half image is rendered for debugging
-  useEffect(() => {
-    if (secondImageRef.current && shouldRenderSecond) {
-      console.log(`[CharacterPanel ${side}] 🖼️ IMAGE VISIBLE:`, {
-        character: secondHalfCharacter,
-        phase,
-        key: `character-${secondHalfCharacter}`
-      });
-    }
-  }, [shouldRenderSecond, secondHalfCharacter, phase, side]);
 
   // Only render when there's content to show
   if (!hasCurrent && !shouldRenderFirst) {
@@ -329,7 +236,6 @@ export const CharacterPanel: React.FC<CharacterPanelProps> = ({
           {/* Second half character (visible during enter phase or always when not entering) */}
           {shouldRenderSecond && (
             <img
-              ref={secondImageRef}
               key={`character-${secondHalfCharacter}`}
               src={getDisplayImage(secondHalfCharacter)}
               alt=""

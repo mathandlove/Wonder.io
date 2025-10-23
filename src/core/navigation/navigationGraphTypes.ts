@@ -137,6 +137,56 @@ export interface SceneRegistry {
 }
 
 /**
+ * NavigationHistoryEntry - Record of a single navigation event
+ *
+ * Tracks where the user navigated, when, and why
+ */
+export interface NavigationHistoryEntry {
+  /** When this navigation occurred */
+  timestamp: number;
+
+  /** The node we navigated to */
+  nodeId: NodeId;
+
+  /** Scene this node belongs to */
+  sceneId: SceneId;
+
+  /** Semantic state key */
+  stateKey: string;
+
+  /** What triggered this navigation */
+  trigger: 'forward' | 'backward' | 'force-forward' | 'force-backward' | 'initial' | 'scene-change';
+
+  /** Human-readable description */
+  description?: string;
+}
+
+/**
+ * NodeLifecycleEvent - Record of node creation or deletion
+ *
+ * Tracks when nodes are added or removed from the graph
+ */
+export interface NodeLifecycleEvent {
+  /** When this event occurred */
+  timestamp: number;
+
+  /** Type of event */
+  type: 'created' | 'deleted' | 'marked-for-deletion';
+
+  /** The affected node */
+  nodeId: NodeId;
+
+  /** Scene this node belongs to */
+  sceneId: SceneId;
+
+  /** Semantic state key */
+  stateKey: string;
+
+  /** Additional context */
+  context?: string;
+}
+
+/**
  * NavigationGraph - Complete navigation graph structure
  *
  * This is the single source of truth for navigation.
@@ -183,6 +233,18 @@ export interface NavigationGraph {
 
   /** Scene registry for fast scene-range operations (optional) */
   sceneRegistry?: SceneRegistry;
+
+  /**
+   * Navigation history - tracks where the user has been
+   * Most recent entries are at the end of the array
+   */
+  navigationHistory?: NavigationHistoryEntry[];
+
+  /**
+   * Node lifecycle events - tracks node creation and deletion
+   * Most recent events are at the end of the array
+   */
+  lifecycleEvents?: NodeLifecycleEvent[];
 }
 
 /**

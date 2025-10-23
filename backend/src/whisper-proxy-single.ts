@@ -239,6 +239,7 @@ export function handleWhisperProxy(clientWs: WebSocket, request: any) {
     if (clientWs.readyState === WebSocket.OPEN) {
       const readyEvent: NormalizedSttEvent = { type: 'ready' };
       clientWs.send(JSON.stringify(readyEvent));
+      console.log('📡 [WebSocket] Ready signal sent to client');
     }
   }, 100);
 
@@ -262,6 +263,8 @@ export function handleWhisperProxy(clientWs: WebSocket, request: any) {
         }
 
         if (message.type === 'finalize') {
+          console.log('🎤 [Finalize] Received finalize command');
+          console.log(`📊 [Audio Buffer] Size: ${audioBuffer.length} bytes (${(audioBuffer.length / 32000).toFixed(2)}s at 16kHz mono)`);
 
           // Process complete audio buffer
           if (audioBuffer.length > 0) {
@@ -342,6 +345,7 @@ export function handleWhisperProxy(clientWs: WebSocket, request: any) {
       // Log progress every 100KB
       if (audioBuffer.length % 100000 < data.length) {
         const seconds = (audioBuffer.length / 32000).toFixed(1);
+        console.log(`⏱️  [Progress] Accumulated ${seconds}s of audio`);
       }
     }
   });

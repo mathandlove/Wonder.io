@@ -81,74 +81,15 @@ export const ChatGatewayProvider: React.FC<ChatGatewayProviderProps> = ({
   const accumulatedTextRef = useRef<string>('');
 
   /**
-   * Claude Streaming API call via WebSocket
+   * Mock AI response (Claude proxy has been removed)
+   * TODO: Replace with your preferred AI integration
    */
-  const streamClaudeResponse = async (payload: ChatPayload): Promise<string> => {
-    return new Promise((resolve, reject) => {
-      accumulatedTextRef.current = '';
+  const getMockResponse = async (payload: ChatPayload): Promise<string> => {
+    // Simulate a brief delay for realism
+    await new Promise(resolve => setTimeout(resolve, 500));
 
-      // Connect to Claude WebSocket endpoint
-      const ws = new WebSocket('ws://localhost:3001/api/claude/socket');
-      wsRef.current = ws;
-
-      ws.onopen = () => {
-
-        // Build the message with character context
-        let message = payload.message;
-        if (payload.context?.characterDescription) {
-          message = `${payload.context.characterDescription}\n\nUser: ${payload.message}`;
-        }
-
-        // Send message to Claude
-        ws.send(JSON.stringify({
-          type: 'message',
-          text: message,
-          context: payload.context?.characterDescription
-        }));
-      };
-
-      ws.onmessage = (event) => {
-        try {
-          const data = JSON.parse(event.data);
-
-          switch (data.type) {
-            case 'debug':
-              // Log debug information to console
-              break;
-
-            case 'content_delta':
-              // Accumulate text as it streams in
-              accumulatedTextRef.current += data.text;
-              break;
-
-            case 'content_complete':
-              break;
-
-            case 'message_complete':
-              ws.close();
-              resolve(accumulatedTextRef.current);
-              break;
-
-            case 'error':
-              console.error('❌ Claude error:', data.message);
-              ws.close();
-              reject(new Error(data.message));
-              break;
-          }
-        } catch (error) {
-          console.error('❌ Failed to parse WebSocket message:', error);
-        }
-      };
-
-      ws.onerror = (error) => {
-        console.error('❌ WebSocket error:', error);
-        reject(new Error('WebSocket connection failed'));
-      };
-
-      ws.onclose = () => {
-        wsRef.current = null;
-      };
-    });
+    // Return a simple mock response
+    return `This is a mock response to: "${payload.message}". The Claude proxy has been removed. Please integrate your preferred AI service here.`;
   };
 
   /**
@@ -179,8 +120,8 @@ export const ChatGatewayProvider: React.FC<ChatGatewayProviderProps> = ({
       // Build privacy-aware payload
       const payload = buildPayload(input);
 
-      // Call Claude streaming API
-      const responseText = await streamClaudeResponse(payload);
+      // Get mock response (Claude proxy removed)
+      const responseText = await getMockResponse(payload);
 
       return {
         text: responseText,

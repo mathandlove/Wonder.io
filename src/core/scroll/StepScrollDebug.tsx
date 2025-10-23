@@ -49,10 +49,7 @@ export function StepScrollDebug() {
 
   // Get current node and navigation graph
   const currentNode = nodeManager.getCurrentNode();
-  const { navigationGraph, allScenes, scenes } = nodeManager;
-
-  // Get frozen snapshot (used for exit animations)
-  const frozenSnapshot = navigationGraph.lastFrozenNode;
+  const { navigationGraph } = nodeManager;
 
   // Get current index from navigation graph
   const currentNodeId = navigationGraph.currentId;
@@ -63,13 +60,6 @@ export function StepScrollDebug() {
 
   // Get current scene
   const currentScene = currentNode?.scene as (Scene & { sceneId?: string, flowId?: string }) | undefined;
-
-  // Helper to get node by index from graph
-  const getNodeByIndex = (index: number) => {
-    if (index < 0 || index >= navigationGraph.order.length) return null;
-    const nodeId = navigationGraph.order[index];
-    return navigationGraph.byId[nodeId];
-  };
 
   // Keyboard shortcut: backslash (\) to toggle visibility and recenter
   useEffect(() => {
@@ -307,224 +297,139 @@ export function StepScrollDebug() {
         )}
       </div>
 
-      {/* Frozen Snapshot Section - Shows what animations see */}
-      <div style={{ marginTop: '10px', paddingTop: '8px', borderTop: '1px solid #ff0' }}>
-        <div style={{ color: '#ff0', marginBottom: '8px', fontWeight: 'bold' }}>❄️ Frozen Snapshot (for exit animations)</div>
-        {frozenSnapshot ? (
+      {/* Navigation History Section */}
+      <div style={{ marginTop: '10px', paddingTop: '8px', borderTop: '1px solid #0ff' }}>
+        <div style={{ color: '#0ff', marginBottom: '8px', fontWeight: 'bold' }}>📜 Navigation History</div>
+
+        {navigationGraph.navigationHistory && navigationGraph.navigationHistory.length > 0 ? (
           <div style={{
-            padding: '8px',
-            background: 'rgba(255, 255, 0, 0.1)',
-            borderRadius: '4px',
-            border: '1px solid #ff0'
+            maxHeight: '200px',
+            overflowY: 'auto',
+            display: 'flex',
+            flexDirection: 'column',
+            gap: '4px'
           }}>
-            <div style={{ color: '#ff0', fontSize: '10px', marginBottom: '4px' }}>
-              🆔 Scene ID: <strong>{frozenSnapshot.sceneId}</strong>
-            </div>
-            <div style={{ color: '#888', fontSize: '9px', marginTop: '2px' }}>
-              Node ID: {frozenSnapshot.nodeId.substring(0, 10)}...
-            </div>
-            <div style={{ color: '#ff0', fontSize: '10px', marginTop: '4px' }}>
-              🔧 State Key: <strong>{frozenSnapshot.stateKey}</strong>
-            </div>
-            {/* Show frozen characters */}
-            {(() => {
-              // eslint-disable-next-line @typescript-eslint/no-explicit-any
-              const frozenScene = frozenSnapshot.scene as any;
-              const leftChar = frozenScene?.['left-character'] || 'none';
-              const rightChar = frozenScene?.['right-character'] || 'none';
+            {navigationGraph.navigationHistory.slice(-20).reverse().map((entry, idx) => {
+              const isCurrentNode = entry.nodeId === currentNodeId;
+              const triggerColor =
+                entry.trigger === 'force-forward' ? '#0f0' :
+                entry.trigger === 'force-backward' ? '#ff0' :
+                entry.trigger === 'initial' ? '#0ff' : '#888';
+
+              const triggerIcon =
+                entry.trigger === 'force-forward' ? '▶️' :
+                entry.trigger === 'force-backward' ? '◀️' :
+                entry.trigger === 'initial' ? '🏁' : '↔️';
+
               return (
-                <div style={{ marginTop: '8px', display: 'flex', gap: '8px' }}>
-                  <div style={{ flex: 1 }}>
-                    <div style={{ color: '#888', fontSize: '9px' }}>Left:</div>
-                    <div style={{ color: '#ff0', fontSize: '10px', fontWeight: 'bold' }}>
-                      {leftChar}
+                <div
+                  key={`${entry.nodeId}-${entry.timestamp}-${idx}`}
+                  style={{
+                    padding: '6px',
+                    background: isCurrentNode ? 'rgba(0, 255, 0, 0.2)' : 'rgba(0, 150, 150, 0.1)',
+                    borderRadius: '4px',
+                    border: isCurrentNode ? '2px solid #0f0' : '1px solid #0ff',
+                    fontSize: '9px'
+                  }}
+                >
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'start', marginBottom: '2px' }}>
+                    <div style={{ color: triggerColor, fontWeight: 'bold', fontSize: '10px' }}>
+                      {triggerIcon} {entry.trigger}
+                    </div>
+                    <div style={{ color: '#666', fontSize: '8px' }}>
+                      {new Date(entry.timestamp).toLocaleTimeString()}
                     </div>
                   </div>
-                  <div style={{ flex: 1 }}>
-                    <div style={{ color: '#888', fontSize: '9px' }}>Right:</div>
-                    <div style={{ color: '#ff0', fontSize: '10px', fontWeight: 'bold' }}>
-                      {rightChar}
-                    </div>
+                  <div style={{ color: '#0ff', fontSize: '9px', marginTop: '2px' }}>
+                    🆔 {entry.sceneId.substring(0, 8)}... | {entry.stateKey}
                   </div>
+                  {entry.description && (
+                    <div style={{ color: '#888', fontSize: '8px', marginTop: '2px', fontStyle: 'italic' }}>
+                      {entry.description}
+                    </div>
+                  )}
+                  {isCurrentNode && (
+                    <div style={{ color: '#0f0', fontSize: '8px', marginTop: '2px', fontWeight: 'bold' }}>
+                      ← YOU ARE HERE
+                    </div>
+                  )}
                 </div>
               );
-            })()}
+            })}
           </div>
         ) : (
-          <div style={{
-            padding: '8px',
-            background: 'rgba(100, 100, 100, 0.2)',
-            borderRadius: '4px',
-            border: '1px solid #666',
-            color: '#666',
-            fontSize: '10px',
-            fontStyle: 'italic'
-          }}>
-            No frozen snapshot (first navigation or no previous node)
+          <div style={{ color: '#666', fontSize: '9px', fontStyle: 'italic' }}>
+            No navigation history yet
           </div>
         )}
       </div>
 
-      {/* Character Information Section - Current Node Only */}
-      <div style={{ marginTop: '10px', paddingTop: '8px', borderTop: '1px solid #f90' }}>
-        <div style={{ color: '#f90', marginBottom: '8px', fontWeight: 'bold' }}>👥 Current Characters & Animations</div>
+      {/* Node Lifecycle Events Section */}
+      <div style={{ marginTop: '10px', paddingTop: '8px', borderTop: '1px solid #f0f' }}>
+        <div style={{ color: '#f0f', marginBottom: '8px', fontWeight: 'bold' }}>🔄 Node Lifecycle Events</div>
 
-        {/* Helper function to get character name from scene */}
-        {(() => {
-          const getCharacter = (node: typeof currentNode, side: 'left' | 'right') => {
-            if (!node?.scene) return 'NOCHARACTER';
-            const key = side === 'left' ? 'left-character' : 'right-character';
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            return (node.scene as any)[key] || 'NOCHARACTER';
-          };
+        {navigationGraph.lifecycleEvents && navigationGraph.lifecycleEvents.length > 0 ? (
+          <div style={{
+            maxHeight: '150px',
+            overflowY: 'auto',
+            display: 'flex',
+            flexDirection: 'column',
+            gap: '4px'
+          }}>
+            {navigationGraph.lifecycleEvents.slice(-15).reverse().map((event, idx) => {
+              const typeColor =
+                event.type === 'created' ? '#0f0' :
+                event.type === 'marked-for-deletion' ? '#ff0' :
+                '#f00';
 
-          // Get current, previous, and next characters for animation logic
-          const prevNode = getNodeByIndex(navigationIndex - 1);
-          const nextNode = getNodeByIndex(navigationIndex + 1);
+              const typeIcon =
+                event.type === 'created' ? '➕' :
+                event.type === 'marked-for-deletion' ? '⚠️' :
+                '❌';
 
-          const currentLeft = getCharacter(currentNode, 'left');
-          const currentRight = getCharacter(currentNode, 'right');
-          const previousLeft = getCharacter(prevNode ? { scene: prevNode.scene } as typeof currentNode : null, 'left');
-          const previousRight = getCharacter(prevNode ? { scene: prevNode.scene } as typeof currentNode : null, 'right');
-          const nextLeft = getCharacter(nextNode ? { scene: nextNode.scene } as typeof currentNode : null, 'left');
-          const nextRight = getCharacter(nextNode ? { scene: nextNode.scene } as typeof currentNode : null, 'right');
-
-          // Get speaker
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          const speaker = (currentNode?.scene as any)?.speaker || null;
-
-          // Replicate CharacterPanel animation logic
-          const calculateAnimationType = (
-            currentChar: string,
-            previousChar: string,
-            nextChar: string,
-            side: 'left' | 'right'
-          ): string => {
-            const hasCharacter = currentChar !== 'NOCHARACTER';
-            if (!hasCharacter) return 'hidden';
-
-            // Check if same scene (using sceneId comparison like CharacterPanel does)
-            const currentSceneId = currentNode?.sceneId;
-            const previousSceneId = frozenSnapshot?.sceneId;
-            const isSameScene = currentSceneId && previousSceneId && currentSceneId === previousSceneId;
-
-            // Infer which character we came from
-            const characterWeComingFrom = previousChar !== currentChar ? previousChar : nextChar;
-
-            // Check if this is a new character (same logic as CharacterPanel line 77)
-            const isNewCharacter = !isSameScene && characterWeComingFrom !== currentChar && currentChar !== 'NOCHARACTER';
-
-            // Check for jiggle state
-            const dialogueState = currentNode?.sceneState?.type === 'dialogue' ? currentNode.sceneState.state : null;
-            const isSuccessDanceScene = currentNode?.scene?.type === 'success-dance';
-            const shouldJiggle = dialogueState === 'answer-right' || isSuccessDanceScene;
-
-            // Phase priority (same as CharacterPanel getCurrentPhase)
-            if (isNewCharacter) return 'entering 🎬';
-            if (shouldJiggle) return 'jiggling 💃';
-            if (speaker === side) return 'speaking 🗣️';
-            return 'idle 😐';
-          };
-
-          const leftAnimation = calculateAnimationType(currentLeft, previousLeft, nextLeft, 'left');
-          const rightAnimation = calculateAnimationType(currentRight, previousRight, nextRight, 'right');
-
-          // Color based on animation type
-          const getAnimationColor = (animation: string) => {
-            if (animation.includes('entering')) return '#ff0'; // Yellow - NEW CHARACTER
-            if (animation.includes('jiggling')) return '#0ff'; // Cyan
-            if (animation.includes('speaking')) return '#0f0'; // Green
-            if (animation.includes('idle')) return '#888'; // Gray
-            return '#666'; // Hidden
-          };
-
-          return (
-            <>
-              {/* Current Scene Characters with Animation Types */}
-              <div style={{
-                marginBottom: '8px',
-                padding: '8px',
-                background: 'rgba(0, 255, 0, 0.15)',
-                borderRadius: '4px',
-                border: '2px solid #0f0'
-              }}>
-                <div style={{ color: '#0f0', fontSize: '10px', marginBottom: '8px', fontWeight: 'bold' }}>
-                  ▶️ Current Node (idx: {navigationIndex})
-                </div>
-
-                {/* Left Character */}
-                <div style={{ marginBottom: '8px', paddingBottom: '8px', borderBottom: '1px solid #444' }}>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                    <div>
-                      <div style={{ color: '#888', fontSize: '9px' }}>Left Character:</div>
-                      <div style={{ color: '#0f0', fontSize: '11px', fontWeight: 'bold' }}>
-                        {currentLeft}
-                      </div>
+              return (
+                <div
+                  key={`${event.nodeId}-${event.timestamp}-${idx}`}
+                  style={{
+                    padding: '5px',
+                    background: 'rgba(255, 0, 255, 0.1)',
+                    borderRadius: '4px',
+                    border: `1px solid ${typeColor}`,
+                    fontSize: '9px'
+                  }}
+                >
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'start' }}>
+                    <div style={{ color: typeColor, fontWeight: 'bold', fontSize: '10px' }}>
+                      {typeIcon} {event.type}
                     </div>
-                    <div style={{
-                      padding: '4px 8px',
-                      background: 'rgba(0,0,0,0.3)',
-                      borderRadius: '4px',
-                      border: `1px solid ${getAnimationColor(leftAnimation)}`
-                    }}>
-                      <div style={{ color: getAnimationColor(leftAnimation), fontSize: '10px', fontWeight: 'bold' }}>
-                        {leftAnimation}
-                      </div>
+                    <div style={{ color: '#666', fontSize: '8px' }}>
+                      {new Date(event.timestamp).toLocaleTimeString()}
                     </div>
                   </div>
-                </div>
-
-                {/* Right Character */}
-                <div>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                    <div>
-                      <div style={{ color: '#888', fontSize: '9px' }}>Right Character:</div>
-                      <div style={{ color: '#0f0', fontSize: '11px', fontWeight: 'bold' }}>
-                        {currentRight}
-                      </div>
-                    </div>
-                    <div style={{
-                      padding: '4px 8px',
-                      background: 'rgba(0,0,0,0.3)',
-                      borderRadius: '4px',
-                      border: `1px solid ${getAnimationColor(rightAnimation)}`
-                    }}>
-                      <div style={{ color: getAnimationColor(rightAnimation), fontSize: '10px', fontWeight: 'bold' }}>
-                        {rightAnimation}
-                      </div>
-                    </div>
+                  <div style={{ color: '#f0f', fontSize: '9px', marginTop: '2px' }}>
+                    {event.sceneId.substring(0, 8)}... | {event.stateKey}
                   </div>
-                </div>
-
-                {/* Speaker indicator */}
-                {speaker && (
-                  <div style={{ marginTop: '8px', paddingTop: '8px', borderTop: '1px solid #444' }}>
-                    <div style={{ color: '#0ff', fontSize: '9px' }}>
-                      Current Speaker: <strong>{speaker}</strong>
+                  {event.context && (
+                    <div style={{ color: '#888', fontSize: '8px', marginTop: '2px', fontStyle: 'italic' }}>
+                      {event.context}
                     </div>
-                  </div>
-                )}
-              </div>
-
-              {/* Animation Logic Explanation */}
-              <div style={{
-                padding: '6px',
-                background: 'rgba(100, 100, 100, 0.1)',
-                borderRadius: '4px',
-                fontSize: '8px',
-                color: '#666',
-                fontStyle: 'italic'
-              }}>
-                💡 Entering = new char from frozen snapshot | Same scene = no entering
-              </div>
-            </>
-          );
-        })()}
+                  )}
+                </div>
+              );
+            })}
+          </div>
+        ) : (
+          <div style={{ color: '#666', fontSize: '9px', fontStyle: 'italic' }}>
+            No lifecycle events yet
+          </div>
+        )}
       </div>
 
       {/* Stats Footer */}
       <div style={{ marginTop: '10px', paddingTop: '8px', borderTop: '1px solid #0f0', fontSize: '9px', color: '#666' }}>
-        Total Scenes: {allScenes.length} | Visible: {scenes.length} | Nodes: {totalNodes} | Graph v{navigationGraph.historyVersion}
+        Total Scenes: {navigationGraph.sceneRegistry?.order.length || 0} | Nodes: {totalNodes} | Graph v{navigationGraph.historyVersion}
+        <br />
+        History: {navigationGraph.navigationHistory?.length || 0} navigations | {navigationGraph.lifecycleEvents?.length || 0} lifecycle events
       </div>
     </div>
   );

@@ -44,7 +44,7 @@ function hasFlowId(scene: Scene | undefined | null): scene is SceneWithFlowId {
 }
 
 export function RecordingOrchestrator() {
-  const { getCurrentNode, getCurrentNodeId, getCurrentSceneId, insertScene, addStateToCurrentNode, updateNodeState, updateSceneTextByRecordingId, forceAdvanceNavigation } = useNodeManager();
+  const { getCurrentNode, getCurrentNodeId, getCurrentSceneId, insertSceneNodes, addStateToCurrentNode, updateNodeState, updateSceneTextByRecordingId, forceAdvanceNavigation } = useNodeManager();
   const { createRecordingScene, createFailDanceScene, createSuccessDanceScene } = useSceneFactory();
   const recording = useRecording();
 
@@ -96,9 +96,6 @@ export function RecordingOrchestrator() {
 
   // Ref to store handleRecordStop so it can be used in effects before it's defined
   const handleRecordStopRef = React.useRef<(() => void) | null>(null);
-
-  // Track if we're currently stopping to prevent duplicate stop calls
-  const isStoppingRef = React.useRef<boolean>(false);
 
   // ===================================
   // QUESTION TRACKING LOGIC
@@ -185,10 +182,10 @@ export function RecordingOrchestrator() {
             undefined // right-character set to undefined to trigger exit animation
           );
 
-          // Insert the fail-dance scene after current scene using sceneId-based insertion
+          // Insert the fail-dance scene after current node using synchronous insertion
           // This properly maintains the state-node graph structure
-          const currentSceneId = getCurrentSceneId();
-          insertScene(currentSceneId, failDanceScene);
+          const currentNodeId = getCurrentNodeId();
+          insertSceneNodes(currentNodeId, failDanceScene);
 
           // Wait 2 seconds before transitioning current scene to input-showInput state
           // This keeps the answer-wrong visual feedback visible longer before conversion
@@ -215,7 +212,7 @@ export function RecordingOrchestrator() {
 
       return () => clearTimeout(timerId);
     }
-  }, [dialogueState, answerWrongVideoComplete, sceneState, currentNode?.scene, getCurrentSceneId, getCurrentNodeId, insertScene, forceAdvanceNavigation, createFailDanceScene, updateNodeState]);
+  }, [dialogueState, answerWrongVideoComplete, sceneState, currentNode?.scene, getCurrentSceneId, getCurrentNodeId, insertSceneNodes, forceAdvanceNavigation, createFailDanceScene, updateNodeState]);
 
   // Effect: Auto-transition from answer-right to success-dance scene, triggered AFTER video ends
   useEffect(() => {
@@ -262,10 +259,9 @@ export function RecordingOrchestrator() {
             rightCharacter // Keep the right character (don't set to null)
           );
 
-          // Insert the success-dance scene after current scene
-          // Insert the success-dance scene after current scene using sceneId-based insertion
-          const currentSceneId = getCurrentSceneId();
-          insertScene(currentSceneId, successDanceScene);
+          // Insert the success-dance scene after current node using synchronous insertion
+          const currentNodeId = getCurrentNodeId();
+          insertSceneNodes(currentNodeId, successDanceScene);
 
           // Auto-advance to success-dance scene immediately
           // Note: We don't update the current scene state to 'basic' before navigating
@@ -288,32 +284,16 @@ export function RecordingOrchestrator() {
 
       return () => clearTimeout(timerId);
     }
-  }, [dialogueState, answerRightVideoComplete, sceneState, currentNode?.scene, getCurrentSceneId, getCurrentNodeId, insertScene, forceAdvanceNavigation, createSuccessDanceScene, updateNodeState]);
+  }, [dialogueState, answerRightVideoComplete, sceneState, currentNode?.scene, getCurrentSceneId, getCurrentNodeId, insertSceneNodes, forceAdvanceNavigation, createSuccessDanceScene, updateNodeState]);
 
   // ===================================
   // RECORDING FLOW LOGIC
   // ===================================
 
-  // EVENT-DRIVEN CLEANUP: Auto-stop recording when leaving recording states
-  // NOTE: Recording START is now event-driven (happens in button handlers)
-  // This effect only handles CLEANUP when states change unexpectedly
-  React.useEffect(() => {
-    const isRecordingState = sceneState?.type === 'dialogue' &&
-      (sceneState.state === 'input-recording' || sceneState.state === 'record-answer');
-
-    // Auto-stop recording when leaving recording states (cleanup only)
-    if (!isRecordingState && recording.isRecording() && !isStoppingRef.current) {
-      isStoppingRef.current = true;
-      Recording.stop();
-
-      // Reset stopping flag after a brief delay
-      setTimeout(() => {
-        isStoppingRef.current = false;
-      }, 100);
-    }
-
-    // NOTE: activeRecordingId is now derived from the scene, no manual cleanup needed!
-  }, [sceneState, recording]);
+  // RECORDING LIFECYCLE: Recording is controlled ONLY by user button clicks
+  // - Start: User clicks Ask/Answer button → handleRecordStart/handleAnswerClick
+  // - Stop: User clicks Stop button → handleRecordStop
+  // NO automatic stopping based on scene state changes!
 
   // Sync recording transcript - simplified for batch processing
   // During recording, we don't get real-time updates anymore
@@ -488,7 +468,6 @@ export function RecordingOrchestrator() {
       // Generate unique recording ID
       const recordingId = `rec-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
 
-
       // STEP 1: START RECORDING IMMEDIATELY (event-driven, not state-driven)
       // This happens FIRST, before any state changes or navigation
       // NOTE: recordingId will be stored in the scene itself (line 396)
@@ -504,8 +483,10 @@ export function RecordingOrchestrator() {
       // Increment question counter - unlocks Answer button after first question
       setQuestionCount(prev => prev + 1);
 
-      // Update current node state from input-showInput to basic (locks auto-recalculated)
+      // Get current node ID for both state update and scene insertion
       const currentNodeId = getCurrentNodeId();
+
+      // Update current node state from input-showInput to basic (locks auto-recalculated)
       if (currentNodeId) {
         updateNodeState(currentNodeId, { type: 'dialogue', state: 'basic' });
       }
@@ -525,17 +506,26 @@ export function RecordingOrchestrator() {
         (newScene as any).flowId = flowId;
       }
 
-      // Insert scene after current scene using sceneId-based insertion
+      // Insert scene after current node (not scene) to ensure proper positioning
       // This properly maintains the state-node graph structure
-      const currentSceneId = getCurrentSceneId();
-      insertScene(currentSceneId, newScene);
+      console.log('[handleRecordStart] ===== BEFORE INSERT =====');
+      console.log('[handleRecordStart] Current node ID:', currentNodeId);
+      console.log('[handleRecordStart] New recording scene:', newScene);
 
-      // Navigate forward to the new recording scene
+      // Use insertSceneNodes for synchronous scene insertion
+      // This avoids the race condition where forceAdvanceNavigation reads stale graph
+      const insertedNodeId = insertSceneNodes(currentNodeId, newScene);
+
+      console.log('[handleRecordStart] ===== AFTER INSERT =====');
+      console.log('[handleRecordStart] Inserted node ID:', insertedNodeId);
+      console.log('[handleRecordStart] About to navigate forward...');
+
+      // Navigate to the new recording state
       forceAdvanceNavigation('forward');
     } catch {
       // Silent error handling - recording failed to start
     }
-  }, [createRecordingScene, getCurrentSceneId, getCurrentNodeId, insertScene, forceAdvanceNavigation, updateNodeState, currentNode?.scene]);
+  }, [getCurrentNodeId, insertSceneNodes, forceAdvanceNavigation, updateNodeState, currentNode?.scene, createRecordingScene]);
 
   /**
    * Handle recording stop - NEW BATCH PROCESSING FLOW
@@ -612,7 +602,6 @@ export function RecordingOrchestrator() {
     try {
       // Generate unique recording ID
       const recordingId = `answer-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
-
 
       // STEP 1: START RECORDING IMMEDIATELY (event-driven, not state-driven)
       // This happens FIRST, before any state changes or navigation

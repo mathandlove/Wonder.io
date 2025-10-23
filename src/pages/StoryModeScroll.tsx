@@ -76,7 +76,6 @@ const StoryContent: React.FC = () => {
 
   // Navigation context
   const {
-    scenes,
     setScenes,
     navigationGraph,
     getCurrentNode,
@@ -84,6 +83,20 @@ const StoryContent: React.FC = () => {
 
   // Dialogue context for turn banners
   const { showTurnBanner, turnBannerText } = useDialogue();
+
+  // Initialize navigation graph from story on FIRST load only
+  // Use ref to prevent re-initialization if story object changes
+  const hasInitializedGraph = React.useRef(false);
+  React.useEffect(() => {
+    if (!story?.scenes || hasInitializedGraph.current) return;
+
+    // Build initial graph from story scenes (this only happens once)
+    const processedScenes = injectPanelMetaFromFlows(story.scenes);
+    setScenes(processedScenes);
+
+    hasInitializedGraph.current = true;
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [story?.scenes]); // Only depend on story.scenes, ignore setScenes to prevent loops
 
   // Build array of all nodes from navigation graph for rendering
   const allNavigationNodes = useMemo(() => {
@@ -181,7 +194,7 @@ const StoryContent: React.FC = () => {
   }
 
   // RENDER PATH #2: failed or empty story → show an error/empty state
-  if (error || !story || scenes.length === 0) {
+  if (error || !story || navigationGraph.order.length === 0) {
     return (
       <FullScreen>
         {error ? `Problem loading story: ${error.message}` : "No story content found"}

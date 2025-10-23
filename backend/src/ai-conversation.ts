@@ -92,19 +92,8 @@ export async function handleAIChat(req: Request, res: Response): Promise<void> {
       return;
     }
 
-      question: question.substring(0, 100),
-      historyLength: conversationHistory.length,
-      characterDescriptionLength: characterDescription.length
-    });
-
-    // Log the full conversation history being sent
-    conversationHistory.forEach((msg, idx) => {
-    });
-
     // Build the system prompt with character description
     const systemPrompt = buildSystemPrompt(characterDescription);
-
-    // Log the system prompt to see how character is being instructed
 
     // Build messages array for OpenAI API
     // Format: [system, ...history, new user message]

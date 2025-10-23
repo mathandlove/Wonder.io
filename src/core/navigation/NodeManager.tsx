@@ -12,8 +12,8 @@
 import React, { createContext, useCallback, useContext, useMemo, useState } from "react";
 import type { Scene } from '@core/types/scene';
 import type { Node, SceneState } from '@core/navigation/types';
-import { buildNavigationGraph } from '@core/navigation/navigationGraphBuilder';
-import type { NavigationGraph, NodeId, FrozenNodeSnapshot } from '@core/navigation/navigationGraphTypes';
+import { buildNavigationGraph, expandSceneToNodes } from '@core/navigation/navigationGraphBuilder';
+import type { NavigationGraph, NodeId, FrozenNodeSnapshot, SceneId } from '@core/navigation/navigationGraphTypes';
 import {
   markNodeForRemoval,
   compactNode,
@@ -76,10 +76,6 @@ export function getLocksForState(state: SceneState): { lockForward: boolean; loc
 }
 
 export interface NodeManagerType {
-  // Scene source data (backward compatibility - scenes are source, nodes are derived)
-  allScenes: Scene[];
-  scenes: Scene[]; // Filtered visible scenes
-
   // Node graph navigation (primary system)
   navigationGraph: NavigationGraph;
   getCurrentNodeId: () => NodeId | null;
@@ -92,7 +88,7 @@ export interface NodeManagerType {
 
   // Node management (scenes are source data, nodes are built from scenes)
   setScenes: (scenes: Scene[]) => void;
-  insertScene: (previousSceneId: string | null, scene: Scene) => void;
+  insertSceneNodes: (afterNodeId: NodeId | null, scene: Scene) => NodeId | null;
   addStateToCurrentNode: (newState: SceneState, insertAfter?: boolean) => NodeId | null;
   updateNodeState: (nodeId: NodeId, newState: SceneState) => void;
   updateSceneTextByRecordingId: (recordingId: string, newText: string) => void;
@@ -123,39 +119,29 @@ interface NodeManagerProviderProps {
 }
 
 export function NodeManagerProvider({ children, initialSceneId }: NodeManagerProviderProps) {
-  const [allScenes, setAllScenes] = useState<Scene[]>([]);
-
   // NAVIGATION GRAPH: Single source of truth for navigation
-  const [navigationGraph, setNavigationGraph] = useState<NavigationGraph>({
-    byId: {},
-    order: [],
-    currentId: null,
-    lastFrozenNode: null,
-    historyVersion: 0,
+  const [navigationGraph, setNavigationGraph] = useState<NavigationGraph>(() => {
+    const graph: NavigationGraph = {
+      byId: {},
+      order: [],
+      currentId: null,
+      lastFrozenNode: null,
+      historyVersion: 0,
+      navigationHistory: [],
+      lifecycleEvents: [],
+    };
+
+    // Apply initialSceneId if provided and valid
+    if (initialSceneId && graph.sceneRegistry?.byId[initialSceneId]) {
+      const sceneInfo = graph.sceneRegistry.byId[initialSceneId];
+      graph.currentId = sceneInfo.firstNodeId;
+    }
+
+    return graph;
   });
 
   // Ref for latest navigation graph (for synchronous access in callbacks)
   const navigationGraphRef = React.useRef<NavigationGraph>(navigationGraph);
-
-
-  // Build navigation graph from allScenes (single source of truth)
-  const baseNavigationGraph = useMemo(() => {
-    const state = buildNavigationGraph(allScenes);
-
-    // Apply initialSceneId if provided and valid
-    if (initialSceneId && state.sceneRegistry?.byId[initialSceneId]) {
-      const sceneInfo = state.sceneRegistry.byId[initialSceneId];
-      state.currentId = sceneInfo.firstNodeId;
-    }
-
-    return state;
-  }, [allScenes, initialSceneId]);
-
-  // Derive visible scenes for backward compatibility
-  const visibleScenes = useMemo(
-    () => allScenes.filter(scene => !scene.hidden),
-    [allScenes]
-  );
 
   // Wrapper for setNavigationGraph that keeps ref in sync synchronously
   const setNavigationGraphWithRef = React.useCallback((
@@ -169,11 +155,6 @@ export function NodeManagerProvider({ children, initialSceneId }: NodeManagerPro
     });
   }, []);
 
-  // Sync navigationGraph with baseNavigationGraph when scenes change
-  React.useEffect(() => {
-    setNavigationGraphWithRef(baseNavigationGraph);
-  }, [baseNavigationGraph, setNavigationGraphWithRef]);
-
   // Update ref to always have the latest navigationGraph
   React.useEffect(() => {
     navigationGraphRef.current = navigationGraph;
@@ -182,6 +163,46 @@ export function NodeManagerProvider({ children, initialSceneId }: NodeManagerPro
   // =============================================================================
   // HELPER FUNCTIONS: Node access via pointers
   // =============================================================================
+
+  /**
+   * Helper to add a navigation history entry
+   */
+  const addNavigationHistory = useCallback((
+    nodeId: NodeId,
+    node: { sceneId: SceneId; stateKey: string },
+    trigger: 'forward' | 'backward' | 'force-forward' | 'force-backward' | 'initial' | 'scene-change',
+    description?: string
+  ) => {
+    const entry = {
+      timestamp: Date.now(),
+      nodeId,
+      sceneId: node.sceneId,
+      stateKey: node.stateKey,
+      trigger,
+      description,
+    };
+    return entry;
+  }, []);
+
+  /**
+   * Helper to add a lifecycle event
+   */
+  const addLifecycleEvent = useCallback((
+    type: 'created' | 'deleted' | 'marked-for-deletion',
+    nodeId: NodeId,
+    node: { sceneId: SceneId; stateKey: string },
+    context?: string
+  ) => {
+    const event = {
+      timestamp: Date.now(),
+      type,
+      nodeId,
+      sceneId: node.sceneId,
+      stateKey: node.stateKey,
+      context,
+    };
+    return event;
+  }, []);
 
   const getCurrentNodeId = useCallback((): NodeId | null => {
     return navigationGraph.currentId;
@@ -252,41 +273,173 @@ export function NodeManagerProvider({ children, initialSceneId }: NodeManagerPro
   }, [getCurrentScene]);
 
   // =============================================================================
-  // SCENE COLLECTION MANAGEMENT
-  // (Scenes are the source data - nodes are built from scenes)
+  // SCENE MANAGEMENT
+  // (Scenes are now managed directly through the navigation graph)
   // =============================================================================
 
   const setScenes = useCallback((scenes: Scene[]) => {
-    setAllScenes(scenes);
-  }, []);
+    // Build a fresh navigation graph from scenes
+    const newGraph = buildNavigationGraph(scenes);
 
-  /**
-   * Insert a scene after a specific scene (sceneId-based)
-   * This will rebuild the node graph to include the new scene's nodes
-   */
-  const insertScene = useCallback((previousSceneId: string | null, scene: Scene) => {
-    setAllScenes(prevScenes => {
-      // Find the index of the previous scene
-      const previousIndex = previousSceneId
-        ? prevScenes.findIndex(s => {
-            const sceneWithId = s as Scene & { sceneId?: string };
-            return sceneWithId.sceneId === previousSceneId;
-          })
-        : -1;
+    setNavigationGraphWithRef(prevState => {
+      // Try to preserve current position by sceneId
+      let preservedCurrentId = newGraph.currentId; // Default to first node
 
-      if (previousSceneId && previousIndex === -1) {
-        console.warn('[NodeManager] insertScene: previousSceneId not found:', previousSceneId);
-        return prevScenes;
+      if (prevState.currentId) {
+        const prevNode = prevState.byId[prevState.currentId];
+        if (prevNode) {
+          // Find the same scene in the new graph
+          const newSceneInfo = newGraph.sceneRegistry?.byId[prevNode.sceneId];
+          if (newSceneInfo) {
+            // Navigate to the first node of that scene in the new graph
+            preservedCurrentId = newSceneInfo.firstNodeId;
+          }
+        }
       }
 
-      // Insert after the previous scene (or at beginning if previousSceneId is null)
-      const insertIndex = previousIndex + 1;
-      const newScenes = [...prevScenes];
-      newScenes.splice(insertIndex, 0, scene);
-
-      return newScenes;
+      return {
+        ...newGraph,
+        currentId: preservedCurrentId,
+        // Preserve accumulated history across graph rebuilds
+        navigationHistory: prevState.navigationHistory || [],
+        lifecycleEvents: prevState.lifecycleEvents || [],
+      };
     });
-  }, []);
+  }, [setNavigationGraphWithRef]);
+
+  /**
+   * Insert a scene's nodes directly into the navigation graph (synchronous)
+   *
+   * This directly manipulates the navigation graph without triggering a full rebuild.
+   * Use this when you need to navigate immediately after insertion.
+   *
+   * Pattern similar to addStateToCurrentNode and deleteNode - directly mutates graph.
+   *
+   * @param afterNodeId - Insert after this node (or at beginning if null)
+   * @param scene - Scene to insert (will be expanded into nodes)
+   * @returns The first nodeId of the inserted scene, or null if failed
+   */
+  const insertSceneNodes = useCallback((afterNodeId: NodeId | null, scene: Scene): NodeId | null => {
+    // Generate or use existing sceneId
+    const newSceneId: SceneId = scene.sceneId || ulid();
+
+    // Ensure the scene has the sceneId set
+    if (!scene.sceneId) {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      (scene as any).sceneId = newSceneId;
+    }
+
+    // Expand the scene into nodes
+    const newNodes = expandSceneToNodes(scene, newSceneId);
+
+    if (newNodes.length === 0) {
+      console.warn('[NodeManager] insertSceneNodes: Scene expanded to 0 nodes:', scene);
+      return null;
+    }
+
+    // Get current graph state
+    const graphState = navigationGraphRef.current;
+
+    // Validate and get the insertion point node
+    if (afterNodeId && !graphState.byId[afterNodeId]) {
+      console.warn('[NodeManager] insertSceneNodes: afterNodeId not found in graph:', afterNodeId);
+      return null;
+    }
+
+    // Get the insertion point node (or null if inserting at beginning)
+    const insertAfterNode = afterNodeId ? getNodeById(graphState, afterNodeId) : null;
+    const insertAfterNodeId = afterNodeId;
+
+    // Link the new nodes together (internal scene linking)
+    for (let i = 0; i < newNodes.length; i++) {
+      const node = newNodes[i];
+      node.prevId = i === 0
+        ? insertAfterNodeId  // First node links to previous scene's tail
+        : newNodes[i - 1].id; // Or previous node in this scene
+      node.nextId = i === newNodes.length - 1
+        ? (insertAfterNode?.nextId || null) // Last node links to what previous tail pointed to
+        : newNodes[i + 1].id; // Or next node in this scene
+    }
+
+    const firstNewNodeId = newNodes[0].id;
+    const lastNewNodeId = newNodes[newNodes.length - 1].id;
+
+    // Build the new graph state synchronously (use graphState from above)
+    const newById = { ...graphState.byId };
+    const newOrder = [...graphState.order];
+    const newSceneRegistry = {
+      byId: { ...graphState.sceneRegistry?.byId },
+      order: [...(graphState.sceneRegistry?.order || [])],
+    };
+    const newLifecycleEvents = [...(graphState.lifecycleEvents || [])];
+
+    // Add all new nodes to byId and track creation
+    for (const node of newNodes) {
+      newById[node.id] = node;
+      newLifecycleEvents.push(addLifecycleEvent('created', node.id, node, 'insertSceneNodes'));
+    }
+
+    // Rewire the insertion point's next pointer
+    if (insertAfterNodeId && newById[insertAfterNodeId]) {
+      console.log('[insertSceneNodes] Rewiring node:', insertAfterNodeId);
+      console.log('[insertSceneNodes] Old nextId:', newById[insertAfterNodeId].nextId);
+      console.log('[insertSceneNodes] New nextId (recording):', firstNewNodeId);
+
+      newById[insertAfterNodeId] = {
+        ...newById[insertAfterNodeId],
+        nextId: firstNewNodeId,
+      };
+    }
+
+    // Rewire the next node's prev pointer (if exists)
+    const nextNodeId = insertAfterNode?.nextId;
+    if (nextNodeId && newById[nextNodeId]) {
+      newById[nextNodeId] = {
+        ...newById[nextNodeId],
+        prevId: lastNewNodeId,
+      };
+    }
+
+    // Insert into order array
+    const insertIndex = insertAfterNodeId
+      ? newOrder.indexOf(insertAfterNodeId) + 1
+      : 0;
+
+    newOrder.splice(insertIndex, 0, ...newNodes.map(n => n.id));
+
+    // Update scene registry
+    newSceneRegistry.byId[newSceneId] = {
+      id: newSceneId,
+      firstNodeId: firstNewNodeId,
+      lastNodeId: lastNewNodeId,
+      nodeCount: newNodes.length,
+    };
+
+    // Insert scene into registry order - insert after the scene that contains insertAfterNode
+    let sceneInsertIndex = 0;
+    if (insertAfterNode) {
+      const afterSceneId = insertAfterNode.sceneId;
+      const afterSceneIndex = newSceneRegistry.order.indexOf(afterSceneId);
+      sceneInsertIndex = afterSceneIndex >= 0 ? afterSceneIndex + 1 : newSceneRegistry.order.length;
+    }
+    newSceneRegistry.order.splice(sceneInsertIndex, 0, newSceneId);
+
+    // Build the complete new state
+    const newState: NavigationGraph = {
+      ...graphState,
+      byId: newById,
+      order: newOrder,
+      sceneRegistry: newSceneRegistry,
+      historyVersion: graphState.historyVersion + 1,
+      lifecycleEvents: newLifecycleEvents,
+    };
+
+    // Update both the React state AND the ref synchronously
+    navigationGraphRef.current = newState;
+    setNavigationGraph(newState);
+
+    return firstNewNodeId;
+  }, [addLifecycleEvent]);
 
   /**
    * Add a new state to the current node
@@ -328,6 +481,7 @@ export function NodeManagerProvider({ children, initialSceneId }: NodeManagerPro
     setNavigationGraphWithRef(prevState => {
       const newById = { ...prevState.byId };
       const newOrder = [...prevState.order];
+      const newLifecycleEvents = [...(prevState.lifecycleEvents || [])];
 
       if (insertAfter) {
         // Create new node
@@ -369,6 +523,9 @@ export function NodeManagerProvider({ children, initialSceneId }: NodeManagerPro
         } else {
           newOrder.push(newNodeId);
         }
+
+        // Track node creation
+        newLifecycleEvents.push(addLifecycleEvent('created', newNodeId, newNode, 'addStateToCurrentNode'));
       } else {
         // Replace current node's state
         newById[currentNode.id] = {
@@ -385,11 +542,12 @@ export function NodeManagerProvider({ children, initialSceneId }: NodeManagerPro
         byId: newById,
         order: newOrder,
         historyVersion: prevState.historyVersion + 1,
+        lifecycleEvents: newLifecycleEvents,
       };
     });
 
     return insertAfter ? newNodeId : currentNode.id;
-  }, [navigationGraph, setNavigationGraphWithRef]);
+  }, [navigationGraph, setNavigationGraphWithRef, addLifecycleEvent]);
 
   /**
    * Update the state of a specific node by nodeId
@@ -491,16 +649,30 @@ export function NodeManagerProvider({ children, initialSceneId }: NodeManagerPro
 
     // Phase 1: Mark node and rewire neighbors immediately
     const { state: newState } = markNodeForRemoval(currentState, nodeId);
-    setNavigationGraphWithRef(newState);
+
+    // Track the marking for deletion
+    const markEvent = addLifecycleEvent('marked-for-deletion', nodeId, node, 'skip-back navigation');
+
+    setNavigationGraphWithRef({
+      ...newState,
+      lifecycleEvents: [...(newState.lifecycleEvents || []), markEvent],
+    });
 
     // Phase 2: Schedule compaction after animation duration
     const TRANSITION_DURATION_MS = 2000;
     const BUFFER_MS = 500;
 
     window.setTimeout(() => {
-      setNavigationGraphWithRef(prevState => compactNode(prevState, nodeId));
+      setNavigationGraphWithRef(prevState => {
+        // Track the actual deletion
+        const deleteEvent = addLifecycleEvent('deleted', nodeId, node, 'compaction after animation');
+        return {
+          ...compactNode(prevState, nodeId),
+          lifecycleEvents: [...(prevState.lifecycleEvents || []), deleteEvent],
+        };
+      });
     }, TRANSITION_DURATION_MS + BUFFER_MS);
-  }, [setNavigationGraphWithRef]);
+  }, [setNavigationGraphWithRef, addLifecycleEvent]);
 
   // =============================================================================
   // NODE NAVIGATION: Pointer-based traversal with skip-back rewiring
@@ -523,6 +695,10 @@ export function NodeManagerProvider({ children, initialSceneId }: NodeManagerPro
     const currentState = navigationGraphRef.current;
     const currentNodeId = currentState.currentId;
 
+    console.log('[forceAdvanceNavigation] 📍 Starting navigation');
+    console.log('[forceAdvanceNavigation] Direction:', direction);
+    console.log('[forceAdvanceNavigation] Current node ID:', currentNodeId);
+
     if (!currentNodeId) {
       console.warn('[forceAdvanceNavigation] ⚠️  No current node ID');
       return;
@@ -535,6 +711,9 @@ export function NodeManagerProvider({ children, initialSceneId }: NodeManagerPro
       return;
     }
 
+    console.log('[forceAdvanceNavigation] Current node:', currentNode);
+    console.log('[forceAdvanceNavigation] Current scene ID:', currentNode.sceneId);
+
     // Find next active node based on direction
     const nextActiveNode = direction === 'forward'
       ? findNextActiveNode(currentState, currentNodeId)
@@ -545,6 +724,10 @@ export function NodeManagerProvider({ children, initialSceneId }: NodeManagerPro
       return; // At head or tail
     }
 
+    console.log('[forceAdvanceNavigation] ✅ Next node found:', nextActiveNode.id);
+    console.log('[forceAdvanceNavigation] Next scene ID:', nextActiveNode.sceneId);
+    console.log('[forceAdvanceNavigation] Next node:', nextActiveNode);
+
     // CRITICAL: Capture frozen snapshot FIRST, before any mutations
     // This preserves character data for exit animations, even if node gets deleted
     const frozenSnapshot = createFrozenSnapshot(currentNodeId);
@@ -554,26 +737,45 @@ export function NodeManagerProvider({ children, initialSceneId }: NodeManagerPro
     // Cross-scene navigation preserves history for backward navigation
     if (direction === 'forward') {
       const isSameScene = currentNode.sceneId === nextActiveNode.sceneId;
+      console.log('[forceAdvanceNavigation] Same scene?', isSameScene, `(${currentNode.sceneId} === ${nextActiveNode.sceneId})`);
 
       if (isSameScene) {
         // Delete the current node (rewires neighbors + schedules compaction)
+        console.log('[forceAdvanceNavigation] 🗑️  Deleting current node (intra-scene collapse)');
         deleteNode(currentNodeId);
+      } else {
+        console.log('[forceAdvanceNavigation] ⏭️  Cross-scene navigation - preserving history');
       }
       // Cross-scene: do NOT mark for removal - preserve for backward navigation
     }
 
-    // Update currentId to point to the new node, save frozen snapshot
+    console.log('[forceAdvanceNavigation] 🎯 Navigating to:', nextActiveNode.id);
+
+    // Create navigation history entry
+    const trigger = direction === 'forward' ? 'force-forward' : 'force-backward';
+    const historyEntry = addNavigationHistory(
+      nextActiveNode.id,
+      nextActiveNode,
+      trigger,
+      direction === 'forward'
+        ? (currentNode.sceneId === nextActiveNode.sceneId ? 'Same scene (skip-back)' : 'New scene')
+        : 'Backward navigation'
+    );
+
+    // Update currentId to point to the new node, save frozen snapshot, and record history
     setNavigationGraphWithRef(prevState => ({
       ...prevState,
       currentId: nextActiveNode.id,
       lastFrozenNode: frozenSnapshot,
       historyVersion: prevState.historyVersion + 1,
+      navigationHistory: [...(prevState.navigationHistory || []), historyEntry],
     }));
 
   }, [
     createFrozenSnapshot,
     deleteNode,
     setNavigationGraphWithRef,
+    addNavigationHistory,
   ]);
 
   /**
@@ -599,10 +801,6 @@ export function NodeManagerProvider({ children, initialSceneId }: NodeManagerPro
   }, [navigationGraph, forceAdvanceNavigation]);
 
   const contextValue = useMemo((): NodeManagerType => ({
-    // Scene collection
-    allScenes,
-    scenes: visibleScenes,
-
     // Node graph navigation
     navigationGraph,
     getCurrentNodeId,
@@ -615,7 +813,7 @@ export function NodeManagerProvider({ children, initialSceneId }: NodeManagerPro
 
     // Scene management
     setScenes,
-    insertScene,
+    insertSceneNodes,
     addStateToCurrentNode,
     updateNodeState,
     updateSceneTextByRecordingId,
@@ -628,8 +826,6 @@ export function NodeManagerProvider({ children, initialSceneId }: NodeManagerPro
     // Derived state
     currentBackgroundId,
   }), [
-    allScenes,
-    visibleScenes,
     navigationGraph,
     getCurrentNodeId,
     getCurrentNode,
@@ -637,7 +833,7 @@ export function NodeManagerProvider({ children, initialSceneId }: NodeManagerPro
     getCurrentSceneId,
     createFrozenSnapshot,
     setScenes,
-    insertScene,
+    insertSceneNodes,
     addStateToCurrentNode,
     updateNodeState,
     updateSceneTextByRecordingId,
