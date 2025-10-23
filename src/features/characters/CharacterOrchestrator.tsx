@@ -27,6 +27,17 @@ export const CharacterOrchestrator: React.FC<Props> = ({ storyId, scenes, curren
   // Compute panel data fresh from navigation array
   // Scene IDs come from active transition snapshot (frozen at transition start) to prevent race conditions
   const { leftPanel, rightPanel, currentSpeaker, isJiggling, transitionNonce, currentSceneId, previousSceneId } = useMemo(() => {
+    console.log('[CharacterOrchestrator] 🔍 Computing panel data:', {
+      scrollOffset,
+      activeTransition: activeTransition ? {
+        id: activeTransition.id,
+        fromSceneId: activeTransition.fromSceneId,
+        toSceneId: activeTransition.toSceneId,
+        direction: activeTransition.direction,
+      } : null,
+      navigationArrayLength: navigationArray.length,
+    });
+
     const i = Math.max(0, Math.min(navigationArray.length - 1, Math.round(scrollOffset)));
     const currentNavItem = navigationArray[i];
 
@@ -54,6 +65,13 @@ export const CharacterOrchestrator: React.FC<Props> = ({ storyId, scenes, curren
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const speaker = (currentNavItem.scene as any)?.speaker || null;
+
+    console.log('[CharacterOrchestrator] 📢 Speaker detection:', {
+      sceneType: currentNavItem.scene.type,
+      speaker,
+      sceneId: currentNavItem.sceneId,
+      stateKey: currentNavItem.stateKey,
+    });
 
     // Check if we're in answer-right state or success-dance scene (should trigger jiggle dance)
     const dialogueState = currentNavItem.sceneState?.type === 'dialogue' ? currentNavItem.sceneState.state : null;
@@ -125,6 +143,17 @@ export const CharacterOrchestrator: React.FC<Props> = ({ storyId, scenes, curren
   // Fallback to scroll offset calculation if no active transition
   const scrollDirection = activeTransition?.direction || 'forward';
 
+  // Speaking is always allowed - CharacterPanel handles priority internally
+  // (entering phase blocks speaking via phase priority system in CharacterPanel.tsx)
+  const allowSpeaking = true;
+
+  console.log('[CharacterOrchestrator] 🗣️ Speaking state:', {
+    allowSpeaking,
+    currentSpeaker,
+    leftSpeaking: allowSpeaking && currentSpeaker === 'left',
+    rightSpeaking: allowSpeaking && currentSpeaker === 'right',
+  });
+
   // AnimNonce increment logic removed - transition.id key handles animation triggering
   // The transition system already creates a unique key per navigation, so we don't need
   // a separate nonce mechanism that causes double animations
@@ -171,7 +200,7 @@ export const CharacterOrchestrator: React.FC<Props> = ({ storyId, scenes, curren
           pose={leftPanel.pose}
           storyId={storyId}
           scrollDirection={scrollDirection}
-          isSpeaking={currentSpeaker === 'left'}
+          isSpeaking={allowSpeaking && currentSpeaker === 'left'}
           isJiggling={isJiggling}
           transitionNonce={transitionNonce}
           currentSceneId={currentSceneId}
@@ -193,7 +222,7 @@ export const CharacterOrchestrator: React.FC<Props> = ({ storyId, scenes, curren
           pose={rightPanel.pose}
           storyId={storyId}
           scrollDirection={scrollDirection}
-          isSpeaking={currentSpeaker === 'right'}
+          isSpeaking={allowSpeaking && currentSpeaker === 'right'}
           isJiggling={isJiggling}
           transitionNonce={transitionNonce}
           currentSceneId={currentSceneId}

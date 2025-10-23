@@ -54,9 +54,8 @@ export const CharacterPanel: React.FC<CharacterPanelProps> = ({
   // Track which animation variant to use (alternate between 1 and 2 to force restart)
   const animationVariantRef = useRef<1 | 2>(1);
 
-  // Track the previous scene ID to detect same-scene transitions
-  // Initialize with undefined to allow first transition to play normally
-  const prevSceneIdRef = useRef<string | undefined>(undefined);
+  // REMOVED: prevSceneIdRef - was causing stale state issues
+  // Now using previousSceneId from frozen snapshot (TransitionManager) as source of truth
 
   // Reset entering state whenever we get a new transition (scene change)
   // IMPORTANT: Only trigger animation when NEW nonce is defined (transition START)
@@ -197,13 +196,11 @@ export const CharacterPanel: React.FC<CharacterPanelProps> = ({
     }
 
     // Check if this is a same-scene transition (state change only)
-    // Use ref to track the actual previous scene we were on
-    const prevScene = prevSceneIdRef.current;
-    const isSameScene = currentSceneId && prevScene && currentSceneId === prevScene;
+    // Use previousSceneId from frozen snapshot (source of truth from TransitionManager)
+    const isSameScene = currentSceneId && previousSceneId && currentSceneId === previousSceneId;
 
     console.log(`[CharacterPanel ${side}] 🔍 Same-scene check:`, {
       currentSceneId,
-      prevScene,
       previousSceneId,
       isSameScene,
       willSkip: isSameScene
@@ -214,9 +211,6 @@ export const CharacterPanel: React.FC<CharacterPanelProps> = ({
       console.log(`[CharacterPanel ${side}] ⏭️ SKIPPING animation restart - same scene transition`);
       return;
     }
-
-    // Update the ref for next transition
-    prevSceneIdRef.current = currentSceneId;
 
     // Toggle animation variant for entrance animations to force browser restart
     if (phase === 'entering') {
@@ -279,7 +273,12 @@ export const CharacterPanel: React.FC<CharacterPanelProps> = ({
     if (phase === 'entering') {
       const enteringClass = `entering-${side}${variantSuffix}`;
       panelElement.classList.add(enteringClass);
-      console.log(`[CharacterPanel ${side}] 🎬 APPLIED ENTERING VARIANT ${variant}:`, enteringClass);
+      console.log(`[CharacterPanel ${side}] 🎬 APPLIED ENTERING VARIANT ${variant}:`, enteringClass, {
+        panelElement: panelElement,
+        computedClasses: panelElement.className,
+        hasCharacterElement: !!cardboardElement.querySelector('.character-image'),
+        characterName
+      });
     } else {
       cardboardElement.classList.add('idle');
     }

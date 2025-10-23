@@ -35,7 +35,6 @@ interface TransitionManagerContextType {
     direction: 'forward' | 'backward',
     navigationArray: NavigationItem[]
   ) => string;
-  onTransitionComplete: (transitionId: string) => void;
   addEventListener: (eventType: TransitionEventType, listener: TransitionEventListener) => void;
   removeEventListener: (eventType: TransitionEventType, listener: TransitionEventListener) => void;
 }
@@ -247,37 +246,9 @@ export function TransitionManagerProvider({ children }: TransitionManagerProvide
     [extractCharacterSnapshot]
   );
 
-  /**
-   * Complete a transition - clears the active snapshot
-   * Called either by timeout or manual completion
-   */
-  const onTransitionComplete = useCallback((transitionId: string) => {
-    const current = activeTransitionRef.current;
-
-    if (!current) {
-      console.log('[TransitionManager] ℹ️  Complete called but no active transition');
-      return;
-    }
-
-    if (current.id !== transitionId) {
-      console.log('[TransitionManager] ⚠️  Complete called for non-active transition:', {
-        requested: transitionId,
-        active: current.id,
-      });
-      return;
-    }
-
-    console.log('[TransitionManager] ✅ Transition complete:', transitionId);
-
-    // Fire complete event before clearing
-    eventListenersRef.current['transition-complete'].forEach(listener => {
-      listener(current);
-    });
-
-    // Clear active transition
-    setActiveTransition(null);
-    activeTransitionRef.current = null;
-  }, []);
+  // REMOVED: onTransitionComplete - transitions are now always active
+  // Each navigation creates a new snapshot, but never clears it
+  // Components use transition.id changes to detect new transitions
 
   /**
    * Add event listener for transition lifecycle events
@@ -299,11 +270,10 @@ export function TransitionManagerProvider({ children }: TransitionManagerProvide
     (): TransitionManagerContextType => ({
       activeTransition,
       beginTransition,
-      onTransitionComplete,
       addEventListener,
       removeEventListener,
     }),
-    [activeTransition, beginTransition, onTransitionComplete, addEventListener, removeEventListener]
+    [activeTransition, beginTransition, addEventListener, removeEventListener]
   );
 
   return (

@@ -32,13 +32,22 @@ export type SceneState =
  * Navigation item - represents one "stop" in the navigation array
  * This is the fundamental unit of navigation - each scroll action moves
  * from one NavigationItem to the next
+ *
+ * IMPORTANT: Use nodeId as React key (not index) for stable reconciliation
  */
 export interface NavigationItem {
+  // Stable unique identifier for this state node (use as React key)
+  nodeId: string;
+
   // The scene this navigation item belongs to
   scene: Scene;
 
   // Unique identifier for this scene (used to detect scene changes)
   sceneId: string;
+
+  // Semantic key describing this state's purpose
+  // Examples: "enter", "speak", "exit", "dialogue:quest-showing", "dialogue:input-recording"
+  stateKey: string;
 
   // Current state of this scene
   sceneState: SceneState;
@@ -48,5 +57,8 @@ export interface NavigationItem {
   lockBackward?: boolean;
 
   // Metadata
-  index: number;  // Position in the navigation array
+  index: number;  // Position in the navigation array (for backward compatibility)
+
+  // Node status (for state-node deletion system)
+  status?: 'active' | 'pendingRemoval';
 }

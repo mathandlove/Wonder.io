@@ -12,9 +12,20 @@
  */
 import React, { createContext, useCallback, useContext, useMemo, useState } from "react";
 import type { Scene } from '@core/types/scene';
-import { buildNavigationArray } from '@core/navigation/buildNavigationArray';
 import type { NavigationItem, SceneState } from '@core/navigation/types';
 import { useTransitionManager } from '@core/navigation/useTransitionManager';
+import { buildStateNodeGraph } from '@core/navigation/stateNodeBuilder';
+import { navigatorStateToArray } from '@core/navigation/navigatorStateToArray';
+import type { NavigatorState, StateNodeId } from '@core/navigation/stateNodeTypes';
+import {
+  markNodeForRemoval,
+  compactNode,
+  findNextActiveNode,
+  findPrevActiveNode,
+  markSceneForRemoval,
+  batchCompact,
+} from '@core/navigation/stateNodeOperations';
+import { ulid } from 'ulid';
 
 /**
  * Determine scroll locks based purely on the current state
@@ -135,16 +146,46 @@ export function SceneManagerProvider({ children, initialIndex = 0 }: SceneManage
   // Access TransitionManager for coordinating animations with navigation
   const transitionManager = useTransitionManager();
 
+  // STATE NODE GRAPH: Single source of truth for navigation
+  // This replaces the array-based system with pointer-based traversal
+  const [navigatorState, setNavigatorState] = useState<NavigatorState>({
+    byId: {},
+    order: [],
+    currentId: null,
+    historyVersion: 0,
+  });
+
+  // Ref for latest navigator state (for synchronous access)
+  const navigatorStateRef = React.useRef<NavigatorState>(navigatorState);
+
   // Ref to access latest navigationArray without causing dependency changes
   const navigationArrayRef = React.useRef<NavigationItem[]>([]);
 
-  // Pending deletions: { index: number, timerId: number }[]
-  const pendingDeletionsRef = React.useRef<{ index: number; timerId: number }[]>([]);
+  // Pending deletions for state nodes: { nodeId, timerId, compactAt }[]
+  const pendingDeletionsRef = React.useRef<Map<StateNodeId, { timerId: number; compactAt: number }>>(new Map());
 
-  // Build navigation array directly from allScenes
-  const baseNavigationArray = useMemo(() => {
-    return buildNavigationArray(allScenes);
+  // Build state node graph from allScenes (single source of truth)
+  const baseNavigatorState = useMemo(() => {
+    const state = buildStateNodeGraph(allScenes);
+    console.log('[SceneManager] 🔨 Built state node graph:', {
+      nodeCount: state.order.length,
+      sceneCount: state.sceneRegistry?.order.length,
+      firstNodeId: state.order[0],
+      currentId: state.currentId,
+    });
+    return state;
   }, [allScenes]);
+
+  // Build navigation array FROM navigator state (uses same node IDs)
+  const baseNavigationArray = useMemo(() => {
+    const array = navigatorStateToArray(baseNavigatorState);
+    console.log('[SceneManager] 📋 Converted to navigation array:', {
+      length: array.length,
+      firstNodeId: array[0]?.nodeId,
+      matchesStateNodeCount: array.length === baseNavigatorState.order.length,
+    });
+    return array;
+  }, [baseNavigatorState]);
 
   // Derive visible scenes for backward compatibility
   // (scenes that are not hidden - same filtering as buildNavigationArray)
@@ -152,6 +193,38 @@ export function SceneManagerProvider({ children, initialIndex = 0 }: SceneManage
     () => allScenes.filter(scene => !scene.hidden),
     [allScenes]
   );
+
+  // Mutable navigator state (can be modified during navigation)
+  // This starts from baseNavigatorState and evolves as nodes are marked/compacted
+
+  // Wrapper for setNavigatorState that keeps ref in sync synchronously
+  const setNavigatorStateWithRef = React.useCallback((
+    update: NavigatorState | ((prev: NavigatorState) => NavigatorState)
+  ) => {
+    setNavigatorState(prev => {
+      const newState = typeof update === 'function' ? update(prev) : update;
+      // Update ref synchronously so it's immediately available
+      navigatorStateRef.current = newState;
+      return newState;
+    });
+  }, []);
+
+  // Sync navigatorState with baseNavigatorState when scenes change
+  React.useEffect(() => {
+    console.log('[SceneManager] 🔄 Syncing navigatorState from baseNavigatorState:', {
+      nodeCount: baseNavigatorState.order.length,
+      currentId: baseNavigatorState.currentId,
+      firstNode: baseNavigatorState.order[0],
+      sceneCount: baseNavigatorState.sceneRegistry?.order.length,
+    });
+    setNavigatorStateWithRef(baseNavigatorState);
+    // Do NOT touch navigationIndex/currentId - let them stay where they are
+  }, [baseNavigatorState, setNavigatorStateWithRef]);
+
+  // Update ref to always have the latest navigatorState
+  React.useEffect(() => {
+    navigatorStateRef.current = navigatorState;
+  }, [navigatorState]);
 
   // Mutable navigation array that can be collapsed as we progress forward
   const [navigationArray, _setNavigationArray] = useState<NavigationItem[]>([]);
@@ -210,6 +283,38 @@ export function SceneManagerProvider({ children, initialIndex = 0 }: SceneManage
 
     return null;
   }, [getCurrentScene]);
+
+  // =============================================================================
+  // HELPER FUNCTIONS: Convert between nodeId and navigationIndex
+  // =============================================================================
+
+  /**
+   * Get nodeId from navigationIndex
+   * Uses the current navigationArray (which may have collapsed states)
+   */
+  const getNodeIdFromIndex = useCallback((index: number): StateNodeId | null => {
+    const item = navigationArrayRef.current[index];
+    return item?.nodeId || null;
+  }, []);
+
+  /**
+   * Get navigationIndex from nodeId
+   * Returns the current index in the navigationArray
+   */
+  const getIndexFromNodeId = useCallback((nodeId: StateNodeId): number => {
+    return navigationArrayRef.current.findIndex(item => item.nodeId === nodeId);
+  }, []);
+
+  /**
+   * Get current nodeId (from navigationIndex)
+   */
+  const getCurrentNodeId = useCallback((): StateNodeId | null => {
+    return getNodeIdFromIndex(navigationIndex);
+  }, [getNodeIdFromIndex, navigationIndex]);
+
+  // =============================================================================
+  // LEGACY NAVIGATION METHODS
+  // =============================================================================
 
   const goToIndex = useCallback((index: number) => {
     const clampedIndex = Math.max(0, Math.min(index, visibleScenes.length - 1));
@@ -426,6 +531,8 @@ export function SceneManagerProvider({ children, initialIndex = 0 }: SceneManage
    * This creates a new NavigationItem for the same scene but with a different state
    * Useful for transitions like: input-showInput → record-answer → answer-waiting → answer-right/wrong
    *
+   * IMPORTANT: Generates a new stable nodeId for the new state
+   *
    * @param newState - The new state to add
    * @param insertAfterCurrent - If true, inserts after current index. If false, replaces current.
    * @returns The index of the newly added navigation item
@@ -441,16 +548,37 @@ export function SceneManagerProvider({ children, initialIndex = 0 }: SceneManage
     }
 
     const locks = getLocksForState(newState);
+
+    // Generate stable unique nodeId for the new state
+    const newNodeId = ulid();
+
+    // Extract stateKey from newState
+    let stateKey = 'unknown';
+    if (newState.type === 'dialogue') {
+      stateKey = `dialogue:${newState.state}`;
+    } else if (newState.type === 'image') {
+      stateKey = `image:${newState.state}`;
+    } else {
+      stateKey = newState.type;
+    }
+
     const newItem: NavigationItem = {
+      nodeId: newNodeId, // CRITICAL: Stable unique ID for React keys
       scene: currentItem.scene, // Same scene
       sceneId: currentItem.sceneId, // Same sceneId
+      stateKey, // Semantic state key
       sceneState: newState, // New state
       lockForward: locks.lockForward,
       lockBackward: locks.lockBackward,
       index: insertAfterCurrent ? navigationIndex + 1 : navigationIndex,
+      status: 'active',
     };
 
-
+    console.log('[addNavigationStateToCurrentScene] Creating new state node:', {
+      nodeId: newNodeId,
+      stateKey,
+      insertAfterCurrent,
+    });
 
     if (insertAfterCurrent) {
       // Insert after current position
@@ -553,87 +681,207 @@ export function SceneManagerProvider({ children, initialIndex = 0 }: SceneManage
     onComplete?.();
   }, [currentIndex, hideScene]);
 
-  // Force advance navigation (bypasses locks but still collapses states)
-  // Note: Uses navigationArrayRef which is kept in sync synchronously via setNavigationArray wrapper
+  // =============================================================================
+  // STATE-NODE DELETION: Two-phase deletion with rewiring
+  // =============================================================================
+
+  /**
+   * Mark a state node for removal and schedule compaction
+   *
+   * Phase 1 (Immediate): Mark node as pendingRemoval, rewire neighbors
+   * Phase 2 (Deferred): Compact (physically remove) after animation completes
+   *
+   * @param nodeId - Node to mark for removal
+   */
+  const markStateNodeForRemoval = useCallback((nodeId: StateNodeId) => {
+    const currentState = navigatorStateRef.current;
+
+    // Mark node and get rewiring operations
+    const { state: newState, rewiring } = markNodeForRemoval(currentState, nodeId);
+
+    console.log('[SceneManager] 🔖 Marked node for removal:', {
+      nodeId,
+      rewiring: rewiring.length,
+    });
+
+    // Update navigator state immediately
+    setNavigatorStateWithRef(newState);
+
+    // Schedule compaction after transition duration + buffer
+    const TRANSITION_DURATION_MS = 2000;
+    const BUFFER_MS = 500;
+    const compactAt = performance.now() + TRANSITION_DURATION_MS + BUFFER_MS;
+
+    const timerId = window.setTimeout(() => {
+      console.log('[SceneManager] ♻️  Compaction timer fired for node:', nodeId);
+
+      // Remove from pending deletions map
+      pendingDeletionsRef.current.delete(nodeId);
+
+      // Compact the node
+      setNavigatorStateWithRef(prevState => compactNode(prevState, nodeId));
+    }, TRANSITION_DURATION_MS + BUFFER_MS);
+
+    // Track pending deletion
+    pendingDeletionsRef.current.set(nodeId, { timerId, compactAt });
+  }, [setNavigatorStateWithRef]);
+
+  /**
+   * Process all pending node compactions immediately
+   * Called before navigation to clean up stale nodes
+   */
+  const processAllPendingCompactions = useCallback(() => {
+    if (pendingDeletionsRef.current.size === 0) return;
+
+    console.log('[SceneManager] 🧹 Processing all pending compactions:', pendingDeletionsRef.current.size);
+
+    // Cancel all timers
+    for (const [nodeId, { timerId }] of pendingDeletionsRef.current.entries()) {
+      clearTimeout(timerId);
+      console.log('[SceneManager] ⏹️  Cancelled compaction timer for:', nodeId);
+    }
+
+    // Batch compact all pending nodes
+    const nodeIds = Array.from(pendingDeletionsRef.current.keys());
+    setNavigatorStateWithRef(prevState => batchCompact(prevState, nodeIds));
+
+    // Clear pending map
+    pendingDeletionsRef.current.clear();
+  }, [setNavigatorStateWithRef]);
+
+  // =============================================================================
+  // STATE-NODE NAVIGATION: Pointer-based traversal with skip-back rewiring
+  // =============================================================================
+
+  /**
+   * Force advance navigation with state-node skip-back rewiring
+   *
+   * Implements the full skip-back deletion behavior:
+   * 1. Begin transition (capture frozen snapshot FIRST)
+   * 2. Process pending compactions (clean up before move)
+   * 3. Find next/prev active node (skip pendingRemoval nodes)
+   * 4. If moving FORWARD: mark current node for removal + rewire
+   * 5. If moving BACKWARD: navigate via prev pointers (already rewired)
+   * 6. Update navigationIndex to match new currentId
+   *
+   * Bypasses locks but respects the state-node graph structure.
+   */
   const forceAdvanceNavigation = useCallback((direction: 'forward' | 'backward') => {
     const currentArray = navigationArrayRef.current;
-    const delta = direction === 'forward' ? 1 : -1;
-    const next = navigationIndex + delta;
-    const clamped = Math.max(0, Math.min(next, currentArray.length - 1));
+    const currentState = navigatorStateRef.current;
+    const currentNodeId = getCurrentNodeId();
 
-    if (clamped === navigationIndex) return;
+    console.log('[forceAdvanceNavigation] 🚀 Starting navigation:', {
+      direction,
+      currentNodeId,
+      navigationIndex,
+      navigatorStateNodeCount: currentState.order.length,
+      navigationArrayLength: currentArray.length,
+    });
+
+    if (!currentNodeId) {
+      console.warn('[forceAdvanceNavigation] ⚠️  No current node ID');
+      return;
+    }
+
+    // Get current node from graph
+    const currentNode = currentState.byId[currentNodeId];
+    if (!currentNode) {
+      console.error('[forceAdvanceNavigation] ❌ Current node not found in byId:', currentNodeId);
+      return;
+    }
+
+    console.log('[forceAdvanceNavigation] 📍 Current node:', {
+      id: currentNode.id,
+      stateKey: currentNode.stateKey,
+      sceneId: currentNode.sceneId,
+      prevId: currentNode.prevId,
+      nextId: currentNode.nextId,
+      status: currentNode.status,
+    });
+
+    // Find next active node based on direction
+    const nextActiveNode = direction === 'forward'
+      ? findNextActiveNode(currentState, currentNodeId)
+      : findPrevActiveNode(currentState, currentNodeId);
+
+    if (!nextActiveNode) {
+      console.warn('[forceAdvanceNavigation] ⚠️  No active node in direction:', direction);
+      console.log('[forceAdvanceNavigation] Graph state:', {
+        totalNodes: currentState.order.length,
+        currentNodeNextId: currentNode.nextId,
+        currentNodePrevId: currentNode.prevId,
+      });
+      return; // At head or tail
+    }
+
+    // Get indices for transition manager (uses current navigationArray)
+    const fromIndex = navigationIndex;
+    const toIndex = getIndexFromNodeId(nextActiveNode.id);
+
+    if (toIndex === -1) {
+      console.warn('[forceAdvanceNavigation] Target node not found in navigationArray:', nextActiveNode.id);
+      return;
+    }
 
     // CRITICAL: Begin transition FIRST, before any mutations
     // This captures the frozen snapshot of character data
-    transitionManager.beginTransition(navigationIndex, clamped, direction, currentArray);
+    transitionManager.beginTransition(fromIndex, toIndex, direction, currentArray);
 
-    // Process any pending deletions after capturing snapshot
-    processPendingDeletions();
+    // Process any pending compactions after capturing snapshot
+    processAllPendingCompactions();
 
-    // Track the actual navigation index we ended up at (for currentIndex sync below)
-    let finalNavigationIndex = clamped;
+    // SKIP-BACK REWIRING: Only mark for removal when navigating within the same scene
+    // This collapses intra-scene states (e.g., quest-basic → quest-showing → quest-accepted)
+    // Cross-scene navigation preserves history for backward navigation
+    if (direction === 'forward') {
+      const isSameScene = currentNode.sceneId === nextActiveNode.sceneId;
 
-    // When moving FORWARD, collapse previous states of the same scene
-    if (direction === 'forward' && clamped < currentArray.length) {
-      const targetItem = currentArray[clamped];
-      const currentItem = currentArray[navigationIndex];
-
-      // Check if we're moving to next state of same scene
-      if (targetItem && currentItem && targetItem.sceneId === currentItem.sceneId) {
-        const newArray = currentArray.filter((item, idx) => {
-          return item.sceneId !== targetItem.sceneId || idx >= clamped;
-        });
-
-        setNavigationArray(newArray);
-        const newIndex = newArray.findIndex(item => item === targetItem);
-        setNavigationIndex(newIndex);
-        finalNavigationIndex = newIndex;
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-
+      if (isSameScene) {
+        console.log('[forceAdvanceNavigation] ⏭️  Same-scene forward - marking current node for removal:', currentNode.stateKey);
+        markStateNodeForRemoval(currentNodeId);
       } else {
-        setNavigationIndex(clamped);
+        console.log('[forceAdvanceNavigation] ➡️  Cross-scene forward - preserving current node for history:', currentNode.stateKey);
+        // Do NOT mark for removal - preserve for backward navigation
       }
-    } else if (direction === 'backward') {
-      // When moving BACKWARD, skip over previous states of the same scene
-      // Jump directly to a different scene
-      const currentItem = currentArray[navigationIndex];
-      const targetItem = currentArray[clamped];
+    }
 
-      if (targetItem && currentItem && targetItem.sceneId === currentItem.sceneId) {
-        // Same scene - keep going backward until we find a different scene
-        let backwardIndex = clamped - 1;
-        while (backwardIndex >= 0 && currentArray[backwardIndex].sceneId === currentItem.sceneId) {
-          backwardIndex--;
-        }
-
-        if (backwardIndex >= 0) {
-
-          setNavigationIndex(backwardIndex);
-          finalNavigationIndex = backwardIndex;
-        } else {
-          // No different scene found, stay at current position
-
-          return; // Don't update anything
-        }
-      } else {
-        setNavigationIndex(clamped);
-      }
+    // Update navigationIndex to point to the new node
+    // Note: toIndex may have changed if nodes were compacted, so recalculate
+    const finalIndex = getIndexFromNodeId(nextActiveNode.id);
+    if (finalIndex !== -1) {
+      setNavigationIndex(finalIndex);
     } else {
-      setNavigationIndex(clamped);
+      console.warn('[forceAdvanceNavigation] Target node disappeared after compaction');
     }
 
-    // Also update currentIndex for backward compatibility
-    const item = currentArray[finalNavigationIndex];
-    if (item) {
-      const sceneIndex = visibleScenes.findIndex(s => {
-        const sceneWithId = s as Scene & { sceneId?: string };
-        return sceneWithId.sceneId === item.sceneId;
-      });
-      if (sceneIndex !== -1) {
-        setCurrentIndex(sceneIndex);
-      }
+    // Update currentIndex for backward compatibility with legacy scene-based navigation
+    const sceneIndex = visibleScenes.findIndex(s => {
+      const sceneWithId = s as Scene & { sceneId?: string };
+      return sceneWithId.sceneId === nextActiveNode.sceneId;
+    });
+    if (sceneIndex !== -1) {
+      setCurrentIndex(sceneIndex);
     }
-  }, [navigationIndex, setNavigationIndex, setNavigationArray, visibleScenes, setCurrentIndex, processPendingDeletions, transitionManager]);
+
+    console.log('[forceAdvanceNavigation] ✅ Navigation complete:', {
+      direction,
+      from: currentNodeId,
+      to: nextActiveNode.id,
+      fromIndex,
+      toIndex: finalIndex,
+    });
+  }, [
+    navigationIndex,
+    getCurrentNodeId,
+    getIndexFromNodeId,
+    setNavigationIndex,
+    setCurrentIndex,
+    visibleScenes,
+    transitionManager,
+    processAllPendingCompactions,
+    markStateNodeForRemoval,
+  ]);
 
   // Navigation array-based navigation with state collapse
   // Note: We use navigationArrayRef to access the latest array without causing dependency changes
