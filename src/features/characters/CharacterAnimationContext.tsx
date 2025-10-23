@@ -18,7 +18,7 @@ export const CharacterAnimationProvider: React.FC<{ children: React.ReactNode }>
   // Track which animations have already completed
   const [completedAnimations, setCompletedAnimations] = useState<Record<number, Record<string, boolean>>>({});
   // Event listeners for animation events
-  const [eventListeners, setEventListeners] = useState<Record<AnimationEventType, AnimationEventListener[]>>({
+  const [, setEventListeners] = useState<Record<AnimationEventType, AnimationEventListener[]>>({
     'entrance-complete': [],
     'jiggle-complete': []
   });

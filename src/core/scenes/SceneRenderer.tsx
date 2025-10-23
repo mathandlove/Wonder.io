@@ -51,7 +51,7 @@ export const SceneRenderer = React.memo(function SceneRenderer({ scene, sceneInd
   const Comp = sceneRegistry[scene.type] as ComponentType<SceneProps> | undefined;
 
   if (!Comp) {
-    if (process.env.NODE_ENV !== "production") {
+    if (import.meta.env.DEV) {
       console.warn(`Unknown scene type: ${scene.type}`);
     }
     return (

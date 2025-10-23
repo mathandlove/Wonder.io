@@ -8,20 +8,17 @@
  */
 
 import React from 'react';
-import { useNodeManager } from '@core/navigation/NodeManager';
+import { useNavigationStore, selectCurrentNode } from '@core/navigation/navigationStore';
 import { useChatFlowOrchestrator } from './ChatFlowOrchestrator';
 
 export function ChatFlowOrchestratorComponent() {
-  const nodeManager = useNodeManager();
   const chatFlow = useChatFlowOrchestrator();
 
   // Track if we're currently processing to avoid duplicate calls
   const [processingRecordingId, setProcessingRecordingId] = React.useState<string | null>(null);
 
-  // Get current node from NodeManager - memoized and reactive to nodeManager changes
-  const currentNode = React.useMemo(() => {
-    return nodeManager.getCurrentNode();
-  }, [nodeManager]);
+  // Subscribe to current node from navigation store
+  const currentNode = useNavigationStore(selectCurrentNode);
 
   // Extract primitive values for effect dependencies (so effect re-runs when these change)
   const sceneState = currentNode?.sceneState;
@@ -29,7 +26,7 @@ export function ChatFlowOrchestratorComponent() {
   const questionText = sceneState?.type === 'dialogue' ? sceneState.questionText : undefined;
   const currentScene = currentNode?.scene;
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const recordingId = currentScene && 'recordingId' in currentScene ? (currentScene as any).recordingId : undefined;
+  const recordingId = currentScene && typeof currentScene === 'object' && 'recordingId' in currentScene ? (currentScene as any).recordingId : undefined;
 
   // Auto-trigger AI response when scene enters ai-waiting state with valid transcript
   React.useEffect(() => {

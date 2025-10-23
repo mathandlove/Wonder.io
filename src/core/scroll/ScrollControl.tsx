@@ -12,7 +12,8 @@
 import React, { useRef, useCallback, useLayoutEffect, useEffect } from 'react';
 import type { Scene } from '@core/types/scene';
 import { useStepScroll } from './useStepScroll';
-import { useNodeManager } from '@core/navigation/NodeManager';
+import { useNavigationStore, selectCurrentNodeId } from '@core/navigation/navigationStore';
+import { getCurrentNode, advanceNavigation } from '@core/navigation/navigationHelpers';
 import { useSceneOrchestrator } from '../scenes/useSceneOrchestrator';
 import { SceneOrchestratorProvider } from '../scenes/SceneOrchestratorContext';
 import { useSceneStates } from '@core/data/PersistentObjects';
@@ -49,9 +50,8 @@ export function ScrollControl({
 }: ScrollControlProps) {
   const containerRef = useRef<HTMLDivElement>(null);
 
-  // Get navigation from NodeManager (single source of truth)
-  const nodeManager = useNodeManager();
-  const { advanceNavigation, navigationGraph } = nodeManager;
+  // OPTIMIZED: Subscribe only to currentId for sceneState updates
+  const currentNodeId = useNavigationStore(selectCurrentNodeId);
 
   // Get SceneStates for persistent state cache
   const sceneStates = useSceneStates();
@@ -66,14 +66,14 @@ export function ScrollControl({
   // This keeps a persistent cache of scene states that persists even when scrolling past scenes
   // Required for ImageScene captions to remember their state after scrolling past
   useEffect(() => {
-    const currentNode = nodeManager.getCurrentNode();
+    const currentNode = getCurrentNode();
     if (!currentNode) {
       return;
     }
 
     const { sceneId, sceneState } = currentNode;
     sceneStates.updateSceneState(sceneId, sceneState);
-  }, [navigationGraph.currentId, nodeManager, sceneStates]);
+  }, [currentNodeId, sceneStates]);
 
   // Check if input is focused
   const isInputFocused = useCallback(() => {

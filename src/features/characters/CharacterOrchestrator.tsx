@@ -1,6 +1,6 @@
 import React, { useMemo, useLayoutEffect } from "react";
 import { useCharacterAnimation } from '@features/characters/CharacterAnimationContext';
-import { useNodeManager } from '@core/navigation/NodeManager';
+import { useNavigationStore, selectCurrentNodeId, selectLastFrozenNode, selectNavigationGraph } from '@core/navigation/navigationStore';
 import type { Scene } from '@core/types/scene';
 import { getNodeById } from '@core/navigation/navigationGraphBuilder';
 import { CharacterPanel } from "./CharacterPanel";
@@ -14,12 +14,17 @@ type Props = {
 
 export const CharacterOrchestrator: React.FC<Props> = ({ storyId, scenes }) => {
   const { notifyEntranceComplete } = useCharacterAnimation();
-  const { navigationGraph, getCurrentNodeId } = useNodeManager();
+
+  // OPTIMIZED: Subscribe only to currentId and lastFrozenNode
+  // This prevents re-renders when other parts of the graph change (insertions, deletions, etc.)
+  const currentId = useNavigationStore(selectCurrentNodeId);
+  const lastFrozenNode = useNavigationStore(selectLastFrozenNode);
+  const graph = useNavigationStore(selectNavigationGraph);
 
   // Compute panel data from current node in navigation graph
   // Use currentNode.nodeId as animation nonce, lastFrozenNode for previousSceneId
   const { leftPanel, rightPanel, currentSpeaker, isJiggling, transitionNonce, currentSceneId, previousSceneId } = useMemo(() => {
-    const nodeId = getCurrentNodeId();
+    const nodeId = currentId;
 
     if (!nodeId) {
       return {
@@ -39,7 +44,7 @@ export const CharacterOrchestrator: React.FC<Props> = ({ storyId, scenes }) => {
       };
     }
 
-    const currentNode = getNodeById(navigationGraph, nodeId);
+    const currentNode = getNodeById(graph, nodeId);
 
     if (!currentNode) {
       return {
@@ -64,11 +69,12 @@ export const CharacterOrchestrator: React.FC<Props> = ({ storyId, scenes }) => {
 
     // Check if we're in answer-right state or success-dance scene (should trigger jiggle dance)
     const dialogueState = currentNode.sceneState?.type === 'dialogue' ? currentNode.sceneState.state : null;
-    const isSuccessDanceScene = currentNode.scene?.type === 'success-dance';
+    const scene = currentNode.scene as Scene | undefined;
+    const isSuccessDanceScene = scene?.type === 'success-dance';
     const shouldJiggle = dialogueState === 'answer-right' || isSuccessDanceScene;
 
     // Get frozen snapshot node (the state BEFORE this transition started)
-    const frozenNode = navigationGraph.lastFrozenNode;
+    const frozenNode = lastFrozenNode;
 
     // Helper to extract character from a node or frozen snapshot
     const getChar = (node: typeof currentNode | typeof frozenNode | null, side: 'left' | 'right') => {
@@ -94,9 +100,9 @@ export const CharacterOrchestrator: React.FC<Props> = ({ storyId, scenes }) => {
       isJiggling: shouldJiggle,
       transitionNonce: currentNode.id, // Use current node ID as animation nonce
       currentSceneId: currentNode.sceneId, // Current scene from live node
-      previousSceneId: navigationGraph.lastFrozenNode?.sceneId // Previous scene from frozen snapshot
+      previousSceneId: lastFrozenNode?.sceneId // Previous scene from frozen snapshot
     };
-  }, [navigationGraph, getCurrentNodeId]);
+  }, [currentId, lastFrozenNode, graph]);
 
   // Create callbacks to notify when entrance completes
   // Using nodeId instead of scene index for coordination

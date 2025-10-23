@@ -10,19 +10,19 @@
  */
 
 import type { Scene } from '@core/types/scene';
-import type { NavigationItem } from './types';
+import type { Node } from './navigationGraphTypes';
 import { buildNavigationGraph, getNodeById } from './navigationGraphBuilder';
 
 /**
  * Main builder function - converts scenes to navigation array
  * Filters out hidden scenes and expands remaining scenes into navigation items
  */
-export function buildNavigationArray(scenes: Scene[]): NavigationItem[] {
+export function buildNavigationArray(scenes: Scene[]): Node[] {
   // Build navigation graph
   const navigationGraph = buildNavigationGraph(scenes);
 
-  // Convert nodes to NavigationItems
-  const navigationArray: NavigationItem[] = [];
+  // Convert nodes to array
+  const navigationArray: Node[] = [];
 
   for (let i = 0; i < navigationGraph.order.length; i++) {
     const nodeId = navigationGraph.order[i];
@@ -33,20 +33,7 @@ export function buildNavigationArray(scenes: Scene[]): NavigationItem[] {
       continue;
     }
 
-    // Convert Node to NavigationItem
-    const navItem: NavigationItem = {
-      nodeId: node.id,
-      scene: node.scene as Scene, // Scene is stored in the node
-      sceneId: node.sceneId,
-      stateKey: node.stateKey,
-      sceneState: node.sceneState,
-      lockForward: node.lockForward,
-      lockBackward: node.lockBackward,
-      index: i,
-      status: node.status,
-    };
-
-    navigationArray.push(navItem);
+    navigationArray.push(node);
   }
 
   return navigationArray;

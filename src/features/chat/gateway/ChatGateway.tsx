@@ -7,7 +7,7 @@
  * 4) Returns the response text to the caller (orchestrator handles scene creation)
  */
 
-import React, { createContext, useContext, useCallback, useRef, type ReactNode } from 'react';
+import React, { createContext, useContext, useCallback, type ReactNode } from 'react';
 
 // ============================================================================
 // Types
@@ -77,8 +77,6 @@ export const ChatGatewayProvider: React.FC<ChatGatewayProviderProps> = ({
 }) => {
   const [isProcessing, setIsProcessing] = React.useState(false);
   const [lastError, setLastError] = React.useState<string | undefined>();
-  const wsRef = useRef<WebSocket | null>(null);
-  const accumulatedTextRef = useRef<string>('');
 
   /**
    * Mock AI response (Claude proxy has been removed)

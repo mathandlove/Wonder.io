@@ -8,12 +8,11 @@
  */
 
 import React from 'react';
-import { useNodeManager } from '@core/navigation/NodeManager';
+import { getCurrentNode, getCurrentNodeId, updateNodeState } from '@core/navigation/navigationHelpers';
 import { validateAnswer, type AnswerValidationResult } from './validateAnswer';
 import { useAIMemory } from '@core/ai/useAIMemory';
 
 export function AnswerValidationOrchestrator() {
-  const { getCurrentNode, getCurrentNodeId, updateNodeState } = useNodeManager();
   const aiMemory = useAIMemory();
 
   // Track if we're currently processing to avoid duplicate calls
@@ -76,7 +75,7 @@ export function AnswerValidationOrchestrator() {
         });
       }
     }
-  }, [currentNode, currentNodeId, processingNodeId, updateNodeState, aiMemory]);
+  }, [currentNode, currentNodeId, processingNodeId, aiMemory]);
 
   // This is a logic-only component, renders nothing
   return null;

@@ -10,7 +10,7 @@
  * - Navigation graph statistics
  */
 import { useEffect, useState } from 'react';
-import { useNodeManager } from '@core/navigation/NodeManager';
+import { useNavigationStore, selectNavigationGraph, selectCurrentNode } from '@core/navigation/navigationStore';
 import type { Scene } from '@core/types/scene';
 import type { ImageState } from '@core/dialogue/types';
 
@@ -44,12 +44,18 @@ export function StepScrollDebug() {
 
   const [isVisible, setIsVisible] = useState(getInitialVisibility);
 
-  // Get node manager for navigation context (single source of truth)
-  const nodeManager = useNodeManager();
+  // Subscribe to navigation store (single source of truth)
+  const navigationGraph = useNavigationStore(selectNavigationGraph);
+  const currentNodeFromStore = useNavigationStore(selectCurrentNode);
 
-  // Get current node and navigation graph
-  const currentNode = nodeManager.getCurrentNode();
-  const { navigationGraph } = nodeManager;
+  // Convert to Node format for compatibility
+  const currentNode = currentNodeFromStore ? {
+    nodeId: currentNodeFromStore.id,
+    scene: currentNodeFromStore.scene as Scene,
+    sceneId: currentNodeFromStore.sceneId,
+    sceneState: currentNodeFromStore.sceneState,
+    status: currentNodeFromStore.status,
+  } : null;
 
   // Get current index from navigation graph
   const currentNodeId = navigationGraph.currentId;

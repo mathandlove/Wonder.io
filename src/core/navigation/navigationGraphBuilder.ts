@@ -100,6 +100,7 @@ export function buildNavigationGraph(scenes: Scene[]): NavigationGraph {
     byId,
     order,
     currentId: order.length > 0 ? order[0] : null,
+    lastFrozenNode: null,
     historyVersion: 0,
     sceneRegistry,
   };

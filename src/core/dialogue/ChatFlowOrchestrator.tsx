@@ -17,7 +17,7 @@
 import { useCallback } from 'react';
 import { useAIModule } from '@features/ai/useAIModule';
 import { useSceneFactory } from '@core/navigation/SceneFactory';
-import { useNodeManager} from '@core/navigation/NodeManager';
+import { getCurrentNode, getCurrentNodeId, updateNodeState, insertSceneNodes, forceAdvanceNavigation } from '@core/navigation/navigationHelpers';
 import { useSceneFlowMetadata } from '@core/data/FlowMetadataStore';
 import { useAIMemory } from '@core/ai/useAIMemory';
 import type { CharacterScene, Scene } from '@core/types/scene';
@@ -66,11 +66,10 @@ export function useChatFlowOrchestrator(props?: ChatFlowOrchestratorProps) {
 
   const aiModule = useAIModule();
   const sceneFactory = useSceneFactory();
-  const nodeManager = useNodeManager();
   const aiMemory = useAIMemory();
 
   // Get current scene to access flow metadata
-  const currentNavItem = nodeManager.getCurrentNode();
+  const currentNavItem = getCurrentNode();
   const currentScene = currentNavItem?.scene;
   const flowMetadata = useSceneFlowMetadata(hasFlowId(currentScene) ? currentScene : null);
 
@@ -83,7 +82,7 @@ export function useChatFlowOrchestrator(props?: ChatFlowOrchestratorProps) {
 
     try {
       // Step 1: Get the current scene context for scene creation
-      const currentNavItem = nodeManager.getCurrentNode();
+      const currentNavItem = getCurrentNode();
       const currentScene = currentNavItem?.scene;
 
       // Extract context from current scene or use metadata
@@ -143,21 +142,20 @@ export function useChatFlowOrchestrator(props?: ChatFlowOrchestratorProps) {
 
       // Step 4: Update previous node state to 'basic' (remove input UI, locks auto-recalculated)
       // This collapses the recording input UI from the previous scene
-      const currentNodeId = nodeManager.getCurrentNodeId();
+      const currentNodeId = getCurrentNodeId();
       if (currentNodeId) {
-        nodeManager.updateNodeState(currentNodeId, {
+        updateNodeState(currentNodeId, {
           type: 'dialogue' as const,
           state: 'basic' as const
         });
       }
 
-      // Step 5: Insert the scene after current scene using sceneId-based insertion
+      // Step 5: Insert the scene after current node
       // This properly maintains the state-node graph structure
-      const currentSceneId = nodeManager.getCurrentSceneId();
-      nodeManager.insertScene(currentSceneId, finalScene);
+      insertSceneNodes(currentNodeId, finalScene);
 
       // Step 6: Navigate to the new scene
-      nodeManager.forceAdvanceNavigation('forward');
+      forceAdvanceNavigation('forward');
 
 
     } catch (error) {
@@ -165,7 +163,7 @@ export function useChatFlowOrchestrator(props?: ChatFlowOrchestratorProps) {
       console.error('❌ ChatFlowOrchestrator error:', errorMessage);
       onError?.(errorMessage);
     }
-  }, [aiModule, sceneFactory, nodeManager, aiMemory, onError, onResponseReceived, onSceneCreated]);
+  }, [aiModule, sceneFactory, aiMemory, onError, onResponseReceived, onSceneCreated]);
 
   /**
    * Convenience function for processing transcript completion

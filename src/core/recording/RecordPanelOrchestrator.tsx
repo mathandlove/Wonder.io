@@ -15,7 +15,7 @@
  * - Quest completion determines if Next button is unlocked
  */
 import React, { useCallback, useEffect } from 'react';
-import { useNodeManager } from '@core/navigation/NodeManager';
+import { getCurrentNode, getCurrentNodeId, insertSceneNodes, addStateToCurrentNode, updateNodeState, updateSceneTextByRecordingId, forceAdvanceNavigation } from '@core/navigation/navigationHelpers';
 import { useSceneFlowMetadata } from '@core/data/FlowMetadataStore';
 import { useSceneFactory } from '@core/navigation/SceneFactory';
 import { Recording } from '@core/recording/RecordingAPI';
@@ -44,7 +44,6 @@ function hasFlowId(scene: Scene | undefined | null): scene is SceneWithFlowId {
 }
 
 export function RecordingOrchestrator() {
-  const { getCurrentNode, getCurrentNodeId, getCurrentSceneId, insertSceneNodes, addStateToCurrentNode, updateNodeState, updateSceneTextByRecordingId, forceAdvanceNavigation } = useNodeManager();
   const { createRecordingScene, createFailDanceScene, createSuccessDanceScene } = useSceneFactory();
   const recording = useRecording();
 
@@ -212,7 +211,8 @@ export function RecordingOrchestrator() {
 
       return () => clearTimeout(timerId);
     }
-  }, [dialogueState, answerWrongVideoComplete, sceneState, currentNode?.scene, getCurrentSceneId, getCurrentNodeId, insertSceneNodes, forceAdvanceNavigation, createFailDanceScene, updateNodeState]);
+     
+  }, [dialogueState, answerWrongVideoComplete, sceneState, currentNode?.scene, createFailDanceScene]);
 
   // Effect: Auto-transition from answer-right to success-dance scene, triggered AFTER video ends
   useEffect(() => {
@@ -284,7 +284,7 @@ export function RecordingOrchestrator() {
 
       return () => clearTimeout(timerId);
     }
-  }, [dialogueState, answerRightVideoComplete, sceneState, currentNode?.scene, getCurrentSceneId, getCurrentNodeId, insertSceneNodes, forceAdvanceNavigation, createSuccessDanceScene, updateNodeState]);
+  }, [dialogueState, answerRightVideoComplete, sceneState, currentNode?.scene, createSuccessDanceScene]);
 
   // ===================================
   // RECORDING FLOW LOGIC
@@ -407,9 +407,9 @@ export function RecordingOrchestrator() {
             });
           }
         }
-      } 
+      }
     }
-  }, [displayText, isRecording, sceneState, activeRecordingId, updateSceneTextByRecordingId, getCurrentNode, getCurrentNodeId, updateNodeState]);
+  }, [displayText, isRecording, sceneState, activeRecordingId]);
 
   // Register onAutoStop callback when in recording states
   // This allows the auto-stop timeout to call handleRecordStop and transition state properly
@@ -525,7 +525,7 @@ export function RecordingOrchestrator() {
     } catch {
       // Silent error handling - recording failed to start
     }
-  }, [getCurrentNodeId, insertSceneNodes, forceAdvanceNavigation, updateNodeState, currentNode?.scene, createRecordingScene]);
+  }, [currentNode?.scene, createRecordingScene]);
 
   /**
    * Handle recording stop - NEW BATCH PROCESSING FLOW
@@ -577,7 +577,7 @@ export function RecordingOrchestrator() {
     // onFinal callback will update the text in input-processing state
     // When transcript arrives, transcript sync effect will transition to ai-waiting
     // ChatFlowOrchestrator will trigger AI processing when in ai-waiting state
-  }, [sceneState, getCurrentNodeId, updateNodeState, activeRecordingId, updateSceneTextByRecordingId]);
+  }, [sceneState, activeRecordingId]);
 
   // Update ref when handleRecordStop changes (so effects can use it)
   React.useEffect(() => {
@@ -590,7 +590,7 @@ export function RecordingOrchestrator() {
    */
   const handleAcceptQuest = useCallback(() => {
     forceAdvanceNavigation('forward');
-  }, [forceAdvanceNavigation]);
+  }, []);
 
 
   /**
@@ -632,7 +632,7 @@ export function RecordingOrchestrator() {
     } catch {
       // Silent error handling - recording failed to start
     }
-  }, [addStateToCurrentNode, forceAdvanceNavigation, getCurrentNode]);
+  }, []);
 
   // Don't render if panel shouldn't be visible
   if (!shouldShowPanel) {

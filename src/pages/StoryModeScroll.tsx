@@ -7,7 +7,8 @@ import { useStory } from '@core/data/useStory';
 import { FlowLayout } from '@features/flow-layout/FlowLayout';
 import { SceneRenderer } from '@core/scenes/SceneRenderer';
 import { SceneFactoryProvider } from '@core/navigation/SceneFactory';
-import { useNodeManager } from '@core/navigation/NodeManager';
+import { setScenes, getCurrentNode } from '@core/navigation/navigationHelpers';
+import { useNavigationStore, selectNavigationGraph, selectCurrentNodeId } from '@core/navigation/navigationStore';
 import { BackgroundOrchestrator } from '@features/background/BackgroundOrchestrator';
 import { CharacterOrchestrator } from '@features/characters/CharacterOrchestrator';
 import { SpeechBubbleOrchestrator } from '@features/chat/orchestrators/SpeechBubbleOrchestrator';
@@ -74,12 +75,9 @@ const StoryContent: React.FC = () => {
   // Track if we've already populated the store to prevent infinite loops
   const hasPopulatedMetadata = React.useRef(false);
 
-  // Navigation context
-  const {
-    setScenes,
-    navigationGraph,
-    getCurrentNode,
-  } = useNodeManager();
+  // OPTIMIZED: Subscribe only to specific graph slices instead of entire navigationGraph
+  const navigationGraph = useNavigationStore(selectNavigationGraph);
+  const currentNodeId = useNavigationStore(selectCurrentNodeId);
 
   // Dialogue context for turn banners
   const { showTurnBanner, turnBannerText } = useDialogue();
@@ -95,7 +93,7 @@ const StoryContent: React.FC = () => {
     setScenes(processedScenes);
 
     hasInitializedGraph.current = true;
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+     
   }, [story?.scenes]); // Only depend on story.scenes, ignore setScenes to prevent loops
 
   // Build array of all nodes from navigation graph for rendering
@@ -143,16 +141,15 @@ const StoryContent: React.FC = () => {
     });
 
     return index >= 0 ? index : 0;
-  }, [getCurrentNode, uniqueScenes]);
+  }, [uniqueScenes]);
 
   // Calculate navigation index (position in the full node array)
   const navigationIndex = useMemo(() => {
-    const currentNodeId = navigationGraph.currentId;
     if (!currentNodeId) return 0;
 
     const index = navigationGraph.order.indexOf(currentNodeId);
     return index >= 0 ? index : 0;
-  }, [navigationGraph]);
+  }, [currentNodeId, navigationGraph.order]);
 
   // Populate flow metadata store when story loads (only once)
   React.useEffect(() => {
@@ -175,7 +172,7 @@ const StoryContent: React.FC = () => {
     // Inject panel metadata once during story load
     const processedScenes = injectPanelMetaFromFlows(story.scenes);
     setScenes(processedScenes);
-  }, [story?.scenes, setScenes]);
+  }, [story?.scenes]);
 
   // Handle scene index changes - now handled via scroll control
   // ScrollControl manages the visual scroll position

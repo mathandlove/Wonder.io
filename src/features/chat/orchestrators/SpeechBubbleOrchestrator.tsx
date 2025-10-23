@@ -4,7 +4,7 @@
  */
 import React, { useMemo } from 'react';
 import { CardboardBubble } from '@features/chat/components/CardboardBubble';
-import { useNodeManager } from '@core/navigation/NodeManager';
+import { useNavigationStore, selectNavigationGraph, selectCurrentNodeId } from '@core/navigation/navigationStore';
 import { AudioVisualizer } from '@core/recording/AudioVisualizer';
 import { useRecording } from '@core/recording/RecordingContext';
 import type { Scene, CharacterScene } from '@core/types/scene';
@@ -21,14 +21,15 @@ type SceneWithId = Scene & {
 
 export function SpeechBubbleOrchestrator() {
 
-  // IMPORTANT: Get navigation graph to access modified scenes (like recording scenes)
-  // Navigation graph contains ALL nodes including dynamically created ones
-  const nodeManager = useNodeManager();
-  const { navigationGraph } = nodeManager;
+  // OPTIMIZED: Subscribe only to graph structure and currentId
+  // This prevents re-renders when other graph properties change (history, lifecycle events, etc.)
+  const navigationGraph = useNavigationStore(selectNavigationGraph);
+  const currentNodeId = useNavigationStore(selectCurrentNodeId);
   const { state: recordingState } = useRecording();
 
   // Convert navigationGraph to array format for compatibility
   // Map graph.order to Node objects for iteration
+  // OPTIMIZED: Only rebuild when order or byId changes, not on every graph mutation
   const navigationArray = useMemo(() => {
     return navigationGraph.order.map((nodeId, index) => {
       const node = navigationGraph.byId[nodeId];
@@ -44,13 +45,14 @@ export function SpeechBubbleOrchestrator() {
         status: node.status,
       } as Node & { index: number };
     });
-  }, [navigationGraph]);
+  }, [navigationGraph.order, navigationGraph.byId]);
 
   // Calculate current navigation index from currentId
+  // OPTIMIZED: Only recalculate when currentId or order changes
   const navigationIndex = useMemo(() => {
-    if (!navigationGraph.currentId) return 0;
-    return navigationGraph.order.indexOf(navigationGraph.currentId);
-  }, [navigationGraph.currentId, navigationGraph.order]);
+    if (!currentNodeId) return 0;
+    return navigationGraph.order.indexOf(currentNodeId);
+  }, [currentNodeId, navigationGraph.order]);
 
   // Use navigationIndex for scroll offset since we're working with navigationArray
   // NOT currentIndex which is based on visible scenes array

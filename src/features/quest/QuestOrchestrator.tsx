@@ -9,7 +9,7 @@
  */
 
 import { useEffect, useRef } from 'react';
-import { useNodeManager } from '@core/navigation/NodeManager';
+import { getCurrentNode, forceAdvanceNavigation } from '@core/navigation/navigationHelpers';
 import { useSceneFlowMetadata } from '@core/data/FlowMetadataStore';
 import { useQuest } from './QuestManager';
 import type { Node } from '@core/navigation/types';
@@ -33,11 +33,10 @@ function hasFlowId(scene: unknown): scene is SceneWithFlowId {
 }
 
 export function QuestOrchestrator() {
-  const nodeManager = useNodeManager();
   const quest = useQuest();
 
   // Get current node
-  const currentNode = nodeManager.getCurrentNode();
+  const currentNode = getCurrentNode();
   const currentScene = currentNode?.scene;
 
   // Get flow metadata for current scene
@@ -83,12 +82,12 @@ export function QuestOrchestrator() {
     // Detect transition from 'offered' to 'minimized' (user clicked Accept)
     if (previousPhase === 'offered' && currentPhase === 'minimized') {
       // Use forceAdvanceNavigation to bypass locks but still collapse states
-      nodeManager.forceAdvanceNavigation('forward');
+      forceAdvanceNavigation('forward');
     }
 
     // Update ref for next comparison
     previousPhaseRef.current = currentPhase;
-  }, [quest.state.phase, nodeManager]);
+  }, [quest.state.phase]);
 
   // This is a non-visual orchestrator component
   return null;

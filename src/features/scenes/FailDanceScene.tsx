@@ -11,7 +11,7 @@
 import { useCallback, useState, useRef } from 'react';
 import type { SceneProps } from './registry';
 import type { FailDanceScene as FailDanceSceneType } from '@core/types/scene';
-import { useNodeManager } from '@core/navigation/NodeManager';
+import { forceAdvanceNavigation, deleteNode, getCurrentNode, getCurrentNodeId } from '@core/navigation/navigationHelpers';
 import './FailDanceScene.css';
 
 export default function FailDanceScene({ scene }: SceneProps<FailDanceSceneType>) {
@@ -21,7 +21,6 @@ export default function FailDanceScene({ scene }: SceneProps<FailDanceSceneType>
     return pathParts[pathParts.length - 1] || 'gingerbread';
   });
 
-  const { forceAdvanceNavigation, deleteNode, getCurrentNode, getCurrentNodeId } = useNodeManager();
   const side = scene.side || 'right';
   const currentNode = getCurrentNode();
   const currentNodeId = getCurrentNodeId();
@@ -65,7 +64,7 @@ export default function FailDanceScene({ scene }: SceneProps<FailDanceSceneType>
         deleteNode(failDanceNodeId);
       }
     }, 3000);
-  }, [currentSceneId, scene.sceneId, currentNodeId, forceAdvanceNavigation, deleteNode]);
+  }, [currentSceneId, scene.sceneId, currentNodeId]);
 
   // Image paths with cache busting
   const version = `v${Date.now()}`;

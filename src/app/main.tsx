@@ -4,7 +4,6 @@
 import ReactDOM from 'react-dom/client'
 import StoryModeScroll from '../pages/StoryModeScroll'
 import { DialogueProvider } from '@core/dialogue/DialogueContext'
-import { NodeManagerProvider } from '@core/navigation/NodeManager'
 import { ChatDialogueProvider } from '@features/chat/context/ChatDialogueContext'
 import { RecordingProvider } from '@core/recording/RecordingContext'
 import './global.css'
@@ -12,14 +11,12 @@ import './global.css'
 
 ReactDOM.createRoot(document.getElementById('root')!).render(
   // <React.StrictMode>
-    <NodeManagerProvider initialIndex={0}>
-      <DialogueProvider>
-        <RecordingProvider>
-          <ChatDialogueProvider>
-            <StoryModeScroll />
-          </ChatDialogueProvider>
-        </RecordingProvider>
-      </DialogueProvider>
-    </NodeManagerProvider>
+  <DialogueProvider>
+    <RecordingProvider>
+      <ChatDialogueProvider>
+        <StoryModeScroll />
+      </ChatDialogueProvider>
+    </RecordingProvider>
+  </DialogueProvider>
   // </React.StrictMode>,
 )

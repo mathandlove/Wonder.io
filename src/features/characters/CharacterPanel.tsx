@@ -22,7 +22,6 @@ type Phase = 'idle' | 'entering' | 'speaking' | 'jiggling';
 
 export const CharacterPanel: React.FC<CharacterPanelProps> = ({
   side,
-  visible,
   currentCharacter,
   previousCharacter,
   storyId,
@@ -44,7 +43,7 @@ export const CharacterPanel: React.FC<CharacterPanelProps> = ({
 
 
   // Single source of truth: compute phase and related state once
-  const { phase, variant, hasCurrent, hasPrevious, isSameScene, isNewCharacter } = useMemo(() => {
+  const { phase, variant, hasCurrent, hasPrevious } = useMemo(() => {
     // Normalize character checks
     const hasCurrent = currentCharacter !== 'NOCHARACTER';
     const hasPrevious = previousCharacter !== 'NOCHARACTER';
@@ -83,11 +82,9 @@ export const CharacterPanel: React.FC<CharacterPanelProps> = ({
       phase,
       variant: animationVariantRef.current,
       hasCurrent,
-      hasPrevious,
-      isSameScene,
-      isNewCharacter
+      hasPrevious
     };
-  }, [currentCharacter, previousCharacter, currentSceneId, previousSceneId, isSpeaking, isJiggling, transitionNonce, side]);
+  }, [currentCharacter, previousCharacter, currentSceneId, previousSceneId, isSpeaking, isJiggling, transitionNonce]);
 
   // No imperative class manipulation - animations are driven by data-attributes
 
@@ -149,7 +146,7 @@ export const CharacterPanel: React.FC<CharacterPanelProps> = ({
     }
 
     return result;
-  }, [phase, currentCharacter, previousCharacter, hasCurrent, hasPrevious, side]);
+  }, [phase, currentCharacter, previousCharacter, hasCurrent, hasPrevious]);
 
   // Asset URL builders with stable version
   const getDisplayImage = (char: string) => {

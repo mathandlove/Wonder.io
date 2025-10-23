@@ -20,11 +20,10 @@
 
 import { useEffect, useRef } from 'react';
 import { useCharacterAnimation } from '@features/characters/CharacterAnimationContext';
-import { useNodeManager } from '@core/navigation/NodeManager';
+import { forceAdvanceNavigation, deleteNode, getCurrentNodeId } from '@core/navigation/navigationHelpers';
 
 export default function SuccessDanceScene() {
   const { addEventListener, removeEventListener } = useCharacterAnimation();
-  const { forceAdvanceNavigation, deleteNode, getCurrentNodeId } = useNodeManager();
   const hasNavigatedRef = useRef(false);
   const currentNodeId = getCurrentNodeId();
 
@@ -54,7 +53,7 @@ export default function SuccessDanceScene() {
     return () => {
       removeEventListener('jiggle-complete', handleJiggleComplete);
     };
-  }, [addEventListener, removeEventListener, forceAdvanceNavigation, deleteNode, currentNodeId]);
+  }, [addEventListener, removeEventListener, currentNodeId]);
 
   return (
     <div style={{
