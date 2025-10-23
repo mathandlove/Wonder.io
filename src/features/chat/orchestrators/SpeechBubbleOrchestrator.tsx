@@ -236,15 +236,14 @@ export function SpeechBubbleOrchestrator() {
         const hasEnteringAnimation = leftCharEntering || rightCharEntering;
 
         // Check next scene in navigationArray to see if characters will change (indicating swap for backwards scroll)
-        const nextNavItem = sceneIndex < navigationArray.length - 1 ? navigationArray[sceneIndex + 1] : null;
-        const nextSceneForSwap = nextNavItem?.scene;
-        // Treat missing character properties as 'NOCHARACTER' to match CharacterOrchestrator behavior
-        const nextLeftChar = nextSceneForSwap && 'left-character' in nextSceneForSwap ? nextSceneForSwap["left-character"] : 'NOCHARACTER';
-        const nextRightChar = nextSceneForSwap && 'right-character' in nextSceneForSwap ? nextSceneForSwap["right-character"] : 'NOCHARACTER';
-
-        const leftCharSwapping = leftCharacter && (leftCharacter !== nextLeftChar || nextLeftChar === 'NOCHARACTER');
-        const rightCharSwapping = rightCharacter && (rightCharacter !== nextRightChar || nextRightChar === 'NOCHARACTER');
-        const hasSwapAnimation = leftCharSwapping || rightCharSwapping;
+        // Note: Currently not used, but kept for future backward scroll optimizations
+        // const nextNavItem = sceneIndex < navigationArray.length - 1 ? navigationArray[sceneIndex + 1] : null;
+        // const nextSceneForSwap = nextNavItem?.scene;
+        // const nextLeftChar = nextSceneForSwap && 'left-character' in nextSceneForSwap ? nextSceneForSwap["left-character"] : 'NOCHARACTER';
+        // const nextRightChar = nextSceneForSwap && 'right-character' in nextSceneForSwap ? nextSceneForSwap["right-character"] : 'NOCHARACTER';
+        // const leftCharSwapping = leftCharacter && (leftCharacter !== nextLeftChar || nextLeftChar === 'NOCHARACTER');
+        // const rightCharSwapping = rightCharacter && (rightCharacter !== nextRightChar || nextRightChar === 'NOCHARACTER');
+        // const hasSwapAnimation = leftCharSwapping || rightCharSwapping;
 
         let transition;
         if (isEntering) {

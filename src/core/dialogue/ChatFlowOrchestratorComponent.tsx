@@ -18,13 +18,10 @@ export function ChatFlowOrchestratorComponent() {
   // Track if we're currently processing to avoid duplicate calls
   const [processingRecordingId, setProcessingRecordingId] = React.useState<string | null>(null);
 
-  // Get current node ID to track navigation changes
-  const currentNodeId = nodeManager.getCurrentNodeId();
-
-  // Get current node from NodeManager - memoized and reactive to currentNodeId changes
+  // Get current node from NodeManager - memoized and reactive to nodeManager changes
   const currentNode = React.useMemo(() => {
     return nodeManager.getCurrentNode();
-  }, [currentNodeId, nodeManager]);
+  }, [nodeManager]);
 
   // Extract primitive values for effect dependencies (so effect re-runs when these change)
   const sceneState = currentNode?.sceneState;

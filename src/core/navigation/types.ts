@@ -11,7 +11,6 @@
 
 import type { Scene } from '@core/types/scene';
 import type { ImageState, DialogueState } from '@core/dialogue/types';
-import type { CharacterSnapshot } from './transitionTypes';
 
 /**
  * Scene state - describes what state a particular scene is in

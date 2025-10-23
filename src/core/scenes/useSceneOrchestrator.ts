@@ -88,7 +88,7 @@ export function useSceneOrchestrator({
 
     let needsUpdate = false;
 
-    scenes.forEach((scene, index) => {
+    scenes.forEach((scene) => {
       const sceneWithId = scene as Scene & { sceneId?: string };
       const sceneId = sceneWithId.sceneId;
 

@@ -199,10 +199,7 @@ export function NodeManagerProvider({ children, initialSceneId }: NodeManagerPro
       nodeId: node.id,
       scene: node.scene as Scene,
       sceneId: node.sceneId,
-      stateKey: node.stateKey,
       sceneState: node.sceneState,
-      lockForward: node.lockForward,
-      lockBackward: node.lockBackward,
       status: node.status,
     };
   }, [navigationGraph]);
@@ -573,13 +570,6 @@ export function NodeManagerProvider({ children, initialSceneId }: NodeManagerPro
       historyVersion: prevState.historyVersion + 1,
     }));
 
-    console.log('[forceAdvanceNavigation] ✅ Navigation complete:', {
-      direction,
-      from: currentNodeId,
-      to: nextActiveNode.id,
-      fromScene: currentNode.sceneId,
-      toScene: nextActiveNode.sceneId,
-    });
   }, [
     createFrozenSnapshot,
     deleteNode,

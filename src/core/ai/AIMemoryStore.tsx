@@ -7,7 +7,8 @@
  * is preserved across multiple questions to the same character.
  */
 
-import React, { createContext, useContext, useCallback, useState, type ReactNode } from 'react';
+import React, { useCallback, useState, type ReactNode } from 'react';
+import { AIMemoryStoreContext, type AIMemoryStoreContextType } from './AIMemoryStoreContext';
 
 // ============================================================================
 // Types
@@ -24,32 +25,6 @@ export interface ConversationHistory {
   messages: ConversationMessage[];
   characterDescription?: string;
 }
-
-// ============================================================================
-// Context
-// ============================================================================
-
-interface AIMemoryStoreContextType {
-  // Get conversation history for a specific flowId
-  getHistory: (flowId: string) => ConversationMessage[];
-
-  // Add a user message to the conversation
-  addUserMessage: (flowId: string, content: string) => void;
-
-  // Add an assistant (AI) message to the conversation
-  addAssistantMessage: (flowId: string, content: string) => void;
-
-  // Clear history for a specific flowId
-  clearHistory: (flowId: string) => void;
-
-  // Clear all conversation histories
-  clearAllHistories: () => void;
-
-  // Get the full conversation history object (for debugging)
-  getAllHistories: () => Record<string, ConversationHistory>;
-}
-
-const AIMemoryStoreContext = createContext<AIMemoryStoreContextType | undefined>(undefined);
 
 // ============================================================================
 // Provider
@@ -173,13 +148,6 @@ export const AIMemoryStoreProvider: React.FC<AIMemoryStoreProviderProps> = ({
 };
 
 // ============================================================================
-// Hook
+// Hook - moved to separate file for react-refresh compliance
 // ============================================================================
-
-export function useAIMemory() {
-  const ctx = useContext(AIMemoryStoreContext);
-  if (!ctx) {
-    throw new Error('useAIMemory must be used within AIMemoryStoreProvider');
-  }
-  return ctx;
-}
+// Import from: import { useAIMemory } from './useAIMemory';

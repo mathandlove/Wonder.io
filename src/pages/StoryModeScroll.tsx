@@ -167,7 +167,7 @@ const StoryContent: React.FC = () => {
   // Handle scene index changes - now handled via scroll control
   // ScrollControl manages the visual scroll position
   // Navigation graph manages the logical navigation state
-  const handleIndexChange = (nextIndex: number) => {
+  const handleIndexChange = () => {
     // Note: ScrollControl handles scroll position
     // Navigation advances are triggered by user interactions (quest acceptance, etc.)
     // The scroll index is derived from the current node's sceneId

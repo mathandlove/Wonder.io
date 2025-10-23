@@ -13,7 +13,7 @@ type Props = {
 };
 
 export const CharacterOrchestrator: React.FC<Props> = ({ storyId, scenes }) => {
-  const { notifyEntranceComplete, notifyJiggleComplete } = useCharacterAnimation();
+  const { notifyEntranceComplete } = useCharacterAnimation();
   const { navigationGraph, getCurrentNodeId } = useNodeManager();
 
   // Compute panel data from current node in navigation graph
@@ -26,14 +26,10 @@ export const CharacterOrchestrator: React.FC<Props> = ({ storyId, scenes }) => {
         leftPanel: {
           character: 'NOCHARACTER',
           previousCharacter: 'NOCHARACTER',
-          nextCharacter: 'NOCHARACTER',
-          pose: null,
         },
         rightPanel: {
           character: 'NOCHARACTER',
           previousCharacter: 'NOCHARACTER',
-          nextCharacter: 'NOCHARACTER',
-          pose: null,
         },
         currentSpeaker: null,
         isJiggling: false,
@@ -50,14 +46,10 @@ export const CharacterOrchestrator: React.FC<Props> = ({ storyId, scenes }) => {
         leftPanel: {
           character: 'NOCHARACTER',
           previousCharacter: 'NOCHARACTER',
-          nextCharacter: 'NOCHARACTER',
-          pose: null,
         },
         rightPanel: {
           character: 'NOCHARACTER',
           previousCharacter: 'NOCHARACTER',
-          nextCharacter: 'NOCHARACTER',
-          pose: null,
         },
         currentSpeaker: null,
         isJiggling: false,
@@ -75,12 +67,11 @@ export const CharacterOrchestrator: React.FC<Props> = ({ storyId, scenes }) => {
     const isSuccessDanceScene = currentNode.scene?.type === 'success-dance';
     const shouldJiggle = dialogueState === 'answer-right' || isSuccessDanceScene;
 
-    // Get previous and next nodes using pointer-based navigation
-    const previousNode = currentNode.prevId ? getNodeById(navigationGraph, currentNode.prevId) : null;
-    const nextNode = currentNode.nextId ? getNodeById(navigationGraph, currentNode.nextId) : null;
+    // Get frozen snapshot node (the state BEFORE this transition started)
+    const frozenNode = navigationGraph.lastFrozenNode;
 
-    // Helper to extract character from a node
-    const getChar = (node: typeof currentNode | null, side: 'left' | 'right') => {
+    // Helper to extract character from a node or frozen snapshot
+    const getChar = (node: typeof currentNode | typeof frozenNode | null, side: 'left' | 'right') => {
       if (!node) return 'NOCHARACTER';
       const key = side === 'left' ? 'left-character' : 'right-character';
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -93,17 +84,11 @@ export const CharacterOrchestrator: React.FC<Props> = ({ storyId, scenes }) => {
     return {
       leftPanel: {
         character: leftChar,
-        previousCharacter: getChar(previousNode, 'left'),
-        nextCharacter: getChar(nextNode, 'left'),
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        pose: (currentNode.scene as any)?.meta?.panelLeft?.pose || null,
+        previousCharacter: getChar(frozenNode, 'left'), // Use frozen snapshot, not previous node
       },
       rightPanel: {
         character: rightChar,
-        previousCharacter: getChar(previousNode, 'right'),
-        nextCharacter: getChar(nextNode, 'right'),
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        pose: (currentNode.scene as any)?.meta?.panelRight?.pose || null,
+        previousCharacter: getChar(frozenNode, 'right'), // Use frozen snapshot, not previous node
       },
       currentSpeaker: speaker,
       isJiggling: shouldJiggle,
@@ -125,13 +110,13 @@ export const CharacterOrchestrator: React.FC<Props> = ({ storyId, scenes }) => {
     notifyEntranceComplete(0, 'right');
   };
 
-  // Create callbacks to notify when jiggle completes
+  // Jiggle complete callbacks - currently no-op since jiggle system is simplified
   const handleLeftJiggleComplete = () => {
-    notifyJiggleComplete(0, 'left');
+    // No coordination needed for jiggle animations
   };
 
   const handleRightJiggleComplete = () => {
-    notifyJiggleComplete(0, 'right');
+    // No coordination needed for jiggle animations
   };
 
   // Speaking is always allowed - CharacterPanel handles priority internally
@@ -178,10 +163,8 @@ export const CharacterOrchestrator: React.FC<Props> = ({ storyId, scenes }) => {
           key={leftPanelKey}
           side="left"
           visible={true}
-          characterName={leftPanel.character}
+          currentCharacter={leftPanel.character}
           previousCharacter={leftPanel.previousCharacter}
-          nextCharacter={leftPanel.nextCharacter}
-          pose={leftPanel.pose}
           storyId={storyId}
           isSpeaking={allowSpeaking && currentSpeaker === 'left'}
           isJiggling={isJiggling}
@@ -199,10 +182,8 @@ export const CharacterOrchestrator: React.FC<Props> = ({ storyId, scenes }) => {
           key={rightPanelKey}
           side="right"
           visible={true}
-          characterName={rightPanel.character}
+          currentCharacter={rightPanel.character}
           previousCharacter={rightPanel.previousCharacter}
-          nextCharacter={rightPanel.nextCharacter}
-          pose={rightPanel.pose}
           storyId={storyId}
           isSpeaking={allowSpeaking && currentSpeaker === 'right'}
           isJiggling={isJiggling}

@@ -1,3 +1,31 @@
+/* ============================================
+   🐛 DEBUG MODE - Uncomment to slow animations
+   ============================================ */
+/*
+.story-character-cardboard,
+.story-character-image,
+.story-wooden-dowel {
+  animation-duration: 10s !important;
+  animation-delay: 0s !important;
+  transition-duration: 10s !important;
+}
+*/
+
+/* 🐛 DEBUG MODE 2 - Make invisible elements visible */
+/*
+.story-character-cardboard {
+  outline: 3px solid red !important;
+}
+.story-character-image {
+  outline: 3px solid blue !important;
+}
+.story-wooden-dowel {
+  background-color: rgba(255, 0, 0, 0.3) !important;
+  opacity: 1 !important;
+  visibility: visible !important;
+}
+*/
+
 /* Character panel wrapper styles */
 .character-panel {
   position: fixed;
@@ -52,6 +80,8 @@
   width: 100%;
   height: 100%;
   transform-style: preserve-3d;
+  /* Unified pivot point for all animations - simulates long dowel pole */
+  transform-origin: center 150vh;
 }
 
 .story-character-image {
@@ -59,7 +89,7 @@
   height: auto;
   display: block;
   transform: rotate(-5deg);
-  transition: transform 0.3s ease;
+  /* Removed transition - using data-attribute driven animations instead */
   position: relative;
   z-index: 2;
   filter: drop-shadow(0 10px 20px rgba(0,0,0,0.3));
@@ -81,19 +111,8 @@
   visibility: hidden;
 }
 
-.story-character-inner {
-  position: relative;
-  width: 100%;
-  height: 100%;
-  transform-origin: center 150vh;
-}
-
-/* Speaking jiggle animations */
-.story-character-speaking {
-  animation: character-shake 1s ease-in-out 1;
-}
-
-.story-character-speaking-right {
+/* Speaking animations - driven by data-phase attribute */
+.story-character-cardboard[data-phase="speaking"] {
   animation: character-shake 1s ease-in-out 1;
 }
 
@@ -110,11 +129,11 @@
 }
 
 /* Jiggle dance animation - 3 back-and-forth jiggles for celebration */
-.story-character-jiggling-left {
+.story-character-cardboard[data-phase="jiggling"][data-side="left"] {
   animation: character-jiggle-left 1.5s ease-in-out 1;
 }
 
-.story-character-jiggling-right {
+.story-character-cardboard[data-phase="jiggling"][data-side="right"] {
   animation: character-jiggle-right 1.5s ease-in-out 1;
 }
 
@@ -210,32 +229,29 @@
   }
 }
 
-/* Character transition animations - moved to panel level for coordinated movement */
-/* Version 1 - default */
-.story-character-panel.story-character-left.entering-left {
-  transform-origin: center calc(100% + 300px);
+/* Character entrance animations - driven by data-phase, data-side, and data-variant */
+/* Variant 1 - default */
+.story-character-cardboard[data-phase="entering"][data-side="left"][data-variant="1"] {
   animation: character-entrance-settle-left 1600ms ease-in-out forwards;
 }
 
-.story-character-panel.story-character-right.entering-right {
-  transform-origin: center calc(100% + 300px);
+.story-character-cardboard[data-phase="entering"][data-side="right"][data-variant="1"] {
   animation: character-entrance-settle-right 1600ms ease-in-out forwards;
 }
 
-/* Version 2 - identical animation with different name to force browser restart */
-.story-character-panel.story-character-left.entering-left-2 {
-  transform-origin: center calc(100% + 300px);
+/* Variant 2 - identical animation with different name to force browser restart */
+.story-character-cardboard[data-phase="entering"][data-side="left"][data-variant="2"] {
   animation: character-entrance-settle-left-2 1600ms ease-in-out forwards;
 }
 
-.story-character-panel.story-character-right.entering-right-2 {
-  transform-origin: center calc(100% + 300px);
+.story-character-cardboard[data-phase="entering"][data-side="right"][data-variant="2"] {
   animation: character-entrance-settle-right-2 1600ms ease-in-out forwards;
 }
 
-.story-character-cardboard.idle {
+/* Idle state - resting transform */
+.story-character-cardboard[data-phase="idle"] {
   transform: translateX(0) translateY(0) rotate(0deg) scale(1);
-  transform-origin: center calc(100% + 300px);
+  /* Inherits transform-origin: center 150vh from .story-character-cardboard */
 }
 
 /* Character image visibility during animation phases */

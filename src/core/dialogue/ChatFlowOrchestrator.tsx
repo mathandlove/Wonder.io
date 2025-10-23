@@ -15,11 +15,11 @@
  */
 
 import { useCallback } from 'react';
-import { useAIModule } from '@features/ai/AIModule';
+import { useAIModule } from '@features/ai/useAIModule';
 import { useSceneFactory } from '@core/navigation/SceneFactory';
 import { useNodeManager} from '@core/navigation/NodeManager';
 import { useSceneFlowMetadata } from '@core/data/FlowMetadataStore';
-import { useAIMemory } from '@core/ai/AIMemoryStore';
+import { useAIMemory } from '@core/ai/useAIMemory';
 import type { CharacterScene, Scene } from '@core/types/scene';
 
 // Type guard for scenes with character properties

@@ -40,8 +40,6 @@ export const RecordPanel: React.FC<RecordPanelProps> = ({
   const { toast, hideToast } = useToast();
   const { state: recordingState } = useRecording();
   const [showStamp, setShowStamp] = React.useState(false);
-  // @ts-expect-error - playVideo used in future features
-  const [playVideo, setPlayVideo] = React.useState(false);
   const [videoComplete, setVideoComplete] = React.useState(false);
   const videoRef = React.useRef<HTMLVideoElement>(null);
 
@@ -86,7 +84,6 @@ export const RecordPanel: React.FC<RecordPanelProps> = ({
   React.useEffect(() => {
     if (!isAnswerWaiting && !isAnswerRight && !isAnswerWrong && !isFailDance) {
       setShowStamp(false);
-      setPlayVideo(false);
       setVideoComplete(false);
     }
   }, [isAnswerWaiting, isAnswerRight, isAnswerWrong, isFailDance]);
@@ -96,7 +93,6 @@ export const RecordPanel: React.FC<RecordPanelProps> = ({
     if (isAnswerWaiting) {
       // Wait 500ms before starting video in answer-waiting state
       const timer = setTimeout(() => {
-        setPlayVideo(true);
         if (videoRef.current) {
           videoRef.current.playbackRate = 0.7; // Play at 70% speed
           videoRef.current.play();
@@ -106,7 +102,6 @@ export const RecordPanel: React.FC<RecordPanelProps> = ({
     } else if ((isAnswerRight || isAnswerWrong) && !videoComplete) {
       // Play immediately for right/wrong states, but only if video hasn't already completed
       // This prevents replay when transitioning to success-dance (which uses answer-right styling)
-      setPlayVideo(true);
       if (videoRef.current) {
         videoRef.current.playbackRate = 0.7; // Play at 70% speed
         videoRef.current.play();

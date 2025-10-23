@@ -4,7 +4,8 @@
  * Mock implementation that returns "Processed: [input text]" after a 2-second delay.
  */
 
-import React, { createContext, useContext, useCallback, type ReactNode } from 'react';
+import React, { useCallback, type ReactNode } from 'react';
+import { AIModuleContext, type AIModuleContextType } from './AIModuleContext';
 
 // ============================================================================
 // Types
@@ -28,18 +29,6 @@ export interface AIResponse {
   success: boolean;
   error?: string;
 }
-
-// ============================================================================
-// Context
-// ============================================================================
-
-interface AIModuleContextType {
-  isProcessing: boolean;
-  lastError?: string;
-  getResponse: (input: AIInput) => Promise<AIResponse>;
-}
-
-const AIModuleContext = createContext<AIModuleContextType | undefined>(undefined);
 
 // ============================================================================
 // Provider
@@ -135,13 +124,6 @@ export const AIModuleProvider: React.FC<AIModuleProviderProps> = ({
 };
 
 // ============================================================================
-// Hook
+// Hook - moved to separate file for react-refresh compliance
 // ============================================================================
-
-export function useAIModule() {
-  const ctx = useContext(AIModuleContext);
-  if (!ctx) {
-    throw new Error('useAIModule must be used within AIModuleProvider');
-  }
-  return ctx;
-}
+// Import from: import { useAIModule } from './useAIModule';

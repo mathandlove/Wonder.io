@@ -10,7 +10,7 @@
 import React from 'react';
 import { useNodeManager } from '@core/navigation/NodeManager';
 import { validateAnswer, type AnswerValidationResult } from './validateAnswer';
-import { useAIMemory } from '@core/ai/AIMemoryStore';
+import { useAIMemory } from '@core/ai/useAIMemory';
 
 export function AnswerValidationOrchestrator() {
   const { getCurrentNode, getCurrentNodeId, updateNodeState } = useNodeManager();
