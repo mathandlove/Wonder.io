@@ -25,7 +25,8 @@ export const CharacterOrchestrator: React.FC<Props> = ({ storyId, scenes, curren
   // This prevents double animations (transition key + nonce both triggered re-mounts)
 
   // Compute panel data fresh from navigation array
-  const { leftPanel, rightPanel, currentSpeaker, isJiggling, transitionNonce } = useMemo(() => {
+  // Scene IDs come from active transition snapshot (frozen at transition start) to prevent race conditions
+  const { leftPanel, rightPanel, currentSpeaker, isJiggling, transitionNonce, currentSceneId, previousSceneId } = useMemo(() => {
     const i = Math.max(0, Math.min(navigationArray.length - 1, Math.round(scrollOffset)));
     const currentNavItem = navigationArray[i];
 
@@ -45,7 +46,9 @@ export const CharacterOrchestrator: React.FC<Props> = ({ storyId, scenes, curren
         },
         currentSpeaker: null,
         isJiggling: false,
-        transitionNonce: undefined
+        transitionNonce: undefined,
+        currentSceneId: undefined,
+        previousSceneId: undefined
       };
     }
 
@@ -89,6 +92,9 @@ export const CharacterOrchestrator: React.FC<Props> = ({ storyId, scenes, curren
       currentSpeaker: speaker,
       isJiggling: shouldJiggle,
       transitionNonce: activeTransition?.id, // Use transition ID from active transition
+      // Use frozen scene IDs from transition snapshot to avoid race conditions with navigation mutations
+      currentSceneId: activeTransition?.toSceneId,
+      previousSceneId: activeTransition?.fromSceneId
     };
   }, [scrollOffset, navigationArray, activeTransition]);
 
@@ -168,6 +174,8 @@ export const CharacterOrchestrator: React.FC<Props> = ({ storyId, scenes, curren
           isSpeaking={currentSpeaker === 'left'}
           isJiggling={isJiggling}
           transitionNonce={transitionNonce}
+          currentSceneId={currentSceneId}
+          previousSceneId={previousSceneId}
           onEntranceComplete={handleLeftEntranceComplete}
           onJiggleComplete={handleLeftJiggleComplete}
         />
@@ -188,6 +196,8 @@ export const CharacterOrchestrator: React.FC<Props> = ({ storyId, scenes, curren
           isSpeaking={currentSpeaker === 'right'}
           isJiggling={isJiggling}
           transitionNonce={transitionNonce}
+          currentSceneId={currentSceneId}
+          previousSceneId={previousSceneId}
           onEntranceComplete={handleRightEntranceComplete}
           onJiggleComplete={handleRightJiggleComplete}
         />

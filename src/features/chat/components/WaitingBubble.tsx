@@ -73,7 +73,7 @@ export function WaitingBubble({
         className="waiting-bubble-inner"
         style={{
           background: 'rgb(253, 248, 228)',
-          padding: '15px',
+          padding: side === 'right' ? '15px 15px 25px 15px' : '15px',
           margin: '0px',
           borderRadius: '10px',
           height: '18px',

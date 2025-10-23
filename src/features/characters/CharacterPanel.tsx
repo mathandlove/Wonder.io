@@ -16,6 +16,8 @@ interface CharacterPanelProps {
   onJiggleComplete?: () => void; // Callback when jiggle animation completes
   isSpeaking?: boolean; // true if this character is currently the speaker
   isJiggling?: boolean; // true if this character should play the jiggle dance animation
+  currentSceneId?: string; // Current scene ID to detect same-scene transitions
+  previousSceneId?: string; // Previous scene ID to detect scene changes
 }
 
 type Phase = 'hidden' | 'entering' | 'idle' | 'speaking' | 'jiggling';
@@ -33,7 +35,9 @@ export const CharacterPanel: React.FC<CharacterPanelProps> = ({
   onEntranceComplete,
   onJiggleComplete,
   isSpeaking = false,
-  isJiggling = false
+  isJiggling = false,
+  currentSceneId,
+  previousSceneId
 }) => {
   const [version] = useState(`v${Date.now()}`);
 
@@ -50,6 +54,10 @@ export const CharacterPanel: React.FC<CharacterPanelProps> = ({
   // Track which animation variant to use (alternate between 1 and 2 to force restart)
   const animationVariantRef = useRef<1 | 2>(1);
 
+  // Track the previous scene ID to detect same-scene transitions
+  // Initialize with undefined to allow first transition to play normally
+  const prevSceneIdRef = useRef<string | undefined>(undefined);
+
   // Reset entering state whenever we get a new transition (scene change)
   // IMPORTANT: Only trigger animation when NEW nonce is defined (transition START)
   // Ignore when transitioning from defined -> undefined (transition END)
@@ -60,8 +68,12 @@ export const CharacterPanel: React.FC<CharacterPanelProps> = ({
     // Calculate if this is a new character based on scroll direction
     // Forward: compare with previousCharacter (where we came from)
     // Backward: compare with nextCharacter (where we came from)
+    // IMPORTANT: If transitioning within the same scene (state change only), never treat as new character
+    const isSameScene = currentSceneId && previousSceneId && currentSceneId === previousSceneId;
     const characterWeComingFrom = scrollDirection === 'forward' ? previousCharacter : nextCharacter;
-    const isNewCharacter = characterWeComingFrom !== characterName && characterName !== 'NOCHARACTER';
+    // On first load (prevNonce undefined), don't trigger entrance if character is already defined
+    const isFirstLoad = prevNonce === undefined;
+    const isNewCharacter = !isSameScene && !isFirstLoad && characterWeComingFrom !== characterName && characterName !== 'NOCHARACTER';
 
     console.log(`[CharacterPanel ${side}] 🔍 TRANSITION EFFECT CHECK:`, {
       prevNonce,
@@ -70,6 +82,10 @@ export const CharacterPanel: React.FC<CharacterPanelProps> = ({
       previousCharacter,
       nextCharacter,
       scrollDirection,
+      currentSceneId,
+      previousSceneId,
+      isSameScene,
+      isFirstLoad,
       characterWeComingFrom,
       isNewCharacter,
       currentIsEntering: isEntering,
@@ -180,6 +196,28 @@ export const CharacterPanel: React.FC<CharacterPanelProps> = ({
       return;
     }
 
+    // Check if this is a same-scene transition (state change only)
+    // Use ref to track the actual previous scene we were on
+    const prevScene = prevSceneIdRef.current;
+    const isSameScene = currentSceneId && prevScene && currentSceneId === prevScene;
+
+    console.log(`[CharacterPanel ${side}] 🔍 Same-scene check:`, {
+      currentSceneId,
+      prevScene,
+      previousSceneId,
+      isSameScene,
+      willSkip: isSameScene
+    });
+
+    // Skip animation restarts for same-scene transitions - characters should maintain their current state
+    if (isSameScene) {
+      console.log(`[CharacterPanel ${side}] ⏭️ SKIPPING animation restart - same scene transition`);
+      return;
+    }
+
+    // Update the ref for next transition
+    prevSceneIdRef.current = currentSceneId;
+
     // Toggle animation variant for entrance animations to force browser restart
     if (phase === 'entering') {
       animationVariantRef.current = animationVariantRef.current === 1 ? 2 : 1;
@@ -261,7 +299,7 @@ export const CharacterPanel: React.FC<CharacterPanelProps> = ({
       cardboardClassesFinal: cardboardElement.className,
       innerClassesFinal: innerElement.className
     });
-  }, [transitionNonce, phase, side, characterName, isSpeaking, isJiggling, isEntering]); // Include all animation-relevant state
+  }, [transitionNonce, phase, side, characterName, isSpeaking, isJiggling, isEntering, currentSceneId, previousSceneId]); // Include all animation-relevant state
 
   // Animation event detection
   useEffect(() => {
