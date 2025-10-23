@@ -1,9 +1,9 @@
 /**
- * State Node Types - Core data structures for state-granular navigation
+ * Navigation Graph Types - Core data structures for node-based navigation
  *
- * This module defines the fundamental building blocks of the state-node navigation system:
- * - StateNode: Individual navigation unit (replaces scene-level navigation)
- * - NavigatorState: Complete navigation graph with pointer-based traversal
+ * This module defines the fundamental building blocks of the navigation system:
+ * - Node: Individual navigation unit representing one state in the story
+ * - NavigationGraph: Complete navigation graph with pointer-based traversal
  * - SceneRegistry: Fast scene-range operations (O(1) scene deletion)
  *
  * Key Concepts:
@@ -16,18 +16,18 @@
 import type { SceneState } from './types';
 
 /**
- * Unique identifier for a state node
+ * Unique identifier for a node
  * Generated using ulid() for stable, sortable IDs
  */
-export type StateNodeId = string;
+export type NodeId = string;
 
 /**
- * Unique identifier for a scene (multiple state nodes can share the same sceneId)
+ * Unique identifier for a scene (multiple nodes can share the same sceneId)
  */
 export type SceneId = string;
 
 /**
- * StateNode - A single navigation unit representing one state in the story
+ * Node - A single navigation unit representing one state in the story
  *
  * Each node represents a specific state within a scene (e.g., "enter", "speak", "exit",
  * or dialogue substates like "quest-showing", "input-recording").
@@ -35,9 +35,9 @@ export type SceneId = string;
  * Navigation happens by traversing the linked list via prevId/nextId pointers.
  * Visual animations read from frozen snapshots while the graph can be mutated freely.
  */
-export interface StateNode {
-  /** Unique, stable ID for this state node (used as React key) */
-  id: StateNodeId;
+export interface Node {
+  /** Unique, stable ID for this node (used as React key) */
+  id: NodeId;
 
   /** Parent scene ID - multiple nodes can belong to the same scene */
   sceneId: SceneId;
@@ -78,11 +78,11 @@ export interface StateNode {
     [key: string]: unknown;
   };
 
-  /** Pointer to previous state node (null if this is the head) */
-  prevId: StateNodeId | null;
+  /** Pointer to previous node (null if this is the head) */
+  prevId: NodeId | null;
 
-  /** Pointer to next state node (null if this is the tail) */
-  nextId: StateNodeId | null;
+  /** Pointer to next node (null if this is the tail) */
+  nextId: NodeId | null;
 
   /**
    * Node lifecycle status
@@ -102,7 +102,7 @@ export interface StateNode {
 /**
  * SceneInfo - Metadata for fast scene-range operations
  *
- * Tracks the first and last state nodes of a scene, enabling O(1) scene deletion:
+ * Tracks the first and last nodes of a scene, enabling O(1) scene deletion:
  * - Delete scene: Mark range [firstNodeId...lastNodeId] as pendingRemoval
  * - Rewire neighbors: prevScene.lastNode.nextId = nextScene.firstNode.id
  */
@@ -110,13 +110,13 @@ export interface SceneInfo {
   /** Scene identifier */
   id: SceneId;
 
-  /** First state node of this scene */
-  firstNodeId: StateNodeId;
+  /** First node of this scene */
+  firstNodeId: NodeId;
 
-  /** Last state node of this scene */
-  lastNodeId: StateNodeId;
+  /** Last node of this scene */
+  lastNodeId: NodeId;
 
-  /** Number of state nodes in this scene (for quick scene length checks) */
+  /** Number of nodes in this scene (for quick scene length checks) */
   nodeCount: number;
 }
 
@@ -137,10 +137,9 @@ export interface SceneRegistry {
 }
 
 /**
- * NavigatorState - Complete navigation graph state
+ * NavigationGraph - Complete navigation graph structure
  *
- * This is the single source of truth for navigation. Replaces the flat
- * array of NavigationItems with a proper graph structure.
+ * This is the single source of truth for navigation.
  *
  * Navigation is pointer-based:
  * - getCurrentNode() → byId[currentId]
@@ -150,19 +149,26 @@ export interface SceneRegistry {
  * The 'order' array is for debugging/iteration only - navigation should
  * use pointer traversal for correctness.
  */
-export interface NavigatorState {
-  /** Canonical store of all state nodes (both active and pendingRemoval) */
-  byId: Record<StateNodeId, StateNode>;
+export interface NavigationGraph {
+  /** Canonical store of all nodes (both active and pendingRemoval) */
+  byId: Record<NodeId, Node>;
 
   /**
    * Linear traversal order for iteration/debugging
    * Contains all node IDs in story order
    * Note: For navigation, use pointer traversal (prevId/nextId), not this array
    */
-  order: StateNodeId[];
+  order: NodeId[];
 
-  /** Currently active state node ID (null if no navigation initialized) */
-  currentId: StateNodeId | null;
+  /** Currently active node ID (null if no navigation initialized) */
+  currentId: NodeId | null;
+
+  /**
+   * Frozen snapshot of the previous node (before last navigation)
+   * Preserved for exit animations even if the node gets deleted during skip-back
+   * Use this to get previousSceneId for animation coordination
+   */
+  lastFrozenNode: FrozenNodeSnapshot | null;
 
   /**
    * Version counter for structural changes
@@ -191,7 +197,7 @@ export interface NavigatorState {
  */
 export interface PendingNodeDeletion {
   /** Node ID to delete */
-  nodeId: StateNodeId;
+  nodeId: NodeId;
 
   /** Scene ID (for logging/debugging) */
   sceneId: SceneId;
@@ -216,14 +222,46 @@ export interface PendingNodeDeletion {
  */
 export interface RewiringOperation {
   /** Node to update */
-  nodeId: StateNodeId;
+  nodeId: NodeId;
 
   /** Field to update ("prevId" or "nextId") */
   field: 'prevId' | 'nextId';
 
   /** New pointer value (null if becoming head/tail) */
-  newValue: StateNodeId | null;
+  newValue: NodeId | null;
 
   /** Optional: Previous value (for undo/logging) */
-  previousValue?: StateNodeId | null;
+  previousValue?: NodeId | null;
+}
+
+/**
+ * FrozenNodeSnapshot - Immutable snapshot of a node for animations
+ *
+ * This is a pure data view captured at transition start, containing only
+ * what's needed for rendering. Unlike Node, it excludes navigation metadata:
+ * - No index (ephemeral, changes with deletions)
+ * - No locks (navigation logic, not visual data)
+ * - No status (internal graph state)
+ * - No pointers (graph structure, not visual data)
+ *
+ * Use this for:
+ * - Character animation data extraction
+ * - Transition snapshots
+ * - Any system that needs stable scene data during graph mutations
+ */
+export interface FrozenNodeSnapshot {
+  /** Stable node identifier (never changes) */
+  nodeId: NodeId;
+
+  /** Scene this node belongs to */
+  sceneId: SceneId;
+
+  /** Semantic state key (e.g., "enter", "speak", "dialogue:quest-showing") */
+  stateKey: string;
+
+  /** Complete scene state data */
+  sceneState: SceneState;
+
+  /** Original scene data (for character extraction, background, etc.) */
+  scene: unknown; // Will be typed as Scene in implementation
 }

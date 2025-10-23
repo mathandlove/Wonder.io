@@ -38,7 +38,6 @@ export type ClaudeServerMessage =
 // ──────────────────────────────────────────────────────────────────────────────
 
 export async function handleClaudeProxy(ws: WebSocket) {
-  console.log('🔵 Claude WebSocket connection established');
 
   let isStreaming = false;
   let currentStream: AsyncIterable<any> | null = null;
@@ -51,7 +50,6 @@ export async function handleClaudeProxy(ws: WebSocket) {
       // Handle STOP command
       // ────────────────────────────────────────────────────────────────────────
       if (message.type === 'stop') {
-        console.log('🛑 Stop command received');
         isStreaming = false;
         currentStream = null;
         return;
@@ -69,7 +67,6 @@ export async function handleClaudeProxy(ws: WebSocket) {
           return;
         }
 
-        console.log('📨 Received message:', message.text.substring(0, 100));
         isStreaming = true;
 
         try {
@@ -92,19 +89,12 @@ export async function handleClaudeProxy(ws: WebSocket) {
           for await (const event of stream) {
             // Stop processing if stop command was received
             if (!isStreaming) {
-              console.log('🛑 Streaming stopped by user');
               break;
             }
 
             // ────────────────────────────────────────────────────────────────
             // DEBUG LOGGING - Log every event with full details
             // ────────────────────────────────────────────────────────────────
-            console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
-            console.log('📊 CLAUDE STREAM EVENT');
-            console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
-            console.log('Event Type:', event.type);
-            console.log('Full Event:', JSON.stringify(event, null, 2));
-            console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n');
 
             // Send debug event to frontend
             ws.send(JSON.stringify({
@@ -117,14 +107,12 @@ export async function handleClaudeProxy(ws: WebSocket) {
             // Handle different event types
             // ────────────────────────────────────────────────────────────────
             if (event.type === 'message_start') {
-              console.log('🎬 Message Start:', {
                 id: event.message?.id,
                 model: event.message?.model,
                 role: event.message?.role,
                 usage: event.message?.usage
               });
             } else if (event.type === 'content_block_start') {
-              console.log('📝 Content Block Start:', {
                 index: event.index,
                 content_block: event.content_block
               });
@@ -132,7 +120,6 @@ export async function handleClaudeProxy(ws: WebSocket) {
               // This is where text chunks arrive
               if (event.delta?.type === 'text_delta') {
                 const text = event.delta.text;
-                console.log('✍️  Text Delta:', {
                   index: event.index,
                   text: text,
                   length: text.length
@@ -146,7 +133,6 @@ export async function handleClaudeProxy(ws: WebSocket) {
                 } satisfies ClaudeServerMessage));
               }
             } else if (event.type === 'content_block_stop') {
-              console.log('✅ Content Block Stop:', {
                 index: event.index
               });
 
@@ -155,23 +141,19 @@ export async function handleClaudeProxy(ws: WebSocket) {
                 index: event.index
               } satisfies ClaudeServerMessage));
             } else if (event.type === 'message_delta') {
-              console.log('📊 Message Delta:', {
                 delta: event.delta,
                 usage: event.usage
               });
             } else if (event.type === 'message_stop') {
-              console.log('🏁 Message Stop');
 
               ws.send(JSON.stringify({
                 type: 'message_complete'
               } satisfies ClaudeServerMessage));
             } else {
               // Handle any other event types (ping, error, etc.)
-              console.log('❓ Unknown/unhandled event type:', (event as any).type);
             }
           }
 
-          console.log('✅ Stream completed successfully');
           isStreaming = false;
 
         } catch (error) {
@@ -197,7 +179,6 @@ export async function handleClaudeProxy(ws: WebSocket) {
   });
 
   ws.on('close', () => {
-    console.log('🔴 Claude WebSocket connection closed');
     isStreaming = false;
     currentStream = null;
   });

@@ -184,7 +184,6 @@ async function main(){
     await comp.webp({ quality:100, lossless:true }).toFile(output);
   }
 
-  console.log(`✔ Bevel added -> ${output}  (bevelPx=${bevelPx}, lightDir=${lightDir}°, intensity=${intensity}, mode=${mode}, rimPx≈${r})`);
 }
 
 main().catch(err => { console.error("✖", err.stack || err); process.exit(1); });

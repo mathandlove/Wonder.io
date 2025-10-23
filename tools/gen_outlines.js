@@ -49,7 +49,6 @@ const colors = {
  * Log with color and formatting
  */
 function log(message, color = 'reset') {
-  console.log(`${colors[color]}${message}${colors.reset}`);
 }
 
 /**

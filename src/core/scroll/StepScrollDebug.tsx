@@ -1,40 +1,20 @@
-/* eslint-disable @typescript-eslint/no-unused-vars */
-/* eslint-disable @typescript-eslint/no-explicit-any */
-/* eslint-disable react-hooks/rules-of-hooks */
-/* eslint-disable react-hooks/exhaustive-deps */
 /**
- * StepScrollDebug - Visual display of scroll and scene state
+ * StepScrollDebug - Visual display of navigation graph and scene state
  *
  * Shows real-time state of:
- * - Animation flag
- * - Wheel accumulator
- * - Current index and scene info
+ * - Current node position in graph
+ * - Node and scene information
  * - Lock states
- * - Caption states
- * - Timers
+ * - Caption states for image scenes
+ * - Character positions (prev/current/next)
+ * - Navigation graph statistics
  */
 import { useEffect, useState } from 'react';
-import { useSceneManager } from '@core/scenes/SceneManager';
-import { useDialogue } from '@core/dialogue/DialogueContext';
-import { useSceneFlowMetadata } from '@core/data/FlowMetadataStore';
+import { useNodeManager } from '@core/navigation/NodeManager';
 import type { Scene } from '@core/types/scene';
 import type { ImageState } from '@core/dialogue/types';
 
-interface DebugState {
-  wheelAccum: number;
-  debounceActive: boolean;
-  lastEvent: string;
-  timestamp: number;
-}
-
 export function StepScrollDebug() {
-  // Unused state - kept for future debugging features
-  const [, _setState] = useState<DebugState>({
-    wheelAccum: 0,
-    debounceActive: false,
-    lastEvent: '',
-    timestamp: 0,
-  });
 
   // Draggable position state - load from localStorage or default to top-right
   const getInitialPosition = () => {
@@ -42,7 +22,7 @@ export function StepScrollDebug() {
     if (saved) {
       try {
         return JSON.parse(saved);
-      } catch (e) {
+      } catch {
         return { top: 10, right: 10, left: null, bottom: null };
       }
     }
@@ -64,41 +44,29 @@ export function StepScrollDebug() {
 
   const [isVisible, setIsVisible] = useState(getInitialVisibility);
 
-  // Get scene manager for additional context (single source of truth)
-  const sceneManager = useSceneManager();
+  // Get node manager for navigation context (single source of truth)
+  const nodeManager = useNodeManager();
 
-  // Get current navigation state directly from SceneManager
-  const { navigationIndex, navigationArray } = sceneManager;
+  // Get current node and navigation graph
+  const currentNode = nodeManager.getCurrentNode();
+  const { navigationGraph, allScenes, scenes } = nodeManager;
 
-  // Get flow metadata for current scene
-  const currentNavItem = navigationArray[navigationIndex];
-  const currentScene = currentNavItem?.scene as (Scene & { sceneId?: string, flowId?: string }) | undefined;
-  // @ts-expect-error - Used in future debugging features
-  const _flowMetadata = useSceneFlowMetadata(currentScene); // Unused - kept for future debugging
+  // Get current index from navigation graph
+  const currentNodeId = navigationGraph.currentId;
+  const navigationIndex = currentNodeId ? navigationGraph.order.indexOf(currentNodeId) : -1;
 
-  // Try to get dialogue context, may be undefined if not in provider tree
-  // Unused but kept for future debugging features
-  // @ts-expect-error - Used in future debugging features
-  let _dialogue;
-  try {
-    _dialogue = useDialogue();
-  } catch (e) {
-    // DialogueProvider not available
-    _dialogue = null;
-  }
+  // Total number of nodes in the graph
+  const totalNodes = navigationGraph.order.length;
 
-  useEffect(() => {
-    // Listen for custom debug events from useStepScroll
-    const handleDebug = (e: CustomEvent) => {
-      _setState(e.detail);
-    };
+  // Get current scene
+  const currentScene = currentNode?.scene as (Scene & { sceneId?: string, flowId?: string }) | undefined;
 
-    window.addEventListener('stepscroll:debug' as any, handleDebug);
-
-    return () => {
-      window.removeEventListener('stepscroll:debug' as any, handleDebug);
-    };
-  }, []);
+  // Helper to get node by index from graph
+  const getNodeByIndex = (index: number) => {
+    if (index < 0 || index >= navigationGraph.order.length) return null;
+    const nodeId = navigationGraph.order[index];
+    return navigationGraph.byId[nodeId];
+  };
 
   // Keyboard shortcut: backslash (\) to toggle visibility and recenter
   useEffect(() => {
@@ -132,14 +100,15 @@ export function StepScrollDebug() {
     };
   }, []);
 
-  // Extract scene info (currentNavItem and currentScene already defined above for flowMetadata hook)
+  // Extract scene info
   const sceneType = currentScene?.type || 'unknown';
-  const sceneId = currentNavItem?.sceneId || 'no-id';
+  const sceneId = currentNode?.sceneId || 'no-id';
+  const nodeId = currentNode?.nodeId || 'no-id';
 
-  // Get caption state from navigation array (single source of truth)
+  // Get caption state from current node (single source of truth)
   const captionState: ImageState =
-    currentNavItem?.sceneState.type === 'image'
-      ? currentNavItem.sceneState.state
+    currentNode?.sceneState.type === 'image'
+      ? currentNode.sceneState.state
       : 'hidden';
   // Type-safe caption check - only ImageScene has caption/text properties
   const hasCaption = sceneType === 'image' && currentScene && 'caption' in currentScene
@@ -152,8 +121,8 @@ export function StepScrollDebug() {
 
   // Format scene state for display
   const formatSceneState = (): string => {
-    if (!currentNavItem) return 'No state';
-    const { sceneState } = currentNavItem;
+    if (!currentNode) return 'No state';
+    const { sceneState } = currentNode;
 
     if (sceneState.type === 'image') {
       return `image: ${sceneState.state}`;
@@ -257,12 +226,15 @@ export function StepScrollDebug() {
       <div style={{ display: 'grid', gap: '5px' }}>
         {/* Scene & State Section */}
         <div style={{ marginBottom: '8px', paddingBottom: '8px', borderBottom: '1px solid #0ff' }}>
-          <div style={{ color: '#0ff', marginBottom: '4px', fontWeight: 'bold' }}>🎬 Scene & State</div>
+          <div style={{ color: '#0ff', marginBottom: '4px', fontWeight: 'bold' }}>🎬 Node & State</div>
           <div style={{ color: '#0f0' }}>
-            📍 Index: <strong>{navigationIndex}</strong> / {navigationArray.length - 1}
+            📍 Index: <strong>{navigationIndex}</strong> / {totalNodes - 1}
           </div>
           <div style={{ color: '#0f0' }}>
             🆔 Scene ID: <strong>{sceneId}</strong>
+          </div>
+          <div style={{ color: '#0ff', fontSize: '9px', marginTop: '2px' }}>
+            Node ID: {nodeId.substring(0, 10)}...
           </div>
           <div style={{ color: '#ff0' }}>
             🔧 State: <strong>{formatSceneState()}</strong>
@@ -335,16 +307,29 @@ export function StepScrollDebug() {
       <div style={{ marginTop: '10px', paddingTop: '8px', borderTop: '1px solid #f90' }}>
         <div style={{ color: '#f90', marginBottom: '8px', fontWeight: 'bold' }}>👥 Characters</div>
 
-        {/* Helper function to get character name from navigation item */}
+        {/* Helper function to get character name from graph node */}
         {(() => {
-          const getCharacter = (navItem: any, side: 'left' | 'right') => {
-            if (!navItem?.scene) return 'none';
+          const getCharacter = (node: typeof currentNode, side: 'left' | 'right') => {
+            if (!node?.scene) return 'none';
             const key = side === 'left' ? 'left-character' : 'right-character';
-            return navItem.scene[key] || 'none';
+            return node.scene[key] || 'none';
           };
 
-          const prevNavItem = navigationArray[navigationIndex - 1];
-          const nextNavItem = navigationArray[navigationIndex + 1];
+          const prevNode = getNodeByIndex(navigationIndex - 1);
+          const nextNode = getNodeByIndex(navigationIndex + 1);
+
+          // Convert graph nodes to the format expected by getCharacter
+          const prevNavItem = prevNode ? {
+            scene: prevNode.scene,
+            sceneId: prevNode.sceneId,
+            nodeId: prevNode.id,
+          } : null;
+
+          const nextNavItem = nextNode ? {
+            scene: nextNode.scene,
+            sceneId: nextNode.sceneId,
+            nodeId: nextNode.id,
+          } : null;
 
           return (
             <>
@@ -384,19 +369,19 @@ export function StepScrollDebug() {
                 border: '2px solid #0f0'
               }}>
                 <div style={{ color: '#0f0', fontSize: '10px', marginBottom: '4px', fontWeight: 'bold' }}>
-                  ▶️ Current Scene (idx: {navigationIndex})
+                  ▶️ Current Node (idx: {navigationIndex})
                 </div>
                 <div style={{ display: 'flex', gap: '8px' }}>
                   <div style={{ flex: 1 }}>
                     <div style={{ color: '#0ff', fontSize: '9px' }}>Left:</div>
                     <div style={{ color: '#0f0', fontSize: '11px', fontWeight: 'bold' }}>
-                      {currentNavItem ? getCharacter(currentNavItem, 'left') : 'N/A'}
+                      {currentNode ? getCharacter(currentNode, 'left') : 'N/A'}
                     </div>
                   </div>
                   <div style={{ flex: 1 }}>
                     <div style={{ color: '#0ff', fontSize: '9px' }}>Right:</div>
                     <div style={{ color: '#0f0', fontSize: '11px', fontWeight: 'bold' }}>
-                      {currentNavItem ? getCharacter(currentNavItem, 'right') : 'N/A'}
+                      {currentNode ? getCharacter(currentNode, 'right') : 'N/A'}
                     </div>
                   </div>
                 </div>
@@ -435,7 +420,7 @@ export function StepScrollDebug() {
 
       {/* Stats Footer */}
       <div style={{ marginTop: '10px', paddingTop: '8px', borderTop: '1px solid #0f0', fontSize: '9px', color: '#666' }}>
-        Total Scenes: {sceneManager.allScenes.length} | Visible: {sceneManager.scenes.length} | Nav Items: {navigationArray.length}
+        Total Scenes: {allScenes.length} | Visible: {scenes.length} | Nodes: {totalNodes} | Graph v{navigationGraph.historyVersion}
       </div>
     </div>
   );

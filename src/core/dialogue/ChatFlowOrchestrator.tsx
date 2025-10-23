@@ -3,21 +3,21 @@
  * Orchestrates the chat conversation flow:
  * 1) Listens for transcript completion from recording
  * 2) Calls AI module to get AI response
- * 3) Creates response scenes using PageFactory
- * 4) Manages scene insertion via SceneManager
+ * 3) Creates response scenes using SceneFactory
+ * 4) Manages scene insertion via NodeManager
  * 5) Handles errors and state transitions
  *
  * This component coordinates between:
  * - Recording system (getting transcript)
  * - AI Module (getting AI response)
- * - PageFactory (creating scenes)
- * - SceneManager (inserting scenes into navigation)
+ * - SceneFactory (creating scenes)
+ * - NodeManager (inserting scenes into navigation)
  */
 
 import { useCallback } from 'react';
 import { useAIModule } from '@features/ai/AIModule';
-import { usePageFactory } from '@core/navigation/PageFactory';
-import { useSceneManager, getLocksForState } from '@core/scenes/SceneManager';
+import { useSceneFactory } from '@core/navigation/SceneFactory';
+import { useNodeManager} from '@core/navigation/NodeManager';
 import { useSceneFlowMetadata } from '@core/data/FlowMetadataStore';
 import { useAIMemory } from '@core/ai/AIMemoryStore';
 import type { CharacterScene, Scene } from '@core/types/scene';
@@ -65,12 +65,12 @@ export function useChatFlowOrchestrator(props?: ChatFlowOrchestratorProps) {
   const { onError, onResponseReceived, onSceneCreated } = props || {};
 
   const aiModule = useAIModule();
-  const pageFactory = usePageFactory();
-  const sceneManager = useSceneManager();
+  const sceneFactory = useSceneFactory();
+  const nodeManager = useNodeManager();
   const aiMemory = useAIMemory();
 
   // Get current scene to access flow metadata
-  const currentNavItem = sceneManager.getCurrentNavigationItem();
+  const currentNavItem = nodeManager.getCurrentNode();
   const currentScene = currentNavItem?.scene;
   const flowMetadata = useSceneFlowMetadata(hasFlowId(currentScene) ? currentScene : null);
 
@@ -83,9 +83,8 @@ export function useChatFlowOrchestrator(props?: ChatFlowOrchestratorProps) {
 
     try {
       // Step 1: Get the current scene context for scene creation
-      const currentNavItem = sceneManager.getCurrentNavigationItem();
+      const currentNavItem = nodeManager.getCurrentNode();
       const currentScene = currentNavItem?.scene;
-      const navigationIndex = sceneManager.navigationIndex;
 
       // Extract context from current scene or use metadata
       const background = input.metadata?.currentBackground ||
@@ -101,14 +100,6 @@ export function useChatFlowOrchestrator(props?: ChatFlowOrchestratorProps) {
       // Use flowId from current scene to maintain character-specific conversations
       const flowId = hasFlowId(currentScene) ? currentScene.flowId : undefined;
       const conversationHistory = flowId ? aiMemory.getHistory(flowId) : [];
-
-      console.log('[ChatFlowOrchestrator] Current flowId:', flowId);
-
-      console.log('[ChatFlowOrchestrator] Processing with conversation history:', {
-        flowId,
-        historyLength: conversationHistory.length,
-        question: input.text.substring(0, 50)
-      });
 
       // Add user message to conversation history BEFORE calling AI
       if (flowId) {
@@ -138,56 +129,35 @@ export function useChatFlowOrchestrator(props?: ChatFlowOrchestratorProps) {
         aiMemory.addAssistantMessage(flowId, response.text);
       }
 
-      // Step 3: Create a new scene with the AI response
+      // Step 3: Create a new AI response scene using SceneFactory
       // IMPORTANT: Preserve flowId so subsequent questions maintain conversation context
-
-      const responseScene = pageFactory.createRecordingScene(
-        `chat-response-${Date.now()}`,
+      const finalScene = sceneFactory.createAIResponseScene(
+        response.text,
+        flowId,
         background,
         leftCharacter,
         rightCharacter
       );
 
-      // Update the scene with response text and proper speaker
-      const finalScene: CharacterScene = {
-        ...responseScene,
-        text: response.text,
-        speaker: 'right',
-        isRecording: false,
-        recordingId: undefined,
-        flowId: flowId // Preserve flowId for next question in conversation
-      };
-
-
-
       onSceneCreated?.(finalScene);
 
-      // Step 4: Update previous scene state to 'basic' (remove input UI, locks auto-recalculated)
+      // Step 4: Update previous node state to 'basic' (remove input UI, locks auto-recalculated)
       // This collapses the recording input UI from the previous scene
-      sceneManager.updateNavigationItemState(navigationIndex, {
-        type: 'dialogue' as const,
-        state: 'basic' as const
-      });
+      const currentNodeId = nodeManager.getCurrentNodeId();
+      if (currentNodeId) {
+        nodeManager.updateNodeState(currentNodeId, {
+          type: 'dialogue' as const,
+          state: 'basic' as const
+        });
+      }
 
-      // Step 5: Insert the scene into navigation with 'input-showInput' state
-      // This shows the input UI on the new response scene for the next user input
-      const sceneState = { type: 'dialogue' as const, state: 'input-showInput' as const };
-      const locks = getLocksForState(sceneState); // Calculate locks from state
-      const newNavItem = {
-        scene: finalScene,
-        sceneId: finalScene.sceneId || `scene-${Date.now()}`,
-        sceneState,
-        lockForward: locks.lockForward,
-        lockBackward: locks.lockBackward,
-        index: navigationIndex + 1
-      };
-
-      sceneManager.insertNavigationItem(newNavItem, navigationIndex + 1);
-
+      // Step 5: Insert the scene after current scene using sceneId-based insertion
+      // This properly maintains the state-node graph structure
+      const currentSceneId = nodeManager.getCurrentSceneId();
+      nodeManager.insertScene(currentSceneId, finalScene);
 
       // Step 6: Navigate to the new scene
-
-      sceneManager.setNavigationIndex(navigationIndex + 1);
+      nodeManager.forceAdvanceNavigation('forward');
 
 
     } catch (error) {
@@ -195,7 +165,7 @@ export function useChatFlowOrchestrator(props?: ChatFlowOrchestratorProps) {
       console.error('❌ ChatFlowOrchestrator error:', errorMessage);
       onError?.(errorMessage);
     }
-  }, [aiModule, pageFactory, sceneManager, onError, onResponseReceived, onSceneCreated]);
+  }, [aiModule, sceneFactory, nodeManager, aiMemory, onError, onResponseReceived, onSceneCreated]);
 
   /**
    * Convenience function for processing transcript completion

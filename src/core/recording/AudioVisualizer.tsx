@@ -66,7 +66,6 @@ export const AudioVisualizer: React.FC<AudioVisualizerProps> = ({
   // Track if we've detected any sound yet
   useEffect(() => {
     if (!hasSoundDetected && audioLevel > SOUND_THRESHOLD) {
-      console.log('[AudioVisualizer] Sound detected! audioLevel:', audioLevel);
       setHasSoundDetected(true);
     }
   }, [audioLevel, hasSoundDetected]);
@@ -111,7 +110,6 @@ export const AudioVisualizer: React.FC<AudioVisualizerProps> = ({
           const normalizedRms = Math.max(0, Math.min(1, (rmsRef.current - 0.02) / 0.18));
           targetAmplitudeRef.current = normalizedRms * maxAmplitudePx;
 
-          console.log('[AudioVisualizer] 🎙️ Voice DETECTED - Continuous wave started');
         }
       } else {
         // Release: speech → silence
@@ -122,7 +120,6 @@ export const AudioVisualizer: React.FC<AudioVisualizerProps> = ({
             belowReleaseTimeRef.current = 0;
             // Start amplitude decay to zero
             targetAmplitudeRef.current = 0;
-            console.log('[AudioVisualizer] 🔇 Voice STOPPED - amplitude decaying to 0');
           }
         } else {
           belowReleaseTimeRef.current = 0;

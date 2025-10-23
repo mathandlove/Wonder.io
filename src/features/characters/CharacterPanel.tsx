@@ -8,7 +8,6 @@ interface CharacterPanelProps {
   characterName: string; // Can be 'NOCHARACTER' for empty panels
   previousCharacter?: string; // Can be 'NOCHARACTER' for previous empty panels
   nextCharacter?: string; // Can be 'NOCHARACTER' for next empty panels
-  scrollDirection?: 'forward' | 'backward';
   pose?: string | null;
   storyId: string;
   transitionNonce?: string; // Unique ID per transition, used to force CSS animation restart
@@ -28,7 +27,6 @@ export const CharacterPanel: React.FC<CharacterPanelProps> = ({
   characterName,
   previousCharacter,
   nextCharacter,
-  scrollDirection = 'forward',
   pose,
   storyId,
   transitionNonce,
@@ -64,77 +62,40 @@ export const CharacterPanel: React.FC<CharacterPanelProps> = ({
     const prevNonce = prevTransitionNonceRef.current;
     const currentNonce = transitionNonce;
 
-    // Calculate if this is a new character based on scroll direction
-    // Forward: compare with previousCharacter (where we came from)
-    // Backward: compare with nextCharacter (where we came from)
+    // Calculate if this is a new character
+    // previousSceneId comes from the frozen snapshot (where we came from)
     // IMPORTANT: If transitioning within the same scene (state change only), never treat as new character
     const isSameScene = currentSceneId && previousSceneId && currentSceneId === previousSceneId;
-    const characterWeComingFrom = scrollDirection === 'forward' ? previousCharacter : nextCharacter;
+
+    // Infer which character we came from by checking which neighbor differs from current
+    // If previousCharacter matches current, we're going backward (came from next)
+    // If nextCharacter matches current, we're going forward (came from previous)
+    const characterWeComingFrom = previousCharacter !== characterName ? previousCharacter : nextCharacter;
+
     // On first load (prevNonce undefined), don't trigger entrance if character is already defined
     const isFirstLoad = prevNonce === undefined;
     const isNewCharacter = !isSameScene && !isFirstLoad && characterWeComingFrom !== characterName && characterName !== 'NOCHARACTER';
 
-    console.log(`[CharacterPanel ${side}] 🔍 TRANSITION EFFECT CHECK:`, {
-      prevNonce,
-      currentNonce,
-      characterName,
-      previousCharacter,
-      nextCharacter,
-      scrollDirection,
-      currentSceneId,
-      previousSceneId,
-      isSameScene,
-      isFirstLoad,
-      characterWeComingFrom,
-      isNewCharacter,
-      currentIsEntering: isEntering,
-      willEvaluate: prevNonce !== currentNonce && currentNonce !== undefined
-    });
-
     // Case 1: New transition started (undefined -> defined OR defined -> different defined)
     if (prevNonce !== currentNonce && currentNonce !== undefined) {
-      console.log(`[CharacterPanel ${side}] 🔄 New transition started`, {
-        oldNonce: prevNonce,
-        newNonce: currentNonce,
-        characterName,
-        characterWeComingFrom,
-        scrollDirection,
-        isNewCharacter
-      });
       prevTransitionNonceRef.current = currentNonce;
 
       // Determine if this is a new character entering or same character continuing
       if (isNewCharacter) {
         // NEW character entering - trigger entrance animation
-        console.log(`[CharacterPanel ${side}] 🎭 ENTRANCE ANIMATION TRIGGERED:`, {
-          characterName,
-          characterWeComingFrom,
-          scrollDirection
-        });
         setIsEntering(true);
       } else {
         // SAME character continuing to new scene - clear entering state to allow speaking animations
-        console.log(`[CharacterPanel ${side}] ✅ SAME CHARACTER CONTINUING - CLEARING ENTERING STATE`, {
-          characterName,
-          characterWeComingFrom,
-          scrollDirection,
-          wasEntering: isEntering
-        });
         setIsEntering(false);
       }
     }
     // Case 2: Transition ended (defined -> undefined)
     // Just update the ref, don't change entering state or trigger animation
     else if (prevNonce !== currentNonce && currentNonce === undefined) {
-      console.log(`[CharacterPanel ${side}] 🏁 Transition ended, keeping current state`, {
-        oldNonce: prevNonce,
-        characterName,
-        isEntering
-      });
       prevTransitionNonceRef.current = currentNonce;
       // Don't modify isEntering - let it stay as is until next real transition
     }
-  }, [transitionNonce, characterName, previousCharacter, nextCharacter, scrollDirection, side, isEntering]);
+  }, [transitionNonce, characterName, previousCharacter, nextCharacter, currentSceneId, previousSceneId]);
 
   // Pure renderer - determine phase based on scroll direction and character state
   const getCurrentPhase = (): Phase => {
@@ -163,16 +124,8 @@ export const CharacterPanel: React.FC<CharacterPanelProps> = ({
 
   // Debug: Log phase changes
   React.useEffect(() => {
-    console.log(`[CharacterPanel ${side}] 🎨 Phase changed to:`, phase, {
-      scrollDirection,
-      characterName,
-      isEntering,
-      isSpeaking,
-      isJiggling,
-      transitionNonce,
-      className: phase === 'entering' ? `entering-${side}` : 'idle'
-    });
-  }, [phase, side, scrollDirection, characterName, isEntering, isSpeaking, isJiggling, transitionNonce]);
+    // Phase changed
+  }, [phase, side, characterName, isEntering, isSpeaking, isJiggling, transitionNonce]);
 
   // Ref for animation event detection
   const panelRef = useRef<HTMLDivElement>(null);
@@ -199,16 +152,8 @@ export const CharacterPanel: React.FC<CharacterPanelProps> = ({
     // Use previousSceneId from frozen snapshot (source of truth from TransitionManager)
     const isSameScene = currentSceneId && previousSceneId && currentSceneId === previousSceneId;
 
-    console.log(`[CharacterPanel ${side}] 🔍 Same-scene check:`, {
-      currentSceneId,
-      previousSceneId,
-      isSameScene,
-      willSkip: isSameScene
-    });
-
     // Skip animation restarts for same-scene transitions - characters should maintain their current state
     if (isSameScene) {
-      console.log(`[CharacterPanel ${side}] ⏭️ SKIPPING animation restart - same scene transition`);
       return;
     }
 
@@ -219,19 +164,6 @@ export const CharacterPanel: React.FC<CharacterPanelProps> = ({
 
     const variant = animationVariantRef.current;
     const variantSuffix = variant === 2 ? '-2' : '';
-
-    console.log(`[CharacterPanel ${side}] 🧹 CLEARING ALL ANIMATIONS`, {
-      phase,
-      transitionNonce,
-      characterName,
-      isSpeaking,
-      isJiggling,
-      isEntering,
-      animationVariant: variant,
-      panelClassesBefore: panelElement.className,
-      cardboardClassesBefore: cardboardElement.className,
-      innerClassesBefore: innerElement.className
-    });
 
     // STEP 1: Remove ALL possible animation classes from all elements
     // This ensures a clean slate regardless of what was applied before
@@ -254,31 +186,18 @@ export const CharacterPanel: React.FC<CharacterPanelProps> = ({
       'story-character-jiggling-right'
     );
 
-    console.log(`[CharacterPanel ${side}] 🗑️ CLEARED - classes removed`, {
-      panelClassesAfterClear: panelElement.className,
-      cardboardClassesAfterClear: cardboardElement.className,
-      innerClassesAfterClear: innerElement.className
-    });
-
     // STEP 2: Force reflow - critical to ensure browser sees the clear
     // Reading offsetWidth triggers a synchronous layout recalculation
     void panelElement.offsetWidth;
     void cardboardElement.offsetWidth;
     void innerElement.offsetWidth;
 
-    console.log(`[CharacterPanel ${side}] 🔄 REFLOW FORCED`);
 
     // STEP 3: Immediately apply the correct classes (no rAF needed with variant alternation)
     // The different animation name ensures browser sees this as a new animation
     if (phase === 'entering') {
       const enteringClass = `entering-${side}${variantSuffix}`;
       panelElement.classList.add(enteringClass);
-      console.log(`[CharacterPanel ${side}] 🎬 APPLIED ENTERING VARIANT ${variant}:`, enteringClass, {
-        panelElement: panelElement,
-        computedClasses: panelElement.className,
-        hasCharacterElement: !!cardboardElement.querySelector('.character-image'),
-        characterName
-      });
     } else {
       cardboardElement.classList.add('idle');
     }
@@ -290,14 +209,6 @@ export const CharacterPanel: React.FC<CharacterPanelProps> = ({
       const speakClass = side === 'left' ? 'story-character-speaking' : 'story-character-speaking-right';
       innerElement.classList.add(speakClass);
     }
-
-    console.log(`[CharacterPanel ${side}] ✅ ANIMATIONS RE-APPLIED`, {
-      phase,
-      variant,
-      panelClassesFinal: panelElement.className,
-      cardboardClassesFinal: cardboardElement.className,
-      innerClassesFinal: innerElement.className
-    });
   }, [transitionNonce, phase, side, characterName, isSpeaking, isJiggling, isEntering, currentSceneId, previousSceneId]); // Include all animation-relevant state
 
   // Animation event detection
@@ -310,7 +221,6 @@ export const CharacterPanel: React.FC<CharacterPanelProps> = ({
       if (event.animationName.includes('character-entrance-settle') ||
           event.animationName.includes('character-bounce') ||
           event.animationName.includes('character-wiggle')) {
-        console.log(`[CharacterPanel ${side}] ✅ Entrance animation completed`, { characterName });
         // DO NOT clear entering state - it should persist until next transition
         // Call the entrance completion callback
         onEntranceComplete?.();
@@ -319,7 +229,6 @@ export const CharacterPanel: React.FC<CharacterPanelProps> = ({
       // Trigger callback for jiggle animations
       if (event.animationName.includes('character-jiggle-left') ||
           event.animationName.includes('character-jiggle-right')) {
-        console.log('[CharacterPanel] 🎉 Jiggle animation ended', { side, characterName });
         onJiggleComplete?.();
       }
     };
@@ -367,14 +276,10 @@ export const CharacterPanel: React.FC<CharacterPanelProps> = ({
   // Character display logic with animation-based character swapping
   const getDisplayCharacter = () => {
     if (phase === 'entering') {
-      if (scrollDirection === 'forward') {
-        // Forward scrolling: start with previous character, switch to current halfway through
-        // CSS animation will handle the switch at the 50% mark (hidden phase)
-        return previousCharacter || characterName;
-      } else if (scrollDirection === 'backward' && aboutToSwap) {
-        // Backward scrolling: start with next character, switch to current halfway through
-        return nextCharacter || characterName;
-      }
+      // Infer direction: we came from whichever neighbor differs from current character
+      // Show the character we're transitioning FROM during the first half of the animation
+      const characterWeComingFrom = previousCharacter !== characterName ? previousCharacter : nextCharacter;
+      return characterWeComingFrom || characterName;
     }
     return characterName;
   };
@@ -405,18 +310,9 @@ export const CharacterPanel: React.FC<CharacterPanelProps> = ({
   // Debug: Log character swapping
   React.useEffect(() => {
     if (phase === 'entering') {
-      console.log(`[CharacterPanel ${side}] 🎭 CHARACTER SWAP LOGIC:`, {
-        phase,
-        characterName,
-        previousCharacter,
-        nextCharacter,
-        scrollDirection,
-        displayCharacter,
-        secondHalfCharacter,
-        aboutToSwap
-      });
+      // Character entering
     }
-  }, [phase, characterName, previousCharacter, nextCharacter, scrollDirection, displayCharacter, secondHalfCharacter, aboutToSwap, side]);
+  }, [phase, characterName, previousCharacter, nextCharacter, displayCharacter, secondHalfCharacter, aboutToSwap, side]);
 
 
   return (
@@ -451,7 +347,6 @@ Next: ${nextCharacter || 'none'}
 Phase: ${phase}
 IsEntering: ${isEntering}
 AboutToSwap: ${aboutToSwap}
-Direction: ${scrollDirection}
 IsSpeaking: ${isSpeaking}
 Display: ${displayCharacter}
 Entering: ${phase === 'entering'}
@@ -473,8 +368,9 @@ Speaking: ${phase === 'speaking'}`}
                   {/* First half dowel (exits) - hidden when coming from NOCHARACTER */}
                   <div className="story-wooden-dowel" style={{
                     animation: 'first-half-visibility 1600ms ease-in-out forwards',
-                    display: (scrollDirection === 'forward' && previousCharacter === 'NOCHARACTER') ||
-                             (scrollDirection === 'backward' && nextCharacter === 'NOCHARACTER') ? 'none' : 'block'
+                    // Hide dowel if we're coming from NOCHARACTER (infer from which neighbor differs)
+                    display: (previousCharacter !== characterName && previousCharacter === 'NOCHARACTER') ||
+                             (nextCharacter !== characterName && nextCharacter === 'NOCHARACTER') ? 'none' : 'block'
                   }}></div>
 
                   {/* Second half dowel (enters) - always uses visibility animation to sync with character */}

@@ -20,38 +20,30 @@
 
 import { useEffect, useRef } from 'react';
 import { useCharacterAnimation } from '@features/characters/CharacterAnimationContext';
-import { useSceneManager } from '@core/scenes/SceneManager';
+import { useNodeManager } from '@core/navigation/NodeManager';
 
 export default function SuccessDanceScene() {
   const { addEventListener, removeEventListener } = useCharacterAnimation();
-  const { deleteNavigationItem, forceAdvanceNavigation, navigationIndex } = useSceneManager();
+  const { forceAdvanceNavigation, deleteNode, getCurrentNodeId } = useNodeManager();
   const hasNavigatedRef = useRef(false);
+  const currentNodeId = getCurrentNodeId();
 
   // Listen for both character panels to complete their jiggle animations
   useEffect(() => {
-    const handleJiggleComplete = (sceneIndex: number) => {
-      // Only act if this event is for OUR scene index and we haven't already navigated
-      if (sceneIndex === navigationIndex && !hasNavigatedRef.current) {
+    const handleJiggleComplete = () => {
+      // Only navigate once
+      if (!hasNavigatedRef.current && currentNodeId) {
         hasNavigatedRef.current = true;
 
-        console.log('[SuccessDance] 🎊 Both panels finished jiggling, navigating forward and scheduling deletion');
-        const currentIndex = navigationIndex;
+        const successDanceNodeId = currentNodeId;
 
-        // IMPORTANT: Navigate FIRST, then schedule deletion
-        // forceAdvanceNavigation processes pending deletions at the start,
-        // so we need to navigate before the deletion is scheduled
+        // Navigate forward after jiggle completes, then delete this temporary scene
         setTimeout(() => {
-          console.log('[SuccessDance] ➡️  Auto-navigating to next scene');
           forceAdvanceNavigation('forward');
 
-          // Now that we've navigated away, schedule deletion of the success-dance scene
-          // IMPORTANT: Use preserveCurrentIndex=true to prevent navigationIndex adjustment
-          // We navigated FROM currentIndex TO currentIndex+1, then we're deleting currentIndex
-          // We want to stay at currentIndex+1 (which becomes currentIndex after splice)
-          // NOT have it decremented by the deletion logic
+          // Delete the success-dance node after navigating away
           setTimeout(() => {
-            console.log('[SuccessDance] 🗑️  Scheduling deletion of index', currentIndex, '(preserving current position)');
-            deleteNavigationItem(currentIndex, true); // preserveCurrentIndex = true
+            deleteNode(successDanceNodeId);
           }, 50);
         }, 100);
       }
@@ -62,7 +54,7 @@ export default function SuccessDanceScene() {
     return () => {
       removeEventListener('jiggle-complete', handleJiggleComplete);
     };
-  }, [navigationIndex, addEventListener, removeEventListener, deleteNavigationItem, forceAdvanceNavigation]);
+  }, [addEventListener, removeEventListener, forceAdvanceNavigation, deleteNode, currentNodeId]);
 
   return (
     <div style={{

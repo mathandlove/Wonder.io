@@ -57,10 +57,8 @@ function recordingReducer(state: RecordingState, action: RecordingEvent): Record
       // Backend sends complete, accurate final transcript
       const trimmedFinal = action.finalText.trim();
 
-      console.log('[RecordingReducer] ACCUMULATE:', { finalText: trimmedFinal });
 
       if (!trimmedFinal) {
-        console.log('[RecordingReducer] Empty final text, ignoring');
         return state;
       }
 
@@ -117,7 +115,6 @@ export function RecordingProvider({ children }: { children: React.ReactNode }) {
   const stt = useSTT({
     onFinal: (text: string) => {
       // Receive the complete, finalized transcript from backend after stop
-      console.log('[RecordingContext] onFinal callback received:', text);
       dispatch({
         type: 'ACCUMULATE',
         finalText: text
@@ -145,12 +142,10 @@ export function RecordingProvider({ children }: { children: React.ReactNode }) {
 
     // CRITICAL FIX: Wait for audio initialization BEFORE dispatching START
     // This ensures the UI doesn't show "recording" until audio is actually flowing
-    console.log('[RecordingContext] 🚀 Initializing audio (await before START dispatch)...');
 
     try {
       // Wait for microphone, AudioWorklet loading, and audio graph connection
       await stt.start();
-      console.log('[RecordingContext] ✅ Audio initialized - NOW dispatching START');
 
       // NOW dispatch START - audio is actually flowing
       dispatch({ type: 'START', sessionId });
@@ -161,7 +156,6 @@ export function RecordingProvider({ children }: { children: React.ReactNode }) {
   }, [stt]);
 
   const stop = useCallback(() => {
-    console.log('[RecordingContext] Stopping recording');
 
     // Stop backend WebSocket (will process and send final transcript)
     stt.stop();

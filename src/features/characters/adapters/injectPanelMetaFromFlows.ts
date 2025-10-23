@@ -14,17 +14,6 @@ export function injectPanelMetaFromFlows(scenes: Scene[]): Scene[] {
   let currentRight: string | null = null;
 
   const out = scenes.map((s, i) => {
-    // Debug logging for fail-dance scenes
-    if ((s as any).type === 'fail-dance') {
-      console.log('[injectPanelMetaFromFlows] Processing fail-dance scene:', {
-        index: i,
-        leftCharacter: (s as any)['left-character'],
-        rightCharacter: (s as any)['right-character'],
-        dancingSide: (s as any).side,
-        currentLeft,
-        currentRight
-      });
-    }
 
     // Check if this is a scene that has character data (character, input, quest, etc.)
     // These scenes have left-character and/or right-character properties
@@ -119,14 +108,6 @@ export function injectPanelMetaFromFlows(scenes: Scene[]): Scene[] {
 
         if (leftPanel) meta.panelLeft = leftPanel;
         if (rightPanel) meta.panelRight = rightPanel;
-
-        // Debug logging for fail-dance panel states
-        if (s.type === 'fail-dance') {
-          console.log('[injectPanelMetaFromFlows] Fail-dance panel states created:', {
-            leftPanel: leftPanel ? { character: leftPanel.character, newCharacter: leftPanel.newCharacter } : null,
-            rightPanel: rightPanel ? { character: rightPanel.character, newCharacter: rightPanel.newCharacter } : null
-          });
-        }
 
         // Bubble animates immediately if the speaking character is not new
         const speakerSide = (s as any).speaker;

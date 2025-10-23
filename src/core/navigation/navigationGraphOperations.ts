@@ -1,7 +1,7 @@
 /**
- * State Node Operations - Graph manipulation utilities
+ * Node Operations - Graph manipulation utilities
  *
- * This module provides operations for manipulating the state node graph:
+ * This module provides operations for manipulating the navigation graph:
  * - Rewiring: Update prev/next pointers when deleting nodes
  * - Marking for removal: Set status to pendingRemoval and rewire
  * - Compaction: Physically remove nodes from the graph
@@ -9,13 +9,12 @@
  */
 
 import type {
-  NavigatorState,
-  StateNode,
-  StateNodeId,
+  NavigationGraph,
+  Node,
+  NodeId,
   RewiringOperation,
-  PendingNodeDeletion,
-} from './stateNodeTypes';
-import { getNodeById, getPrevNode, getNextNode } from './stateNodeBuilder';
+} from './navigationGraphTypes';
+import { getNodeById, getPrevNode, getNextNode } from './navigationGraphBuilder';
 
 /**
  * Mark a node for removal with immediate rewiring
@@ -27,23 +26,21 @@ import { getNodeById, getPrevNode, getNextNode } from './stateNodeBuilder';
  *
  * After marking, backward navigation from the next node will skip over this node.
  *
- * @param state - Current navigator state
+ * @param state - Current navigation graph
  * @param nodeId - Node to mark for removal
- * @returns New navigator state with node marked and neighbors rewired
+ * @returns New navigation graph with node marked and neighbors rewired
  */
 export function markNodeForRemoval(
-  state: NavigatorState,
-  nodeId: StateNodeId
-): { state: NavigatorState; rewiring: RewiringOperation[] } {
+  state: NavigationGraph,
+  nodeId: NodeId
+): { state: NavigationGraph; rewiring: RewiringOperation[] } {
   const node = getNodeById(state, nodeId);
 
   if (!node) {
-    console.warn('[markNodeForRemoval] Node not found:', nodeId);
     return { state, rewiring: [] };
   }
 
   if (node.status === 'pendingRemoval') {
-    console.warn('[markNodeForRemoval] Node already marked for removal:', nodeId);
     return { state, rewiring: [] };
   }
 
@@ -97,12 +94,6 @@ export function markNodeForRemoval(
   newState.byId = newById;
   newState.historyVersion = state.historyVersion + 1;
 
-  console.log('[markNodeForRemoval] Marked node for removal:', {
-    nodeId,
-    stateKey: node.stateKey,
-    rewiring: rewiring.map(r => `${r.nodeId}.${r.field} = ${r.newValue}`),
-  });
-
   return { state: newState, rewiring };
 }
 
@@ -119,11 +110,10 @@ export function markNodeForRemoval(
  * @param nodeId - Node to compact
  * @returns New navigator state with node removed
  */
-export function compactNode(state: NavigatorState, nodeId: StateNodeId): NavigatorState {
+export function compactNode(state: NavigationGraph, nodeId: NodeId): NavigationGraph {
   const node = getNodeById(state, nodeId);
 
   if (!node) {
-    console.warn('[compactNode] Node not found:', nodeId);
     return state;
   }
 
@@ -180,16 +170,7 @@ export function compactNode(state: NavigatorState, nodeId: StateNodeId): Navigat
 
     // Prefer next, fallback to prev, fallback to null
     newCurrentId = nextActive?.id || prevActive?.id || null;
-
-    console.log('[compactNode] Current node deleted, moving to:', newCurrentId);
   }
-
-  console.log('[compactNode] Compacted node:', {
-    nodeId,
-    stateKey: node.stateKey,
-    sceneId: node.sceneId,
-    remainingNodes: newOrder.length,
-  });
 
   return {
     ...state,
@@ -208,7 +189,7 @@ export function compactNode(state: NavigatorState, nodeId: StateNodeId): Navigat
  * @param fromNodeId - Starting node ID
  * @returns Next active node or null
  */
-export function findNextActiveNode(state: NavigatorState, fromNodeId: StateNodeId): StateNode | null {
+export function findNextActiveNode(state: NavigationGraph, fromNodeId: NodeId): Node | null {
   let current = getNodeById(state, fromNodeId);
 
   while (current) {
@@ -232,7 +213,7 @@ export function findNextActiveNode(state: NavigatorState, fromNodeId: StateNodeI
  * @param fromNodeId - Starting node ID
  * @returns Previous active node or null
  */
-export function findPrevActiveNode(state: NavigatorState, fromNodeId: StateNodeId): StateNode | null {
+export function findPrevActiveNode(state: NavigationGraph, fromNodeId: NodeId): Node | null {
   let current = getNodeById(state, fromNodeId);
 
   while (current) {
@@ -261,7 +242,7 @@ export function findPrevActiveNode(state: NavigatorState, fromNodeId: StateNodeI
  * @param currentNodeId - Current node ID
  * @returns Next navigation target or null
  */
-export function navigateNext(state: NavigatorState, currentNodeId: StateNodeId): StateNode | null {
+export function navigateNext(state: NavigationGraph, currentNodeId: NodeId): Node | null {
   const current = getNodeById(state, currentNodeId);
   if (!current) return null;
 
@@ -287,7 +268,7 @@ export function navigateNext(state: NavigatorState, currentNodeId: StateNodeId):
  * @param currentNodeId - Current node ID
  * @returns Previous navigation target or null
  */
-export function navigatePrev(state: NavigatorState, currentNodeId: StateNodeId): StateNode | null {
+export function navigatePrev(state: NavigationGraph, currentNodeId: NodeId): Node | null {
   const current = getNodeById(state, currentNodeId);
   if (!current) return null;
 
@@ -304,14 +285,14 @@ export function navigatePrev(state: NavigatorState, currentNodeId: StateNodeId):
 /**
  * Batch mark multiple nodes for removal (e.g., entire scene)
  *
- * @param state - Current navigator state
+ * @param state - Current navigation graph
  * @param nodeIds - Array of node IDs to mark
- * @returns New navigator state with all nodes marked and rewired
+ * @returns New navigation graph with all nodes marked and rewired
  */
 export function batchMarkForRemoval(
-  state: NavigatorState,
-  nodeIds: StateNodeId[]
-): { state: NavigatorState; rewiring: RewiringOperation[] } {
+  state: NavigationGraph,
+  nodeIds: NodeId[]
+): { state: NavigationGraph; rewiring: RewiringOperation[] } {
   let currentState = state;
   const allRewiring: RewiringOperation[] = [];
 
@@ -331,7 +312,7 @@ export function batchMarkForRemoval(
  * @param nodeIds - Array of node IDs to compact
  * @returns New navigator state with all nodes removed
  */
-export function batchCompact(state: NavigatorState, nodeIds: StateNodeId[]): NavigatorState {
+export function batchCompact(state: NavigationGraph, nodeIds: NodeId[]): NavigationGraph {
   let currentState = state;
 
   for (const nodeId of nodeIds) {
@@ -347,21 +328,21 @@ export function batchCompact(state: NavigatorState, nodeIds: StateNodeId[]): Nav
  * Uses scene registry for O(1) range identification.
  * Falls back to linear scan if registry not available.
  *
- * @param state - Current navigator state
+ * @param state - Current navigation graph
  * @param sceneId - Scene ID to mark for removal
- * @returns New navigator state with scene marked
+ * @returns New navigation graph with scene marked
  */
 export function markSceneForRemoval(
-  state: NavigatorState,
+  state: NavigationGraph,
   sceneId: string
-): { state: NavigatorState; nodeIds: StateNodeId[] } {
+): { state: NavigationGraph; nodeIds: NodeId[] } {
   // Use scene registry if available
   if (state.sceneRegistry && state.sceneRegistry.byId[sceneId]) {
     const sceneInfo = state.sceneRegistry.byId[sceneId];
 
     // Collect all node IDs in the scene range
-    const nodeIds: StateNodeId[] = [];
-    let currentId: StateNodeId | null = sceneInfo.firstNodeId;
+    const nodeIds: NodeId[] = [];
+    let currentId: NodeId | null = sceneInfo.firstNodeId;
 
     while (currentId) {
       const node = getNodeById(state, currentId);

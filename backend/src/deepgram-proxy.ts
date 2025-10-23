@@ -249,7 +249,6 @@ export function handleDeepgramProxy(clientWs: WebSocket, request: any) {
                 props.push(`${key}=${JSON.stringify(message[key])}`);
               }
             }
-            console.log(`[DEEPGRAM] ${props.join(' ')} text="${transcript}"`);
           }
         }
 

@@ -15,9 +15,9 @@
  * - Quest completion determines if Next button is unlocked
  */
 import React, { useCallback, useEffect } from 'react';
-import { useSceneManager } from '@core/scenes/SceneManager';
+import { useNodeManager } from '@core/navigation/NodeManager';
 import { useSceneFlowMetadata } from '@core/data/FlowMetadataStore';
-import { usePageFactory } from '@core/navigation/PageFactory';
+import { useSceneFactory } from '@core/navigation/SceneFactory';
 import { Recording } from '@core/recording/RecordingAPI';
 import { RecordPanel } from './RecordPanel';
 import { useRecording } from './RecordingContext';
@@ -44,27 +44,19 @@ function hasFlowId(scene: Scene | undefined | null): scene is SceneWithFlowId {
 }
 
 export function RecordingOrchestrator() {
-  const { getCurrentNavigationItem, insertNavigationItem, deleteNavigationItem, addNavigationStateToCurrentScene, updateNavigationItemState, updateSceneTextByRecordingId, navigationIndex, setNavigationIndex, forceAdvanceNavigation, navigationArray } = useSceneManager();
-  const { createRecordingScene, createFailDanceScene, createSuccessDanceScene } = usePageFactory();
+  const { getCurrentNode, getCurrentNodeId, getCurrentSceneId, insertScene, addStateToCurrentNode, updateNodeState, updateSceneTextByRecordingId, forceAdvanceNavigation } = useNodeManager();
+  const { createRecordingScene, createFailDanceScene, createSuccessDanceScene } = useSceneFactory();
   const recording = useRecording();
 
-  // Track pending deletions to prevent duplicate deletion attempts
-  const pendingDeletionRef = React.useRef<number | null>(null);
 
-  // Get current scene state to understand context
-  // We extract just the current item from navigationArray so we react to changes,
-  // but we memoize based on the actual content we care about (sceneId and state type/state)
-  // to prevent unnecessary re-renders when unrelated properties change
-  const currentNavItem = React.useMemo(() => {
-    return navigationArray[navigationIndex] || null;
-  }, [navigationArray, navigationIndex]);
-
-  const currentScene = currentNavItem?.scene;
+  // Get current node from navigation graph
+  const currentNode = getCurrentNode();
+  const currentScene = currentNode?.scene;
 
   // Memoize sceneState based on its actual content to prevent unnecessary re-renders
   const sceneState = React.useMemo(() => {
-    return currentNavItem?.sceneState || null;
-  }, [currentNavItem?.sceneState]);
+    return currentNode?.sceneState || null;
+  }, [currentNode?.sceneState]);
 
   // Get flow metadata for quest text
   const flowMetadata = useSceneFlowMetadata(hasFlowId(currentScene) ? currentScene : null);
@@ -83,20 +75,7 @@ export function RecordingOrchestrator() {
   const isSuccessDanceScene = currentScene?.type === 'success-dance';
   const isFailDanceScene = currentScene?.type === 'fail-dance';
   const shouldShowPanel =
-    dialogueState === 'basic' ||
-    dialogueState === 'input-basic' ||
-    dialogueState === 'quest-showing' ||
-    dialogueState === 'input-showInput' ||
-    dialogueState === 'input-recording' ||
-    dialogueState === 'input-processing' ||
-    dialogueState === 'show-hint' ||
-    dialogueState === 'record-answer' ||
-    dialogueState === 'answer-processing' ||
-    dialogueState === 'waiting-for-answer-finalize' ||
-    dialogueState === 'answer-waiting' ||
-    dialogueState === 'answer-right' ||
-    dialogueState === 'answer-wrong' ||
-    dialogueState === 'ai-waiting' ||
+    sceneState?.type === 'dialogue' ||
     isStaticScene ||
     isSuccessDanceScene ||
     isFailDanceScene;
@@ -105,14 +84,14 @@ export function RecordingOrchestrator() {
   // Get the active recording ID from the CURRENT SCENE (survives navigation!)
   // This is stored in the scene itself, not in component state
   const activeRecordingId = React.useMemo(() => {
-    const scene = currentNavItem?.scene;
+    const scene = currentNode?.scene;
     if (scene && 'recordingId' in scene) {
       return (scene as { recordingId?: string }).recordingId || null;
     }
     return null;
-  }, [currentNavItem]);
+  }, [currentNode]);
 
-  // Track question count - resets when panel becomes hidden (basic state)
+  // Track question count for enabling Answer (todo)
   const [, setQuestionCount] = React.useState<number>(0);
 
   // Ref to store handleRecordStop so it can be used in effects before it's defined
@@ -170,7 +149,7 @@ export function RecordingOrchestrator() {
         const currentState = sceneState?.type === 'dialogue' ? sceneState : null;
         if (currentState?.state === 'answer-wrong') {
           // Extract character information from current scene
-          const scene = currentNavItem?.scene;
+          const scene = currentNode?.scene;
           let character = 'bakerMom'; // default - the one who gets angry
           let leftCharacter: string | undefined;
           let background: string | undefined;
@@ -196,40 +175,34 @@ export function RecordingOrchestrator() {
           const answerText = currentState.answerText || '';
           const questionText = currentState.questionText || '';
 
-          // Use PageFactory to create fail-dance scene
+          // Use SceneFactory to create fail-dance scene
           const failDanceScene = createFailDanceScene(
             character,
             answerText,
             questionText,
             background,
             leftCharacter,
-            null // right-character set to null to trigger exit animation
+            undefined // right-character set to undefined to trigger exit animation
           );
 
-          // Insert the fail-dance scene after current scene
-          // Panel metadata (newCharacter, previousCharacter, etc.) will be automatically
-          // injected by SceneManager's reactive effect when navigationArray changes
-          const newNavItem = {
-            scene: failDanceScene,
-            sceneId: failDanceScene.sceneId!,
-            sceneState: { type: 'static' as const },
-            lockForward: true, // Lock navigation during fail-dance animation
-            lockBackward: true,
-            index: navigationIndex + 1
-          };
-
-          insertNavigationItem(newNavItem, navigationIndex + 1);
+          // Insert the fail-dance scene after current scene using sceneId-based insertion
+          // This properly maintains the state-node graph structure
+          const currentSceneId = getCurrentSceneId();
+          insertScene(currentSceneId, failDanceScene);
 
           // Wait 2 seconds before transitioning current scene to input-showInput state
           // This keeps the answer-wrong visual feedback visible longer before conversion
           setTimeout(() => {
-            // Transition current scene to input-showInput state (ready for retry)
+            // Transition current node to input-showInput state (ready for retry)
             // This will be visible when we return from the fail-dance scene
-            updateNavigationItemState(navigationIndex, {
-              type: 'dialogue',
-              state: 'input-showInput',
-              questionText: currentState.questionText // Preserve question for retry
-            });
+            const currentNodeId = getCurrentNodeId();
+            if (currentNodeId) {
+              updateNodeState(currentNodeId, {
+                type: 'dialogue',
+                state: 'input-showInput',
+                questionText: currentState.questionText // Preserve question for retry
+              });
+            }
           }, 2000);
 
           // Auto-advance to fail-dance scene after a brief moment
@@ -242,7 +215,7 @@ export function RecordingOrchestrator() {
 
       return () => clearTimeout(timerId);
     }
-  }, [dialogueState, answerWrongVideoComplete, sceneState, navigationIndex, updateNavigationItemState, currentNavItem, insertNavigationItem, forceAdvanceNavigation, createFailDanceScene]);
+  }, [dialogueState, answerWrongVideoComplete, sceneState, currentNode?.scene, getCurrentSceneId, getCurrentNodeId, insertScene, forceAdvanceNavigation, createFailDanceScene, updateNodeState]);
 
   // Effect: Auto-transition from answer-right to success-dance scene, triggered AFTER video ends
   useEffect(() => {
@@ -253,7 +226,7 @@ export function RecordingOrchestrator() {
         const currentState = sceneState?.type === 'dialogue' ? sceneState : null;
         if (currentState?.state === 'answer-right') {
           // Extract character information from current scene
-          const scene = currentNavItem?.scene;
+          const scene = currentNode?.scene;
           let character = 'bakerMom'; // default - the one who celebrates
           let leftCharacter: string | undefined;
           let rightCharacter: string | undefined;
@@ -279,7 +252,7 @@ export function RecordingOrchestrator() {
           // Get the answer text to display in the record panel
           const answerText = currentState.answerText || '';
 
-          // Use PageFactory to create success-dance scene
+          // Use SceneFactory to create success-dance scene
           // IMPORTANT: Pass BOTH left and right characters to keep them in their panels
           const successDanceScene = createSuccessDanceScene(
             character,
@@ -290,36 +263,32 @@ export function RecordingOrchestrator() {
           );
 
           // Insert the success-dance scene after current scene
-          const newNavItem = {
-            scene: successDanceScene,
-            sceneId: successDanceScene.sceneId!,
-            sceneState: { type: 'static' as const },
-            lockForward: true, // Lock navigation during success-dance animation
-            lockBackward: true,
-            index: navigationIndex + 1
-          };
-
-          insertNavigationItem(newNavItem, navigationIndex + 1);
+          // Insert the success-dance scene after current scene using sceneId-based insertion
+          const currentSceneId = getCurrentSceneId();
+          insertScene(currentSceneId, successDanceScene);
 
           // Auto-advance to success-dance scene immediately
           // Note: We don't update the current scene state to 'basic' before navigating
           // This prevents visual flicker/unwanted navigation during the transition
           forceAdvanceNavigation('forward');
 
-          // After navigating away, update the previous scene to basic state
+          // After navigating away, update the previous node to basic state
           // This ensures if user scrolls back, the answer-right scene is in basic state
           setTimeout(() => {
-            updateNavigationItemState(navigationIndex, {
-              type: 'dialogue',
-              state: 'basic'
-            });
+            const currentNodeId = getCurrentNodeId();
+            if (currentNodeId) {
+              updateNodeState(currentNodeId, {
+                type: 'dialogue',
+                state: 'basic'
+              });
+            }
           }, 100);
         }
       }, 100); // Minimal delay, just enough for state to settle
 
       return () => clearTimeout(timerId);
     }
-  }, [dialogueState, answerRightVideoComplete, sceneState, navigationIndex, updateNavigationItemState, currentNavItem, insertNavigationItem, forceAdvanceNavigation, createSuccessDanceScene]);
+  }, [dialogueState, answerRightVideoComplete, sceneState, currentNode?.scene, getCurrentSceneId, getCurrentNodeId, insertScene, forceAdvanceNavigation, createSuccessDanceScene, updateNodeState]);
 
   // ===================================
   // RECORDING FLOW LOGIC
@@ -334,7 +303,6 @@ export function RecordingOrchestrator() {
 
     // Auto-stop recording when leaving recording states (cleanup only)
     if (!isRecordingState && recording.isRecording() && !isStoppingRef.current) {
-      console.log('[RecordPanelOrchestrator] Auto-stopping recording (leaving recording state)');
       isStoppingRef.current = true;
       Recording.stop();
 
@@ -357,29 +325,35 @@ export function RecordingOrchestrator() {
     // Only sync during active recording (no partial updates, but keep UI responsive)
     if (isRecording && activeRecordingId) {
       // Read fresh state on each update
-      const freshNavItem = getCurrentNavigationItem();
-      const currentState = freshNavItem?.sceneState?.type === 'dialogue' ? freshNavItem.sceneState : null;
+      const freshNode = getCurrentNode();
+      const currentState = freshNode?.sceneState?.type === 'dialogue' ? freshNode.sceneState : null;
 
       if (currentState?.state === 'input-recording') {
         // Ask recording: Update scene text minimally (backend will provide final on stop)
         // We don't get real-time transcripts anymore, but keep state synced
         if (currentState.questionText !== displayText && displayText) {
           updateSceneTextByRecordingId(activeRecordingId, displayText);
-          updateNavigationItemState(navigationIndex, {
-            type: 'dialogue',
-            state: 'input-recording',
-            questionText: displayText
-          });
+          const currentNodeId = getCurrentNodeId();
+          if (currentNodeId) {
+            updateNodeState(currentNodeId, {
+              type: 'dialogue',
+              state: 'input-recording',
+              questionText: displayText
+            });
+          }
         }
       } else if (currentState?.state === 'record-answer') {
         // Answer recording: Update answerText minimally
         if (currentState.answerText !== displayText && displayText) {
-          updateNavigationItemState(navigationIndex, {
-            type: 'dialogue',
-            state: 'record-answer',
-            answerText: displayText,
-            questionText: currentState.questionText
-          });
+          const currentNodeId = getCurrentNodeId();
+          if (currentNodeId) {
+            updateNodeState(currentNodeId, {
+              type: 'dialogue',
+              state: 'record-answer',
+              answerText: displayText,
+              questionText: currentState.questionText
+            });
+          }
         }
       }
     }
@@ -388,84 +362,74 @@ export function RecordingOrchestrator() {
     // This effect updates the text as soon as it arrives (before 'close' signal)
 
     // Get FRESH state every time (don't rely on effect dependency)
-    const freshNavItem = getCurrentNavigationItem();
-    const freshState = freshNavItem?.sceneState?.type === 'dialogue' ? freshNavItem.sceneState : null;
-
-    // DEBUG: Log the current state check conditions
-    console.log('[RecordPanelOrchestrator] Transcript sync check:', {
-      isRecording,
-      hasActiveRecordingId: !!activeRecordingId,
-      hasDisplayText: !!displayText.trim(),
-      displayText: displayText.substring(0, 50),
-      freshStateType: freshState?.type,
-      freshStateValue: freshState?.state
-    });
+    const freshNode = getCurrentNode();
+    const freshState = freshNode?.sceneState?.type === 'dialogue' ? freshNode.sceneState : null;
 
     if (!isRecording && activeRecordingId && displayText.trim()) {
-      console.log('[RecordPanelOrchestrator] 🔍 Conditions met for transcript processing. Fresh state:', freshState?.state);
 
       if (freshState?.state === 'input-processing') {
         // Final transcript arrived from backend - transition to ai-waiting
         const finalText = displayText.trim();
-        console.log('[RecordPanelOrchestrator] Final transcript arrived in input-processing:', finalText);
 
         // Valid transcript - update questionText and transition to ai-waiting
-        console.log('[RecordPanelOrchestrator] ✅ Transitioning from input-processing to ai-waiting with final text:', finalText);
         updateSceneTextByRecordingId(activeRecordingId, finalText);
-        updateNavigationItemState(navigationIndex, {
-          type: 'dialogue',
-          state: 'ai-waiting',
-          questionText: finalText
-        });
-      } else if (freshState?.state === 'ai-waiting') {
-        // Final transcript arrived from backend (fallback if we somehow skipped input-processing)
-        const finalText = displayText.trim();
-        console.log('[RecordPanelOrchestrator] Final transcript arrived:', finalText);
-
-        if (freshState.questionText !== finalText) {
-          // Valid transcript - update questionText in ai-waiting state
-          console.log('[RecordPanelOrchestrator] ✅ Updating ai-waiting state with final text:', finalText);
-          updateSceneTextByRecordingId(activeRecordingId, finalText);
-          updateNavigationItemState(navigationIndex, {
+        const currentNodeId = getCurrentNodeId();
+        if (currentNodeId) {
+          updateNodeState(currentNodeId, {
             type: 'dialogue',
             state: 'ai-waiting',
             questionText: finalText
           });
-        } else {
-          console.log('[RecordPanelOrchestrator] ⏭️  Skipping update - text unchanged');
         }
+      } else if (freshState?.state === 'ai-waiting') {
+        // Final transcript arrived from backend (fallback if we somehow skipped input-processing)
+        const finalText = displayText.trim();
+
+        if (freshState.questionText !== finalText) {
+          // Valid transcript - update questionText in ai-waiting state
+          updateSceneTextByRecordingId(activeRecordingId, finalText);
+          const currentNodeId = getCurrentNodeId();
+          if (currentNodeId) {
+            updateNodeState(currentNodeId, {
+              type: 'dialogue',
+              state: 'ai-waiting',
+              questionText: finalText
+            });
+          }
+        } 
       } else if (freshState?.state === 'answer-processing') {
         // Final transcript arrived from backend - transition to answer-waiting
         const finalText = displayText.trim();
-        console.log('[RecordPanelOrchestrator] Final transcript arrived in answer-processing:', finalText);
 
         // Valid transcript - update answerText and transition to answer-waiting
-        console.log('[RecordPanelOrchestrator] ✅ Transitioning from answer-processing to answer-waiting with final text:', finalText);
-        updateNavigationItemState(navigationIndex, {
-          type: 'dialogue',
-          state: 'answer-waiting',
-          answerText: finalText,
-          questionText: freshState.questionText
-        });
-      } else if (freshState?.state === 'answer-waiting') {
-        // Final transcript arrived for answer (fallback if we somehow skipped answer-processing)
-        const finalText = displayText.trim();
-
-        if (freshState.answerText !== finalText) {
-          // Valid answer - update answerText in answer-waiting state
-          console.log('[RecordPanelOrchestrator] ✅ Updating answer-waiting state with final text:', finalText);
-          updateNavigationItemState(navigationIndex, {
+        const currentNodeId = getCurrentNodeId();
+        if (currentNodeId) {
+          updateNodeState(currentNodeId, {
             type: 'dialogue',
             state: 'answer-waiting',
             answerText: finalText,
             questionText: freshState.questionText
           });
         }
-      } else {
-        console.log('[RecordPanelOrchestrator] ⚠️  Unexpected state when final transcript arrived:', freshState?.state);
-      }
+      } else if (freshState?.state === 'answer-waiting') {
+        // Final transcript arrived for answer (fallback if we somehow skipped answer-processing)
+        const finalText = displayText.trim();
+
+        if (freshState.answerText !== finalText) {
+          // Valid answer - update answerText in answer-waiting state
+          const currentNodeId = getCurrentNodeId();
+          if (currentNodeId) {
+            updateNodeState(currentNodeId, {
+              type: 'dialogue',
+              state: 'answer-waiting',
+              answerText: finalText,
+              questionText: freshState.questionText
+            });
+          }
+        }
+      } 
     }
-  }, [displayText, isRecording, sceneState, activeRecordingId, navigationIndex, updateSceneTextByRecordingId, updateNavigationItemState, getCurrentNavigationItem, navigationArray, setNavigationIndex, deleteNavigationItem]);
+  }, [displayText, isRecording, sceneState, activeRecordingId, updateSceneTextByRecordingId, getCurrentNode, getCurrentNodeId, updateNodeState]);
 
   // Register onAutoStop callback when in recording states
   // This allows the auto-stop timeout to call handleRecordStop and transition state properly
@@ -503,7 +467,6 @@ export function RecordingOrchestrator() {
     if (shouldRegisterCallback) {
       // Register callback that will fire when backend sends 'close' signal
       recording.setOnFinalized(() => {
-        console.log('[RecordPanelOrchestrator] ✅ Transcription finalized - backend processing complete');
       });
 
       // Cleanup: unregister when leaving these states
@@ -525,7 +488,6 @@ export function RecordingOrchestrator() {
       // Generate unique recording ID
       const recordingId = `rec-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
 
-      console.log('[RecordPanelOrchestrator] 🎙️ EVENT-DRIVEN: Starting recording IMMEDIATELY on click');
 
       // STEP 1: START RECORDING IMMEDIATELY (event-driven, not state-driven)
       // This happens FIRST, before any state changes or navigation
@@ -537,21 +499,23 @@ export function RecordingOrchestrator() {
         throw err; // Re-throw to prevent state updates on failure
       });
 
-      console.log('[RecordPanelOrchestrator] ✅ Recording started, NOW updating states');
 
       // STEP 2: NOW update UI states (happens AFTER recording is flowing)
       // Increment question counter - unlocks Answer button after first question
       setQuestionCount(prev => prev + 1);
 
-      // Update current navigation item state from input-showInput to basic (locks auto-recalculated)
-      updateNavigationItemState(navigationIndex, { type: 'dialogue', state: 'basic' });
+      // Update current node state from input-showInput to basic (locks auto-recalculated)
+      const currentNodeId = getCurrentNodeId();
+      if (currentNodeId) {
+        updateNodeState(currentNodeId, { type: 'dialogue', state: 'basic' });
+      }
 
       // Create a new CharacterScene, inheriting context from current scene
-      const currentScene = currentNavItem?.scene;
-      const currentBackground = currentScene && 'background' in currentScene ? currentScene.background : undefined;
-      const leftCharacter = hasCharacterProperties(currentScene) ? currentScene['left-character'] : undefined;
-      const rightCharacter = hasCharacterProperties(currentScene) ? currentScene['right-character'] : undefined;
-      const flowId = hasFlowId(currentScene) ? currentScene.flowId : undefined;
+      const scene = currentNode?.scene;
+      const currentBackground = scene && 'background' in scene ? scene.background : undefined;
+      const leftCharacter = hasCharacterProperties(scene) ? scene['left-character'] : undefined;
+      const rightCharacter = hasCharacterProperties(scene) ? scene['right-character'] : undefined;
+      const flowId = hasFlowId(scene) ? scene.flowId : undefined;
 
       const newScene = createRecordingScene(recordingId, currentBackground, leftCharacter, rightCharacter);
 
@@ -561,24 +525,17 @@ export function RecordingOrchestrator() {
         (newScene as any).flowId = flowId;
       }
 
-      const sceneId = newScene.sceneId || 'default';
+      // Insert scene after current scene using sceneId-based insertion
+      // This properly maintains the state-node graph structure
+      const currentSceneId = getCurrentSceneId();
+      insertScene(currentSceneId, newScene);
 
-      // Create NavigationItem with recording state
-      const newNavItem = {
-        scene: newScene,
-        sceneId,
-        sceneState: { type: 'dialogue' as const, state: 'input-recording' as const },
-        lockForward: true, // Block scrolling in both directions while recording
-        lockBackward: true,
-        index: navigationIndex + 1
-      };
-
-      insertNavigationItem(newNavItem, navigationIndex + 1);
-      setNavigationIndex(navigationIndex + 1);
+      // Navigate forward to the new recording scene
+      forceAdvanceNavigation('forward');
     } catch {
       // Silent error handling - recording failed to start
     }
-  }, [createRecordingScene, insertNavigationItem, updateNavigationItemState, navigationIndex, setNavigationIndex, currentNavItem]);
+  }, [createRecordingScene, getCurrentSceneId, getCurrentNodeId, insertScene, forceAdvanceNavigation, updateNodeState, currentNode?.scene]);
 
   /**
    * Handle recording stop - NEW BATCH PROCESSING FLOW
@@ -590,15 +547,17 @@ export function RecordingOrchestrator() {
    */
   const handleRecordStop = useCallback(() => {
     const currentState = sceneState?.type === 'dialogue' ? sceneState : null;
+    const currentNodeId = getCurrentNodeId();
+
+    if (!currentNodeId) return;
 
     if (currentState?.state === 'record-answer') {
       // Answer recording: Transition to answer-processing to show "Processing..."
       // Backend will process audio and send final transcript
       // When transcript arrives, we'll transition to answer-waiting
       const currentAnswerText = currentState.answerText || '';
-      console.log('[RecordPanelOrchestrator] 🛑 Stop answer recording, transitioning to answer-processing with text:', currentAnswerText);
 
-      updateNavigationItemState(navigationIndex, {
+      updateNodeState(currentNodeId, {
         type: 'dialogue',
         state: 'answer-processing',
         answerText: currentAnswerText, // Will be updated when final transcript arrives
@@ -609,14 +568,13 @@ export function RecordingOrchestrator() {
       // Backend will process audio and send final transcript
       // When transcript arrives, we'll transition to ai-waiting
       const currentQuestionText = currentState.questionText || '';
-      console.log('[RecordPanelOrchestrator] 🛑 Stop recording, transitioning to input-processing with text:', currentQuestionText);
 
       // Update scene text (for speech bubble) before transitioning state
       if (activeRecordingId && currentQuestionText) {
         updateSceneTextByRecordingId(activeRecordingId, currentQuestionText);
       }
 
-      updateNavigationItemState(navigationIndex, {
+      updateNodeState(currentNodeId, {
         type: 'dialogue',
         state: 'input-processing',
         questionText: currentQuestionText // Will be updated when final transcript arrives
@@ -629,7 +587,7 @@ export function RecordingOrchestrator() {
     // onFinal callback will update the text in input-processing state
     // When transcript arrives, transcript sync effect will transition to ai-waiting
     // ChatFlowOrchestrator will trigger AI processing when in ai-waiting state
-  }, [navigationIndex, sceneState, updateNavigationItemState, activeRecordingId, updateSceneTextByRecordingId]);
+  }, [sceneState, getCurrentNodeId, updateNodeState, activeRecordingId, updateSceneTextByRecordingId]);
 
   // Update ref when handleRecordStop changes (so effects can use it)
   React.useEffect(() => {
@@ -655,7 +613,6 @@ export function RecordingOrchestrator() {
       // Generate unique recording ID
       const recordingId = `answer-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
 
-      console.log('[RecordPanelOrchestrator] 🎙️ EVENT-DRIVEN: Starting ANSWER recording IMMEDIATELY on click');
 
       // STEP 1: START RECORDING IMMEDIATELY (event-driven, not state-driven)
       // This happens FIRST, before any state changes or navigation
@@ -664,20 +621,18 @@ export function RecordingOrchestrator() {
         throw err; // Re-throw to prevent state updates on failure
       });
 
-      console.log('[RecordPanelOrchestrator] ✅ Answer recording started, NOW updating states');
 
       // STEP 2: NOW update UI states (happens AFTER recording is flowing)
       // CRITICAL: Add recordingId to the current scene so activeRecordingId can be derived
-      const currentItem = getCurrentNavigationItem();
+      const currentItem = getCurrentNode();
       if (currentItem?.scene) {
         // Add recordingId property to the scene (type assertion needed)
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         (currentItem.scene as any).recordingId = recordingId;
-        console.log('[RecordPanelOrchestrator] ✅ Added recordingId to current scene:', recordingId);
       }
 
       // Add record-answer state to current scene (same scene, new state)
-      addNavigationStateToCurrentScene(
+      addStateToCurrentNode(
         { type: 'dialogue', state: 'record-answer' },
         true  // Insert after current
       );
@@ -688,7 +643,7 @@ export function RecordingOrchestrator() {
     } catch {
       // Silent error handling - recording failed to start
     }
-  }, [addNavigationStateToCurrentScene, forceAdvanceNavigation, getCurrentNavigationItem]);
+  }, [addStateToCurrentNode, forceAdvanceNavigation, getCurrentNode]);
 
   // Don't render if panel shouldn't be visible
   if (!shouldShowPanel) {

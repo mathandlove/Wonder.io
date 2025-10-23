@@ -22,58 +22,46 @@ async function testMagneticScroller() {
         page.on('console', msg => {
             const text = msg.text();
             if (text.includes('🧲') || text.includes('MAGNETIC') || text.includes('magnetic')) {
-                console.log('🧲 SCROLLER LOG:', text);
             } else if (text.includes('🔍') || text.includes('Found') || text.includes('bubbles')) {
-                console.log('🔍 DEBUG LOG:', text);
             } else if (text.includes('=== FLOW POSITIONING DEBUG ===')) {
-                console.log('📍 POSITION DEBUG:', text);
             }
         });
         
-        console.log('📱 Loading story app...');
         await page.goto('http://localhost:5173?mode=story', { 
             waitUntil: 'networkidle0', 
             timeout: 30000 
         });
         
         // Wait for React app to render
-        console.log('⏳ Waiting for story content to load...');
         await page.waitForTimeout(5000);
         
         // Check if flow content exists
         const flowContent = await page.$('.flow-content');
         if (!flowContent) {
-            console.log('❌ .flow-content not found - story may not have loaded');
             return;
         }
         
         const flowItems = await page.$$('.flow-item');
-        console.log(`✅ Found ${flowItems.length} flow items`);
         
         if (flowItems.length === 0) {
-            console.log('❌ No flow items found - cannot test magnetic scroller');
             return;
         }
         
         // Test 1: Initial position
-        console.log('\n📍 TEST 1: Initial positioning');
         await page.evaluate(() => {
             if (window.debugFlowPositions) {
                 window.debugFlowPositions();
             } else {
-                console.log('❌ debugFlowPositions() not available');
             }
         });
         
         // Test 2: Scroll down and test magnetic snap
-        console.log('\n📜 TEST 2: Testing scroll down behavior');
         await page.evaluate(() => {
             window.scrollTo({ top: 0, behavior: 'auto' });
         });
         await page.waitForTimeout(500);
         
         await page.evaluate(() => {
-            console.log('📜 Scrolling down 300px...');
             window.scrollBy({ top: 300, behavior: 'auto' });
         });
         
@@ -81,7 +69,6 @@ async function testMagneticScroller() {
         await page.waitForTimeout(1500);
         
         // Test 3: Check final positioning
-        console.log('\n📍 TEST 3: Checking post-scroll positioning');
         const positionInfo = await page.evaluate(() => {
             const viewportCenter = window.innerHeight / 2;
             const flowItems = document.querySelectorAll('.flow-item');
@@ -108,7 +95,6 @@ async function testMagneticScroller() {
             };
         });
         
-        console.log(`📊 Viewport: ${positionInfo.viewportHeight}px, Scroll: ${positionInfo.scrollY}px`);
         
         positionInfo.results.forEach(result => {
             const distance = parseFloat(result.distance);
@@ -116,27 +102,22 @@ async function testMagneticScroller() {
                           distance < 25 ? '⚠️ REASONABLY CENTERED' : 
                           '❌ POORLY CENTERED';
             
-            console.log(`📍 Flow item ${result.index}: center=${result.itemCenter}px, distance=${result.distance}px ${status}`);
         });
         
         // Test 4: Test scroll up behavior
-        console.log('\n📜 TEST 4: Testing scroll up behavior');
         await page.evaluate(() => {
-            console.log('📜 Scrolling up 200px...');
             window.scrollBy({ top: -200, behavior: 'auto' });
         });
         
         await page.waitForTimeout(1500);
         
         // Test 5: Final debug check
-        console.log('\n🔍 TEST 5: Final debug check');
         await page.evaluate(() => {
             if (window.debugFlowPositions) {
                 window.debugFlowPositions();
             }
         });
         
-        console.log('\n✅ Test completed successfully!');
         
     } catch (error) {
         console.error('❌ Test failed:', error.message);
@@ -152,7 +133,4 @@ try {
     require('puppeteer');
     testMagneticScroller();
 } catch (e) {
-    console.log('❌ Puppeteer not available. Installing...');
-    console.log('Run: npm install puppeteer');
-    console.log('Then run: node test-scroller.js');
 }

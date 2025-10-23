@@ -1,7 +1,6 @@
 import sharp from 'sharp';
 
 async function debugStickerBorder(input, strokePx = 80, softness = 1.2) {
-  console.log(`🔍 Debugging sticker border creation...`);
 
   // Step 1: Load and get image info
   const image = sharp(input).rotate();
@@ -11,7 +10,6 @@ async function debugStickerBorder(input, strokePx = 80, softness = 1.2) {
     .toBuffer({ resolveWithObject: true });
   
   const { width: W, height: H } = info;
-  console.log(`   📏 Original size: ${W}x${H}`);
   
   // Calculate expanded canvas size
   const borderWidth = strokePx * 2;
@@ -20,7 +18,6 @@ async function debugStickerBorder(input, strokePx = 80, softness = 1.2) {
   const offsetX = borderWidth;
   const offsetY = borderWidth;
   
-  console.log(`   📐 Expanded size: ${newW}x${newH} (border: ${borderWidth}px on each side)`);
 
   // Step 2: Create expanded canvas and place original image in center
   const expandedData = Buffer.alloc(newW * newH * 4);
@@ -52,10 +49,8 @@ async function debugStickerBorder(input, strokePx = 80, softness = 1.2) {
     if (expandedAlpha[i] > 0) expandedNonZero++;
     if (expandedAlpha[i] > expandedMaxValue) expandedMaxValue = expandedAlpha[i];
   }
-  console.log(`   📊 Expanded alpha stats: ${expandedNonZero} non-zero pixels, max value: ${expandedMaxValue}`);
 
   // Save the expanded alpha as debug image
-  console.log(`   💾 Saving expanded alpha as debug image...`);
   await sharp(expandedAlpha, {
     raw: { width: newW, height: newH, channels: 1 }
   })
@@ -67,7 +62,6 @@ async function debugStickerBorder(input, strokePx = 80, softness = 1.2) {
   const iterations = Math.min(Math.ceil(strokePx / 30), 8);
   const blurPerIteration = strokePx * softness / iterations;
   
-  console.log(`   🔄 Using ${iterations} blur iterations of ${blurPerIteration.toFixed(1)}px each...`);
   
   for (let i = 0; i < iterations; i++) {
     currentAlpha = await sharp(currentAlpha, {
@@ -79,7 +73,6 @@ async function debugStickerBorder(input, strokePx = 80, softness = 1.2) {
   }
   
   // Save the grown alpha as debug image
-  console.log(`   💾 Saving grown alpha as debug image...`);
   await sharp(currentAlpha, {
     raw: { width: newW, height: newH, channels: 1 }
   })
@@ -94,7 +87,6 @@ async function debugStickerBorder(input, strokePx = 80, softness = 1.2) {
     if (currentAlpha[i] > maxValue) maxValue = currentAlpha[i];
   }
   
-  console.log(`   📊 Grown alpha stats: ${nonZeroCount} non-zero pixels, max value: ${maxValue}`);
   
   // Create border mask visualization
   const borderMask = Buffer.alloc(newW * newH * 4);
@@ -109,14 +101,12 @@ async function debugStickerBorder(input, strokePx = 80, softness = 1.2) {
     }
   }
   
-  console.log(`   💾 Saving border mask visualization...`);
   await sharp(borderMask, {
     raw: { width: newW, height: newH, channels: 4 }
   })
   .png()
   .toFile('/tmp/debug_border_mask.png');
   
-  console.log(`✔ Debug images saved to /tmp/debug_*.png`);
 }
 
 const input = 'public/stories/gingerbread.bundle/images/characters/fox.cutout.webp';

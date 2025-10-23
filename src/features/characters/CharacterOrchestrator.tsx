@@ -1,8 +1,8 @@
 import React, { useMemo, useLayoutEffect } from "react";
 import { useCharacterAnimation } from '@features/characters/CharacterAnimationContext';
-import { useSceneManager } from '@core/scenes/SceneManager';
-import { useTransitionManager } from '@core/navigation/useTransitionManager';
+import { useNodeManager } from '@core/navigation/NodeManager';
 import type { Scene } from '@core/types/scene';
+import { getNodeById } from '@core/navigation/navigationGraphBuilder';
 import { CharacterPanel } from "./CharacterPanel";
 
 
@@ -10,38 +10,42 @@ import { CharacterPanel } from "./CharacterPanel";
 type Props = {
   storyId: string;
   scenes: Scene[];
-  currentIndex?: number;
 };
 
-export const CharacterOrchestrator: React.FC<Props> = ({ storyId, scenes, currentIndex = 0 }) => {
+export const CharacterOrchestrator: React.FC<Props> = ({ storyId, scenes }) => {
   const { notifyEntranceComplete, notifyJiggleComplete } = useCharacterAnimation();
-  const { navigationArray } = useSceneManager();
-  const { activeTransition } = useTransitionManager();
+  const { navigationGraph, getCurrentNodeId } = useNodeManager();
 
-  // Use currentIndex directly (always passed from ScrollControl)
-  const scrollOffset = currentIndex;
-
-  // AnimNonce removed - using transition.id as React key instead
-  // This prevents double animations (transition key + nonce both triggered re-mounts)
-
-  // Compute panel data fresh from navigation array
-  // Scene IDs come from active transition snapshot (frozen at transition start) to prevent race conditions
+  // Compute panel data from current node in navigation graph
+  // Use currentNode.nodeId as animation nonce, lastFrozenNode for previousSceneId
   const { leftPanel, rightPanel, currentSpeaker, isJiggling, transitionNonce, currentSceneId, previousSceneId } = useMemo(() => {
-    console.log('[CharacterOrchestrator] 🔍 Computing panel data:', {
-      scrollOffset,
-      activeTransition: activeTransition ? {
-        id: activeTransition.id,
-        fromSceneId: activeTransition.fromSceneId,
-        toSceneId: activeTransition.toSceneId,
-        direction: activeTransition.direction,
-      } : null,
-      navigationArrayLength: navigationArray.length,
-    });
+    const nodeId = getCurrentNodeId();
 
-    const i = Math.max(0, Math.min(navigationArray.length - 1, Math.round(scrollOffset)));
-    const currentNavItem = navigationArray[i];
+    if (!nodeId) {
+      return {
+        leftPanel: {
+          character: 'NOCHARACTER',
+          previousCharacter: 'NOCHARACTER',
+          nextCharacter: 'NOCHARACTER',
+          pose: null,
+        },
+        rightPanel: {
+          character: 'NOCHARACTER',
+          previousCharacter: 'NOCHARACTER',
+          nextCharacter: 'NOCHARACTER',
+          pose: null,
+        },
+        currentSpeaker: null,
+        isJiggling: false,
+        transitionNonce: undefined,
+        currentSceneId: undefined,
+        previousSceneId: undefined
+      };
+    }
 
-    if (!currentNavItem) {
+    const currentNode = getNodeById(navigationGraph, nodeId);
+
+    if (!currentNode) {
       return {
         leftPanel: {
           character: 'NOCHARACTER',
@@ -64,95 +68,75 @@ export const CharacterOrchestrator: React.FC<Props> = ({ storyId, scenes, curren
     }
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const speaker = (currentNavItem.scene as any)?.speaker || null;
-
-    console.log('[CharacterOrchestrator] 📢 Speaker detection:', {
-      sceneType: currentNavItem.scene.type,
-      speaker,
-      sceneId: currentNavItem.sceneId,
-      stateKey: currentNavItem.stateKey,
-    });
+    const speaker = (currentNode.scene as any)?.speaker || null;
 
     // Check if we're in answer-right state or success-dance scene (should trigger jiggle dance)
-    const dialogueState = currentNavItem.sceneState?.type === 'dialogue' ? currentNavItem.sceneState.state : null;
-    const isSuccessDanceScene = currentNavItem.scene?.type === 'success-dance';
+    const dialogueState = currentNode.sceneState?.type === 'dialogue' ? currentNode.sceneState.state : null;
+    const isSuccessDanceScene = currentNode.scene?.type === 'success-dance';
     const shouldJiggle = dialogueState === 'answer-right' || isSuccessDanceScene;
 
-    const previousNavItem = navigationArray[i - 1];
-    const nextNavItem = navigationArray[i + 1];
+    // Get previous and next nodes using pointer-based navigation
+    const previousNode = currentNode.prevId ? getNodeById(navigationGraph, currentNode.prevId) : null;
+    const nextNode = currentNode.nextId ? getNodeById(navigationGraph, currentNode.nextId) : null;
 
-    // Helper to extract character from a navigation item
-    const getChar = (navItem: typeof currentNavItem | undefined, side: 'left' | 'right') => {
-      if (!navItem) return 'NOCHARACTER';
+    // Helper to extract character from a node
+    const getChar = (node: typeof currentNode | null, side: 'left' | 'right') => {
+      if (!node) return 'NOCHARACTER';
       const key = side === 'left' ? 'left-character' : 'right-character';
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      return (navItem.scene as any)?.[key] || 'NOCHARACTER';
+      return (node.scene as any)?.[key] || 'NOCHARACTER';
     };
 
-    const leftChar = getChar(currentNavItem, 'left');
-    const rightChar = getChar(currentNavItem, 'right');
+    const leftChar = getChar(currentNode, 'left');
+    const rightChar = getChar(currentNode, 'right');
 
     return {
       leftPanel: {
         character: leftChar,
-        previousCharacter: getChar(previousNavItem, 'left'),
-        nextCharacter: getChar(nextNavItem, 'left'),
+        previousCharacter: getChar(previousNode, 'left'),
+        nextCharacter: getChar(nextNode, 'left'),
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        pose: (currentNavItem.scene as any)?.meta?.panelLeft?.pose || null,
+        pose: (currentNode.scene as any)?.meta?.panelLeft?.pose || null,
       },
       rightPanel: {
         character: rightChar,
-        previousCharacter: getChar(previousNavItem, 'right'),
-        nextCharacter: getChar(nextNavItem, 'right'),
+        previousCharacter: getChar(previousNode, 'right'),
+        nextCharacter: getChar(nextNode, 'right'),
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        pose: (currentNavItem.scene as any)?.meta?.panelRight?.pose || null,
+        pose: (currentNode.scene as any)?.meta?.panelRight?.pose || null,
       },
       currentSpeaker: speaker,
       isJiggling: shouldJiggle,
-      transitionNonce: activeTransition?.id, // Use transition ID from active transition
-      // Use frozen scene IDs from transition snapshot to avoid race conditions with navigation mutations
-      currentSceneId: activeTransition?.toSceneId,
-      previousSceneId: activeTransition?.fromSceneId
+      transitionNonce: currentNode.id, // Use current node ID as animation nonce
+      currentSceneId: currentNode.sceneId, // Current scene from live node
+      previousSceneId: navigationGraph.lastFrozenNode?.sceneId // Previous scene from frozen snapshot
     };
-  }, [scrollOffset, navigationArray, activeTransition]);
-
-  // Get current scene index for callback coordination
-  const currentSceneIndex = Math.max(0, Math.min(scenes.length - 1, Math.round(scrollOffset)));
+  }, [navigationGraph, getCurrentNodeId]);
 
   // Create callbacks to notify when entrance completes
+  // Using nodeId instead of scene index for coordination
   const handleLeftEntranceComplete = () => {
-    notifyEntranceComplete(currentSceneIndex, 'left');
+    // Note: The animation system may need to be updated to use nodeId instead of index
+    // For now, we'll use 0 as a placeholder since index-based coordination is being phased out
+    notifyEntranceComplete(0, 'left');
   };
 
   const handleRightEntranceComplete = () => {
-    notifyEntranceComplete(currentSceneIndex, 'right');
+    notifyEntranceComplete(0, 'right');
   };
 
   // Create callbacks to notify when jiggle completes
   const handleLeftJiggleComplete = () => {
-    notifyJiggleComplete(currentSceneIndex, 'left');
+    notifyJiggleComplete(0, 'left');
   };
 
   const handleRightJiggleComplete = () => {
-    notifyJiggleComplete(currentSceneIndex, 'right');
+    notifyJiggleComplete(0, 'right');
   };
-
-
-
-  // Use scroll direction from active transition (source of truth)
-  // Fallback to scroll offset calculation if no active transition
-  const scrollDirection = activeTransition?.direction || 'forward';
 
   // Speaking is always allowed - CharacterPanel handles priority internally
   // (entering phase blocks speaking via phase priority system in CharacterPanel.tsx)
   const allowSpeaking = true;
-
-  console.log('[CharacterOrchestrator] 🗣️ Speaking state:', {
-    allowSpeaking,
-    currentSpeaker,
-    leftSpeaking: allowSpeaking && currentSpeaker === 'left',
-    rightSpeaking: allowSpeaking && currentSpeaker === 'right',
-  });
 
   // AnimNonce increment logic removed - transition.id key handles animation triggering
   // The transition system already creates a unique key per navigation, so we don't need
@@ -176,7 +160,7 @@ export const CharacterOrchestrator: React.FC<Props> = ({ storyId, scenes, curren
     // Update on resize
     window.addEventListener('resize', updatePanelWidths);
     return () => window.removeEventListener('resize', updatePanelWidths);
-  }, [scrollOffset, scenes]);
+  }, [scenes]);
 
 
 
@@ -199,7 +183,6 @@ export const CharacterOrchestrator: React.FC<Props> = ({ storyId, scenes, curren
           nextCharacter={leftPanel.nextCharacter}
           pose={leftPanel.pose}
           storyId={storyId}
-          scrollDirection={scrollDirection}
           isSpeaking={allowSpeaking && currentSpeaker === 'left'}
           isJiggling={isJiggling}
           transitionNonce={transitionNonce}
@@ -221,7 +204,6 @@ export const CharacterOrchestrator: React.FC<Props> = ({ storyId, scenes, curren
           nextCharacter={rightPanel.nextCharacter}
           pose={rightPanel.pose}
           storyId={storyId}
-          scrollDirection={scrollDirection}
           isSpeaking={allowSpeaking && currentSpeaker === 'right'}
           isJiggling={isJiggling}
           transitionNonce={transitionNonce}

@@ -94,7 +94,6 @@ export function useSceneOrchestrator({
 
       // Skip scenes without sceneId
       if (!sceneId) {
-        console.log(`  ⚠️ Skipping scene ${index}: no sceneId`);
         return;
       }
 

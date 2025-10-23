@@ -79,12 +79,6 @@ export const AIModuleProvider: React.FC<AIModuleProviderProps> = ({
         conversationHistory: input.conversationHistory || []
       };
 
-      console.log('[AIModule] Calling backend API with:', {
-        questionLength: input.text.length,
-        historyLength: requestBody.conversationHistory.length,
-        characterDescriptionLength: input.context.characterDescription.length
-      });
-
       // Call backend API
       const response = await fetch('http://localhost:3001/api/ai/chat', {
         method: 'POST',
@@ -105,7 +99,6 @@ export const AIModuleProvider: React.FC<AIModuleProviderProps> = ({
         throw new Error('Received empty response from AI');
       }
 
-      console.log('[AIModule] ✅ Received AI response:', data.response.substring(0, 100));
 
       return {
         text: data.response,

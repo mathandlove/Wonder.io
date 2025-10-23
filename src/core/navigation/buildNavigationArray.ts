@@ -1,9 +1,9 @@
 /**
  * buildNavigationArray - Converts scenes into a flat navigation array
  *
- * Now builds via state-node graph for stable IDs and pointer-based navigation:
- * 1. Build state node graph using buildStateNodeGraph
- * 2. Convert state nodes to NavigationItems (for backward compatibility)
+ * Now builds via navigation graph for stable IDs and pointer-based navigation:
+ * 1. Build navigation graph using buildNavigationGraph
+ * 2. Convert nodes to NavigationItems (for backward compatibility)
  * 3. Return flat array with stable nodeId keys
  *
  * Each NavigationItem represents one "scroll stop" in the story.
@@ -11,29 +11,29 @@
 
 import type { Scene } from '@core/types/scene';
 import type { NavigationItem } from './types';
-import { buildStateNodeGraph, getNodeById } from './stateNodeBuilder';
+import { buildNavigationGraph, getNodeById } from './navigationGraphBuilder';
 
 /**
  * Main builder function - converts scenes to navigation array
  * Filters out hidden scenes and expands remaining scenes into navigation items
  */
 export function buildNavigationArray(scenes: Scene[]): NavigationItem[] {
-  // Build state node graph
-  const navigatorState = buildStateNodeGraph(scenes);
+  // Build navigation graph
+  const navigationGraph = buildNavigationGraph(scenes);
 
-  // Convert state nodes to NavigationItems
+  // Convert nodes to NavigationItems
   const navigationArray: NavigationItem[] = [];
 
-  for (let i = 0; i < navigatorState.order.length; i++) {
-    const nodeId = navigatorState.order[i];
-    const node = getNodeById(navigatorState, nodeId);
+  for (let i = 0; i < navigationGraph.order.length; i++) {
+    const nodeId = navigationGraph.order[i];
+    const node = getNodeById(navigationGraph, nodeId);
 
     if (!node) {
       console.warn('⚠️ buildNavigationArray: Node not found in byId:', nodeId);
       continue;
     }
 
-    // Convert StateNode to NavigationItem
+    // Convert Node to NavigationItem
     const navItem: NavigationItem = {
       nodeId: node.id,
       scene: node.scene as Scene, // Scene is stored in the node

@@ -85,7 +85,6 @@ function playAudioDebug(wavFilePath: string): Promise<void> {
     return Promise.resolve();
   }
 
-  console.log(`🔊 [DEBUG] Playing audio: ${wavFilePath}`);
 
   return new Promise((resolve) => {
     exec(`afplay "${wavFilePath}"`, (error, _stdout, stderr) => {
@@ -93,7 +92,6 @@ function playAudioDebug(wavFilePath: string): Promise<void> {
         console.error('🔊 [DEBUG] ❌ Failed to play audio:', error.message);
         if (stderr) console.error('🔊 [DEBUG] stderr:', stderr);
       } else {
-        console.log('🔊 [DEBUG] ✅ Playback completed');
       }
       resolve();
     });
@@ -107,7 +105,6 @@ async function transcribeCompleteAudio(audioBuffer: Buffer): Promise<string> {
   let tempFilePath: string | null = null;
 
   try {
-    console.log(`[GPT-4o] 📝 Transcribing complete audio (${audioBuffer.length} bytes, ${(audioBuffer.length / 32000).toFixed(1)}s)...`);
 
     // Convert PCM to WAV
     const wavBuffer = pcmToWav(audioBuffer, SAMPLE_RATE);
@@ -116,7 +113,6 @@ async function transcribeCompleteAudio(audioBuffer: Buffer): Promise<string> {
     if (DEBUG_SAVE_CHUNKS && debugChunkCounter < 5) {
       const debugPath = join(tmpdir(), `debug_chunk_${debugChunkCounter}.wav`);
       writeFileSync(debugPath, wavBuffer);
-      console.log(`💾 [DEBUG] Saved chunk to: ${debugPath}`);
       debugChunkCounter++;
     }
 
@@ -142,7 +138,6 @@ async function transcribeCompleteAudio(audioBuffer: Buffer): Promise<string> {
     }
 
     const transcription = response.text.trim();
-    console.log(`[GPT-4o] ✅ Transcription complete: "${transcription}"`);
     return transcription;
   } catch (error) {
     console.error('❌ GPT-4o Transcribe API error:', error);
@@ -191,7 +186,6 @@ export function handleWhisperProxy(clientWs: WebSocket, request: any) {
     return;
   }
 
-  console.log(`[GPT-4o] 🔌 New connection from ${origin}`);
 
   // Connection state - SIMPLE: just buffer everything
   let audioBuffer: Buffer = Buffer.alloc(0);
@@ -207,7 +201,6 @@ export function handleWhisperProxy(clientWs: WebSocket, request: any) {
     if (isClosed) return;
     isClosed = true;
 
-    console.log(`[GPT-4o] 🔌 Connection closed: ${reason}`);
 
     if (idleTimer) {
       clearTimeout(idleTimer);
@@ -246,7 +239,6 @@ export function handleWhisperProxy(clientWs: WebSocket, request: any) {
     if (clientWs.readyState === WebSocket.OPEN) {
       const readyEvent: NormalizedSttEvent = { type: 'ready' };
       clientWs.send(JSON.stringify(readyEvent));
-      console.log(`[GPT-4o] ✅ Ready signal sent`);
     }
   }, 100);
 
@@ -266,12 +258,10 @@ export function handleWhisperProxy(clientWs: WebSocket, request: any) {
           currentSessionId = Date.now();
           audioBuffer = Buffer.alloc(0);
           totalBytesReceived = 0;
-          console.log(`[GPT-4o] 🆕 New session started (ID: ${currentSessionId})`);
           return;
         }
 
         if (message.type === 'finalize') {
-          console.log(`[GPT-4o] 🏁 Finalize signal received - processing ${audioBuffer.length} bytes`);
 
           // Process complete audio buffer
           if (audioBuffer.length > 0) {
@@ -297,7 +287,6 @@ export function handleWhisperProxy(clientWs: WebSocket, request: any) {
               }
             }
           } else {
-            console.log(`[GPT-4o] ⚠️  No audio to transcribe`);
           }
 
           // Send close signal and wait for messages to flush before cleanup
@@ -353,7 +342,6 @@ export function handleWhisperProxy(clientWs: WebSocket, request: any) {
       // Log progress every 100KB
       if (audioBuffer.length % 100000 < data.length) {
         const seconds = (audioBuffer.length / 32000).toFixed(1);
-        console.log(`[GPT-4o] 📊 Buffered ${audioBuffer.length} bytes (~${seconds}s of audio)`);
       }
     }
   });

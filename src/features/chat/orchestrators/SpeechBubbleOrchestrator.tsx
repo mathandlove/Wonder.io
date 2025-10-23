@@ -4,11 +4,11 @@
  */
 import React, { useMemo } from 'react';
 import { CardboardBubble } from '@features/chat/components/CardboardBubble';
-import { useSceneManager } from '@core/scenes/SceneManager';
+import { useNodeManager } from '@core/navigation/NodeManager';
 import { AudioVisualizer } from '@core/recording/AudioVisualizer';
 import { useRecording } from '@core/recording/RecordingContext';
 import type { Scene, CharacterScene } from '@core/types/scene';
-import type { NavigationItem } from '@core/navigation/types';
+import type { Node } from '@core/navigation/types';
 
 // Extended scene types that include commonly accessed properties
 type SceneWithId = Scene & {
@@ -21,11 +21,36 @@ type SceneWithId = Scene & {
 
 export function SpeechBubbleOrchestrator() {
 
-  // IMPORTANT: Get navigationArray to access modified scenes (like recording scenes)
-  // navigationArray contains ALL scene items including dynamically created ones
-  const sceneManager = useSceneManager();
-  const { navigationArray, navigationIndex } = sceneManager;
+  // IMPORTANT: Get navigation graph to access modified scenes (like recording scenes)
+  // Navigation graph contains ALL nodes including dynamically created ones
+  const nodeManager = useNodeManager();
+  const { navigationGraph } = nodeManager;
   const { state: recordingState } = useRecording();
+
+  // Convert navigationGraph to array format for compatibility
+  // Map graph.order to Node objects for iteration
+  const navigationArray = useMemo(() => {
+    return navigationGraph.order.map((nodeId, index) => {
+      const node = navigationGraph.byId[nodeId];
+      return {
+        nodeId: node.id,
+        scene: node.scene as Scene,
+        sceneId: node.sceneId,
+        stateKey: node.stateKey,
+        sceneState: node.sceneState,
+        lockForward: node.lockForward,
+        lockBackward: node.lockBackward,
+        index,
+        status: node.status,
+      } as Node & { index: number };
+    });
+  }, [navigationGraph]);
+
+  // Calculate current navigation index from currentId
+  const navigationIndex = useMemo(() => {
+    if (!navigationGraph.currentId) return 0;
+    return navigationGraph.order.indexOf(navigationGraph.currentId);
+  }, [navigationGraph.currentId, navigationGraph.order]);
 
   // Use navigationIndex for scroll offset since we're working with navigationArray
   // NOT currentIndex which is based on visible scenes array
@@ -57,7 +82,7 @@ export function SpeechBubbleOrchestrator() {
     // firstIndex = where the scene first appeared (used for positioning)
     // latestIndex = the most recent state (used for getting current content)
     const sceneIdToNavItem = new Map<string, {
-      navItem: NavigationItem,
+      navItem: Node & { index: number },
       firstIndex: number,
       latestIndex: number
     }>();

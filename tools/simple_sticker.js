@@ -1,20 +1,17 @@
 import sharp from 'sharp';
 
 async function createSimpleBorder(input, output, strokePx = 80) {
-  console.log(`🔖 Creating simple sticker border: ${strokePx}px`);
 
   // Step 1: Load image
   const image = sharp(input).rotate();
   const { width: W, height: H } = await image.metadata();
   
-  console.log(`   📏 Original size: ${W}x${H}`);
   
   // Step 2: Create expanded canvas
   const padding = strokePx;
   const newW = W + padding * 2;
   const newH = H + padding * 2;
   
-  console.log(`   📐 New size: ${newW}x${newH} (padding: ${padding}px)`);
   
   // Step 3: Create white background
   const whiteBackground = sharp({
@@ -42,7 +39,6 @@ async function createSimpleBorder(input, output, strokePx = 80) {
     })
     .toFile(output);
   
-  console.log(`✅ Simple border complete: ${input} -> ${output}`);
 }
 
 const input = 'public/stories/gingerbread.bundle/images/characters/fox.cutout.webp';

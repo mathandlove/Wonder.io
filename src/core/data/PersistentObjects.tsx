@@ -60,7 +60,6 @@ export function SceneStatesProvider({ children }: SceneStatesProviderProps) {
         return prev; // Return same reference to prevent re-render
       }
 
-      console.log('[SceneStates] 📝 Updating state for', sceneId, ':', state);
       return {
         ...prev,
         [sceneId]: state,

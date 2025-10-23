@@ -8,10 +8,10 @@
  * - Phase 2 (3.5s+): Character stays hidden off-screen
  */
 
-import { useCallback, useState, useEffect, useRef } from 'react';
+import { useCallback, useState, useRef } from 'react';
 import type { SceneProps } from './registry';
 import type { FailDanceScene as FailDanceSceneType } from '@core/types/scene';
-import { useSceneManager } from '@core/scenes/SceneManager';
+import { useNodeManager } from '@core/navigation/NodeManager';
 import './FailDanceScene.css';
 
 export default function FailDanceScene({ scene }: SceneProps<FailDanceSceneType>) {
@@ -21,14 +21,15 @@ export default function FailDanceScene({ scene }: SceneProps<FailDanceSceneType>
     return pathParts[pathParts.length - 1] || 'gingerbread';
   });
 
-  const { forceAdvanceNavigation, deleteNavigationItem, navigationIndex, getCurrentSceneId } = useSceneManager();
+  const { forceAdvanceNavigation, deleteNode, getCurrentNode, getCurrentNodeId } = useNodeManager();
   const side = scene.side || 'right';
-  const currentSceneId = getCurrentSceneId();
+  const currentNode = getCurrentNode();
+  const currentNodeId = getCurrentNodeId();
+  const currentSceneId = currentNode?.sceneId;
 
   // Track deletion state across renders
   const pendingDeletionRef = useRef<{
-    failDanceIndex: number;
-    navigatedBackTo: number;
+    failDanceNodeId: string;
     deleted: boolean;
   } | null>(null);
 
@@ -37,74 +38,34 @@ export default function FailDanceScene({ scene }: SceneProps<FailDanceSceneType>
     // Only respond to the character container's animation ending (not sub-elements)
     if (!e.currentTarget.classList.contains('fail-dance-character-container')) return;
 
-    console.log('[FailDance] 🎬 Animation ended', {
-      currentSceneId,
-      sceneSceneId: scene.sceneId,
-      navigationIndex
-    });
-
     // Only act if we're still on THIS fail-dance scene (prevents double-trigger if user navigated away)
     if (currentSceneId !== scene.sceneId) {
-      console.log('[FailDance] ⏭️  Skipping - already navigated away');
       return;
     }
 
-    // Remember our current position before navigating
-    const failDanceIndex = navigationIndex;
-    const previousSceneIndex = navigationIndex - 1;
+    // Only act if we have a current node ID
+    if (!currentNodeId) return;
 
-    console.log('[FailDance] ⬅️  Navigating backward', {
-      from: failDanceIndex,
-      to: previousSceneIndex
-    });
+    // Remember our current node before navigating
+    const failDanceNodeId = currentNodeId;
 
     // Navigate back first (force to bypass navigation locks)
     forceAdvanceNavigation('backward');
 
     // Set up pending deletion tracking
     pendingDeletionRef.current = {
-      failDanceIndex,
-      navigatedBackTo: previousSceneIndex,
+      failDanceNodeId,
       deleted: false
     };
-
-    console.log('[FailDance] 📋 Deletion tracking set up', pendingDeletionRef.current);
 
     // Schedule deletion after 3 seconds
     setTimeout(() => {
       if (pendingDeletionRef.current && !pendingDeletionRef.current.deleted) {
-        console.log('[FailDance] ⏰ DELETING via timeout (3s)', {
-          deletingIndex: failDanceIndex
-        });
         pendingDeletionRef.current.deleted = true;
-        deleteNavigationItem(failDanceIndex);
+        deleteNode(failDanceNodeId);
       }
     }, 3000);
-  }, [currentSceneId, scene.sceneId, navigationIndex, forceAdvanceNavigation, deleteNavigationItem]);
-
-  // Watch for user scrolling forward - immediate deletion
-  useEffect(() => {
-    if (!pendingDeletionRef.current || pendingDeletionRef.current.deleted) return;
-
-    const { failDanceIndex, navigatedBackTo } = pendingDeletionRef.current;
-
-    console.log('[FailDance] 📊 Navigation change detected', {
-      currentNavigationIndex: navigationIndex,
-      navigatedBackTo,
-      shouldDelete: navigationIndex > navigatedBackTo
-    });
-
-    // If user scrolled forward PAST where we navigated back to, delete immediately
-    if (navigationIndex > navigatedBackTo) {
-      console.log('[FailDance] ✅ DELETING via forward scroll', {
-        deletingIndex: failDanceIndex,
-        userScrolledTo: navigationIndex,
-        wasWaitingAt: navigatedBackTo
-      });
-      pendingDeletionRef.current.deleted = true;
-      deleteNavigationItem(failDanceIndex);
-    }
-  }, [navigationIndex, deleteNavigationItem]);
+  }, [currentSceneId, scene.sceneId, currentNodeId, forceAdvanceNavigation, deleteNode]);
 
   // Image paths with cache busting
   const version = `v${Date.now()}`;

@@ -92,7 +92,6 @@ export const ChatGatewayProvider: React.FC<ChatGatewayProviderProps> = ({
       wsRef.current = ws;
 
       ws.onopen = () => {
-        console.log('🟢 Connected to Claude WebSocket');
 
         // Build the message with character context
         let message = payload.message;
@@ -115,21 +114,17 @@ export const ChatGatewayProvider: React.FC<ChatGatewayProviderProps> = ({
           switch (data.type) {
             case 'debug':
               // Log debug information to console
-              console.log('🔍 DEBUG:', data.event, data.data);
               break;
 
             case 'content_delta':
               // Accumulate text as it streams in
               accumulatedTextRef.current += data.text;
-              console.log('📝 Delta:', data.text);
               break;
 
             case 'content_complete':
-              console.log('✅ Content block complete');
               break;
 
             case 'message_complete':
-              console.log('🏁 Message complete');
               ws.close();
               resolve(accumulatedTextRef.current);
               break;
@@ -151,7 +146,6 @@ export const ChatGatewayProvider: React.FC<ChatGatewayProviderProps> = ({
       };
 
       ws.onclose = () => {
-        console.log('🔴 Claude WebSocket closed');
         wsRef.current = null;
       };
     });

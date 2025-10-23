@@ -8,46 +8,43 @@
  */
 
 import React from 'react';
-import { useSceneManager } from '@core/scenes/SceneManager';
+import { useNodeManager } from '@core/navigation/NodeManager';
 import { validateAnswer, type AnswerValidationResult } from './validateAnswer';
 import { useAIMemory } from '@core/ai/AIMemoryStore';
 
 export function AnswerValidationOrchestrator() {
-  const { navigationArray, navigationIndex, updateNavigationItemState } = useSceneManager();
+  const { getCurrentNode, getCurrentNodeId, updateNodeState } = useNodeManager();
   const aiMemory = useAIMemory();
 
   // Track if we're currently processing to avoid duplicate calls
-  const [processingSceneIndex, setProcessingSceneIndex] = React.useState<number | null>(null);
+  const [processingNodeId, setProcessingNodeId] = React.useState<string | null>(null);
 
-  // Get current navigation item - reactive to navigationArray changes
-  const currentNavItem = React.useMemo(() => {
-    return navigationArray[navigationIndex] || null;
-  }, [navigationArray, navigationIndex]);
+  // Get current node - reactive to navigation changes
+  const currentNode = getCurrentNode();
+  const currentNodeId = getCurrentNodeId();
 
   // Auto-trigger answer validation when scene enters answer-waiting state
   React.useEffect(() => {
-    const sceneState = currentNavItem?.sceneState;
+    if (!currentNode || !currentNodeId) return;
 
+    const sceneState = currentNode.sceneState;
     const isAnswerWaiting = sceneState?.type === 'dialogue' && sceneState.state === 'answer-waiting';
 
     // Process when in answer-waiting state
-    if (isAnswerWaiting && navigationIndex !== processingSceneIndex) {
+    if (isAnswerWaiting && currentNodeId !== processingNodeId) {
       const answerText = sceneState?.type === 'dialogue' ? sceneState.answerText : undefined;
       const questionText = sceneState?.type === 'dialogue' ? sceneState.questionText : undefined;
 
       // Only process if we have an answer
       if (answerText) {
-
-        setProcessingSceneIndex(navigationIndex);
+        setProcessingNodeId(currentNodeId);
 
         // Validate the answer
         validateAnswer(answerText, questionText).then((result: AnswerValidationResult) => {
-
-
           // Transition to right or wrong state based on result
           const newState = result === 'pass' ? 'answer-right' : 'answer-wrong';
 
-          updateNavigationItemState(navigationIndex, {
+          updateNodeState(currentNodeId, {
             type: 'dialogue',
             state: newState,
             answerText,
@@ -56,31 +53,30 @@ export function AnswerValidationOrchestrator() {
 
           // Clear conversation history when quest is completed successfully
           if (result === 'pass') {
-            const currentScene = currentNavItem?.scene;
+            const currentScene = currentNode.scene;
             const flowId = currentScene && 'flowId' in currentScene ? (currentScene as { flowId?: string }).flowId : undefined;
 
             if (flowId) {
-              console.log('[AnswerValidation] ✅ Quest completed! Clearing conversation history for flowId:', flowId);
               aiMemory.clearHistory(flowId);
             }
           }
 
           // Clear processing flag after completion
-          setProcessingSceneIndex(null);
+          setProcessingNodeId(null);
         }).catch((error) => {
           console.error('Error validating answer:', error);
           // On error, treat as wrong
-          updateNavigationItemState(navigationIndex, {
+          updateNodeState(currentNodeId, {
             type: 'dialogue',
             state: 'answer-wrong',
             answerText,
             questionText
           });
-          setProcessingSceneIndex(null);
+          setProcessingNodeId(null);
         });
       }
     }
-  }, [currentNavItem, navigationIndex, processingSceneIndex, updateNavigationItemState, aiMemory]);
+  }, [currentNode, currentNodeId, processingNodeId, updateNodeState, aiMemory]);
 
   // This is a logic-only component, renders nothing
   return null;

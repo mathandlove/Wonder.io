@@ -12,10 +12,10 @@
 import React, { useRef, useCallback, useLayoutEffect, useEffect } from 'react';
 import type { Scene } from '@core/types/scene';
 import { useStepScroll } from './useStepScroll';
-import { useSceneManager } from '@core/scenes/SceneManager';
+import { useNodeManager } from '@core/navigation/NodeManager';
 import { useSceneOrchestrator } from '../scenes/useSceneOrchestrator';
 import { SceneOrchestratorProvider } from '../scenes/SceneOrchestratorContext';
-import { useSceneStates } from '@core/scenes/SceneStates';
+import { useSceneStates } from '@core/data/PersistentObjects';
 import './ScrollControl.css';
 
 export interface ScrollControlProps {
@@ -49,33 +49,31 @@ export function ScrollControl({
 }: ScrollControlProps) {
   const containerRef = useRef<HTMLDivElement>(null);
 
-  // Get navigation from SceneManager (single source of truth)
-  const sceneManager = useSceneManager();
-  const { advanceNavigation, navigationIndex, navigationArray } = sceneManager;
+  // Get navigation from NodeManager (single source of truth)
+  const nodeManager = useNodeManager();
+  const { advanceNavigation, navigationGraph } = nodeManager;
 
   // Get SceneStates for persistent state cache
   const sceneStates = useSceneStates();
 
-  // Scene orchestrator for input scene runtime state management
+  // Create scene orchestrator for runtime state management
   const sceneOrchestrator = useSceneOrchestrator({
     scenes,
-    currentIndex: navigationIndex,
+    currentIndex,
   });
 
-  // Update SceneStates whenever navigationIndex changes
+  // Update SceneStates whenever current node changes
   // This keeps a persistent cache of scene states that persists even when scrolling past scenes
   // Required for ImageScene captions to remember their state after scrolling past
   useEffect(() => {
-    const currentNavItem = navigationArray[navigationIndex];
-    if (!currentNavItem) {
-      console.log('[ScrollControl] ⚠️ No current navigation item at index', navigationIndex);
+    const currentNode = nodeManager.getCurrentNode();
+    if (!currentNode) {
       return;
     }
 
-    const { sceneId, sceneState } = currentNavItem;
-    console.log('[ScrollControl] 🔄 Updating SceneStates for sceneId:', sceneId, 'state:', sceneState);
+    const { sceneId, sceneState } = currentNode;
     sceneStates.updateSceneState(sceneId, sceneState);
-  }, [navigationIndex, navigationArray, sceneStates]);
+  }, [navigationGraph.currentId, nodeManager, sceneStates]);
 
   // Check if input is focused
   const isInputFocused = useCallback(() => {

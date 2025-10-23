@@ -9,17 +9,17 @@
  */
 
 import { useEffect, useRef } from 'react';
-import { useSceneManager } from '@core/scenes/SceneManager';
+import { useNodeManager } from '@core/navigation/NodeManager';
 import { useSceneFlowMetadata } from '@core/data/FlowMetadataStore';
 import { useQuest } from './QuestManager';
-import type { NavigationItem } from '@core/navigation/types';
+import type { Node } from '@core/navigation/types';
 
-// Type guard to check if navigation item has quest-showing state
-function isQuestShowingState(navItem: NavigationItem | null): boolean {
-  if (!navItem) return false;
+// Type guard to check if node has quest-showing state
+function isQuestShowingState(node: Node | null): boolean {
+  if (!node) return false;
   return (
-    navItem.sceneState.type === 'dialogue' &&
-    navItem.sceneState.state === 'quest-showing'
+    node.sceneState.type === 'dialogue' &&
+    node.sceneState.state === 'quest-showing'
   );
 }
 
@@ -33,12 +33,12 @@ function hasFlowId(scene: unknown): scene is SceneWithFlowId {
 }
 
 export function QuestOrchestrator() {
-  const sceneManager = useSceneManager();
+  const nodeManager = useNodeManager();
   const quest = useQuest();
 
-  // Get current navigation item
-  const currentNavItem = sceneManager.getCurrentNavigationItem();
-  const currentScene = currentNavItem?.scene;
+  // Get current node
+  const currentNode = nodeManager.getCurrentNode();
+  const currentScene = currentNode?.scene;
 
   // Get flow metadata for current scene
   const flowMetadata = useSceneFlowMetadata(hasFlowId(currentScene) ? currentScene : null);
@@ -49,7 +49,7 @@ export function QuestOrchestrator() {
   // Effect 1: Offer quest when reaching quest-showing state
   useEffect(() => {
     // Check if we're on a quest-showing state
-    if (!isQuestShowingState(currentNavItem)) {
+    if (!isQuestShowingState(currentNode)) {
       return;
     }
 
@@ -59,23 +59,21 @@ export function QuestOrchestrator() {
       return;
     }
 
-    // Null check for currentNavItem
-    if (!currentNavItem) {
-      console.warn('⚠️ QuestOrchestrator: No current navigation item');
+    // Null check for currentNode
+    if (!currentNode) {
+      console.warn('⚠️ QuestOrchestrator: No current node');
       return;
     }
 
     // Only offer if quest is not already offered/active
     if (quest.state.phase === 'idle' || quest.state.phase === 'clear') {
-     
-
       quest.offer({
-        id: currentNavItem.sceneId, // Use sceneId as quest ID
+        id: currentNode.sceneId, // Use sceneId as quest ID
         title: undefined, // Could extract from questText if needed
         text: flowMetadata.questText
       });
     }
-  }, [currentNavItem, flowMetadata, quest]);
+  }, [currentNode, flowMetadata, quest]);
 
   // Effect 2: Advance navigation when quest is accepted
   useEffect(() => {
@@ -84,15 +82,13 @@ export function QuestOrchestrator() {
 
     // Detect transition from 'offered' to 'minimized' (user clicked Accept)
     if (previousPhase === 'offered' && currentPhase === 'minimized') {
-      console.log('✅ QuestOrchestrator: Quest accepted, advancing and collapsing quest-showing state');
-
       // Use forceAdvanceNavigation to bypass locks but still collapse states
-      sceneManager.forceAdvanceNavigation('forward');
+      nodeManager.forceAdvanceNavigation('forward');
     }
 
     // Update ref for next comparison
     previousPhaseRef.current = currentPhase;
-  }, [quest.state.phase, sceneManager]);
+  }, [quest.state.phase, nodeManager]);
 
   // This is a non-visual orchestrator component
   return null;

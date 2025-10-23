@@ -6,8 +6,8 @@ import React, { useMemo } from "react";
 import { useStory } from '@core/data/useStory';
 import { FlowLayout } from '@features/flow-layout/FlowLayout';
 import { SceneRenderer } from '@core/scenes/SceneRenderer';
-import { PageFactoryProvider } from '@core/navigation/PageFactory';
-import { useSceneManager } from '@core/scenes/SceneManager';
+import { SceneFactoryProvider } from '@core/navigation/SceneFactory';
+import { useNodeManager } from '@core/navigation/NodeManager';
 import { BackgroundOrchestrator } from '@features/background/BackgroundOrchestrator';
 import { CharacterOrchestrator } from '@features/characters/CharacterOrchestrator';
 import { SpeechBubbleOrchestrator } from '@features/chat/orchestrators/SpeechBubbleOrchestrator';
@@ -27,15 +27,12 @@ type SceneWithId = Scene & {
 // Type extension for debugging window object
 declare global {
   interface Window {
-    __hideScene?: (sceneId: string) => void;
-    __showScene?: (sceneId: string) => void;
-    __allScenes?: Scene[];
-    __visibleScenes?: Scene[];
+    __scenes?: Scene[];
   }
 }
 import { UIOverlayRoot } from '@core/uiLayout/UIOverlayRoot'
 import { StepScrollDebug } from '@core/scroll/StepScrollDebug'
-import { SceneStatesProvider } from '@core/scenes/SceneStates'
+import { SceneStatesProvider } from '@core/data/PersistentObjects'
 import { AIModuleProvider } from '@features/ai/AIModule'
 import { AIMemoryStoreProvider } from '@core/ai/AIMemoryStore'
 import { ChatFlowOrchestratorComponent } from '@core/dialogue/ChatFlowOrchestratorComponent'
@@ -78,26 +75,37 @@ const StoryContent: React.FC = () => {
   const hasPopulatedMetadata = React.useRef(false);
 
   // Navigation context
-  const { scenes, setScenes, setCurrentIndex, hideScene, showScene, allScenes, navigationArray, navigationIndex } = useSceneManager();
+  const {
+    scenes,
+    setScenes,
+    navigationGraph,
+    getCurrentNode,
+  } = useNodeManager();
 
   // Dialogue context for turn banners
   const { showTurnBanner, turnBannerText } = useDialogue();
 
-  // Extract scenes from navigationArray and inject meta for character orchestration
-  // This recalculates previousCharacter/nextCharacter/newCharacter for ALL scenes including dynamic ones
-  const allNavigationScenes = useMemo(() => {
-    const scenes = navigationArray.map(item => item.scene);
-    return injectPanelMetaFromFlows(scenes);
-  }, [navigationArray]);
+  // Build array of all nodes from navigation graph for rendering
+  const allNavigationNodes = useMemo(() => {
+    return navigationGraph.order
+      .map(nodeId => navigationGraph.byId[nodeId])
+      .filter(node => node && node.status === 'active');
+  }, [navigationGraph]);
 
-  // Deduplicate navigationArray by sceneId to get unique scenes for DOM rendering
-  // Each scene may have multiple states in navigationArray, but only needs one DOM element
+  // Extract scenes from nodes and inject meta for character orchestration
+  const allNavigationScenes = useMemo(() => {
+    const scenes = allNavigationNodes.map(node => node.scene as Scene);
+    return injectPanelMetaFromFlows(scenes);
+  }, [allNavigationNodes]);
+
+  // Deduplicate nodes by sceneId to get unique scenes for DOM rendering
+  // Each scene may have multiple states/nodes, but only needs one DOM element
   const uniqueScenes = useMemo(() => {
     const seenSceneIds = new Set<string>();
     const unique: Scene[] = [];
 
-    navigationArray.forEach((item, index) => {
-      const sceneId = item.sceneId;
+    allNavigationNodes.forEach((node, index) => {
+      const sceneId = node.sceneId;
       if (!seenSceneIds.has(sceneId)) {
         seenSceneIds.add(sceneId);
         // Use the scene from allNavigationScenes at the correct index
@@ -107,23 +115,31 @@ const StoryContent: React.FC = () => {
     });
 
     return unique;
-  }, [navigationArray, allNavigationScenes]);
+  }, [allNavigationNodes, allNavigationScenes]);
 
-  // Map navigationIndex to DOM scroll index (currentIndex for uniqueScenes)
-  // Since multiple navigation items can map to same scene, we find the scene's first appearance
+  // Map current node to DOM scroll index
+  // Find which unique scene corresponds to the current node's sceneId
   const scrollIndex = useMemo(() => {
-    const currentNavItem = navigationArray[navigationIndex];
-    if (!currentNavItem) return 0;
+    const currentNode = getCurrentNode();
+    if (!currentNode) return 0;
 
-    // Find the index in uniqueScenes that matches the current navigationItem's sceneId
-    const sceneId = currentNavItem.sceneId;
+    const currentSceneId = currentNode.sceneId;
     const index = uniqueScenes.findIndex(scene => {
       const sceneWithId = scene as Scene & { sceneId?: string };
-      return sceneWithId.sceneId === sceneId;
+      return sceneWithId.sceneId === currentSceneId;
     });
 
     return index >= 0 ? index : 0;
-  }, [navigationArray, navigationIndex, uniqueScenes]);
+  }, [getCurrentNode, uniqueScenes]);
+
+  // Calculate navigation index (position in the full node array)
+  const navigationIndex = useMemo(() => {
+    const currentNodeId = navigationGraph.currentId;
+    if (!currentNodeId) return 0;
+
+    const index = navigationGraph.order.indexOf(currentNodeId);
+    return index >= 0 ? index : 0;
+  }, [navigationGraph]);
 
   // Populate flow metadata store when story loads (only once)
   React.useEffect(() => {
@@ -148,24 +164,16 @@ const StoryContent: React.FC = () => {
     setScenes(processedScenes);
   }, [story?.scenes, setScenes]);
 
-  // Handle scene index changes
+  // Handle scene index changes - now handled via scroll control
+  // ScrollControl manages the visual scroll position
+  // Navigation graph manages the logical navigation state
   const handleIndexChange = (nextIndex: number) => {
-    // Update NavigationContext index
-    // NavigationContext will emit scene:enter/leave events automatically
-    setCurrentIndex(nextIndex);
+    // Note: ScrollControl handles scroll position
+    // Navigation advances are triggered by user interactions (quest acceptance, etc.)
+    // The scroll index is derived from the current node's sceneId
   };
 
   // Note: Focus management is now handled within ScrollControl component
-
-  // Debug: Expose scene hiding functions globally for testing
-  React.useEffect(() => {
-    if (typeof window !== 'undefined') {
-      window.__hideScene = hideScene;
-      window.__showScene = showScene;
-      window.__allScenes = allScenes;
-      window.__visibleScenes = scenes; // scenes = visibleScenes (filtered allScenes)
-    }
-  }, [hideScene, showScene, allScenes, scenes]);
 
   // RENDER PATH #1: still loading the story → show a friendly centered message
   if (loading) {
@@ -184,7 +192,7 @@ const StoryContent: React.FC = () => {
   // RENDER PATH #3: story loaded → render each scene in a vertical, snap-scrolling layout
 
   return (
-    <PageFactoryProvider>
+    <SceneFactoryProvider>
       <AIMemoryStoreProvider maxMessagesPerFlow={10}>
         <AIModuleProvider>
           <SceneStatesProvider>
@@ -202,11 +210,11 @@ const StoryContent: React.FC = () => {
             onIndexChange={handleIndexChange}
             className="story-scroll"
           >
-              {/* Layer 1: Hybrid background system - uses navigationArray for dynamic scenes */}
+              {/* Layer 1: Hybrid background system - uses navigation graph internally */}
               <BackgroundOrchestrator storyId="gingerbread" storyContent={allNavigationScenes} currentIndex={navigationIndex} />
 
-              {/* Layer 1.5: Character panels (fixed, independent of scroll flow) - uses navigationArray */}
-              <CharacterOrchestrator storyId="gingerbread" scenes={allNavigationScenes} currentIndex={navigationIndex} />
+              {/* Layer 1.5: Character panels - uses navigation graph internally */}
+              <CharacterOrchestrator storyId="gingerbread" scenes={allNavigationScenes} />
 
               {/* Layer 1.8: Speech bubbles - already uses navigationArray internally */}
               <SpeechBubbleOrchestrator />
@@ -264,7 +272,7 @@ const StoryContent: React.FC = () => {
         </SceneStatesProvider>
       </AIModuleProvider>
       </AIMemoryStoreProvider>
-    </PageFactoryProvider>
+    </SceneFactoryProvider>
   );
 };
 

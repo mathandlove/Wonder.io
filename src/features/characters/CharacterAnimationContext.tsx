@@ -27,11 +27,9 @@ export const CharacterAnimationProvider: React.FC<{ children: React.ReactNode }>
   });
 
   const registerEntranceCallback = useCallback((sceneIndex: number, side: 'left' | 'right', callback: () => void) => {
-    console.log('[CharacterAnimation] 📝 Registering callback', { sceneIndex, side });
 
     // Check if animation already completed
     if (completedAnimations[sceneIndex]?.[side]) {
-      console.log('[CharacterAnimation] ⚡ Animation already complete - firing callback immediately', { sceneIndex, side });
       callback();
       return;
     }
@@ -47,7 +45,6 @@ export const CharacterAnimationProvider: React.FC<{ children: React.ReactNode }>
   }, [completedAnimations]);
 
   const notifyEntranceComplete = useCallback((sceneIndex: number, side: 'left' | 'right') => {
-    console.log('[CharacterAnimation] ✨ Animation complete notification', { sceneIndex, side });
 
     // Mark as completed
     setCompletedAnimations(prev => ({
@@ -61,15 +58,12 @@ export const CharacterAnimationProvider: React.FC<{ children: React.ReactNode }>
     // Fire callback if one exists
     const callback = callbacks[sceneIndex]?.[side];
     if (callback) {
-      console.log('[CharacterAnimation] 🔔 Firing registered callback', { sceneIndex, side });
       callback();
     } else {
-      console.log('[CharacterAnimation] 📭 No callback registered yet', { sceneIndex, side });
     }
   }, [callbacks]);
 
   const notifyJiggleComplete = useCallback((sceneIndex: number, side: 'left' | 'right') => {
-    console.log('[CharacterAnimation] 🎉 Jiggle complete notification', { sceneIndex, side });
 
     setJiggleCompletions(prev => {
       const newCompletions = {
@@ -85,7 +79,7 @@ export const CharacterAnimationProvider: React.FC<{ children: React.ReactNode }>
       const leftDone = sceneCompletions?.left === true;
       const rightDone = sceneCompletions?.right === true;
 
-      console.log('[CharacterAnimation] Jiggle status check', {
+      console.log('[CharacterAnimation] Jiggle progress:', {
         sceneIndex,
         leftDone,
         rightDone,
@@ -94,8 +88,7 @@ export const CharacterAnimationProvider: React.FC<{ children: React.ReactNode }>
 
       // If both sides are done, fire the jiggle-complete event
       if (leftDone && rightDone) {
-        console.log('[CharacterAnimation] 🎊 Both sides jiggled! Firing jiggle-complete event', { sceneIndex });
-
+        console.log('[CharacterAnimation] Both sides complete, firing event for scene:', sceneIndex);
         // Fire all listeners for this event
         eventListeners['jiggle-complete'].forEach(listener => {
           listener(sceneIndex);
@@ -111,7 +104,6 @@ export const CharacterAnimationProvider: React.FC<{ children: React.ReactNode }>
   }, [eventListeners]);
 
   const addEventListener = useCallback((eventType: AnimationEventType, listener: AnimationEventListener) => {
-    console.log('[CharacterAnimation] 📡 Adding event listener', { eventType });
     setEventListeners(prev => ({
       ...prev,
       [eventType]: [...prev[eventType], listener]
@@ -119,7 +111,6 @@ export const CharacterAnimationProvider: React.FC<{ children: React.ReactNode }>
   }, []);
 
   const removeEventListener = useCallback((eventType: AnimationEventType, listener: AnimationEventListener) => {
-    console.log('[CharacterAnimation] 🔌 Removing event listener', { eventType });
     setEventListeners(prev => ({
       ...prev,
       [eventType]: prev[eventType].filter(l => l !== listener)

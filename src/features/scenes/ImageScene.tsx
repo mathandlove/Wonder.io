@@ -10,8 +10,8 @@ import type { SceneProps } from "./registry";
 import type { ImageScene } from "@core/types/scene";
 import { resolveStoryImage } from "@core/data/imageResolver";
 import Caption from "@features/caption/Caption";
-import { useSceneManager } from "@core/scenes/SceneManager";
-import { useSceneStates } from "@core/scenes/SceneStates";
+import { useNodeManager } from "@core/navigation/NodeManager";
+import { useSceneStates } from "@core/data/PersistentObjects";
 import type { ImageState } from "@core/dialogue/types";
 
 export default function ImageScene({ scene }: SceneProps<ImageScene>) {
@@ -23,7 +23,7 @@ export default function ImageScene({ scene }: SceneProps<ImageScene>) {
   const sceneId = (scene as ImageScene & { sceneId?: string }).sceneId;
 
   // Get this scene's PERSISTENT state from SceneStates cache
-  // This persists even after navigationIndex moves to other scenes
+  // This persists even after current node moves to other scenes
   const sceneStates = useSceneStates();
 
   // IMPORTANT: Depend on sceneStates.states to trigger re-render when state changes
@@ -31,15 +31,15 @@ export default function ImageScene({ scene }: SceneProps<ImageScene>) {
   const sceneState = sceneId ? sceneStates.states[sceneId] : undefined;
 
   // FALLBACK: If SceneStates doesn't have this scene yet, check if we're currently ON this scene
-  const sceneManager = useSceneManager();
-  const currentNavItem = sceneManager.getCurrentNavigationItem();
-  const isCurrentScene = currentNavItem?.sceneId === sceneId;
+  const nodeManager = useNodeManager();
+  const currentNode = nodeManager.getCurrentNode();
+  const isCurrentScene = currentNode?.sceneId === sceneId;
 
-  // Extract caption state - prioritize SceneStates (persistence), fallback to current nav item
+  // Extract caption state - prioritize SceneStates (persistence), fallback to current node
   const captionState: ImageState = sceneState?.type === 'image'
     ? sceneState.state
-    : (isCurrentScene && currentNavItem?.sceneState.type === 'image')
-      ? currentNavItem.sceneState.state
+    : (isCurrentScene && currentNode?.sceneState.type === 'image')
+      ? currentNode.sceneState.state
       : 'hidden';
 
   return (
