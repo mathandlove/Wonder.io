@@ -41,7 +41,9 @@ export const RecordPanel: React.FC<RecordPanelProps> = ({
   const { state: recordingState } = useRecording();
   const [showStamp, setShowStamp] = React.useState(false);
   const [videoComplete, setVideoComplete] = React.useState(false);
+  const [successDanceHidePanel, setSuccessDanceHidePanel] = React.useState(false);
   const videoRef = React.useRef<HTMLVideoElement>(null);
+  const containerRef = React.useRef<HTMLDivElement>(null);
 
   // Determine visual state based on dialogueState (must be before effects that use these)
   // - basic: Panel hidden below screen
@@ -77,6 +79,19 @@ export const RecordPanel: React.FC<RecordPanelProps> = ({
   const isFailDance = dialogueState === 'fail-dance';
   const isWaiting = dialogueState === 'ai-waiting' || isWaitingForFinalize || isWaitingForAnswerFinalize || isAnswerWaiting || isProcessing || isAnswerProcessing;
 
+  // Debug logging for success-dance
+  React.useEffect(() => {
+    console.log('[RecordPanel] 📊 State:', {
+      dialogueState,
+      isSuccessDance,
+      successDanceHidePanel,
+      isAnswerRight,
+      videoComplete,
+      questText,
+      answerText
+    });
+  }, [dialogueState, isSuccessDance, successDanceHidePanel, isAnswerRight, videoComplete, questText, answerText]);
+
   // Hidden state (basic or input-basic) should use quest-offer visual styling
   const useQuestOfferStyling = isQuestOffer || isBasic || isInputBasic;
 
@@ -87,6 +102,49 @@ export const RecordPanel: React.FC<RecordPanelProps> = ({
       setVideoComplete(false);
     }
   }, [isAnswerWaiting, isAnswerRight, isAnswerWrong, isFailDance]);
+
+  // Handle success-dance panel animation - hide after 0.5 seconds
+  // Use ref to track if we've already started the animation to prevent resets on re-renders
+  const hasStartedSuccessDanceRef = React.useRef(false);
+
+  React.useEffect(() => {
+    if (isSuccessDance) {
+      // Only start the animation sequence once
+      if (!hasStartedSuccessDanceRef.current) {
+        hasStartedSuccessDanceRef.current = true;
+        console.log('[RecordPanel] 🎉 Success dance started - beginning animation sequence');
+
+        // Panel should already be centered from answer-right state
+        // Don't reset! Just wait and then hide
+        const timer = setTimeout(() => {
+          console.log('[RecordPanel] ⬇️ Hiding panel for success dance');
+
+          // Use requestAnimationFrame to ensure this happens in the next frame
+          requestAnimationFrame(() => {
+            setSuccessDanceHidePanel(true);
+
+            // Debug logging
+            setTimeout(() => {
+              if (containerRef.current) {
+                const computed = window.getComputedStyle(containerRef.current);
+                console.log('[RecordPanel] 🔍 Animation state:', {
+                  bottom: computed.bottom,
+                  top: computed.top,
+                  className: containerRef.current.className
+                });
+              }
+            }, 100);
+          });
+        }, 500);
+
+        return () => clearTimeout(timer);
+      }
+    } else {
+      // Reset when leaving success-dance
+      hasStartedSuccessDanceRef.current = false;
+      setSuccessDanceHidePanel(false);
+    }
+  }, [isSuccessDance]);
 
   // Handle video playback with delay for answer-waiting
   React.useEffect(() => {
@@ -147,8 +205,18 @@ export const RecordPanel: React.FC<RecordPanelProps> = ({
     // Centered states (important moments)
     // For answer-right: only show green glow after stamp appears, otherwise show golden glow
     if (isAnswerRight) return videoComplete ? 'answer-right-centered' : 'quest-offer-centered';
-    // For success-dance: keep panel centered with green glow (same as answer-right after stamp)
-    if (isSuccessDance) return 'answer-right-centered';
+    // For success-dance: start centered, then animate down after 0.5 seconds
+    // Keep answer-right-centered class for styling, add hidden for positioning after delay
+    if (isSuccessDance) {
+      const className = successDanceHidePanel ? 'answer-right-centered hidden' : 'answer-right-centered';
+      console.log('[RecordPanel] 🎨 Container class:', className, {
+        isSuccessDance,
+        successDanceHidePanel,
+        questText,
+        answerText
+      });
+      return className;
+    }
     // For answer-wrong: only show red glow after stamp appears, otherwise show golden glow
     if (isAnswerWrong) return videoComplete ? 'answer-wrong-centered' : 'quest-offer-centered';
     if (isAnswerWaiting) return 'quest-offer-centered'; // Golden glow for waiting
@@ -190,7 +258,11 @@ export const RecordPanel: React.FC<RecordPanelProps> = ({
   };
 
   return (
-    <div className={`record-panel-container ${getContainerClass()}`} onWheel={handleWheel}>
+    <div
+      ref={containerRef}
+      className={`record-panel-container ${getContainerClass()}`}
+      onWheel={handleWheel}
+    >
       {/* Main Frame - matching Figma exactly */}
       <div className="frame">
         {/* Quest Section - white card with shadow */}
@@ -215,8 +287,8 @@ export const RecordPanel: React.FC<RecordPanelProps> = ({
 
         {/* Answer Display Frame - middle white box (only visible during answer states) */}
         {showAnswerText && (
-          <div className={`whiteframe answer-frame ${(isAnswerWaiting || isAnswerRight || isAnswerWrong) ? 'answer-feedback-state' : ''}`}>
-            <div className={`quest ${isAnswerWaiting ? 'answer-waiting' : ''} ${isAnswerRight ? 'answer-right' : ''} ${isAnswerWrong ? 'answer-wrong' : ''}`}>
+          <div className={`whiteframe answer-frame ${(isAnswerWaiting || isAnswerRight || isAnswerWrong || isSuccessDance) ? 'answer-feedback-state' : ''}`}>
+            <div className={`quest ${isAnswerWaiting ? 'answer-waiting' : ''} ${(isAnswerRight || isSuccessDance) ? 'answer-right' : ''} ${isAnswerWrong ? 'answer-wrong' : ''}`}>
               <p className="quest-find-out-what">
                 <span className="quest-label">Answer:</span>
               </p>

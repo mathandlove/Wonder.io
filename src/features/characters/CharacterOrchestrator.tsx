@@ -1,4 +1,4 @@
-import React, { useMemo, useLayoutEffect } from "react";
+import React, { useMemo, useLayoutEffect, useRef, useCallback } from "react";
 import { useCharacterAnimation } from '@features/characters/CharacterAnimationContext';
 import { useNavigationStore, selectCurrentNodeId, selectLastFrozenNode, selectNavigationGraph } from '@core/navigation/navigationStore';
 import type { Scene } from '@core/types/scene';
@@ -13,7 +13,10 @@ type Props = {
 };
 
 export const CharacterOrchestrator: React.FC<Props> = ({ storyId, scenes }) => {
-  const { notifyEntranceComplete } = useCharacterAnimation();
+  const { notifyEntranceComplete, emitEvent } = useCharacterAnimation();
+
+  // Track which panels have completed their jiggle animation
+  const jiggleCompletionRef = useRef<{ left: boolean; right: boolean }>({ left: false, right: false });
 
   // OPTIMIZED: Subscribe only to currentId and lastFrozenNode
   // This prevents re-renders when other parts of the graph change (insertions, deletions, etc.)
@@ -67,11 +70,12 @@ export const CharacterOrchestrator: React.FC<Props> = ({ storyId, scenes }) => {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const speaker = (currentNode.scene as any)?.speaker || null;
 
-    // Check if we're in answer-right state or success-dance scene (should trigger jiggle dance)
+    // Check if we're in success-dance scene (should trigger jiggle dance)
+    // Note: NOT during answer-right - that's for showing the stamp video
     const dialogueState = currentNode.sceneState?.type === 'dialogue' ? currentNode.sceneState.state : null;
     const scene = currentNode.scene as Scene | undefined;
     const isSuccessDanceScene = scene?.type === 'success-dance';
-    const shouldJiggle = dialogueState === 'answer-right' || isSuccessDanceScene;
+    const shouldJiggle = isSuccessDanceScene; // Only jiggle during success-dance, not answer-right
 
     // Get frozen snapshot node (the state BEFORE this transition started)
     const frozenNode = lastFrozenNode;
@@ -116,14 +120,50 @@ export const CharacterOrchestrator: React.FC<Props> = ({ storyId, scenes }) => {
     notifyEntranceComplete(0, 'right');
   };
 
-  // Jiggle complete callbacks - currently no-op since jiggle system is simplified
-  const handleLeftJiggleComplete = () => {
-    // No coordination needed for jiggle animations
-  };
+  // Reset jiggle completion tracking when jiggle state changes
+  React.useEffect(() => {
+    if (isJiggling) {
+      console.log('[CharacterOrchestrator] 🎉 Jiggle started!', {
+        leftCharacter: leftPanel.character,
+        rightCharacter: rightPanel.character
+      });
+      // Reset tracking when we start jiggling
+      // Mark panels as complete if they have no character (NOCHARACTER won't animate)
+      jiggleCompletionRef.current = {
+        left: leftPanel.character === 'NOCHARACTER',
+        right: rightPanel.character === 'NOCHARACTER'
+      };
 
-  const handleRightJiggleComplete = () => {
-    // No coordination needed for jiggle animations
-  };
+      // If both panels are NOCHARACTER, emit immediately
+      if (leftPanel.character === 'NOCHARACTER' && rightPanel.character === 'NOCHARACTER') {
+        console.log('[CharacterOrchestrator] ⚡ No characters - emitting jiggle-complete immediately');
+        emitEvent('jiggle-complete', 0);
+      }
+    }
+  }, [isJiggling, leftPanel.character, rightPanel.character, emitEvent]);
+
+  // Jiggle complete callbacks - emit event when both panels complete
+  const handleLeftJiggleComplete = useCallback(() => {
+    console.log('[CharacterOrchestrator] ✅ LEFT jiggle complete', jiggleCompletionRef.current);
+    jiggleCompletionRef.current.left = true;
+
+    // If both panels have completed, emit the jiggle-complete event
+    if (jiggleCompletionRef.current.left && jiggleCompletionRef.current.right) {
+      console.log('[CharacterOrchestrator] 🎊 BOTH panels complete - emitting jiggle-complete event');
+      emitEvent('jiggle-complete', 0); // Using 0 as scene index (not currently used)
+    }
+  }, [emitEvent]);
+
+  const handleRightJiggleComplete = useCallback(() => {
+    console.log('[CharacterOrchestrator] ✅ RIGHT jiggle complete', jiggleCompletionRef.current);
+    jiggleCompletionRef.current.right = true;
+
+    // If both panels have completed, emit the jiggle-complete event
+    if (jiggleCompletionRef.current.left && jiggleCompletionRef.current.right) {
+      console.log('[CharacterOrchestrator] 🎊 BOTH panels complete - emitting jiggle-complete event');
+      emitEvent('jiggle-complete', 0); // Using 0 as scene index (not currently used)
+    }
+  }, [emitEvent]);
 
   // Speaking is always allowed - CharacterPanel handles priority internally
   // (entering phase blocks speaking via phase priority system in CharacterPanel.tsx)

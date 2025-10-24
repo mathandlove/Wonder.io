@@ -51,6 +51,7 @@
 .record-panel-container.answer-right-centered {
   top: 50%; /* Explicitly set top positioning for centered states */
   bottom: auto; /* Clear bottom positioning */
+  left: 50%;
   transform: translate(-50%, -50%); /* Perfectly centered */
   justify-content: center;
 }
@@ -61,6 +62,21 @@
   bottom: auto; /* Clear bottom positioning */
   transform: translate(-50%, -50%); /* Perfectly centered */
   justify-content: center;
+}
+
+/* Success Dance - answer-right styling that animates down after delay */
+/* When both answer-right-centered and hidden are present, hidden positioning wins */
+/* Keep transform the same, only animate top/bottom to avoid transform snap */
+.record-panel-container.answer-right-centered.hidden {
+  top: 150vh !important; /* Move far below screen (100vh + extra for panel height and transform offset) */
+  bottom: auto !important; /* Keep bottom as auto */
+  left: 50%;
+  transform: translate(-50%, -50%) !important; /* Keep same transform for smooth animation */
+  justify-content: flex-end;
+  /* Re-declare transition to ensure it applies */
+  transition: transform 0.6s cubic-bezier(0.34, 1.56, 0.64, 1),
+              top 0.6s cubic-bezier(0.34, 1.56, 0.64, 1),
+              bottom 0.6s cubic-bezier(0.34, 1.56, 0.64, 1);
 }
 
 .record-panel-container > *,

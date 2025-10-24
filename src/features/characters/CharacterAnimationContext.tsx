@@ -8,6 +8,7 @@ interface CharacterAnimationContextType {
   notifyEntranceComplete: (sceneIndex: number, side: 'left' | 'right') => void;
   addEventListener: (eventType: AnimationEventType, listener: AnimationEventListener) => void;
   removeEventListener: (eventType: AnimationEventType, listener: AnimationEventListener) => void;
+  emitEvent: (eventType: AnimationEventType, sceneIndex: number) => void;
 }
 
 const CharacterAnimationContext = createContext<CharacterAnimationContextType | null>(null);
@@ -18,7 +19,7 @@ export const CharacterAnimationProvider: React.FC<{ children: React.ReactNode }>
   // Track which animations have already completed
   const [completedAnimations, setCompletedAnimations] = useState<Record<number, Record<string, boolean>>>({});
   // Event listeners for animation events
-  const [, setEventListeners] = useState<Record<AnimationEventType, AnimationEventListener[]>>({
+  const [eventListeners, setEventListeners] = useState<Record<AnimationEventType, AnimationEventListener[]>>({
     'entrance-complete': [],
     'jiggle-complete': []
   });
@@ -73,12 +74,18 @@ export const CharacterAnimationProvider: React.FC<{ children: React.ReactNode }>
     }));
   }, []);
 
+  const emitEvent = useCallback((eventType: AnimationEventType, sceneIndex: number) => {
+    const listeners = eventListeners[eventType];
+    listeners.forEach(listener => listener(sceneIndex));
+  }, [eventListeners]);
+
   return (
     <CharacterAnimationContext.Provider value={{
       registerEntranceCallback,
       notifyEntranceComplete,
       addEventListener,
-      removeEventListener
+      removeEventListener,
+      emitEvent
     }}>
       {children}
     </CharacterAnimationContext.Provider>

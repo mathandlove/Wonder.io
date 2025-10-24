@@ -45,11 +45,7 @@
           "side": "right",
           "text": "Test5"
         },
-                     {
-      "type":"quest",
-      "text":"Figure out what is wrong.",
-      "successAnswer":"Mrs. Baker's cookie was stolen."
-     },
+
    
  {
           "side": "right",
@@ -138,6 +134,11 @@
           "side": "right",
           "text": "Help!"
         },
+                             {
+      "type":"quest",
+      "text":"Figure out what is wrong.",
+      "successAnswer":"Mrs. Baker's cookie was stolen."
+     },
         {
           "side": "right",
           "text": "Somebody please help me!",

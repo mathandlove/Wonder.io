@@ -27,30 +27,45 @@ export default function SuccessDanceScene() {
   const hasNavigatedRef = useRef(false);
   const currentNodeId = getCurrentNodeId();
 
+  console.log('[SuccessDanceScene] 🎬 Mounted with currentNodeId:', currentNodeId);
+
   // Listen for both character panels to complete their jiggle animations
   useEffect(() => {
+    console.log('[SuccessDanceScene] 👂 Registering jiggle-complete listener');
+
     const handleJiggleComplete = () => {
+      console.log('[SuccessDanceScene] 🎊 Received jiggle-complete event!', {
+        hasNavigated: hasNavigatedRef.current,
+        currentNodeId
+      });
+
       // Only navigate once
       if (!hasNavigatedRef.current && currentNodeId) {
         hasNavigatedRef.current = true;
 
         const successDanceNodeId = currentNodeId;
 
-        // Navigate forward after jiggle completes, then delete this temporary scene
-        setTimeout(() => {
-          forceAdvanceNavigation('forward');
+        console.log('[SuccessDanceScene] 🚀 Jiggle complete - auto-navigation DISABLED for debugging');
 
-          // Delete the success-dance node after navigating away
-          setTimeout(() => {
-            deleteNode(successDanceNodeId);
-          }, 50);
-        }, 100);
+        // TEMPORARILY COMMENTED OUT FOR DEBUGGING
+        // Navigate forward after jiggle completes, then delete this temporary scene
+        // setTimeout(() => {
+        //   console.log('[SuccessDanceScene] ➡️ Navigating forward');
+        //   forceAdvanceNavigation('forward');
+
+        //   // Delete the success-dance node after navigating away
+        //   setTimeout(() => {
+        //     console.log('[SuccessDanceScene] 🗑️ Deleting success-dance node:', successDanceNodeId);
+        //     deleteNode(successDanceNodeId);
+        //   }, 50);
+        // }, 100);
       }
     };
 
     addEventListener('jiggle-complete', handleJiggleComplete);
 
     return () => {
+      console.log('[SuccessDanceScene] 🔇 Removing jiggle-complete listener');
       removeEventListener('jiggle-complete', handleJiggleComplete);
     };
   }, [addEventListener, removeEventListener, currentNodeId]);

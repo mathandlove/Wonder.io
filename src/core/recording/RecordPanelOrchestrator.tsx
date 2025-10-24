@@ -686,6 +686,7 @@ export function RecordingOrchestrator() {
 
   return (
     <RecordPanel
+      key="record-panel-singleton" // Stable key to prevent remounting on state changes
       disabled={false}  // Recording is always enabled when this panel shows
       questState={questState}
       dialogueState={presentationState}
