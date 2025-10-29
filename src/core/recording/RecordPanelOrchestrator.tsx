@@ -15,7 +15,7 @@
  * - Quest completion determines if Next button is unlocked
  */
 import React, { useCallback, useEffect } from 'react';
-import { getCurrentNode, getCurrentNodeId, insertSceneNodes, addStateToCurrentNode, updateNodeState, updateSceneTextByRecordingId, forceAdvanceNavigation } from '@core/navigation/navigationHelpers';
+import { getCurrentNode, getCurrentNodeId, insertSceneNodes, addStateToCurrentNode, updateNodeState, updateSceneTextByRecordingId, forceAdvanceNavigation, cloneNodeWithStateChange, replaceNode, deleteNode } from '@core/navigation/navigationHelpers';
 import { useSceneFlowMetadata } from '@core/data/FlowMetadataStore';
 import { useSceneFactory } from '@core/navigation/SceneFactory';
 import { Recording } from '@core/recording/RecordingAPI';
@@ -217,72 +217,72 @@ export function RecordingOrchestrator() {
   // Effect: Auto-transition from answer-right to success-dance scene, triggered AFTER video ends
   useEffect(() => {
     if (dialogueState === 'answer-right' && answerRightVideoComplete) {
-      // Transition to success-dance scene immediately after video completes
-      // The record panel will maintain the same appearance during success-dance
-      const timerId = setTimeout(() => {
-        const currentState = sceneState?.type === 'dialogue' ? sceneState : null;
-        if (currentState?.state === 'answer-right') {
-          // Extract character information from current scene
-          const scene = currentNode?.scene;
-          let character = 'bakerMom'; // default - the one who celebrates
-          let leftCharacter: string | undefined;
-          let rightCharacter: string | undefined;
-          let background: string | undefined;
+      const currentState = sceneState?.type === 'dialogue' ? sceneState : null;
+      if (currentState?.state === 'answer-right') {
+        // Extract character information from current scene
+        const scene = currentNode?.scene;
+        let character = 'bakerMom'; // default - the one who celebrates
+        let leftCharacter: string | undefined;
+        let rightCharacter: string | undefined;
+        let background: string | undefined;
 
-          if (hasCharacterProperties(scene)) {
-            // Preserve BOTH characters exactly as they are in the current scene
-            leftCharacter = scene['left-character'];
-            rightCharacter = scene['right-character'];
+        if (hasCharacterProperties(scene)) {
+          // Preserve BOTH characters exactly as they are in the current scene
+          leftCharacter = scene['left-character'];
+          rightCharacter = scene['right-character'];
 
-            // Character is used for the old success-dance animation (will be removed later)
-            if (rightCharacter) {
-              character = rightCharacter;
-            } else if (leftCharacter) {
-              character = leftCharacter;
-            }
+          // Character is used for the old success-dance animation (will be removed later)
+          if (rightCharacter) {
+            character = rightCharacter;
+          } else if (leftCharacter) {
+            character = leftCharacter;
           }
-
-          if (scene && 'background' in scene) {
-            background = scene.background;
-          }
-
-          // Get the answer text to display in the record panel
-          const answerText = currentState.answerText || '';
-
-          // Use SceneFactory to create success-dance scene
-          // IMPORTANT: Pass BOTH left and right characters to keep them in their panels
-          const successDanceScene = createSuccessDanceScene(
-            character,
-            answerText,
-            background,
-            leftCharacter,
-            rightCharacter // Keep the right character (don't set to null)
-          );
-
-          // Insert the success-dance scene after current node using synchronous insertion
-          const currentNodeId = getCurrentNodeId();
-          insertSceneNodes(currentNodeId, successDanceScene);
-
-          // Auto-advance to success-dance scene immediately
-          // Note: We don't update the current scene state to 'basic' before navigating
-          // This prevents visual flicker/unwanted navigation during the transition
-          forceAdvanceNavigation('forward');
-
-          // After navigating away, update the previous node to basic state
-          // This ensures if user scrolls back, the answer-right scene is in basic state
-          setTimeout(() => {
-            const currentNodeId = getCurrentNodeId();
-            if (currentNodeId) {
-              updateNodeState(currentNodeId, {
-                type: 'dialogue',
-                state: 'basic'
-              });
-            }
-          }, 100);
         }
-      }, 100); // Minimal delay, just enough for state to settle
 
-      return () => clearTimeout(timerId);
+        if (scene && 'background' in scene) {
+          background = scene.background;
+        }
+
+        // Get the answer text to display in the record panel
+        const answerText = currentState.answerText || '';
+
+        // STEP 1: Create success-dance scene using SceneFactory
+        // IMPORTANT: Pass BOTH left and right characters to keep them in their panels
+        const successDanceScene = createSuccessDanceScene(
+          character,
+          answerText,
+          background,
+          leftCharacter,
+          rightCharacter // Keep the right character (don't set to null)
+        );
+
+        // STEP 2: Capture answer-right node ID (current node)
+        const answerRightNodeId = getCurrentNodeId();
+        if (!answerRightNodeId) return;
+
+        // STEP 3: Insert the success-dance scene after current node
+        insertSceneNodes(answerRightNodeId, successDanceScene);
+
+        // STEP 4: Clone the answer-right node with basic state
+        const basicNode = cloneNodeWithStateChange(answerRightNodeId, {
+          type: 'dialogue',
+          state: 'basic'
+        });
+
+        // STEP 5: Replace answer-right node with basic node
+        // This inherits all pointers, so previous node now points to basic node
+        if (basicNode) {
+          replaceNode(answerRightNodeId, basicNode);
+        }
+
+        // STEP 6: Navigate forward to success-dance scene
+        forceAdvanceNavigation('forward');
+
+        // STEP 7: Delete the old answer-right node (now replaced by basic node)
+        // Note: We're deleting the OLD node ID, which has been replaced
+        // The graph now correctly points from basic -> success-dance
+        deleteNode(answerRightNodeId);
+      }
     }
   }, [dialogueState, answerRightVideoComplete, sceneState, currentNode?.scene, createSuccessDanceScene]);
 

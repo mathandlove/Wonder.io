@@ -150,6 +150,8 @@ interface NavigationState {
   // Actions (must match these exact names per spec)
   setScenes: (scenes: Scene[]) => void;
   insertSceneNodes: (afterNodeId: NodeId | null, scene: Scene) => NodeId | null;
+  insertNode: (afterNodeId: NodeId | null, node: Omit<Node, 'prevId' | 'nextId'>) => NodeId;
+  replaceNode: (oldNodeId: NodeId, newNode: Omit<Node, 'prevId' | 'nextId'>) => NodeId | null;
   addStateToCurrentNode: (newState: SceneState, insertAfter?: boolean) => NodeId | null;
   updateNodeState: (nodeId: NodeId, newState: SceneState) => void;
   updateSceneTextByRecordingId: (recordingId: string, newText: string) => void;
@@ -332,6 +334,160 @@ export const useNavigationStore = create<NavigationState>()(
         );
 
         return firstNewNodeId;
+      },
+
+      // =============================================================================
+      // Action: insertNode
+      // Insert a single node after a specific node (or at beginning if null)
+      // =============================================================================
+      insertNode: (afterNodeId: NodeId | null, node: Omit<Node, 'prevId' | 'nextId'>): NodeId => {
+        const newNodeId = node.id;
+
+        set(
+          (state) => {
+            // Validate insertion point
+            if (afterNodeId && !state.graph.byId[afterNodeId]) {
+              console.warn('[navigationStore] insertNode: afterNodeId not found:', afterNodeId);
+              return state;
+            }
+
+            const insertAfterNode = afterNodeId ? getNodeById(state.graph, afterNodeId) : null;
+
+            // Build the complete node with prev/next pointers
+            const completeNode: Node = {
+              ...node,
+              prevId: afterNodeId,
+              nextId: insertAfterNode?.nextId || null,
+            };
+
+            // Build new graph state (atomic update)
+            const newById = { ...state.graph.byId };
+            const newOrder = [...state.graph.order];
+            const newLifecycleEvents = [...(state.graph.lifecycleEvents || [])];
+
+            // Add node to byId and track creation
+            newById[newNodeId] = completeNode;
+            newLifecycleEvents.push(buildLifecycleEvent('created', newNodeId, completeNode, 'insertNode'));
+
+            // Rewire the insertion point's next pointer
+            if (afterNodeId && newById[afterNodeId]) {
+              newById[afterNodeId] = {
+                ...newById[afterNodeId],
+                nextId: newNodeId,
+              };
+            }
+
+            // Rewire the next node's prev pointer (if exists)
+            const nextNodeId = insertAfterNode?.nextId;
+            if (nextNodeId && newById[nextNodeId]) {
+              newById[nextNodeId] = {
+                ...newById[nextNodeId],
+                prevId: newNodeId,
+              };
+            }
+
+            // Insert into order array
+            const insertIndex = afterNodeId ? newOrder.indexOf(afterNodeId) + 1 : 0;
+            newOrder.splice(insertIndex, 0, newNodeId);
+
+            return {
+              ...state,
+              graph: {
+                ...state.graph,
+                byId: newById,
+                order: newOrder,
+                historyVersion: state.graph.historyVersion + 1,
+                lifecycleEvents: newLifecycleEvents,
+              },
+            };
+          },
+          false,
+          'nav/insertNode'
+        );
+
+        return newNodeId;
+      },
+
+      // =============================================================================
+      // Action: replaceNode
+      // Replace an existing node with a new node, preserving all pointer connections
+      // The old node is removed and the new node takes its place in the graph
+      // =============================================================================
+      replaceNode: (oldNodeId: NodeId, newNode: Omit<Node, 'prevId' | 'nextId'>): NodeId | null => {
+        const newNodeId = newNode.id;
+
+        set(
+          (state) => {
+            // Validate old node exists
+            const oldNode = getNodeById(state.graph, oldNodeId);
+            if (!oldNode) {
+              console.warn('[navigationStore] replaceNode: oldNodeId not found:', oldNodeId);
+              return state;
+            }
+
+            // Build the complete new node with the same prev/next pointers as the old node
+            const completeNewNode: Node = {
+              ...newNode,
+              prevId: oldNode.prevId,
+              nextId: oldNode.nextId,
+            };
+
+            // Build new graph state (atomic update)
+            const newById = { ...state.graph.byId };
+            const newOrder = [...state.graph.order];
+            const newLifecycleEvents = [...(state.graph.lifecycleEvents || [])];
+
+            // Replace the old node with the new node in byId
+            delete newById[oldNodeId];
+            newById[newNodeId] = completeNewNode;
+
+            // Track lifecycle events
+            newLifecycleEvents.push(buildLifecycleEvent('removed', oldNodeId, oldNode, 'replaceNode'));
+            newLifecycleEvents.push(buildLifecycleEvent('created', newNodeId, completeNewNode, 'replaceNode'));
+
+            // Rewire the previous node's next pointer (if exists)
+            if (oldNode.prevId && newById[oldNode.prevId]) {
+              newById[oldNode.prevId] = {
+                ...newById[oldNode.prevId],
+                nextId: newNodeId,
+              };
+            }
+
+            // Rewire the next node's prev pointer (if exists)
+            if (oldNode.nextId && newById[oldNode.nextId]) {
+              newById[oldNode.nextId] = {
+                ...newById[oldNode.nextId],
+                prevId: newNodeId,
+              };
+            }
+
+            // Replace in order array
+            const oldIndex = newOrder.indexOf(oldNodeId);
+            if (oldIndex !== -1) {
+              newOrder[oldIndex] = newNodeId;
+            }
+
+            // Update currentId if we're replacing the current node
+            const newCurrentId = state.currentId === oldNodeId ? newNodeId : state.currentId;
+
+            return {
+              ...state,
+              currentId: newCurrentId,
+              graph: {
+                ...state.graph,
+                byId: newById,
+                order: newOrder,
+                currentId: newCurrentId,
+                historyVersion: state.graph.historyVersion + 1,
+                lifecycleEvents: newLifecycleEvents,
+              },
+            };
+          },
+          false,
+          'nav/replaceNode'
+        );
+
+        return newNodeId;
       },
 
       // =============================================================================
