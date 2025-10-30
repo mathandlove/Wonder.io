@@ -33,11 +33,13 @@ function Caption({ text, state, align = 'bottom' }: { text: string; state: Image
   );
 }
 
-export default function ImageScene({ scene }: SceneProps<ImageSceneType>) {
-  // Get current node's phase from navigationStore (source of truth)
+export default function ImageScene({ scene, nodeId }: SceneProps<ImageSceneType>) {
+  // Get THIS node's phase from navigationStore (source of truth)
+  // Use the nodeId prop if provided, otherwise fall back to currentId for backwards compatibility
   const currentNodeId = useNavigationStore(state => state.currentId);
+  const effectiveNodeId = nodeId || currentNodeId;
   const nodePhase = useNavigationStore(state =>
-    currentNodeId ? state.graph.byId[currentNodeId]?.phase : undefined
+    effectiveNodeId ? state.graph.byId[effectiveNodeId]?.phase : undefined
   );
 
   // Support both 'text' (legacy) and 'caption' properties

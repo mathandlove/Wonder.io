@@ -12,7 +12,7 @@
  * @module imageSceneMachine
  */
 
-import { setup, assign, sendParent } from 'xstate';
+import { setup, sendParent } from 'xstate';
 
 export type ImageSceneContext = {
   phase?: 'image_only' | 'caption';
@@ -25,9 +25,10 @@ export type ImageSceneEvent =
 /**
  * Image Scene State Machine
  *
- * Two phases:
- * 1. image_only - Just the image is visible
- * 2. caption - Image with caption overlay
+ * Three states:
+ * 1. routing - Transient state that routes to the correct initial state based on input phase
+ * 2. image_only - Just the image is visible
+ * 3. caption - Image with caption overlay
  *
  * Note: This machine does NOT track nodeId - that's the parent's responsibility.
  * It only manages phase transitions and notifies the parent of changes.
@@ -40,7 +41,7 @@ export const imageSceneMachine = setup({
   },
 }).createMachine({
   id: 'imageScene',
-  initial: 'image_only',
+  initial: 'routing',
   context: ({ input }) => ({
     phase: input.phase || 'image_only',
   }),
@@ -48,6 +49,23 @@ export const imageSceneMachine = setup({
     console.log('[ImageSceneMachine] Started with phase:', context.phase);
   },
   states: {
+    /**
+     * ROUTING
+     * Transient state - immediately routes to the correct state based on input phase
+     * This allows the machine to restore to 'caption' state when re-invoked
+     */
+    routing: {
+      always: [
+        {
+          guard: ({ context }) => context.phase === 'caption',
+          target: 'caption',
+        },
+        {
+          target: 'image_only',
+        },
+      ],
+    },
+
     /**
      * IMAGE_ONLY
      * Just showing the image without caption

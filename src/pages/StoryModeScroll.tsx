@@ -87,39 +87,23 @@ const StoryContent: React.FC = () => {
     return injectPanelMetaFromFlows(scenes);
   }, [allNavigationNodes]);
 
-  // Deduplicate nodes by sceneId to get unique scenes for DOM rendering
-  // Each scene may have multiple states/nodes, but only needs one DOM element
+  // Build array of unique scenes with their nodeIds for rendering
+  // Each node gets rendered, so non-focused scenes can display their own phase
   const uniqueScenes = useMemo(() => {
-    const seenSceneIds = new Set<string>();
-    const unique: Scene[] = [];
-
-    allNavigationNodes.forEach((node, index) => {
-      const sceneId = node.sceneId;
-      if (!seenSceneIds.has(sceneId)) {
-        seenSceneIds.add(sceneId);
-        // Use the scene from allNavigationScenes at the correct index
-        const sceneWithMeta = allNavigationScenes[index];
-        unique.push(sceneWithMeta);
-      }
-    });
-
-    return unique;
+    return allNavigationNodes.map((node, index) => ({
+      scene: allNavigationScenes[index],
+      nodeId: node.id,
+    }));
   }, [allNavigationNodes, allNavigationScenes]);
 
   // Map current node to DOM scroll index
-  // Find which unique scene corresponds to the current node's sceneId
+  // Find which scene entry corresponds to the current nodeId
   const scrollIndex = useMemo(() => {
-    const currentNode = getCurrentNode();
-    if (!currentNode) return 0;
+    if (!currentNodeId) return 0;
 
-    const currentSceneId = currentNode.sceneId;
-    const index = uniqueScenes.findIndex(scene => {
-      const sceneWithId = scene as Scene & { sceneId?: string };
-      return sceneWithId.sceneId === currentSceneId;
-    });
-
+    const index = uniqueScenes.findIndex(entry => entry.nodeId === currentNodeId);
     return index >= 0 ? index : 0;
-  }, [uniqueScenes]);
+  }, [uniqueScenes, currentNodeId]);
 
   // Calculate navigation index (position in the full node array)
   const navigationIndex = useMemo(() => {
@@ -183,9 +167,10 @@ const StoryContent: React.FC = () => {
 
               {/* Layer 2: Document flow content with scroll snap targets - renders from navigationArray */}
               <div style={{ position: "relative" }}>
-                {uniqueScenes.map((scene: Scene, i: number) => {
-                  // Use stable ID if available, fallback to index for original scenes
-                  const stableKey = (scene as SceneWithId).sceneId || `original-${i}`;
+                {uniqueScenes.map((entry, i: number) => {
+                  const { scene, nodeId } = entry;
+                  // Use nodeId as stable key
+                  const stableKey = nodeId;
 
                   // Hidden scenes are already filtered out by NavigationContext,
                   // but add safety check and zero-height container if somehow present
@@ -214,7 +199,7 @@ const StoryContent: React.FC = () => {
                         keyId={i.toString()}
                         panelRestricted={(scene as unknown as { panelRestricted?: boolean })?.panelRestricted ?? false}
                       >
-                        <SceneContentWithNavigation scene={scene} sceneIndex={i} />
+                        <SceneContentWithNavigation scene={scene} nodeId={nodeId} sceneIndex={i} />
                       </FlowLayout>
                     </div>
                   );
@@ -236,11 +221,12 @@ const StoryContent: React.FC = () => {
 
 
 // SceneContentWithNavigation: thin wrapper to render a scene and navigate to the next scene when it completes
-const SceneContentWithNavigation = React.memo(function SceneContentWithNavigation({ scene, sceneIndex }: { scene: Scene; sceneIndex: number }) {
+const SceneContentWithNavigation = React.memo(function SceneContentWithNavigation({ scene, nodeId, sceneIndex }: { scene: Scene; nodeId: string; sceneIndex: number }) {
   // SceneRenderer picks the right visual component for the given scene.type
   return (
     <SceneRenderer
       scene={scene}
+      nodeId={nodeId}
       sceneIndex={sceneIndex}
     />
   );

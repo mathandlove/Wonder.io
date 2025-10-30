@@ -43,11 +43,12 @@ class SceneErrorBoundary extends React.Component<{ children: React.ReactNode }, 
 
 export type SceneRendererProps = {
   scene: Scene;
+  nodeId?: string;
   sceneIndex?: number;
   onComplete?: () => void;
 };
 
-export const SceneRenderer = React.memo(function SceneRenderer({ scene, sceneIndex, onComplete }: SceneRendererProps) {
+export const SceneRenderer = React.memo(function SceneRenderer({ scene, nodeId, sceneIndex, onComplete }: SceneRendererProps) {
   const Comp = sceneRegistry[scene.type] as ComponentType<SceneProps> | undefined;
 
   if (!Comp) {
@@ -73,7 +74,7 @@ export const SceneRenderer = React.memo(function SceneRenderer({ scene, sceneInd
   return (
     <SceneErrorBoundary>
       <Suspense fallback={<div style={{ padding: 16 }}>Loading…</div>}>
-        <Comp scene={scene} sceneIndex={sceneIndex} onComplete={onComplete} />
+        <Comp scene={scene} nodeId={nodeId} sceneIndex={sceneIndex} onComplete={onComplete} />
       </Suspense>
     </SceneErrorBoundary>
   );

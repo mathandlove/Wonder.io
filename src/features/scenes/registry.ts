@@ -18,6 +18,7 @@ import SuccessDanceScene from "./SuccessDanceScene";
 export type SceneProps<T extends Scene = Scene> = {
   scene: T;
   sceneIndex?: number;
+  nodeId?: string;
   onComplete?: () => void;
 };
 
