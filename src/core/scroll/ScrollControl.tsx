@@ -13,10 +13,10 @@ import React, { useRef, useCallback, useLayoutEffect, useEffect } from 'react';
 import type { Scene } from '@core/types/scene';
 import { useStepScroll } from './useStepScroll';
 import { useNavigationStore, selectCurrentNodeId } from '@core/navigation/navigationStore';
-import { getCurrentNode, advanceNavigation } from '@core/navigation/navigationHelpers';
+import { getCurrentNode } from '@core/navigation/navigationHelpers';
+import * as navigationBus from '@core/navigation/events/navigationBus';
 import { useSceneOrchestrator } from '../scenes/useSceneOrchestrator';
 import { SceneOrchestratorProvider } from '../scenes/SceneOrchestratorContext';
-import { useSceneStates } from '@core/data/PersistentObjects';
 import './ScrollControl.css';
 
 export interface ScrollControlProps {
@@ -50,30 +50,11 @@ export function ScrollControl({
 }: ScrollControlProps) {
   const containerRef = useRef<HTMLDivElement>(null);
 
-  // OPTIMIZED: Subscribe only to currentId for sceneState updates
-  const currentNodeId = useNavigationStore(selectCurrentNodeId);
-
-  // Get SceneStates for persistent state cache
-  const sceneStates = useSceneStates();
-
   // Create scene orchestrator for runtime state management
   const sceneOrchestrator = useSceneOrchestrator({
     scenes,
     currentIndex,
   });
-
-  // Update SceneStates whenever current node changes
-  // This keeps a persistent cache of scene states that persists even when scrolling past scenes
-  // Required for ImageScene captions to remember their state after scrolling past
-  useEffect(() => {
-    const currentNode = getCurrentNode();
-    if (!currentNode) {
-      return;
-    }
-
-    const { sceneId, sceneState } = currentNode;
-    sceneStates.updateSceneState(sceneId, sceneState);
-  }, [currentNodeId, sceneStates]);
 
   // Check if input is focused
   const isInputFocused = useCallback(() => {
@@ -83,9 +64,17 @@ export function ScrollControl({
     return tag === 'input' || tag === 'textarea' || a.isContentEditable;
   }, []);
 
-  // Pure gesture detection - emits direction, SceneManager handles navigation
+  // Pure gesture detection - emits scroll events to XState machine
+  // The machine owns routing and decides how to handle the scroll
   useStepScroll(containerRef, {
-    onNavigate: advanceNavigation, // Direct connection to SceneManager!
+    onNavigate: (direction) => {
+      // Emit SCROLL_DOWN_STEP or SCROLL_UP_STEP to the navigation bus
+      // The XState machine will update activeNodeId and route to the correct scene
+      navigationBus.emit({
+        type: direction === 'forward' ? 'SCROLL_DOWN_STEP' : 'SCROLL_UP_STEP',
+        source: 'wheel',
+      });
+    },
     thresholdPx: scrollConfig.thresholdPx ?? 10,
     isInputFocused,
   });

@@ -18,7 +18,6 @@ type RawFlowItem = {
   type?: "input" | "quest"; // Marks this as metadata item
   CharacterDescription?: string; // AI chat context (for input)
   successAnswer?: string; // Expected phrase for quest completion
-  States?: string[]; // New: array of feature states like ["quest", "input"]
   "left-character"?: string;
   "right-character"?: string;
 };
@@ -82,41 +81,13 @@ function flattenScenes(rawScenes: RawScene[]): FlattenResult {
       let currentRightCharacter = scene["right-character"];
 
       scene.flow.forEach((f, flowIndex) => {
-        // Handle pure input metadata items (they don't become scenes, but affect previous scene)
+        // Handle pure input metadata items (skip - they don't become scenes)
         if (f.type === "input" && !f.text && !f.quest) {
-          // Find the last normal character scene and add "input" state
-          for (let i = out.length - 1; i >= 0; i--) {
-            const prevScene = out[i];
-            if (prevScene.type === "character") {
-              // Add "input" to the States array
-              // eslint-disable-next-line @typescript-eslint/no-explicit-any
-              const currentStates = (prevScene as any).States || [];
-              if (!currentStates.includes("input")) {
-                // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                (prevScene as any).States = [...currentStates, "input"];
-              }
-              break; // Found and updated the previous dialogue scene
-            }
-          }
           return; // Skip creating a scene for this metadata item
         }
 
-        // Handle pure quest metadata items (they don't become scenes, but affect previous scene)
+        // Handle pure quest metadata items (skip - they don't become scenes)
         if (f.type === "quest" && !f.side) {
-          // Find the last normal character scene and add "giveQuest" state
-          for (let i = out.length - 1; i >= 0; i--) {
-            const prevScene = out[i];
-            if (prevScene.type === "character") {
-              // Add "giveQuest" to the States array
-              // eslint-disable-next-line @typescript-eslint/no-explicit-any
-              const currentStates = (prevScene as any).States || [];
-              if (!currentStates.includes("giveQuest")) {
-                // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                (prevScene as any).States = [...currentStates, "giveQuest"];
-              }
-              break; // Found and updated the previous dialogue scene
-            }
-          }
           return; // Skip creating a scene for this metadata item
         }
 
@@ -130,7 +101,7 @@ function flattenScenes(rawScenes: RawScene[]): FlattenResult {
 
         // Use the current character state
         let flattened: Partial<Scene> = {
-          sceneId: `scene-${sceneCounter++}`,
+        
           flowSequence: true,
           isFirstInFlow: flowIndex === 0,
           background: scene.background,
@@ -144,16 +115,9 @@ function flattenScenes(rawScenes: RawScene[]): FlattenResult {
           (flattened as any).flowId = flowId;
         }
 
-        // Preserve States field if present
-        if (f.States) {
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          (flattened as any).States = f.States;
-        }
-
         // Only create scenes for flow items with actual dialogue content
         if (f.input) {
           // Input flow items become character scenes
-          // The States field (already preserved above) will mark them as interactive
           flattened = {
             ...flattened,
             type: "character",

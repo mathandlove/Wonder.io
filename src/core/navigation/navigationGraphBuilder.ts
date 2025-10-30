@@ -124,14 +124,9 @@ export function expandSceneToNodes(scene: Scene, sceneId: SceneId): Node[] {
     case 'image':
       return expandImageScene(scene, sceneId);
 
-    case 'character': {
-      // Check if this character scene has States field (from character-flow flattening or dynamically assigned)
-      const characterScene = scene as Scene & { States?: string[] };
-      if (characterScene.States && characterScene.States.length > 0) {
-        return expandCharacterWithStates(characterScene as Scene & { States: string[] }, sceneId);
-      }
+    case 'character':
+      // Character scenes are now simple - phase is tracked on the scene itself, not via multiple nodes
       return [createSimpleNode(scene, sceneId, 'dialogue:basic', { type: 'dialogue', state: 'basic' })];
-    }
 
     case 'character-flow':
       return expandCharacterFlowScene(scene, sceneId);
@@ -153,33 +148,10 @@ export function expandSceneToNodes(scene: Scene, sceneId: SceneId): Node[] {
 }
 
 /**
- * Image scene expansion - creates hidden/showing states if caption exists
+ * Image scene expansion - creates single node (no more state splitting)
  */
-function expandImageScene(scene: Scene & { caption?: string; text?: string }, sceneId: SceneId): Node[] {
-  const captionText = scene.caption || scene.text;
-  const hasCaption = captionText && captionText.trim() !== '';
-
-  if (hasCaption) {
-    // Image with caption: 2 states (hidden → showing)
-    return [
-      createNode(
-        scene,
-        sceneId,
-        'image:hidden',
-        { type: 'image', state: 'hidden' },
-        { lockForward: false, lockBackward: false }
-      ),
-      createNode(
-        scene,
-        sceneId,
-        'image:showing',
-        { type: 'image', state: 'showing' },
-        { lockForward: false, lockBackward: false }
-      ),
-    ];
-  }
-
-  // Image without caption: single state
+function expandImageScene(scene: Scene, sceneId: SceneId): Node[] {
+  // Image scenes now have a single node with phase tracking on the scene itself
   return [
     createNode(
       scene,
@@ -192,38 +164,10 @@ function expandImageScene(scene: Scene & { caption?: string; text?: string }, sc
 }
 
 /**
- * Character scene with States expansion - for flattened character-flow scenes
- * States field controls which interactive features appear (quest/input/recording)
- */
-function expandCharacterWithStates(scene: Scene & { States: string[] }, sceneId: SceneId): Node[] {
-  const states = scene.States;
-  const hasQuest = states.includes('quest') || states.includes('giveQuest');
-  const hasInput = states.includes('input');
-  const isRecording = states.includes('recording');
-
-  // Recording scenes are always in input-recording state (single node)
-  if (isRecording) {
-    return [createSimpleNode(scene, sceneId, 'dialogue:input-recording', { type: 'dialogue', state: 'input-recording' })];
-  }
-
-  return expandDialogueStates(scene, sceneId, { hasQuest, hasInput });
-}
-
-/**
- * Character-flow scene expansion - checks flow items for States field
+ * Character-flow scene expansion - simplified without States field
  */
 function expandCharacterFlowScene(scene: CharacterFlowScene, sceneId: SceneId): Node[] {
-  const flowItemWithStates = scene.flow.find(item => item.States && item.States.length > 0);
-
-  if (flowItemWithStates && flowItemWithStates.States) {
-    const states = flowItemWithStates.States;
-    const hasQuest = states.includes('quest') || states.includes('giveQuest');
-    const hasInput = states.includes('input');
-
-    return expandDialogueStates(scene, sceneId, { hasQuest, hasInput });
-  }
-
-  // Character-flow without features - basic dialogue
+  // Character-flow scenes are now simple - phase tracking is on the scene itself
   return [
     createNode(
       scene,
@@ -233,96 +177,6 @@ function expandCharacterFlowScene(scene: CharacterFlowScene, sceneId: SceneId): 
       { lockForward: false, lockBackward: false }
     ),
   ];
-}
-
-/**
- * Expands dialogue states based on interactive features (quest/input)
- *
- * Flow patterns:
- * - hasInput only: input-basic → input-showInput
- * - hasQuest only: quest-basic → quest-showing → quest-accepted
- * - hasQuest + hasInput: quest-basic → quest-showing → input-showInput
- */
-function expandDialogueStates(
-  scene: Scene,
-  sceneId: SceneId,
-  features: { hasQuest: boolean; hasInput: boolean }
-): Node[] {
-  const nodes: Node[] = [];
-
-  // Combined quest + input flow
-  if (features.hasQuest && features.hasInput) {
-    nodes.push(
-      createNode(
-        scene,
-        sceneId,
-        'dialogue:quest-basic',
-        { type: 'dialogue', state: 'basic' },
-        { lockForward: false, lockBackward: false }
-      ),
-      createNode(
-        scene,
-        sceneId,
-        'dialogue:quest-showing',
-        { type: 'dialogue', state: 'quest-showing' },
-        { lockForward: true, lockBackward: true } // Block until quest accepted
-      ),
-      createNode(
-        scene,
-        sceneId,
-        'dialogue:input-showInput',
-        { type: 'dialogue', state: 'input-showInput' },
-        { lockForward: true, lockBackward: false } // Block until recording
-      )
-    );
-  }
-  // Quest-only flow
-  else if (features.hasQuest) {
-    nodes.push(
-      createNode(
-        scene,
-        sceneId,
-        'dialogue:quest-basic',
-        { type: 'dialogue', state: 'quest-basic' },
-        { lockForward: false, lockBackward: false }
-      ),
-      createNode(
-        scene,
-        sceneId,
-        'dialogue:quest-showing',
-        { type: 'dialogue', state: 'quest-showing' },
-        { lockForward: true, lockBackward: true }
-      ),
-      createNode(
-        scene,
-        sceneId,
-        'dialogue:quest-accepted',
-        { type: 'dialogue', state: 'quest-accepted' },
-        { lockForward: false, lockBackward: false }
-      )
-    );
-  }
-  // Input-only flow
-  else if (features.hasInput) {
-    nodes.push(
-      createNode(
-        scene,
-        sceneId,
-        'dialogue:input-basic',
-        { type: 'dialogue', state: 'input-basic' },
-        { lockForward: false, lockBackward: false }
-      ),
-      createNode(
-        scene,
-        sceneId,
-        'dialogue:input-showInput',
-        { type: 'dialogue', state: 'input-showInput' },
-        { lockForward: true, lockBackward: false }
-      )
-    );
-  }
-
-  return nodes;
 }
 
 /**
@@ -342,21 +196,29 @@ function createNode(
   sceneState: SceneState,
   overrideLocks?: { lockForward?: boolean; lockBackward?: boolean }
 ): Node {
-  // Compute locks from scene state if not overridden
-  const locks = overrideLocks || getLocksForState(sceneState);
+  // Determine initial phase based on scene type
+  let initialPhase: string;
+  if (scene.type === 'image') {
+    initialPhase = scene.phase || 'image_only';
+  } else if (scene.type === 'character' || scene.type === 'character-flow') {
+    initialPhase = scene.phase || 'basic';
+  } else if (scene.type === 'fail-dance') {
+    initialPhase = 'answer-wrong';
+  } else if (scene.type === 'success-dance') {
+    initialPhase = 'answer-right';
+  } else {
+    initialPhase = scene.phase || 'static';
+  }
 
   return {
     id: ulid(), // Stable unique ID
-    sceneId,
-    stateKey,
-    sceneState,
     scene, // Store full scene object
-    stateMeta: {},
+    sceneId, // Scene identifier
+    stateKey, // Semantic state key for debugging
+    phase: initialPhase, // Initialize phase based on scene type
     prevId: null, // Will be set during linking
     nextId: null, // Will be set during linking
     status: 'active',
-    lockForward: locks.lockForward,
-    lockBackward: locks.lockBackward,
   };
 }
 

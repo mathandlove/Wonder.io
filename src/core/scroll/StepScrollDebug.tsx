@@ -46,16 +46,7 @@ export function StepScrollDebug() {
 
   // Subscribe to navigation store (single source of truth)
   const navigationGraph = useNavigationStore(selectNavigationGraph);
-  const currentNodeFromStore = useNavigationStore(selectCurrentNode);
-
-  // Convert to Node format for compatibility
-  const currentNode = currentNodeFromStore ? {
-    nodeId: currentNodeFromStore.id,
-    scene: currentNodeFromStore.scene as Scene,
-    sceneId: currentNodeFromStore.sceneId,
-    sceneState: currentNodeFromStore.sceneState,
-    status: currentNodeFromStore.status,
-  } : null;
+  const currentNode = useNavigationStore(selectCurrentNode);
 
   // Get current index from navigation graph
   const currentNodeId = navigationGraph.currentId;
@@ -101,38 +92,23 @@ export function StepScrollDebug() {
 
   // Extract scene info
   const sceneType = currentScene?.type || 'unknown';
-  const sceneId = currentNode?.sceneId || 'no-id';
-  const nodeId = currentNode?.nodeId || 'no-id';
+  const nodeId = currentNode?.id || 'no-id';
 
-  // Get caption state from current node (single source of truth)
+  // Get phase from current node (this is the new way - replaces old sceneState)
+  const phase = currentNode?.phase || 'unknown';
+
+  // Determine caption state from phase (for image scenes)
   const captionState: ImageState =
-    currentNode?.sceneState.type === 'image'
-      ? currentNode.sceneState.state
-      : 'hidden';
+    sceneType === 'image' && phase === 'caption' ? 'showing' : 'hidden';
   // Type-safe caption check - only ImageScene has caption/text properties
   const hasCaption = sceneType === 'image' && currentScene && 'caption' in currentScene
     ? ((currentScene.caption || currentScene.text)?.trim() || false)
     : false;
 
-  // Get dialogue messages for current scene (safely) - currently unused but available for future debugging
-  // const messages = dialogue?.getMessagesForScene(sceneId) ?? [];
-  // const pendingConversions = dialogue?.getPendingConversions() ?? [];
-
-  // Format scene state for display
-  const formatSceneState = (): string => {
-    if (!currentNode) return 'No state';
-    const { sceneState } = currentNode;
-
-    if (sceneState.type === 'image') {
-      return `image: ${sceneState.state}`;
-    } else if (sceneState.type === 'dialogue') {
-      return `dialogue: ${sceneState.state}`;
-    } else if (sceneState.type === 'static') {
-      return 'static';
-    } else if (sceneState.type === 'quest') {
-      return `quest: ${sceneState.state}`;
-    }
-    return 'unknown';
+  // Format phase for display (replaces old formatSceneState)
+  const formatPhase = (): string => {
+    if (!currentNode) return 'No phase';
+    return phase;
   };
 
 
@@ -230,14 +206,11 @@ export function StepScrollDebug() {
           <div style={{ color: '#0f0' }}>
             📍 Index: <strong>{navigationIndex}</strong> / {totalNodes - 1}
           </div>
-          <div style={{ color: '#0f0' }}>
-            🆔 Scene ID: <strong>{sceneId}</strong>
-          </div>
           <div style={{ color: '#0ff', fontSize: '9px', marginTop: '2px' }}>
-            Node ID: {nodeId.substring(0, 10)}...
+            🆔 Node ID: {nodeId.substring(0, 10)}...
           </div>
           <div style={{ color: '#ff0' }}>
-            🔧 State: <strong>{formatSceneState()}</strong>
+            🔧 Phase: <strong>{formatPhase()}</strong>
           </div>
           <div style={{ color: '#888', fontSize: '9px', marginTop: '2px' }}>
             Type: {sceneType}
@@ -347,7 +320,7 @@ export function StepScrollDebug() {
                     </div>
                   </div>
                   <div style={{ color: '#0ff', fontSize: '9px', marginTop: '2px' }}>
-                    🆔 {entry.sceneId.substring(0, 8)}... | {entry.stateKey}
+                    🔑 {entry.stateKey}
                   </div>
                   {entry.description && (
                     <div style={{ color: '#888', fontSize: '8px', marginTop: '2px', fontStyle: 'italic' }}>
@@ -413,7 +386,7 @@ export function StepScrollDebug() {
                     </div>
                   </div>
                   <div style={{ color: '#f0f', fontSize: '9px', marginTop: '2px' }}>
-                    {event.sceneId.substring(0, 8)}... | {event.stateKey}
+                    🔑 {event.stateKey}
                   </div>
                   {event.context && (
                     <div style={{ color: '#888', fontSize: '8px', marginTop: '2px', fontStyle: 'italic' }}>

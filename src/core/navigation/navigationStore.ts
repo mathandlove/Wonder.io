@@ -97,14 +97,13 @@ export function getLocksForState(state: SceneState): { lockForward: boolean; loc
  */
 function buildHistoryEntry(
   nodeId: NodeId,
-  node: { sceneId: SceneId; stateKey: string },
+  node: { stateKey: string },
   trigger: 'forward' | 'backward' | 'force-forward' | 'force-backward' | 'initial' | 'scene-change',
   description?: string
 ): NavigationHistoryEntry {
   return {
     timestamp: Date.now(),
     nodeId,
-    sceneId: node.sceneId,
     stateKey: node.stateKey,
     trigger,
     description,
@@ -117,14 +116,13 @@ function buildHistoryEntry(
 function buildLifecycleEvent(
   type: 'created' | 'deleted' | 'marked-for-deletion',
   nodeId: NodeId,
-  node: { sceneId: SceneId; stateKey: string },
+  node: { stateKey: string },
   context?: string
 ): NodeLifecycleEvent {
   return {
     timestamp: Date.now(),
     type,
     nodeId,
-    sceneId: node.sceneId,
     stateKey: node.stateKey,
     context,
   };
@@ -809,7 +807,6 @@ export const useNavigationStore = create<NavigationState>()(
           nodeId: currentNode.id,
           sceneId: currentNode.sceneId,
           stateKey: currentNode.stateKey,
-          sceneState: currentNode.sceneState,
           scene: currentNode.scene,
         };
 

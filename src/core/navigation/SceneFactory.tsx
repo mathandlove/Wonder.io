@@ -2,19 +2,15 @@
  * SceneFactory (formerly PageFactory/NodeFactory) - Creates new scenes dynamically
  *
  * Architecture:
- * - Creates Scene objects with proper sceneId
+ * - Creates Scene objects with proper sceneId and initial phase="basic"
  * - Scenes are added to NodeManager via insertScene()
  * - NodeManager's buildNavigationGraph() converts scenes to nodes automatically
  *
  * Scene → Node Conversion (happens automatically in navigationGraphBuilder):
- * - CharacterScene with States=['recording'] → Node with state: dialogue:input-recording
- * - CharacterScene with States=['input'] → Nodes with states: input-basic → input-showInput
- * - CharacterScene (no States) → Node with state: dialogue:basic
+ * - All scenes create a single basic node
+ * - Phase tracking is handled on the scene itself, not via multiple nodes
  * - FailDanceScene → Node with state: dance:fail (answer-wrong)
  * - SuccessDanceScene → Node with state: dance:success (answer-right)
- *
- * The factory creates scenes with initial data and States field, and the graph builder
- * expands them into their constituent nodes with proper states.
  */
 import React, { createContext, useContext } from "react";
 import type { CharacterScene, Scene, FailDanceScene, SuccessDanceScene } from "@core/types/scene";
@@ -29,7 +25,7 @@ import { NOCHARACTER } from "@features/characters/buildPanelRangesFromScenes";
 type SceneFactoryContextType = {
   /**
    * Creates a recording scene (user is speaking)
-   * Sets States=['recording'] which converts to: Node with state dialogue:input-recording
+   * Sets phase='basic' initially
    */
   createRecordingScene: (
     recordingId: string,
@@ -40,7 +36,7 @@ type SceneFactoryContextType = {
 
   /**
    * Creates an AI response scene (NPC speaking)
-   * Sets States=['input'] which converts to: Nodes with states input-basic → input-showInput
+   * Sets phase='basic' initially
    */
   createAIResponseScene: (
     responseText: string,
@@ -90,17 +86,16 @@ export function SceneFactoryProvider({ children }: SceneFactoryProviderProps) {
    *
    * Flow:
    * 1. User clicks Ask/Record button
-   * 2. This scene is created with unique recordingId and States=['recording']
+   * 2. This scene is created with unique recordingId and phase='basic'
    * 3. Added to navigation graph via insertScene()
-   * 4. Graph builder expands to Node with state: dialogue:input-recording
-   * 5. RecordPanelOrchestrator manages state transitions:
-   *    - input-recording → input-processing → ai-waiting → (AI response)
+   * 4. Graph builder creates a single node with state: dialogue:basic
+   * 5. Phase transitions are managed separately (e.g., basic → recording → processing)
    *
    * @param recordingId - Unique ID linking scene to recording session
    * @param currentBackground - Inherited background for visual continuity
    * @param leftCharacter - User's character (usually left side)
    * @param rightCharacter - NPC character (usually right side)
-   * @returns CharacterScene that will expand to input-recording node
+   * @returns CharacterScene with phase='basic'
    */
   const createRecordingScene = (
     recordingId: string,
@@ -119,11 +114,8 @@ export function SceneFactoryProvider({ children }: SceneFactoryProviderProps) {
       "left-character": leftCharacter || "leo", // Inherit or fallback
       "right-character": rightCharacter || "bakerMom", // Inherit or fallback
       background: currentBackground, // Inherit background from current scene
+      phase: "basic", // All scenes start with basic phase
     };
-
-    // Assign States to declare that this scene should be in input-recording state
-    // This is cleaner than having conditional logic in the graph builder
-    (newScene as any).States = ['recording'];
 
     return newScene;
   };
@@ -133,17 +125,17 @@ export function SceneFactoryProvider({ children }: SceneFactoryProviderProps) {
    *
    * Flow:
    * 1. AI processes user's question from recording scene
-   * 2. This scene is created with AI's response text and States=['input']
+   * 2. This scene is created with AI's response text and phase='basic'
    * 3. Added to navigation graph via insertScene()
-   * 4. Graph builder expands to Nodes: input-basic → input-showInput
-   * 5. User can then ask follow-up questions from input-showInput state
+   * 4. Graph builder creates a single node with state: dialogue:basic
+   * 5. Phase can be managed separately if needed (e.g., to show input UI)
    *
    * @param responseText - AI's response to display
    * @param flowId - Conversation flow ID for continuity
    * @param currentBackground - Inherited background
    * @param leftCharacter - User's character
    * @param rightCharacter - NPC/AI character (speaker)
-   * @returns CharacterScene that will expand to basic dialogue node
+   * @returns CharacterScene with phase='basic'
    */
   const createAIResponseScene = (
     responseText: string,
@@ -163,11 +155,8 @@ export function SceneFactoryProvider({ children }: SceneFactoryProviderProps) {
       "left-character": leftCharacter || "leo", // User's character
       "right-character": rightCharacter || "bakerMom", // AI character
       background: currentBackground,
+      phase: "basic", // All scenes start with basic phase
     };
-
-    // Assign States to declare that this scene should show input UI
-    // This follows the same pattern as character-flow scenes with input
-    (newScene as any).States = ['input'];
 
     return newScene;
   };
@@ -218,7 +207,8 @@ export function SceneFactoryProvider({ children }: SceneFactoryProviderProps) {
       background: currentBackground,
       answerText: answerText,
       questionText: questionText,
-      duration: 3500
+      duration: 3500,
+      phase: "basic", // All scenes start with basic phase
       // NOTE: meta will be injected automatically by injectPanelMetaFromFlows in StoryModeScroll
     };
 
@@ -267,7 +257,8 @@ export function SceneFactoryProvider({ children }: SceneFactoryProviderProps) {
       "right-character": rightCharacter || NOCHARACTER, // Use NOCHARACTER to trigger exit animation
       background: currentBackground,
       answerText: answerText,
-      duration: 3500
+      duration: 3500,
+      phase: "basic", // All scenes start with basic phase
       // NOTE: meta will be injected automatically by injectPanelMetaFromFlows in StoryModeScroll
     };
 
@@ -322,19 +313,20 @@ export const usePageFactory = useSceneFactory;
  * 1. **Scenes are the source of truth** - stored in NodeManager.allScenes
  * 2. **Nodes are derived** - generated by buildNavigationGraph() from scenes
  * 3. **Single expansion logic** - all scenes go through the same builder
- * 4. **Automatic state management** - initial states handled by expansion logic
+ * 4. **Phase-based state management** - scenes have a phase field (default: "basic")
  *
  * The Scene → Node conversion happens in navigationGraphBuilder.ts:
- * - `character` type with States=['recording'] → `dialogue:input-recording` node
- * - `character` type with States=['input'] → multi-state nodes (input-basic → input-showInput)
- * - `character` type (no States) → `dialogue:basic` node
+ * - All scene types create a single node (no more multi-state expansion)
+ * - `character` type → single `dialogue:basic` node
+ * - `image` type → single `image:basic` node
  * - `fail-dance` type → `dance:fail` node with answer-wrong state
  * - `success-dance` type → `dance:success` node with answer-right state
+ * - Phase transitions are managed on the scene object itself, not via multiple nodes
  *
  * This architecture ensures:
  * - Consistent node creation
  * - Proper linking (prev/next pointers)
- * - Correct initial states
+ * - Simpler scene/node relationship (1:1 instead of 1:many)
  * - Scene registry updates
  * - Graph integrity
  */

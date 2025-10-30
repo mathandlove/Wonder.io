@@ -184,6 +184,8 @@ export function RecordingOrchestrator() {
           // Insert the fail-dance scene after current node using synchronous insertion
           // This properly maintains the state-node graph structure
           const currentNodeId = getCurrentNodeId();
+          // TODO: [Navigation Refactor] Replace with event bus emission
+          // emit({ type: 'ANSWER_VALIDATED', nodeId: currentNodeId, isCorrect: false })
           insertSceneNodes(currentNodeId, failDanceScene);
 
           // Wait 2 seconds before transitioning current scene to input-showInput state
@@ -261,6 +263,9 @@ export function RecordingOrchestrator() {
         if (!answerRightNodeId) return;
 
         // STEP 3: Insert the success-dance scene after current node
+        // TODO: [Navigation Refactor] Replace with event bus emission
+        // emit({ type: 'ANSWER_VALIDATED', nodeId: answerRightNodeId, isCorrect: true })
+        // The machine will handle: insert success-dance → replace with basic → navigate → cleanup
         insertSceneNodes(answerRightNodeId, successDanceScene);
 
         // STEP 4: Clone the answer-right node with basic state
@@ -272,6 +277,7 @@ export function RecordingOrchestrator() {
         // STEP 5: Replace answer-right node with basic node
         // This inherits all pointers, so previous node now points to basic node
         if (basicNode) {
+          // TODO: [Navigation Refactor] This should be a command, not direct call
           replaceNode(answerRightNodeId, basicNode);
         }
 
@@ -281,6 +287,7 @@ export function RecordingOrchestrator() {
         // STEP 7: Delete the old answer-right node (now replaced by basic node)
         // Note: We're deleting the OLD node ID, which has been replaced
         // The graph now correctly points from basic -> success-dance
+        // TODO: [Navigation Refactor] This should be a command, not direct call
         deleteNode(answerRightNodeId);
       }
     }
@@ -514,6 +521,8 @@ export function RecordingOrchestrator() {
 
       // Use insertSceneNodes for synchronous scene insertion
       // This avoids the race condition where forceAdvanceNavigation reads stale graph
+      // TODO: [Navigation Refactor] Replace with event bus emission
+      // emit({ type: 'RECORDING_STARTED', nodeId: currentNodeId, recordingType: 'question' })
       const insertedNodeId = insertSceneNodes(currentNodeId, newScene);
 
       console.log('[handleRecordStart] ===== AFTER INSERT =====');

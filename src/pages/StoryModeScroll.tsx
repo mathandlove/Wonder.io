@@ -3,11 +3,10 @@
  * Each scene gets its own 100vh section with snap-scroll behavior.
  */
 import React, { useMemo } from "react";
-import { useStory } from '@core/data/useStory';
 import { FlowLayout } from '@features/flow-layout/FlowLayout';
 import { SceneRenderer } from '@core/scenes/SceneRenderer';
 import { SceneFactoryProvider } from '@core/navigation/SceneFactory';
-import { setScenes, getCurrentNode } from '@core/navigation/navigationHelpers';
+import { getCurrentNode } from '@core/navigation/navigationHelpers';
 import { useNavigationStore, selectNavigationGraph, selectCurrentNodeId } from '@core/navigation/navigationStore';
 import { BackgroundOrchestrator } from '@features/background/BackgroundOrchestrator';
 import { CharacterOrchestrator } from '@features/characters/CharacterOrchestrator';
@@ -33,16 +32,11 @@ declare global {
 }
 import { UIOverlayRoot } from '@core/uiLayout/UIOverlayRoot'
 import { StepScrollDebug } from '@core/scroll/StepScrollDebug'
-import { SceneStatesProvider } from '@core/data/PersistentObjects'
 import { AIModuleProvider } from '@features/ai/AIModule'
 import { AIMemoryStoreProvider } from '@core/ai/AIMemoryStore'
 import { ChatFlowOrchestratorComponent } from '@core/dialogue/ChatFlowOrchestratorComponent'
 import { AnswerValidationOrchestrator } from '@core/dialogue/AnswerValidationOrchestrator'
 import { FlowMetadataProvider, useFlowMetadata } from '@core/data/FlowMetadataStore'
-// Path to the story JSON bundle we want to load. In demo mode we keep this fixed
-// so the experience is deterministic for the presentation.
-
-const STORY_URL = "/stories/gingerbread.bundle/story.json"; // <- story content source
 
 // FullScreen: tiny helper to center any message while we load or show an error
 function FullScreen({ children }: { children: React.ReactNode }) {
@@ -64,16 +58,10 @@ const StoryModeScroll: React.FC = () => {
   );
 };
 
-// StoryContent: inner component that uses SceneManagerProvider context
+// StoryContent: inner component that reads from navigation store
 const StoryContent: React.FC = () => {
-  // Load story data
-  const { story, flowMetadata, loading, error } = useStory(STORY_URL);
-
   // Flow metadata store
   const flowMetadataStore = useFlowMetadata();
-
-  // Track if we've already populated the store to prevent infinite loops
-  const hasPopulatedMetadata = React.useRef(false);
 
   // OPTIMIZED: Subscribe only to specific graph slices instead of entire navigationGraph
   const navigationGraph = useNavigationStore(selectNavigationGraph);
@@ -82,19 +70,9 @@ const StoryContent: React.FC = () => {
   // Dialogue context for turn banners
   const { showTurnBanner, turnBannerText } = useDialogue();
 
-  // Initialize navigation graph from story on FIRST load only
-  // Use ref to prevent re-initialization if story object changes
-  const hasInitializedGraph = React.useRef(false);
-  React.useEffect(() => {
-    if (!story?.scenes || hasInitializedGraph.current) return;
-
-    // Build initial graph from story scenes (this only happens once)
-    const processedScenes = injectPanelMetaFromFlows(story.scenes);
-    setScenes(processedScenes);
-
-    hasInitializedGraph.current = true;
-     
-  }, [story?.scenes]); // Only depend on story.scenes, ignore setScenes to prevent loops
+  // The navigation machine now loads the story during boot sequence
+  // We just wait for the graph to be populated
+  const isGraphReady = navigationGraph.order.length > 0;
 
   // Build array of all nodes from navigation graph for rendering
   const allNavigationNodes = useMemo(() => {
@@ -151,28 +129,9 @@ const StoryContent: React.FC = () => {
     return index >= 0 ? index : 0;
   }, [currentNodeId, navigationGraph.order]);
 
-  // Populate flow metadata store when story loads (only once)
-  React.useEffect(() => {
-    if (!flowMetadata || hasPopulatedMetadata.current) return;
-
-    const entries = Object.entries(flowMetadata);
-    if (entries.length === 0) return;
-
-    // Populate the FlowMetadataStore with all flow metadata from the story
-    entries.forEach(([flowId, metadata]) => {
-      flowMetadataStore.setFlowMetadata(flowId, metadata);
-    });
-
-    hasPopulatedMetadata.current = true;
-  }, [flowMetadata, flowMetadataStore]);
-
-  // Derive a stable array of scenes from the loaded story and set them in SceneManager
-  React.useEffect(() => {
-    if (!story?.scenes) return;
-    // Inject panel metadata once during story load
-    const processedScenes = injectPanelMetaFromFlows(story.scenes);
-    setScenes(processedScenes);
-  }, [story?.scenes]);
+  // TODO: Populate flow metadata store when the machine loads the story
+  // For now, we'll skip this since the machine doesn't yet expose flowMetadata
+  // This will be wired up when we integrate FlowMetadataStore with the boot sequence
 
   // Handle scene index changes - now handled via scroll control
   // ScrollControl manages the visual scroll position
@@ -185,18 +144,9 @@ const StoryContent: React.FC = () => {
 
   // Note: Focus management is now handled within ScrollControl component
 
-  // RENDER PATH #1: still loading the story → show a friendly centered message
-  if (loading) {
+  // RENDER PATH #1: waiting for the machine to load the story → show a friendly centered message
+  if (!isGraphReady) {
     return <FullScreen>Loading story…</FullScreen>;
-  }
-
-  // RENDER PATH #2: failed or empty story → show an error/empty state
-  if (error || !story || navigationGraph.order.length === 0) {
-    return (
-      <FullScreen>
-        {error ? `Problem loading story: ${error.message}` : "No story content found"}
-      </FullScreen>
-    );
   }
 
   // RENDER PATH #3: story loaded → render each scene in a vertical, snap-scrolling layout
@@ -205,8 +155,7 @@ const StoryContent: React.FC = () => {
     <SceneFactoryProvider>
       <AIMemoryStoreProvider maxMessagesPerFlow={10}>
         <AIModuleProvider>
-          <SceneStatesProvider>
-            <CharacterAnimationProvider>
+          <CharacterAnimationProvider>
             {/* ChatFlow orchestrator watches for ai-waiting state and triggers responses */}
             <ChatFlowOrchestratorComponent />
 
@@ -276,10 +225,9 @@ const StoryContent: React.FC = () => {
             <StepScrollDebug />
           </ScrollControl>
 
-          {/* UI Overlays - must be inside SceneStatesProvider for RecordingOrchestrator */}
+          {/* UI Overlays */}
           <UIOverlayRoot />
           </CharacterAnimationProvider>
-        </SceneStatesProvider>
       </AIModuleProvider>
       </AIMemoryStoreProvider>
     </SceneFactoryProvider>

@@ -13,7 +13,60 @@
  * 4. Deletion is two-phase: mark as pendingRemoval, then compact after animation
  */
 
-import type { SceneState } from './types';
+import type { Scene } from '@core/types/scene';
+
+/**
+ * Node Phase - represents the current phase/state of a node
+ *
+ * Image phases:
+ * - 'image_only' - Just showing the image
+ * - 'caption' - Showing image with caption overlay
+ *
+ * Dialogue phases:
+ * - 'basic' - Default dialogue state
+ * - 'input-basic' - Showing input option
+ * - 'input-showInput' - Input UI visible
+ * - 'input-recording' - User is recording
+ * - 'input-processing' - Processing the recording
+ * - 'ai-waiting' - Waiting for AI response
+ * - 'record-answer' - Recording an answer to a question
+ * - 'waiting-for-answer-finalize' - Answer recording finalizing
+ * - 'answer-processing' - Processing answer recording
+ * - 'answer-waiting' - Waiting for answer validation
+ * - 'answer-right' - Answer was correct
+ * - 'answer-wrong' - Answer was incorrect
+ *
+ * Quest phases:
+ * - 'quest-showing' - Quest prompt is displayed
+ * - 'quest-accepted' - User accepted the quest
+ *
+ * Other:
+ * - 'static' - For scenes with no state variations (text, full, caption)
+ */
+export type NodePhase =
+  // Image phases
+  | 'image_only'
+  | 'caption'
+  // Dialogue phases
+  | 'basic'
+  | 'input-basic'
+  | 'input-showInput'
+  | 'input-recording'
+  | 'input-processing'
+  | 'ai-waiting'
+  | 'record-answer'
+  | 'waiting-for-answer-finalize'
+  | 'answer-processing'
+  | 'answer-waiting'
+  | 'answer-right'
+  | 'answer-wrong'
+  // Quest phases
+  | 'quest-showing'
+  | 'quest-accepted'
+  // Static/other
+  | 'static'
+  // Allow string for flexibility during migration
+  | string;
 
 /**
  * Unique identifier for a node
@@ -22,9 +75,11 @@ import type { SceneState } from './types';
 export type NodeId = string;
 
 /**
- * Unique identifier for a scene (multiple nodes can share the same sceneId)
+ * Unique identifier for a scene
+ * Scenes can have multiple nodes (one per phase/state)
  */
 export type SceneId = string;
+
 
 /**
  * Node - A single navigation unit representing one state in the story
@@ -35,48 +90,39 @@ export type SceneId = string;
  * Navigation happens by traversing the linked list via prevId/nextId pointers.
  * Visual animations read from frozen snapshots while the graph can be mutated freely.
  */
+/**
+ * Node - A single navigation unit in the story
+ *
+ * Each node represents one "stop" the user can navigate to.
+ * Nodes form a doubly-linked list via prevId/nextId pointers.
+ */
 export interface Node {
   /** Unique, stable ID for this node (used as React key) */
   id: NodeId;
 
-  /** Parent scene ID - multiple nodes can belong to the same scene */
+  /**
+   * The scene content for this node
+   * Contains the visual/interaction data (image, dialogue, character, etc.)
+   */
+  scene: Scene;
+
+  /**
+   * Scene ID - identifier for the scene this node belongs to
+   * Multiple nodes can share the same sceneId (different phases of same scene)
+   */
   sceneId: SceneId;
 
   /**
-   * Semantic key describing this state's purpose
-   * Examples:
-   * - "enter" - Character entrance state
-   * - "speak" - Main dialogue/interaction state
-   * - "exit" - Character exit state
-   * - "dialogue:quest-showing" - Quest UI visible
-   * - "dialogue:input-recording" - Recording user input
-   * - "dialogue:answer-right" - Correct answer feedback
-   * - "image:hidden" - Image before caption reveal
-   * - "image:showing" - Image with caption visible
+   * Semantic state key (e.g., "dialogue:basic", "image:caption", "static")
+   * Used for debugging and history tracking
    */
   stateKey: string;
 
   /**
-   * Complete scene state data (type, state, metadata)
-   * This is the full SceneState object that was previously in NavigationItem
+   * Current phase of this node
+   * Examples: 'image_only', 'caption', 'basic', 'ai-waiting', 'input-recording', etc.
    */
-  sceneState: SceneState;
-
-  /**
-   * Original scene data (stored for easy access)
-   * This is the full Scene object from the story
-   */
-  scene: unknown; // Will be typed as Scene in implementation
-
-  /**
-   * Additional metadata for this state (optional)
-   * Can include pose hints, timing info, visual effects, etc.
-   */
-  stateMeta?: {
-    pose?: string | null;
-    timing?: number;
-    [key: string]: unknown;
-  };
+  phase: NodePhase;
 
   /** Pointer to previous node (null if this is the head) */
   prevId: NodeId | null;
@@ -87,16 +133,9 @@ export interface Node {
   /**
    * Node lifecycle status
    * - "active": Normal, navigable node
-   * - "pendingRemoval": Marked for deletion, skipped in navigation, will be compacted after animation
+   * - "pendingRemoval": Marked for deletion, skipped in navigation
    */
   status: 'active' | 'pendingRemoval';
-
-  /**
-   * Scroll lock flags (computed from sceneState, not stored permanently)
-   * These control whether navigation is allowed in each direction
-   */
-  lockForward?: boolean;
-  lockBackward?: boolean;
 }
 
 /**
@@ -106,35 +145,8 @@ export interface Node {
  * - Delete scene: Mark range [firstNodeId...lastNodeId] as pendingRemoval
  * - Rewire neighbors: prevScene.lastNode.nextId = nextScene.firstNode.id
  */
-export interface SceneInfo {
-  /** Scene identifier */
-  id: SceneId;
 
-  /** First node of this scene */
-  firstNodeId: NodeId;
 
-  /** Last node of this scene */
-  lastNodeId: NodeId;
-
-  /** Number of nodes in this scene (for quick scene length checks) */
-  nodeCount: number;
-}
-
-/**
- * SceneRegistry - Fast lookup for scene boundaries and range operations
- *
- * Optional but recommended for efficient scene-level operations:
- * - Insert/delete entire scenes without traversing the graph
- * - Query scene boundaries (first/last nodes)
- * - Update scene pointers when nodes are added/removed
- */
-export interface SceneRegistry {
-  /** Map of scene ID to scene info */
-  byId: Record<SceneId, SceneInfo>;
-
-  /** Ordered list of scene IDs (same order as they appear in the story) */
-  order: SceneId[];
-}
 
 /**
  * NavigationHistoryEntry - Record of a single navigation event
@@ -147,9 +159,6 @@ export interface NavigationHistoryEntry {
 
   /** The node we navigated to */
   nodeId: NodeId;
-
-  /** Scene this node belongs to */
-  sceneId: SceneId;
 
   /** Semantic state key */
   stateKey: string;
@@ -175,9 +184,6 @@ export interface NodeLifecycleEvent {
 
   /** The affected node */
   nodeId: NodeId;
-
-  /** Scene this node belongs to */
-  sceneId: SceneId;
 
   /** Semantic state key */
   stateKey: string;
@@ -321,9 +327,6 @@ export interface FrozenNodeSnapshot {
   /** Semantic state key (e.g., "enter", "speak", "dialogue:quest-showing") */
   stateKey: string;
 
-  /** Complete scene state data */
-  sceneState: SceneState;
-
   /** Original scene data (for character extraction, background, etc.) */
-  scene: unknown; // Will be typed as Scene in implementation
+  scene: Scene;
 }

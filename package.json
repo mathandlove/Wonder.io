@@ -13,12 +13,14 @@
     "cardboard:force": "node tools/make_all_cardboard.js --force"
   },
   "dependencies": {
+    "@statelyai/inspect": "^0.4.0",
     "framer-motion": "^12.23.15",
     "potrace": "^2.1.8",
     "react": "^19.1.1",
     "react-dom": "^19.1.1",
     "sharp": "^0.34.3",
     "ulid": "^3.0.1",
+    "xstate": "^5.23.0",
     "zustand": "^5.0.8"
   },
   "devDependencies": {

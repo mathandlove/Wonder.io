@@ -14,7 +14,7 @@ export type CharacterScene = {
   flowSequence?: boolean;
   isFirstInFlow?: boolean;
   hidden?: boolean;
-  States?: string[]; // Array of feature states: "quest", "input", "recording" (from character-flow flattening or dynamically assigned)
+  phase?: string; // Current phase of the scene (default: "basic")
   recordingId?: string; // Links to active recording session - used to update text when recording completes
   flowId?: string; // Reference to flow metadata (characterDescription, successAnswer)
   meta?: {
@@ -22,8 +22,6 @@ export type CharacterScene = {
     panelRight?: { character: string; previousCharacter?: string; nextCharacter?: string; newCharacter?: boolean; aboutToSwap?: boolean };
   };
 };
-
-// QuestScene removed - quest functionality is now part of character-flow scenes via States field
 
 export type ImageScene = {
   type: "image";
@@ -35,6 +33,7 @@ export type ImageScene = {
   flowSequence?: boolean;
   isFirstInFlow?: boolean;
   hidden?: boolean;
+  phase?: string; // Current phase of the scene (default: "basic")
   meta?: {
     panelLeft?: { character: string; previousCharacter?: string; nextCharacter?: string; newCharacter?: boolean; aboutToSwap?: boolean };
     panelRight?: { character: string; previousCharacter?: string; nextCharacter?: string; newCharacter?: boolean; aboutToSwap?: boolean };
@@ -48,6 +47,7 @@ export type CharacterFlowScene = {
   "left-character"?: string | null;
   "right-character"?: string | null;
   hidden?: boolean;
+  phase?: string; // Current phase of the scene (default: "basic")
   flow: Array<{
     side?: "left" | "right";
     text?: string;
@@ -56,7 +56,6 @@ export type CharacterFlowScene = {
     type?: "input" | "quest"; // Marks this flow item as metadata
     CharacterDescription?: string; // AI chat context (for input)
     successAnswer?: string; // Expected phrase for quest completion
-    States?: string[]; // Array of feature states: "quest", "input"
   }>;
 };
 
@@ -68,6 +67,7 @@ export type FullScene = {
   flowSequence?: boolean;
   isFirstInFlow?: boolean;
   hidden?: boolean;
+  phase?: string; // Current phase of the scene (default: "basic")
   meta?: {
     panelLeft?: { character: string; previousCharacter?: string; nextCharacter?: string; newCharacter?: boolean; aboutToSwap?: boolean };
     panelRight?: { character: string; previousCharacter?: string; nextCharacter?: string; newCharacter?: boolean; aboutToSwap?: boolean };
@@ -83,6 +83,7 @@ export type TextScene = {
   flowSequence?: boolean;
   isFirstInFlow?: boolean;
   hidden?: boolean;
+  phase?: string; // Current phase of the scene (default: "basic")
 };
 
 export type FailDanceScene = {
@@ -100,6 +101,7 @@ export type FailDanceScene = {
   flowSequence?: boolean;
   isFirstInFlow?: boolean;
   hidden?: boolean;
+  phase?: string; // Current phase of the scene (default: "basic")
   meta?: {
     panelLeft?: { character: string; previousCharacter?: string; nextCharacter?: string; newCharacter?: boolean; aboutToSwap?: boolean };
     panelRight?: { character: string; previousCharacter?: string; nextCharacter?: string; newCharacter?: boolean; aboutToSwap?: boolean };
@@ -120,6 +122,7 @@ export type SuccessDanceScene = {
   flowSequence?: boolean;
   isFirstInFlow?: boolean;
   hidden?: boolean;
+  phase?: string; // Current phase of the scene (default: "basic")
   meta?: {
     panelLeft?: { character: string; previousCharacter?: string; nextCharacter?: string; newCharacter?: boolean; aboutToSwap?: boolean };
     panelRight?: { character: string; previousCharacter?: string; nextCharacter?: string; newCharacter?: boolean; aboutToSwap?: boolean };

@@ -152,6 +152,8 @@ export function useChatFlowOrchestrator(props?: ChatFlowOrchestratorProps) {
 
       // Step 5: Insert the scene after current node
       // This properly maintains the state-node graph structure
+      // TODO: [Navigation Refactor] Replace with event bus emission
+      // emit({ type: 'AI_DONE', nodeId: currentNodeId, response: aiText })
       insertSceneNodes(currentNodeId, finalScene);
 
       // Step 6: Navigate to the new scene

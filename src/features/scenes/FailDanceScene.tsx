@@ -61,6 +61,8 @@ export default function FailDanceScene({ scene }: SceneProps<FailDanceSceneType>
     setTimeout(() => {
       if (pendingDeletionRef.current && !pendingDeletionRef.current.deleted) {
         pendingDeletionRef.current.deleted = true;
+        // TODO: [Navigation Refactor] Replace with event bus emission
+        // emit({ type: 'VIDEO_COMPLETE', nodeId: failDanceNodeId, videoType: 'fail-dance' })
         deleteNode(failDanceNodeId);
       }
     }, 3000);

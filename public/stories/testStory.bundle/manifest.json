@@ -1,0 +1,113 @@
+{
+  "id": "gingerbread.bundle",
+  "version": "1.0.0",
+  "type": "story",
+  "name": "The Gingerbread Man",
+  "description": "Classic tale of the Gingerbread Man's adventure",
+  "dependsOn": ["assets.core"],
+  "metadata": {
+    "author": "Traditional",
+    "difficulty": "beginner",
+    "duration": "10-15 minutes",
+    "tags": ["classic", "adventure", "chase"]
+  },
+  "assets": {
+    "characters": {
+      "gingerbread-man": {
+        "id": "gingerbread-man",
+        "name": "Gingerbread Man",
+        "type": "character",
+        "image": "images/runningGingerBreadMan.png"
+      },
+      "baker-mom": {
+        "id": "baker-mom",
+        "name": "Baker Mom",
+        "type": "character",
+        "image": "images/bakerMom.png"
+      },
+      "fox": {
+        "id": "fox",
+        "name": "Fox",
+        "type": "character",
+        "image": "images/fox.png"
+      },
+      "farmer": {
+        "id": "farmer",
+        "name": "Farmer",
+        "type": "character",
+        "image": "images/farmer.png"
+      }
+    },
+    "locations": {
+      "bakery": {
+        "id": "bakery",
+        "name": "Bakery",
+        "type": "location",
+        "image": "images/bakery.png",
+        "coordinates": { "x": 100, "y": 200 }
+      },
+      "market": {
+        "id": "market",
+        "name": "Market Square",
+        "type": "location",
+        "image": "images/market.png",
+        "coordinates": { "x": 300, "y": 250 }
+      }
+    },
+    "scenes": {
+      "scene-1": {
+        "id": "scene-1",
+        "title": "The Creation",
+        "type": "scene",
+        "image": "images/floatingBlanket.png",
+        "audio": "audio/scene1-narration.mp3"
+      },
+      "scene-2": {
+        "id": "scene-2",
+        "title": "The Chase Begins",
+        "type": "scene",
+        "image": "images/runningGingerBreadMan.png",
+        "audio": "audio/scene2-narration.mp3"
+      },
+      "scene-3": {
+        "id": "scene-3",
+        "title": "Meeting the Fox",
+        "type": "scene",
+        "image": "images/fightingFox.png",
+        "audio": "audio/scene3-narration.mp3"
+      }
+    },
+    "story": {
+      "chapters": [
+        {
+          "id": "chapter-1",
+          "title": "The Beginning",
+          "scenes": ["scene-1"],
+          "path": "story/chapter1.json"
+        },
+        {
+          "id": "chapter-2",
+          "title": "The Great Chase",
+          "scenes": ["scene-2"],
+          "path": "story/chapter2.json"
+        },
+        {
+          "id": "chapter-3",
+          "title": "The Clever Fox",
+          "scenes": ["scene-3"],
+          "path": "story/chapter3.json"
+        }
+      ]
+    },
+    "annotations": {
+      "hotspots": {
+        "path": "annotations/hotspots.json",
+        "description": "Interactive hotspots for the map"
+      },
+      "paths": {
+        "path": "annotations/paths.json",
+        "description": "Character movement paths"
+      }
+    }
+  }
+}
