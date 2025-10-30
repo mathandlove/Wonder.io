@@ -15,7 +15,6 @@
 import { setup, assign, sendParent } from 'xstate';
 
 export type ImageSceneContext = {
-  nodeId: string;
   phase?: 'image_only' | 'caption';
 };
 
@@ -29,22 +28,24 @@ export type ImageSceneEvent =
  * Two phases:
  * 1. image_only - Just the image is visible
  * 2. caption - Image with caption overlay
+ *
+ * Note: This machine does NOT track nodeId - that's the parent's responsibility.
+ * It only manages phase transitions and notifies the parent of changes.
  */
 export const imageSceneMachine = setup({
   types: {
     context: {} as ImageSceneContext,
     events: {} as ImageSceneEvent,
-    input: {} as { nodeId: string; phase?: 'image_only' | 'caption' },
+    input: {} as { phase?: 'image_only' | 'caption' },
   },
 }).createMachine({
   id: 'imageScene',
   initial: 'image_only',
   context: ({ input }) => ({
-    nodeId: input.nodeId,
     phase: input.phase || 'image_only',
   }),
   entry: ({ context }) => {
-    console.log('[ImageSceneMachine] Started for node:', context.nodeId, 'phase:', context.phase);
+    console.log('[ImageSceneMachine] Started with phase:', context.phase);
   },
   states: {
     /**
@@ -56,7 +57,13 @@ export const imageSceneMachine = setup({
       on: {
         SCROLL_DOWN_STEP: {
           target: 'caption',
-          actions: () => console.log('[ImageSceneMachine] First scroll - showing caption'),
+          actions: [
+            () => console.log('[ImageSceneMachine] First scroll - transitioning to caption'),
+            sendParent({
+              type: 'UPDATE_NODE_PHASE',
+              phase: 'caption',
+            }),
+          ],
         },
         SCROLL_UP_STEP: {
           actions: sendParent({ type: 'REQUEST_NAV_PREV' }),

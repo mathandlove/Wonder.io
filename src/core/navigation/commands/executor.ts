@@ -193,6 +193,17 @@ export function actionsToCommands(
         break;
       }
 
+      case 'UPDATE_NODE_PHASE': {
+        // Update the phase field of a specific node
+        console.log('[Executor] UPDATE_NODE_PHASE for node:', action.nodeId.substring(0, 8), '→', action.phase);
+        commands.push({
+          type: 'UPDATE_NODE_PHASE',
+          nodeId: action.nodeId,
+          phase: action.phase,
+        });
+        break;
+      }
+
       default: {
         // TypeScript exhaustiveness check
         const _exhaustive: never = action;

@@ -214,6 +214,17 @@ export type RequestNavPrevEvent = {
 };
 
 /**
+ * UPDATE_NODE_PHASE
+ * Emitted when: Child scene machine transitions phase (e.g., image_only → caption)
+ * Purpose: Notify parent to persist phase change to navigationStore
+ * Note: nodeId is NOT included - parent determines which node to update
+ */
+export type UpdateNodePhaseEvent = {
+  type: 'UPDATE_NODE_PHASE';
+  phase: string;
+};
+
+/**
  * Union of all domain events the machine can receive
  */
 export type NavigationEvent =
@@ -234,7 +245,8 @@ export type NavigationEvent =
   | ScrollDownStepEvent
   | ScrollUpStepEvent
   | RequestNavNextEvent
-  | RequestNavPrevEvent;
+  | RequestNavPrevEvent
+  | UpdateNodePhaseEvent;
 
 // Note: SCENE_PHASE_CHANGED removed - phase lives in child machine state,
 // not as a parent event. Phase is persisted via meta when needed.
@@ -389,6 +401,17 @@ export type ResetTempNodesAction = {
 };
 
 /**
+ * UPDATE_NODE_PHASE
+ * Intent: Update the phase of a specific node in the navigation graph
+ * Example: When imageSceneMachine transitions from 'image_only' to 'caption'
+ */
+export type UpdateNodePhaseAction = {
+  type: 'UPDATE_NODE_PHASE';
+  nodeId: string;
+  phase: string;
+};
+
+/**
  * Union of all action intents the machine can emit
  */
 export type NavigationAction =
@@ -402,7 +425,8 @@ export type NavigationAction =
   | LogErrorAction
   | ApplyGraphAction
   | SetActiveNodeAction
-  | ResetTempNodesAction;
+  | ResetTempNodesAction
+  | UpdateNodePhaseAction;
 
 // ============================================================================
 // COMMANDS (Graph Mutation Operations)
@@ -481,6 +505,17 @@ export type AdvanceCommand = {
 };
 
 /**
+ * UPDATE_NODE_PHASE
+ * Command: Update the phase field of a specific node
+ * Payload: Node ID and new phase value
+ */
+export type UpdateNodePhaseCommand = {
+  type: 'UPDATE_NODE_PHASE';
+  nodeId: string;
+  phase: string;
+};
+
+/**
  * Union of all commands that mutate the graph
  */
 export type NavigationCommand =
@@ -489,7 +524,8 @@ export type NavigationCommand =
   | SetNodeStateCommand
   | NavigateToCommand
   | DeleteNodeCommand
-  | AdvanceCommand;
+  | AdvanceCommand
+  | UpdateNodePhaseCommand;
 
 // ============================================================================
 // MACHINE STATE SCHEMA

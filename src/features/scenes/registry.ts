@@ -9,7 +9,7 @@ import type { ComponentType } from "react";
 import type { Scene } from '@core/types/scene';
 
 import CharacterScene from "./CharacterScene";
-import ImageScene from "./ImageScene";
+import ImageScene from "@core/scenes/image/ImageScene";
 import FullScene from "./FullScene";
 import TextScene from "./TextScene";
 import FailDanceScene from "./FailDanceScene";

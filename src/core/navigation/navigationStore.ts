@@ -22,7 +22,6 @@ import { create } from 'zustand';
 import { devtools, subscribeWithSelector } from 'zustand/middleware';
 import { ulid } from 'ulid';
 import type { Scene } from '@core/types/scene';
-import type { SceneState } from '@core/navigation/types';
 import type {
   NavigationGraph,
   NodeId,
@@ -152,6 +151,7 @@ interface NavigationState {
   replaceNode: (oldNodeId: NodeId, newNode: Omit<Node, 'prevId' | 'nextId'>) => NodeId | null;
   addStateToCurrentNode: (newState: SceneState, insertAfter?: boolean) => NodeId | null;
   updateNodeState: (nodeId: NodeId, newState: SceneState) => void;
+  updateNodePhase: (nodeId: NodeId, phase: string) => void;
   updateSceneTextByRecordingId: (recordingId: string, newText: string) => void;
   deleteNode: (nodeId: NodeId) => void;
   advance: (direction: 'forward' | 'backward') => void;
@@ -649,6 +649,45 @@ export const useNavigationStore = create<NavigationState>()(
           },
           false,
           'nav/updateNodeState'
+        );
+      },
+
+      // =============================================================================
+      // Action: updateNodePhase
+      // Update the phase field of a specific node
+      // =============================================================================
+      updateNodePhase: (nodeId: NodeId, phase: string) => {
+        set(
+          (state) => {
+            const node = getNodeById(state.graph, nodeId);
+            if (!node) {
+              console.warn('[navigationStore] updateNodePhase: node not found:', nodeId);
+              console.warn('[navigationStore] Available node IDs:', state.graph.order.slice(0, 5).map(id => id.substring(0, 8)));
+              console.warn('[navigationStore] Current node ID:', state.currentId?.substring(0, 8));
+              return state;
+            }
+
+            console.log('[navigationStore] Updating node phase:', nodeId.substring(0, 8), '→', phase);
+
+            const newById = {
+              ...state.graph.byId,
+              [nodeId]: {
+                ...node,
+                phase,
+              },
+            };
+
+            return {
+              ...state,
+              graph: {
+                ...state.graph,
+                byId: newById,
+                historyVersion: state.graph.historyVersion + 1,
+              },
+            };
+          },
+          false,
+          'nav/updateNodePhase'
         );
       },
 

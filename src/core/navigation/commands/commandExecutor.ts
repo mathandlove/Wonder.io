@@ -113,6 +113,12 @@ export async function executeCommand(command: NavigationCommand): Promise<void> 
       break;
     }
 
+    case 'UPDATE_NODE_PHASE': {
+      console.log('[CommandExecutor] UPDATE_NODE_PHASE:', command.nodeId.substring(0, 8), '→', command.phase);
+      store.updateNodePhase(command.nodeId, command.phase);
+      break;
+    }
+
     default: {
       // TypeScript exhaustiveness check
       const _exhaustive: never = command;

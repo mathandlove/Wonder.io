@@ -9,11 +9,12 @@
  * @module navigationMachine
  */
 
-import { setup, assign, fromPromise } from 'xstate';
+import { setup, assign, fromPromise, sendTo } from 'xstate';
 import type { NavigationEvent, NavigationContext, NavigationAction, MachineGraphNode, MachineGraph } from './types';
 import { loadStory } from '@core/data/loadStory';
 import { imageSceneMachine } from '@core/scenes/image/imageSceneMachine';
 import { buildNavigationGraph } from '../navigationGraphBuilder';
+import { useNavigationStore } from '../navigationStore';
 
 /**
  * Helper: Get current node from context
@@ -201,6 +202,34 @@ export const navigationMachine = setup({
       pendingActions: [],
     }),
 
+    // Emit phase update action when child machine changes phase
+    emitPhaseUpdate: assign({
+      pendingActions: ({ context, event }) => {
+        if (event.type !== 'UPDATE_NODE_PHASE') {
+          return context.pendingActions || [];
+        }
+
+        // Use navigationStore's currentId as the source of truth
+        // The child machine's nodeId might not match the actual store node ID
+        const store = useNavigationStore.getState();
+        const actualNodeId = store.currentId;
+
+        if (!actualNodeId) {
+          console.warn('[NavigationMachine] Cannot emit UPDATE_NODE_PHASE - no current node in store');
+          return context.pendingActions || [];
+        }
+
+        const action: NavigationAction = {
+          type: 'UPDATE_NODE_PHASE',
+          nodeId: actualNodeId,
+          phase: event.phase,
+        };
+
+        console.log('[NavigationMachine] Emitting UPDATE_NODE_PHASE action for node:', actualNodeId.substring(0, 8), 'phase:', event.phase);
+        return [...(context.pendingActions || []), action];
+      },
+    }),
+
     // Assign boot error to context
     assignBootError: assign({
       bootError: ({ event }) => {
@@ -384,6 +413,10 @@ export const navigationMachine = setup({
           actions: 'goPrev',
           target: '.route',
         },
+        // Handle phase updates from child machines
+        UPDATE_NODE_PHASE: {
+          actions: 'emitPhaseUpdate',
+        },
       },
       states: {
         /**
@@ -433,63 +466,43 @@ export const navigationMachine = setup({
          * IMAGE scene
          * Handles image display with caption phases
          * Invokes the image child machine that manages image_only → caption transitions
+         * Phase is read from navigationStore and updated via UPDATE_NODE_PHASE commands
          */
         image: {
           entry: ({ context }) => {
-            const node = getNode(context);
-            const phase = (node?.meta?.phase as string) || 'image_only';
-            console.log('[NavigationMachine] Entering scene.image for node:', context.activeNodeId, 'will restore phase:', phase);
+            console.log('[NavigationMachine] Entering scene.image for node:', context.activeNodeId);
           },
-          exit: assign({
-            // Persist child's phase to graph meta when exiting
-            graph: ({ context, self }) => {
-              // Get the child machine's current state
-              const childSnapshot = self.system.get('imageSceneMachine');
-              if (!childSnapshot) return context.graph;
-
-              const childPhase = childSnapshot.getSnapshot?.()?.value as string;
-              if (!childPhase) return context.graph;
-
-              console.log('[NavigationMachine] Exiting scene.image, persisting phase:', childPhase);
-
-              // Update the graph meta with the child's final phase
-              const updatedScenes = context.graph.scenes.map(scene => {
-                if (scene.id === context.activeNodeId) {
-                  return {
-                    ...scene,
-                    meta: {
-                      ...scene.meta,
-                      phase: childPhase,
-                    },
-                  };
-                }
-                return scene;
-              });
-
-              return {
-                ...context.graph,
-                scenes: updatedScenes,
-              };
-            },
-          }),
           invoke: {
             id: 'imageSceneMachine',
             src: 'imageSceneMachine',
-            input: ({ context }) => {
-              const currentNode = context.graph.scenes.find(s => s.id === context.activeNodeId);
-              const input = {
-                nodeId: context.activeNodeId || '',
-                phase: (currentNode?.meta?.phase as 'image_only' | 'caption') || 'image_only',
-              };
-              console.log('[NavigationMachine] Invoking imageSceneMachine with:', input);
-              return input;
+            input: () => {
+              // Read phase from navigationStore (source of truth)
+              const store = useNavigationStore.getState();
+              const currentNodeId = store.currentId;
+              const node = currentNodeId ? store.graph.byId[currentNodeId] : null;
+              const phase = (node?.phase as 'image_only' | 'caption') || 'image_only';
+
+              console.log('[NavigationMachine] Invoking imageSceneMachine with phase from store:', phase, 'for node:', currentNodeId?.substring(0, 8));
+              return { phase };
             },
             onError: (error) => {
               console.error('[NavigationMachine] imageSceneMachine error:', error);
             },
           },
           on: {
-            // Scroll events are forwarded to the child machine automatically
+            // Forward scroll events to the child machine using sendTo
+            SCROLL_DOWN_STEP: {
+              actions: [
+                sendTo('imageSceneMachine', ({ event }) => event),
+                () => console.log('[NavigationMachine] Forwarded SCROLL_DOWN_STEP to imageSceneMachine'),
+              ],
+            },
+            SCROLL_UP_STEP: {
+              actions: [
+                sendTo('imageSceneMachine', ({ event }) => event),
+                () => console.log('[NavigationMachine] Forwarded SCROLL_UP_STEP to imageSceneMachine'),
+              ],
+            },
           },
         },
 
