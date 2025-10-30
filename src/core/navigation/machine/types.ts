@@ -225,6 +225,16 @@ export type UpdateNodePhaseEvent = {
 };
 
 /**
+ * NODE_CHANGED
+ * Emitted when: navigationStore.currentId changes (after ADVANCE or NAVIGATE_TO commands)
+ * Purpose: Trigger machine to re-route to the correct scene type for the new node
+ */
+export type NodeChangedEvent = {
+  type: 'NODE_CHANGED';
+  nodeId: string;
+};
+
+/**
  * Union of all domain events the machine can receive
  */
 export type NavigationEvent =
@@ -246,7 +256,8 @@ export type NavigationEvent =
   | ScrollUpStepEvent
   | RequestNavNextEvent
   | RequestNavPrevEvent
-  | UpdateNodePhaseEvent;
+  | UpdateNodePhaseEvent
+  | NodeChangedEvent;
 
 // Note: SCENE_PHASE_CHANGED removed - phase lives in child machine state,
 // not as a parent event. Phase is persisted via meta when needed.
@@ -272,20 +283,19 @@ export type MachineGraph = {
 /**
  * Machine Context
  *
- * The machine holds a minimal graph for routing decisions.
+ * The machine holds a minimal graph for routing decisions only.
  * The full graph with all state lives in navigationStore.
+ *
+ * Note: activeNodeId is NOT stored here - navigationStore.currentId is the single source of truth.
+ * Guards and actions read directly from navigationStore when needed.
  */
 export type NavigationContext = {
   /** Story identifier currently loaded or loading */
   storyId?: string;
   /** Minimal graph for routing (just id, type, meta) */
   graph: MachineGraph;
-  /** Currently active node ID */
-  activeNodeId?: string;
   /** Last boot error, if any */
   bootError?: { message: string; timestamp: string } | null;
-  /** Pending actions waiting to be converted to commands (for legacy host effects) */
-  pendingActions?: NavigationAction[];
 };
 
 // Note: Phase is NOT tracked in parent context - it lives in:

@@ -11,8 +11,6 @@ import { createActor } from 'xstate';
 import { createBrowserInspector } from '@statelyai/inspect';
 import { navigationMachine } from './navigationMachine';
 import * as navigationBus from '../events/navigationBus';
-import { actionsToCommands } from '../commands/executor';
-import { enqueue } from '../queue/navigationQueue';
 import { useNavigationStore } from '../navigationStore';
 
 /**
@@ -74,24 +72,7 @@ export function startNavigationService(): ReturnType<typeof createActor> {
 
     console.log('[NavigationInterpreter] State changed to:', logInfo);
 
-    // Check if there are pending actions to process
-    const pendingActions = snapshot.context.pendingActions || [];
-
-    if (pendingActions.length > 0) {
-      console.log('[NavigationInterpreter] Processing', pendingActions.length, 'pending action(s)');
-
-      // Convert actions to commands
-      const commands = actionsToCommands(snapshot.context, pendingActions);
-
-      // Enqueue each command for execution
-      commands.forEach((command) => {
-        console.log('[NavigationInterpreter] Enqueuing command:', command.type);
-        enqueue(command);
-      });
-
-      // Send ACTIONS_FLUSHED to clear the pendingActions array
-      serviceInstance?.send({ type: 'ACTIONS_FLUSHED' });
-    }
+    // Note: Actions now call store methods directly, no queue processing needed
   });
 
   // Start the machine

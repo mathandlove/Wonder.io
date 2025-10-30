@@ -7,7 +7,12 @@
                        {
       "type":"image",
       "image":"story/dragonFeet.png",
-      "text":"This is an image"
+      "text":"This is not an image"
+    },
+        {
+      "type":"image",
+      "image":"story/dragonFight.png",
+      "text":"Sometimes I have to fight the monsters."
     },
       {
       "type": "character-flow",

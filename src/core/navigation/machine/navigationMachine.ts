@@ -15,56 +15,10 @@ import { loadStory } from '@core/data/loadStory';
 import { imageSceneMachine } from '@core/scenes/image/imageSceneMachine';
 import { buildNavigationGraph } from '../navigationGraphBuilder';
 import { useNavigationStore } from '../navigationStore';
+import { setScenes } from '../navigationHelpers';
 
-/**
- * Helper: Get current node from context
- */
-function getNode(context: NavigationContext): MachineGraphNode | undefined {
-  if (!context.activeNodeId) return undefined;
-  return context.graph.scenes.find(s => s.id === context.activeNodeId);
-}
-
-/**
- * Helper: Get next node ID
- */
-function getNextId(context: NavigationContext): string | undefined {
-  const currentId = context.activeNodeId;
-  if (!currentId) return undefined;
-
-  // Use edges if available
-  if (context.graph.edges?.[currentId]?.next) {
-    return context.graph.edges[currentId].next;
-  }
-
-  // Otherwise use array index
-  const currentIndex = context.graph.scenes.findIndex(s => s.id === currentId);
-  if (currentIndex === -1 || currentIndex >= context.graph.scenes.length - 1) {
-    return undefined; // At end
-  }
-
-  return context.graph.scenes[currentIndex + 1]?.id;
-}
-
-/**
- * Helper: Get previous node ID
- */
-function getPrevId(context: NavigationContext): string | undefined {
-  const currentId = context.activeNodeId;
-  if (!currentId) return undefined;
-
-  // Use edges if available
-  if (context.graph.edges?.[currentId]?.prev) {
-    return context.graph.edges[currentId].prev;
-  }
-
-  // Otherwise use array index
-  const currentIndex = context.graph.scenes.findIndex(s => s.id === currentId);
-  if (currentIndex <= 0) {
-    return undefined; // At start
-  }
-
-  return context.graph.scenes[currentIndex - 1]?.id;
-}
+// Helper functions removed - navigationStore is now the single source of truth
+// Navigation logic (next/prev) is handled by navigationStore.advance()
 
 /**
  * Story loading service
@@ -129,7 +83,8 @@ export const navigationMachine = setup({
       },
     }),
 
-    // Apply graph and initial node from APPLY_GRAPH event
+    // Apply graph from APPLY_GRAPH event
+    // Note: Initial node is set via SET_ACTIVE_NODE action, not here
     applyGraph: assign({
       graph: ({ event }) => {
         if (event.type === 'APPLY_GRAPH') {
@@ -137,98 +92,71 @@ export const navigationMachine = setup({
         }
         return { scenes: [] };
       },
-      activeNodeId: ({ event }) => {
-        if (event.type === 'APPLY_GRAPH') {
-          return event.initialNodeId;
-        }
-        return undefined;
-      },
     }),
 
     // Navigate to next node
-    goNext: assign({
-      activeNodeId: ({ context }) => {
-        const nextId = getNextId(context);
-        if (nextId) {
-          console.log('[NavigationMachine] goNext:', context.activeNodeId, '→', nextId);
-          return nextId;
-        }
-        console.log('[NavigationMachine] goNext: at end, staying at', context.activeNodeId);
-        return context.activeNodeId; // Stay at current if at end
-      },
-    }),
+    // Calls navigationStore.advance() directly (single source of truth)
+    goNext: () => {
+      const store = useNavigationStore.getState();
+      console.log('[NavigationMachine] goNext from:', store.currentId?.substring(0, 8));
+      store.advance('forward');
+    },
 
     // Navigate to previous node
-    goPrev: assign({
-      activeNodeId: ({ context }) => {
-        const prevId = getPrevId(context);
-        if (prevId) {
-          console.log('[NavigationMachine] goPrev:', context.activeNodeId, '→', prevId);
-          return prevId;
+    // Calls navigationStore.advance() directly (single source of truth)
+    goPrev: () => {
+      const store = useNavigationStore.getState();
+      console.log('[NavigationMachine] goPrev from:', store.currentId?.substring(0, 8));
+      store.advance('backward');
+    },
+
+    // Update phase when child machine changes phase
+    // Calls navigationStore.updateNodePhase() directly
+    updatePhase: ({ event }) => {
+      if (event.type !== 'UPDATE_NODE_PHASE') {
+        return;
+      }
+
+      // Use navigationStore's currentId as the source of truth
+      const store = useNavigationStore.getState();
+      const nodeId = store.currentId;
+
+      if (!nodeId) {
+        console.warn('[NavigationMachine] Cannot update phase - no current node');
+        return;
+      }
+
+      console.log('[NavigationMachine] Updating phase:', nodeId.substring(0, 8), '→', event.phase);
+      store.updateNodePhase(nodeId, event.phase);
+    },
+
+    // Initialize navigationStore with loaded story data
+    initializeStore: ({ event }) => {
+      // This action is only called from onDone, so we know event has output
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const doneEvent = event as any;
+
+      if (!doneEvent.output?.fullStory) {
+        console.error('[NavigationMachine] initializeStore: No story data in event', event);
+        return;
+      }
+
+      console.log('[NavigationMachine] Initializing store with', doneEvent.output.fullStory.length, 'scenes');
+
+      // Load scenes into store
+      setScenes(doneEvent.output.fullStory);
+
+      // Navigate to first node
+      const store = useNavigationStore.getState();
+      const firstNodeId = store.graph.order[0];
+      if (firstNodeId) {
+        console.log('[NavigationMachine] Navigating to first node:', firstNodeId.substring(0, 8));
+        // Use forceAdvance to set initial position
+        while (store.currentId !== firstNodeId) {
+          store.forceAdvance('forward');
         }
-        console.log('[NavigationMachine] goPrev: at start, staying at', context.activeNodeId);
-        return context.activeNodeId; // Stay at current if at start
-      },
-    }),
-
-    // Emit actions by adding them to context.pendingActions
-    emitBootActions: assign({
-      pendingActions: ({ context, event }) => {
-        if (event.type !== 'STORY_LOADED') {
-          return context.pendingActions || [];
-        }
-
-        const actions: NavigationAction[] = [
-          {
-            type: 'APPLY_GRAPH',
-            graph: event.graph,
-          },
-          {
-            type: 'SET_ACTIVE_NODE',
-            nodeId: event.initialNodeId,
-          },
-          {
-            type: 'RESET_TEMP_NODES',
-          },
-        ];
-
-        console.log('[NavigationMachine] Emitted', actions.length, 'boot actions');
-        return [...(context.pendingActions || []), ...actions];
-      },
-    }),
-
-    // Clear pendingActions after they've been processed
-    clearPendingActions: assign({
-      pendingActions: [],
-    }),
-
-    // Emit phase update action when child machine changes phase
-    emitPhaseUpdate: assign({
-      pendingActions: ({ context, event }) => {
-        if (event.type !== 'UPDATE_NODE_PHASE') {
-          return context.pendingActions || [];
-        }
-
-        // Use navigationStore's currentId as the source of truth
-        // The child machine's nodeId might not match the actual store node ID
-        const store = useNavigationStore.getState();
-        const actualNodeId = store.currentId;
-
-        if (!actualNodeId) {
-          console.warn('[NavigationMachine] Cannot emit UPDATE_NODE_PHASE - no current node in store');
-          return context.pendingActions || [];
-        }
-
-        const action: NavigationAction = {
-          type: 'UPDATE_NODE_PHASE',
-          nodeId: actualNodeId,
-          phase: event.phase,
-        };
-
-        console.log('[NavigationMachine] Emitting UPDATE_NODE_PHASE action for node:', actualNodeId.substring(0, 8), 'phase:', event.phase);
-        return [...(context.pendingActions || []), action];
-      },
-    }),
+      }
+    },
 
     // Assign boot error to context
     assignBootError: assign({
@@ -250,14 +178,18 @@ export const navigationMachine = setup({
   },
   guards: {
     // Check if current node is dialogue type
-    isDialogue: ({ context }) => {
-      const node = getNode(context);
-      return node?.type === 'dialogue';
+    // Reads from navigationStore (single source of truth)
+    isDialogue: () => {
+      const store = useNavigationStore.getState();
+      const currentNode = store.currentId ? store.graph.byId[store.currentId] : null;
+      return currentNode?.scene?.type === 'character' || currentNode?.scene?.type === 'character-flow';
     },
     // Check if current node is image type
-    isImage: ({ context }) => {
-      const node = getNode(context);
-      return node?.type === 'image';
+    // Reads from navigationStore (single source of truth)
+    isImage: () => {
+      const store = useNavigationStore.getState();
+      const currentNode = store.currentId ? store.graph.byId[store.currentId] : null;
+      return currentNode?.scene?.type === 'image';
     },
   },
 }).createMachine({
@@ -266,19 +198,10 @@ export const navigationMachine = setup({
   context: {
     storyId: undefined,
     graph: { scenes: [] },
-    activeNodeId: undefined,
     bootError: null,
-    pendingActions: [],
   },
   on: {
-    // Global handler for ACTIONS_FLUSHED - clears pendingActions from any state
-    ACTIONS_FLUSHED: {
-      actions: 'clearPendingActions',
-    },
-    // Note: ACTIVE_NODE_CHANGED is NOT handled globally.
-    // It's handled by individual scene states to enable proper routing.
-    // The child states (dialogue, image, unknown) transition back to scene.waiting,
-    // which then routes to the correct scene type based on the node payload.
+    // Note: Global event handlers go here if needed
   },
   states: {
     /**
@@ -287,12 +210,14 @@ export const navigationMachine = setup({
      */
     boot: {
       initial: 'waiting_for_story',
+      entry: () => console.log('[NavigationMachine] Entered boot state'),
       states: {
         /**
          * WAITING_FOR_STORY
          * Wait for LOAD_STORY_REQUESTED event before starting the load
          */
         waiting_for_story: {
+          entry: () => console.log('[NavigationMachine] Waiting for story load request...'),
           on: {
             LOAD_STORY_REQUESTED: {
               actions: ['assignStoryId', 'clearBootError'],
@@ -311,35 +236,17 @@ export const navigationMachine = setup({
             src: 'loadStory',
             input: ({ context }) => ({ storyId: context.storyId || '' }),
             onDone: {
-              // Transition to scene.route - it will receive APPLY_GRAPH via raise
-              target: '#navigation.scene.route',
+              // Transition to scene.navigating, then route to correct scene type
+              target: '#navigation.scene.navigating',
               actions: [
+                () => console.log('[NavigationMachine] Story loaded successfully!'),
                 // Apply the minimal graph to machine context
                 assign({
                   graph: ({ event }) => event.output.minimalGraph,
-                  activeNodeId: ({ event }) => event.output.initialNodeId,
                 }),
-                // Queue actions to apply the full graph to navigationStore
-                assign({
-                  pendingActions: ({ context, event }) => {
-                    const actions: NavigationAction[] = [
-                      {
-                        type: 'APPLY_GRAPH',
-                        graph: { scenes: event.output.fullStory, flowMetadata: event.output.flowMetadata },
-                      },
-                      {
-                        type: 'SET_ACTIVE_NODE',
-                        nodeId: event.output.initialNodeId,
-                      },
-                      {
-                        type: 'RESET_TEMP_NODES',
-                      },
-                    ];
-
-                    console.log('[NavigationMachine] Boot complete, queuing', actions.length, 'store actions');
-                    return [...(context.pendingActions || []), ...actions];
-                  },
-                }),
+                // Initialize navigationStore with loaded scenes
+                'initializeStore',
+                () => console.log('[NavigationMachine] Transitioning to scene.navigating...'),
               ],
             },
             onError: {
@@ -371,28 +278,9 @@ export const navigationMachine = setup({
     },
 
     /**
-     * DIALOGUE
-     * Main dialogue flow states
-     */
-    dialogue: {
-      initial: 'input',
-      states: {
-        /**
-         * INPUT
-         * Waiting for user input (recording or interaction)
-         */
-        input: {
-          on: {
-            // Add event transitions here as features are migrated
-          },
-        },
-      },
-    },
-
-    /**
      * SCENE
-     * XState-driven navigation router. Handles scroll events, updates activeNodeId,
-     * and routes to the correct child scene type (dialogue, image, etc.).
+     * XState-driven navigation router. Handles scroll events, triggers navigationStore updates,
+     * and routes to the correct child scene type (dialogue, image, etc.) based on navigationStore.currentId.
      */
     scene: {
       initial: 'route',
@@ -407,23 +295,46 @@ export const navigationMachine = setup({
         // Children send REQUEST_NAV_* when they're ready to navigate
         REQUEST_NAV_NEXT: {
           actions: 'goNext',
-          target: '.route',
+          target: '.navigating',
         },
         REQUEST_NAV_PREV: {
           actions: 'goPrev',
-          target: '.route',
+          target: '.navigating',
         },
         // Handle phase updates from child machines
         UPDATE_NODE_PHASE: {
-          actions: 'emitPhaseUpdate',
+          actions: 'updatePhase',
         },
       },
       states: {
         /**
+         * NAVIGATING
+         * Transient state - processes queued commands synchronously, then immediately routes
+         * Since commands now execute synchronously, we can route immediately via 'always'
+         */
+        navigating: {
+          on: {
+            // Ignore scroll events while navigating
+            SCROLL_DOWN_STEP: {},
+            SCROLL_UP_STEP: {},
+          },
+          always: {
+            // Commands execute synchronously now, so store is already updated - route immediately
+            target: 'route',
+          },
+        },
+
+        /**
          * ROUTE
-         * Immediate routing state - checks context.activeNodeId and branches to correct child
+         * Immediate routing state - checks navigationStore.currentId and branches to correct child
+         * Ignores scroll events while routing to prevent race conditions
          */
         route: {
+          on: {
+            // Ignore scroll events while routing - they'll be handled by the child state
+            SCROLL_DOWN_STEP: {},
+            SCROLL_UP_STEP: {},
+          },
           always: [
             {
               guard: 'isImage',
@@ -447,7 +358,7 @@ export const navigationMachine = setup({
           // TODO: Invoke dialogue child machine here
           // invoke: {
           //   src: 'dialogueSceneMachine',
-          //   input: ({ context }) => ({ nodeId: context.activeNodeId, ... }),
+          //   input: () => ({ /* read from navigationStore if needed */ }),
           // },
           on: {
             // Temporary: Until we have dialogueSceneMachine, handle scrolls directly
@@ -469,8 +380,9 @@ export const navigationMachine = setup({
          * Phase is read from navigationStore and updated via UPDATE_NODE_PHASE commands
          */
         image: {
-          entry: ({ context }) => {
-            console.log('[NavigationMachine] Entering scene.image for node:', context.activeNodeId);
+          entry: () => {
+            const store = useNavigationStore.getState();
+            console.log('[NavigationMachine] Entering scene.image for node:', store.currentId?.substring(0, 8));
           },
           invoke: {
             id: 'imageSceneMachine',
@@ -510,8 +422,10 @@ export const navigationMachine = setup({
          * UNKNOWN scene type (safety net)
          */
         unknown: {
-          entry: ({ context }) => {
-            console.warn('[NavigationMachine] Unknown scene type for node:', context.activeNodeId);
+          entry: () => {
+            const store = useNavigationStore.getState();
+            const currentNode = store.currentId ? store.graph.byId[store.currentId] : null;
+            console.warn('[NavigationMachine] Unknown scene type for node:', store.currentId?.substring(0, 8), 'type:', currentNode?.scene?.type);
           },
           on: {
             // Fallback: allow scrolling through unknown scenes

@@ -23,10 +23,11 @@ import type { Node } from '../types';
  *
  * This is called by the navigation queue for each command.
  * Each command type maps to one or more store mutations.
+ * Executes synchronously to ensure state updates complete immediately.
  *
  * @param command - The command to execute
  */
-export async function executeCommand(command: NavigationCommand): Promise<void> {
+export function executeCommand(command: NavigationCommand): void {
   const store = useNavigationStore.getState();
 
   switch (command.type) {

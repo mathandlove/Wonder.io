@@ -24,7 +24,7 @@ let isStarted = false;
  * Command executor function - will be set when graph mutators are integrated
  * For now, this is a no-op that just logs commands
  */
-let executor: ((command: NavigationCommand) => void | Promise<void>) = async (command) => {
+let executor: ((command: NavigationCommand) => void) = (command) => {
   console.log('[NavigationQueue] Processing command:', command.type);
   // TODO: In Ticket 8, this will call actual graph mutators
 };
@@ -34,9 +34,9 @@ let executor: ((command: NavigationCommand) => void | Promise<void>) = async (co
  *
  * This will be called once during initialization to wire up the graph mutators
  *
- * @param fn - Function that executes a command
+ * @param fn - Function that executes a command synchronously
  */
-export function setExecutor(fn: (command: NavigationCommand) => void | Promise<void>): void {
+export function setExecutor(fn: (command: NavigationCommand) => void): void {
   executor = fn;
 }
 
@@ -66,9 +66,9 @@ export function enqueue(command: NavigationCommand): void {
 /**
  * Process commands from the queue one at a time
  *
- * This runs asynchronously and ensures only one command executes at a time
+ * Executes synchronously to ensure commands complete before XState transitions
  */
-async function processQueue(): Promise<void> {
+function processQueue(): void {
   if (isProcessing) {
     return; // Already processing
   }
@@ -80,7 +80,7 @@ async function processQueue(): Promise<void> {
     if (!command) continue;
 
     try {
-      await executor(command);
+      executor(command);
     } catch (error) {
       console.error('[NavigationQueue] Error executing command:', command.type, error);
       // Continue processing next command even if one fails
