@@ -144,11 +144,11 @@ function expandImageScene(scene: Scene): Node[] {
  * This follows the imageScene pattern:
  * - One visual scene = One node
  * - Phases are managed by child state machine
- * - User scrolls through phases (basic → quest → input) within the node
+ * - User scrolls through phases (basic → quest-showing → input) within the node
  * - Only moves to next node after all phases are exhausted
  *
  * The flow array determines which phases are available:
- * - If flow has quest item → node can transition to 'quest' phase
+ * - If flow has quest item → node can transition to 'quest-showing' phase
  * - If flow has input item → node can transition to 'input' phase
  * - dialogueSceneMachine reads the flow to determine phase routing
  */

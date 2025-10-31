@@ -62,7 +62,7 @@ export function RecordingOrchestrator() {
   const flowMetadata = useSceneFlowMetadata(hasFlowId(currentScene) ? currentScene : null);
 
   // Determine if panel should be visible based on phase or scene type
-  // Show for dialogue phases: basic, quest, input, input-recording, input-processing, ai-waiting,
+  // Show for dialogue phases: basic, quest-showing, input, input-recording, input-processing, ai-waiting,
   // record-answer, answer-processing, answer-waiting, answer-right, answer-wrong
   // Also show for success-dance and fail-dance scenes
   const isSuccessDanceScene = currentScene?.type === 'success-dance';

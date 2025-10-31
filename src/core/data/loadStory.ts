@@ -5,6 +5,7 @@
 // src/data/loadStory.ts
 import type { Scene, Story } from '@core/types/scene';
 import type { FlowMetadataMap } from '@core/data/FlowMetadataStore';
+import { PHASES, type Phase } from '@core/navigation/navigationGraphTypes';
 
 // Re-export for convenience
 export type { FlowMetadataMap } from '@core/data/FlowMetadataStore';
@@ -82,7 +83,7 @@ function flattenScenes(rawScenes: RawScene[]): FlattenResult {
       let currentLeftCharacter = scene["left-character"];
       let currentRightCharacter = scene["right-character"];
       let currentDialogue: Partial<Scene> | null = null;
-      let currentPhaseSteps: string[] = ["basic"];
+      let currentPhaseSteps: Phase[] = [PHASES.BASIC];
       let isFirstInFlow = true;
 
       scene.flow.forEach((f, flowIndex) => {
@@ -116,7 +117,7 @@ function flattenScenes(rawScenes: RawScene[]): FlattenResult {
             isFirstInFlow,
             flowId
           };
-          currentPhaseSteps = ["basic"];
+          currentPhaseSteps = [PHASES.BASIC];
           isFirstInFlow = false;
         }
         // Quest metadata - add to current dialogue's phases
@@ -125,7 +126,8 @@ function flattenScenes(rawScenes: RawScene[]): FlattenResult {
             console.warn('[loadStory] Quest metadata found without preceding dialogue at flow index', flowIndex, '- skipping');
             return;
           }
-          currentPhaseSteps.push("quest");
+          // Use PHASES constant to ensure correct phase name
+          currentPhaseSteps.push(PHASES.QUEST_SHOWING);
         }
         // Input metadata - add to current dialogue's phases
         else if (f.type === "input" && !f.text) {
@@ -133,7 +135,7 @@ function flattenScenes(rawScenes: RawScene[]): FlattenResult {
             console.warn('[loadStory] Input metadata found without preceding dialogue at flow index', flowIndex, '- skipping');
             return;
           }
-          currentPhaseSteps.push("input");
+          currentPhaseSteps.push(PHASES.INPUT);
         }
         // Legacy: flow items with f.input or f.quest (old format) - ignore
         else {
@@ -153,7 +155,9 @@ function flattenScenes(rawScenes: RawScene[]): FlattenResult {
       // Create single image scene with caption (if text is present)
       // Determine phaseSteps based on whether caption exists
       const hasCaption = !!scene.text;
-      const phaseSteps = hasCaption ? ["image_only", "caption"] : ["image_only"];
+      const phaseSteps: Phase[] = hasCaption
+        ? [PHASES.IMAGE_ONLY, PHASES.CAPTION]
+        : [PHASES.IMAGE_ONLY];
 
       console.log('[loadStory] Image scene:', {
         hasCaption,

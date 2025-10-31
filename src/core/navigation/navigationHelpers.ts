@@ -10,7 +10,7 @@
  */
 
 import type { Scene } from '@core/types/scene';
-import type { Node, NodeId, FrozenNodeSnapshot } from '@core/navigation/navigationGraphTypes';
+import type { Node, NodeId, FrozenNodeSnapshot, Phase } from '@core/navigation/navigationGraphTypes';
 import { getNodeById } from '@core/navigation/navigationGraphBuilder';
 import { useNavigationStore } from '@core/navigation/navigationStore';
 import { ulid } from 'ulid';
@@ -183,8 +183,9 @@ export function updateNodeState(nodeId: NodeId, newState: SceneState): void {
 /**
  * Update the phase of the current node
  * Example: updateCurrentPhase('input-recording')
+ * @deprecated Use updateNodePhase + updateSceneProperties instead
  */
-export function updateCurrentPhase(phase: string): void {
+export function updateCurrentPhase(phase: Phase): void {
   useNavigationStore.getState().updateCurrentPhase(phase);
 }
 

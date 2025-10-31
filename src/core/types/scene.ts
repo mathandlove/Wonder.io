@@ -14,7 +14,7 @@ export type CharacterScene = {
   isFirstInFlow?: boolean;
   hidden?: boolean;
   phase?: string; // Current phase of the scene (default: "basic")
-  phaseSteps?: string[]; // Available phases for this scene (e.g., ["basic", "quest", "input"])
+  phaseSteps?: string[]; // Available phases for this scene (e.g., ["basic", "quest-showing", "input"])
   recordingId?: string; // Links to active recording session - used to update text when recording completes
   flowId?: string; // Reference to flow metadata (characterDescription, successAnswer)
   meta?: {

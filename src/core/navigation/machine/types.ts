@@ -11,6 +11,8 @@
  * @module machine/types
  */
 
+import type { Phase } from '@core/navigation/navigationGraphTypes';
+
 // ============================================================================
 // DOMAIN EVENTS (Input to Machine)
 // ============================================================================
@@ -221,7 +223,7 @@ export type RequestNavPrevEvent = {
  */
 export type UpdateNodePhaseEvent = {
   type: 'UPDATE_NODE_PHASE';
-  phase: string;
+  phase: Phase;
 };
 
 export type deleteCurrentNodeandNavNext = {
@@ -414,7 +416,7 @@ export type ResetTempNodesAction = {
 export type UpdateNodePhaseAction = {
   type: 'UPDATE_NODE_PHASE';
   nodeId: string;
-  phase: string;
+  phase: Phase;
 };
 
 /**
@@ -518,7 +520,7 @@ export type AdvanceCommand = {
 export type UpdateNodePhaseCommand = {
   type: 'UPDATE_NODE_PHASE';
   nodeId: string;
-  phase: string;
+  phase: Phase;
 };
 
 /**

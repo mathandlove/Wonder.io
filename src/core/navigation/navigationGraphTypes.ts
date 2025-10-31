@@ -16,7 +16,10 @@
 import type { Scene } from '@core/types/scene';
 
 /**
- * Node Phase - represents the current phase/state of a node
+ * Phase - Strict type representing all valid phase/state names
+ *
+ * This is the single source of truth for phase names. Use this type
+ * everywhere to ensure type safety and prevent phase name mismatches.
  *
  * Image phases:
  * - 'image_only' - Just showing the image
@@ -37,13 +40,18 @@ import type { Scene } from '@core/types/scene';
  * - 'answer-wrong' - Answer was incorrect
  *
  * Quest phases:
- * - 'quest-showing' - Quest prompt is displayed
+ * - 'quest-showing' - Quest prompt is displayed (THE ONLY VALID QUEST PHASE NAME)
  * - 'quest-accepted' - User accepted the quest
+ *
+ * Special scene phases:
+ * - 'success-dance' - Success celebration animation
+ * - 'fail-dance' - Failure animation
  *
  * Other:
  * - 'static' - For scenes with no state variations (text, full, caption)
+ * - 'input' - Generic input phase (legacy, prefer specific input-* phases)
  */
-export type NodePhase =
+export type Phase =
   // Image phases
   | 'image_only'
   | 'caption'
@@ -61,12 +69,83 @@ export type NodePhase =
   | 'answer-right'
   | 'answer-wrong'
   // Quest phases
-  | 'quest-showing'
+  | 'quest-showing'  // ⚠️ THE ONLY VALID QUEST PHASE - use this everywhere!
   | 'quest-accepted'
+  // Special scene phases
+  | 'success-dance'
+  | 'fail-dance'
   // Static/other
   | 'static'
-  // Allow string for flexibility during migration
-  | string;
+  | 'input'; // Legacy generic input phase
+
+/**
+ * @deprecated Use Phase instead. NodePhase kept for backward compatibility.
+ * Allows string for gradual migration, but prefer using strict Phase type.
+ */
+export type NodePhase = Phase | string;
+
+/**
+ * Phase constants - Use these to avoid typos when working with phases
+ *
+ * @example
+ * ```ts
+ * import { PHASES } from '@core/navigation/navigationGraphTypes';
+ *
+ * // Instead of: if (phase === 'quest-showing')
+ * // Use: if (phase === PHASES.QUEST_SHOWING)
+ * ```
+ */
+export const PHASES = {
+  // Image phases
+  IMAGE_ONLY: 'image_only' as const,
+  CAPTION: 'caption' as const,
+
+  // Dialogue phases
+  BASIC: 'basic' as const,
+  INPUT_BASIC: 'input-basic' as const,
+  INPUT_SHOW_INPUT: 'input-showInput' as const,
+  INPUT_RECORDING: 'input-recording' as const,
+  INPUT_PROCESSING: 'input-processing' as const,
+  AI_WAITING: 'ai-waiting' as const,
+  RECORD_ANSWER: 'record-answer' as const,
+  WAITING_FOR_ANSWER_FINALIZE: 'waiting-for-answer-finalize' as const,
+  ANSWER_PROCESSING: 'answer-processing' as const,
+  ANSWER_WAITING: 'answer-waiting' as const,
+  ANSWER_RIGHT: 'answer-right' as const,
+  ANSWER_WRONG: 'answer-wrong' as const,
+
+  // Quest phases
+  QUEST_SHOWING: 'quest-showing' as const,  // ⚠️ THE ONLY VALID QUEST PHASE
+  QUEST_ACCEPTED: 'quest-accepted' as const,
+
+  // Special scene phases
+  SUCCESS_DANCE: 'success-dance' as const,
+  FAIL_DANCE: 'fail-dance' as const,
+
+  // Static/other
+  STATIC: 'static' as const,
+  INPUT: 'input' as const,
+} as const;
+
+/**
+ * Common phase step patterns for different scene types
+ */
+export const PHASE_STEPS = {
+  /** Simple dialogue with no interaction: ["basic"] */
+  BASIC_ONLY: ['basic'] as const,
+
+  /** Dialogue with quest: ["basic", "quest-showing"] */
+  WITH_QUEST: ['basic', 'quest-showing'] as const,
+
+  /** Full dialogue flow with quest and input: ["basic", "quest-showing", "input"] */
+  FULL_DIALOGUE: ['basic', 'quest-showing', 'input'] as const,
+
+  /** Image scene with caption: ["image_only", "caption"] */
+  IMAGE_WITH_CAPTION: ['image_only', 'caption'] as const,
+
+  /** Image scene without caption: ["image_only"] */
+  IMAGE_ONLY: ['image_only'] as const,
+} as const;
 
 /**
  * Unique identifier for a node
@@ -102,11 +181,11 @@ export interface Node {
 
   /**
    * Current phase of this node
-   * Examples: 'image_only', 'caption', 'basic', 'quest', 'input', etc.
+   * Examples: 'image_only', 'caption', 'basic', 'quest-showing', 'input', etc.
    *
    * Invariant: phase === phaseSteps[phaseIndex]
    */
-  phase: NodePhase;
+  phase: Phase;
 
   /**
    * Available phases for this node
@@ -114,11 +193,11 @@ export interface Node {
    *
    * Examples:
    * - Simple dialogue: ["basic"]
-   * - Dialogue with quest: ["basic", "quest"]
-   * - Dialogue with quest and input: ["basic", "quest", "input"]
+   * - Dialogue with quest: ["basic", "quest-showing"]
+   * - Dialogue with quest and input: ["basic", "quest-showing", "input"]
    * - Image with caption: ["image_only", "caption"]
    */
-  phaseSteps: NodePhase[];
+  phaseSteps: readonly Phase[];
 
   /**
    * Current position in phaseSteps array

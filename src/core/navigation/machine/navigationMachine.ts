@@ -160,7 +160,7 @@ export const navigationMachine = setup({
     // Uses convenience method to get scene type
     isQuest: () => {
       const currentPhase= useNavigationStore.getState().getCurrentPhase();
-      return currentPhase === 'quest';
+      return currentPhase === 'quest-showing';
     },
 
   },
@@ -314,7 +314,7 @@ export const navigationMachine = setup({
 
         /**
          * DIALOGUE scene
-         * Handles dialogue flows with phase management (basic → quest → input)
+         * Handles dialogue flows with phase management (basic → quest-showing → input)
          * Uses store.advance() which automatically handles phase transitions
          */
       

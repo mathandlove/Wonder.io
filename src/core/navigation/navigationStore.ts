@@ -30,6 +30,7 @@ import type {
   FrozenNodeSnapshot,
   NavigationHistoryEntry,
   NodeLifecycleEvent,
+  Phase,
 } from '@core/navigation/navigationGraphTypes';
 
 /**
@@ -105,14 +106,14 @@ interface NavigationState {
   replaceNode: (oldNodeId: NodeId, newNode: Omit<Node, 'prevId' | 'nextId'>) => NodeId | null;
   addStateToCurrentNode: (newState: SceneState, insertAfter?: boolean) => NodeId | null; // DEPRECATED
   updateNodeState: (nodeId: NodeId, newState: SceneState) => void; // DEPRECATED
-  updateNodePhase: (nodeId: NodeId, phase: string) => void;
+  updateNodePhase: (nodeId: NodeId, phase: Phase) => void;
   updateSceneProperties: (nodeId: NodeId, updates: Partial<Scene>) => void;
   updateSceneTextByRecordingId: (recordingId: string, newText: string) => void;
   deleteNode: (nodeId: NodeId) => void;
   advance: (direction: 'forward' | 'backward') => void;
 
   // Convenience methods (assume currentId)
-  updateCurrentPhase: (phase: string) => void;
+  updateCurrentPhase: (phase: Phase) => void;
   updateCurrentSceneProperties: (updates: Partial<Scene>) => void;
   getCurrentNode: () => Node | null;
   getCurrentSceneType: () => string | null;
@@ -120,8 +121,8 @@ interface NavigationState {
   // Phase management (NEW - for phaseSteps navigation)
   advancePhase: (direction: 1 | -1) => boolean;
   canAdvancePhase: (direction: 1 | -1) => boolean;
-  getCurrentPhaseInfo: () => { phase: string; index: number; steps: string[]; canGoNext: boolean; canGoPrev: boolean } | null;
-  getCurrentPhase: () => string | null;
+  getCurrentPhaseInfo: () => { phase: Phase; index: number; steps: readonly Phase[]; canGoNext: boolean; canGoPrev: boolean } | null;
+  getCurrentPhase: () => Phase | null;
 }
 
 // =============================================================================
@@ -613,7 +614,7 @@ export const useNavigationStore = create<NavigationState>()(
       // Action: updateNodePhase
       // Update the phase field of a specific node
       // =============================================================================
-      updateNodePhase: (nodeId: NodeId, phase: string) => {
+      updateNodePhase: (nodeId: NodeId, phase: Phase) => {
         set(
           (state) => {
             const node = getNodeById(state.graph, nodeId);

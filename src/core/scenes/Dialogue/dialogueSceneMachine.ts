@@ -4,7 +4,7 @@
  * Manages phase transitions for dialogue scenes using phaseSteps
  *
  * Flow:
- * - Reads phaseSteps from node (e.g., ["basic"], ["basic", "quest"], ["basic", "quest", "input"])
+ * - Reads phaseSteps from node (e.g., ["basic"], ["basic", "quest-showing"], ["basic", "quest-showing", "input"])
  * - SCROLL_DOWN: advances to next phase if available, else requests nav to next node
  * - SCROLL_UP: goes back to previous phase if available, else requests nav to previous node
  *
