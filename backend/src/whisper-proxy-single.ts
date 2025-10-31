@@ -1,4 +1,5 @@
 import { WebSocket, RawData } from 'ws';
+import { IncomingMessage } from 'http';
 import OpenAI from 'openai';
 import { createReadStream, unlinkSync, writeFileSync, mkdirSync, existsSync } from 'fs';
 import { tmpdir } from 'os';
@@ -33,7 +34,6 @@ const IDLE_TIMEOUT = 90 * 1000; // 90 seconds
 const SAMPLE_RATE = 16000; // 16kHz audio
 const DEBUG_PLAYBACK = process.env.DEBUG_PLAYBACK === 'true'; // Set to 'true' to hear received audio
 const DEBUG_SAVE_CHUNKS = process.env.DEBUG_SAVE_CHUNKS === 'true'; // Set to 'true' to save audio files
-let debugChunkCounter = 0; // Counter for saved debug chunks
 
 // Debug audio storage directory - relative to backend folder
 const DEBUG_AUDIO_DIR = join(__dirname, '..', 'debug-audio');
@@ -194,7 +194,7 @@ async function transcribeCompleteAudio(audioBuffer: Buffer): Promise<string> {
  * Handles a single WebSocket connection - SINGLE-SEND APPROACH
  * Buffers all audio, sends once on finalize
  */
-export function handleWhisperProxy(clientWs: WebSocket, request: any) {
+export function handleWhisperProxy(clientWs: WebSocket, request: IncomingMessage) {
   const origin = request.headers.origin || request.headers.referer || 'unknown';
 
   // Validate origin - support multiple environments
@@ -228,7 +228,6 @@ export function handleWhisperProxy(clientWs: WebSocket, request: any) {
   let totalBytesReceived = 0;
   let idleTimer: NodeJS.Timeout | null = null;
   let isClosed = false;
-  let currentSessionId = Date.now();
 
   /**
    * Cleanup function
@@ -292,7 +291,6 @@ export function handleWhisperProxy(clientWs: WebSocket, request: any) {
 
         if (message.type === 'start_session') {
           // Reset for new recording session
-          currentSessionId = Date.now();
           audioBuffer = Buffer.alloc(0);
           totalBytesReceived = 0;
           return;

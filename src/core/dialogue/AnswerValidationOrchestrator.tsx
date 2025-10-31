@@ -8,7 +8,7 @@
  */
 
 import React from 'react';
-import { getCurrentNode, getCurrentNodeId, updateCurrentPhase, updateCurrentSceneProperties } from '@core/navigation/navigationHelpers';
+import { getCurrentNode, getCurrentNodeId, updateCurrentPhase } from '@core/navigation/navigationHelpers';
 import { validateAnswer, type AnswerValidationResult } from './validateAnswer';
 import { useAIMemory } from '@core/ai/useAIMemory';
 import type { CharacterScene } from '@core/types/scene';

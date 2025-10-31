@@ -40,10 +40,13 @@ app.post('/api/selections', async (req, res) => {
     }
 
     // Validate points structure
-    const isValidPoints = points.every((p: any) => 
-      typeof p === 'object' && 
-      typeof p.x === 'number' && 
-      typeof p.y === 'number'
+    const isValidPoints = points.every((p: unknown) =>
+      typeof p === 'object' &&
+      p !== null &&
+      'x' in p &&
+      'y' in p &&
+      typeof (p as Point).x === 'number' &&
+      typeof (p as Point).y === 'number'
     );
 
     if (!isValidPoints) {

@@ -6,7 +6,6 @@ import React, { useMemo } from "react";
 import { FlowLayout } from '@features/flow-layout/FlowLayout';
 import { SceneRenderer } from '@core/scenes/SceneRenderer';
 import { SceneFactoryProvider } from '@core/navigation/SceneFactory';
-import { getCurrentNode } from '@core/navigation/navigationHelpers';
 import { useNavigationStore, selectNavigationGraph, selectCurrentNodeId } from '@core/navigation/navigationStore';
 import { BackgroundOrchestrator } from '@features/background/BackgroundOrchestrator';
 import { CharacterOrchestrator } from '@features/characters/CharacterOrchestrator';
@@ -17,12 +16,6 @@ import { CharacterAnimationProvider } from '@features/characters/CharacterAnimat
 import TurnCueBanner from '@features/chat/components/TurnCueBanner';
 import { useDialogue } from '@features/chat/context/useChatDialogue';
 import type { Scene } from '@core/types/scene';
-
-// Extended scene type for dynamic properties
-type SceneWithId = Scene & {
-  sceneId?: string;
-  hidden?: boolean;
-};
 
 // Type extension for debugging window object
 declare global {
@@ -36,7 +29,7 @@ import { AIModuleProvider } from '@features/ai/AIModule'
 import { AIMemoryStoreProvider } from '@core/ai/AIMemoryStore'
 import { ChatFlowOrchestratorComponent } from '@core/dialogue/ChatFlowOrchestratorComponent'
 import { AnswerValidationOrchestrator } from '@core/dialogue/AnswerValidationOrchestrator'
-import { FlowMetadataProvider, useFlowMetadata } from '@core/data/FlowMetadataStore'
+import { FlowMetadataProvider } from '@core/data/FlowMetadataStore'
 
 // FullScreen: tiny helper to center any message while we load or show an error
 function FullScreen({ children }: { children: React.ReactNode }) {
@@ -60,9 +53,6 @@ const StoryModeScroll: React.FC = () => {
 
 // StoryContent: inner component that reads from navigation store
 const StoryContent: React.FC = () => {
-  // Flow metadata store
-  const flowMetadataStore = useFlowMetadata();
-
   // OPTIMIZED: Subscribe only to specific graph slices instead of entire navigationGraph
   const navigationGraph = useNavigationStore(selectNavigationGraph);
   const currentNodeId = useNavigationStore(selectCurrentNodeId);

@@ -17,6 +17,8 @@ export type CharacterScene = {
   phaseSteps?: string[]; // Available phases for this scene (e.g., ["basic", "quest-showing", "input"])
   recordingId?: string; // Links to active recording session - used to update text when recording completes
   flowId?: string; // Reference to flow metadata (characterDescription, successAnswer)
+  questionText?: string; // User's question in quest flow
+  answerText?: string; // User's answer to quest question
   meta?: {
     panelLeft?: { character: string; previousCharacter?: string; nextCharacter?: string; newCharacter?: boolean; aboutToSwap?: boolean };
     panelRight?: { character: string; previousCharacter?: string; nextCharacter?: string; newCharacter?: boolean; aboutToSwap?: boolean };

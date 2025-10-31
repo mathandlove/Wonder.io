@@ -140,11 +140,14 @@ export function clearLogs(): void {
   console.log('[NavigationLogger] Logs cleared');
 }
 
+// Create logger object for type and window exposure
+const navigationLogger = {
+  getRecentLogs,
+  printLogSummary,
+  clearLogs,
+};
+
 // Expose logger functions on window for debugging
 if (typeof window !== 'undefined' && ENABLE_LOGGING) {
-  (window as any).__navigationLogger = {
-    getRecentLogs,
-    printLogSummary,
-    clearLogs,
-  };
+  (window as Window & { __navigationLogger?: typeof navigationLogger }).__navigationLogger = navigationLogger;
 }

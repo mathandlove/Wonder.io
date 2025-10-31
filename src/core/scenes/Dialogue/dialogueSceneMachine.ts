@@ -86,7 +86,7 @@ export const dialogueSceneMachine = setup({
               }
             },
             // Conditionally send to parent if at boundary
-            sendParent(({ context }) => {
+            sendParent(() => {
               const store = useNavigationStore.getState();
               const canAdvance = store.canAdvancePhase(1);
 
@@ -113,7 +113,7 @@ export const dialogueSceneMachine = setup({
               }
             },
             // Conditionally send to parent if at boundary
-            sendParent(({ context }) => {
+            sendParent(() => {
               const store = useNavigationStore.getState();
               const canAdvance = store.canAdvancePhase(-1);
 

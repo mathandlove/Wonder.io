@@ -15,7 +15,7 @@
  * - Quest completion determines if Next button is unlocked
  */
 import React, { useCallback, useEffect } from 'react';
-import { getCurrentNode, getCurrentNodeId, insertSceneNodes, advanceNavigation, updateCurrentPhase, updateCurrentSceneProperties } from '@core/navigation/navigationHelpers';
+import { getCurrentNode, getCurrentNodeId, insertSceneNodes, advanceNavigation, updateCurrentPhase, updateCurrentSceneProperties, addStateToCurrentNode } from '@core/navigation/navigationHelpers';
 import { useNavigationStore } from '@core/navigation/navigationStore';
 import { useSceneFlowMetadata } from '@core/data/FlowMetadataStore';
 import { useSceneFactory } from '@core/navigation/SceneFactory';
@@ -477,7 +477,7 @@ export function RecordingOrchestrator() {
     // When transcript arrives, transcript sync effect will transition to ai-waiting
     // ChatFlowOrchestrator will trigger AI processing when in ai-waiting phase
     Recording.stop();
-  }, [phase, activeRecordingId]);
+  }, [activeRecordingId]);
 
   // Update ref when handleRecordStop changes (so effects can use it)
   React.useEffect(() => {

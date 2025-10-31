@@ -6,17 +6,20 @@ async function checkImages() {
   
   const cutoutMeta = await sharp(cutout).metadata();
   const stickerMeta = await sharp(sticker).metadata();
-  
+
+  console.log('Cutout dimensions:', {
     width: cutoutMeta.width,
     height: cutoutMeta.height,
     channels: cutoutMeta.channels
   });
-  
+
+  console.log('Sticker dimensions:', {
     width: stickerMeta.width,
     height: stickerMeta.height,
     channels: stickerMeta.channels
   });
-  
+
+  console.log('Difference:', {
     width: stickerMeta.width - cutoutMeta.width,
     height: stickerMeta.height - cutoutMeta.height
   });

@@ -18,7 +18,6 @@ import type {
   NodeId,
   NavigationGraph,
 } from './navigationGraphTypes';
-import type { SceneState } from './types';
 
 /**
  * Build a complete navigation graph from an array of scenes

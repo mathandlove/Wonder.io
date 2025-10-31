@@ -14,7 +14,6 @@ import type { NavigationCommand } from '../machine/types';
 import { useNavigationStore } from '../navigationStore';
 import { setScenes } from '../navigationHelpers';
 import type { Scene } from '@core/types/scene';
-import type { Node } from '../navigationGraphTypes';
 
 /**
  * Execute a navigation command by calling the appropriate graph mutator
@@ -34,7 +33,7 @@ export function executeCommand(command: NavigationCommand): void {
 
       // Create a minimal scene from the node data
       const scene: Scene = {
-        type: command.newNode.sceneKind as any,
+        type: command.newNode.sceneKind as Scene['type'],
         sceneId: command.newNode.sceneId,
         ...command.newNode.metadata,
       };
@@ -143,7 +142,7 @@ export function executeCommand(command: NavigationCommand): void {
  *
  * @param graph - The graph data to apply (contains scenes and flowMetadata)
  */
-export function applyGraph(graph: any): { firstNodeId: string | null } {
+export function applyGraph(graph: { scenes?: Scene[]; [key: string]: unknown }): { firstNodeId: string | null } {
   console.log('[CommandExecutor] APPLY_GRAPH - Received graph:', graph);
   console.log('[CommandExecutor] APPLY_GRAPH - Loading', graph.scenes?.length || 0, 'scenes');
 

@@ -452,8 +452,8 @@ export type InsertAfterCommand = {
     nodeId: string;
     sceneId: string;
     sceneKind: string;
-    sceneState: any; // Will be properly typed when integrated with Node type
-    metadata?: Record<string, any>;
+    sceneState: unknown; // Will be properly typed when integrated with Node type
+    metadata?: Record<string, unknown>;
   };
 };
 
@@ -466,8 +466,8 @@ export type ReplaceNodeCommand = {
   type: 'REPLACE_NODE';
   nodeId: string;
   updates: {
-    sceneState?: any; // Will be properly typed when integrated
-    metadata?: Record<string, any>;
+    sceneState?: unknown; // Will be properly typed when integrated
+    metadata?: Record<string, unknown>;
   };
 };
 
@@ -479,7 +479,7 @@ export type ReplaceNodeCommand = {
 export type SetNodeStateCommand = {
   type: 'SET_NODE_STATE';
   nodeId: string;
-  newState: any; // Will be properly typed when integrated with SceneState
+  newState: unknown; // Will be properly typed when integrated with SceneState
 };
 
 /**

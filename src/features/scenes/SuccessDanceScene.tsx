@@ -20,7 +20,7 @@
 
 import { useEffect, useRef } from 'react';
 import { useCharacterAnimation } from '@features/characters/CharacterAnimationContext';
-import { forceAdvanceNavigation, deleteNode, getCurrentNodeId } from '@core/navigation/navigationHelpers';
+import { getCurrentNodeId } from '@core/navigation/navigationHelpers';
 
 export default function SuccessDanceScene() {
   const { addEventListener, removeEventListener } = useCharacterAnimation();
@@ -42,8 +42,6 @@ export default function SuccessDanceScene() {
       // Only navigate once
       if (!hasNavigatedRef.current && currentNodeId) {
         hasNavigatedRef.current = true;
-
-        const successDanceNodeId = currentNodeId;
 
         console.log('[SuccessDanceScene] 🚀 Jiggle complete - auto-navigation DISABLED for debugging');
 

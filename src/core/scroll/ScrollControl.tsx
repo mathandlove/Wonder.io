@@ -9,11 +9,9 @@
  * Navigation always advances, regardless of content state. State transitions
  * (like showing captions) happen automatically when navigation lands on a new state.
  */
-import React, { useRef, useCallback, useLayoutEffect, useEffect } from 'react';
+import React, { useRef, useCallback, useLayoutEffect } from 'react';
 import type { Scene } from '@core/types/scene';
 import { useStepScroll } from './useStepScroll';
-import { useNavigationStore, selectCurrentNodeId } from '@core/navigation/navigationStore';
-import { getCurrentNode } from '@core/navigation/navigationHelpers';
 import * as navigationBus from '@core/navigation/events/navigationBus';
 import { useSceneOrchestrator } from '../scenes/useSceneOrchestrator';
 import { SceneOrchestratorProvider } from '../scenes/SceneOrchestratorContext';
@@ -21,7 +19,7 @@ import './ScrollControl.css';
 
 export interface ScrollControlProps {
   // Core scene management
-  scenes: Scene[];
+  scenes: Scene[] | { scene: Scene; nodeId: string }[];
   currentIndex: number;
   onIndexChange: (index: number) => void;
 
@@ -50,9 +48,19 @@ export function ScrollControl({
 }: ScrollControlProps) {
   const containerRef = useRef<HTMLDivElement>(null);
 
+  // Normalize scenes array - extract Scene objects if wrapped in { scene, nodeId } structure
+  const normalizedScenes = React.useMemo(() => {
+    if (scenes.length === 0) return [];
+    // Check if first element has 'scene' property (indicates wrapped structure)
+    if ('scene' in scenes[0]) {
+      return (scenes as { scene: Scene; nodeId: string }[]).map(item => item.scene);
+    }
+    return scenes as Scene[];
+  }, [scenes]);
+
   // Create scene orchestrator for runtime state management
   const sceneOrchestrator = useSceneOrchestrator({
-    scenes,
+    scenes: normalizedScenes,
     currentIndex,
   });
 

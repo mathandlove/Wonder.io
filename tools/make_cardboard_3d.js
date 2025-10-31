@@ -48,6 +48,7 @@ async function main() {
   const args = process.argv.slice(2);
   
   if (args.length === 0 || args[0] === '--help') {
+    console.log(`Usage:
   node tools/make_cardboard_3d.js <input.sticker.webp> <output-cardboard-3d.webp>
   node tools/make_cardboard_3d.js --all  # Process all stickers missing -cardboard-3d versions`);
     process.exit(0);
