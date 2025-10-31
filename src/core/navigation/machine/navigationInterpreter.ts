@@ -57,17 +57,15 @@ export function startNavigationService(): ReturnType<typeof createActor> {
 
   // Listen to machine transitions and process actions
   serviceInstance.subscribe((snapshot) => {
-    // Get the current node from the navigation store
-    // Use store.currentId as the source of truth (not machine's activeNodeId)
-    const store = useNavigationStore.getState();
-    const currentNode = store.currentId ? store.graph.byId[store.currentId] : null;
+    // Get the current node using convenience method
+    const node = useNavigationStore.getState().getCurrentNode();
 
     // Build log info with machine state and complete node
     const logInfo: Record<string, unknown> = {
       machineState: snapshot.value,
-      scene: currentNode?.scene?.type || 'none',
-      phase: currentNode?.phase || 'none',
-      nodeId: currentNode?.id.substring(0, 8) + '...' || 'none',
+      scene: node?.scene?.type || 'none',
+      phase: node?.phase || 'none',
+      nodeId: node?.id.substring(0, 8) + '...' || 'none',
     };
 
     console.log('[NavigationInterpreter] State changed to:', logInfo);

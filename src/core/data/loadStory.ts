@@ -76,21 +76,16 @@ function flattenScenes(rawScenes: RawScene[]): FlattenResult {
         };
       }
 
-      // Track current characters throughout the flow
+      // Smart flow parsing: dialogue items "consume" following quest/input metadata
+      // Algorithm: Iterate through flow, build scenes with their phaseSteps
+
       let currentLeftCharacter = scene["left-character"];
       let currentRightCharacter = scene["right-character"];
+      let currentDialogue: Partial<Scene> | null = null;
+      let currentPhaseSteps: string[] = ["basic"];
+      let isFirstInFlow = true;
 
       scene.flow.forEach((f, flowIndex) => {
-        // Handle pure input metadata items (skip - they don't become scenes)
-        if (f.type === "input" && !f.text && !f.quest) {
-          return; // Skip creating a scene for this metadata item
-        }
-
-        // Handle pure quest metadata items (skip - they don't become scenes)
-        if (f.type === "quest" && !f.side) {
-          return; // Skip creating a scene for this metadata item
-        }
-
         // Update characters if specified in this flow item
         if (f["left-character"]) {
           currentLeftCharacter = f["left-character"];
@@ -99,47 +94,73 @@ function flattenScenes(rawScenes: RawScene[]): FlattenResult {
           currentRightCharacter = f["right-character"];
         }
 
-        // Use the current character state
-        let flattened: Partial<Scene> = {
-        
-          flowSequence: true,
-          isFirstInFlow: flowIndex === 0,
-          background: scene.background,
-          "left-character": currentLeftCharacter,
-          "right-character": currentRightCharacter,
-        };
+        // Dialogue item - save previous and start new
+        if (f.side && f.text) {
+          // Save previous dialogue if exists
+          if (currentDialogue) {
+            out.push({
+              ...currentDialogue,
+              phaseSteps: currentPhaseSteps
+            } as Scene);
+          }
 
-        // Attach flowId reference if this flow has metadata
-        if (flowId) {
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          (flattened as any).flowId = flowId;
-        }
-
-        // Only create scenes for flow items with actual dialogue content
-        if (f.input) {
-          // Input flow items become character scenes
-          flattened = {
-            ...flattened,
-            type: "character",
-            text: f.input,
-            speaker: f.side,
-          };
-        } else if (f.text) {
-          flattened = {
-            ...flattened,
+          // Start new dialogue scene
+          currentDialogue = {
             type: "character",
             text: f.text,
             speaker: f.side,
+            background: scene.background,
+            "left-character": currentLeftCharacter,
+            "right-character": currentRightCharacter,
+            flowSequence: true,
+            isFirstInFlow,
+            flowId
           };
-        } else {
-          // No text content, skip creating a scene
-          return;
+          currentPhaseSteps = ["basic"];
+          isFirstInFlow = false;
         }
-
-        out.push(flattened as Scene);
+        // Quest metadata - add to current dialogue's phases
+        else if (f.type === "quest" && !f.side) {
+          if (!currentDialogue) {
+            console.warn('[loadStory] Quest metadata found without preceding dialogue at flow index', flowIndex, '- skipping');
+            return;
+          }
+          currentPhaseSteps.push("quest");
+        }
+        // Input metadata - add to current dialogue's phases
+        else if (f.type === "input" && !f.text) {
+          if (!currentDialogue) {
+            console.warn('[loadStory] Input metadata found without preceding dialogue at flow index', flowIndex, '- skipping');
+            return;
+          }
+          currentPhaseSteps.push("input");
+        }
+        // Legacy: flow items with f.input or f.quest (old format) - ignore
+        else {
+          console.log('[loadStory] Skipping unrecognized flow item at index', flowIndex, f);
+        }
       });
+
+      // Save last dialogue if exists
+      if (currentDialogue) {
+        const finalScene = currentDialogue as Scene;
+        out.push({
+          ...finalScene,
+          phaseSteps: currentPhaseSteps
+        });
+      }
     } else if (scene.type === "image" && scene.image) {
       // Create single image scene with caption (if text is present)
+      // Determine phaseSteps based on whether caption exists
+      const hasCaption = !!scene.text;
+      const phaseSteps = hasCaption ? ["image_only", "caption"] : ["image_only"];
+
+      console.log('[loadStory] Image scene:', {
+        hasCaption,
+        phaseSteps,
+        text: scene.text?.substring(0, 30)
+      });
+
       out.push({
         type: "image",
         sceneId: `scene-${sceneCounter++}`,
@@ -148,6 +169,7 @@ function flattenScenes(rawScenes: RawScene[]): FlattenResult {
         background: scene.background,
         flowSequence: false,
         isFirstInFlow: false,
+        phaseSteps, // Explicitly set phaseSteps
       } as Scene);
     } else {
       // Pass-through for any already-flat scene types you might have

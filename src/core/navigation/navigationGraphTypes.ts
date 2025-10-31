@@ -74,12 +74,6 @@ export type NodePhase =
  */
 export type NodeId = string;
 
-/**
- * Unique identifier for a scene
- * Scenes can have multiple nodes (one per phase/state)
- */
-export type SceneId = string;
-
 
 /**
  * Node - A single navigation unit representing one state in the story
@@ -107,22 +101,32 @@ export interface Node {
   scene: Scene;
 
   /**
-   * Scene ID - identifier for the scene this node belongs to
-   * Multiple nodes can share the same sceneId (different phases of same scene)
-   */
-  sceneId: SceneId;
-
-  /**
-   * Semantic state key (e.g., "dialogue:basic", "image:caption", "static")
-   * Used for debugging and history tracking
-   */
-  stateKey: string;
-
-  /**
    * Current phase of this node
-   * Examples: 'image_only', 'caption', 'basic', 'ai-waiting', 'input-recording', etc.
+   * Examples: 'image_only', 'caption', 'basic', 'quest', 'input', etc.
+   *
+   * Invariant: phase === phaseSteps[phaseIndex]
    */
   phase: NodePhase;
+
+  /**
+   * Available phases for this node
+   * The node transitions through these phases on scroll before moving to next node
+   *
+   * Examples:
+   * - Simple dialogue: ["basic"]
+   * - Dialogue with quest: ["basic", "quest"]
+   * - Dialogue with quest and input: ["basic", "quest", "input"]
+   * - Image with caption: ["image_only", "caption"]
+   */
+  phaseSteps: NodePhase[];
+
+  /**
+   * Current position in phaseSteps array
+   * Points to the current phase: phaseSteps[phaseIndex] === phase
+   *
+   * Range: 0 to phaseSteps.length - 1
+   */
+  phaseIndex: number;
 
   /** Pointer to previous node (null if this is the head) */
   prevId: NodeId | null;
@@ -160,9 +164,6 @@ export interface NavigationHistoryEntry {
   /** The node we navigated to */
   nodeId: NodeId;
 
-  /** Semantic state key */
-  stateKey: string;
-
   /** What triggered this navigation */
   trigger: 'forward' | 'backward' | 'force-forward' | 'force-backward' | 'initial' | 'scene-change';
 
@@ -184,9 +185,6 @@ export interface NodeLifecycleEvent {
 
   /** The affected node */
   nodeId: NodeId;
-
-  /** Semantic state key */
-  stateKey: string;
 
   /** Additional context */
   context?: string;
@@ -222,7 +220,7 @@ export interface NavigationGraph {
   /**
    * Frozen snapshot of the previous node (before last navigation)
    * Preserved for exit animations even if the node gets deleted during skip-back
-   * Use this to get previousSceneId for animation coordination
+   * Use this to get previous node data for animation coordination
    */
   lastFrozenNode: FrozenNodeSnapshot | null;
 
@@ -236,9 +234,6 @@ export interface NavigationGraph {
    * Components can depend on this to trigger re-renders when the graph structure changes
    */
   historyVersion: number;
-
-  /** Scene registry for fast scene-range operations (optional) */
-  sceneRegistry?: SceneRegistry;
 
   /**
    * Navigation history - tracks where the user has been
@@ -266,9 +261,6 @@ export interface NavigationGraph {
 export interface PendingNodeDeletion {
   /** Node ID to delete */
   nodeId: NodeId;
-
-  /** Scene ID (for logging/debugging) */
-  sceneId: SceneId;
 
   /** When the deletion was scheduled (performance.now()) */
   scheduledAt: number;
@@ -320,12 +312,6 @@ export interface RewiringOperation {
 export interface FrozenNodeSnapshot {
   /** Stable node identifier (never changes) */
   nodeId: NodeId;
-
-  /** Scene this node belongs to */
-  sceneId: SceneId;
-
-  /** Semantic state key (e.g., "enter", "speak", "dialogue:quest-showing") */
-  stateKey: string;
 
   /** Original scene data (for character extraction, background, etc.) */
   scene: Scene;

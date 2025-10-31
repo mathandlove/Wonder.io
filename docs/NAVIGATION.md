@@ -87,10 +87,6 @@ interface Node {
   prevId: NodeId | null;
   nextId: NodeId | null;
 
-  // Navigation
-  lockForward?: boolean;         // Prevent scroll down
-  lockBackward?: boolean;        // Prevent scroll up
-
   // Lifecycle
   status: 'active' | 'pendingRemoval';
 }
@@ -194,7 +190,7 @@ nodeManager.insertSceneAfterCurrent(recordingScene);
 // goNext() implementation
 function goNext() {
   const current = byId[currentId];
-  if (current.lockForward) return; // Locked!
+  // Lock logic now handled by XState machines
 
   // Traverse pointers
   const next = byId[current.nextId];
@@ -241,12 +237,9 @@ type DialogueState =
 **Implementation**: Each node computes locks from its `sceneState`:
 
 ```typescript
-// buildNavigationArray.ts
-const lockForward =
-  (state === 'quest-showing' && questState !== 'complete') ||
-  state === 'input-recording' ||
-  state === 'answer-waiting' ||
-  state === 'ai-waiting';
+// Lock logic now managed by XState machines
+// Each scene type (image, dialogue, etc.) has its own state machine
+// that controls when navigation is allowed
 ```
 
 ## Two-Phase Deletion

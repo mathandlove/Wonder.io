@@ -34,5 +34,4 @@ export {
   markSceneForRemoval,
 } from '../navigationGraphOperations';
 
-// Re-export getLocksForState from the store (it's pure and reusable)
-export { getLocksForState } from '../navigationStore';
+// Lock logic removed - now managed by XState machines

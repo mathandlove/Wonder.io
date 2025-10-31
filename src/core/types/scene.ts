@@ -5,7 +5,6 @@
 // src/types/scene.ts
 export type CharacterScene = {
   type: "character";
-  sceneId?: string;
   text: string; // Empty string during recording, filled when transcript arrives
   speaker?: "left" | "right";
   background?: string;
@@ -15,6 +14,7 @@ export type CharacterScene = {
   isFirstInFlow?: boolean;
   hidden?: boolean;
   phase?: string; // Current phase of the scene (default: "basic")
+  phaseSteps?: string[]; // Available phases for this scene (e.g., ["basic", "quest", "input"])
   recordingId?: string; // Links to active recording session - used to update text when recording completes
   flowId?: string; // Reference to flow metadata (characterDescription, successAnswer)
   meta?: {
@@ -25,7 +25,6 @@ export type CharacterScene = {
 
 export type ImageScene = {
   type: "image";
-  sceneId?: string;
   image: string;
   text?: string; // Caption text (legacy property name)
   caption?: string; // Alternative caption property
@@ -34,6 +33,7 @@ export type ImageScene = {
   isFirstInFlow?: boolean;
   hidden?: boolean;
   phase?: string; // Current phase of the scene (default: "basic")
+  phaseSteps?: string[]; // Available phases for this scene (e.g., ["image_only", "caption"])
   meta?: {
     panelLeft?: { character: string; previousCharacter?: string; nextCharacter?: string; newCharacter?: boolean; aboutToSwap?: boolean };
     panelRight?: { character: string; previousCharacter?: string; nextCharacter?: string; newCharacter?: boolean; aboutToSwap?: boolean };
@@ -42,12 +42,12 @@ export type ImageScene = {
 
 export type CharacterFlowScene = {
   type: "character-flow";
-  sceneId?: string;
   background?: string;
   "left-character"?: string | null;
   "right-character"?: string | null;
   hidden?: boolean;
   phase?: string; // Current phase of the scene (default: "basic")
+  phaseSteps?: string[]; // Available phases (note: character-flow is flattened in loadStory, so this is rarely used)
   flow: Array<{
     side?: "left" | "right";
     text?: string;
@@ -61,13 +61,13 @@ export type CharacterFlowScene = {
 
 export type FullScene = {
   type: "full";
-  sceneId?: string;
   text: string;
   background?: string;
   flowSequence?: boolean;
   isFirstInFlow?: boolean;
   hidden?: boolean;
   phase?: string; // Current phase of the scene (default: "basic")
+  phaseSteps?: string[]; // Available phases (usually ["static"])
   meta?: {
     panelLeft?: { character: string; previousCharacter?: string; nextCharacter?: string; newCharacter?: boolean; aboutToSwap?: boolean };
     panelRight?: { character: string; previousCharacter?: string; nextCharacter?: string; newCharacter?: boolean; aboutToSwap?: boolean };
@@ -76,7 +76,6 @@ export type FullScene = {
 
 export type TextScene = {
   type: "text";
-  sceneId?: string;
   text: string;
   character?: string;
   background?: string;
@@ -84,11 +83,11 @@ export type TextScene = {
   isFirstInFlow?: boolean;
   hidden?: boolean;
   phase?: string; // Current phase of the scene (default: "basic")
+  phaseSteps?: string[]; // Available phases (usually ["static"])
 };
 
 export type FailDanceScene = {
   type: "fail-dance";
-  sceneId?: string;
   background?: string;
   character: string; // The regular character name (e.g., "bakerMom")
   angryCharacter: string; // The angry version (e.g., "angrybakerMom")
@@ -102,6 +101,7 @@ export type FailDanceScene = {
   isFirstInFlow?: boolean;
   hidden?: boolean;
   phase?: string; // Current phase of the scene (default: "basic")
+  phaseSteps?: string[]; // Available phases (usually ["answer-wrong"])
   meta?: {
     panelLeft?: { character: string; previousCharacter?: string; nextCharacter?: string; newCharacter?: boolean; aboutToSwap?: boolean };
     panelRight?: { character: string; previousCharacter?: string; nextCharacter?: string; newCharacter?: boolean; aboutToSwap?: boolean };
@@ -110,7 +110,6 @@ export type FailDanceScene = {
 
 export type SuccessDanceScene = {
   type: "success-dance";
-  sceneId?: string;
   background?: string;
   character: string; // The regular character name (e.g., "bakerMom")
   happyCharacter: string; // The happy/celebrating version (e.g., "happybakerMom")
@@ -123,6 +122,7 @@ export type SuccessDanceScene = {
   isFirstInFlow?: boolean;
   hidden?: boolean;
   phase?: string; // Current phase of the scene (default: "basic")
+  phaseSteps?: string[]; // Available phases (usually ["answer-right"])
   meta?: {
     panelLeft?: { character: string; previousCharacter?: string; nextCharacter?: string; newCharacter?: boolean; aboutToSwap?: boolean };
     panelRight?: { character: string; previousCharacter?: string; nextCharacter?: string; newCharacter?: boolean; aboutToSwap?: boolean };

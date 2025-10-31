@@ -9,10 +9,9 @@
  * @module navigationMachine
  */
 
-import { setup, assign, fromPromise, sendTo } from 'xstate';
-import type { NavigationEvent, NavigationContext, NavigationAction, MachineGraphNode, MachineGraph } from './types';
+import { setup, assign, fromPromise } from 'xstate';
+import type { NavigationEvent, NavigationContext, MachineGraph } from './types';
 import { loadStory } from '@core/data/loadStory';
-import { imageSceneMachine } from '@core/scenes/image/imageSceneMachine';
 import { buildNavigationGraph } from '../navigationGraphBuilder';
 import { useNavigationStore } from '../navigationStore';
 import { setScenes } from '../navigationHelpers';
@@ -70,7 +69,6 @@ export const navigationMachine = setup({
   },
   actors: {
     loadStory: loadStoryService,
-    imageSceneMachine,
   },
   actions: {
     // Assign storyId to context when LOAD_STORY_REQUESTED is received
@@ -97,37 +95,13 @@ export const navigationMachine = setup({
     // Navigate to next node
     // Calls navigationStore.advance() directly (single source of truth)
     goNext: () => {
-      const store = useNavigationStore.getState();
-      console.log('[NavigationMachine] goNext from:', store.currentId?.substring(0, 8));
-      store.advance('forward');
+      useNavigationStore.getState().advance('forward');
     },
 
     // Navigate to previous node
     // Calls navigationStore.advance() directly (single source of truth)
     goPrev: () => {
-      const store = useNavigationStore.getState();
-      console.log('[NavigationMachine] goPrev from:', store.currentId?.substring(0, 8));
-      store.advance('backward');
-    },
-
-    // Update phase when child machine changes phase
-    // Calls navigationStore.updateNodePhase() directly
-    updatePhase: ({ event }) => {
-      if (event.type !== 'UPDATE_NODE_PHASE') {
-        return;
-      }
-
-      // Use navigationStore's currentId as the source of truth
-      const store = useNavigationStore.getState();
-      const nodeId = store.currentId;
-
-      if (!nodeId) {
-        console.warn('[NavigationMachine] Cannot update phase - no current node');
-        return;
-      }
-
-      console.log('[NavigationMachine] Updating phase:', nodeId.substring(0, 8), '→', event.phase);
-      store.updateNodePhase(nodeId, event.phase);
+      useNavigationStore.getState().advance('backward');
     },
 
     // Initialize navigationStore with loaded story data
@@ -178,18 +152,16 @@ export const navigationMachine = setup({
   },
   guards: {
     // Check if current node is dialogue type
-    // Reads from navigationStore (single source of truth)
+    // Uses convenience method to get scene type
     isDialogue: () => {
-      const store = useNavigationStore.getState();
-      const currentNode = store.currentId ? store.graph.byId[store.currentId] : null;
-      return currentNode?.scene?.type === 'character' || currentNode?.scene?.type === 'character-flow';
+      const type = useNavigationStore.getState().getCurrentSceneType();
+      return type === 'character' || type === 'character-flow';
     },
     // Check if current node is image type
-    // Reads from navigationStore (single source of truth)
+    // Uses convenience method to get scene type
     isImage: () => {
-      const store = useNavigationStore.getState();
-      const currentNode = store.currentId ? store.graph.byId[store.currentId] : null;
-      return currentNode?.scene?.type === 'image';
+      const type = useNavigationStore.getState().getCurrentSceneType();
+      return type === 'image';
     },
   },
 }).createMachine({
@@ -290,9 +262,7 @@ export const navigationMachine = setup({
           actions: 'applyGraph',
           target: '.route',
         },
-        // Handle navigation requests from children
-        // Note: SCROLL_* events are NOT handled here - they go to child machines first
-        // Children send REQUEST_NAV_* when they're ready to navigate
+        // Handle navigation requests (kept for backwards compatibility)
         REQUEST_NAV_NEXT: {
           actions: 'goNext',
           target: '.navigating',
@@ -300,10 +270,6 @@ export const navigationMachine = setup({
         REQUEST_NAV_PREV: {
           actions: 'goPrev',
           target: '.navigating',
-        },
-        // Handle phase updates from child machines
-        UPDATE_NODE_PHASE: {
-          actions: 'updatePhase',
         },
       },
       states: {
@@ -352,22 +318,23 @@ export const navigationMachine = setup({
 
         /**
          * DIALOGUE scene
-         * Handles dialogue flows - will invoke dialogue child machine later
+         * Handles dialogue flows with phase management (basic → quest → input)
+         * Uses store.advance() which automatically handles phase transitions
          */
         dialogue: {
-          // TODO: Invoke dialogue child machine here
-          // invoke: {
-          //   src: 'dialogueSceneMachine',
-          //   input: () => ({ /* read from navigationStore if needed */ }),
-          // },
           on: {
-            // Temporary: Until we have dialogueSceneMachine, handle scrolls directly
             SCROLL_DOWN_STEP: {
-              actions: 'goNext',
+              actions: [
+                'goNext',
+                () => console.log('[NavigationMachine] SCROLL_DOWN_STEP in dialogue → goNext'),
+              ],
               target: '#navigation.scene.route',
             },
             SCROLL_UP_STEP: {
-              actions: 'goPrev',
+              actions: [
+                'goPrev',
+                () => console.log('[NavigationMachine] SCROLL_UP_STEP in dialogue → goPrev'),
+              ],
               target: '#navigation.scene.route',
             },
           },
@@ -375,45 +342,24 @@ export const navigationMachine = setup({
 
         /**
          * IMAGE scene
-         * Handles image display with caption phases
-         * Invokes the image child machine that manages image_only → caption transitions
-         * Phase is read from navigationStore and updated via UPDATE_NODE_PHASE commands
+         * Handles image display with caption phases (image_only → caption)
+         * Uses store.advance() which automatically handles phase transitions
          */
         image: {
-          entry: () => {
-            const store = useNavigationStore.getState();
-            console.log('[NavigationMachine] Entering scene.image for node:', store.currentId?.substring(0, 8));
-          },
-          invoke: {
-            id: 'imageSceneMachine',
-            src: 'imageSceneMachine',
-            input: () => {
-              // Read phase from navigationStore (source of truth)
-              const store = useNavigationStore.getState();
-              const currentNodeId = store.currentId;
-              const node = currentNodeId ? store.graph.byId[currentNodeId] : null;
-              const phase = (node?.phase as 'image_only' | 'caption') || 'image_only';
-
-              console.log('[NavigationMachine] Invoking imageSceneMachine with phase from store:', phase, 'for node:', currentNodeId?.substring(0, 8));
-              return { phase };
-            },
-            onError: (error) => {
-              console.error('[NavigationMachine] imageSceneMachine error:', error);
-            },
-          },
           on: {
-            // Forward scroll events to the child machine using sendTo
             SCROLL_DOWN_STEP: {
               actions: [
-                sendTo('imageSceneMachine', ({ event }) => event),
-                () => console.log('[NavigationMachine] Forwarded SCROLL_DOWN_STEP to imageSceneMachine'),
+                'goNext',
+                () => console.log('[NavigationMachine] SCROLL_DOWN_STEP in image → goNext'),
               ],
+              target: '#navigation.scene.route',
             },
             SCROLL_UP_STEP: {
               actions: [
-                sendTo('imageSceneMachine', ({ event }) => event),
-                () => console.log('[NavigationMachine] Forwarded SCROLL_UP_STEP to imageSceneMachine'),
+                'goPrev',
+                () => console.log('[NavigationMachine] SCROLL_UP_STEP in image → goPrev'),
               ],
+              target: '#navigation.scene.route',
             },
           },
         },
@@ -423,9 +369,8 @@ export const navigationMachine = setup({
          */
         unknown: {
           entry: () => {
-            const store = useNavigationStore.getState();
-            const currentNode = store.currentId ? store.graph.byId[store.currentId] : null;
-            console.warn('[NavigationMachine] Unknown scene type for node:', store.currentId?.substring(0, 8), 'type:', currentNode?.scene?.type);
+            const node = useNavigationStore.getState().getCurrentNode();
+            console.warn('[NavigationMachine] Unknown scene type:', node?.scene?.type);
           },
           on: {
             // Fallback: allow scrolling through unknown scenes

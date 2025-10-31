@@ -24,7 +24,6 @@
  */
 export type CharacterScene = {
   type: "character";
-  sceneId?: string;
   text: string; // Empty string during recording, filled when transcript arrives
   speaker?: "left" | "right";
   background?: string;
@@ -48,7 +47,6 @@ export type CharacterScene = {
  */
 export type ImageScene = {
   type: "image";
-  sceneId?: string;
   image: string;
   text?: string; // Caption text (legacy property name)
   caption?: string; // Alternative caption property
@@ -67,7 +65,6 @@ export type ImageScene = {
  */
 export type CharacterFlowScene = {
   type: "character-flow";
-  sceneId?: string;
   background?: string;
   "left-character"?: string | null;
   "right-character"?: string | null;
@@ -89,7 +86,6 @@ export type CharacterFlowScene = {
  */
 export type FullScene = {
   type: "full";
-  sceneId?: string;
   text: string;
   background?: string;
   flowSequence?: boolean;
@@ -106,7 +102,6 @@ export type FullScene = {
  */
 export type TextScene = {
   type: "text";
-  sceneId?: string;
   text: string;
   character?: string;
   background?: string;
@@ -120,7 +115,6 @@ export type TextScene = {
  */
 export type FailDanceScene = {
   type: "fail-dance";
-  sceneId?: string;
   background?: string;
   character: string; // Regular character name
   angryCharacter: string; // Angry version character name
@@ -144,7 +138,6 @@ export type FailDanceScene = {
  */
 export type SuccessDanceScene = {
   type: "success-dance";
-  sceneId?: string;
   background?: string;
   character: string; // Regular character name
   happyCharacter: string; // Happy/celebrating character name
@@ -191,11 +184,6 @@ export type Story = {
 export type NodeId = string;
 
 /**
- * Unique identifier for a scene
- */
-export type SceneId = string;
-
-/**
  * Scene state - describes what state a particular scene is in
  */
 export type SceneState =
@@ -210,8 +198,6 @@ export type SceneState =
 export interface Node {
   /** Unique, stable ID for this node (used as React key) */
   id: NodeId;
-  /** Parent scene ID */
-  sceneId: SceneId;
   /** Semantic state key (e.g., "enter", "speak", "dialogue:quest-showing") */
   stateKey: string;
   /** Complete scene state data */
@@ -230,27 +216,6 @@ export interface Node {
   nextId: NodeId | null;
   /** Node lifecycle status */
   status: 'active' | 'pendingRemoval';
-  /** Scroll lock flags */
-  lockForward?: boolean;
-  lockBackward?: boolean;
-}
-
-/**
- * Scene boundary information for fast scene operations
- */
-export interface SceneInfo {
-  id: SceneId;
-  firstNodeId: NodeId;
-  lastNodeId: NodeId;
-  nodeCount: number;
-}
-
-/**
- * Registry for fast scene lookups
- */
-export interface SceneRegistry {
-  byId: Record<SceneId, SceneInfo>;
-  order: SceneId[];
 }
 
 /**
@@ -267,8 +232,6 @@ export interface NavigationGraph {
   lastFrozenNode: FrozenNodeSnapshot | null;
   /** Version counter for structural changes */
   historyVersion: number;
-  /** Optional scene registry */
-  sceneRegistry?: SceneRegistry;
 }
 
 /**
@@ -276,7 +239,6 @@ export interface NavigationGraph {
  */
 export interface FrozenNodeSnapshot {
   nodeId: NodeId;
-  sceneId: SceneId;
   stateKey: string;
   sceneState: SceneState;
   scene: Scene;
@@ -287,7 +249,6 @@ export interface FrozenNodeSnapshot {
  */
 export interface PendingNodeDeletion {
   nodeId: NodeId;
-  sceneId: SceneId;
   scheduledAt: number;
   timerId: number;
   compactAt: number;

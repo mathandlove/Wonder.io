@@ -16,9 +16,7 @@ import type { Scene, CharacterFlowScene } from '@core/types/scene';
 import type {
   Node,
   NodeId,
-  SceneId,
   NavigationGraph,
-  SceneRegistry,
 } from './navigationGraphTypes';
 import type { SceneState } from './types';
 
@@ -41,24 +39,17 @@ import type { SceneState } from './types';
 export function buildNavigationGraph(scenes: Scene[]): NavigationGraph {
   const byId: Record<NodeId, Node> = {};
   const order: NodeId[] = [];
-  const sceneRegistry: SceneRegistry = {
-    byId: {},
-    order: [],
-  };
 
   let previousNodeId: NodeId | null = null;
 
   // Process each scene
   for (const scene of scenes) {
-    // Ensure scene has an ID
-    const sceneId: SceneId = scene.sceneId || ulid();
-
     // Expand scene into state nodes
-    const sceneNodes = expandSceneToNodes(scene, sceneId);
+    const sceneNodes = expandSceneToNodes(scene);
 
     if (sceneNodes.length === 0) continue;
 
-    // Track first and last nodes for scene registry
+    // Track first and last nodes
     const firstNodeId = sceneNodes[0].id;
     const lastNodeId = sceneNodes[sceneNodes.length - 1].id;
 
@@ -84,16 +75,6 @@ export function buildNavigationGraph(scenes: Scene[]): NavigationGraph {
 
     // Update previousNodeId for next iteration
     previousNodeId = lastNodeId;
-
-    // Add to scene registry
-    sceneRegistry.byId[sceneId] = {
-      id: sceneId,
-      firstNodeId,
-      lastNodeId,
-      nodeCount: sceneNodes.length,
-    };
-    sceneRegistry.order.push(sceneId);
-
   }
 
   return {
@@ -102,7 +83,6 @@ export function buildNavigationGraph(scenes: Scene[]): NavigationGraph {
     currentId: order.length > 0 ? order[0] : null,
     lastFrozenNode: null,
     historyVersion: 0,
-    sceneRegistry,
   };
 }
 
@@ -112,110 +92,140 @@ export function buildNavigationGraph(scenes: Scene[]): NavigationGraph {
  * Different scene types expand differently:
  * - Image scenes: may have "hidden" and "showing" states (if caption exists)
  * - Character scenes: may have dialogue substates (quest/input features)
- * - Character-flow scenes: expanded based on flow items with States field
+ * - Character-flow scenes: expanded based on flow items with phaseSteps
  * - Simple scenes (text, full): single state node
  *
  * @param scene - Scene to expand
- * @param sceneId - Stable scene identifier
  * @returns Array of state nodes (not yet linked)
  */
-export function expandSceneToNodes(scene: Scene, sceneId: SceneId): Node[] {
+export function expandSceneToNodes(scene: Scene): Node[] {
   switch (scene.type) {
     case 'image':
-      return expandImageScene(scene, sceneId);
+      return expandImageScene(scene);
 
     case 'character':
       // Character scenes are now simple - phase is tracked on the scene itself, not via multiple nodes
-      return [createSimpleNode(scene, sceneId, 'dialogue:basic', { type: 'dialogue', state: 'basic' })];
+      return [createSimpleNode(scene)];
 
     case 'character-flow':
-      return expandCharacterFlowScene(scene, sceneId);
+      return expandCharacterFlowScene(scene);
 
     case 'text':
     case 'full':
-      return [createSimpleNode(scene, sceneId, 'static', { type: 'static' })];
+      return [createSimpleNode(scene)];
 
     case 'fail-dance':
-      return [createSimpleNode(scene, sceneId, 'dance:fail', { type: 'dialogue', state: 'answer-wrong' })];
+      return [createSimpleNode(scene)];
 
     case 'success-dance':
-      return [createSimpleNode(scene, sceneId, 'dance:success', { type: 'dialogue', state: 'answer-right' })];
+      return [createSimpleNode(scene)];
 
     default:
       console.warn('Unknown scene type:', (scene as { type?: string }).type);
-      return [createSimpleNode(scene, sceneId, 'unknown', { type: 'static' })];
+      return [createSimpleNode(scene)];
   }
 }
 
 /**
- * Image scene expansion - creates single node (no more state splitting)
+ * Image scene expansion - creates single node with phase management
  */
-function expandImageScene(scene: Scene, sceneId: SceneId): Node[] {
-  // Image scenes now have a single node with phase tracking on the scene itself
-  return [
-    createNode(
-      scene,
-      sceneId,
-      'image:basic',
-      { type: 'dialogue', state: 'basic' },
-      { lockForward: false, lockBackward: false }
-    ),
-  ];
+function expandImageScene(scene: Scene): Node[] {
+  // Image scenes create a single node that starts in 'image_only' phase
+  // Will transition to 'caption' phase if the scene has a caption
+  return [createNode(scene)];
 }
 
 /**
- * Character-flow scene expansion - simplified without States field
+ * Character-flow scene expansion - creates single node with phase management
+ *
+ * Unlike the old multi-node approach, character-flow scenes now create ONE node
+ * that transitions through phases internally (managed by dialogueSceneMachine).
+ *
+ * This follows the imageScene pattern:
+ * - One visual scene = One node
+ * - Phases are managed by child state machine
+ * - User scrolls through phases (basic → quest → input) within the node
+ * - Only moves to next node after all phases are exhausted
+ *
+ * The flow array determines which phases are available:
+ * - If flow has quest item → node can transition to 'quest' phase
+ * - If flow has input item → node can transition to 'input' phase
+ * - dialogueSceneMachine reads the flow to determine phase routing
  */
-function expandCharacterFlowScene(scene: CharacterFlowScene, sceneId: SceneId): Node[] {
-  // Character-flow scenes are now simple - phase tracking is on the scene itself
-  return [
-    createNode(
-      scene,
-      sceneId,
-      'dialogue:basic',
-      { type: 'dialogue', state: 'basic' },
-      { lockForward: false, lockBackward: false }
-    ),
-  ];
+function expandCharacterFlowScene(scene: CharacterFlowScene): Node[] {
+  // Character-flow scenes create ONE node with phase tracking
+  // The dialogueSceneMachine will manage phase transitions based on the flow
+  console.log('[expandCharacterFlowScene] Creating single node with phase management for flow with', scene.flow.length, 'items');
+
+  return [createNode(scene)];
 }
 
 /**
- * Create a state node with computed locks from scene state
+ * Create a state node
  *
  * @param scene - Original scene data
- * @param sceneId - Stable scene identifier
- * @param stateKey - Semantic key for this state
- * @param sceneState - Full scene state object
- * @param overrideLocks - Optional lock overrides (for builder control)
  * @returns Complete Node (not yet linked)
  */
 function createNode(
-  scene: Scene,
-  sceneId: SceneId,
-  stateKey: string,
-  sceneState: SceneState,
-  overrideLocks?: { lockForward?: boolean; lockBackward?: boolean }
+  scene: Scene
 ): Node {
   // Determine initial phase based on scene type
   let initialPhase: string;
-  if (scene.type === 'image') {
-    initialPhase = scene.phase || 'image_only';
+
+  if (scene.phase) {
+    // Use explicit phase from scene if provided
+    initialPhase = scene.phase;
+  } else if (scene.type === 'image') {
+    initialPhase = 'image_only';
   } else if (scene.type === 'character' || scene.type === 'character-flow') {
-    initialPhase = scene.phase || 'basic';
+    initialPhase = 'basic';
   } else if (scene.type === 'fail-dance') {
     initialPhase = 'answer-wrong';
   } else if (scene.type === 'success-dance') {
     initialPhase = 'answer-right';
   } else {
-    initialPhase = scene.phase || 'static';
+    initialPhase = 'static';
+  }
+
+  // Get phaseSteps from scene or compute defaults
+  let phaseSteps: string[];
+  if ('phaseSteps' in scene && Array.isArray(scene.phaseSteps) && scene.phaseSteps.length > 0) {
+    // Use phaseSteps from scene (set by loadStory for dialogue, or manually)
+    phaseSteps = scene.phaseSteps;
+  } else if (scene.type === 'image') {
+    // Image scenes: check if caption exists
+    const hasCaption = ('text' in scene && scene.text) || ('caption' in scene && scene.caption);
+    phaseSteps = hasCaption ? ['image_only', 'caption'] : ['image_only'];
+  } else if (scene.type === 'character' || scene.type === 'character-flow') {
+    // Dialogue scenes: default to basic only (phaseSteps should be set by loadStory)
+    phaseSteps = ['basic'];
+  } else if (scene.type === 'fail-dance') {
+    phaseSteps = ['answer-wrong'];
+  } else if (scene.type === 'success-dance') {
+    phaseSteps = ['answer-right'];
+  } else {
+    // Default: single static phase
+    phaseSteps = ['static'];
+  }
+
+  // Calculate phaseIndex from initialPhase
+  let phaseIndex = phaseSteps.indexOf(initialPhase);
+  if (phaseIndex === -1) {
+    console.warn('[createNode] Phase not found in phaseSteps, using 0', {
+      phase: initialPhase,
+      phaseSteps,
+      sceneType: scene.type
+    });
+    phaseIndex = 0;
+    initialPhase = phaseSteps[0];
   }
 
   return {
     id: ulid(), // Stable unique ID
     scene, // Store full scene object
-    sceneId, // Scene identifier
-    stateKey, // Semantic state key for debugging
-    phase: initialPhase, // Initialize phase based on scene type
+    phase: initialPhase, // Initialize phase from scene type
+    phaseSteps, // Available phases for this node
+    phaseIndex, // Current position in phaseSteps
     prevId: null, // Will be set during linking
     nextId: null, // Will be set during linking
     status: 'active',
@@ -226,62 +236,9 @@ function createNode(
  * Create a simple state node for scenes without substates
  */
 function createSimpleNode(
-  scene: Scene,
-  sceneId: SceneId,
-  stateKey: string,
-  sceneState: SceneState
+  scene: Scene
 ): Node {
-  return createNode(scene, sceneId, stateKey, sceneState, {
-    lockForward: false,
-    lockBackward: false,
-  });
-}
-
-/**
- * Determine scroll locks based on scene state
- * (Extracted from SceneManager.tsx getLocksForState)
- */
-function getLocksForState(state: SceneState): { lockForward: boolean; lockBackward: boolean } {
-  if (state.type === 'static') {
-    return { lockForward: false, lockBackward: false };
-  }
-
-  if (state.type === 'image') {
-    return { lockForward: false, lockBackward: false };
-  }
-
-  if (state.type === 'dialogue') {
-    switch (state.state) {
-      case 'quest-showing':
-        return { lockForward: true, lockBackward: true };
-
-      case 'input-basic':
-        return { lockForward: false, lockBackward: false };
-
-      case 'input-showInput':
-        return { lockForward: true, lockBackward: false };
-
-      case 'input-recording':
-      case 'input-processing':
-      case 'ai-waiting':
-        return { lockForward: true, lockBackward: true };
-
-      case 'record-answer':
-      case 'waiting-for-answer-finalize':
-        return { lockForward: true, lockBackward: true };
-
-      case 'answer-processing':
-      case 'answer-waiting':
-      case 'answer-right':
-      case 'answer-wrong':
-        return { lockForward: true, lockBackward: true };
-
-      default:
-        return { lockForward: false, lockBackward: false };
-    }
-  }
-
-  return { lockForward: false, lockBackward: false };
+  return createNode(scene);
 }
 
 /**
@@ -320,20 +277,3 @@ export function getCurrentNode(navigationGraph: NavigationGraph): Node | null {
   return getNodeById(navigationGraph, navigationGraph.currentId);
 }
 
-/**
- * Helper: Find first node of a scene
- */
-export function getFirstNodeOfScene(navigationGraph: NavigationGraph, sceneId: SceneId): Node | null {
-  const sceneInfo = navigationGraph.sceneRegistry?.byId[sceneId];
-  if (!sceneInfo) return null;
-  return getNodeById(navigationGraph, sceneInfo.firstNodeId);
-}
-
-/**
- * Helper: Find last node of a scene
- */
-export function getLastNodeOfScene(navigationGraph: NavigationGraph, sceneId: SceneId): Node | null {
-  const sceneInfo = navigationGraph.sceneRegistry?.byId[sceneId];
-  if (!sceneInfo) return null;
-  return getNodeById(navigationGraph, sceneInfo.lastNodeId);
-}

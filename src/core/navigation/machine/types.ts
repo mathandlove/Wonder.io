@@ -224,15 +224,11 @@ export type UpdateNodePhaseEvent = {
   phase: string;
 };
 
-/**
- * NODE_CHANGED
- * Emitted when: navigationStore.currentId changes (after ADVANCE or NAVIGATE_TO commands)
- * Purpose: Trigger machine to re-route to the correct scene type for the new node
- */
-export type NodeChangedEvent = {
-  type: 'NODE_CHANGED';
-  nodeId: string;
+export type deleteCurrentNodeandNavNext = {
+  type: 'DELETE_CURRENT_NODE_AND_NAV_NEXT';
 };
+
+
 
 /**
  * Union of all domain events the machine can receive
@@ -257,7 +253,7 @@ export type NavigationEvent =
   | RequestNavNextEvent
   | RequestNavPrevEvent
   | UpdateNodePhaseEvent
-  | NodeChangedEvent;
+  |deleteCurrentNodeandNavNext
 
 // Note: SCENE_PHASE_CHANGED removed - phase lives in child machine state,
 // not as a parent event. Phase is persisted via meta when needed.

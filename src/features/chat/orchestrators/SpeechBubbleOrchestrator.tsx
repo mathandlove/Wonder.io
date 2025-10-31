@@ -39,8 +39,6 @@ export function SpeechBubbleOrchestrator() {
         sceneId: node.sceneId,
         stateKey: node.stateKey,
         sceneState: node.sceneState,
-        lockForward: node.lockForward,
-        lockBackward: node.lockBackward,
         index,
         status: node.status,
       } as Node & { index: number };

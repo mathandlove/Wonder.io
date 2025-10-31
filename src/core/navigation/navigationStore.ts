@@ -24,6 +24,7 @@ import { ulid } from 'ulid';
 import type { Scene } from '@core/types/scene';
 import type {
   NavigationGraph,
+  Node,
   NodeId,
   SceneId,
   FrozenNodeSnapshot,
@@ -42,68 +43,18 @@ import {
   findPrevActiveNode,
 } from '@core/navigation/navigationGraphOperations';
 
-/**
- * Determine scroll locks based purely on the current node's state
- * Locks are state-dependent, not preserved from previous states
- */
-export function getLocksForState(state: SceneState): { lockForward: boolean; lockBackward: boolean } {
-  // Default: no locks
-  if (state.type === 'static') {
-    return { lockForward: false, lockBackward: false };
-  }
-
-  if (state.type === 'image') {
-    // Image states allow free scrolling to reveal caption
-    return { lockForward: false, lockBackward: false };
-  }
-
-  if (state.type === 'dialogue') {
-    switch (state.state) {
-      // Quest states
-      case 'quest-showing':
-        return { lockForward: true, lockBackward: true }; // Must accept quest
-
-      // Input states
-      case 'input-basic':
-        return { lockForward: false, lockBackward: false }; // Can scroll freely
-      case 'input-showInput':
-        return { lockForward: true, lockBackward: false }; // Must record to continue, can go back
-      case 'input-recording':
-      case 'input-processing':
-      case 'ai-waiting':
-        return { lockForward: true, lockBackward: true }; // Cannot navigate during recording/processing/waiting
-
-      // Answer recording states
-      case 'record-answer':
-      case 'waiting-for-answer-finalize':
-      case 'answer-processing':
-      case 'answer-waiting':
-      case 'answer-right':
-      case 'answer-wrong':
-        return { lockForward: true, lockBackward: true }; // Cannot navigate during answer feedback
-
-      // Default dialogue states (basic, quest-basic, quest-accepted, etc.)
-      default:
-        return { lockForward: false, lockBackward: false };
-    }
-  }
-
-  return { lockForward: false, lockBackward: false };
-}
 
 /**
  * Helper to build a navigation history entry
  */
 function buildHistoryEntry(
   nodeId: NodeId,
-  node: { stateKey: string },
   trigger: 'forward' | 'backward' | 'force-forward' | 'force-backward' | 'initial' | 'scene-change',
   description?: string
 ): NavigationHistoryEntry {
   return {
     timestamp: Date.now(),
     nodeId,
-    stateKey: node.stateKey,
     trigger,
     description,
   };
@@ -125,13 +76,6 @@ function buildLifecycleEvent(
     stateKey: node.stateKey,
     context,
   };
-}
-
-/**
- * Helper to check if two scenes are the same
- */
-function sameScene(sceneIdA: SceneId, sceneIdB: SceneId): boolean {
-  return sceneIdA === sceneIdB;
 }
 
 // =============================================================================
@@ -156,6 +100,16 @@ interface NavigationState {
   deleteNode: (nodeId: NodeId) => void;
   advance: (direction: 'forward' | 'backward') => void;
   forceAdvance: (direction: 'forward' | 'backward') => void;
+
+  // Convenience methods (assume currentId)
+  updateCurrentPhase: (phase: string) => void;
+  getCurrentNode: () => Node | null;
+  getCurrentSceneType: () => string | null;
+
+  // Phase management (NEW - for phaseSteps navigation)
+  advancePhase: (direction: 1 | -1) => boolean;
+  canAdvancePhase: (direction: 1 | -1) => boolean;
+  getCurrentPhaseInfo: () => { phase: string; index: number; steps: string[]; canGoNext: boolean; canGoPrev: boolean } | null;
 }
 
 // =============================================================================
@@ -509,7 +463,6 @@ export const useNavigationStore = create<NavigationState>()(
               return state;
             }
 
-            const locks = getLocksForState(newState);
             const newNodeId = ulid();
 
             // Extract stateKey from newState
@@ -538,8 +491,6 @@ export const useNavigationStore = create<NavigationState>()(
                 prevId: currentNode.id,
                 nextId: currentNode.nextId,
                 status: 'active' as const,
-                lockForward: locks.lockForward,
-                lockBackward: locks.lockBackward,
               };
 
               // Update current node's nextId to point to new node
@@ -577,8 +528,6 @@ export const useNavigationStore = create<NavigationState>()(
                 ...newById[currentNode.id],
                 sceneState: newState,
                 stateKey,
-                lockForward: locks.lockForward,
-                lockBackward: locks.lockBackward,
               };
 
               resultNodeId = currentNode.id;
@@ -604,7 +553,7 @@ export const useNavigationStore = create<NavigationState>()(
 
       // =============================================================================
       // Action: updateNodeState
-      // Update sceneState, stateKey, and locks for the node
+      // Update sceneState and stateKey for the node
       // =============================================================================
       updateNodeState: (nodeId: NodeId, newState: SceneState) => {
         set(
@@ -614,8 +563,6 @@ export const useNavigationStore = create<NavigationState>()(
               console.warn('[navigationStore] updateNodeState: node not found:', nodeId);
               return state;
             }
-
-            const locks = getLocksForState(newState);
 
             // Extract stateKey from newState
             let stateKey = 'unknown';
@@ -633,8 +580,6 @@ export const useNavigationStore = create<NavigationState>()(
                 ...node,
                 sceneState: newState,
                 stateKey,
-                lockForward: locks.lockForward,
-                lockBackward: locks.lockBackward,
               },
             };
 
@@ -787,46 +732,33 @@ export const useNavigationStore = create<NavigationState>()(
 
       // =============================================================================
       // Action: advance
-      // Read current node; if locked in that direction, return early
-      // Delegate to forceAdvance
+      // Phase-aware navigation: first try to advance phase within node, then move to next/prev node
       // =============================================================================
       advance: (direction: 'forward' | 'backward') => {
         const state = get();
         const currentNodeId = state.currentId;
 
-        if (currentNodeId) {
-          const currentNode = getNodeById(state.graph, currentNodeId);
-
-          if (currentNode) {
-            if (direction === 'forward' && currentNode.lockForward) {
-              return;
-            }
-            if (direction === 'backward' && currentNode.lockBackward) {
-              return;
-            }
-          }
-        }
-
-        // Delegate to forceAdvance for the actual logic
-        get().forceAdvance(direction);
-      },
-
-      // =============================================================================
-      // Action: forceAdvance
-      // Snapshot first, compute next, delete current if forward + same scene, update currentId
-      // =============================================================================
-      forceAdvance: (direction: 'forward' | 'backward') => {
-        const state = get();
-        const currentNodeId = state.currentId;
-
         if (!currentNodeId) {
-          console.warn('[navigationStore] forceAdvance: No current node ID');
+          console.warn('[navigationStore] advance: No current node ID');
           return;
         }
 
+        // STEP 1: Try to advance phase within current node
+        const phaseDirection = direction === 'forward' ? 1 : -1;
+        const phaseAdvanced = get().advancePhase(phaseDirection);
+
+        if (phaseAdvanced) {
+          // Successfully advanced phase - stay on current node
+          console.log('[navigationStore] advance: Advanced phase, staying on current node');
+          return;
+        }
+
+        // STEP 2: Phase at boundary - move to next/previous node
+        console.log('[navigationStore] advance: Phase at boundary, moving to', direction, 'node');
+
         const currentNode = getNodeById(state.graph, currentNodeId);
         if (!currentNode) {
-          console.error('[navigationStore] forceAdvance: Current node not found:', currentNodeId);
+          console.error('[navigationStore] advance: Current node not found:', currentNodeId);
           return;
         }
 
@@ -837,39 +769,22 @@ export const useNavigationStore = create<NavigationState>()(
             : findPrevActiveNode(state.graph, currentNodeId);
 
         if (!nextActiveNode) {
-          console.warn('[navigationStore] forceAdvance: No active node in direction:', direction);
+          console.warn('[navigationStore] advance: No active node in direction:', direction);
           return;
         }
 
-        // CRITICAL: Capture frozen snapshot FIRST, before any mutations
+        // Capture frozen snapshot for animations
         const frozenSnapshot: FrozenNodeSnapshot = {
           nodeId: currentNode.id,
-          sceneId: currentNode.sceneId,
-          stateKey: currentNode.stateKey,
           scene: currentNode.scene,
         };
 
-        // SKIP-BACK REWIRING: Only mark for removal when navigating forward within the same scene
-        if (direction === 'forward') {
-          const isSameScene = sameScene(currentNode.sceneId, nextActiveNode.sceneId);
-
-          if (isSameScene) {
-            // Delete the current node (rewires neighbors + schedules compaction)
-            get().deleteNode(currentNodeId);
-          }
-        }
-
         // Create navigation history entry
-        const trigger = direction === 'forward' ? 'force-forward' : 'force-backward';
+        const trigger = direction === 'forward' ? 'forward' : 'backward';
         const historyEntry = buildHistoryEntry(
           nextActiveNode.id,
-          nextActiveNode,
           trigger,
-          direction === 'forward'
-            ? sameScene(currentNode.sceneId, nextActiveNode.sceneId)
-              ? 'Same scene (skip-back)'
-              : 'New scene'
-            : 'Backward navigation'
+          `${direction} navigation`
         );
 
         // Update currentId, save frozen snapshot, record history (atomic update)
@@ -887,8 +802,138 @@ export const useNavigationStore = create<NavigationState>()(
             },
           }),
           false,
-          direction === 'forward' ? 'nav/forceAdvance/forward' : 'nav/forceAdvance/backward'
+          direction === 'forward' ? 'nav/advance/forward' : 'nav/advance/backward'
         );
+      },
+
+
+      // =============================================================================
+      // Convenience Methods - Assume currentId
+      // These methods operate on the current node without requiring explicit nodeId
+      // =============================================================================
+
+      /**
+       * Update the phase of the current node
+       * Convenience wrapper around updateNodePhase that assumes currentId
+       */
+      updateCurrentPhase: (phase: string) => {
+        const state = get();
+        if (!state.currentId) {
+          console.warn('[navigationStore] updateCurrentPhase: No current node');
+          return;
+        }
+        get().updateNodePhase(state.currentId, phase);
+      },
+
+      /**
+       * Get the current node
+       * Convenience method to read the current node without selector
+       */
+      getCurrentNode: () => {
+        const state = get();
+        if (!state.currentId) return null;
+        return getNodeById(state.graph, state.currentId);
+      },
+
+      /**
+       * Get the type of the current scene
+       * Convenience method for routing decisions
+       */
+      getCurrentSceneType: () => {
+        const node = get().getCurrentNode();
+        return node?.scene?.type || null;
+      },
+
+      // =============================================================================
+      // Phase Management - For phaseSteps navigation
+      // =============================================================================
+
+      /**
+       * Advance the current node's phase by one step
+       * @param direction 1 for forward (next phase), -1 for backward (previous phase)
+       * @returns true if phase was advanced, false if at boundary
+       */
+      advancePhase: (direction: 1 | -1) => {
+        const state = get();
+        const node = state.getCurrentNode();
+
+        if (!node) {
+          console.warn('[navigationStore] advancePhase: No current node');
+          return false;
+        }
+
+        const newIndex = node.phaseIndex + direction;
+
+        // Check bounds
+        if (newIndex < 0 || newIndex >= node.phaseSteps.length) {
+          console.log('[navigationStore] advancePhase: At boundary', {
+            direction,
+            currentIndex: node.phaseIndex,
+            stepsLength: node.phaseSteps.length
+          });
+          return false; // Can't advance in this direction
+        }
+
+        const newPhase = node.phaseSteps[newIndex];
+
+        console.log('[navigationStore] advancePhase:', {
+          from: `${node.phase} (${node.phaseIndex})`,
+          to: `${newPhase} (${newIndex})`,
+          steps: node.phaseSteps
+        });
+
+        // Update both phase and phaseIndex atomically
+        set(
+          (prevState) => ({
+            ...prevState,
+            graph: {
+              ...prevState.graph,
+              byId: {
+                ...prevState.graph.byId,
+                [node.id]: {
+                  ...node,
+                  phase: newPhase,
+                  phaseIndex: newIndex
+                }
+              },
+              historyVersion: prevState.graph.historyVersion + 1
+            }
+          }),
+          false,
+          `nav/advancePhase/${direction > 0 ? 'forward' : 'backward'}`
+        );
+
+        return true;
+      },
+
+      /**
+       * Check if the current node can advance phase in a direction
+       * @param direction 1 for forward, -1 for backward
+       * @returns true if advancement is possible
+       */
+      canAdvancePhase: (direction: 1 | -1) => {
+        const node = get().getCurrentNode();
+        if (!node) return false;
+
+        const newIndex = node.phaseIndex + direction;
+        return newIndex >= 0 && newIndex < node.phaseSteps.length;
+      },
+
+      /**
+       * Get current phase information for the current node
+       * @returns Phase info object or null if no current node
+       */
+      getCurrentPhaseInfo: () => {
+        const node = get().getCurrentNode();
+        if (!node) return null;
+
+        return {
+          phase: node.phase,
+          index: node.phaseIndex,
+          steps: node.phaseSteps,
+          canGoNext: node.phaseIndex < node.phaseSteps.length - 1,
+          canGoPrev: node.phaseIndex > 0
+        };
       },
     }),
     {

@@ -13,7 +13,7 @@ import type { Scene } from '@core/types/scene';
 import type { Node, SceneState } from '@core/navigation/types';
 import type { NodeId, FrozenNodeSnapshot } from '@core/navigation/navigationGraphTypes';
 import { getNodeById } from '@core/navigation/navigationGraphBuilder';
-import { useNavigationStore, getLocksForState as getLocksForStateFromStore } from '@core/navigation/navigationStore';
+import { useNavigationStore } from '@core/navigation/navigationStore';
 import { ulid } from 'ulid';
 
 /**
@@ -207,11 +207,6 @@ export function forceAdvanceNavigation(direction: 'forward' | 'backward'): void 
   useNavigationStore.getState().forceAdvance(direction);
 }
 
-/**
- * Re-export getLocksForState from navigationStore
- */
-export { getLocksForState } from '@core/navigation/navigationStore';
-
 // =============================================================================
 // Node Factory Helpers - Create/clone nodes with modified state
 // =============================================================================
@@ -258,9 +253,6 @@ export function cloneNodeWithStateChange(nodeId: NodeId, newState: SceneState): 
     return null;
   }
 
-  // Compute locks for the new state
-  const locks = getLocksForStateFromStore(newState);
-
   // Generate stateKey from newState
   let stateKey = 'unknown';
   if (newState.type === 'dialogue') {
@@ -280,8 +272,6 @@ export function cloneNodeWithStateChange(nodeId: NodeId, newState: SceneState): 
     scene: originalNode.scene, // Same scene data
     stateMeta: originalNode.stateMeta ? { ...originalNode.stateMeta } : {}, // Clone metadata
     status: 'active', // New nodes are always active
-    lockForward: locks.lockForward,
-    lockBackward: locks.lockBackward,
     // Note: prevId and nextId are omitted - caller must insert into graph
   };
 }
