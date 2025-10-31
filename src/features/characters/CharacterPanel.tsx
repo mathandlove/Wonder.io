@@ -13,8 +13,6 @@ interface CharacterPanelProps {
   onJiggleComplete?: () => void; // Callback when jiggle animation completes
   isSpeaking?: boolean; // true if this character is currently the speaker
   isJiggling?: boolean; // true if this character should play the jiggle dance animation
-  currentSceneId?: string; // Current scene ID to detect same-scene transitions
-  previousSceneId?: string; // Previous scene ID to detect scene changes
   assetVersion?: string; // Stable version string for cache busting (default: "1")
 }
 
@@ -30,8 +28,6 @@ export const CharacterPanel: React.FC<CharacterPanelProps> = ({
   onJiggleComplete,
   isSpeaking = false,
   isJiggling = false,
-  currentSceneId,
-  previousSceneId,
   assetVersion = '1'
 }) => {
   // Track which animation variant to use (alternate between 1 and 2 to force restart)
@@ -47,14 +43,13 @@ export const CharacterPanel: React.FC<CharacterPanelProps> = ({
     // Normalize character checks
     const hasCurrent = currentCharacter !== 'NOCHARACTER';
     const hasPrevious = previousCharacter !== 'NOCHARACTER';
-    const isSameScene = currentSceneId === previousSceneId;
     const isNewCharacter = currentCharacter !== previousCharacter;
 
-    // Toggle variant only when we have a NEW transition nonce AND it's a valid entrance transition
+    // Toggle variant only when we have a NEW transition nonce AND it's a character change
     const wasVariantToggled = transitionNonce && transitionNonce !== lastTransitionNonceRef.current;
     if (wasVariantToggled) {
-      // Check if this is a scene change with new character (valid entrance condition)
-      if (!isSameScene && isNewCharacter) {
+      // Each node transition with a character change gets a new animation variant
+      if (isNewCharacter) {
         animationVariantRef.current = animationVariantRef.current === 1 ? 2 : 1;
       }
       lastTransitionNonceRef.current = transitionNonce;
@@ -63,9 +58,9 @@ export const CharacterPanel: React.FC<CharacterPanelProps> = ({
     // Compute phase with priority
     let phase: Phase = 'idle';
 
-    // Priority 1: Entrance animations (scene changed AND character changed)
-    // If scene changes but character stays the same, don't animate entrance
-    if (!isSameScene && isNewCharacter) {
+    // Priority 1: Entrance animations (character changed)
+    // In the node-based system, every navigation is effectively a new scene
+    if (isNewCharacter) {
       phase = 'entering';
     } else if (isJiggling) {
       // Priority 2: Jiggling dance animation (celebration for correct answers)
@@ -75,8 +70,6 @@ export const CharacterPanel: React.FC<CharacterPanelProps> = ({
       phase = 'speaking';
     }
     // else: idle (default)
-    // Note: When scene changes but character stays same (scene-0→scene-1, leo→leo),
-    // we stay in idle/speaking mode - no entrance animation
 
     return {
       phase,
@@ -84,7 +77,7 @@ export const CharacterPanel: React.FC<CharacterPanelProps> = ({
       hasCurrent,
       hasPrevious
     };
-  }, [currentCharacter, previousCharacter, currentSceneId, previousSceneId, isSpeaking, isJiggling, transitionNonce]);
+  }, [currentCharacter, previousCharacter, isSpeaking, isJiggling, transitionNonce]);
 
   // No imperative class manipulation - animations are driven by data-attributes
 

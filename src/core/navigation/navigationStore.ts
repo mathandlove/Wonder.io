@@ -14,7 +14,7 @@
  * Architecture:
  * - State: graph, currentId, lastFrozenNode
  * - Actions: setScenes, insertSceneNodes, addStateToCurrentNode, updateNodeState,
- *           updateSceneTextByRecordingId, deleteNode, advance, forceAdvance
+ *           updateSceneTextByRecordingId, deleteNode, advance
  * - Middlewares: devtools → subscribeWithSelector
  */
 
@@ -31,6 +31,16 @@ import type {
   NavigationHistoryEntry,
   NodeLifecycleEvent,
 } from '@core/navigation/navigationGraphTypes';
+
+/**
+ * DEPRECATED: SceneState type for backward compatibility with old commands
+ * Use phases and scene properties instead
+ */
+type SceneState =
+  | { type: 'dialogue'; state: string; questionText?: string; answerText?: string; allowAnimate?: boolean }
+  | { type: 'image'; state: string }
+  | { type: 'static' }
+  | { type: 'quest'; state: string };
 import {
   buildNavigationGraph,
   expandSceneToNodes,
@@ -93,16 +103,17 @@ interface NavigationState {
   insertSceneNodes: (afterNodeId: NodeId | null, scene: Scene) => NodeId | null;
   insertNode: (afterNodeId: NodeId | null, node: Omit<Node, 'prevId' | 'nextId'>) => NodeId;
   replaceNode: (oldNodeId: NodeId, newNode: Omit<Node, 'prevId' | 'nextId'>) => NodeId | null;
-  addStateToCurrentNode: (newState: SceneState, insertAfter?: boolean) => NodeId | null;
-  updateNodeState: (nodeId: NodeId, newState: SceneState) => void;
+  addStateToCurrentNode: (newState: SceneState, insertAfter?: boolean) => NodeId | null; // DEPRECATED
+  updateNodeState: (nodeId: NodeId, newState: SceneState) => void; // DEPRECATED
   updateNodePhase: (nodeId: NodeId, phase: string) => void;
+  updateSceneProperties: (nodeId: NodeId, updates: Partial<Scene>) => void;
   updateSceneTextByRecordingId: (recordingId: string, newText: string) => void;
   deleteNode: (nodeId: NodeId) => void;
   advance: (direction: 'forward' | 'backward') => void;
-  forceAdvance: (direction: 'forward' | 'backward') => void;
 
   // Convenience methods (assume currentId)
   updateCurrentPhase: (phase: string) => void;
+  updateCurrentSceneProperties: (updates: Partial<Scene>) => void;
   getCurrentNode: () => Node | null;
   getCurrentSceneType: () => string | null;
 
@@ -110,6 +121,7 @@ interface NavigationState {
   advancePhase: (direction: 1 | -1) => boolean;
   canAdvancePhase: (direction: 1 | -1) => boolean;
   getCurrentPhaseInfo: () => { phase: string; index: number; steps: string[]; canGoNext: boolean; canGoPrev: boolean } | null;
+  getCurrentPhase: () => string | null;
 }
 
 // =============================================================================
@@ -637,6 +649,47 @@ export const useNavigationStore = create<NavigationState>()(
       },
 
       // =============================================================================
+      // Action: updateSceneProperties
+      // Immutably update scene properties (questionText, answerText, etc.)
+      // =============================================================================
+      updateSceneProperties: (nodeId: NodeId, updates: Partial<Scene>) => {
+        set(
+          (state) => {
+            const node = getNodeById(state.graph, nodeId);
+            if (!node) {
+              console.warn('[navigationStore] updateSceneProperties: node not found:', nodeId);
+              return state;
+            }
+
+            // Create new scene object with updates (immutable)
+            const updatedScene = {
+              ...node.scene,
+              ...updates,
+            };
+
+            const newById = {
+              ...state.graph.byId,
+              [nodeId]: {
+                ...node,
+                scene: updatedScene,
+              },
+            };
+
+            return {
+              ...state,
+              graph: {
+                ...state.graph,
+                byId: newById,
+                historyVersion: state.graph.historyVersion + 1,
+              },
+            };
+          },
+          false,
+          'nav/updateSceneProperties'
+        );
+      },
+
+      // =============================================================================
       // Action: updateSceneTextByRecordingId
       // Find node whose scene.recordingId === recordingId, update scene.text
       // =============================================================================
@@ -656,7 +709,7 @@ export const useNavigationStore = create<NavigationState>()(
                   scene: {
                     ...scene,
                     text: newText,
-                  },
+                  } as Scene,
                 };
                 updated = true;
                 break;
@@ -732,7 +785,9 @@ export const useNavigationStore = create<NavigationState>()(
 
       // =============================================================================
       // Action: advance
-      // Phase-aware navigation: first try to advance phase within node, then move to next/prev node
+      // Phase-aware navigation for forward, node-only navigation for backward
+      // - Forward: cycles through phases within a node before moving to next node
+      // - Backward: skips phase cycling and jumps directly to previous nodes
       // =============================================================================
       advance: (direction: 'forward' | 'backward') => {
         const state = get();
@@ -743,18 +798,21 @@ export const useNavigationStore = create<NavigationState>()(
           return;
         }
 
-        // STEP 1: Try to advance phase within current node
-        const phaseDirection = direction === 'forward' ? 1 : -1;
-        const phaseAdvanced = get().advancePhase(phaseDirection);
+        // STEP 1: Try to advance phase within current node (ONLY for forward direction)
+        if (direction === 'forward') {
+          const phaseAdvanced = get().advancePhase(1);
 
-        if (phaseAdvanced) {
-          // Successfully advanced phase - stay on current node
-          console.log('[navigationStore] advance: Advanced phase, staying on current node');
-          return;
+          if (phaseAdvanced) {
+            // Successfully advanced phase - stay on current node
+            console.log('[navigationStore] advance: Advanced phase, staying on current node');
+            return;
+          }
         }
 
-        // STEP 2: Phase at boundary - move to next/previous node
-        console.log('[navigationStore] advance: Phase at boundary, moving to', direction, 'node');
+        // STEP 2: Move to next/previous node
+        // For forward: phase at boundary - move to next node
+        // For backward: skip phases entirely - move to previous node
+        console.log('[navigationStore] advance: Moving to', direction, 'node');
 
         const currentNode = getNodeById(state.graph, currentNodeId);
         if (!currentNode) {
@@ -823,6 +881,20 @@ export const useNavigationStore = create<NavigationState>()(
           return;
         }
         get().updateNodePhase(state.currentId, phase);
+      },
+
+      /**
+       * Update scene properties of the current node
+       * Convenience wrapper around updateSceneProperties that assumes currentId
+       * Example: updateCurrentSceneProperties({ questionText: 'Hello?', answerText: 'World!' })
+       */
+      updateCurrentSceneProperties: (updates: Partial<Scene>) => {
+        const state = get();
+        if (!state.currentId) {
+          console.warn('[navigationStore] updateCurrentSceneProperties: No current node');
+          return;
+        }
+        get().updateSceneProperties(state.currentId, updates);
       },
 
       /**
@@ -918,6 +990,14 @@ export const useNavigationStore = create<NavigationState>()(
         const newIndex = node.phaseIndex + direction;
         return newIndex >= 0 && newIndex < node.phaseSteps.length;
       },
+      getCurrentPhase: () => {
+        const node = get().getCurrentNode();
+        if (!node) return null;
+
+        return node.phase
+        ;
+      },
+ 
 
       /**
        * Get current phase information for the current node

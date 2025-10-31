@@ -17,7 +17,7 @@
 import { useCallback } from 'react';
 import { useAIModule } from '@features/ai/useAIModule';
 import { useSceneFactory } from '@core/navigation/SceneFactory';
-import { getCurrentNode, getCurrentNodeId, updateNodeState, insertSceneNodes, forceAdvanceNavigation } from '@core/navigation/navigationHelpers';
+import { getCurrentNode, getCurrentNodeId, updateCurrentPhase, insertSceneNodes, advanceNavigation } from '@core/navigation/navigationHelpers';
 import { useSceneFlowMetadata } from '@core/data/FlowMetadataStore';
 import { useAIMemory } from '@core/ai/useAIMemory';
 import type { CharacterScene, Scene } from '@core/types/scene';
@@ -140,24 +140,22 @@ export function useChatFlowOrchestrator(props?: ChatFlowOrchestratorProps) {
 
       onSceneCreated?.(finalScene);
 
-      // Step 4: Update previous node state to 'basic' (remove input UI, locks auto-recalculated)
+      // Step 4: Update previous node phase to 'basic' (remove input UI)
       // This collapses the recording input UI from the previous scene
-      const currentNodeId = getCurrentNodeId();
-      if (currentNodeId) {
-        updateNodeState(currentNodeId, {
-          type: 'dialogue' as const,
-          state: 'basic' as const
-        });
-      }
+      updateCurrentPhase('basic');
 
       // Step 5: Insert the scene after current node
+      const currentNodeId = getCurrentNodeId();
       // This properly maintains the state-node graph structure
       // TODO: [Navigation Refactor] Replace with event bus emission
       // emit({ type: 'AI_DONE', nodeId: currentNodeId, response: aiText })
       insertSceneNodes(currentNodeId, finalScene);
 
+      // TODO: [Navigation Refactor] Orchestrators should NOT call navigation directly
+      // This should emit an event to the navigation machine instead
+      // emit({ type: 'REQUEST_NAV_NEXT' })
       // Step 6: Navigate to the new scene
-      forceAdvanceNavigation('forward');
+      advanceNavigation('forward');
 
 
     } catch (error) {

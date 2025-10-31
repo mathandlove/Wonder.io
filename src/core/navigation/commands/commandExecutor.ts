@@ -14,9 +14,7 @@ import type { NavigationCommand } from '../machine/types';
 import { useNavigationStore } from '../navigationStore';
 import { setScenes } from '../navigationHelpers';
 import type { Scene } from '@core/types/scene';
-
-// Also add these imports for debugging
-import type { Node } from '../types';
+import type { Node } from '../navigationGraphTypes';
 
 /**
  * Execute a navigation command by calling the appropriate graph mutator
@@ -47,6 +45,7 @@ export function executeCommand(command: NavigationCommand): void {
 
     case 'REPLACE_NODE': {
       console.log('[CommandExecutor] REPLACE_NODE:', command.nodeId);
+      console.warn('[CommandExecutor] DEPRECATED: REPLACE_NODE command uses old sceneState architecture');
 
       const existingNode = store.graph.byId[command.nodeId];
       if (!existingNode) {
@@ -54,12 +53,14 @@ export function executeCommand(command: NavigationCommand): void {
         break;
       }
 
-      // Use replaceNode to update the node
+      // DEPRECATED: This uses the old sceneState architecture
+      // TODO: Refactor to use phase-based updates
       store.replaceNode(command.nodeId, {
-        nodeId: command.nodeId,
+        id: command.nodeId,
         scene: existingNode.scene,
-        sceneId: existingNode.sceneId,
-        sceneState: command.updates.sceneState ?? existingNode.sceneState,
+        phase: existingNode.phase,
+        phaseSteps: existingNode.phaseSteps,
+        phaseIndex: existingNode.phaseIndex,
         status: existingNode.status,
       });
       break;
@@ -67,7 +68,13 @@ export function executeCommand(command: NavigationCommand): void {
 
     case 'SET_NODE_STATE': {
       console.log('[CommandExecutor] SET_NODE_STATE:', command.nodeId, '→', command.newState);
-      store.updateNodeState(command.nodeId, command.newState);
+      console.warn('[CommandExecutor] DEPRECATED: SET_NODE_STATE command - use UPDATE_NODE_PHASE instead');
+
+      // DEPRECATED: Map old sceneState updates to phase updates
+      // This provides backward compatibility during migration
+      if (command.newState.type === 'dialogue') {
+        store.updateNodePhase(command.nodeId, command.newState.state);
+      }
       break;
     }
 
@@ -92,11 +99,11 @@ export function executeCommand(command: NavigationCommand): void {
 
       const direction = targetIndex > currentIndex ? 'forward' : 'backward';
 
-      // Use forceAdvance to navigate to the target
+      // Use advance to navigate to the target
       // We may need multiple advances if the target is far away
       const steps = Math.abs(targetIndex - currentIndex);
       for (let i = 0; i < steps; i++) {
-        store.forceAdvance(direction);
+        store.advance(direction);
       }
       break;
     }

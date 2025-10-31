@@ -10,11 +10,20 @@
  */
 
 import type { Scene } from '@core/types/scene';
-import type { Node, SceneState } from '@core/navigation/types';
-import type { NodeId, FrozenNodeSnapshot } from '@core/navigation/navigationGraphTypes';
+import type { Node, NodeId, FrozenNodeSnapshot } from '@core/navigation/navigationGraphTypes';
 import { getNodeById } from '@core/navigation/navigationGraphBuilder';
 import { useNavigationStore } from '@core/navigation/navigationStore';
 import { ulid } from 'ulid';
+
+/**
+ * DEPRECATED: SceneState type for backward compatibility
+ * Use phases and scene properties instead
+ */
+type SceneState =
+  | { type: 'dialogue'; state: string; questionText?: string; answerText?: string; allowAnimate?: boolean }
+  | { type: 'image'; state: string }
+  | { type: 'static' }
+  | { type: 'quest'; state: string };
 
 /**
  * Get the current node ID
@@ -31,16 +40,7 @@ export function getCurrentNode(): Node | null {
   const currentNodeId = state.currentId;
   if (!currentNodeId) return null;
 
-  const node = getNodeById(state.graph, currentNodeId);
-  if (!node) return null;
-
-  return {
-    nodeId: node.id,
-    scene: node.scene as Scene,
-    sceneId: node.sceneId,
-    sceneState: node.sceneState,
-    status: node.status,
-  };
+  return getNodeById(state.graph, currentNodeId);
 }
 
 /**
@@ -174,9 +174,26 @@ export function addStateToCurrentNode(newState: SceneState, insertAfter: boolean
 
 /**
  * Update a node's state
+ * @deprecated Use updateNodePhase + updateSceneProperties instead
  */
 export function updateNodeState(nodeId: NodeId, newState: SceneState): void {
   useNavigationStore.getState().updateNodeState(nodeId, newState);
+}
+
+/**
+ * Update the phase of the current node
+ * Example: updateCurrentPhase('input-recording')
+ */
+export function updateCurrentPhase(phase: string): void {
+  useNavigationStore.getState().updateCurrentPhase(phase);
+}
+
+/**
+ * Update scene properties immutably (for current node)
+ * Example: updateCurrentSceneProperties({ questionText: 'Hello?', answerText: 'World!' })
+ */
+export function updateCurrentSceneProperties(updates: Partial<Scene>): void {
+  useNavigationStore.getState().updateCurrentSceneProperties(updates);
 }
 
 /**
@@ -202,9 +219,10 @@ export function advanceNavigation(direction: 'forward' | 'backward'): void {
 
 /**
  * Force advance navigation (bypasses locks)
+ * @deprecated Use advanceNavigation instead - no longer needed as locks are removed
  */
 export function forceAdvanceNavigation(direction: 'forward' | 'backward'): void {
-  useNavigationStore.getState().forceAdvance(direction);
+  useNavigationStore.getState().advance(direction);
 }
 
 // =============================================================================

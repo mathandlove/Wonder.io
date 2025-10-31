@@ -11,7 +11,7 @@
 import { useCallback, useState, useRef } from 'react';
 import type { SceneProps } from './registry';
 import type { FailDanceScene as FailDanceSceneType } from '@core/types/scene';
-import { forceAdvanceNavigation, deleteNode, getCurrentNode, getCurrentNodeId } from '@core/navigation/navigationHelpers';
+import { advanceNavigation, deleteNode, getCurrentNode, getCurrentNodeId } from '@core/navigation/navigationHelpers';
 import './FailDanceScene.css';
 
 export default function FailDanceScene({ scene }: SceneProps<FailDanceSceneType>) {
@@ -48,8 +48,11 @@ export default function FailDanceScene({ scene }: SceneProps<FailDanceSceneType>
     // Remember our current node before navigating
     const failDanceNodeId = currentNodeId;
 
-    // Navigate back first (force to bypass navigation locks)
-    forceAdvanceNavigation('backward');
+    // TODO: [Navigation Refactor] Scenes should NOT call navigation directly
+    // This should emit an event to the navigation machine instead
+    // emit({ type: 'REQUEST_NAV_PREV' })
+    // Navigate back first
+    advanceNavigation('backward');
 
     // Set up pending deletion tracking
     pendingDeletionRef.current = {

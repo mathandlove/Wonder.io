@@ -25,8 +25,8 @@ export const CharacterOrchestrator: React.FC<Props> = ({ storyId, scenes }) => {
   const graph = useNavigationStore(selectNavigationGraph);
 
   // Compute panel data from current node in navigation graph
-  // Use currentNode.nodeId as animation nonce, lastFrozenNode for previousSceneId
-  const { leftPanel, rightPanel, currentSpeaker, isJiggling, transitionNonce, currentSceneId, previousSceneId } = useMemo(() => {
+  // Use currentNode.nodeId as animation nonce
+  const { leftPanel, rightPanel, currentSpeaker, isJiggling, transitionNonce } = useMemo(() => {
     const nodeId = currentId;
 
     if (!nodeId) {
@@ -41,9 +41,7 @@ export const CharacterOrchestrator: React.FC<Props> = ({ storyId, scenes }) => {
         },
         currentSpeaker: null,
         isJiggling: false,
-        transitionNonce: undefined,
-        currentSceneId: undefined,
-        previousSceneId: undefined
+        transitionNonce: undefined
       };
     }
 
@@ -61,9 +59,7 @@ export const CharacterOrchestrator: React.FC<Props> = ({ storyId, scenes }) => {
         },
         currentSpeaker: null,
         isJiggling: false,
-        transitionNonce: undefined,
-        currentSceneId: undefined,
-        previousSceneId: undefined
+        transitionNonce: undefined
       };
     }
 
@@ -72,7 +68,6 @@ export const CharacterOrchestrator: React.FC<Props> = ({ storyId, scenes }) => {
 
     // Check if we're in success-dance scene (should trigger jiggle dance)
     // Note: NOT during answer-right - that's for showing the stamp video
-    const dialogueState = currentNode.sceneState?.type === 'dialogue' ? currentNode.sceneState.state : null;
     const scene = currentNode.scene as Scene | undefined;
     const isSuccessDanceScene = scene?.type === 'success-dance';
     const shouldJiggle = isSuccessDanceScene; // Only jiggle during success-dance, not answer-right
@@ -102,9 +97,7 @@ export const CharacterOrchestrator: React.FC<Props> = ({ storyId, scenes }) => {
       },
       currentSpeaker: speaker,
       isJiggling: shouldJiggle,
-      transitionNonce: currentNode.id, // Use current node ID as animation nonce
-      currentSceneId: currentNode.sceneId, // Current scene from live node
-      previousSceneId: lastFrozenNode?.sceneId // Previous scene from frozen snapshot
+      transitionNonce: currentNode.id // Use current node ID as animation nonce
     };
   }, [currentId, lastFrozenNode, graph]);
 
@@ -215,8 +208,6 @@ export const CharacterOrchestrator: React.FC<Props> = ({ storyId, scenes }) => {
           isSpeaking={allowSpeaking && currentSpeaker === 'left'}
           isJiggling={isJiggling}
           transitionNonce={transitionNonce}
-          currentSceneId={currentSceneId}
-          previousSceneId={previousSceneId}
           onEntranceComplete={handleLeftEntranceComplete}
           onJiggleComplete={handleLeftJiggleComplete}
         />
@@ -234,8 +225,6 @@ export const CharacterOrchestrator: React.FC<Props> = ({ storyId, scenes }) => {
           isSpeaking={allowSpeaking && currentSpeaker === 'right'}
           isJiggling={isJiggling}
           transitionNonce={transitionNonce}
-          currentSceneId={currentSceneId}
-          previousSceneId={previousSceneId}
           onEntranceComplete={handleRightEntranceComplete}
           onJiggleComplete={handleRightJiggleComplete}
         />

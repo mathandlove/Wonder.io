@@ -125,10 +125,15 @@ export const navigationMachine = setup({
       const firstNodeId = store.graph.order[0];
       if (firstNodeId) {
         console.log('[NavigationMachine] Navigating to first node:', firstNodeId.substring(0, 8));
-        // Use forceAdvance to set initial position
-        while (store.currentId !== firstNodeId) {
-          store.forceAdvance('forward');
-        }
+        // Set initial position directly - no frozen node needed for very first load
+        useNavigationStore.setState({
+          currentId: firstNodeId,
+          lastFrozenNode: null, // No previous node on initial load
+          graph: {
+            ...store.graph,
+            currentId: firstNodeId,
+          }
+        });
       }
     },
 
@@ -153,16 +158,11 @@ export const navigationMachine = setup({
   guards: {
     // Check if current node is dialogue type
     // Uses convenience method to get scene type
-    isDialogue: () => {
-      const type = useNavigationStore.getState().getCurrentSceneType();
-      return type === 'character' || type === 'character-flow';
+    isQuest: () => {
+      const currentPhase= useNavigationStore.getState().getCurrentPhase();
+      return currentPhase === 'quest';
     },
-    // Check if current node is image type
-    // Uses convenience method to get scene type
-    isImage: () => {
-      const type = useNavigationStore.getState().getCurrentSceneType();
-      return type === 'image';
-    },
+
   },
 }).createMachine({
   id: 'navigation',
@@ -303,12 +303,8 @@ export const navigationMachine = setup({
           },
           always: [
             {
-              guard: 'isImage',
-              target: 'image',
-            },
-            {
-              guard: 'isDialogue',
-              target: 'dialogue',
+              guard: 'isQuest',
+              target: 'quest',
             },
             {
               target: 'unknown',
@@ -321,31 +317,12 @@ export const navigationMachine = setup({
          * Handles dialogue flows with phase management (basic → quest → input)
          * Uses store.advance() which automatically handles phase transitions
          */
-        dialogue: {
-          on: {
-            SCROLL_DOWN_STEP: {
-              actions: [
-                'goNext',
-                () => console.log('[NavigationMachine] SCROLL_DOWN_STEP in dialogue → goNext'),
-              ],
-              target: '#navigation.scene.route',
-            },
-            SCROLL_UP_STEP: {
-              actions: [
-                'goPrev',
-                () => console.log('[NavigationMachine] SCROLL_UP_STEP in dialogue → goPrev'),
-              ],
-              target: '#navigation.scene.route',
-            },
-          },
-        },
+      
 
         /**
-         * IMAGE scene
-         * Handles image display with caption phases (image_only → caption)
-         * Uses store.advance() which automatically handles phase transitions
+//TODO update quest it's image right now.
          */
-        image: {
+        quest: {
           on: {
             SCROLL_DOWN_STEP: {
               actions: [

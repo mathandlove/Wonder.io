@@ -34,14 +34,9 @@ export function SpeechBubbleOrchestrator() {
     return navigationGraph.order.map((nodeId, index) => {
       const node = navigationGraph.byId[nodeId];
       return {
-        nodeId: node.id,
-        scene: node.scene as Scene,
-        sceneId: node.sceneId,
-        stateKey: node.stateKey,
-        sceneState: node.sceneState,
+        ...node,
         index,
-        status: node.status,
-      } as Node & { index: number };
+      };
     });
   }, [navigationGraph.order, navigationGraph.byId]);
 
@@ -178,10 +173,9 @@ export function SpeechBubbleOrchestrator() {
         const characterScene = scene as CharacterScene;
         const sceneId = (characterScene as SceneWithId).sceneId;
 
-        // Get the navigation item to access scene state (more reliable than sceneStates context)
+        // Get the navigation item to access phase
         const navItem = navigationArray[sceneIndex];
-        const sceneState = navItem?.sceneState;
-        const dialogueState = sceneState?.type === 'dialogue' ? sceneState.state : null;
+        const phase = navItem?.phase;
 
         // Determine speaker and side
         const speakerLabel = characterScene.speaker === "left"
@@ -193,25 +187,25 @@ export function SpeechBubbleOrchestrator() {
         const side = characterScene.speaker === 'left' ? 'left' :
                characterScene.speaker === 'right' ? 'right' : 'center';
 
-        // Show AudioVisualizer placeholder when in input-recording state
-        const isRecording = dialogueState === 'input-recording';
-        const isProcessing = dialogueState === 'input-processing';
+        // Show AudioVisualizer placeholder when in input-recording phase
+        const isRecording = phase === 'input-recording';
+        const isProcessing = phase === 'input-processing';
 
-        // During recording, show transcript from scene state or AudioVisualizer
+        // During recording, show transcript from scene or AudioVisualizer
         // During processing, ALWAYS show AudioVisualizer with "Processing..." (ignore any text)
-        // The scene text might be default placeholder like "Test words", so we check scene state for actual transcript
-        const hasTranscript = sceneState?.type === 'dialogue' && sceneState.questionText && sceneState.questionText.trim();
+        // The scene text might be default placeholder like "Test words", so we check scene for actual transcript
+        const hasTranscript = characterScene.questionText && characterScene.questionText.trim();
 
         // Priority: processing > recording > normal text
         const bubbleContent = isProcessing
           ? null // Always null during processing - will show AudioVisualizer with "Processing..."
           : isRecording
-          ? (hasTranscript ? sceneState.questionText : null) // During recording: show transcript or AudioVisualizer
-          : characterScene.text; // Normal state: show scene text
+          ? (hasTranscript ? characterScene.questionText : null) // During recording: show transcript or AudioVisualizer
+          : characterScene.text; // Normal phase: show scene text
 
-        // Show waiting bubble based solely on dialogue state
-        // When state is 'ai-waiting', show the animated ellipses bubble
-        const shouldShowWaitingBubble = dialogueState === 'ai-waiting';
+        // Show waiting bubble based solely on phase
+        // When phase is 'ai-waiting', show the animated ellipses bubble
+        const shouldShowWaitingBubble = phase === 'ai-waiting';
 
         // Skip rendering if no content (unless recording/processing - show AudioVisualizer)
         if (!bubbleContent && !(isRecording && !hasTranscript) && !isProcessing) return null;

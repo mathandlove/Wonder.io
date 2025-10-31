@@ -36,6 +36,8 @@ export type CharacterScene = {
   recordingId?: string; // Links to active recording session
   isRecording?: boolean; // Visual flag during recording
   flowId?: string; // Reference to flow metadata (characterDescription, successAnswer)
+  questionText?: string; // Question text during quest/input phases
+  answerText?: string; // Answer text during answer recording/validation phases
   meta?: {
     panelLeft?: PanelMeta;
     panelRight?: PanelMeta;
@@ -179,125 +181,24 @@ export type Story = {
 // ============================================================================
 
 /**
- * Unique identifier for a node
+ * Navigation types are now defined in @core/navigation/navigationGraphTypes.ts
+ * Import Node, NodeId, NavigationGraph, etc. from that module instead.
+ *
+ * This migration removes the old sceneState/stateKey architecture in favor of
+ * the new phase-based navigation system.
  */
-export type NodeId = string;
-
-/**
- * Scene state - describes what state a particular scene is in
- */
-export type SceneState =
-  | { type: 'image'; state: ImageState }
-  | { type: 'dialogue'; state: DialogueState; questionText?: string; answerText?: string; allowAnimate?: boolean }
-  | { type: 'static' }
-  | { type: 'quest'; state: 'idle' | 'active' | 'completed' | 'failed' };
-
-/**
- * Navigation node - represents one stop in the navigation graph
- */
-export interface Node {
-  /** Unique, stable ID for this node (used as React key) */
-  id: NodeId;
-  /** Semantic state key (e.g., "enter", "speak", "dialogue:quest-showing") */
-  stateKey: string;
-  /** Complete scene state data */
-  sceneState: SceneState;
-  /** Original scene data */
-  scene: Scene;
-  /** Additional metadata */
-  stateMeta?: {
-    pose?: string | null;
-    timing?: number;
-    [key: string]: unknown;
-  };
-  /** Pointer to previous node */
-  prevId: NodeId | null;
-  /** Pointer to next node */
-  nextId: NodeId | null;
-  /** Node lifecycle status */
-  status: 'active' | 'pendingRemoval';
-}
-
-/**
- * Complete navigation graph structure
- */
-export interface NavigationGraph {
-  /** All nodes indexed by ID */
-  byId: Record<NodeId, Node>;
-  /** Linear traversal order */
-  order: NodeId[];
-  /** Currently active node */
-  currentId: NodeId | null;
-  /** Last frozen snapshot for animations */
-  lastFrozenNode: FrozenNodeSnapshot | null;
-  /** Version counter for structural changes */
-  historyVersion: number;
-}
-
-/**
- * Frozen snapshot of a node for stable animations
- */
-export interface FrozenNodeSnapshot {
-  nodeId: NodeId;
-  stateKey: string;
-  sceneState: SceneState;
-  scene: Scene;
-}
-
-/**
- * Pending node deletion with compaction timer
- */
-export interface PendingNodeDeletion {
-  nodeId: NodeId;
-  scheduledAt: number;
-  timerId: number;
-  compactAt: number;
-}
-
-/**
- * Graph pointer update operation
- */
-export interface RewiringOperation {
-  nodeId: NodeId;
-  field: 'prevId' | 'nextId';
-  newValue: NodeId | null;
-  previousValue?: NodeId | null;
-}
 
 // ============================================================================
 // DIALOGUE & INTERACTION TYPES
 // ============================================================================
 
 /**
- * Image caption states
+ * DEPRECATED: ImageState and DialogueState are replaced by NodePhase
+ * Import NodePhase from @core/navigation/navigationGraphTypes.ts instead.
+ *
+ * The new phase system unifies all scene states (image, dialogue, quest, etc.)
+ * into a single type that represents what the user sees at each navigation step.
  */
-export type ImageState =
-  | 'hidden'
-  | 'showing';
-
-/**
- * Dialogue scene interaction states
- */
-export type DialogueState =
-  | 'basic'
-  | 'pre-feature'
-  | 'input-ready'
-  | 'input-recording'
-  | 'input-processing'
-  | 'waiting-for-finalize'
-  | 'ai-waiting'
-  | 'quest-basic'
-  | 'quest-showing'
-  | 'quest-accepted'
-  | 'input-basic'
-  | 'input-showInput'
-  | 'show-hint'
-  | 'record-answer'
-  | 'answer-processing'
-  | 'waiting-for-answer-finalize'
-  | 'answer-waiting'
-  | 'answer-right'
-  | 'answer-wrong';
 
 /**
  * Message delivery status in chat
