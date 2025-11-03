@@ -212,6 +212,37 @@ export function deleteNode(nodeId: NodeId): void {
 }
 
 /**
+ * Initialize navigationStore with loaded story data
+ * Called by navigationMachine after story is loaded
+ *
+ * @param fullStory - Array of scenes from story JSON
+ * @param firstNodeId - ID of the first node to navigate to (optional)
+ */
+export function initializeStoreWithStory(fullStory: Scene[], firstNodeId?: string): void {
+  console.log('[navigationHelpers] Initializing store with', fullStory.length, 'scenes');
+
+  // Load scenes into store
+  setScenes(fullStory);
+
+  // Navigate to first node (or use store's default)
+  const store = useNavigationStore.getState();
+  const targetNodeId = firstNodeId || store.graph.order[0];
+
+  if (targetNodeId) {
+    console.log('[navigationHelpers] Navigating to first node:', targetNodeId.substring(0, 8));
+    // Set initial position directly - no frozen node needed for very first load
+    useNavigationStore.setState({
+      currentId: targetNodeId,
+      lastFrozenNode: null, // No previous node on initial load
+      graph: {
+        ...store.graph,
+        currentId: targetNodeId,
+      }
+    });
+  }
+}
+
+/**
  * Advance navigation (respects locks)
  */
 export function advanceNavigation(direction: 'forward' | 'backward'): void {

@@ -176,6 +176,10 @@ export function RecordingOrchestrator() {
           // Insert the fail-dance scene after current node using synchronous insertion
           // This properly maintains the state-node graph structure
           const currentNodeId = getCurrentNodeId();
+          if (!currentNodeId) {
+            console.error('[RecordPanelOrchestrator] No current node ID - cannot insert fail-dance scene');
+            return;
+          }
           // TODO: [Navigation Refactor] Replace with event bus emission
           // emit({ type: 'ANSWER_VALIDATED', nodeId: currentNodeId, isCorrect: false })
           insertSceneNodes(currentNodeId, failDanceScene);
@@ -186,7 +190,9 @@ export function RecordingOrchestrator() {
             // Transition the answer-wrong node to input-showInput phase (ready for retry)
             // This will be visible when we return from the fail-dance scene
             // Note: questionText is already stored on the scene, we just update the phase
-            useNavigationStore.getState().updateNodePhase(currentNodeId!, 'input-showInput');
+            if (currentNodeId) {
+              useNavigationStore.getState().updateNodePhase(currentNodeId, 'input-showInput');
+            }
           }, 2000);
 
           // TODO: [Navigation Refactor] Orchestrators should NOT call navigation directly
@@ -203,7 +209,7 @@ export function RecordingOrchestrator() {
       return () => clearTimeout(timerId);
     }
 
-  }, [phase, answerWrongVideoComplete, createFailDanceScene]);
+  }, [phase, answerWrongVideoComplete]);
 
   // Effect: Auto-transition from answer-right to success-dance scene, triggered AFTER video ends
   useEffect(() => {
@@ -267,7 +273,7 @@ export function RecordingOrchestrator() {
         advanceNavigation('forward');
       }
     }
-  }, [phase, answerRightVideoComplete, createSuccessDanceScene]);
+  }, [phase, answerRightVideoComplete]);
 
   // ===================================
   // RECORDING FLOW LOGIC
@@ -372,23 +378,87 @@ export function RecordingOrchestrator() {
   }, [phase, isRecording, recording]);
 
   /**
-   * Handle recording start - EVENT DRIVEN APPROACH
-   * Emits ASK_BUTTON_CLICKED event to XState machine
-   * XState handles: recording start, scene creation, insertion, and navigation
+   * Handle recording start - ORCHESTRATOR-FIRST APPROACH
+   * Orchestrator handles complex business logic, then emits event to machine
    */
-  const handleRecordStart = useCallback(() => {
-    // Increment question counter - unlocks Answer button after first question
-    setQuestionCount(prev => prev + 1);
+  const handleRecordStart = useCallback(async () => {
+    try {
+      // Increment question counter - unlocks Answer button after first question
+      setQuestionCount(prev => prev + 1);
 
-    // Emit event to XState machine - it will handle the entire flow
-    // XState action will:
-    // 1. Start recording immediately
-    // 2. Update phase from input to basic
-    // 3. Create recording scene
-    // 4. Insert scene into graph
-    // 5. Navigate forward
-    console.log('[RecordPanelOrchestrator] Emitting ASK_BUTTON_CLICKED event');
-    navigationBus.emit({ type: 'ASK_BUTTON_CLICKED' });
+      // Generate unique recording ID
+      const recordingId = `rec-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+
+      // STEP 1: START RECORDING IMMEDIATELY (critical for responsiveness)
+      await Recording.start().catch((err) => {
+        console.error('[RecordPanelOrchestrator] Failed to start recording:', err);
+        throw err; // Re-throw to prevent state updates on failure
+      });
+
+      // STEP 2: Update current node phase from input to basic
+      updateCurrentPhase('basic');
+
+      // STEP 3: Get current scene context for inheritance
+      const currentNode = getCurrentNode();
+      const currentNodeId = getCurrentNodeId();
+      const scene = currentNode?.scene;
+
+      if (!currentNodeId) {
+        console.error('[RecordPanelOrchestrator] No current node ID - cannot insert recording scene');
+        return;
+      }
+
+      // Extract scene properties to inherit
+      const currentBackground = scene && 'background' in scene ? scene.background : undefined;
+      const leftCharacter = scene && 'left-character' in scene ? (scene as { 'left-character'?: string })['left-character'] : 'leo';
+      const rightCharacter = scene && 'right-character' in scene ? (scene as { 'right-character'?: string })['right-character'] : 'bakerMom';
+      const conversationId = scene && 'conversationId' in scene ? (scene as { conversationId?: string }).conversationId : undefined;
+
+      // STEP 4: Create recording scene using pure factory function (with conversationId inheritance)
+      const { createRecordingScene } = await import('@core/navigation/sceneFactoryFunctions');
+      const newScene = createRecordingScene(
+        recordingId,
+        conversationId, // Pass conversationId so recording scene has AI context
+        currentBackground,
+        leftCharacter,
+        rightCharacter
+      );
+
+      // STEP 5: Insert scene into graph
+      console.log('[RecordPanelOrchestrator] Inserting recording scene after node:', currentNodeId);
+      const newNodeId = insertSceneNodes(currentNodeId, newScene);
+
+      if (!newNodeId) {
+        console.error('[RecordPanelOrchestrator] Failed to insert recording scene - no node ID returned');
+        return;
+      }
+
+      // STEP 6: Navigate forward to the new recording scene
+      console.log('[RecordPanelOrchestrator] Navigating to recording scene');
+      advanceNavigation('forward');
+
+      // STEP 7: Transition new scene to input-recording phase
+      // This must happen AFTER navigation so the new node is current
+      console.log('[RecordPanelOrchestrator] Transitioning to input-recording phase');
+      useNavigationStore.getState().updateNodePhase(newNodeId, 'input-recording');
+
+      // STEP 8: Emit success event to machine for state transition
+      console.log('[RecordPanelOrchestrator] 📤 Emitting RECORDING_STARTED event');
+      navigationBus.emit({
+        type: 'RECORDING_STARTED',
+        recordingId,
+        nodeId: newNodeId
+      });
+
+      console.log('[RecordPanelOrchestrator] Ask button flow completed successfully');
+    } catch (error) {
+      console.error('[RecordPanelOrchestrator] Ask button flow failed:', error);
+      // Emit error event to machine
+      navigationBus.emit({
+        type: 'RECORDING_FAILED',
+        error: error instanceof Error ? error.message : 'Unknown error'
+      });
+    }
   }, []);
 
   /**

@@ -95,5 +95,7 @@ export function useSceneConversationMetadata(scene: { conversationId?: string } 
 export type InputMetadata = ConversationMetadata;
 export type FlowMetadataMap = ConversationMetadataMap;
 export const FlowMetadataProvider = ConversationMetadataProvider;
+// eslint-disable-next-line react-refresh/only-export-components
 export const useFlowMetadata = useConversationMetadata;
+// eslint-disable-next-line react-refresh/only-export-components
 export const useSceneFlowMetadata = useSceneConversationMetadata;

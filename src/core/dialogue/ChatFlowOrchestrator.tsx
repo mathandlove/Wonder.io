@@ -16,8 +16,7 @@
 
 import { useCallback } from 'react';
 import { useAIModule } from '@features/ai/useAIModule';
-import { useSceneFactory } from '@core/navigation/SceneFactory';
-import { getCurrentNode, getCurrentNodeId, updateCurrentPhase, insertSceneNodes, advanceNavigation } from '@core/navigation/navigationHelpers';
+import { getCurrentNode } from '@core/navigation/navigationHelpers';
 import { useSceneConversationMetadata } from '@core/data/FlowMetadataStore';
 import { useAIMemory } from '@core/ai/useAIMemory';
 import * as navigationBus from '@core/navigation/events/navigationBus';
@@ -63,10 +62,9 @@ export interface UserInput {
 }
 
 export function useChatFlowOrchestrator(props?: ChatFlowOrchestratorProps) {
-  const { onError, onResponseReceived, onSceneCreated } = props || {};
+  const { onError, onResponseReceived } = props || {};
 
   const aiModule = useAIModule();
-  const sceneFactory = useSceneFactory();
   const aiMemory = useAIMemory();
 
   // Get current scene to access flow metadata
@@ -82,17 +80,9 @@ export function useChatFlowOrchestrator(props?: ChatFlowOrchestratorProps) {
 
 
     try {
-      // Step 1: Get the current scene context for scene creation
+      // Step 1: Get the current scene context for conversation ID
       const currentNavItem = getCurrentNode();
       const currentScene = currentNavItem?.scene;
-
-      // Extract context from current scene or use metadata
-      const background = input.metadata?.currentBackground ||
-        (currentScene && 'background' in currentScene ? currentScene.background : undefined);
-      const leftCharacter = input.metadata?.leftCharacter ||
-        (hasCharacterProperties(currentScene) ? currentScene['left-character'] : undefined);
-      const rightCharacter = input.metadata?.rightCharacter ||
-        (hasCharacterProperties(currentScene) ? currentScene['right-character'] : undefined);
 
 
 
@@ -145,7 +135,7 @@ export function useChatFlowOrchestrator(props?: ChatFlowOrchestratorProps) {
       console.error('❌ ChatFlowOrchestrator error:', errorMessage);
       onError?.(errorMessage);
     }
-  }, [aiModule, sceneFactory, aiMemory, onError, onResponseReceived, onSceneCreated]);
+  }, [aiModule, aiMemory, onError, onResponseReceived]);
 
   /**
    * Convenience function for processing transcript completion

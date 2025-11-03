@@ -104,13 +104,23 @@ export type InternalErrorEvent = {
 
 /**
  * RECORDING_STARTED
- * Emitted when: User begins recording (Ask or Answer)
- * Payload: Recording type
+ * Emitted when: Recording has been successfully started and scene created
+ * Payload: Recording ID and node ID (emitted by orchestrator after complex flow)
  */
 export type RecordingStartedEvent = {
   type: 'RECORDING_STARTED';
+  recordingId: string;
   nodeId: string;
-  recordingType: 'question' | 'answer';
+};
+
+/**
+ * RECORDING_FAILED
+ * Emitted when: Recording failed to start or scene creation failed
+ * Payload: Error message
+ */
+export type RecordingFailedEvent = {
+  type: 'RECORDING_FAILED';
+  error: string;
 };
 
 /**
@@ -275,6 +285,7 @@ export type NavigationEvent =
   | UserNavigateEvent
   | InternalErrorEvent
   | RecordingStartedEvent
+  | RecordingFailedEvent
   | RecordingStoppedEvent
   | RecordingProcessedEvent
   | ReceivedAIResponseEvent
@@ -289,7 +300,7 @@ export type NavigationEvent =
   | RequestNavNextEvent
   | RequestNavPrevEvent
   | UpdateNodePhaseEvent
-  |deleteCurrentNodeandNavNext
+  | deleteCurrentNodeandNavNext
 
 // Note: SCENE_PHASE_CHANGED removed - phase lives in child machine state,
 // not as a parent event. Phase is persisted via meta when needed.
