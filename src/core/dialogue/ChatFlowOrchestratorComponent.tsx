@@ -21,19 +21,21 @@ export function ChatFlowOrchestratorComponent() {
   const currentNode = useNavigationStore(selectCurrentNode);
 
   // Extract primitive values for effect dependencies (so effect re-runs when these change)
-  const sceneState = currentNode?.sceneState;
-  const dialogueState = sceneState?.type === 'dialogue' ? sceneState.state : null;
-  const questionText = sceneState?.type === 'dialogue' ? sceneState.questionText : undefined;
   const currentScene = currentNode?.scene;
+  const phase = currentNode?.phase;
+
+  // Extract questionText and recordingId from scene (xState-driven architecture)
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const questionText = currentScene && typeof currentScene === 'object' && 'questionText' in currentScene ? (currentScene as any).questionText : undefined;
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const recordingId = currentScene && typeof currentScene === 'object' && 'recordingId' in currentScene ? (currentScene as any).recordingId : undefined;
 
-  // Auto-trigger AI response when scene enters ai-waiting state with valid transcript
+  // Auto-trigger AI response when scene enters ai-waiting phase with valid transcript
   React.useEffect(() => {
-    const isAiWaiting = dialogueState === 'ai-waiting';
+    const isAiWaiting = phase === 'ai-waiting';
 
     console.log('🔍 [ChatFlowOrchestrator] State Check:', {
-      dialogueState,
+      phase,
       isAiWaiting,
       recordingId,
       questionText,
@@ -66,7 +68,7 @@ export function ChatFlowOrchestratorComponent() {
         console.log('⏭️  [ChatFlowOrchestrator] Already processing this recording, skipping');
       }
     }
-  }, [dialogueState, questionText, recordingId, chatFlow, processingRecordingId]);
+  }, [phase, questionText, recordingId, chatFlow, processingRecordingId]);
 
   // This is a logic-only component, renders nothing
   return null;

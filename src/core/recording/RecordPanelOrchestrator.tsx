@@ -18,11 +18,12 @@ import React, { useCallback, useEffect } from 'react';
 import { getCurrentNode, getCurrentNodeId, insertSceneNodes, advanceNavigation, updateCurrentPhase, updateCurrentSceneProperties, addStateToCurrentNode } from '@core/navigation/navigationHelpers';
 import { useNavigationStore } from '@core/navigation/navigationStore';
 import { useSceneFlowMetadata } from '@core/data/FlowMetadataStore';
-import { useSceneFactory } from '@core/navigation/SceneFactory';
+import { createFailDanceScene, createSuccessDanceScene } from '@core/navigation/sceneFactoryFunctions';
 import { Recording } from '@core/recording/RecordingAPI';
 import { RecordPanel } from './RecordPanel';
 import { useRecording } from './RecordingContext';
 import type { Scene, CharacterScene } from '@core/types/scene';
+import * as navigationBus from '@core/navigation/events/navigationBus';
 
 // Type guard for scenes with character properties
 type SceneWithCharacters = Scene & {
@@ -45,7 +46,6 @@ function hasFlowId(scene: Scene | undefined | null): scene is SceneWithFlowId {
 }
 
 export function RecordingOrchestrator() {
-  const { createRecordingScene, createFailDanceScene, createSuccessDanceScene } = useSceneFactory();
   const recording = useRecording();
 
 
@@ -309,13 +309,19 @@ export function RecordingOrchestrator() {
       const finalText = displayText.trim();
 
       if (phase === 'input-processing') {
-        // Final transcript arrived - transition to ai-waiting
-        useNavigationStore.getState().updateSceneTextByRecordingId(activeRecordingId, finalText);
-        updateCurrentSceneProperties({ questionText: finalText });
-        updateCurrentPhase('ai-waiting');
+        // Final transcript arrived - emit RECORDING_PROCESSED to xState machine
+        // Machine will store transcript and transition from askProcessing → askWaitingForAI
+        // XState now handles all store mutations (unidirectional data flow)
+        console.log('[RecordPanelOrchestrator] 📤 Emitting RECORDING_PROCESSED event with transcript:', finalText.substring(0, 50));
+        navigationBus.emit({
+          type: 'RECORDING_PROCESSED',
+          transcript: finalText,
+          recordingId: activeRecordingId
+        });
       } else if (phase === 'ai-waiting' && characterScene.questionText !== finalText) {
-        // Update questionText in ai-waiting phase (fallback if we skipped input-processing)
-        useNavigationStore.getState().updateSceneTextByRecordingId(activeRecordingId, finalText);
+        // Fallback: Update questionText in ai-waiting phase (if we somehow skipped input-processing)
+        // This should rarely happen with proper state machine flow
+        console.warn('[RecordPanelOrchestrator] ⚠️ Updating questionText in ai-waiting phase (fallback path)');
         updateCurrentSceneProperties({ questionText: finalText });
       } else if (phase === 'answer-processing') {
         // Final transcript arrived - transition to answer-waiting
@@ -367,74 +373,23 @@ export function RecordingOrchestrator() {
 
   /**
    * Handle recording start - EVENT DRIVEN APPROACH
-   * Starts recording IMMEDIATELY, then updates states
+   * Emits ASK_BUTTON_CLICKED event to XState machine
+   * XState handles: recording start, scene creation, insertion, and navigation
    */
-  const handleRecordStart = useCallback(async () => {
-    try {
-      // Generate unique recording ID
-      const recordingId = `rec-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+  const handleRecordStart = useCallback(() => {
+    // Increment question counter - unlocks Answer button after first question
+    setQuestionCount(prev => prev + 1);
 
-      // STEP 1: START RECORDING IMMEDIATELY (event-driven, not state-driven)
-      // This happens FIRST, before any state changes or navigation
-      // NOTE: recordingId will be stored in the scene itself (line 396)
-
-      // Start recording - this will await audio initialization
-      await Recording.start().catch((err) => {
-        console.error('[RecordPanelOrchestrator] Failed to start recording:', err);
-        throw err; // Re-throw to prevent state updates on failure
-      });
-
-
-      // STEP 2: NOW update UI phase (happens AFTER recording is flowing)
-      // Increment question counter - unlocks Answer button after first question
-      setQuestionCount(prev => prev + 1);
-
-      // Update current node phase from input-showInput to basic
-      updateCurrentPhase('basic');
-
-      // Get current node ID for scene insertion
-      const currentNodeId = getCurrentNodeId();
-
-      // Create a new CharacterScene, inheriting context from current scene
-      const scene = currentNode?.scene;
-      const currentBackground = scene && 'background' in scene ? scene.background : undefined;
-      const leftCharacter = hasCharacterProperties(scene) ? scene['left-character'] : undefined;
-      const rightCharacter = hasCharacterProperties(scene) ? scene['right-character'] : undefined;
-      const flowId = hasFlowId(scene) ? scene.flowId : undefined;
-
-      const newScene = createRecordingScene(recordingId, currentBackground, leftCharacter, rightCharacter);
-
-      // Copy flowId from the original scene to the recording scene
-      if (flowId) {
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        (newScene as any).flowId = flowId;
-      }
-
-      // Insert scene after current node (not scene) to ensure proper positioning
-      // This properly maintains the state-node graph structure
-      console.log('[handleRecordStart] ===== BEFORE INSERT =====');
-      console.log('[handleRecordStart] Current node ID:', currentNodeId);
-      console.log('[handleRecordStart] New recording scene:', newScene);
-
-      // Use insertSceneNodes for synchronous scene insertion
-      // This avoids the race condition where advanceNavigation reads stale graph
-      // TODO: [Navigation Refactor] Replace with event bus emission
-      // emit({ type: 'RECORDING_STARTED', nodeId: currentNodeId, recordingType: 'question' })
-      const insertedNodeId = insertSceneNodes(currentNodeId, newScene);
-
-      console.log('[handleRecordStart] ===== AFTER INSERT =====');
-      console.log('[handleRecordStart] Inserted node ID:', insertedNodeId);
-      console.log('[handleRecordStart] About to navigate forward...');
-
-      // TODO: [Navigation Refactor] Orchestrators should NOT call navigation directly
-      // This should emit an event to the navigation machine instead
-      // emit({ type: 'REQUEST_NAV_NEXT' })
-      // Navigate to the new recording state
-      advanceNavigation('forward');
-    } catch {
-      // Silent error handling - recording failed to start
-    }
-  }, [currentNode?.scene, createRecordingScene]);
+    // Emit event to XState machine - it will handle the entire flow
+    // XState action will:
+    // 1. Start recording immediately
+    // 2. Update phase from input to basic
+    // 3. Create recording scene
+    // 4. Insert scene into graph
+    // 5. Navigate forward
+    console.log('[RecordPanelOrchestrator] Emitting ASK_BUTTON_CLICKED event');
+    navigationBus.emit({ type: 'ASK_BUTTON_CLICKED' });
+  }, []);
 
   /**
    * Handle recording stop - NEW BATCH PROCESSING FLOW
@@ -451,6 +406,8 @@ export function RecordingOrchestrator() {
     const { phase, scene } = node;
     const characterScene = scene as CharacterScene;
 
+    console.log('[RecordPanelOrchestrator] 🛑 handleRecordStop called, phase:', phase);
+
     if (phase === 'record-answer') {
       // Answer recording: Transition to answer-processing to show "Processing..."
       // Backend will process audio and send final transcript
@@ -458,24 +415,27 @@ export function RecordingOrchestrator() {
       // Note: answerText and questionText are already on the scene
       updateCurrentPhase('answer-processing');
     } else if (phase === 'input-recording') {
-      // Ask recording: Transition to input-processing to show "Processing..."
-      // Backend will process audio and send final transcript
-      // When transcript arrives, we'll transition to ai-waiting
+      // Ask recording: Emit RECORDING_STOPPED event to xState machine
+      // Machine will transition from askRecording → askProcessing
       const currentQuestionText = characterScene.questionText || '';
 
-      // Update scene text (for speech bubble) before transitioning phase
+      // Update scene text (for speech bubble) before transitioning
       if (activeRecordingId && currentQuestionText) {
         useNavigationStore.getState().updateSceneTextByRecordingId(activeRecordingId, currentQuestionText);
       }
 
-      updateCurrentPhase('input-processing');
+      // Emit RECORDING_STOPPED event to navigation machine
+      console.log('[RecordPanelOrchestrator] 📤 Emitting RECORDING_STOPPED event');
+      navigationBus.emit({
+        type: 'RECORDING_STOPPED',
+        nodeId: node.id,
+        recordingType: 'question'
+      });
     }
 
     // CRITICAL: Actually stop the recording!
     // This will send 'finalize' to backend
     // Backend will process complete audio and send ONE final transcript
-    // When transcript arrives, transcript sync effect will transition to ai-waiting
-    // ChatFlowOrchestrator will trigger AI processing when in ai-waiting phase
     Recording.stop();
   }, [activeRecordingId]);
 
@@ -489,10 +449,8 @@ export function RecordingOrchestrator() {
    * Advances navigation when quest is accepted
    */
   const handleAcceptQuest = useCallback(() => {
-    // TODO: [Navigation Refactor] Orchestrators should NOT call navigation directly
-    // This should emit an event to the navigation machine instead
-    // emit({ type: 'REQUEST_NAV_NEXT' })
-    advanceNavigation('forward');
+    // Emit navigation request to state machine via event bus
+    navigationBus.emit({ type: 'REQUEST_NAV_NEXT' });
   }, []);
 
 

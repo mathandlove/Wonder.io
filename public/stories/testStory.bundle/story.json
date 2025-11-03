@@ -3,11 +3,7 @@
   "storyId": "leo-monster-hunter-001",
   "scenes": [
 
-         {
-      "type":"image",
-      "image":"story/dragonFight.png",
-      "text":"Sometimes I have to fight the monsters."
-    },
+     
 
       {
       "type": "character-flow",
@@ -17,13 +13,7 @@
       "flow": [
 
 
-                {
-        
-      "side": "left",
-      "text": "Test1"
-      
 
-    },   
                     {
         
       "side": "right",
@@ -31,11 +21,7 @@
       
 
     },   
-                                 {
-      "type":"quest",
-      "text":"Figure out what is wrong.",
-      "successAnswer":"Mrs. Baker's cookie was stolen."
-     },
+
     
          {
       "type":"input",
@@ -50,6 +36,10 @@
       "type":"image",
       "image":"story/dragonFeet.png",
       "text":"This is not an image"
+    },    {
+      "type":"image",
+      "image":"story/dragonFight.png",
+      "text":"Sometimes I have to fight the monsters."
     },
         {
       "type": "text",

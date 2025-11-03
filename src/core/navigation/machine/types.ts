@@ -114,6 +114,15 @@ export type RecordingStartedEvent = {
 };
 
 /**
+ * ASK_BUTTON_CLICKED
+ * Emitted when: User clicks the Ask button in input phase
+ * Purpose: Trigger recording start and phase transition
+ */
+export type AskButtonClickedEvent = {
+  type: 'ASK_BUTTON_CLICKED';
+};
+
+/**
  * RECORDING_STOPPED
  * Emitted when: User stops recording
  * Payload: Recording type
@@ -122,6 +131,28 @@ export type RecordingStoppedEvent = {
   type: 'RECORDING_STOPPED';
   nodeId: string;
   recordingType: 'question' | 'answer';
+};
+
+/**
+ * RECORDING_PROCESSED
+ * Emitted when: Recording has been transcribed and text is ready
+ * Payload: Transcript text and recording ID
+ */
+export type RecordingProcessedEvent = {
+  type: 'RECORDING_PROCESSED';
+  transcript: string;
+  recordingId: string;
+};
+
+/**
+ * RECEIVED_AI_RESPONSE
+ * Emitted when: AI has finished generating a response
+ * Payload: AI response text and conversation context
+ */
+export type ReceivedAIResponseEvent = {
+  type: 'RECEIVED_AI_RESPONSE';
+  responseText: string;
+  conversationId?: string;
 };
 
 /**
@@ -245,6 +276,9 @@ export type NavigationEvent =
   | InternalErrorEvent
   | RecordingStartedEvent
   | RecordingStoppedEvent
+  | RecordingProcessedEvent
+  | ReceivedAIResponseEvent
+  | AskButtonClickedEvent
   | LoadStoryRequestedEvent
   | ApplyGraphEvent
   | StoryLoadedEvent

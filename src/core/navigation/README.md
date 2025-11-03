@@ -1,11 +1,16 @@
 # Navigation Architecture
 
+> **📚 For complete architecture documentation, see:**
+> - [State Management Architecture](../../../docs/ARCHITECTURE_STATE_MANAGEMENT.md) - Full system overview
+> - [ConversationId Guide](../../../docs/CONVERSATION_ID_GUIDE.md) - Conversation context system
+> - [XState AI Migration](../../../docs/MIGRATION_2025_01_XSTATE_AI.md) - Recent changes
+
 ## Overview
 
-The navigation system has been refactored to use **XState** as the single decision-making brain, with strict separation between:
+The navigation system uses **XState** as the single decision-making brain, with strict separation between:
 - **Events** (domain signals from UI/media/AI)
-- **State Machine** (decision logic)
-- **Commands** (graph mutations)
+- **State Machine** (decision logic & orchestration)
+- **Commands** (graph mutations via Zustand store)
 
 ## Architecture Diagram
 

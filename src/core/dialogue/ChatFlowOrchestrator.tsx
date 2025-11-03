@@ -18,8 +18,9 @@ import { useCallback } from 'react';
 import { useAIModule } from '@features/ai/useAIModule';
 import { useSceneFactory } from '@core/navigation/SceneFactory';
 import { getCurrentNode, getCurrentNodeId, updateCurrentPhase, insertSceneNodes, advanceNavigation } from '@core/navigation/navigationHelpers';
-import { useSceneFlowMetadata } from '@core/data/FlowMetadataStore';
+import { useSceneConversationMetadata } from '@core/data/FlowMetadataStore';
 import { useAIMemory } from '@core/ai/useAIMemory';
+import * as navigationBus from '@core/navigation/events/navigationBus';
 import type { CharacterScene, Scene } from '@core/types/scene';
 
 // Type guard for scenes with character properties
@@ -33,13 +34,13 @@ function hasCharacterProperties(scene: Scene | undefined | null): scene is Scene
     ('left-character' in scene || 'right-character' in scene);
 }
 
-// Type guard for scenes with flowId
-type SceneWithFlowId = Scene & {
-  flowId?: string;
+// Type guard for scenes with conversationId
+type SceneWithConversationId = Scene & {
+  conversationId?: string;
 };
 
-function hasFlowId(scene: Scene | undefined | null): scene is SceneWithFlowId {
-  return scene !== null && scene !== undefined && 'flowId' in scene;
+function hasConversationId(scene: Scene | undefined | null): scene is SceneWithConversationId {
+  return scene !== null && scene !== undefined && 'conversationId' in scene;
 }
 
 export interface ChatFlowOrchestratorProps {
@@ -71,7 +72,7 @@ export function useChatFlowOrchestrator(props?: ChatFlowOrchestratorProps) {
   // Get current scene to access flow metadata
   const currentNavItem = getCurrentNode();
   const currentScene = currentNavItem?.scene;
-  const flowMetadata = useSceneFlowMetadata(hasFlowId(currentScene) ? currentScene : null);
+  const conversationMetadata = useSceneConversationMetadata(hasConversationId(currentScene) ? currentScene : null);
 
   /**
    * Main orchestration function:
@@ -96,13 +97,13 @@ export function useChatFlowOrchestrator(props?: ChatFlowOrchestratorProps) {
 
 
       // Step 2: Get conversation history and call AI module
-      // Use flowId from current scene to maintain character-specific conversations
-      const flowId = hasFlowId(currentScene) ? currentScene.flowId : undefined;
-      const conversationHistory = flowId ? aiMemory.getHistory(flowId) : [];
+      // Use conversationId from current scene to maintain character-specific conversations
+      const conversationId = hasConversationId(currentScene) ? currentScene.conversationId : undefined;
+      const conversationHistory = conversationId ? aiMemory.getHistory(conversationId) : [];
 
       // Add user message to conversation history BEFORE calling AI
-      if (flowId) {
-        aiMemory.addUserMessage(flowId, input.text);
+      if (conversationId) {
+        aiMemory.addUserMessage(conversationId, input.text);
       }
 
       const response = await aiModule.getResponse({
@@ -124,38 +125,19 @@ export function useChatFlowOrchestrator(props?: ChatFlowOrchestratorProps) {
       onResponseReceived?.(response.text);
 
       // Add assistant response to conversation history AFTER receiving it
-      if (flowId) {
-        aiMemory.addAssistantMessage(flowId, response.text);
+      if (conversationId) {
+        aiMemory.addAssistantMessage(conversationId, response.text);
       }
 
-      // Step 3: Create a new AI response scene using SceneFactory
-      // IMPORTANT: Preserve flowId so subsequent questions maintain conversation context
-      const finalScene = sceneFactory.createAIResponseScene(
-        response.text,
-        flowId,
-        background,
-        leftCharacter,
-        rightCharacter
-      );
+      // Emit RECEIVED_AI_RESPONSE event to xState machine
+      // Machine will handle scene creation and navigation (createAIResponseScene action)
+      console.log('[ChatFlowOrchestrator] 📤 Emitting RECEIVED_AI_RESPONSE event with response:', response.text.substring(0, 50));
 
-      onSceneCreated?.(finalScene);
-
-      // Step 4: Update previous node phase to 'basic' (remove input UI)
-      // This collapses the recording input UI from the previous scene
-      updateCurrentPhase('basic');
-
-      // Step 5: Insert the scene after current node
-      const currentNodeId = getCurrentNodeId();
-      // This properly maintains the state-node graph structure
-      // TODO: [Navigation Refactor] Replace with event bus emission
-      // emit({ type: 'AI_DONE', nodeId: currentNodeId, response: aiText })
-      insertSceneNodes(currentNodeId, finalScene);
-
-      // TODO: [Navigation Refactor] Orchestrators should NOT call navigation directly
-      // This should emit an event to the navigation machine instead
-      // emit({ type: 'REQUEST_NAV_NEXT' })
-      // Step 6: Navigate to the new scene
-      advanceNavigation('forward');
+      navigationBus.emit({
+        type: 'RECEIVED_AI_RESPONSE',
+        responseText: response.text,
+        conversationId: conversationId
+      });
 
 
     } catch (error) {
@@ -176,7 +158,7 @@ export function useChatFlowOrchestrator(props?: ChatFlowOrchestratorProps) {
     console.log('📝 [ChatFlowOrchestrator] processTranscript called:', {
       transcript,
       recordingId,
-      characterDescription: flowMetadata?.characterDescription,
+      characterDescription: conversationMetadata?.characterDescription,
       leftCharacter: hasCharacterProperties(currentScene) ? currentScene['left-character'] : undefined,
       rightCharacter: hasCharacterProperties(currentScene) ? currentScene['right-character'] : undefined,
     });
@@ -190,13 +172,13 @@ export function useChatFlowOrchestrator(props?: ChatFlowOrchestratorProps) {
         currentBackground: currentScene && 'background' in currentScene ? currentScene.background : undefined,
         leftCharacter: hasCharacterProperties(currentScene) ? currentScene['left-character'] : undefined,
         rightCharacter: hasCharacterProperties(currentScene) ? currentScene['right-character'] : undefined,
-        characterDescription: flowMetadata?.characterDescription,
+        characterDescription: conversationMetadata?.characterDescription,
       }
     };
 
     console.log('🎯 [ChatFlowOrchestrator] About to call processUserInput with:', input);
     await processUserInput(input);
-  }, [currentScene, flowMetadata, processUserInput]);
+  }, [currentScene, conversationMetadata, processUserInput]);
 
   return {
     processUserInput,

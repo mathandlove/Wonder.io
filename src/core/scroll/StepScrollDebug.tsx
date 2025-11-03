@@ -11,6 +11,7 @@
  */
 import { useEffect, useState } from 'react';
 import { useNavigationStore, selectNavigationGraph, selectCurrentNode } from '@core/navigation/navigationStore';
+import { getServiceInstance } from '@core/navigation/machine/navigationInterpreter';
 import type { Scene } from '@core/types/scene';
 import type { ImageState } from '@core/dialogue/types';
 
@@ -44,6 +45,9 @@ export function StepScrollDebug() {
 
   const [isVisible, setIsVisible] = useState(getInitialVisibility);
 
+  // Track xState machine state
+  const [xStateValue, setXStateValue] = useState<string>('unknown');
+
   // Subscribe to navigation store (single source of truth)
   const navigationGraph = useNavigationStore(selectNavigationGraph);
   const currentNode = useNavigationStore(selectCurrentNode);
@@ -57,6 +61,35 @@ export function StepScrollDebug() {
 
   // Get current scene
   const currentScene = currentNode?.scene as (Scene & { sceneId?: string, flowId?: string }) | undefined;
+
+  // Subscribe to xState machine state changes
+  useEffect(() => {
+    const service = getServiceInstance();
+    if (!service) {
+      setXStateValue('not-started');
+      return;
+    }
+
+    // Get initial state
+    const formatStateValue = (value: unknown): string => {
+      if (typeof value === 'string') return value;
+      if (typeof value === 'object' && value !== null) {
+        return JSON.stringify(value);
+      }
+      return String(value);
+    };
+
+    setXStateValue(formatStateValue(service.getSnapshot().value));
+
+    // Subscribe to state changes
+    const subscription = service.subscribe((snapshot) => {
+      setXStateValue(formatStateValue(snapshot.value));
+    });
+
+    return () => {
+      subscription.unsubscribe();
+    };
+  }, []);
 
   // Keyboard shortcut: backslash (\) to toggle visibility and recenter
   useEffect(() => {
@@ -239,6 +272,21 @@ export function StepScrollDebug() {
           )}
         </div>
 
+        {/* XState Machine State Section */}
+        <div style={{ marginBottom: '8px', paddingBottom: '8px', borderBottom: '1px solid #0f0' }}>
+          <div style={{ color: '#0f0', marginBottom: '4px', fontWeight: 'bold' }}>⚙️ XState Machine</div>
+          <div style={{
+            padding: '6px',
+            background: 'rgba(0,255,0,0.1)',
+            borderRadius: '4px',
+            border: '1px solid #0f0'
+          }}>
+            <div style={{ color: '#0f0', fontSize: '10px', fontWeight: 'bold' }}>
+              State: <strong>{xStateValue}</strong>
+            </div>
+          </div>
+        </div>
+
         {/* Flow Metadata Section - Hidden for more space */}
         {/*
         <div style={{ marginBottom: '8px', paddingBottom: '8px', borderBottom: '1px solid #f0f' }}>
@@ -320,7 +368,7 @@ export function StepScrollDebug() {
                     </div>
                   </div>
                   <div style={{ color: '#0ff', fontSize: '9px', marginTop: '2px' }}>
-                    🔑 {entry.stateKey}
+                    🆔 Node: {entry.nodeId.substring(0, 10)}...
                   </div>
                   {entry.description && (
                     <div style={{ color: '#888', fontSize: '8px', marginTop: '2px', fontStyle: 'italic' }}>
@@ -386,7 +434,7 @@ export function StepScrollDebug() {
                     </div>
                   </div>
                   <div style={{ color: '#f0f', fontSize: '9px', marginTop: '2px' }}>
-                    🔑 {event.stateKey}
+                    🆔 Node: {event.nodeId.substring(0, 10)}...
                   </div>
                   {event.context && (
                     <div style={{ color: '#888', fontSize: '8px', marginTop: '2px', fontStyle: 'italic' }}>
@@ -406,7 +454,7 @@ export function StepScrollDebug() {
 
       {/* Stats Footer */}
       <div style={{ marginTop: '10px', paddingTop: '8px', borderTop: '1px solid #0f0', fontSize: '9px', color: '#666' }}>
-        Total Scenes: {navigationGraph.sceneRegistry?.order.length || 0} | Nodes: {totalNodes} | Graph v{navigationGraph.historyVersion}
+        Nodes: {totalNodes} | Graph v{navigationGraph.historyVersion}
         <br />
         History: {navigationGraph.navigationHistory?.length || 0} navigations | {navigationGraph.lifecycleEvents?.length || 0} lifecycle events
       </div>

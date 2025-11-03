@@ -1,90 +1,99 @@
 /**
- * FlowMetadataStore - Single Source of Truth for flow-level metadata
+ * ConversationMetadataStore - Single Source of Truth for conversation-level metadata
  *
  * Stores metadata for character-flow scenes, such as:
  * - characterDescription: Used for AI chat context
  * - successAnswer: Expected phrase for quest completion
  *
- * Each character-flow gets a unique flowId, and scenes reference it.
- * This avoids data duplication across multiple scenes in the same flow.
+ * Each character-flow gets a unique conversationId, and scenes reference it.
+ * This avoids data duplication across multiple scenes in the same conversation.
  */
 
 import React, { createContext, useContext, useState, useCallback } from 'react';
 
-export interface InputMetadata {
+export interface ConversationMetadata {
   characterDescription?: string; // For input items
   questText?: string; // For quest items
   successAnswer: string; // Success phrase for both
 }
 
-export interface FlowMetadataMap {
-  [flowId: string]: InputMetadata;
+export interface ConversationMetadataMap {
+  [conversationId: string]: ConversationMetadata;
 }
 
-interface FlowMetadataContextValue {
-  metadata: FlowMetadataMap;
-  setFlowMetadata: (flowId: string, data: InputMetadata) => void;
-  getFlowMetadata: (flowId: string) => InputMetadata | undefined;
+interface ConversationMetadataContextValue {
+  metadata: ConversationMetadataMap;
+  setConversationMetadata: (conversationId: string, data: ConversationMetadata) => void;
+  getConversationMetadata: (conversationId: string) => ConversationMetadata | undefined;
   clearAllMetadata: () => void;
 }
 
-const FlowMetadataContext = createContext<FlowMetadataContextValue | null>(null);
+const ConversationMetadataContext = createContext<ConversationMetadataContextValue | null>(null);
 
-export function FlowMetadataProvider({ children }: { children: React.ReactNode }) {
-  const [metadata, setMetadata] = useState<FlowMetadataMap>({});
+export function ConversationMetadataProvider({ children }: { children: React.ReactNode }) {
+  const [metadata, setMetadata] = useState<ConversationMetadataMap>({});
 
-  const setFlowMetadata = useCallback((flowId: string, data: InputMetadata) => {
+  const setConversationMetadata = useCallback((conversationId: string, data: ConversationMetadata) => {
     setMetadata(prev => ({
       ...prev,
-      [flowId]: data
+      [conversationId]: data
     }));
   }, []);
 
-  const getFlowMetadata = useCallback((flowId: string): InputMetadata | undefined => {
-    return metadata[flowId];
+  const getConversationMetadata = useCallback((conversationId: string): ConversationMetadata | undefined => {
+    return metadata[conversationId];
   }, [metadata]);
 
   const clearAllMetadata = useCallback(() => {
     setMetadata({});
   }, []);
 
-  const value: FlowMetadataContextValue = {
+  const value: ConversationMetadataContextValue = {
     metadata,
-    setFlowMetadata,
-    getFlowMetadata,
+    setConversationMetadata,
+    getConversationMetadata,
     clearAllMetadata
   };
 
   return (
-    <FlowMetadataContext.Provider value={value}>
+    <ConversationMetadataContext.Provider value={value}>
       {children}
-    </FlowMetadataContext.Provider>
+    </ConversationMetadataContext.Provider>
   );
 }
 
 // eslint-disable-next-line react-refresh/only-export-components
-export function useFlowMetadata() {
-  const context = useContext(FlowMetadataContext);
+export function useConversationMetadata() {
+  const context = useContext(ConversationMetadataContext);
   if (!context) {
-    throw new Error('useFlowMetadata must be used within FlowMetadataProvider');
+    throw new Error('useConversationMetadata must be used within ConversationMetadataProvider');
   }
   return context;
 }
 
 /**
- * Convenience hook to get metadata for a specific scene by its flowId
- * Returns undefined if the scene has no flowId or no metadata is found
+ * Convenience hook to get metadata for a specific scene by its conversationId
+ * Returns undefined if the scene has no conversationId or no metadata is found
  *
- * @param scene - Scene object that may contain a flowId reference
- * @returns InputMetadata or undefined
+ * @param scene - Scene object that may contain a conversationId reference
+ * @returns ConversationMetadata or undefined
  */
 // eslint-disable-next-line react-refresh/only-export-components
-export function useSceneFlowMetadata(scene: { flowId?: string } | null | undefined): InputMetadata | undefined {
-  const { getFlowMetadata } = useFlowMetadata();
+export function useSceneConversationMetadata(scene: { conversationId?: string } | null | undefined): ConversationMetadata | undefined {
+  const { getConversationMetadata } = useConversationMetadata();
 
-  if (!scene?.flowId) {
+  if (!scene?.conversationId) {
     return undefined;
   }
 
-  return getFlowMetadata(scene.flowId);
+  return getConversationMetadata(scene.conversationId);
 }
+
+// ============================================================================
+// Legacy exports for backwards compatibility (will be removed later)
+// ============================================================================
+export type InputMetadata = ConversationMetadata;
+export type FlowMetadataMap = ConversationMetadataMap;
+export const FlowMetadataProvider = ConversationMetadataProvider;
+export const useFlowMetadata = useConversationMetadata;
+export const useSceneFlowMetadata = useSceneConversationMetadata;

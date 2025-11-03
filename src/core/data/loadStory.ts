@@ -4,11 +4,11 @@
  */
 // src/data/loadStory.ts
 import type { Scene, Story } from '@core/types/scene';
-import type { FlowMetadataMap } from '@core/data/FlowMetadataStore';
+import type { ConversationMetadataMap } from '@core/data/FlowMetadataStore';
 import { PHASES, type Phase } from '@core/navigation/navigationGraphTypes';
 
 // Re-export for convenience
-export type { FlowMetadataMap } from '@core/data/FlowMetadataStore';
+export type { ConversationMetadataMap } from '@core/data/FlowMetadataStore';
 
 type RawFlowItem = {
   side?: "left" | "right";
@@ -43,12 +43,12 @@ type RawStory = {
 // Internal type - not exported as it's only used within this file
 interface FlattenResult {
   scenes: Scene[];
-  flowMetadata: FlowMetadataMap;
+  flowMetadata: ConversationMetadataMap;
 }
 
 function flattenScenes(rawScenes: RawScene[]): FlattenResult {
   const out: Scene[] = [];
-  const flowMetadata: FlowMetadataMap = {};
+  const flowMetadata: ConversationMetadataMap = {};
   let sceneCounter = 0;
   let flowCounter = 0;
 
@@ -64,13 +64,13 @@ function flattenScenes(rawScenes: RawScene[]): FlattenResult {
         f => f.type === "quest" && f.text && f.successAnswer
       );
 
-      // Generate unique flowId if this flow has either input or quest metadata
+      // Generate unique conversationId if this flow has either input or quest metadata
       const hasMetadata = inputMetadataItem || questMetadataItem;
-      const flowId = hasMetadata ? `flow-${flowCounter++}` : undefined;
+      const conversationId = hasMetadata ? `conv-${flowCounter++}` : undefined;
 
       // Store metadata if found
-      if (flowId) {
-        flowMetadata[flowId] = {
+      if (conversationId) {
+        flowMetadata[conversationId] = {
           characterDescription: inputMetadataItem?.CharacterDescription,
           questText: questMetadataItem?.text,
           successAnswer: (questMetadataItem?.successAnswer || inputMetadataItem?.successAnswer)!
@@ -115,7 +115,7 @@ function flattenScenes(rawScenes: RawScene[]): FlattenResult {
             "right-character": currentRightCharacter,
             flowSequence: true,
             isFirstInFlow,
-            flowId
+            conversationId
           };
           currentPhaseSteps = [PHASES.BASIC];
           isFirstInFlow = false;
@@ -191,7 +191,7 @@ function flattenScenes(rawScenes: RawScene[]): FlattenResult {
   return { scenes: out, flowMetadata };
 }
 
-export async function loadStory(url: string): Promise<{ story: Story; flowMetadata: FlowMetadataMap }> {
+export async function loadStory(url: string): Promise<{ story: Story; flowMetadata: ConversationMetadataMap }> {
   const res = await fetch(url, { cache: "no-store" });
   if (!res.ok) throw new Error(`Failed to load story: ${res.status}`);
   const data = (await res.json()) as RawStory;
