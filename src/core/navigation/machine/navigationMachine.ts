@@ -181,12 +181,15 @@ export const navigationMachine = setup({
         return;
       }
 
-      // Delegate everything to AIOrchestrator
+      // Delegate everything to AIOrchestrator (SYNCHRONOUS)
+      // This completes immediately - scene is created, inserted, and navigated to
       createAndInsertAIResponseScene({
         responseText,
         conversationId,
         currentNodeId,
       });
+
+      console.log('[NavigationMachine] Scene creation completed synchronously');
     },
   },
   guards: {
@@ -194,6 +197,16 @@ export const navigationMachine = setup({
     isInput: () => {
       const currentPhase = useNavigationStore.getState().getCurrentPhase();
       return currentPhase === 'input' || currentPhase === 'input-showInput';
+    },
+    // Check if current node is in basic phase (regular character dialogue)
+    isBasic: () => {
+      const currentPhase = useNavigationStore.getState().getCurrentPhase();
+      return currentPhase === 'basic';
+    },
+    // Check if current node is showing a quest
+    isQuestShowing: () => {
+      const currentPhase = useNavigationStore.getState().getCurrentPhase();
+      return currentPhase === 'quest-showing';
     },
   },
 }).createMachine({
@@ -331,9 +344,65 @@ export const navigationMachine = setup({
               target: 'dialogueInput',
             },
             {
+              guard: 'isQuestShowing',
+              target: 'questShowing',
+            },
+            {
+              guard: 'isBasic',
+              target: 'dialogueBasic',
+            },
+            {
               target: 'unknown',
             },
           ],
+        },
+
+        /**
+         * QUEST SHOWING state
+         * Quest is being displayed to the user - block all navigation
+         * User must interact with quest UI to proceed
+         */
+        questShowing: {
+          entry: () => console.log('[NavigationMachine] 🎯 Entered questShowing state - navigation blocked'),
+          on: {
+            // Block scroll down - quest must be interacted with
+            SCROLL_DOWN_STEP: {
+              actions: () => console.log('[NavigationMachine] ⛔ SCROLL_DOWN blocked during quest display'),
+            },
+            // Block scroll up - quest must be interacted with
+            SCROLL_UP_STEP: {
+              actions: () => console.log('[NavigationMachine] ⛔ SCROLL_UP blocked during quest display'),
+            },
+            // When quest is accepted/started, transition to input phase
+            REQUEST_NAV_NEXT: {
+              actions: 'goNext',
+              target: '#navigation.scene.route',
+            },
+          },
+        },
+
+        /**
+         * DIALOGUE BASIC scene
+         * Standard character dialogue with basic phase - allows normal scrolling
+         */
+        dialogueBasic: {
+          entry: () => console.log('[NavigationMachine] 🎯 Entered dialogueBasic state'),
+          on: {
+            SCROLL_DOWN_STEP: {
+              actions: [
+                () => console.log('[NavigationMachine] ⬇️  SCROLL_DOWN_STEP in dialogueBasic → calling goNext'),
+                'goNext',
+              ],
+              target: '#navigation.scene.route',
+            },
+            SCROLL_UP_STEP: {
+              actions: [
+                () => console.log('[NavigationMachine] ⬆️  SCROLL_UP_STEP in dialogueBasic → calling goPrev'),
+                'goPrev',
+              ],
+              target: '#navigation.scene.route',
+            },
+          },
         },
 
         /**
@@ -448,7 +517,7 @@ export const navigationMachine = setup({
               };
             },
             onDone: {
-              target: '#navigation.scene.route',
+              target: '#navigation.scene.navigating',
               actions: [
                 'createAIResponseScene',
                 () => console.log('[NavigationMachine] ✅ AI service completed successfully')
@@ -482,12 +551,14 @@ export const navigationMachine = setup({
         },
 
         /**
-         * UNKNOWN scene type (safety net)
+         * UNKNOWN phase (safety net)
+         * Fallback for phases that don't have explicit states
          */
         unknown: {
           entry: () => {
             const node = useNavigationStore.getState().getCurrentNode();
-            console.warn('[NavigationMachine] Unknown scene type:', node?.scene?.type);
+            const phase = useNavigationStore.getState().getCurrentPhase();
+            console.warn('[NavigationMachine] Unknown phase:', phase, '(scene type:', node?.scene?.type + ')');
           },
           on: {
             // Fallback: allow scrolling through unknown scenes

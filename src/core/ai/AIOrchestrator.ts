@@ -15,6 +15,9 @@
 
 import { callAI, type ConversationMessage } from '@features/ai/aiService';
 import type { ConversationMetadataMap } from '@core/data/loadStory';
+import { getCurrentNode, insertSceneNodes, advanceNavigation } from '@core/navigation/navigationHelpers';
+import { createAIResponseScene as createAIResponseSceneFactory } from '@core/navigation/sceneFactoryFunctions';
+import { useNavigationStore } from '@core/navigation/navigationStore';
 
 /**
  * Module-level storage for conversation metadata
@@ -143,13 +146,10 @@ export interface CreateAIResponseInput {
  * Helper to create and insert AI response scene
  * Automatically inherits scene context (background, characters) from current node
  * Returns the new scene ID for tracking
+ *
+ * This is a SYNCHRONOUS function - all navigation operations complete immediately
  */
 export function createAndInsertAIResponseScene(input: CreateAIResponseInput): string | null {
-  // Import dependencies here to avoid circular dependencies
-  const { getCurrentNode, insertSceneNodes, advanceNavigation } = require('@core/navigation/navigationHelpers');
-  const { createAIResponseScene } = require('@core/navigation/sceneFactoryFunctions');
-  const { useNavigationStore } = require('@core/navigation/navigationStore');
-
   try {
     // Get current scene context for inheritance
     const currentNode = getCurrentNode();
@@ -166,7 +166,7 @@ export function createAndInsertAIResponseScene(input: CreateAIResponseInput): st
     const rightCharacter = scene && 'right-character' in scene ? (scene as { 'right-character'?: string })['right-character'] : 'bakerMom';
 
     // Create AI response scene using factory
-    const aiResponseScene = createAIResponseScene(
+    const aiResponseScene = createAIResponseSceneFactory(
       input.responseText,
       input.conversationId,
       currentBackground,
@@ -176,16 +176,19 @@ export function createAndInsertAIResponseScene(input: CreateAIResponseInput): st
 
     console.log('[AIOrchestrator] Creating AI response scene with text:', input.responseText.substring(0, 50));
 
-    // Update current node phase to 'basic' (collapse input UI)
+    // STEP 1: Update current node phase from 'ai-waiting' to 'basic'
+    // This collapses the input UI on the question scene before we navigate away
     useNavigationStore.getState().updateCurrentPhase('basic');
+    console.log('[AIOrchestrator] Updated current scene phase: ai-waiting → basic');
 
-    // Insert the AI response scene after current node
+    // STEP 2: Insert the AI response scene after current node (SYNCHRONOUS)
     const newSceneId = insertSceneNodes(input.currentNodeId, aiResponseScene);
 
-    // Navigate forward to the new AI response scene
+    // STEP 3: Navigate forward to the new AI response scene (SYNCHRONOUS)
+    // The new scene already has phase: 'input' so input UI will show immediately
     advanceNavigation('forward');
 
-    console.log('[AIOrchestrator] AI response scene created and navigated');
+    console.log('[AIOrchestrator] ✅ AI response scene created and navigated (sync)');
 
     return newSceneId;
   } catch (error) {

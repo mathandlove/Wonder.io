@@ -120,14 +120,30 @@ function flattenScenes(rawScenes: RawScene[]): FlattenResult {
           currentPhaseSteps = [PHASES.BASIC];
           isFirstInFlow = false;
         }
-        // Quest metadata - add to current dialogue's phases
+        // Quest metadata - add quest-showing followed by appropriate next phase
         else if (f.type === "quest" && !f.side) {
           if (!currentDialogue) {
             console.warn('[loadStory] Quest metadata found without preceding dialogue at flow index', flowIndex, '- skipping');
             return;
           }
-          // Use PHASES constant to ensure correct phase name
+
+          // Look ahead to see what follows the quest
+          const nextFlowItem = scene.flow[flowIndex + 1];
+
+          // Add quest-showing phase
           currentPhaseSteps.push(PHASES.QUEST_SHOWING);
+
+          // Determine what should follow quest-showing:
+          // - If next item is input metadata → phases will be [basic, quest-showing, input]
+          // - If next item is dialogue or nothing → add basic again [basic, quest-showing, basic]
+          if (nextFlowItem?.type === "input" && !nextFlowItem.text) {
+            // Input follows quest - don't add basic yet, wait for input processing
+            // Phase sequence will be: basic → quest-showing → input
+          } else {
+            // Next is dialogue or end of flow - add basic so scroll back lands on basic
+            // Phase sequence will be: basic → quest-showing → basic
+            currentPhaseSteps.push(PHASES.BASIC);
+          }
         }
         // Input metadata - add to current dialogue's phases
         else if (f.type === "input" && !f.text) {

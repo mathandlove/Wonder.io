@@ -17,11 +17,22 @@
                     {
         
       "side": "right",
-      "text": "Test2"
+      "text": "Test1"
       
 
     },   
+                             {
+      "type":"quest",
+      "text":"What is wrong?",
+      "successAnswer":"Mrs. Baker's cookie was stolen."
+     },
+                         {
+        
+      "side": "right",
+      "text": "Test2"
+      
 
+    },  
     
          {
       "type":"input",

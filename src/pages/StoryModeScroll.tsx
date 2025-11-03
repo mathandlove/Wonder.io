@@ -27,7 +27,6 @@ import { UIOverlayRoot } from '@core/uiLayout/UIOverlayRoot'
 import { StepScrollDebug } from '@core/scroll/StepScrollDebug'
 import { AIModuleProvider } from '@features/ai/AIModule'
 import { AIMemoryStoreProvider } from '@core/ai/AIMemoryStore'
-import { ChatFlowOrchestratorComponent } from '@core/dialogue/ChatFlowOrchestratorComponent'
 import { AnswerValidationOrchestrator } from '@core/dialogue/AnswerValidationOrchestrator'
 import { FlowMetadataProvider } from '@core/data/FlowMetadataStore'
 
@@ -130,9 +129,6 @@ const StoryContent: React.FC = () => {
       <AIMemoryStoreProvider maxMessagesPerFlow={10}>
         <AIModuleProvider>
           <CharacterAnimationProvider>
-            {/* ChatFlow orchestrator watches for ai-waiting state and triggers responses */}
-            <ChatFlowOrchestratorComponent />
-
             {/* AnswerValidation orchestrator watches for answer-waiting state and validates */}
             <AnswerValidationOrchestrator />
 

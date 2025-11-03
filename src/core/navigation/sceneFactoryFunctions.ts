@@ -60,21 +60,21 @@ export function createRecordingScene(
 }
 
 /**
- * Create an AI response scene - CharacterScene for NPC response
+ * Create an AI response scene - CharacterScene for NPC response with immediate input
  *
  * Flow:
  * 1. AI processes user's question from recording scene
- * 2. This scene is created with AI's response text and phase='basic'
+ * 2. This scene is created with AI's response text and phase='input'
  * 3. Added to navigation graph via insertSceneNodes()
- * 4. Graph builder creates a single node with state: dialogue:basic
- * 5. Phase can be managed separately if needed (e.g., to show input UI)
+ * 4. Scene immediately shows AI response with Ask button for follow-up questions
+ * 5. User can immediately ask another question without scrolling
  *
  * @param responseText - AI's response to display
  * @param conversationId - Conversation context ID for continuity
  * @param currentBackground - Inherited background
  * @param leftCharacter - User's character
  * @param rightCharacter - NPC/AI character (speaker)
- * @returns CharacterScene with phase='basic'
+ * @returns CharacterScene with phase='input' for immediate follow-up
  */
 export function createAIResponseScene(
   responseText: string,
@@ -94,7 +94,8 @@ export function createAIResponseScene(
     "left-character": leftCharacter || "leo", // User's character
     "right-character": rightCharacter || "bakerMom", // AI character
     background: currentBackground,
-    phase: "basic", // All scenes start with basic phase
+    phase: "input", // Immediately show input UI for follow-up questions
+    phaseSteps: ["input"], // Only input phase available (no progression needed)
   };
 
   return newScene;
