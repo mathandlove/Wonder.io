@@ -27,7 +27,6 @@ import { UIOverlayRoot } from '@core/uiLayout/UIOverlayRoot'
 import { StepScrollDebug } from '@core/scroll/StepScrollDebug'
 import { AIModuleProvider } from '@features/ai/AIModule'
 import { AIMemoryStoreProvider } from '@core/ai/AIMemoryStore'
-import { AnswerValidationOrchestrator } from '@core/dialogue/AnswerValidationOrchestrator'
 import { FlowMetadataProvider } from '@core/data/FlowMetadataStore'
 
 // FullScreen: tiny helper to center any message while we load or show an error
@@ -129,9 +128,6 @@ const StoryContent: React.FC = () => {
       <AIMemoryStoreProvider maxMessagesPerFlow={10}>
         <AIModuleProvider>
           <CharacterAnimationProvider>
-            {/* AnswerValidation orchestrator watches for answer-waiting state and validates */}
-            <AnswerValidationOrchestrator />
-
             {/* Unified scroll control component - uses uniqueScenes from navigationArray */}
             <ScrollControl
             scenes={uniqueScenes}

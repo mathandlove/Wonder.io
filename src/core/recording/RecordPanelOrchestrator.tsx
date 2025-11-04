@@ -15,7 +15,7 @@
  * - Quest completion determines if Next button is unlocked
  */
 import React, { useCallback, useEffect } from 'react';
-import { getCurrentNode, getCurrentNodeId, insertSceneNodes, advanceNavigation, updateCurrentPhase, updateCurrentSceneProperties, addStateToCurrentNode } from '@core/navigation/navigationHelpers';
+import { getCurrentNode, getCurrentNodeId, insertSceneNodes, advanceNavigation, updateCurrentPhase, updateCurrentSceneProperties } from '@core/navigation/navigationHelpers';
 import { useNavigationStore } from '@core/navigation/navigationStore';
 import { useSceneFlowMetadata } from '@core/data/FlowMetadataStore';
 import { createFailDanceScene, createSuccessDanceScene } from '@core/navigation/sceneFactoryFunctions';
@@ -180,28 +180,29 @@ export function RecordingOrchestrator() {
             console.error('[RecordPanelOrchestrator] No current node ID - cannot insert fail-dance scene');
             return;
           }
-          // TODO: [Navigation Refactor] Replace with event bus emission
-          // emit({ type: 'ANSWER_VALIDATED', nodeId: currentNodeId, isCorrect: false })
+          // Insert the fail-dance scene after current node
           insertSceneNodes(currentNodeId, failDanceScene);
 
-          // Wait 2 seconds before transitioning current scene to input-showInput phase
-          // This keeps the answer-wrong visual feedback visible longer before conversion
-          setTimeout(() => {
-            // Transition the answer-wrong node to input-showInput phase (ready for retry)
-            // This will be visible when we return from the fail-dance scene
-            // Note: questionText is already stored on the scene, we just update the phase
-            if (currentNodeId) {
-              useNavigationStore.getState().updateNodePhase(currentNodeId, 'input-showInput');
-            }
-          }, 2000);
-
-          // TODO: [Navigation Refactor] Orchestrators should NOT call navigation directly
-          // This should emit an event to the navigation machine instead
-          // emit({ type: 'REQUEST_NAV_NEXT' })
           // Auto-advance to fail-dance scene after a brief moment
-          // Note: FailDanceScene will handle navigating back when animation completes
           setTimeout(() => {
+            // Before navigating, reset the question scene phase from 'answer-wrong' to 'basic'
+            // This cleans up the question scene so it's ready for potential retry
+            useNavigationStore.getState().updateNodePhase(currentNodeId, 'basic');
+            console.log('[RecordPanelOrchestrator] Reset question scene phase: answer-wrong → basic');
+
             advanceNavigation('forward');
+
+            // Emit VIDEO_COMPLETE event after fail-dance animation completes (3.5s + 100ms buffer)
+            // Machine will handle navigation back and phase reset
+            setTimeout(() => {
+              const failDanceNodeId = getCurrentNodeId();
+              console.log('[RecordPanelOrchestrator] 🎬 Fail dance animation complete - emitting VIDEO_COMPLETE');
+              navigationBus.emit({
+                type: 'VIDEO_COMPLETE',
+                nodeId: failDanceNodeId || '',
+                videoType: 'fail-dance'
+              });
+            }, 3600); // 3.5s animation + 100ms buffer
           }, 100);
         }
       }, 1000); // Wait 1 second after video ends
@@ -330,11 +331,19 @@ export function RecordingOrchestrator() {
         console.warn('[RecordPanelOrchestrator] ⚠️ Updating questionText in ai-waiting phase (fallback path)');
         updateCurrentSceneProperties({ questionText: finalText });
       } else if (phase === 'answer-processing') {
-        // Final transcript arrived - transition to answer-waiting
-        updateCurrentSceneProperties({ answerText: finalText });
-        updateCurrentPhase('answer-waiting');
+        // Final transcript arrived - emit RECORDING_PROCESSED to xState machine
+        // Machine will store answer and transition from answerProcessing → answerValidating
+        // XState now handles all store mutations (unidirectional data flow)
+        console.log('[RecordPanelOrchestrator] 📤 Emitting RECORDING_PROCESSED event with answer:', finalText.substring(0, 50));
+        navigationBus.emit({
+          type: 'RECORDING_PROCESSED',
+          transcript: finalText,
+          recordingId: activeRecordingId
+        });
       } else if (phase === 'answer-waiting' && characterScene.answerText !== finalText) {
-        // Update answerText in answer-waiting phase (fallback)
+        // Fallback: Update answerText in answer-waiting phase (if we somehow skipped answer-processing)
+        // This should rarely happen with proper state machine flow
+        console.warn('[RecordPanelOrchestrator] ⚠️ Updating answerText in answer-waiting phase (fallback path)');
         updateCurrentSceneProperties({ answerText: finalText });
       }
     }
@@ -479,11 +488,22 @@ export function RecordingOrchestrator() {
     console.log('[RecordPanelOrchestrator] 🛑 handleRecordStop called, phase:', phase);
 
     if (phase === 'record-answer') {
-      // Answer recording: Transition to answer-processing to show "Processing..."
-      // Backend will process audio and send final transcript
-      // When transcript arrives, we'll transition to answer-waiting
-      // Note: answerText and questionText are already on the scene
-      updateCurrentPhase('answer-processing');
+      // Answer recording: Emit RECORDING_STOPPED event to xState machine
+      // Machine will transition from answerRecording → answerProcessing
+      const currentAnswerText = characterScene.answerText || '';
+
+      // Update scene text (for speech bubble) before transitioning
+      if (activeRecordingId && currentAnswerText) {
+        useNavigationStore.getState().updateSceneTextByRecordingId(activeRecordingId, currentAnswerText);
+      }
+
+      // Emit RECORDING_STOPPED event to navigation machine
+      console.log('[RecordPanelOrchestrator] 📤 Emitting RECORDING_STOPPED event (answer)');
+      navigationBus.emit({
+        type: 'RECORDING_STOPPED',
+        nodeId: node.id,
+        recordingType: 'answer'
+      });
     } else if (phase === 'input-recording') {
       // Ask recording: Emit RECORDING_STOPPED event to xState machine
       // Machine will transition from askRecording → askProcessing
@@ -526,8 +546,8 @@ export function RecordingOrchestrator() {
 
   /**
    * Handle Answer button click - EVENT DRIVEN APPROACH
-   * Starts recording IMMEDIATELY, then updates states
-   * Pattern matches handleRecordStart for consistency
+   * Starts recording IMMEDIATELY, then updates phase and emits event
+   * Unlike Ask (which creates new scene), Answer just changes phase on current node
    */
   const handleAnswerClick = useCallback(async () => {
     try {
@@ -535,36 +555,36 @@ export function RecordingOrchestrator() {
       const recordingId = `answer-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
 
       // STEP 1: START RECORDING IMMEDIATELY (event-driven, not state-driven)
-      // This happens FIRST, before any state changes or navigation
+      // This happens FIRST, before any state changes
       await Recording.start().catch((err) => {
         console.error('[RecordPanelOrchestrator] Failed to start answer recording:', err);
         throw err; // Re-throw to prevent state updates on failure
       });
 
-
-      // STEP 2: NOW update UI states (happens AFTER recording is flowing)
-      // CRITICAL: Add recordingId to the current scene so activeRecordingId can be derived
+      // STEP 2: Add recordingId to current scene so activeRecordingId can be derived
       const currentItem = getCurrentNode();
+      const currentNodeId = getCurrentNodeId();
+
       if (currentItem?.scene) {
         // Add recordingId property to the scene (type assertion needed)
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         (currentItem.scene as any).recordingId = recordingId;
       }
 
-      // Add record-answer state to current scene (same scene, new state)
-      addStateToCurrentNode(
-        { type: 'dialogue', state: 'record-answer' },
-        true  // Insert after current
-      );
+      // STEP 3: Update phase to record-answer (stays on same node, just changes phase)
+      updateCurrentPhase('record-answer');
 
-      // TODO: [Navigation Refactor] Orchestrators should NOT call navigation directly
-      // This should emit an event to the navigation machine instead
-      // emit({ type: 'REQUEST_NAV_NEXT' })
-      // Navigate to the new state using advanceNavigation
-      // This will collapse the previous state (input-showInput) from the navigation array
-      advanceNavigation('forward');
-    } catch {
-      // Silent error handling - recording failed to start
+      // STEP 4: Emit event to machine - machine will route to answerRecording state
+      console.log('[RecordPanelOrchestrator] 📤 Emitting ANSWER_RECORDING_STARTED event');
+      navigationBus.emit({
+        type: 'ANSWER_RECORDING_STARTED',
+        recordingId,
+        nodeId: currentNodeId || ''
+      });
+
+      console.log('[RecordPanelOrchestrator] Answer button flow completed successfully');
+    } catch (error) {
+      console.error('[RecordPanelOrchestrator] Answer button flow failed:', error);
     }
   }, []);
 

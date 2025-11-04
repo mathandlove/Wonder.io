@@ -14,18 +14,7 @@
 
 
 
-                    {
-        
-      "side": "right",
-      "text": "Test1"
-      
 
-    },   
-                             {
-      "type":"quest",
-      "text":"What is wrong?",
-      "successAnswer":"Mrs. Baker's cookie was stolen."
-     },
                          {
         
       "side": "right",
@@ -37,6 +26,18 @@
          {
       "type":"input",
       "CharacterDescription":"Ms. Baker is a friendly baker at dreary lane bakery. She made a giant cookie last night and is worried about it. The last time she saw her cookie was when it was cooling on a baking pan, hot out of the oven. Unless asked twice, she won't say why it is important for her cookie to be found. First time she will push off the question, saying that's not important. If asked again, she will say that she spilt some magic ingredients on the cookie that a witch gave her. She won't say why she visited a witch. She thinks that the king stole her cookie because he is always asking her to make more."
+     },
+                         {
+        
+      "side": "right",
+      "text": "Test1"
+      
+
+    },   
+                             {
+      "type":"quest",
+      "text":"What is wrong?",
+      "successAnswer":"Mrs. Baker's cookie was stolen."
      }
 
 

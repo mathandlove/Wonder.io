@@ -166,6 +166,28 @@ export type ReceivedAIResponseEvent = {
 };
 
 /**
+ * FEEDBACK_RECEIVED
+ * Emitted when: AI feedback for wrong answer has been generated and is ready to display
+ * Payload: Feedback text to show to user
+ */
+export type FeedbackReceivedEvent = {
+  type: 'FEEDBACK_RECEIVED';
+  feedbackText: string;
+  questionNodeId: string;
+};
+
+/**
+ * ANSWER_RECORDING_STARTED
+ * Emitted when: User clicks Answer button and recording starts
+ * Payload: Recording ID for tracking
+ */
+export type AnswerRecordingStartedEvent = {
+  type: 'ANSWER_RECORDING_STARTED';
+  recordingId: string;
+  nodeId: string;
+};
+
+/**
  * LOAD_STORY_REQUESTED
  * Emitted when: App/router requests a story to be loaded before navigation can start
  * Payload: Story identifier to load
@@ -289,7 +311,9 @@ export type NavigationEvent =
   | RecordingStoppedEvent
   | RecordingProcessedEvent
   | ReceivedAIResponseEvent
+  | FeedbackReceivedEvent
   | AskButtonClickedEvent
+  | AnswerRecordingStartedEvent
   | LoadStoryRequestedEvent
   | ApplyGraphEvent
   | StoryLoadedEvent
@@ -339,6 +363,10 @@ export type NavigationContext = {
   graph: MachineGraph;
   /** Last boot error, if any */
   bootError?: { message: string; timestamp: string } | null;
+  /** Track if fail-dance video has completed (for answer-wrong flow) */
+  failVideoComplete?: boolean;
+  /** Track if AI feedback has been received (for answer-wrong flow) */
+  feedbackReceived?: boolean;
 };
 
 // Note: Phase is NOT tracked in parent context - it lives in:

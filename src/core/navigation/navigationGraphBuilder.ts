@@ -199,9 +199,9 @@ function createNode(
     // Dialogue scenes: default to basic only (phaseSteps should be set by loadStory)
     phaseSteps = ['basic'];
   } else if (scene.type === 'fail-dance') {
-    phaseSteps = ['answer-wrong'];
+    phaseSteps = ['fail-dance']; // Matches the scene type for RecordPanel state checks
   } else if (scene.type === 'success-dance') {
-    phaseSteps = ['answer-right'];
+    phaseSteps = ['success-dance']; // Matches the scene type for RecordPanel state checks
   } else {
     // Default: single static phase
     phaseSteps = ['static'];

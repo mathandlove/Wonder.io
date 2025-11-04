@@ -21,6 +21,7 @@ import { useSceneConversationMetadata } from '@core/data/FlowMetadataStore';
 import { useAIMemory } from '@core/ai/useAIMemory';
 import * as navigationBus from '@core/navigation/events/navigationBus';
 import type { CharacterScene, Scene } from '@core/types/scene';
+import { addUserMessage as addUserMessageToOrchestrator, addAssistantMessage as addAssistantMessageToOrchestrator } from '@core/ai/AIOrchestrator';
 
 // Type guard for scenes with character properties
 type SceneWithCharacters = Scene & {
@@ -92,8 +93,10 @@ export function useChatFlowOrchestrator(props?: ChatFlowOrchestratorProps) {
       const conversationHistory = conversationId ? aiMemory.getHistory(conversationId) : [];
 
       // Add user message to conversation history BEFORE calling AI
+      // Sync with both AIMemory (React context) and AIOrchestrator (module-level)
       if (conversationId) {
         aiMemory.addUserMessage(conversationId, input.text);
+        addUserMessageToOrchestrator(conversationId, input.text);
       }
 
       const response = await aiModule.getResponse({
@@ -115,8 +118,10 @@ export function useChatFlowOrchestrator(props?: ChatFlowOrchestratorProps) {
       onResponseReceived?.(response.text);
 
       // Add assistant response to conversation history AFTER receiving it
+      // Sync with both AIMemory (React context) and AIOrchestrator (module-level)
       if (conversationId) {
         aiMemory.addAssistantMessage(conversationId, response.text);
+        addAssistantMessageToOrchestrator(conversationId, response.text);
       }
 
       // Emit RECEIVED_AI_RESPONSE event to xState machine

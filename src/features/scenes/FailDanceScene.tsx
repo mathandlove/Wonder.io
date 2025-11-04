@@ -11,7 +11,8 @@
 import { useCallback, useState, useRef } from 'react';
 import type { SceneProps } from './registry';
 import type { FailDanceScene as FailDanceSceneType } from '@core/types/scene';
-import { advanceNavigation, deleteNode, getCurrentNode, getCurrentNodeId } from '@core/navigation/navigationHelpers';
+import { getCurrentNode, getCurrentNodeId } from '@core/navigation/navigationHelpers';
+import * as navigationBus from '@core/navigation/events/navigationBus';
 import './FailDanceScene.css';
 
 export default function FailDanceScene({ scene }: SceneProps<FailDanceSceneType>) {
@@ -32,7 +33,7 @@ export default function FailDanceScene({ scene }: SceneProps<FailDanceSceneType>
     deleted: boolean;
   } | null>(null);
 
-  // Handle animation completion - navigate back and schedule deletion
+  // Handle animation completion - emit event to navigation machine
   const handleAnimationEnd = useCallback((e: React.AnimationEvent) => {
     // Only respond to the character container's animation ending (not sub-elements)
     if (!e.currentTarget.classList.contains('fail-dance-character-container')) return;
@@ -45,14 +46,8 @@ export default function FailDanceScene({ scene }: SceneProps<FailDanceSceneType>
     // Only act if we have a current node ID
     if (!currentNodeId) return;
 
-    // Remember our current node before navigating
+    // Remember our current node for deletion tracking
     const failDanceNodeId = currentNodeId;
-
-    // TODO: [Navigation Refactor] Scenes should NOT call navigation directly
-    // This should emit an event to the navigation machine instead
-    // emit({ type: 'REQUEST_NAV_PREV' })
-    // Navigate back first
-    advanceNavigation('backward');
 
     // Set up pending deletion tracking
     pendingDeletionRef.current = {
@@ -60,15 +55,17 @@ export default function FailDanceScene({ scene }: SceneProps<FailDanceSceneType>
       deleted: false
     };
 
-    // Schedule deletion after 3 seconds
-    setTimeout(() => {
-      if (pendingDeletionRef.current && !pendingDeletionRef.current.deleted) {
-        pendingDeletionRef.current.deleted = true;
-        // TODO: [Navigation Refactor] Replace with event bus emission
-        // emit({ type: 'VIDEO_COMPLETE', nodeId: failDanceNodeId, videoType: 'fail-dance' })
-        deleteNode(failDanceNodeId);
-      }
-    }, 3000);
+    // Emit VIDEO_COMPLETE event to navigation machine
+    // Machine will handle navigation back and phase reset
+    console.log('[FailDanceScene] 🎬 Animation complete - emitting VIDEO_COMPLETE event');
+    navigationBus.emit({
+      type: 'VIDEO_COMPLETE',
+      nodeId: failDanceNodeId,
+      videoType: 'fail-dance'
+    });
+
+    // Note: fail-dance scene deletion is now handled by the machine
+    // The scene can be safely deleted after user navigates away
   }, [currentSceneId, scene.sceneId, currentNodeId]);
 
   // Image paths with cache busting

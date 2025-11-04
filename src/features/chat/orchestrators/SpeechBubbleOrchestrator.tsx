@@ -195,9 +195,13 @@ export function SpeechBubbleOrchestrator() {
         // During processing, ALWAYS show AudioVisualizer with "Processing..." (ignore any text)
         // The scene text might be default placeholder like "Test words", so we check scene for actual transcript
         const hasTranscript = characterScene.questionText && characterScene.questionText.trim();
+        const hasFeedback = (characterScene as any).feedbackText && (characterScene as any).feedbackText.trim();
 
-        // Priority: processing > recording > normal text
-        const bubbleContent = isProcessing
+        // Priority: feedback > processing > recording > normal text
+        // Feedback takes priority to show AI explanation for wrong answers
+        const bubbleContent = hasFeedback
+          ? (characterScene as any).feedbackText // Show AI feedback if available
+          : isProcessing
           ? null // Always null during processing - will show AudioVisualizer with "Processing..."
           : isRecording
           ? (hasTranscript ? characterScene.questionText : null) // During recording: show transcript or AudioVisualizer

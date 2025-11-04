@@ -148,7 +148,7 @@ export function createFailDanceScene(
     answerText: answerText,
     questionText: questionText,
     duration: 3500,
-    phase: "basic", // All scenes start with basic phase
+    phase: "fail-dance", // Matches phaseSteps for fail-dance scenes
     // NOTE: meta will be injected automatically by injectPanelMetaFromFlows in StoryModeScroll
   };
 
@@ -198,7 +198,7 @@ export function createSuccessDanceScene(
     background: currentBackground,
     answerText: answerText,
     duration: 3500,
-    phase: "basic", // All scenes start with basic phase
+    phase: "success-dance", // Matches phaseSteps for success-dance scenes
     // NOTE: meta will be injected automatically by injectPanelMetaFromFlows in StoryModeScroll
   };
 

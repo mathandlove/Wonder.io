@@ -18,9 +18,10 @@
 import { setup, assign, fromPromise } from 'xstate';
 import type { NavigationEvent, NavigationContext } from './types';
 import { loadStoryService } from '@core/data/services/loadStoryService';
-import { callAIService, setConversationMetadata, createAndInsertAIResponseScene } from '@core/ai/AIOrchestrator';
+import { callAIService, setConversationMetadata, createAndInsertAIResponseScene, validateAnswerService, getConversationMetadata, startFeedbackGeneration, getPendingFeedbackPromise, clearPendingFeedback } from '@core/ai/AIOrchestrator';
 import { useNavigationStore } from '../navigationStore';
-import { getCurrentNodeId, getCurrentNode, initializeStoreWithStory } from '../navigationHelpers';
+import { getCurrentNodeId, getCurrentNode, initializeStoreWithStory, insertSceneNodes, deleteNode } from '../navigationHelpers';
+import { createAIResponseScene as createAIResponseSceneFactory } from '../sceneFactoryFunctions';
 
 /**
  * Navigation State Machine
@@ -45,6 +46,12 @@ export const navigationMachine = setup({
       input: { questionText: string; conversationId: string | undefined }
     }) => {
       return await callAIService(input);
+    }),
+    // Answer validation actor - validates user's answer
+    validateAnswer: fromPromise(async ({ input }: {
+      input: { answerText: string; questionText?: string; successAnswer: string; conversationId?: string }
+    }) => {
+      return await validateAnswerService(input);
     }),
   },
   actions: {
@@ -84,6 +91,23 @@ export const navigationMachine = setup({
 
     clearBootError: assign({
       bootError: null,
+    }),
+
+    // =============================================================================
+    // Answer Wrong Flow - Track completion conditions
+    // =============================================================================
+
+    setFailVideoComplete: assign({
+      failVideoComplete: true,
+    }),
+
+    setFeedbackReceived: assign({
+      feedbackReceived: true,
+    }),
+
+    resetAnswerWrongFlags: assign({
+      failVideoComplete: false,
+      feedbackReceived: false,
     }),
 
     // =============================================================================
@@ -149,6 +173,30 @@ export const navigationMachine = setup({
     },
 
     // =============================================================================
+    // Answer Storage - Simple store update for answer validation
+    // =============================================================================
+
+    storeAnswerInScene: ({ event }) => {
+      if (event.type !== 'RECORDING_PROCESSED') return;
+
+      const { transcript } = event;
+
+      if (!transcript || !transcript.trim()) {
+        console.warn('[NavigationMachine] Received empty answer transcript, skipping store');
+        return;
+      }
+
+      console.log('[NavigationMachine] 📝 Storing answer in scene:', transcript.substring(0, 50));
+
+      // Update current scene with answer text
+      useNavigationStore.getState().updateCurrentSceneProperties({
+        answerText: transcript // For validation
+      });
+
+      console.log('[NavigationMachine] ✅ Answer stored successfully');
+    },
+
+    // =============================================================================
     // AI Response Scene Creation - Delegate to AIOrchestrator
     // =============================================================================
 
@@ -208,6 +256,35 @@ export const navigationMachine = setup({
       const currentPhase = useNavigationStore.getState().getCurrentPhase();
       return currentPhase === 'quest-showing';
     },
+    // Check if current node is recording an answer
+    isRecordAnswer: () => {
+      const currentPhase = useNavigationStore.getState().getCurrentPhase();
+      return currentPhase === 'record-answer';
+    },
+    // Check if current node is processing answer transcript
+    isAnswerProcessing: () => {
+      const currentPhase = useNavigationStore.getState().getCurrentPhase();
+      return currentPhase === 'answer-processing';
+    },
+    // Check if current node is waiting for answer validation
+    isAnswerWaiting: () => {
+      const currentPhase = useNavigationStore.getState().getCurrentPhase();
+      return currentPhase === 'answer-waiting';
+    },
+    // Check if current node is showing answer-right animation
+    isAnswerRight: () => {
+      const currentPhase = useNavigationStore.getState().getCurrentPhase();
+      return currentPhase === 'answer-right';
+    },
+    // Check if current node is showing answer-wrong animation
+    isAnswerWrong: () => {
+      const currentPhase = useNavigationStore.getState().getCurrentPhase();
+      return currentPhase === 'answer-wrong';
+    },
+    // Check if both fail video and feedback are ready (for answer-wrong transition)
+    bothFailConditionsMet: ({ context }) => {
+      return context.failVideoComplete === true && context.feedbackReceived === true;
+    },
   },
 }).createMachine({
   id: 'navigation',
@@ -216,6 +293,8 @@ export const navigationMachine = setup({
     storyId: undefined,
     graph: { scenes: [] },
     bootError: null,
+    failVideoComplete: false,
+    feedbackReceived: false,
   },
   on: {
     // Note: Global event handlers go here if needed
@@ -348,6 +427,26 @@ export const navigationMachine = setup({
               target: 'questShowing',
             },
             {
+              guard: 'isRecordAnswer',
+              target: 'answerRecording',
+            },
+            {
+              guard: 'isAnswerProcessing',
+              target: 'answerProcessing',
+            },
+            {
+              guard: 'isAnswerWaiting',
+              target: 'answerValidating',
+            },
+            {
+              guard: 'isAnswerRight',
+              target: 'answerRight',
+            },
+            {
+              guard: 'isAnswerWrong',
+              target: 'answerWrong',
+            },
+            {
               guard: 'isBasic',
               target: 'dialogueBasic',
             },
@@ -427,8 +526,15 @@ export const navigationMachine = setup({
             // Orchestrator handles: recording start, scene creation, insertion, navigation, phase update
             // Machine just transitions state to track that we're recording
             RECORDING_STARTED: {
-              actions: () => console.log('[NavigationMachine] 🎙️  Recording started by orchestrator'),
+              actions: () => console.log('[NavigationMachine] 🎙️  Ask recording started by orchestrator'),
               target: 'askRecording',
+            },
+            // ANSWER_RECORDING_STARTED event comes from RecordPanelOrchestrator AFTER phase update
+            // Orchestrator handles: recording start, phase update to 'record-answer'
+            // Machine transitions to route, which will route to answerRecording based on phase
+            ANSWER_RECORDING_STARTED: {
+              actions: () => console.log('[NavigationMachine] 🎙️  Answer recording started → routing'),
+              target: '#navigation.scene.route',
             },
             // Handle recording failure
             RECORDING_FAILED: {
@@ -547,6 +653,349 @@ export const navigationMachine = setup({
                 () => console.log('[NavigationMachine] ✅ Received AI response via legacy event')
               ]
             },
+          },
+        },
+
+        /**
+         * ANSWER RECORDING state
+         * User is actively recording their answer to a quest
+         * Waits for RECORDING_STOPPED event
+         */
+        answerRecording: {
+          entry: () => console.log('[NavigationMachine] 🎙️  Entered answerRecording state - user recording answer'),
+          on: {
+            // Block all navigation while recording
+            SCROLL_DOWN_STEP: {
+              actions: () => console.log('[NavigationMachine] ⛔ SCROLL blocked during answer recording'),
+            },
+            SCROLL_UP_STEP: {
+              actions: () => console.log('[NavigationMachine] ⛔ SCROLL blocked during answer recording'),
+            },
+            // When user stops recording, move to processing
+            RECORDING_STOPPED: {
+              actions: () => console.log('[NavigationMachine] 🛑 Answer recording stopped → processing'),
+              target: 'answerProcessing',
+            },
+          },
+        },
+
+        /**
+         * ANSWER PROCESSING state
+         * Recording is being transcribed by backend
+         * Waits for RECORDING_PROCESSED event with transcript
+         */
+        answerProcessing: {
+          entry: [
+            () => console.log('[NavigationMachine] ⚙️  Entered answerProcessing state - transcribing answer'),
+            () => useNavigationStore.getState().updateCurrentPhase('answer-processing'),
+          ],
+          on: {
+            // Block navigation while processing
+            SCROLL_DOWN_STEP: {},
+            SCROLL_UP_STEP: {},
+            // When transcript is ready, store it and move to validation
+            RECORDING_PROCESSED: {
+              actions: [
+                'storeAnswerInScene',
+                () => console.log('[NavigationMachine] ✅ Answer transcript stored → validating')
+              ],
+              target: 'answerValidating',
+            },
+          },
+        },
+
+        /**
+         * ANSWER VALIDATING state
+         * Transcript is ready, invoking AI validation service to check answer
+         */
+        answerValidating: {
+          entry: [
+            () => console.log('[NavigationMachine] 🤖 Entered answerValidating - invoking validation service'),
+            () => useNavigationStore.getState().updateCurrentPhase('answer-waiting'),
+          ],
+          invoke: {
+            id: 'validateAnswer',
+            src: 'validateAnswer',
+            input: () => {
+              // Extract answer data from current scene
+              const scene = getCurrentNode()?.scene;
+              const answerText = (scene as { answerText?: string })?.answerText;
+              const questionText = (scene as { questionText?: string })?.questionText;
+              const conversationId = (scene as { conversationId?: string })?.conversationId;
+
+              // Get success answer from metadata
+              const metadata = getConversationMetadata(conversationId);
+              const successAnswer = metadata?.successAnswer || '';
+
+              console.log('[NavigationMachine] 📥 Preparing validation input:', {
+                answerText: answerText?.substring(0, 50),
+                successAnswer,
+                conversationId,
+                hasAnswer: !!answerText,
+                hasSuccessAnswer: !!successAnswer
+              });
+
+              return {
+                answerText: answerText || '',
+                questionText,
+                successAnswer,
+                conversationId
+              };
+            },
+            onDone: [
+              {
+                // If answer is correct, transition to answerRight
+                guard: ({ event }) => event.output.isCorrect,
+                target: 'answerRight',
+                actions: () => console.log('[NavigationMachine] ✅ Answer CORRECT → answerRight')
+              },
+              {
+                // If answer is wrong, START FEEDBACK GENERATION IMMEDIATELY (fire-and-forget)
+                // This gives us maximum time (animation duration + setup) for AI to respond
+                target: 'answerWrong',
+                actions: [
+                  () => {
+                    console.log('[NavigationMachine] ❌ Answer INCORRECT → starting feedback generation');
+
+                    // Get current scene data to extract answer/question information
+                    const scene = getCurrentNode()?.scene;
+                    const questionNodeId = getCurrentNodeId(); // This is the question node (where validation happens)
+                    const answerText = (scene as { answerText?: string })?.answerText || '';
+                    const questionText = (scene as { questionText?: string })?.questionText;
+                    const conversationId = (scene as { conversationId?: string })?.conversationId;
+                    const metadata = getConversationMetadata(conversationId);
+                    const successAnswer = metadata?.successAnswer || '';
+
+                    // Fire-and-forget: Start feedback generation NOW (don't wait for it)
+                    // By the time fail-dance animation completes (~4.7s), feedback will likely be ready
+                    startFeedbackGeneration({
+                      studentAnswer: answerText,
+                      correctAnswer: successAnswer,
+                      questionText,
+                      conversationId
+                    });
+
+                    console.log('[NavigationMachine] 🚀 Feedback generation started in background');
+
+                    // Get the pending feedback promise and await it asynchronously
+                    // When feedback is ready, emit FEEDBACK_RECEIVED event
+                    const feedbackPromise = getPendingFeedbackPromise();
+
+                    if (feedbackPromise && questionNodeId) {
+                      import('@core/navigation/events/navigationBus').then(({ emit }) => {
+                        // Await the feedback with a timeout that we can cancel
+                        let timeoutId: NodeJS.Timeout;
+                        const timeoutPromise = new Promise<null>((resolve) => {
+                          timeoutId = setTimeout(() => {
+                            console.warn('[NavigationMachine] ⏱️ Feedback timeout (10s) - using fallback');
+                            resolve(null);
+                          }, 10000);
+                        });
+
+                        Promise.race([feedbackPromise, timeoutPromise])
+                          .then(feedback => {
+                            // Clear the timeout to prevent it from firing after race completes
+                            clearTimeout(timeoutId);
+
+                            if (feedback) {
+                              console.log('[NavigationMachine] 📨 Emitting FEEDBACK_RECEIVED event for node:', questionNodeId);
+                              emit({
+                                type: 'FEEDBACK_RECEIVED',
+                                feedbackText: feedback,
+                                questionNodeId: questionNodeId
+                              });
+                            } else {
+                              console.warn('[NavigationMachine] ⚠️ Feedback timeout - sending fallback');
+                              emit({
+                                type: 'FEEDBACK_RECEIVED',
+                                feedbackText: "Try thinking about what the correct answer might be.",
+                                questionNodeId: questionNodeId
+                              });
+                            }
+                            // Clear the pending feedback after emitting event
+                            clearPendingFeedback();
+                          })
+                          .catch(err => {
+                            console.error('[NavigationMachine] Error waiting for feedback:', err);
+
+                            // Clear the timeout in error case too
+                            clearTimeout(timeoutId);
+
+                            emit({
+                              type: 'FEEDBACK_RECEIVED',
+                              feedbackText: "Try thinking about what the correct answer might be.",
+                              questionNodeId: questionNodeId
+                            });
+                            clearPendingFeedback();
+                          });
+                      });
+                    }
+                  }
+                ]
+              }
+            ],
+            onError: {
+              // On validation error, treat as wrong answer
+              target: 'answerWrong',
+              actions: [
+                ({ event }) => console.error('[NavigationMachine] ❌ Validation error:', event.error),
+                () => console.log('[NavigationMachine] Treating validation error as incorrect answer')
+              ]
+            }
+          },
+          on: {
+            // Block navigation while validating
+            SCROLL_DOWN_STEP: {
+              actions: () => console.log('[NavigationMachine] ⛔ Scroll blocked while validating answer')
+            },
+            SCROLL_UP_STEP: {
+              actions: () => console.log('[NavigationMachine] ⛔ Scroll blocked while validating answer')
+            },
+          },
+        },
+
+        /**
+         * ANSWER RIGHT state
+         * User answered correctly - show success animation
+         * RecordPanelOrchestrator will handle success-dance scene insertion and navigation
+         */
+        answerRight: {
+          entry: [
+            () => console.log('[NavigationMachine] 🎉 Entered answerRight - success animation'),
+            () => useNavigationStore.getState().updateCurrentPhase('answer-right'),
+          ],
+          on: {
+            // Block navigation during success animation
+            // RecordPanelOrchestrator will handle scene transitions
+            SCROLL_DOWN_STEP: {
+              actions: () => console.log('[NavigationMachine] ⛔ SCROLL blocked during success animation'),
+            },
+            SCROLL_UP_STEP: {
+              actions: () => console.log('[NavigationMachine] ⛔ SCROLL blocked during success animation'),
+            },
+          },
+        },
+
+        /**
+         * ANSWER WRONG state
+         * User answered incorrectly - show fail animation
+         * RecordPanelOrchestrator will handle fail-dance scene insertion
+         * Machine waits for BOTH video completion AND feedback before allowing retry
+         */
+        answerWrong: {
+          entry: [
+            () => console.log('[NavigationMachine] 😞 Entered answerWrong - fail animation'),
+            () => {
+              // Update current scene (question scene) to answer-wrong phase for animation
+              useNavigationStore.getState().updateCurrentPhase('answer-wrong');
+
+              // Note: When we navigate to fail-dance scene, we'll reset this question scene to 'basic'
+              // This happens in the RecordPanelOrchestrator after fail-dance scene insertion
+            },
+            'resetAnswerWrongFlags', // Reset flags on entry
+          ],
+          on: {
+            // Block navigation during fail animation
+            SCROLL_DOWN_STEP: {
+              actions: () => console.log('[NavigationMachine] ⛔ SCROLL blocked during fail animation'),
+            },
+            SCROLL_UP_STEP: {
+              actions: () => console.log('[NavigationMachine] ⛔ SCROLL blocked during fail animation'),
+            },
+            // When fail-dance animation completes, mark video as complete
+            VIDEO_COMPLETE: {
+              actions: [
+                ({ event }) => {
+                  if (event.videoType === 'fail-dance') {
+                    console.log('[NavigationMachine] 🎬 Fail-dance video complete');
+                  }
+                },
+                'setFailVideoComplete',
+              ],
+              // Check if both conditions are met after setting video complete
+              target: '#navigation.scene.answerWrong', // Stay in same state (will check always transition)
+            },
+            // When feedback is received, create a new scene with the feedback text
+            FEEDBACK_RECEIVED: {
+              actions: [
+                ({ event }) => {
+                  console.log('[NavigationMachine] 💬 Feedback received:', event.feedbackText.substring(0, 100) + '...');
+
+                  // Get the question node to extract scene context
+                  const questionNodeId = event.questionNodeId;
+                  if (!questionNodeId) {
+                    console.error('[NavigationMachine] No questionNodeId provided with feedback');
+                    return;
+                  }
+
+                  const store = useNavigationStore.getState();
+                  const questionNode = store.graph.byId[questionNodeId];
+                  if (!questionNode?.scene) {
+                    console.error('[NavigationMachine] Question node not found:', questionNodeId);
+                    return;
+                  }
+
+                  // Extract scene properties for inheritance
+                  const scene = questionNode.scene;
+                  const conversationId = (scene as { conversationId?: string })?.conversationId;
+                  const currentBackground = 'background' in scene ? scene.background : undefined;
+                  const leftCharacter = 'left-character' in scene ? (scene as { 'left-character'?: string })['left-character'] : 'leo';
+                  const rightCharacter = 'right-character' in scene ? (scene as { 'right-character'?: string })['right-character'] : 'bakerMom';
+
+                  // Create feedback scene using the same factory as AI responses
+                  const feedbackScene = createAIResponseSceneFactory(
+                    event.feedbackText,
+                    conversationId,
+                    currentBackground,
+                    leftCharacter,
+                    rightCharacter
+                  );
+
+                  console.log('[NavigationMachine] Creating feedback scene with text:', event.feedbackText.substring(0, 50));
+
+                  // Get current node (should be fail-dance scene)
+                  const currentNodeId = store.currentId;
+                  if (!currentNodeId) {
+                    console.error('[NavigationMachine] No current node ID');
+                    return;
+                  }
+
+                  // Insert feedback scene after current fail-dance scene
+                  insertSceneNodes(currentNodeId, feedbackScene);
+
+                  console.log('[NavigationMachine] ✅ Feedback scene created');
+                },
+                'setFeedbackReceived',
+              ],
+              // Check if both conditions are met after setting feedback received
+              target: '#navigation.scene.answerWrong', // Stay in same state (will check always transition)
+            },
+          },
+          // Always check if both conditions are met - if so, navigate forward to feedback scene and delete fail-dance
+          always: {
+            guard: 'bothFailConditionsMet',
+            actions: [
+              () => {
+                console.log('[NavigationMachine] ✅ Both conditions met - navigating to feedback scene');
+
+                const store = useNavigationStore.getState();
+
+                // Get the current fail-dance node ID before navigating away
+                const failDanceNodeId = store.currentId;
+
+                // Navigate forward to the feedback scene that was inserted
+                console.log('[NavigationMachine] ➡️  Advancing to feedback scene');
+                store.advance('forward');
+
+                // Delete the fail-dance scene now that we've navigated past it
+                // This keeps the graph clean - fail-dance is just a temporary animation
+                if (failDanceNodeId) {
+                  console.log('[NavigationMachine] 🗑️  Deleting fail-dance scene:', failDanceNodeId);
+                  deleteNode(failDanceNodeId);
+                }
+              }
+            ],
+            target: '#navigation.scene.navigating',
           },
         },
 

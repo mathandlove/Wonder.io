@@ -19,6 +19,7 @@ export type CharacterScene = {
   conversationId?: string; // Reference to conversation metadata (characterDescription, successAnswer, conversation history)
   questionText?: string; // User's question in quest flow
   answerText?: string; // User's answer to quest question
+  feedbackText?: string; // AI-generated feedback for wrong answers
   meta?: {
     panelLeft?: { character: string; previousCharacter?: string; nextCharacter?: string; newCharacter?: boolean; aboutToSwap?: boolean };
     panelRight?: { character: string; previousCharacter?: string; nextCharacter?: string; newCharacter?: boolean; aboutToSwap?: boolean };
