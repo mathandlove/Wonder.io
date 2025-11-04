@@ -241,6 +241,15 @@ export function RecordingOrchestrator() {
           background = scene.background;
         }
 
+        console.log('[RecordPanelOrchestrator] 🔍 Extracting properties for success-dance:', {
+          sceneType: scene?.type,
+          background,
+          hasBackground: scene && 'background' in scene,
+          leftCharacter,
+          rightCharacter,
+          character
+        });
+
         // Get the answer text to display in the record panel
         const characterScene = scene as CharacterScene;
         const answerText = characterScene.answerText || '';
@@ -262,7 +271,19 @@ export function RecordingOrchestrator() {
         // STEP 3: Insert the success-dance scene after current node
         // TODO: [Navigation Refactor] Replace with event bus emission
         // emit({ type: 'ANSWER_VALIDATED', nodeId: answerRightNodeId, isCorrect: true })
-        insertSceneNodes(answerRightNodeId, successDanceScene);
+        console.log('[RecordPanelOrchestrator] 🔗 Graph before insert:', {
+          currentNodeId: answerRightNodeId,
+          currentNode: useNavigationStore.getState().graph.byId[answerRightNodeId],
+          nextNodeId: useNavigationStore.getState().graph.byId[answerRightNodeId]?.nextId
+        });
+
+        const newSceneId = insertSceneNodes(answerRightNodeId, successDanceScene);
+
+        console.log('[RecordPanelOrchestrator] 🔗 Graph after insert:', {
+          newSceneId,
+          newNode: useNavigationStore.getState().graph.byId[newSceneId || ''],
+          currentNode: useNavigationStore.getState().graph.byId[answerRightNodeId]
+        });
 
         // STEP 4: Update answer-right node to basic phase (will be visible when we return)
         useNavigationStore.getState().updateNodePhase(answerRightNodeId, 'basic');

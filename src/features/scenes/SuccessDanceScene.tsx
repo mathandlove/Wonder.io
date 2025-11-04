@@ -21,10 +21,11 @@
 import { useEffect, useRef } from 'react';
 import { useCharacterAnimation } from '@features/characters/CharacterAnimationContext';
 import { getCurrentNodeId } from '@core/navigation/navigationHelpers';
+import { emit } from '@core/navigation/events/navigationBus';
 
 export default function SuccessDanceScene() {
   const { addEventListener, removeEventListener } = useCharacterAnimation();
-  const hasNavigatedRef = useRef(false);
+  const hasEmittedEventRef = useRef(false);
   const currentNodeId = getCurrentNodeId();
 
   console.log('[SuccessDanceScene] 🎬 Mounted with currentNodeId:', currentNodeId);
@@ -35,28 +36,23 @@ export default function SuccessDanceScene() {
 
     const handleJiggleComplete = () => {
       console.log('[SuccessDanceScene] 🎊 Received jiggle-complete event!', {
-        hasNavigated: hasNavigatedRef.current,
+        hasEmittedEvent: hasEmittedEventRef.current,
         currentNodeId
       });
 
-      // Only navigate once
-      if (!hasNavigatedRef.current && currentNodeId) {
-        hasNavigatedRef.current = true;
+      // Only emit event once
+      if (!hasEmittedEventRef.current && currentNodeId) {
+        hasEmittedEventRef.current = true;
 
-        console.log('[SuccessDanceScene] 🚀 Jiggle complete - auto-navigation DISABLED for debugging');
+        console.log('[SuccessDanceScene] ✅ Jiggle complete - emitting VIDEO_COMPLETE event');
 
-        // TEMPORARILY COMMENTED OUT FOR DEBUGGING
-        // Navigate forward after jiggle completes, then delete this temporary scene
-        // setTimeout(() => {
-        //   console.log('[SuccessDanceScene] ➡️ Navigating forward');
-        //   forceAdvanceNavigation('forward');
-
-        //   // Delete the success-dance node after navigating away
-        //   setTimeout(() => {
-        //     console.log('[SuccessDanceScene] 🗑️ Deleting success-dance node:', successDanceNodeId);
-        //     deleteNode(successDanceNodeId);
-        //   }, 50);
-        // }, 100);
+        // Emit VIDEO_COMPLETE event to navigation machine
+        // The machine will handle navigation forward and deletion of this scene
+        emit({
+          type: 'VIDEO_COMPLETE',
+          nodeId: currentNodeId,
+          videoType: 'success-dance'
+        });
       }
     };
 

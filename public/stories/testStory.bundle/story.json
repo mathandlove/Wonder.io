@@ -3,7 +3,22 @@
   "storyId": "leo-monster-hunter-001",
   "scenes": [
 
-     
+              {
+      "type": "text",
+      "text": "When I heard a loud cry for help from Betsy the baker.",
+      "background": "bakery.png"
+    },
+
+    {
+      "type": "text",
+      "background": "cobbler.png",
+      "text": "Leo saved the day! The cookies are safe once again."
+    },
+        {
+      "type":"image",
+      "image":"story/dragonFight.png",
+      "text":"Sometimes I have to fight the monsters."
+    },
 
       {
       "type": "character-flow",
@@ -21,7 +36,12 @@
       "text": "Test2"
       
 
-    },  
+    },                               {
+      "type":"quest",
+      "text":"What is wrong?",
+      "successAnswer":"Mrs. Baker's cookie was stolen."
+     },
+
     
          {
       "type":"input",
@@ -33,12 +53,7 @@
       "text": "Test1"
       
 
-    },   
-                             {
-      "type":"quest",
-      "text":"What is wrong?",
-      "successAnswer":"Mrs. Baker's cookie was stolen."
-     }
+    }
 
 
 
@@ -123,6 +138,12 @@
           "side": "right",
           "text": "Help!"
         },
+                                     {
+      "type":"quest",
+      "text":"What is wrong?",
+      "successAnswer":"Mrs. Baker's cookie was stolen."
+     }
+,
                              {
       "type":"quest",
       "text":"Figure out what is wrong.",

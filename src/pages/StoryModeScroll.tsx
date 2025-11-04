@@ -135,8 +135,12 @@ const StoryContent: React.FC = () => {
             onIndexChange={handleIndexChange}
             className="story-scroll"
           >
-              {/* Layer 1: Hybrid background system - uses navigation graph internally */}
-              <BackgroundOrchestrator storyId="gingerbread" storyContent={allNavigationScenes} currentIndex={navigationIndex} />
+              {/* Layer 1: Node-based background system - shows current scene's background */}
+              <BackgroundOrchestrator
+                storyId="gingerbread"
+                currentScene={currentNodeId ? navigationGraph.byId[currentNodeId]?.scene : null}
+                navigationDirection={navigationGraph.navigationHistory?.[navigationGraph.navigationHistory.length - 1]?.trigger}
+              />
 
               {/* Layer 1.5: Character panels - uses navigation graph internally */}
               <CharacterOrchestrator storyId="gingerbread" scenes={allNavigationScenes} />

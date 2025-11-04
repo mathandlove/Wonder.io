@@ -43,6 +43,13 @@ export function createRecordingScene(
 ): CharacterScene {
   const sceneId = `recording-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
 
+  console.log('[createRecordingScene] 🎨 Creating recording scene:', {
+    background: currentBackground,
+    conversationId,
+    leftCharacter,
+    rightCharacter
+  });
+
   const newScene: CharacterScene = {
     type: "character",
     sceneId,
@@ -53,6 +60,8 @@ export function createRecordingScene(
     "left-character": leftCharacter || "leo", // Inherit or fallback
     "right-character": rightCharacter || "bakerMom", // Inherit or fallback
     background: currentBackground, // Inherit background from current scene
+    flowSequence: true, // Mark as part of flow to prevent background range changes
+    isFirstInFlow: false, // Not the first in flow, so inherit background from previous scene
     phase: "basic", // All scenes start with basic phase
   };
 
@@ -85,6 +94,13 @@ export function createAIResponseScene(
 ): CharacterScene {
   const sceneId = `ai-response-${Date.now()}-${Math.random().toString(36).substring(2, 9)}`;
 
+  console.log('[createAIResponseScene] 🎨 Creating AI response scene:', {
+    background: currentBackground,
+    conversationId,
+    leftCharacter,
+    rightCharacter
+  });
+
   const newScene: CharacterScene = {
     type: "character",
     sceneId,
@@ -94,6 +110,8 @@ export function createAIResponseScene(
     "left-character": leftCharacter || "leo", // User's character
     "right-character": rightCharacter || "bakerMom", // AI character
     background: currentBackground,
+    flowSequence: true, // Mark as part of flow to prevent background range changes
+    isFirstInFlow: false, // Not the first in flow, so inherit background from previous scene
     phase: "input", // Immediately show input UI for follow-up questions
     phaseSteps: ["input"], // Only input phase available (no progression needed)
   };
@@ -136,6 +154,12 @@ export function createFailDanceScene(
 ): FailDanceScene {
   const sceneId = `fail-dance-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
 
+  console.log('[createFailDanceScene] 🎨 Creating fail-dance scene:', {
+    background: currentBackground,
+    leftCharacter,
+    rightCharacter
+  });
+
   const newScene: FailDanceScene = {
     type: "fail-dance",
     sceneId,
@@ -149,6 +173,9 @@ export function createFailDanceScene(
     questionText: questionText,
     duration: 3500,
     phase: "fail-dance", // Matches phaseSteps for fail-dance scenes
+    phaseSteps: ["fail-dance"], // Only one phase - the animation itself
+    flowSequence: true, // Mark as part of flow to prevent background range changes
+    isFirstInFlow: false, // Not the first in flow, so inherit background from previous scene
     // NOTE: meta will be injected automatically by injectPanelMetaFromFlows in StoryModeScroll
   };
 
@@ -187,6 +214,12 @@ export function createSuccessDanceScene(
 ): SuccessDanceScene {
   const sceneId = `success-dance-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
 
+  console.log('[createSuccessDanceScene] 🎨 Creating success-dance scene:', {
+    background: currentBackground,
+    leftCharacter,
+    rightCharacter
+  });
+
   const newScene: SuccessDanceScene = {
     type: "success-dance",
     sceneId,
@@ -199,6 +232,9 @@ export function createSuccessDanceScene(
     answerText: answerText,
     duration: 3500,
     phase: "success-dance", // Matches phaseSteps for success-dance scenes
+    phaseSteps: ["success-dance"], // Only one phase - the animation itself
+    flowSequence: true, // Mark as part of flow to prevent background range changes
+    isFirstInFlow: false, // Not the first in flow, so inherit background from previous scene
     // NOTE: meta will be injected automatically by injectPanelMetaFromFlows in StoryModeScroll
   };
 

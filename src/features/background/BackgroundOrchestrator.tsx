@@ -1,68 +1,86 @@
 /**
- * BackgroundOrchestrator - Hybrid background system that combines range-based logic
- * from the original main branch with optimized rendering
+ * BackgroundOrchestrator - Node-based background system that shows the current scene's background
+ * No longer depends on array indices, making it immune to node insertions/deletions
  */
-import { useMemo } from 'react';
-import { buildBackgroundRanges } from './buildBackgroundRanges';
+import { useMemo, useState, useEffect } from 'react';
 import { resolveBackgroundUrl } from './resolveBackgroundUrl';
-import { translateForRange } from './positionBackground';
-import type { SceneContent } from './types';
+
+interface Scene {
+  type: string;
+  background?: string;
+  [key: string]: any;
+}
 
 interface BackgroundOrchestratorProps {
   storyId?: string;
-  storyContent: SceneContent[];
-  currentIndex?: number;
+  currentScene: Scene | null;
+  navigationDirection?: 'forward' | 'backward' | 'force-forward' | 'force-backward' | 'initial' | 'scene-change';
 }
 
-export function BackgroundOrchestrator({ storyId, storyContent, currentIndex = 0 }: BackgroundOrchestratorProps) {
-  // Build background ranges using the original main branch logic
-  const backgroundRanges = useMemo(() => buildBackgroundRanges(storyContent), [storyContent]);
+export function BackgroundOrchestrator({ storyId, currentScene, navigationDirection }: BackgroundOrchestratorProps) {
+  // Get the current scene's background directly - no indices needed!
+  const currentBackground = useMemo(() => {
+    if (!currentScene) return null;
 
-  // Use currentIndex directly (always passed from ScrollControl)
-  const scrollOffset = currentIndex;
-
-  // Find the active range and mount only [active-1, active, active+1] ranges
-  const activeRangeIndex = useMemo(() => {
-    const foundIndex = backgroundRanges.findIndex(range =>
-      scrollOffset >= range.startIndex && scrollOffset <= range.endIndex + 1
-    );
-    return foundIndex;
-  }, [backgroundRanges, scrollOffset]);
-
-  const rangesToRender = useMemo(() => {
-    const ranges: typeof backgroundRanges = [];
-
-    if (activeRangeIndex >= 0) {
-      const activeRange = backgroundRanges[activeRangeIndex];
-
-      // Always render the current active range
-      ranges.push(activeRange);
-
-      // Render the previous range if we're just past a transition (for smooth exit)
-      const prevRangeIndex = activeRangeIndex - 1;
-      if (prevRangeIndex >= 0) {
-        const prevRange = backgroundRanges[prevRangeIndex];
-        // Keep previous range visible during transition (up to 1 scene past its end)
-        if (scrollOffset <= prevRange.endIndex + 1.5) {
-          ranges.unshift(prevRange); // Add to beginning so it renders behind
-        }
-      }
-
-      // Render the next range if we're approaching a transition (forward)
-      // OR if we just left it (backward scroll) - symmetrical to prevRange logic
-      const nextRangeIndex = activeRangeIndex + 1;
-      if (nextRangeIndex < backgroundRanges.length) {
-        const nextRange = backgroundRanges[nextRangeIndex];
-        // Keep next range visible during forward approach OR backward exit transition
-        if (scrollOffset > activeRange.endIndex - 0.5 ||
-            scrollOffset >= nextRange.startIndex - 1.5) {
-          ranges.push(nextRange);
-        }
-      }
+    // Image scenes get comicBackground
+    if (currentScene.type === 'image') {
+      return {
+        background: 'comicBackground',
+        isImage: true
+      };
     }
 
-    return ranges;
-  }, [backgroundRanges, activeRangeIndex, scrollOffset]);
+    // Other scenes use their background property
+    if (currentScene.background) {
+      return {
+        background: currentScene.background,
+        isImage: false
+      };
+    }
+
+    return null;
+  }, [currentScene]);
+
+  // Track previous and current backgrounds for cross-slide animation
+  const [backgrounds, setBackgrounds] = useState<{
+    previous: { background: string; isImage: boolean } | null;
+    current: { background: string; isImage: boolean } | null;
+    direction: 'forward' | 'backward';
+  }>({
+    previous: null,
+    current: currentBackground,
+    direction: 'forward'
+  });
+
+  // Update backgrounds when currentBackground changes
+  useEffect(() => {
+    if (currentBackground && currentBackground.background !== backgrounds.current?.background) {
+      // Determine direction: backward if navigationDirection contains 'backward', else forward
+      const isBackward = navigationDirection === 'backward' || navigationDirection === 'force-backward';
+
+      setBackgrounds({
+        previous: backgrounds.current,
+        current: currentBackground,
+        direction: isBackward ? 'backward' : 'forward'
+      });
+    }
+  }, [currentBackground, navigationDirection]);
+
+  // Resolve background URLs
+  const currentBackgroundImage = useMemo(() => {
+    if (!backgrounds.current) return null;
+    return resolveBackgroundUrl(backgrounds.current.background, backgrounds.current.isImage, storyId);
+  }, [backgrounds.current, storyId]);
+
+  const previousBackgroundImage = useMemo(() => {
+    if (!backgrounds.previous) return null;
+    return resolveBackgroundUrl(backgrounds.previous.background, backgrounds.previous.isImage, storyId);
+  }, [backgrounds.previous, storyId]);
+
+  // If no background, don't render anything
+  if (!currentBackgroundImage) {
+    return null;
+  }
 
   return (
     <div className="story-background-layer" style={{
@@ -71,34 +89,94 @@ export function BackgroundOrchestrator({ storyId, storyContent, currentIndex = 0
       left: 0,
       width: '100vw',
       height: '100vh',
-      zIndex: -10
+      zIndex: -10,
+      overflow: 'hidden'
     }}>
-      {rangesToRender.map((range) => {
-        // Use the actual range index from the backgroundRanges array
-        const globalRangeIndex = backgroundRanges.indexOf(range);
-        const transform = translateForRange(range, scrollOffset);
-        const backgroundImage = resolveBackgroundUrl(range.background, range.isImage, storyId);
+      {/* Previous background - slides out in opposite direction */}
+      {previousBackgroundImage && backgrounds.previous?.background !== backgrounds.current?.background && (
+        <div
+          key={`prev-${backgrounds.previous?.background}`}
+          className="story-background-image"
+          style={{
+            backgroundImage: previousBackgroundImage,
+            width: '100%',
+            height: '100%',
+            position: 'absolute',
+            top: 0,
+            left: 0,
+            backgroundSize: 'cover',
+            backgroundPosition: 'center',
+            animation: backgrounds.direction === 'forward'
+              ? 'slideOutToTop 0.6s ease-out forwards'      // Forward: old slides up
+              : 'slideOutToBottom 0.6s ease-out forwards'   // Backward: old slides down
+          }}
+          data-debug={`prev-${backgrounds.previous?.background}-${backgrounds.direction}`}
+        />
+      )}
 
-        return (
-          <div
-            key={`bg-range-${globalRangeIndex}`}
-            className="story-background-image"
-            style={{
-              backgroundImage,
-              transform,
-              transition: 'transform 0.6s ease-out',
-              width: '100%',
-              height: '100%',
-              position: 'absolute',
-              top: 0,
-              left: 0,
-              backgroundSize: 'cover',
-              backgroundPosition: 'center'
-            }}
-            data-debug={`bg-range-${range.startIndex}-${range.endIndex}-${range.background}`}
-          />
-        );
-      })}
+      {/* Current background - slides in from opposite direction (or appears instantly if first scene) */}
+      <div
+        key={`current-${backgrounds.current?.background}`}
+        className="story-background-image"
+        style={{
+          backgroundImage: currentBackgroundImage,
+          width: '100%',
+          height: '100%',
+          position: 'absolute',
+          top: 0,
+          left: 0,
+          backgroundSize: 'cover',
+          backgroundPosition: 'center',
+          animation: !backgrounds.previous // First scene - no animation
+            ? 'none'
+            : (backgrounds.previous?.background !== backgrounds.current?.background
+                ? (backgrounds.direction === 'forward'
+                    ? 'slideInFromBottom 0.6s ease-out forwards'   // Forward: new from bottom
+                    : 'slideInFromTop 0.6s ease-out forwards')     // Backward: new from top
+                : 'none')
+        }}
+        data-debug={`current-${backgrounds.current?.background}-${backgrounds.direction}-first:${!backgrounds.previous}`}
+      />
+
+      <style>{`
+        /* Forward navigation: new slides up from bottom, old slides up to top */
+        @keyframes slideInFromBottom {
+          from {
+            transform: translateY(100vh);
+          }
+          to {
+            transform: translateY(0);
+          }
+        }
+
+        @keyframes slideOutToTop {
+          from {
+            transform: translateY(0);
+          }
+          to {
+            transform: translateY(-100vh);
+          }
+        }
+
+        /* Backward navigation: new slides down from top, old slides down to bottom */
+        @keyframes slideInFromTop {
+          from {
+            transform: translateY(-100vh);
+          }
+          to {
+            transform: translateY(0);
+          }
+        }
+
+        @keyframes slideOutToBottom {
+          from {
+            transform: translateY(0);
+          }
+          to {
+            transform: translateY(100vh);
+          }
+        }
+      `}</style>
     </div>
   );
 }

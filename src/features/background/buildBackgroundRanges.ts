@@ -8,6 +8,9 @@ export function buildBackgroundRanges(storyContent: SceneContent[]): BackgroundR
   let currentBg: string | null = null;
   let rangeStart = 0;
 
+  console.log('[buildBackgroundRanges] 🎨 Building ranges for', storyContent.length, 'scenes');
+  console.log('[buildBackgroundRanges] 📋 Scene types:', storyContent.map((s, i) => `${i}:${s.type}`).join(', '));
+
   storyContent.forEach((content, index) => {
     // Check if this scene introduces a new background
     let newBg: string | null = null;
@@ -21,10 +24,20 @@ export function buildBackgroundRanges(storyContent: SceneContent[]): BackgroundR
                content.type === 'title2' ||
                content.type === 'full' ||
                content.type === 'character' ||
-               content.type === 'text') &&
+               content.type === 'text' ||
+               content.type === 'success-dance' ||
+               content.type === 'fail-dance') &&
                content.background &&
                (!content.flowSequence || content.isFirstInFlow)) {
       newBg = content.background;
+      console.log(`[buildBackgroundRanges] Scene ${index} (${content.type}): Setting newBg =`, newBg, {
+        flowSequence: content.flowSequence,
+        isFirstInFlow: content.isFirstInFlow,
+        background: content.background
+      });
+    } else if (content.type === 'character' || content.type === 'success-dance' || content.type === 'fail-dance') {
+      // Log scenes that were skipped due to flowSequence
+      console.log(`[buildBackgroundRanges] Scene ${index} (${content.type}): Skipped (flowSequence=${content.flowSequence}, isFirstInFlow=${content.isFirstInFlow}, background=${content.background})`);
     }
 
     // If background changes, save the previous range and start a new one
@@ -53,6 +66,9 @@ export function buildBackgroundRanges(storyContent: SceneContent[]): BackgroundR
     };
     backgroundRanges.push(finalRange);
   }
+
+  console.log('[buildBackgroundRanges] ✅ Built', backgroundRanges.length, 'ranges:',
+    backgroundRanges.map(r => `[${r.startIndex}-${r.endIndex}]: ${r.background}`).join(', '));
 
   return backgroundRanges;
 }

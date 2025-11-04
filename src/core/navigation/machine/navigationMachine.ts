@@ -858,6 +858,7 @@ export const navigationMachine = setup({
          * ANSWER RIGHT state
          * User answered correctly - show success animation
          * RecordPanelOrchestrator will handle success-dance scene insertion and navigation
+         * When success-dance video completes, navigate forward and delete the success-dance scene
          */
         answerRight: {
           entry: [
@@ -866,12 +867,49 @@ export const navigationMachine = setup({
           ],
           on: {
             // Block navigation during success animation
-            // RecordPanelOrchestrator will handle scene transitions
             SCROLL_DOWN_STEP: {
               actions: () => console.log('[NavigationMachine] ⛔ SCROLL blocked during success animation'),
             },
             SCROLL_UP_STEP: {
               actions: () => console.log('[NavigationMachine] ⛔ SCROLL blocked during success animation'),
+            },
+            // When success-dance animation completes, navigate forward and delete success-dance
+            VIDEO_COMPLETE: {
+              actions: [
+                ({ event }) => {
+                  if (event.videoType === 'success-dance') {
+                    console.log('[NavigationMachine] 🎬 Success-dance video complete - cleaning up');
+
+                    const store = useNavigationStore.getState();
+                    const successDanceNodeId = store.currentId;
+
+                    if (!successDanceNodeId) {
+                      console.warn('[NavigationMachine] No current node ID for success-dance cleanup');
+                      return;
+                    }
+
+                    // Navigate forward first (while success-dance still exists in graph)
+                    // This moves currentId to the next scene before we delete success-dance
+                    const successDanceNode = store.graph.byId[successDanceNodeId];
+                    console.log('[NavigationMachine] ➡️  Advancing to next scene from success-dance:', {
+                      successDanceNodeId,
+                      nextId: successDanceNode?.nextId,
+                      prevId: successDanceNode?.prevId
+                    });
+                    store.advance('forward');
+                    console.log('[NavigationMachine] ✅ Advanced to:', {
+                      newCurrentId: store.currentId,
+                      newCurrentNode: store.graph.byId[store.currentId || '']?.scene?.type
+                    });
+
+                    // Now delete the success-dance scene
+                    // Since currentId has moved forward, deletion won't affect current position
+                    console.log('[NavigationMachine] 🗑️  Deleting success-dance scene:', successDanceNodeId);
+                    deleteNode(successDanceNodeId);
+                  }
+                },
+              ],
+              target: '#navigation.scene.navigating',
             },
           },
         },
