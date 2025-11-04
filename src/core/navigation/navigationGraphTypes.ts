@@ -78,11 +78,6 @@ export type Phase =
   | 'static'
   | 'input'; // Legacy generic input phase
 
-/**
- * @deprecated Use Phase instead. NodePhase kept for backward compatibility.
- * Allows string for gradual migration, but prefer using strict Phase type.
- */
-export type NodePhase = Phase | string;
 
 /**
  * Phase constants - Use these to avoid typos when working with phases

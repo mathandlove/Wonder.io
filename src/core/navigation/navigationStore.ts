@@ -33,15 +33,6 @@ import type {
   Phase,
 } from '@core/navigation/navigationGraphTypes';
 
-/**
- * DEPRECATED: SceneState type for backward compatibility with old commands
- * Use phases and scene properties instead
- */
-type SceneState =
-  | { type: 'dialogue'; state: string; questionText?: string; answerText?: string; allowAnimate?: boolean }
-  | { type: 'image'; state: string }
-  | { type: 'static' }
-  | { type: 'quest'; state: string };
 import {
   buildNavigationGraph,
   expandSceneToNodes,
@@ -104,8 +95,6 @@ interface NavigationState {
   insertSceneNodes: (afterNodeId: NodeId | null, scene: Scene) => NodeId | null;
   insertNode: (afterNodeId: NodeId | null, node: Omit<Node, 'prevId' | 'nextId'>) => NodeId;
   replaceNode: (oldNodeId: NodeId, newNode: Omit<Node, 'prevId' | 'nextId'>) => NodeId | null;
-  addStateToCurrentNode: (newState: SceneState, insertAfter?: boolean) => NodeId | null; // DEPRECATED
-  updateNodeState: (nodeId: NodeId, newState: SceneState) => void; // DEPRECATED
   updateNodePhase: (nodeId: NodeId, phase: Phase) => void;
   updateSceneProperties: (nodeId: NodeId, updates: Partial<Scene>) => void;
   updateSceneTextByRecordingId: (recordingId: string, newText: string) => void;
@@ -113,7 +102,6 @@ interface NavigationState {
   advance: (direction: 'forward' | 'backward') => void;
 
   // Convenience methods (assume currentId)
-  updateCurrentPhase: (phase: Phase) => void;
   updateCurrentSceneProperties: (updates: Partial<Scene>) => void;
   getCurrentNode: () => Node | null;
   getCurrentSceneType: () => string | null;
@@ -456,161 +444,6 @@ export const useNavigationStore = create<NavigationState>()(
       },
 
       // =============================================================================
-      // Action: addStateToCurrentNode
-      // Create a new node and rewire, OR replace current node's state
-      // =============================================================================
-      addStateToCurrentNode: (newState: SceneState, insertAfter: boolean = true): NodeId | null => {
-        let resultNodeId: NodeId | null = null;
-
-        set(
-          (state) => {
-            const currentNodeId = state.currentId;
-            if (!currentNodeId) {
-              console.warn('[navigationStore] addStateToCurrentNode: No current node');
-              return state;
-            }
-
-            const currentNode = getNodeById(state.graph, currentNodeId);
-            if (!currentNode) {
-              console.warn('[navigationStore] addStateToCurrentNode: Current node not found');
-              return state;
-            }
-
-            const newNodeId = ulid();
-
-            // Extract stateKey from newState
-            let stateKey = 'unknown';
-            if (newState.type === 'dialogue') {
-              stateKey = `dialogue:${newState.state}`;
-            } else if (newState.type === 'image') {
-              stateKey = `image:${newState.state}`;
-            } else {
-              stateKey = newState.type;
-            }
-
-            const newById = { ...state.graph.byId };
-            const newOrder = [...state.graph.order];
-            const newLifecycleEvents = [...(state.graph.lifecycleEvents || [])];
-
-            if (insertAfter) {
-              // Create new node
-              const newNode = {
-                id: newNodeId,
-                sceneId: currentNode.sceneId,
-                stateKey,
-                sceneState: newState,
-                scene: currentNode.scene,
-                stateMeta: {},
-                prevId: currentNode.id,
-                nextId: currentNode.nextId,
-                status: 'active' as const,
-              };
-
-              // Update current node's nextId to point to new node
-              newById[currentNode.id] = {
-                ...newById[currentNode.id],
-                nextId: newNodeId,
-              };
-
-              // Update next node's prevId to point to new node (if exists)
-              if (currentNode.nextId) {
-                newById[currentNode.nextId] = {
-                  ...newById[currentNode.nextId],
-                  prevId: newNodeId,
-                };
-              }
-
-              // Add new node to byId
-              newById[newNodeId] = newNode;
-
-              // Insert into order array
-              const currentOrderIndex = newOrder.indexOf(currentNode.id);
-              if (currentOrderIndex !== -1) {
-                newOrder.splice(currentOrderIndex + 1, 0, newNodeId);
-              } else {
-                newOrder.push(newNodeId);
-              }
-
-              // Track node creation
-              newLifecycleEvents.push(buildLifecycleEvent('created', newNodeId, newNode, 'addStateToCurrentNode'));
-
-              resultNodeId = newNodeId;
-            } else {
-              // Replace current node's state
-              newById[currentNode.id] = {
-                ...newById[currentNode.id],
-                sceneState: newState,
-                stateKey,
-              };
-
-              resultNodeId = currentNode.id;
-            }
-
-            return {
-              ...state,
-              graph: {
-                ...state.graph,
-                byId: newById,
-                order: newOrder,
-                historyVersion: state.graph.historyVersion + 1,
-                lifecycleEvents: newLifecycleEvents,
-              },
-            };
-          },
-          false,
-          'nav/addStateToCurrentNode'
-        );
-
-        return resultNodeId;
-      },
-
-      // =============================================================================
-      // Action: updateNodeState
-      // Update sceneState and stateKey for the node
-      // =============================================================================
-      updateNodeState: (nodeId: NodeId, newState: SceneState) => {
-        set(
-          (state) => {
-            const node = getNodeById(state.graph, nodeId);
-            if (!node) {
-              console.warn('[navigationStore] updateNodeState: node not found:', nodeId);
-              return state;
-            }
-
-            // Extract stateKey from newState
-            let stateKey = 'unknown';
-            if (newState.type === 'dialogue') {
-              stateKey = `dialogue:${newState.state}`;
-            } else if (newState.type === 'image') {
-              stateKey = `image:${newState.state}`;
-            } else {
-              stateKey = newState.type;
-            }
-
-            const newById = {
-              ...state.graph.byId,
-              [nodeId]: {
-                ...node,
-                sceneState: newState,
-                stateKey,
-              },
-            };
-
-            return {
-              ...state,
-              graph: {
-                ...state.graph,
-                byId: newById,
-                historyVersion: state.graph.historyVersion + 1,
-              },
-            };
-          },
-          false,
-          'nav/updateNodeState'
-        );
-      },
-
-      // =============================================================================
       // Action: updateNodePhase
       // Update the phase field of a specific node
       // =============================================================================
@@ -871,18 +704,6 @@ export const useNavigationStore = create<NavigationState>()(
       // These methods operate on the current node without requiring explicit nodeId
       // =============================================================================
 
-      /**
-       * Update the phase of the current node
-       * Convenience wrapper around updateNodePhase that assumes currentId
-       */
-      updateCurrentPhase: (phase: string) => {
-        const state = get();
-        if (!state.currentId) {
-          console.warn('[navigationStore] updateCurrentPhase: No current node');
-          return;
-        }
-        get().updateNodePhase(state.currentId, phase);
-      },
 
       /**
        * Update scene properties of the current node

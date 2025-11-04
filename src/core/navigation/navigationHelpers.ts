@@ -15,15 +15,6 @@ import { getNodeById } from '@core/navigation/navigationGraphBuilder';
 import { useNavigationStore } from '@core/navigation/navigationStore';
 import { ulid } from 'ulid';
 
-/**
- * DEPRECATED: SceneState type for backward compatibility
- * Use phases and scene properties instead
- */
-type SceneState =
-  | { type: 'dialogue'; state: string; questionText?: string; answerText?: string; allowAnimate?: boolean }
-  | { type: 'image'; state: string }
-  | { type: 'static' }
-  | { type: 'quest'; state: string };
 
 /**
  * Get the current node ID
@@ -165,29 +156,6 @@ export function replaceNode(oldNodeId: NodeId, newNode: Omit<Node, 'prevId' | 'n
   return useNavigationStore.getState().replaceNode(oldNodeId, newNode);
 }
 
-/**
- * Add a new state to the current node
- */
-export function addStateToCurrentNode(newState: SceneState, insertAfter: boolean = true): NodeId | null {
-  return useNavigationStore.getState().addStateToCurrentNode(newState, insertAfter);
-}
-
-/**
- * Update a node's state
- * @deprecated Use updateNodePhase + updateSceneProperties instead
- */
-export function updateNodeState(nodeId: NodeId, newState: SceneState): void {
-  useNavigationStore.getState().updateNodeState(nodeId, newState);
-}
-
-/**
- * Update the phase of the current node
- * Example: updateCurrentPhase('input-recording')
- * @deprecated Use updateNodePhase + updateSceneProperties instead
- */
-export function updateCurrentPhase(phase: Phase): void {
-  useNavigationStore.getState().updateCurrentPhase(phase);
-}
 
 /**
  * Update scene properties immutably (for current node)
@@ -249,79 +217,3 @@ export function advanceNavigation(direction: 'forward' | 'backward'): void {
   useNavigationStore.getState().advance(direction);
 }
 
-/**
- * Force advance navigation (bypasses locks)
- * @deprecated Use advanceNavigation instead - no longer needed as locks are removed
- */
-export function forceAdvanceNavigation(direction: 'forward' | 'backward'): void {
-  useNavigationStore.getState().advance(direction);
-}
-
-// =============================================================================
-// Node Factory Helpers - Create/clone nodes with modified state
-// =============================================================================
-
-/**
- * Clone a node with a new state
- *
- * Creates a new node that is a copy of the specified node, but with a different sceneState.
- * This is useful when you need to transition a scene to a different state without mutating
- * the original node (which could trigger unwanted reactive updates).
- *
- * The new node will have:
- * - A new unique ID (generated via ulid())
- * - The same scene, sceneId, and other properties as the original
- * - The new sceneState you provide
- * - Updated stateKey and locks based on the new state
- * - No prev/next pointers (caller must insert it into the graph)
- *
- * @param nodeId - ID of the node to clone
- * @param newState - The new scene state to apply to the cloned node
- * @returns A new node with the modified state, or null if the original node doesn't exist
- *
- * @example
- * ```typescript
- * // Clone an answer-right node as a basic node
- * const answerRightNodeId = getCurrentNodeId();
- * const basicNode = cloneNodeWithStateChange(answerRightNodeId, {
- *   type: 'dialogue',
- *   state: 'basic'
- * });
- *
- * if (basicNode) {
- *   // Insert the basic node into the graph
- *   // (you'll need to use insertSceneNodes or similar)
- * }
- * ```
- */
-export function cloneNodeWithStateChange(nodeId: NodeId, newState: SceneState): Omit<Node, 'prevId' | 'nextId'> | null {
-  const state = useNavigationStore.getState();
-  const originalNode = getNodeById(state.graph, nodeId);
-
-  if (!originalNode) {
-    console.warn('[navigationHelpers] cloneNodeWithStateChange: Node not found:', nodeId);
-    return null;
-  }
-
-  // Generate stateKey from newState
-  let stateKey = 'unknown';
-  if (newState.type === 'dialogue') {
-    stateKey = `dialogue:${newState.state}`;
-  } else if (newState.type === 'image') {
-    stateKey = `image:${newState.state}`;
-  } else {
-    stateKey = newState.type;
-  }
-
-  // Create the cloned node with new state
-  return {
-    id: ulid(), // New unique ID
-    sceneId: originalNode.sceneId, // Same scene
-    stateKey, // Updated based on new state
-    sceneState: newState, // New state
-    scene: originalNode.scene, // Same scene data
-    stateMeta: originalNode.stateMeta ? { ...originalNode.stateMeta } : {}, // Clone metadata
-    status: 'active', // New nodes are always active
-    // Note: prevId and nextId are omitted - caller must insert into graph
-  };
-}

@@ -7,14 +7,14 @@
  * Mapping rules:
  * - TO_SUCCESS_DANCE → INSERT_AFTER (success-dance scene) + NAVIGATE_TO
  * - TO_FAIL_DANCE → INSERT_AFTER (fail-dance scene) + NAVIGATE_TO
- * - SET_STATE → SET_NODE_STATE
- * - NAV_FORWARD → NAVIGATE_TO (next node)
- * - NAV_BACK → NAVIGATE_TO (prev node)
+ * - NAV_FORWARD → ADVANCE (forward)
+ * - NAV_BACK → ADVANCE (backward)
  * - INSERT_RESPONSE_SCENE → INSERT_AFTER (dialogue scene with AI response)
  * - CLEANUP_TEMP_NODES → DELETE_NODE (for each node)
  * - APPLY_GRAPH → (side effect: load graph into store, no command)
  * - SET_ACTIVE_NODE → NAVIGATE_TO (initial node)
  * - RESET_TEMP_NODES → (side effect: clear temp node tracking, no command)
+ * - UPDATE_NODE_PHASE → UPDATE_NODE_PHASE
  *
  * @module executor
  */
@@ -80,16 +80,6 @@ export function actionsToCommands(
         commands.push({
           type: 'NAVIGATE_TO',
           targetNodeId: newNodeId,
-        });
-        break;
-      }
-
-      case 'SET_STATE': {
-        // Update the dialogue state of a specific node
-        commands.push({
-          type: 'SET_NODE_STATE',
-          nodeId: action.nodeId,
-          newState: { type: 'dialogue', state: action.dialogueState },
         });
         break;
       }

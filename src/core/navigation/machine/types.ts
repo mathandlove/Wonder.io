@@ -396,17 +396,6 @@ export type ToFailDanceAction = {
 };
 
 /**
- * SET_STATE
- * Intent: Update the dialogue state of the current node
- * Example: Move from 'input-recording' to 'input-processing'
- */
-export type SetStateAction = {
-  type: 'SET_STATE';
-  nodeId: string;
-  dialogueState: string; // DialogueState from types.ts
-};
-
-/**
  * NAV_FORWARD
  * Intent: Navigate to the next node in the graph
  */
@@ -498,7 +487,6 @@ export type UpdateNodePhaseAction = {
 export type NavigationAction =
   | ToSuccessDanceAction
   | ToFailDanceAction
-  | SetStateAction
   | NavForwardAction
   | NavBackAction
   | InsertResponseSceneAction
@@ -528,31 +516,6 @@ export type InsertAfterCommand = {
     sceneState: unknown; // Will be properly typed when integrated with Node type
     metadata?: Record<string, unknown>;
   };
-};
-
-/**
- * REPLACE_NODE
- * Command: Replace an existing node's data
- * Payload: Node ID and new data to merge
- */
-export type ReplaceNodeCommand = {
-  type: 'REPLACE_NODE';
-  nodeId: string;
-  updates: {
-    sceneState?: unknown; // Will be properly typed when integrated
-    metadata?: Record<string, unknown>;
-  };
-};
-
-/**
- * SET_NODE_STATE
- * Command: Update only the scene state of a node
- * Payload: Node ID and new dialogue state
- */
-export type SetNodeStateCommand = {
-  type: 'SET_NODE_STATE';
-  nodeId: string;
-  newState: unknown; // Will be properly typed when integrated with SceneState
 };
 
 /**
@@ -601,8 +564,6 @@ export type UpdateNodePhaseCommand = {
  */
 export type NavigationCommand =
   | InsertAfterCommand
-  | ReplaceNodeCommand
-  | SetNodeStateCommand
   | NavigateToCommand
   | DeleteNodeCommand
   | AdvanceCommand

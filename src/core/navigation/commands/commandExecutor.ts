@@ -42,41 +42,6 @@ export function executeCommand(command: NavigationCommand): void {
       break;
     }
 
-    case 'REPLACE_NODE': {
-      console.log('[CommandExecutor] REPLACE_NODE:', command.nodeId);
-      console.warn('[CommandExecutor] DEPRECATED: REPLACE_NODE command uses old sceneState architecture');
-
-      const existingNode = store.graph.byId[command.nodeId];
-      if (!existingNode) {
-        console.warn('[CommandExecutor] Cannot replace node - not found:', command.nodeId);
-        break;
-      }
-
-      // DEPRECATED: This uses the old sceneState architecture
-      // TODO: Refactor to use phase-based updates
-      store.replaceNode(command.nodeId, {
-        id: command.nodeId,
-        scene: existingNode.scene,
-        phase: existingNode.phase,
-        phaseSteps: existingNode.phaseSteps,
-        phaseIndex: existingNode.phaseIndex,
-        status: existingNode.status,
-      });
-      break;
-    }
-
-    case 'SET_NODE_STATE': {
-      console.log('[CommandExecutor] SET_NODE_STATE:', command.nodeId, '→', command.newState);
-      console.warn('[CommandExecutor] DEPRECATED: SET_NODE_STATE command - use UPDATE_NODE_PHASE instead');
-
-      // DEPRECATED: Map old sceneState updates to phase updates
-      // This provides backward compatibility during migration
-      if (command.newState.type === 'dialogue') {
-        store.updateNodePhase(command.nodeId, command.newState.state);
-      }
-      break;
-    }
-
     case 'NAVIGATE_TO': {
       console.log('[CommandExecutor] NAVIGATE_TO:', command.targetNodeId);
 
