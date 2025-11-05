@@ -15,7 +15,7 @@
  * - Quest completion determines if Next button is unlocked
  */
 import React, { useCallback, useEffect } from 'react';
-import { getCurrentNode, getCurrentNodeId, insertSceneNodes, advanceNavigation, updateCurrentPhase, updateCurrentSceneProperties } from '@core/navigation/navigationHelpers';
+import { getCurrentNode, getCurrentNodeId, insertSceneNodes, advanceNavigation, updateCurrentSceneProperties } from '@core/navigation/navigationHelpers';
 import { useNavigationStore } from '@core/navigation/navigationStore';
 import { useSceneFlowMetadata } from '@core/data/FlowMetadataStore';
 import { createFailDanceScene, createSuccessDanceScene } from '@core/navigation/sceneFactoryFunctions';
@@ -425,12 +425,14 @@ export function RecordingOrchestrator() {
         throw err; // Re-throw to prevent state updates on failure
       });
 
-      // STEP 2: Update current node phase from input to basic
-      updateCurrentPhase('basic');
-
-      // STEP 3: Get current scene context for inheritance
+      // STEP 2: Get current scene context
       const currentNode = getCurrentNode();
       const currentNodeId = getCurrentNodeId();
+
+      // STEP 3: Update current node phase from input to basic
+      if (currentNodeId) {
+        useNavigationStore.getState().updateNodePhase(currentNodeId, 'basic');
+      }
       const scene = currentNode?.scene;
 
       if (!currentNodeId) {
@@ -593,7 +595,9 @@ export function RecordingOrchestrator() {
       }
 
       // STEP 3: Update phase to record-answer (stays on same node, just changes phase)
-      updateCurrentPhase('record-answer');
+      if (currentNodeId) {
+        useNavigationStore.getState().updateNodePhase(currentNodeId, 'record-answer');
+      }
 
       // STEP 4: Emit event to machine - machine will route to answerRecording state
       console.log('[RecordPanelOrchestrator] 📤 Emitting ANSWER_RECORDING_STARTED event');
