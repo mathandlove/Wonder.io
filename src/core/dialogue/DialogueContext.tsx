@@ -1,6 +1,35 @@
 import React, { createContext, useContext, useReducer, useCallback } from "react";
-import type { Message, ConversationTurn } from "./types";
-import { nowIso } from "./types";
+
+// Local types for dialogue message management
+type DeliveryStatus =
+  | 'draft'
+  | 'recording'
+  | 'pending'
+  | 'sent'
+  | 'converting'
+  | 'converted'
+  | 'error';
+
+type Sender = 'player' | 'npc';
+
+type Message = {
+  id: string;
+  sceneId: string;
+  sender: Sender;
+  text: string;
+  status: DeliveryStatus;
+  isInterim?: boolean;
+  ts: string;
+};
+
+type ConversationTurn = {
+  playerMessageId: string;
+  npcMessageId: string;
+  sceneId: string;
+};
+
+// Helper function
+const nowIso = () => new Date().toISOString();
 
 type State = {
   messagesById: Record<string, Message>;
