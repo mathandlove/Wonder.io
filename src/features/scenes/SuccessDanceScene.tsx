@@ -28,23 +28,23 @@ export default function SuccessDanceScene() {
   const hasEmittedEventRef = useRef(false);
   const currentNodeId = getCurrentNodeId();
 
-  console.log('[SuccessDanceScene] 🎬 Mounted with currentNodeId:', currentNodeId);
+  // console.log('[SuccessDanceScene] 🎬 Mounted with currentNodeId:', currentNodeId);
 
   // Listen for both character panels to complete their jiggle animations
   useEffect(() => {
-    console.log('[SuccessDanceScene] 👂 Registering jiggle-complete listener');
+    // console.log('[SuccessDanceScene] 👂 Registering jiggle-complete listener');
 
     const handleJiggleComplete = () => {
-      console.log('[SuccessDanceScene] 🎊 Received jiggle-complete event!', {
-        hasEmittedEvent: hasEmittedEventRef.current,
-        currentNodeId
-      });
+      // console.log('[SuccessDanceScene] 🎊 Received jiggle-complete event!', {
+    // hasEmittedEvent: hasEmittedEventRef.current,
+    // currentNodeId
+    // });
 
       // Only emit event once
       if (!hasEmittedEventRef.current && currentNodeId) {
         hasEmittedEventRef.current = true;
 
-        console.log('[SuccessDanceScene] ✅ Jiggle complete - emitting VIDEO_COMPLETE event');
+        // console.log('[SuccessDanceScene] ✅ Jiggle complete - emitting VIDEO_COMPLETE event');
 
         // Emit VIDEO_COMPLETE event to navigation machine
         // The machine will handle navigation forward and deletion of this scene
@@ -59,7 +59,7 @@ export default function SuccessDanceScene() {
     addEventListener('jiggle-complete', handleJiggleComplete);
 
     return () => {
-      console.log('[SuccessDanceScene] 🔇 Removing jiggle-complete listener');
+      // console.log('[SuccessDanceScene] 🔇 Removing jiggle-complete listener');
       removeEventListener('jiggle-complete', handleJiggleComplete);
     };
   }, [addEventListener, removeEventListener, currentNodeId]);

@@ -52,11 +52,11 @@ export const dialogueSceneMachine = setup({
     phaseIndex: input.phaseIndex || 0,
   }),
   entry: ({ context }) => {
-    console.log('[DialogueSceneMachine] Started', {
-      phaseSteps: context.phaseSteps,
-      currentIndex: context.phaseIndex,
-      currentPhase: context.phaseSteps[context.phaseIndex]
-    });
+    // console.log('[DialogueSceneMachine] Started', {
+    //   phaseSteps: context.phaseSteps,
+    //   currentIndex: context.phaseIndex,
+    //   currentPhase: context.phaseSteps[context.phaseIndex]
+    // });
   },
   states: {
     /**
@@ -72,10 +72,10 @@ export const dialogueSceneMachine = setup({
               const advanced = store.advancePhase(1);
 
               if (advanced) {
-                console.log('[DialogueSceneMachine] Advanced to next phase');
+                // console.log('[DialogueSceneMachine] Advanced to next phase');
               } else {
                 // At end of phases - request navigation to next node
-                console.log('[DialogueSceneMachine] Phases complete - requesting nav next');
+                // console.log('[DialogueSceneMachine] Phases complete - requesting nav next');
               }
 
               // If we couldn't advance phase, request nav to next node
@@ -106,10 +106,10 @@ export const dialogueSceneMachine = setup({
               const advanced = store.advancePhase(-1);
 
               if (advanced) {
-                console.log('[DialogueSceneMachine] Went back to previous phase');
+                // console.log('[DialogueSceneMachine] Went back to previous phase');
               } else {
                 // At beginning of phases - request navigation to previous node
-                console.log('[DialogueSceneMachine] At first phase - requesting nav prev');
+                // console.log('[DialogueSceneMachine] At first phase - requesting nav prev');
               }
             },
             // Conditionally send to parent if at boundary

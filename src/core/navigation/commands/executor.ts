@@ -87,7 +87,7 @@ export function actionsToCommands(
       case 'NAV_FORWARD': {
         // Translate to a command that uses store's advance() method
         // The store's advance() method respects locks and handles navigation
-        console.log('[Executor] NAV_FORWARD from', action.fromNodeId);
+        // console.log('[Executor] NAV_FORWARD from', action.fromNodeId);
         commands.push({
           type: 'ADVANCE',
           direction: 'forward',
@@ -97,7 +97,7 @@ export function actionsToCommands(
 
       case 'NAV_BACK': {
         // Translate to a command that uses store's advance() method
-        console.log('[Executor] NAV_BACK from', action.fromNodeId);
+        // console.log('[Executor] NAV_BACK from', action.fromNodeId);
         commands.push({
           type: 'ADVANCE',
           direction: 'backward',
@@ -163,7 +163,7 @@ export function actionsToCommands(
         // If we just loaded a graph, use the actual first node ID from the store
         // Otherwise, use the node ID from the action
         const nodeIdToUse = actualFirstNodeId || action.nodeId;
-        console.log('[Executor] SET_ACTIVE_NODE to', nodeIdToUse, '(original:', action.nodeId, ')');
+        // console.log('[Executor] SET_ACTIVE_NODE to', nodeIdToUse, '(original:', action.nodeId, ')');
 
         if (nodeIdToUse) {
           commands.push({
@@ -185,7 +185,7 @@ export function actionsToCommands(
 
       case 'UPDATE_NODE_PHASE': {
         // Update the phase field of a specific node
-        console.log('[Executor] UPDATE_NODE_PHASE for node:', action.nodeId.substring(0, 8), '→', action.phase);
+        // console.log('[Executor] UPDATE_NODE_PHASE for node:', action.nodeId.substring(0, 8), '→', action.phase);
         commands.push({
           type: 'UPDATE_NODE_PHASE',
           nodeId: action.nodeId,

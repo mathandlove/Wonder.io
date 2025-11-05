@@ -25,7 +25,7 @@ let isStarted = false;
  * For now, this is a no-op that just logs commands
  */
 let executor: ((command: NavigationCommand) => void) = (command) => {
-  console.log('[NavigationQueue] Processing command:', command.type);
+  // console.log('[NavigationQueue] Processing command:', command.type);
   // TODO: In Ticket 8, this will call actual graph mutators
 };
 
@@ -102,7 +102,7 @@ export function start(): void {
   }
 
   isStarted = true;
-  console.log('[NavigationQueue] Queue processing started');
+  // console.log('[NavigationQueue] Queue processing started');
 
   // If there are any commands that were enqueued before start, process them
   if (queue.length > 0 && !isProcessing) {

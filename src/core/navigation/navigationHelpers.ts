@@ -13,7 +13,7 @@ import type { Scene } from '@core/types/scene';
 import type { Node, NodeId, FrozenNodeSnapshot, Phase } from '@core/navigation/navigationGraphTypes';
 import { getNodeById } from '@core/navigation/navigationGraphBuilder';
 import { useNavigationStore } from '@core/navigation/navigationStore';
-import { ulid } from 'ulid';
+
 
 
 /**
@@ -187,7 +187,6 @@ export function deleteNode(nodeId: NodeId): void {
  * @param firstNodeId - ID of the first node to navigate to (optional)
  */
 export function initializeStoreWithStory(fullStory: Scene[], firstNodeId?: string): void {
-  console.log('[navigationHelpers] Initializing store with', fullStory.length, 'scenes');
 
   // Load scenes into store
   setScenes(fullStory);
@@ -197,7 +196,6 @@ export function initializeStoreWithStory(fullStory: Scene[], firstNodeId?: strin
   const targetNodeId = firstNodeId || store.graph.order[0];
 
   if (targetNodeId) {
-    console.log('[navigationHelpers] Navigating to first node:', targetNodeId.substring(0, 8));
     // Set initial position directly - no frozen node needed for very first load
     useNavigationStore.setState({
       currentId: targetNodeId,

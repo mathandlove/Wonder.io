@@ -198,7 +198,11 @@ export const debugUtils = {
     console.log('  wonder:recording:*   - All recording logs');
     console.log('  wonder:scenes:*      - All scene logs');
     console.log('  wonder:*             - All Wonder.io logs');
-    console.log('\n💡 Use __debug.enable("wonder:*") to enable all');
+    console.log('\n🎯 Quick presets:');
+    console.log('  __debug.enableAll()    - Show all Wonder.io logs');
+    console.log('  __debug.recommended()  - Balanced (hide noisy logs)');
+    console.log('  __debug.xstateOnly()   - Only XState machine changes');
+    console.log('  __debug.disableAll()   - Hide all logs');
   },
 
   /**
@@ -231,7 +235,30 @@ export const debugUtils = {
     console.log('   ✗ Scene renderer (too noisy)');
     console.log('🔄 Refresh the page to apply changes');
   },
+
+  /**
+   * Show only XState machine state transitions and changes
+   */
+  xstateOnly() {
+    const xstatePattern = 'wonder:navigation:machine,wonder:scenes:dialogue';
+    localStorage.setItem('debug', xstatePattern);
+    console.log('✅ Debug set to XState-only mode:');
+    console.log('   ✓ Navigation machine state transitions');
+    console.log('   ✓ Dialogue scene machine events');
+    console.log('   ✗ All other debug logs (AI, recording, store, graph, etc.)');
+    console.log('🔄 Refresh the page to apply changes');
+  },
 };
+
+/**
+ * Auto-initialize debug configuration on first load
+ * Set your preferred default here - options:
+ * - 'xstate' - Only XState machine changes (cleanest for development)
+ * - 'recommended' - Balanced logging (all except noisy logs)
+ * - 'all' - Everything
+ * - 'none' - Nothing (you'll use __debug commands manually)
+ */
+const DEFAULT_DEBUG_MODE: 'xstate' | 'recommended' | 'all' | 'none' = 'xstate';
 
 /**
  * Expose debug utilities on window in development for easy DevTools access
@@ -241,9 +268,27 @@ export const debugUtils = {
  * __debug.show()           // Show current config
  * __debug.enableAll()      // Enable all logs
  * __debug.recommended()    // Use recommended settings
+ * __debug.xstateOnly()     // Show only XState machine changes
  * ```
  */
 if (typeof window !== 'undefined' && import.meta.env.DEV) {
+  // Auto-initialize if no debug config exists
+  const currentDebug = localStorage.getItem('debug');
+  if (!currentDebug) {
+    const modeMap = {
+      xstate: 'wonder:navigation:machine,wonder:scenes:dialogue',
+      recommended: 'wonder:*,-wonder:recording:transcripts,-wonder:scenes:renderer',
+      all: 'wonder:*',
+      none: null,
+    };
+    const pattern = modeMap[DEFAULT_DEBUG_MODE];
+    if (pattern) {
+      localStorage.setItem('debug', pattern);
+      console.log(`🐛 Debug auto-initialized to '${DEFAULT_DEBUG_MODE}' mode`);
+      console.log(`   Pattern: ${pattern}`);
+    }
+  }
+
   (window as Window & { __debug?: typeof debugUtils }).__debug = debugUtils;
   console.log('🐛 Debug utilities available: __debug.show()');
 }

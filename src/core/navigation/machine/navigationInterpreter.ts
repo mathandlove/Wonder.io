@@ -51,7 +51,7 @@ export function startNavigationService(): ReturnType<typeof createActor> {
   navigationBus.subscribe((event) => {
     if (!serviceInstance) return;
 
-    console.log('[NavigationInterpreter] Received event:', event.type);
+    // console.log('[NavigationInterpreter] Received event:', event.type);
     serviceInstance.send(event);
   });
 
@@ -61,14 +61,14 @@ export function startNavigationService(): ReturnType<typeof createActor> {
     const node = useNavigationStore.getState().getCurrentNode();
 
     // Build log info with machine state and complete node
-    const logInfo: Record<string, unknown> = {
-      machineState: snapshot.value,
-      scene: node?.scene?.type || 'none',
-      phase: node?.phase || 'none',
-      nodeId: node?.id.substring(0, 8) + '...' || 'none',
-    };
+    // const logInfo: Record<string, unknown> = {
+    //   machineState: snapshot.value,
+    //   scene: node?.scene?.type || 'none',
+    //   phase: node?.phase || 'none',
+    //   nodeId: node?.id.substring(0, 8) + '...' || 'none',
+    // };
 
-    console.log('[NavigationInterpreter] State changed to:', logInfo);
+    // console.log('[NavigationInterpreter] State changed to:', logInfo);
 
     // Note: Actions now call store methods directly, no queue processing needed
   });
@@ -76,7 +76,7 @@ export function startNavigationService(): ReturnType<typeof createActor> {
   // Start the machine
   serviceInstance.start();
 
-  console.log('[NavigationInterpreter] Navigation service started');
+  // console.log('[NavigationInterpreter] Navigation service started');
 
   // Kick off the boot sequence by requesting the gingerbread story to be loaded
   serviceInstance.send({
@@ -101,7 +101,7 @@ export function stopNavigationService(): void {
   serviceInstance.stop();
   serviceInstance = null;
 
-  console.log('[NavigationInterpreter] Navigation service stopped');
+  // console.log('[NavigationInterpreter] Navigation service stopped');
 }
 
 /**

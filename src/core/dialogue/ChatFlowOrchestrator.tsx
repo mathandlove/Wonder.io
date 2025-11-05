@@ -126,7 +126,7 @@ export function useChatFlowOrchestrator(props?: ChatFlowOrchestratorProps) {
 
       // Emit RECEIVED_AI_RESPONSE event to xState machine
       // Machine will handle scene creation and navigation (createAIResponseScene action)
-      console.log('[ChatFlowOrchestrator] 📤 Emitting RECEIVED_AI_RESPONSE event with response:', response.text.substring(0, 50));
+      // console.log('[ChatFlowOrchestrator] 📤 Emitting RECEIVED_AI_RESPONSE event with response:', response.text.substring(0, 50));
 
       navigationBus.emit({
         type: 'RECEIVED_AI_RESPONSE',
@@ -150,13 +150,13 @@ export function useChatFlowOrchestrator(props?: ChatFlowOrchestratorProps) {
     transcript: string,
     recordingId?: string
   ): Promise<void> => {
-    console.log('📝 [ChatFlowOrchestrator] processTranscript called:', {
-      transcript,
-      recordingId,
-      characterDescription: conversationMetadata?.characterDescription,
-      leftCharacter: hasCharacterProperties(currentScene) ? currentScene['left-character'] : undefined,
-      rightCharacter: hasCharacterProperties(currentScene) ? currentScene['right-character'] : undefined,
-    });
+    // console.log('📝 [ChatFlowOrchestrator] processTranscript called:', {
+    // transcript,
+    // recordingId,
+    // characterDescription: conversationMetadata?.characterDescription,
+    // leftCharacter: hasCharacterProperties(currentScene) ? currentScene['left-character'] : undefined,
+    // rightCharacter: hasCharacterProperties(currentScene) ? currentScene['right-character'] : undefined,
+    // });
 
     const input: UserInput = {
       text: transcript,
@@ -171,7 +171,7 @@ export function useChatFlowOrchestrator(props?: ChatFlowOrchestratorProps) {
       }
     };
 
-    console.log('🎯 [ChatFlowOrchestrator] About to call processUserInput with:', input);
+    // console.log('🎯 [ChatFlowOrchestrator] About to call processUserInput with:', input);
     await processUserInput(input);
   }, [currentScene, conversationMetadata, processUserInput]);
 

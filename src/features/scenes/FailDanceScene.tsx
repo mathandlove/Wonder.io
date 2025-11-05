@@ -57,7 +57,7 @@ export default function FailDanceScene({ scene }: SceneProps<FailDanceSceneType>
 
     // Emit VIDEO_COMPLETE event to navigation machine
     // Machine will handle navigation back and phase reset
-    console.log('[FailDanceScene] 🎬 Animation complete - emitting VIDEO_COMPLETE event');
+    // console.log('[FailDanceScene] 🎬 Animation complete - emitting VIDEO_COMPLETE event');
     navigationBus.emit({
       type: 'VIDEO_COMPLETE',
       nodeId: failDanceNodeId,

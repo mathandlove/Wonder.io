@@ -116,10 +116,10 @@ export const CharacterOrchestrator: React.FC<Props> = ({ storyId, scenes }) => {
   // Reset jiggle completion tracking when jiggle state changes
   React.useEffect(() => {
     if (isJiggling) {
-      console.log('[CharacterOrchestrator] 🎉 Jiggle started!', {
-        leftCharacter: leftPanel.character,
-        rightCharacter: rightPanel.character
-      });
+      // console.log('[CharacterOrchestrator] 🎉 Jiggle started!', {
+      //   leftCharacter: leftPanel.character,
+      //   rightCharacter: rightPanel.character
+      // });
       // Reset tracking when we start jiggling
       // Mark panels as complete if they have no character (NOCHARACTER won't animate)
       jiggleCompletionRef.current = {
@@ -129,7 +129,7 @@ export const CharacterOrchestrator: React.FC<Props> = ({ storyId, scenes }) => {
 
       // If both panels are NOCHARACTER, emit immediately
       if (leftPanel.character === 'NOCHARACTER' && rightPanel.character === 'NOCHARACTER') {
-        console.log('[CharacterOrchestrator] ⚡ No characters - emitting jiggle-complete immediately');
+        // console.log('[CharacterOrchestrator] ⚡ No characters - emitting jiggle-complete immediately');
         emitEvent('jiggle-complete', 0);
       }
     }
@@ -137,23 +137,23 @@ export const CharacterOrchestrator: React.FC<Props> = ({ storyId, scenes }) => {
 
   // Jiggle complete callbacks - emit event when both panels complete
   const handleLeftJiggleComplete = useCallback(() => {
-    console.log('[CharacterOrchestrator] ✅ LEFT jiggle complete', jiggleCompletionRef.current);
+    // console.log('[CharacterOrchestrator] ✅ LEFT jiggle complete', jiggleCompletionRef.current);
     jiggleCompletionRef.current.left = true;
 
     // If both panels have completed, emit the jiggle-complete event
     if (jiggleCompletionRef.current.left && jiggleCompletionRef.current.right) {
-      console.log('[CharacterOrchestrator] 🎊 BOTH panels complete - emitting jiggle-complete event');
+      // console.log('[CharacterOrchestrator] 🎊 BOTH panels complete - emitting jiggle-complete event');
       emitEvent('jiggle-complete', 0); // Using 0 as scene index (not currently used)
     }
   }, [emitEvent]);
 
   const handleRightJiggleComplete = useCallback(() => {
-    console.log('[CharacterOrchestrator] ✅ RIGHT jiggle complete', jiggleCompletionRef.current);
+    // console.log('[CharacterOrchestrator] ✅ RIGHT jiggle complete', jiggleCompletionRef.current);
     jiggleCompletionRef.current.right = true;
 
     // If both panels have completed, emit the jiggle-complete event
     if (jiggleCompletionRef.current.left && jiggleCompletionRef.current.right) {
-      console.log('[CharacterOrchestrator] 🎊 BOTH panels complete - emitting jiggle-complete event');
+      // console.log('[CharacterOrchestrator] 🎊 BOTH panels complete - emitting jiggle-complete event');
       emitEvent('jiggle-complete', 0); // Using 0 as scene index (not currently used)
     }
   }, [emitEvent]);

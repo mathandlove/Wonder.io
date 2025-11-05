@@ -79,18 +79,7 @@ export const RecordPanel: React.FC<RecordPanelProps> = ({
   const isFailDance = dialogueState === 'fail-dance';
   const isWaiting = dialogueState === 'ai-waiting' || isWaitingForFinalize || isWaitingForAnswerFinalize || isAnswerWaiting || isProcessing || isAnswerProcessing;
 
-  // Debug logging for success-dance
-  React.useEffect(() => {
-    console.log('[RecordPanel] 📊 State:', {
-      dialogueState,
-      isSuccessDance,
-      successDanceHidePanel,
-      isAnswerRight,
-      videoComplete,
-      questText,
-      answerText
-    });
-  }, [dialogueState, isSuccessDance, successDanceHidePanel, isAnswerRight, videoComplete, questText, answerText]);
+
 
   // Hidden state (basic or input-basic) should use quest-offer visual styling
   const useQuestOfferStyling = isQuestOffer || isBasic || isInputBasic;
@@ -112,28 +101,16 @@ export const RecordPanel: React.FC<RecordPanelProps> = ({
       // Only start the animation sequence once
       if (!hasStartedSuccessDanceRef.current) {
         hasStartedSuccessDanceRef.current = true;
-        console.log('[RecordPanel] 🎉 Success dance started - beginning animation sequence');
 
         // Panel should already be centered from answer-right state
         // Don't reset! Just wait and then hide
         const timer = setTimeout(() => {
-          console.log('[RecordPanel] ⬇️ Hiding panel for success dance');
 
           // Use requestAnimationFrame to ensure this happens in the next frame
           requestAnimationFrame(() => {
             setSuccessDanceHidePanel(true);
 
-            // Debug logging
-            setTimeout(() => {
-              if (containerRef.current) {
-                const computed = window.getComputedStyle(containerRef.current);
-                console.log('[RecordPanel] 🔍 Animation state:', {
-                  bottom: computed.bottom,
-                  top: computed.top,
-                  className: containerRef.current.className
-                });
-              }
-            }, 100);
+  
           });
         }, 500);
 
@@ -209,12 +186,7 @@ export const RecordPanel: React.FC<RecordPanelProps> = ({
     // Keep answer-right-centered class for styling, add hidden for positioning after delay
     if (isSuccessDance) {
       const className = successDanceHidePanel ? 'answer-right-centered hidden' : 'answer-right-centered';
-      console.log('[RecordPanel] 🎨 Container class:', className, {
-        isSuccessDance,
-        successDanceHidePanel,
-        questText,
-        answerText
-      });
+
       return className;
     }
     // For answer-wrong: only show red glow after stamp appears, otherwise show golden glow

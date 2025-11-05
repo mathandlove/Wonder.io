@@ -154,7 +154,7 @@ function expandImageScene(scene: Scene): Node[] {
 function expandCharacterFlowScene(scene: CharacterFlowScene): Node[] {
   // Character-flow scenes create ONE node with phase tracking
   // The dialogueSceneMachine will manage phase transitions based on the flow
-  console.log('[expandCharacterFlowScene] Creating single node with phase management for flow with', scene.flow.length, 'items');
+
 
   return [createNode(scene)];
 }

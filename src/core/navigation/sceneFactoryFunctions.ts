@@ -43,12 +43,12 @@ export function createRecordingScene(
 ): CharacterScene {
   const sceneId = `recording-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
 
-  console.log('[createRecordingScene] 🎨 Creating recording scene:', {
-    background: currentBackground,
-    conversationId,
-    leftCharacter,
-    rightCharacter
-  });
+  // console.log('[createRecordingScene] 🎨 Creating recording scene:', {
+  //   background: currentBackground,
+  //   conversationId,
+  //   leftCharacter,
+  //   rightCharacter
+  // });
 
   const newScene: CharacterScene = {
     type: "character",
@@ -94,12 +94,12 @@ export function createAIResponseScene(
 ): CharacterScene {
   const sceneId = `ai-response-${Date.now()}-${Math.random().toString(36).substring(2, 9)}`;
 
-  console.log('[createAIResponseScene] 🎨 Creating AI response scene:', {
-    background: currentBackground,
-    conversationId,
-    leftCharacter,
-    rightCharacter
-  });
+  // console.log('[createAIResponseScene] 🎨 Creating AI response scene:', {
+  //   background: currentBackground,
+  //   conversationId,
+  //   leftCharacter,
+  //   rightCharacter
+  // });
 
   const newScene: CharacterScene = {
     type: "character",
@@ -154,11 +154,11 @@ export function createFailDanceScene(
 ): FailDanceScene {
   const sceneId = `fail-dance-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
 
-  console.log('[createFailDanceScene] 🎨 Creating fail-dance scene:', {
-    background: currentBackground,
-    leftCharacter,
-    rightCharacter
-  });
+  // console.log('[createFailDanceScene] 🎨 Creating fail-dance scene:', {
+  //   background: currentBackground,
+  //   leftCharacter,
+  //   rightCharacter
+  // });
 
   const newScene: FailDanceScene = {
     type: "fail-dance",
@@ -214,11 +214,11 @@ export function createSuccessDanceScene(
 ): SuccessDanceScene {
   const sceneId = `success-dance-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
 
-  console.log('[createSuccessDanceScene] 🎨 Creating success-dance scene:', {
-    background: currentBackground,
-    leftCharacter,
-    rightCharacter
-  });
+  // console.log('[createSuccessDanceScene] 🎨 Creating success-dance scene:', {
+  //   background: currentBackground,
+  //   leftCharacter,
+  //   rightCharacter
+  // });
 
   const newScene: SuccessDanceScene = {
     type: "success-dance",

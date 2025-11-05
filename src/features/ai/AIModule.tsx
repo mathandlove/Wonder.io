@@ -88,11 +88,11 @@ export const AIModuleProvider: React.FC<AIModuleProviderProps> = ({
         throw new Error('Received empty response from AI');
       }
 
-      console.log('📨 [AIModule] Received response from backend API:', {
-        responseText: data.response,
-        responseLength: data.response.length,
-        timestamp: new Date().toISOString()
-      });
+      // console.log('📨 [AIModule] Received response from backend API:', {
+      //   responseText: data.response,
+      //   responseLength: data.response.length,
+      //   timestamp: new Date().toISOString()
+      // });
 
       return {
         text: data.response,

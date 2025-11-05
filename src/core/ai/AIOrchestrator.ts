@@ -365,7 +365,7 @@ export async function validateAnswerService(input: AnswerValidationInput): Promi
   // For now, use simple case-insensitive substring matching
   const successLower = input.successAnswer.toLowerCase().trim();
 
-  const isCorrect = true;
+  const isCorrect = false;
 
   debug.event('✅', 'Validation complete:', {
     isCorrect,

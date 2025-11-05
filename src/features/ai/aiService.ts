@@ -52,11 +52,11 @@ export async function callAI(input: AIServiceInput): Promise<AIServiceResponse> 
       conversationHistory: input.conversationHistory || []
     };
 
-    console.log('[AIService] 📤 Calling AI backend:', {
-      questionLength: input.questionText.length,
-      characterDescriptionLength: input.characterDescription.length,
-      historyLength: input.conversationHistory?.length || 0
-    });
+    // console.log('[AIService] 📤 Calling AI backend:', {
+    // questionLength: input.questionText.length,
+    // characterDescriptionLength: input.characterDescription.length,
+    // historyLength: input.conversationHistory?.length || 0
+    // });
 
     // Call backend API
     const response = await fetch('http://localhost:3001/api/ai/chat', {
@@ -78,10 +78,10 @@ export async function callAI(input: AIServiceInput): Promise<AIServiceResponse> 
       throw new Error('Received empty response from AI');
     }
 
-    console.log('[AIService] 📨 Received response from backend:', {
-      responseLength: data.response.length,
-      responsePreview: data.response.substring(0, 50) + '...'
-    });
+    // console.log('[AIService] 📨 Received response from backend:', {
+    // responseLength: data.response.length,
+    // responsePreview: data.response.substring(0, 50) + '...'
+    // });
 
     return {
       text: data.response,

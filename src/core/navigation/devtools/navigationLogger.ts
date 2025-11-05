@@ -52,12 +52,12 @@ export function logEvent(event: NavigationEvent): void {
 
   addToLog(eventLog, { event });
 
-  console.log(
-    `%c[NavEvent] ${event.type}`,
-    'color: #4CAF50; font-weight: bold',
-    `node: ${event.nodeId}`,
-    event
-  );
+  // console.log(
+  //   `%c[NavEvent] ${event.type}`,
+  //   'color: #4CAF50; font-weight: bold',
+  //   `node: ${event.nodeId}`,
+  //   event
+  // );
 }
 
 /**
@@ -70,11 +70,11 @@ export function logAction(action: NavigationAction): void {
 
   addToLog(actionLog, { action });
 
-  console.log(
-    `%c[NavAction] ${action.type}`,
-    'color: #2196F3; font-weight: bold',
-    action
-  );
+  // console.log(
+  //   `%c[NavAction] ${action.type}`,
+  //   'color: #2196F3; font-weight: bold',
+  //   action
+  // );
 }
 
 /**
@@ -87,11 +87,11 @@ export function logCommand(command: NavigationCommand): void {
 
   addToLog(commandLog, { command });
 
-  console.log(
-    `%c[NavCommand] ${command.type}`,
-    'color: #FF9800; font-weight: bold',
-    command
-  );
+  // console.log(
+  //   `%c[NavCommand] ${command.type}`,
+  //   'color: #FF9800; font-weight: bold',
+  //   command
+  // );
 }
 
 /**

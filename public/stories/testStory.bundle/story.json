@@ -3,11 +3,8 @@
   "storyId": "leo-monster-hunter-001",
   "scenes": [
 
-        {
-      "type": "text",
-      "text": "Today, I was visiting the Drury Lane Bakery, for my daily Muffin.",
-      "background": "bakery.png"
-    },
+ 
+
       {
       "type": "character-flow",
       "background":"bakery.png",
@@ -24,25 +21,7 @@
     },      
 
 
-                         {
-        
-      "side": "right",
-      "text": "Test2"
-      
-
-    }, 
-                             {
-        
-      "side": "right",
-      "text": "Test3"
-      
-
-    }, 
-        {
-          "side": "right",
-          "text": "Somebody please help me!",
-          "right-character": "fox"
-        },            
+          
     
          {
       "type":"input",

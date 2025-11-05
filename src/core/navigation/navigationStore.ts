@@ -26,7 +26,6 @@ import type {
   NavigationGraph,
   Node,
   NodeId,
-  SceneId,
   FrozenNodeSnapshot,
   NavigationHistoryEntry,
   NodeLifecycleEvent,
@@ -688,13 +687,7 @@ export const useNavigationStore = create<NavigationState>()(
           `${direction} navigation`
         );
 
-        console.log('[navigationStore] advance: About to update currentId', {
-          from: currentNodeId,
-          to: nextActiveNode.id,
-          fromType: currentNode.scene?.type,
-          toType: nextActiveNode.scene?.type,
-          direction,
-        });
+
 
         // Update currentId, save frozen snapshot, record history (atomic update)
         set(
@@ -714,11 +707,7 @@ export const useNavigationStore = create<NavigationState>()(
           direction === 'forward' ? 'nav/advance/forward' : 'nav/advance/backward'
         );
 
-        console.log('[navigationStore] advance: Updated currentId', {
-          newCurrentId: get().currentId,
-          expectedId: nextActiveNode.id,
-          success: get().currentId === nextActiveNode.id,
-        });
+
       },
 
 

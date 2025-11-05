@@ -155,7 +155,7 @@ function flattenScenes(rawScenes: RawScene[]): FlattenResult {
         }
         // Legacy: flow items with f.input or f.quest (old format) - ignore
         else {
-          console.log('[loadStory] Skipping unrecognized flow item at index', flowIndex, f);
+          // console.log('[loadStory] Skipping unrecognized flow item at index', flowIndex, f);
         }
       });
 
@@ -175,11 +175,11 @@ function flattenScenes(rawScenes: RawScene[]): FlattenResult {
         ? [PHASES.IMAGE_ONLY, PHASES.CAPTION]
         : [PHASES.IMAGE_ONLY];
 
-      console.log('[loadStory] Image scene:', {
-        hasCaption,
-        phaseSteps,
-        text: scene.text?.substring(0, 30)
-      });
+      // console.log('[loadStory] Image scene:', {
+    // hasCaption,
+    // phaseSteps,
+    // text: scene.text?.substring(0, 30)
+    // });
 
       out.push({
         type: "image",
