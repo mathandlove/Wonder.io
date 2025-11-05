@@ -575,7 +575,10 @@ export const navigationMachine = setup({
         askProcessing: {
           entry: [
             () => console.log('[NavigationMachine] ⚙️  Entered askProcessing state - transcribing audio'),
-            () => useNavigationStore.getState().updateCurrentPhase('input-processing'),
+            () => {
+              const nodeId = getCurrentNodeId();
+              if (nodeId) useNavigationStore.getState().updateNodePhase(nodeId, 'input-processing');
+            },
           ],
           on: {
             // Block navigation while processing
@@ -599,7 +602,10 @@ export const navigationMachine = setup({
         askWaitingForAI: {
           entry: [
             () => console.log('[NavigationMachine] 🤖 Entered askWaitingForAI - invoking AI service'),
-            () => useNavigationStore.getState().updateCurrentPhase('ai-waiting'),
+            () => {
+              const nodeId = getCurrentNodeId();
+              if (nodeId) useNavigationStore.getState().updateNodePhase(nodeId, 'ai-waiting');
+            },
           ],
           invoke: {
             id: 'callAI',
@@ -633,7 +639,10 @@ export const navigationMachine = setup({
               target: 'dialogueInput',
               actions: [
                 ({ event }) => console.error('[NavigationMachine] ❌ AI service failed:', event.error),
-                () => useNavigationStore.getState().updateCurrentPhase('input')
+                () => {
+                  const nodeId = getCurrentNodeId();
+                  if (nodeId) useNavigationStore.getState().updateNodePhase(nodeId, 'input');
+                }
               ]
             }
           },
@@ -687,7 +696,10 @@ export const navigationMachine = setup({
         answerProcessing: {
           entry: [
             () => console.log('[NavigationMachine] ⚙️  Entered answerProcessing state - transcribing answer'),
-            () => useNavigationStore.getState().updateCurrentPhase('answer-processing'),
+            () => {
+              const nodeId = getCurrentNodeId();
+              if (nodeId) useNavigationStore.getState().updateNodePhase(nodeId, 'answer-processing');
+            },
           ],
           on: {
             // Block navigation while processing
@@ -711,7 +723,10 @@ export const navigationMachine = setup({
         answerValidating: {
           entry: [
             () => console.log('[NavigationMachine] 🤖 Entered answerValidating - invoking validation service'),
-            () => useNavigationStore.getState().updateCurrentPhase('answer-waiting'),
+            () => {
+              const nodeId = getCurrentNodeId();
+              if (nodeId) useNavigationStore.getState().updateNodePhase(nodeId, 'answer-waiting');
+            },
           ],
           invoke: {
             id: 'validateAnswer',
@@ -863,7 +878,10 @@ export const navigationMachine = setup({
         answerRight: {
           entry: [
             () => console.log('[NavigationMachine] 🎉 Entered answerRight - success animation'),
-            () => useNavigationStore.getState().updateCurrentPhase('answer-right'),
+            () => {
+              const nodeId = getCurrentNodeId();
+              if (nodeId) useNavigationStore.getState().updateNodePhase(nodeId, 'answer-right');
+            },
           ],
           on: {
             // Block navigation during success animation
@@ -925,7 +943,8 @@ export const navigationMachine = setup({
             () => console.log('[NavigationMachine] 😞 Entered answerWrong - fail animation'),
             () => {
               // Update current scene (question scene) to answer-wrong phase for animation
-              useNavigationStore.getState().updateCurrentPhase('answer-wrong');
+              const nodeId = getCurrentNodeId();
+              if (nodeId) useNavigationStore.getState().updateNodePhase(nodeId, 'answer-wrong');
 
               // Note: When we navigate to fail-dance scene, we'll reset this question scene to 'basic'
               // This happens in the RecordPanelOrchestrator after fail-dance scene insertion
