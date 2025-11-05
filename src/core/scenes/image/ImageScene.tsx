@@ -8,7 +8,6 @@
  */
 import type { SceneProps } from "@features/scenes/registry";
 import type { ImageScene as ImageSceneType } from "@core/types/scene";
-import type { ImageState } from "@core/dialogue/types";
 import { resolveStoryImage } from "@core/data/imageResolver";
 import { useNavigationStore } from "@core/navigation/navigationStore";
 import "./ImageScene.css";
@@ -16,13 +15,11 @@ import "./ImageScene.css";
 /**
  * Caption Component - Inline caption overlay with construction paper background
  */
-function Caption({ text, state, align = 'bottom' }: { text: string; state: ImageState; align?: "center" | "bottom" }) {
-  // Map ImageState to CSS class
+function Caption({ text, isVisible, align = 'bottom' }: { text: string; isVisible: boolean; align?: "center" | "bottom" }) {
+  // Map visibility to CSS class
   // hidden: no animation, invisible (below viewport)
   // showing: animate in (slide up with construction paper), stays visible
-  const stateClass =
-    state === 'showing' ? 'caption--animate-in' :
-    'caption--hidden';
+  const stateClass = isVisible ? 'caption--animate-in' : 'caption--hidden';
 
   return (
     <div
@@ -73,7 +70,7 @@ export default function ImageScene({ scene, nodeId }: SceneProps<ImageSceneType>
       {hasCaption && (
         <Caption
           text={captionText!}
-          state={shouldShowCaption ? 'showing' : 'hidden'}
+          isVisible={shouldShowCaption}
           align="bottom"
         />
       )}

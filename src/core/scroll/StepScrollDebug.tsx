@@ -13,7 +13,6 @@ import { useEffect, useState } from 'react';
 import { useNavigationStore, selectNavigationGraph, selectCurrentNode } from '@core/navigation/navigationStore';
 import { getServiceInstance } from '@core/navigation/machine/navigationInterpreter';
 import type { Scene } from '@core/types/scene';
-import type { ImageState } from '@core/dialogue/types';
 
 export function StepScrollDebug() {
 
@@ -130,9 +129,9 @@ export function StepScrollDebug() {
   // Get phase from current node (this is the new way - replaces old sceneState)
   const phase = currentNode?.phase || 'unknown';
 
-  // Determine caption state from phase (for image scenes)
-  const captionState: ImageState =
-    sceneType === 'image' && phase === 'caption' ? 'showing' : 'hidden';
+  // Determine if caption is showing (for image scenes)
+  const isCaptionShowing = sceneType === 'image' && phase === 'caption';
+
   // Type-safe caption check - only ImageScene has caption/text properties
   const hasCaption = sceneType === 'image' && currentScene && 'caption' in currentScene
     ? ((currentScene.caption || currentScene.text)?.trim() || false)
@@ -308,16 +307,16 @@ export function StepScrollDebug() {
               border: '1px solid #f0f'
             }}>
               <div style={{
-                color: captionState === 'showing' ? '#0f0' : '#666',
+                color: isCaptionShowing ? '#0f0' : '#666',
                 fontSize: '12px',
                 fontWeight: 'bold'
               }}>
-                {captionState === 'hidden' && '⚫ HIDDEN'}
-                {captionState === 'showing' && '✅ SHOWING'}
+                {!isCaptionShowing && '⚫ HIDDEN'}
+                {isCaptionShowing && '✅ SHOWING'}
               </div>
               <div style={{ color: '#888', fontSize: '9px', marginTop: '2px' }}>
-                {captionState === 'hidden' && 'Caption waiting (scroll blocked until shown)'}
-                {captionState === 'showing' && 'Caption visible (scroll unlocked)'}
+                {!isCaptionShowing && 'Caption waiting (scroll blocked until shown)'}
+                {isCaptionShowing && 'Caption visible (scroll unlocked)'}
               </div>
             </div>
           </div>
