@@ -5,7 +5,7 @@
  */
 import { useMemo, useState, useEffect } from 'react';
 import { CardboardBubble } from '@features/chat/components/CardboardBubble';
-import { useNavigationStore, selectNavigationGraph, selectCurrentNodeId } from '@core/navigation/navigationStore';
+import { useNavigationStore, selectNavigationGraph, selectCurrentNodeId, selectLastFrozenNode } from '@core/navigation/navigationStore';
 import { AudioVisualizer } from '@core/recording/AudioVisualizer';
 import { useRecording } from '@core/recording/RecordingContext';
 import type { CharacterScene } from '@core/types/scene';
@@ -18,13 +18,16 @@ interface BubbleState {
   navItem: Node;
   leftCharacter?: string | null;
   rightCharacter?: string | null;
+  previousLeftCharacter?: string | null; // From frozen snapshot
+  previousRightCharacter?: string | null; // From frozen snapshot
 }
 
 export function SpeechBubbleOrchestrator() {
 
-  // OPTIMIZED: Subscribe only to graph structure and currentId
+  // OPTIMIZED: Subscribe only to graph structure, currentId, and lastFrozenNode
   const navigationGraph = useNavigationStore(selectNavigationGraph);
   const currentNodeId = useNavigationStore(selectCurrentNodeId);
+  const lastFrozenNode = useNavigationStore(selectLastFrozenNode);
   const { state: recordingState } = useRecording();
 
   // Get navigation direction from history
@@ -35,6 +38,7 @@ export function SpeechBubbleOrchestrator() {
   }, [navigationGraph.navigationHistory]);
 
   // Get current bubble state
+  // Uses lastFrozenNode (like CharacterOrchestrator) to detect character entrances
   const currentBubble = useMemo((): BubbleState | null => {
     if (!currentNodeId) return null;
 
@@ -43,19 +47,31 @@ export function SpeechBubbleOrchestrator() {
 
     const scene = navItem.scene as CharacterScene;
 
+    // Helper to extract character from a node (matching CharacterOrchestrator pattern)
+    const getChar = (node: Node | null, side: 'left' | 'right') => {
+      if (!node) return 'NOCHARACTER';
+      const key = side === 'left' ? 'left-character' : 'right-character';
+      const nodeScene = node.scene as any;
+      return nodeScene?.[key] || 'NOCHARACTER';
+    };
+
     return {
       nodeId: currentNodeId,
       scene,
       navItem,
       leftCharacter: scene["left-character"],
       rightCharacter: scene["right-character"],
+      previousLeftCharacter: getChar(lastFrozenNode, 'left'), // Use frozen snapshot
+      previousRightCharacter: getChar(lastFrozenNode, 'right'), // Use frozen snapshot
     };
-  }, [currentNodeId, navigationGraph.byId]);
+  }, [currentNodeId, navigationGraph.byId, lastFrozenNode]);
 
-  // Track previous and current bubbles for animation
+  // Track current bubble and previous bubble for slide-in/out animations
+  // Note: 'previous' is used for rendering exit animations, NOT for character comparison
+  // Character entrance detection uses bubbleState.previousLeftCharacter from frozen snapshot
   const [bubbles, setBubbles] = useState<{
-    previous: BubbleState | null;
-    current: BubbleState | null;
+    previous: BubbleState | null; // For rendering the exit animation
+    current: BubbleState | null;  // For rendering the current bubble
     direction: 'forward' | 'backward';
   }>({
     previous: null,
@@ -66,23 +82,23 @@ export function SpeechBubbleOrchestrator() {
   // Update bubbles when currentBubble changes
   useEffect(() => {
     if (!currentBubble) {
-      // If no character scene, clear bubbles
-      setBubbles({ previous: null, current: null, direction: 'forward' });
+      // If no character scene, clear current but keep previous for exit animation
+      setBubbles(prev => ({ ...prev, current: null }));
       return;
     }
 
     setBubbles(prev => {
       if (currentBubble.nodeId !== prev.current?.nodeId) {
-        // Scene changed - animate transition
+        // New scene - store previous for exit animation, update current for entrance
         const isBackward = navigationDirection === 'backward' || navigationDirection === 'force-backward';
 
         return {
-          previous: prev.current,
+          previous: prev.current, // Store for slide-out animation
           current: currentBubble,
           direction: isBackward ? 'backward' : 'forward'
         };
       } else {
-        // Same node, just update content (phase changes, etc.)
+        // Same node - just update content (phase changes don't need animation)
         return {
           ...prev,
           current: currentBubble
@@ -137,14 +153,14 @@ export function SpeechBubbleOrchestrator() {
     if (!bubbleContent && !(isRecording && !hasTranscript) && !isProcessing) return null;
 
     // Check for character entrance animation (only matters for slide-in)
-    // Compare current bubble's characters with the ACTUAL previous bubble (where we came from)
-    // This correctly handles both forward and backward navigation
+    // Use frozen snapshot (like CharacterOrchestrator) for accurate entrance detection
+    // This correctly handles transitions through non-character scenes (successDance, etc.)
     const leftCharacter = bubbleState.leftCharacter;
     const rightCharacter = bubbleState.rightCharacter;
 
-    // Get characters from the bubble we're transitioning FROM
-    const prevLeftChar = bubbles.previous?.leftCharacter || 'NOCHARACTER';
-    const prevRightChar = bubbles.previous?.rightCharacter || 'NOCHARACTER';
+    // Get characters from frozen snapshot (the state BEFORE this transition started)
+    const prevLeftChar = bubbleState.previousLeftCharacter || 'NOCHARACTER';
+    const prevRightChar = bubbleState.previousRightCharacter || 'NOCHARACTER';
 
     const leftCharEntering = leftCharacter && leftCharacter !== prevLeftChar;
     const rightCharEntering = rightCharacter && rightCharacter !== prevRightChar;

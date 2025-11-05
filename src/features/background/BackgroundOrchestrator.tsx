@@ -19,6 +19,7 @@ interface BackgroundOrchestratorProps {
 
 export function BackgroundOrchestrator({ storyId, currentScene, navigationDirection }: BackgroundOrchestratorProps) {
   // Get the current scene's background directly - no indices needed!
+  // Memoize based on actual background properties, not the entire scene object
   const currentBackground = useMemo(() => {
     if (!currentScene) return null;
 
@@ -39,7 +40,7 @@ export function BackgroundOrchestrator({ storyId, currentScene, navigationDirect
     }
 
     return null;
-  }, [currentScene]);
+  }, [currentScene?.type, currentScene?.background]);
 
   // Track previous and current backgrounds for cross-slide animation
   const [backgrounds, setBackgrounds] = useState<{
@@ -54,16 +55,22 @@ export function BackgroundOrchestrator({ storyId, currentScene, navigationDirect
 
   // Update backgrounds when currentBackground changes
   useEffect(() => {
-    if (currentBackground && currentBackground.background !== backgrounds.current?.background) {
-      // Determine direction: backward if navigationDirection contains 'backward', else forward
+    // Use functional update to avoid stale closure and ensure we read latest state
+    setBackgrounds(prev => {
+      // Only update if background actually changed
+      if (!currentBackground || currentBackground.background === prev.current?.background) {
+        return prev; // No change needed
+      }
+
+      // Background changed - determine direction and update
       const isBackward = navigationDirection === 'backward' || navigationDirection === 'force-backward';
 
-      setBackgrounds({
-        previous: backgrounds.current,
+      return {
+        previous: prev.current,
         current: currentBackground,
         direction: isBackward ? 'backward' : 'forward'
-      });
-    }
+      };
+    });
   }, [currentBackground, navigationDirection]);
 
   // Resolve background URLs
@@ -107,8 +114,9 @@ export function BackgroundOrchestrator({ storyId, currentScene, navigationDirect
             backgroundSize: 'cover',
             backgroundPosition: 'center',
             animation: backgrounds.direction === 'forward'
-              ? 'slideOutToTop 0.6s ease-out forwards'      // Forward: old slides up
-              : 'slideOutToBottom 0.6s ease-out forwards'   // Backward: old slides down
+              ? 'bgSlideOutToTop 0.6s ease-out both'      // Forward: old slides up
+              : 'bgSlideOutToBottom 0.6s ease-out both',  // Backward: old slides down
+            zIndex: 1, // Previous background on top during exit
           }}
           data-debug={`prev-${backgrounds.previous?.background}-${backgrounds.direction}`}
         />
@@ -131,16 +139,17 @@ export function BackgroundOrchestrator({ storyId, currentScene, navigationDirect
             ? 'none'
             : (backgrounds.previous?.background !== backgrounds.current?.background
                 ? (backgrounds.direction === 'forward'
-                    ? 'slideInFromBottom 0.6s ease-out forwards'   // Forward: new from bottom
-                    : 'slideInFromTop 0.6s ease-out forwards')     // Backward: new from top
-                : 'none')
+                    ? 'bgSlideInFromBottom 0.6s ease-out both'   // Forward: new from bottom
+                    : 'bgSlideInFromTop 0.6s ease-out both')     // Backward: new from top
+                : 'none'),
+          zIndex: 0, // Current background behind during transition
         }}
         data-debug={`current-${backgrounds.current?.background}-${backgrounds.direction}-first:${!backgrounds.previous}`}
       />
 
       <style>{`
         /* Forward navigation: new slides up from bottom, old slides up to top */
-        @keyframes slideInFromBottom {
+        @keyframes bgSlideInFromBottom {
           from {
             transform: translateY(100vh);
           }
@@ -149,7 +158,7 @@ export function BackgroundOrchestrator({ storyId, currentScene, navigationDirect
           }
         }
 
-        @keyframes slideOutToTop {
+        @keyframes bgSlideOutToTop {
           from {
             transform: translateY(0);
           }
@@ -159,7 +168,7 @@ export function BackgroundOrchestrator({ storyId, currentScene, navigationDirect
         }
 
         /* Backward navigation: new slides down from top, old slides down to bottom */
-        @keyframes slideInFromTop {
+        @keyframes bgSlideInFromTop {
           from {
             transform: translateY(-100vh);
           }
@@ -168,7 +177,7 @@ export function BackgroundOrchestrator({ storyId, currentScene, navigationDirect
           }
         }
 
-        @keyframes slideOutToBottom {
+        @keyframes bgSlideOutToBottom {
           from {
             transform: translateY(0);
           }
