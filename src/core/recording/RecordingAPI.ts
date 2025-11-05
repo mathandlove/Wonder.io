@@ -1,3 +1,7 @@
+import { createDebugger } from '../../utils/createDebug';
+
+const debug = createDebugger('recording:api');
+
 // Global Recording API singleton
 class RecordingAPI {
   private startFn: (() => Promise<void>) | null = null;
@@ -16,7 +20,7 @@ class RecordingAPI {
     if (this.startFn) {
       await this.startFn();
     } else {
-      console.warn('❌ Recording API not initialized - ensure RecordingProvider is mounted');
+      debug.error('❌ Recording API not initialized - ensure RecordingProvider is mounted');
     }
   }
 
@@ -24,7 +28,7 @@ class RecordingAPI {
     if (this.stopFn) {
       this.stopFn();
     } else {
-      console.warn('❌ Recording API not initialized - ensure RecordingProvider is mounted');
+      debug.error('❌ Recording API not initialized - ensure RecordingProvider is mounted');
     }
   }
 
@@ -32,7 +36,7 @@ class RecordingAPI {
     if (this.abortFn) {
       this.abortFn();
     } else {
-      console.warn('Recording API not initialized - ensure RecordingProvider is mounted');
+      debug.error('Recording API not initialized - ensure RecordingProvider is mounted');
     }
   }
 }

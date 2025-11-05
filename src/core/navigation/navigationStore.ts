@@ -102,6 +102,7 @@ interface NavigationState {
   advance: (direction: 'forward' | 'backward') => void;
 
   // Convenience methods (assume currentId)
+  updateCurrentPhase: (phase: Phase) => void;
   updateCurrentSceneProperties: (updates: Partial<Scene>) => void;
   getCurrentNode: () => Node | null;
   getCurrentSceneType: () => string | null;
@@ -193,13 +194,13 @@ export const useNavigationStore = create<NavigationState>()(
             // Expand the scene into nodes
             const newNodes = expandSceneToNodes(scene, newSceneId);
             if (newNodes.length === 0) {
-              console.warn('[navigationStore] insertSceneNodes: Scene expanded to 0 nodes:', scene);
+              console.error('[navigationStore] insertSceneNodes: Scene expanded to 0 nodes:', scene);
               return state;
             }
 
             // Validate insertion point
             if (afterNodeId && !state.graph.byId[afterNodeId]) {
-              console.warn('[navigationStore] insertSceneNodes: afterNodeId not found:', afterNodeId);
+              console.error('[navigationStore] insertSceneNodes: afterNodeId not found:', afterNodeId);
               return state;
             }
 
@@ -300,7 +301,7 @@ export const useNavigationStore = create<NavigationState>()(
           (state) => {
             // Validate insertion point
             if (afterNodeId && !state.graph.byId[afterNodeId]) {
-              console.warn('[navigationStore] insertNode: afterNodeId not found:', afterNodeId);
+              console.error('[navigationStore] insertNode: afterNodeId not found:', afterNodeId);
               return state;
             }
 
@@ -374,7 +375,7 @@ export const useNavigationStore = create<NavigationState>()(
             // Validate old node exists
             const oldNode = getNodeById(state.graph, oldNodeId);
             if (!oldNode) {
-              console.warn('[navigationStore] replaceNode: oldNodeId not found:', oldNodeId);
+              console.error('[navigationStore] replaceNode: oldNodeId not found:', oldNodeId);
               return state;
             }
 
@@ -452,13 +453,9 @@ export const useNavigationStore = create<NavigationState>()(
           (state) => {
             const node = getNodeById(state.graph, nodeId);
             if (!node) {
-              console.warn('[navigationStore] updateNodePhase: node not found:', nodeId);
-              console.warn('[navigationStore] Available node IDs:', state.graph.order.slice(0, 5).map(id => id.substring(0, 8)));
-              console.warn('[navigationStore] Current node ID:', state.currentId?.substring(0, 8));
+              console.error('[navigationStore] updateNodePhase: node not found:', nodeId);
               return state;
             }
-
-            console.log('[navigationStore] Updating node phase:', nodeId.substring(0, 8), '→', phase);
 
             const newById = {
               ...state.graph.byId,
@@ -491,7 +488,7 @@ export const useNavigationStore = create<NavigationState>()(
           (state) => {
             const node = getNodeById(state.graph, nodeId);
             if (!node) {
-              console.warn('[navigationStore] updateSceneProperties: node not found:', nodeId);
+              console.error('[navigationStore] updateSceneProperties: node not found:', nodeId);
               return state;
             }
 
@@ -576,7 +573,7 @@ export const useNavigationStore = create<NavigationState>()(
         const node = getNodeById(state.graph, nodeId);
 
         if (!node) {
-          console.warn('[navigationStore] deleteNode: node not found:', nodeId);
+          console.error('[navigationStore] deleteNode: node not found:', nodeId);
           return;
         }
 
@@ -628,7 +625,7 @@ export const useNavigationStore = create<NavigationState>()(
         const currentNodeId = state.currentId;
 
         if (!currentNodeId) {
-          console.warn('[navigationStore] advance: No current node ID');
+          console.error('[navigationStore] advance: No current node ID');
           return;
         }
 
@@ -638,7 +635,6 @@ export const useNavigationStore = create<NavigationState>()(
 
           if (phaseAdvanced) {
             // Successfully advanced phase - stay on current node
-            console.log('[navigationStore] advance: Advanced phase, staying on current node');
             return;
           }
         }
@@ -646,7 +642,6 @@ export const useNavigationStore = create<NavigationState>()(
         // STEP 2: Move to next/previous node
         // For forward: phase at boundary - move to next node
         // For backward: skip phases entirely - move to previous node
-        console.log('[navigationStore] advance: Moving to', direction, 'node');
 
         const currentNode = getNodeById(state.graph, currentNodeId);
         if (!currentNode) {
@@ -661,7 +656,21 @@ export const useNavigationStore = create<NavigationState>()(
             : findPrevActiveNode(state.graph, currentNodeId);
 
         if (!nextActiveNode) {
-          console.warn('[navigationStore] advance: No active node in direction:', direction);
+          // Get the immediate next node (even if not active) for debugging
+          const immediateNextNode = currentNode.nextId ? state.graph.byId[currentNode.nextId] : null;
+          console.error('[navigationStore] advance: No active node in direction:', direction, {
+            currentNodeId,
+            currentNodeType: currentNode.scene?.type,
+            currentNodeNextId: currentNode.nextId,
+            currentNodePrevId: currentNode.prevId,
+            immediateNextNode: immediateNextNode ? {
+              id: immediateNextNode.id,
+              type: immediateNextNode.scene?.type,
+              status: immediateNextNode.status,
+              phase: immediateNextNode.phase,
+            } : null,
+            direction,
+          });
           return;
         }
 
@@ -678,6 +687,14 @@ export const useNavigationStore = create<NavigationState>()(
           trigger,
           `${direction} navigation`
         );
+
+        console.log('[navigationStore] advance: About to update currentId', {
+          from: currentNodeId,
+          to: nextActiveNode.id,
+          fromType: currentNode.scene?.type,
+          toType: nextActiveNode.scene?.type,
+          direction,
+        });
 
         // Update currentId, save frozen snapshot, record history (atomic update)
         set(
@@ -696,6 +713,12 @@ export const useNavigationStore = create<NavigationState>()(
           false,
           direction === 'forward' ? 'nav/advance/forward' : 'nav/advance/backward'
         );
+
+        console.log('[navigationStore] advance: Updated currentId', {
+          newCurrentId: get().currentId,
+          expectedId: nextActiveNode.id,
+          success: get().currentId === nextActiveNode.id,
+        });
       },
 
 
@@ -704,6 +727,19 @@ export const useNavigationStore = create<NavigationState>()(
       // These methods operate on the current node without requiring explicit nodeId
       // =============================================================================
 
+      /**
+       * Update phase of the current node
+       * Convenience wrapper around updateNodePhase that assumes currentId
+       * Example: updateCurrentPhase('basic')
+       */
+      updateCurrentPhase: (phase: Phase) => {
+        const state = get();
+        if (!state.currentId) {
+          console.error('[navigationStore] updateCurrentPhase: No current node');
+          return;
+        }
+        get().updateNodePhase(state.currentId, phase);
+      },
 
       /**
        * Update scene properties of the current node
@@ -713,7 +749,7 @@ export const useNavigationStore = create<NavigationState>()(
       updateCurrentSceneProperties: (updates: Partial<Scene>) => {
         const state = get();
         if (!state.currentId) {
-          console.warn('[navigationStore] updateCurrentSceneProperties: No current node');
+          console.error('[navigationStore] updateCurrentSceneProperties: No current node');
           return;
         }
         get().updateSceneProperties(state.currentId, updates);
@@ -752,7 +788,7 @@ export const useNavigationStore = create<NavigationState>()(
         const node = state.getCurrentNode();
 
         if (!node) {
-          console.warn('[navigationStore] advancePhase: No current node');
+          console.error('[navigationStore] advancePhase: No current node');
           return false;
         }
 
@@ -760,21 +796,10 @@ export const useNavigationStore = create<NavigationState>()(
 
         // Check bounds
         if (newIndex < 0 || newIndex >= node.phaseSteps.length) {
-          console.log('[navigationStore] advancePhase: At boundary', {
-            direction,
-            currentIndex: node.phaseIndex,
-            stepsLength: node.phaseSteps.length
-          });
           return false; // Can't advance in this direction
         }
 
         const newPhase = node.phaseSteps[newIndex];
-
-        console.log('[navigationStore] advancePhase:', {
-          from: `${node.phase} (${node.phaseIndex})`,
-          to: `${newPhase} (${newIndex})`,
-          steps: node.phaseSteps
-        });
 
         // Update both phase and phaseIndex atomically
         set(

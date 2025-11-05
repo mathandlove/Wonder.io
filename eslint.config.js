@@ -19,5 +19,10 @@ export default tseslint.config([
       ecmaVersion: 2020,
       globals: globals.browser,
     },
+    rules: {
+      // Discourage direct console usage - use debug utility instead
+      // Allow console.error for critical errors
+      'no-console': ['warn', { allow: ['error'] }],
+    },
   },
 ])

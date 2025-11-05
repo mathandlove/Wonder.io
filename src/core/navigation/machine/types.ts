@@ -367,6 +367,8 @@ export type NavigationContext = {
   failVideoComplete?: boolean;
   /** Track if AI feedback has been received (for answer-wrong flow) */
   feedbackReceived?: boolean;
+  /** Track success-dance node ID for cleanup (for answer-right flow) */
+  successDanceNodeId?: string;
 };
 
 // Note: Phase is NOT tracked in parent context - it lives in:

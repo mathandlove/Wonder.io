@@ -18,6 +18,9 @@ import type { ConversationMetadataMap } from '@core/data/loadStory';
 import { getCurrentNode, insertSceneNodes, advanceNavigation } from '@core/navigation/navigationHelpers';
 import { createAIResponseScene as createAIResponseSceneFactory } from '@core/navigation/sceneFactoryFunctions';
 import { useNavigationStore } from '@core/navigation/navigationStore';
+import { createDebugger } from '../../utils/createDebug';
+
+const debug = createDebugger('ai:orchestrator');
 
 /**
  * Module-level storage for conversation metadata
@@ -54,7 +57,7 @@ export function getConversationMetadata(conversationId: string | undefined) {
  */
 export function setConversationMetadata(metadata: ConversationMetadataMap) {
   currentConversationMetadata = metadata;
-  console.log('[AIOrchestrator] Stored conversation metadata:', Object.keys(currentConversationMetadata));
+  debug.log('Stored conversation metadata:', Object.keys(currentConversationMetadata));
 }
 
 /**
@@ -93,7 +96,7 @@ export function addUserMessage(conversationId: string, content: string) {
     conversationHistories[conversationId] = conversationHistories[conversationId].slice(-20);
   }
 
-  console.log('[AIOrchestrator] Added user message to history:', {
+  debug.log('Added user message to history:', {
     conversationId,
     historyLength: conversationHistories[conversationId].length
   });
@@ -119,7 +122,7 @@ export function addAssistantMessage(conversationId: string, content: string) {
     conversationHistories[conversationId] = conversationHistories[conversationId].slice(-20);
   }
 
-  console.log('[AIOrchestrator] Added assistant message to history:', {
+  debug.log('Added assistant message to history:', {
     conversationId,
     historyLength: conversationHistories[conversationId].length
   });
@@ -165,7 +168,7 @@ export interface AIServiceOutput {
  * @throws Error if validation fails or AI call fails
  */
 export async function callAIService(input: AIServiceInput): Promise<AIServiceOutput> {
-  console.log('[AIOrchestrator] 🤖 AI Service called with:', {
+  debug.event('🤖', 'AI Service called with:', {
     questionText: input.questionText?.substring(0, 50),
     conversationId: input.conversationId
   });
@@ -190,7 +193,7 @@ export async function callAIService(input: AIServiceInput): Promise<AIServiceOut
     throw new Error(`No character description in metadata for conversationId: ${input.conversationId}`);
   }
 
-  console.log('[AIOrchestrator] ✅ Found character description:',
+  debug.event('✅', 'Found character description:',
     metadata.characterDescription.substring(0, 50) + '...');
 
   // Get conversation history from module storage OR from input (for backward compatibility)
@@ -199,14 +202,14 @@ export async function callAIService(input: AIServiceInput): Promise<AIServiceOut
   // If no history provided in input, try to get from module storage
   if (conversationHistory.length === 0) {
     conversationHistory = getConversationHistory(input.conversationId);
-    console.log('[AIOrchestrator] 📚 Retrieved conversation history from storage:',
+    debug.event('📚', 'Retrieved conversation history from storage:',
       conversationHistory.length, 'messages');
   }
 
   // Add user message to history BEFORE calling AI
   addUserMessage(input.conversationId, input.questionText);
 
-  console.log('[AIOrchestrator] 📤 Calling AI with history:', {
+  debug.event('📤', 'Calling AI with history:', {
     questionLength: input.questionText.length,
     historyLength: conversationHistory.length,
     conversationId: input.conversationId
@@ -224,7 +227,7 @@ export async function callAIService(input: AIServiceInput): Promise<AIServiceOut
     throw new Error(response.error || 'AI call failed without error message');
   }
 
-  console.log('[AIOrchestrator] 💬 AI response received:',
+  debug.event('💬', 'AI response received:',
     response.text.substring(0, 50) + '...');
 
   // Add assistant message to history AFTER receiving response
@@ -263,7 +266,7 @@ export function createAndInsertAIResponseScene(input: CreateAIResponseInput): st
     const scene = currentNode?.scene;
 
     if (!input.currentNodeId) {
-      console.error('[AIOrchestrator] No current node ID - cannot create AI response scene');
+      debug.error('No current node ID - cannot create AI response scene');
       return null;
     }
 
@@ -272,7 +275,7 @@ export function createAndInsertAIResponseScene(input: CreateAIResponseInput): st
     const leftCharacter = scene && 'left-character' in scene ? (scene as { 'left-character'?: string })['left-character'] : 'leo';
     const rightCharacter = scene && 'right-character' in scene ? (scene as { 'right-character'?: string })['right-character'] : 'bakerMom';
 
-    console.log('[AIOrchestrator] 🔍 Extracting scene properties:', {
+    debug.event('🔍', 'Extracting scene properties:', {
       currentNodeId: input.currentNodeId,
       sceneType: scene?.type,
       currentBackground,
@@ -291,12 +294,12 @@ export function createAndInsertAIResponseScene(input: CreateAIResponseInput): st
       rightCharacter
     );
 
-    console.log('[AIOrchestrator] Creating AI response scene with text:', input.responseText.substring(0, 50));
+    debug.log('Creating AI response scene with text:', input.responseText.substring(0, 50));
 
     // STEP 1: Update current node phase from 'ai-waiting' to 'basic'
     // This collapses the input UI on the question scene before we navigate away
     useNavigationStore.getState().updateCurrentPhase('basic');
-    console.log('[AIOrchestrator] Updated current scene phase: ai-waiting → basic');
+    debug.log('Updated current scene phase: ai-waiting → basic');
 
     // STEP 2: Insert the AI response scene after current node (SYNCHRONOUS)
     const newSceneId = insertSceneNodes(input.currentNodeId, aiResponseScene);
@@ -305,11 +308,11 @@ export function createAndInsertAIResponseScene(input: CreateAIResponseInput): st
     // The new scene already has phase: 'input' so input UI will show immediately
     advanceNavigation('forward');
 
-    console.log('[AIOrchestrator] ✅ AI response scene created and navigated (sync)');
+    debug.event('✅', 'AI response scene created and navigated (sync)');
 
     return newSceneId;
   } catch (error) {
-    console.error('[AIOrchestrator] Failed to create AI response scene:', error);
+    debug.error('Failed to create AI response scene:', error);
     return null;
   }
 }
@@ -341,7 +344,7 @@ export interface AnswerValidationOutput {
  * @returns Whether the answer is correct
  */
 export async function validateAnswerService(input: AnswerValidationInput): Promise<AnswerValidationOutput> {
-  console.log('[AIOrchestrator] 🎯 Validating answer:', {
+  debug.event('🎯', 'Validating answer:', {
     answerText: input.answerText.substring(0, 50),
     successAnswer: input.successAnswer,
     conversationId: input.conversationId
@@ -349,23 +352,22 @@ export async function validateAnswerService(input: AnswerValidationInput): Promi
 
   // Validate input
   if (!input.answerText?.trim()) {
-    console.warn('[AIOrchestrator] Empty answer text, marking as incorrect');
+    debug.log('Empty answer text, marking as incorrect');
     return { isCorrect: false };
   }
 
   if (!input.successAnswer?.trim()) {
-    console.warn('[AIOrchestrator] No success answer defined, cannot validate');
+    debug.log('No success answer defined, cannot validate');
     return { isCorrect: false };
   }
 
   // TODO: Replace with AI-based validation
   // For now, use simple case-insensitive substring matching
-  const answerLower = input.answerText.toLowerCase().trim();
   const successLower = input.successAnswer.toLowerCase().trim();
 
   const isCorrect = true;
 
-  console.log('[AIOrchestrator] ✅ Validation complete:', {
+  debug.event('✅', 'Validation complete:', {
     isCorrect,
     answerMatched: isCorrect ? successLower : 'no match'
   });
@@ -397,7 +399,7 @@ export interface FeedbackGenerationInput {
  * @param input - Student's answer, correct answer, and context
  */
 export function startFeedbackGeneration(input: FeedbackGenerationInput): void {
-  console.log('[AIOrchestrator] 🚀 Starting feedback generation (fire-and-forget):', {
+  debug.event('🚀', 'Starting feedback generation (fire-and-forget):', {
     studentAnswer: input.studentAnswer.substring(0, 50),
     correctAnswer: input.correctAnswer,
     conversationId: input.conversationId
@@ -405,7 +407,7 @@ export function startFeedbackGeneration(input: FeedbackGenerationInput): void {
 
   // Clear any existing pending feedback before starting new generation
   if (pendingFeedbackGeneration) {
-    console.warn('[AIOrchestrator] ⚠️ Clearing existing pending feedback before starting new generation');
+    debug.log('⚠️ Clearing existing pending feedback before starting new generation');
     pendingFeedbackGeneration = null;
   }
 
@@ -417,7 +419,7 @@ export function startFeedbackGeneration(input: FeedbackGenerationInput): void {
       const conversationHistory = getConversationHistory(input.conversationId || '');
 
       if (!metadata?.characterDescription) {
-        console.warn('[AIOrchestrator] No character description, cannot generate feedback');
+        debug.log('No character description, cannot generate feedback');
         return null;
       }
 
@@ -453,7 +455,7 @@ Previous conversation:
 ${conversationHistory.slice(-5).map(msg => `${msg.role}: ${msg.content}`).join('\n')}
 `;
 
-      console.log('[AIOrchestrator] 📤 Calling AI for feedback generation');
+      debug.event('📤', 'Calling AI for feedback generation');
 
       // Call AI service for feedback
       const response = await callAI({
@@ -464,7 +466,7 @@ ${conversationHistory.slice(-5).map(msg => `${msg.role}: ${msg.content}`).join('
 
       if (response.success && response.text) {
         const elapsed = Date.now() - startTime;
-        console.log('[AIOrchestrator] ✅ Feedback generated successfully (took ' + elapsed + 'ms):',
+        debug.event('✅', 'Feedback generated successfully (took ' + elapsed + 'ms):',
           response.text.substring(0, 100) + '...');
 
         // Add feedback to conversation history
@@ -475,12 +477,12 @@ ${conversationHistory.slice(-5).map(msg => `${msg.role}: ${msg.content}`).join('
         return response.text;
       }
 
-      console.warn('[AIOrchestrator] ⚠️ AI feedback call succeeded but no text returned');
+      debug.log('⚠️ AI feedback call succeeded but no text returned');
       return null;
 
     } catch (error) {
       const elapsed = Date.now() - startTime;
-      console.error('[AIOrchestrator] ❌ Feedback generation failed after ' + elapsed + 'ms:', error);
+      debug.error('❌ Feedback generation failed after ' + elapsed + 'ms:', error);
       return null;
     }
   })();
@@ -515,34 +517,34 @@ export function clearPendingFeedback(): void {
  */
 export async function waitForFeedback(timeoutMs = 5000): Promise<string | null> {
   if (!pendingFeedbackGeneration) {
-    console.warn('[AIOrchestrator] No pending feedback generation to wait for');
+    debug.log('No pending feedback generation to wait for');
     return null;
   }
 
   try {
-    console.log(`[AIOrchestrator] ⏳ Waiting for feedback (timeout: ${timeoutMs}ms)...`);
+    debug.event('⏳', `Waiting for feedback (timeout: ${timeoutMs}ms)...`);
 
     // Race between feedback completion and timeout
     const feedback = await Promise.race([
       pendingFeedbackGeneration,
       new Promise<null>((resolve) => {
         setTimeout(() => {
-          console.warn('[AIOrchestrator] ⏱️ Feedback timeout reached');
+          debug.log('⏱️ Feedback timeout reached');
           resolve(null);
         }, timeoutMs);
       })
     ]);
 
     if (feedback) {
-      console.log('[AIOrchestrator] ✅ Feedback ready:', feedback.substring(0, 100) + '...');
+      debug.event('✅', 'Feedback ready:', feedback.substring(0, 100) + '...');
     } else {
-      console.warn('[AIOrchestrator] ⚠️ Feedback not available (timeout or error)');
+      debug.log('⚠️ Feedback not available (timeout or error)');
     }
 
     return feedback;
 
   } catch (error) {
-    console.error('[AIOrchestrator] ❌ Error waiting for feedback:', error);
+    debug.error('❌ Error waiting for feedback:', error);
     return null;
   } finally {
     // Clean up the pending promise

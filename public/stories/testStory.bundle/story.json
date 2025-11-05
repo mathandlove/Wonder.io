@@ -3,23 +3,11 @@
   "storyId": "leo-monster-hunter-001",
   "scenes": [
 
-              {
+        {
       "type": "text",
-      "text": "When I heard a loud cry for help from Betsy the baker.",
+      "text": "Today, I was visiting the Drury Lane Bakery, for my daily Muffin.",
       "background": "bakery.png"
     },
-
-    {
-      "type": "text",
-      "background": "cobbler.png",
-      "text": "Leo saved the day! The cookies are safe once again."
-    },
-        {
-      "type":"image",
-      "image":"story/dragonFight.png",
-      "text":"Sometimes I have to fight the monsters."
-    },
-
       {
       "type": "character-flow",
       "background":"bakery.png",
@@ -27,7 +15,13 @@
       "right-character": "bakerMom",
       "flow": [
 
+                         {
+        
+      "side": "left",
+      "text": "Test1"
+      
 
+    },      
 
 
                          {
@@ -36,12 +30,19 @@
       "text": "Test2"
       
 
-    },                               {
-      "type":"quest",
-      "text":"What is wrong?",
-      "successAnswer":"Mrs. Baker's cookie was stolen."
-     },
+    }, 
+                             {
+        
+      "side": "right",
+      "text": "Test3"
+      
 
+    }, 
+        {
+          "side": "right",
+          "text": "Somebody please help me!",
+          "right-character": "fox"
+        },            
     
          {
       "type":"input",
@@ -50,10 +51,16 @@
                          {
         
       "side": "right",
-      "text": "Test1"
+      "text": "Test4"
       
 
-    }
+    },
+                      {
+      "type":"quest",
+      "text":"What is wrong?",
+      "successAnswer":"Mrs. Baker's cookie was stolen."
+     }
+
 
 
 
@@ -80,6 +87,22 @@
       "text":"I protect my city by searching for clues."
     },
       
+              {
+      "type": "text",
+      "text": "When I heard a loud cry for help from Betsy the baker.",
+      "background": "bakery.png"
+    },
+
+    {
+      "type": "text",
+      "background": "cobbler.png",
+      "text": "Leo saved the day! The cookies are safe once again."
+    },
+        {
+      "type":"image",
+      "image":"story/dragonFight.png",
+      "text":"Sometimes I have to fight the monsters."
+    },
           
 
         {

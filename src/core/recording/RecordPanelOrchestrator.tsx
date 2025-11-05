@@ -18,12 +18,15 @@ import React, { useCallback, useEffect } from 'react';
 import { getCurrentNode, getCurrentNodeId, insertSceneNodes, advanceNavigation, updateCurrentSceneProperties } from '@core/navigation/navigationHelpers';
 import { useNavigationStore } from '@core/navigation/navigationStore';
 import { useSceneFlowMetadata } from '@core/data/FlowMetadataStore';
-import { createFailDanceScene, createSuccessDanceScene } from '@core/navigation/sceneFactoryFunctions';
+import { createFailDanceScene } from '@core/navigation/sceneFactoryFunctions';
 import { Recording } from '@core/recording/RecordingAPI';
 import { RecordPanel } from './RecordPanel';
 import { useRecording } from './RecordingContext';
 import type { Scene, CharacterScene } from '@core/types/scene';
 import * as navigationBus from '@core/navigation/events/navigationBus';
+import { createDebugger } from '../../utils/createDebug';
+
+const debug = createDebugger('recording:orchestrator');
 
 // Type guard for scenes with character properties
 type SceneWithCharacters = Scene & {
@@ -36,13 +39,13 @@ function hasCharacterProperties(scene: Scene | undefined | null): scene is Scene
     ('left-character' in scene || 'right-character' in scene);
 }
 
-// Type guard for scenes with flowId
-type SceneWithFlowId = Scene & {
-  flowId?: string;
+// Type guard for scenes with conversationId
+type SceneWithConversationId = Scene & {
+  conversationId?: string;
 };
 
-function hasFlowId(scene: Scene | undefined | null): scene is SceneWithFlowId {
-  return scene !== null && scene !== undefined && 'flowId' in scene;
+function hasConversationId(scene: Scene | undefined | null): scene is SceneWithConversationId {
+  return scene !== null && scene !== undefined && 'conversationId' in scene;
 }
 
 export function RecordingOrchestrator() {
@@ -59,7 +62,7 @@ export function RecordingOrchestrator() {
   }, [currentNode?.phase]);
 
   // Get flow metadata for quest text
-  const flowMetadata = useSceneFlowMetadata(hasFlowId(currentScene) ? currentScene : null);
+  const flowMetadata = useSceneFlowMetadata(hasConversationId(currentScene) ? currentScene : null);
 
   // Determine if panel should be visible based on phase or scene type
   // Show for dialogue phases: basic, quest-showing, input, input-recording, input-processing, ai-waiting,
@@ -113,19 +116,12 @@ export function RecordingOrchestrator() {
     setAnswerWrongVideoComplete(true);
   }, []);
 
-  // Track when answer-right video completes
-  const [answerRightVideoComplete, setAnswerRightVideoComplete] = React.useState(false);
-
-  // Reset video complete flag when leaving answer-right phase
-  React.useEffect(() => {
-    if (phase !== 'answer-right') {
-      setAnswerRightVideoComplete(false);
-    }
-  }, [phase]);
-
   // Callback for when answer-right video completes
+  // NEW: Just emit event - machine handles success-dance creation
   const handleAnswerRightVideoComplete = React.useCallback(() => {
-    setAnswerRightVideoComplete(true);
+    debug.log('🎉 Answer-right video complete - emitting event');
+    // Machine will handle success-dance creation, insertion, and navigation
+    // No component logic needed!
   }, []);
 
   // Effect: Auto-transition from answer-wrong to fail-dance scene, triggered 1 second AFTER video ends
@@ -177,7 +173,7 @@ export function RecordingOrchestrator() {
           // This properly maintains the state-node graph structure
           const currentNodeId = getCurrentNodeId();
           if (!currentNodeId) {
-            console.error('[RecordPanelOrchestrator] No current node ID - cannot insert fail-dance scene');
+            debug.error('No current node ID - cannot insert fail-dance scene');
             return;
           }
           // Insert the fail-dance scene after current node
@@ -188,7 +184,7 @@ export function RecordingOrchestrator() {
             // Before navigating, reset the question scene phase from 'answer-wrong' to 'basic'
             // This cleans up the question scene so it's ready for potential retry
             useNavigationStore.getState().updateNodePhase(currentNodeId, 'basic');
-            console.log('[RecordPanelOrchestrator] Reset question scene phase: answer-wrong → basic');
+            debug.log('Reset question scene phase: answer-wrong → basic');
 
             advanceNavigation('forward');
 
@@ -196,7 +192,7 @@ export function RecordingOrchestrator() {
             // Machine will handle navigation back and phase reset
             setTimeout(() => {
               const failDanceNodeId = getCurrentNodeId();
-              console.log('[RecordPanelOrchestrator] 🎬 Fail dance animation complete - emitting VIDEO_COMPLETE');
+              debug.log('🎬 Fail dance animation complete - emitting VIDEO_COMPLETE');
               navigationBus.emit({
                 type: 'VIDEO_COMPLETE',
                 nodeId: failDanceNodeId || '',
@@ -211,91 +207,6 @@ export function RecordingOrchestrator() {
     }
 
   }, [phase, answerWrongVideoComplete]);
-
-  // Effect: Auto-transition from answer-right to success-dance scene, triggered AFTER video ends
-  useEffect(() => {
-    if (phase === 'answer-right' && answerRightVideoComplete) {
-      const freshNode = getCurrentNode();
-      if (freshNode?.phase === 'answer-right') {
-        // Extract character information from current scene
-        const scene = freshNode.scene;
-        let character = 'bakerMom'; // default - the one who celebrates
-        let leftCharacter: string | undefined;
-        let rightCharacter: string | undefined;
-        let background: string | undefined;
-
-        if (hasCharacterProperties(scene)) {
-          // Preserve BOTH characters exactly as they are in the current scene
-          leftCharacter = scene['left-character'];
-          rightCharacter = scene['right-character'];
-
-          // Character is used for the old success-dance animation (will be removed later)
-          if (rightCharacter) {
-            character = rightCharacter;
-          } else if (leftCharacter) {
-            character = leftCharacter;
-          }
-        }
-
-        if (scene && 'background' in scene) {
-          background = scene.background;
-        }
-
-        console.log('[RecordPanelOrchestrator] 🔍 Extracting properties for success-dance:', {
-          sceneType: scene?.type,
-          background,
-          hasBackground: scene && 'background' in scene,
-          leftCharacter,
-          rightCharacter,
-          character
-        });
-
-        // Get the answer text to display in the record panel
-        const characterScene = scene as CharacterScene;
-        const answerText = characterScene.answerText || '';
-
-        // STEP 1: Create success-dance scene using SceneFactory
-        // IMPORTANT: Pass BOTH left and right characters to keep them in their panels
-        const successDanceScene = createSuccessDanceScene(
-          character,
-          answerText,
-          background,
-          leftCharacter,
-          rightCharacter // Keep the right character (don't set to null)
-        );
-
-        // STEP 2: Capture answer-right node ID (current node)
-        const answerRightNodeId = getCurrentNodeId();
-        if (!answerRightNodeId) return;
-
-        // STEP 3: Insert the success-dance scene after current node
-        // TODO: [Navigation Refactor] Replace with event bus emission
-        // emit({ type: 'ANSWER_VALIDATED', nodeId: answerRightNodeId, isCorrect: true })
-        console.log('[RecordPanelOrchestrator] 🔗 Graph before insert:', {
-          currentNodeId: answerRightNodeId,
-          currentNode: useNavigationStore.getState().graph.byId[answerRightNodeId],
-          nextNodeId: useNavigationStore.getState().graph.byId[answerRightNodeId]?.nextId
-        });
-
-        const newSceneId = insertSceneNodes(answerRightNodeId, successDanceScene);
-
-        console.log('[RecordPanelOrchestrator] 🔗 Graph after insert:', {
-          newSceneId,
-          newNode: useNavigationStore.getState().graph.byId[newSceneId || ''],
-          currentNode: useNavigationStore.getState().graph.byId[answerRightNodeId]
-        });
-
-        // STEP 4: Update answer-right node to basic phase (will be visible when we return)
-        useNavigationStore.getState().updateNodePhase(answerRightNodeId, 'basic');
-
-        // STEP 5: Navigate forward to success-dance scene
-        // TODO: [Navigation Refactor] Orchestrators should NOT call navigation directly
-        // This should emit an event to the navigation machine instead
-        // emit({ type: 'REQUEST_NAV_NEXT' })
-        advanceNavigation('forward');
-      }
-    }
-  }, [phase, answerRightVideoComplete]);
 
   // ===================================
   // RECORDING FLOW LOGIC
@@ -340,7 +251,7 @@ export function RecordingOrchestrator() {
         // Final transcript arrived - emit RECORDING_PROCESSED to xState machine
         // Machine will store transcript and transition from askProcessing → askWaitingForAI
         // XState now handles all store mutations (unidirectional data flow)
-        console.log('[RecordPanelOrchestrator] 📤 Emitting RECORDING_PROCESSED event with transcript:', finalText.substring(0, 50));
+        debug.log('📤 Emitting RECORDING_PROCESSED event with transcript:', finalText.substring(0, 50));
         navigationBus.emit({
           type: 'RECORDING_PROCESSED',
           transcript: finalText,
@@ -349,13 +260,13 @@ export function RecordingOrchestrator() {
       } else if (phase === 'ai-waiting' && characterScene.questionText !== finalText) {
         // Fallback: Update questionText in ai-waiting phase (if we somehow skipped input-processing)
         // This should rarely happen with proper state machine flow
-        console.warn('[RecordPanelOrchestrator] ⚠️ Updating questionText in ai-waiting phase (fallback path)');
+        debug.log('⚠️ Updating questionText in ai-waiting phase (fallback path)');
         updateCurrentSceneProperties({ questionText: finalText });
       } else if (phase === 'answer-processing') {
         // Final transcript arrived - emit RECORDING_PROCESSED to xState machine
         // Machine will store answer and transition from answerProcessing → answerValidating
         // XState now handles all store mutations (unidirectional data flow)
-        console.log('[RecordPanelOrchestrator] 📤 Emitting RECORDING_PROCESSED event with answer:', finalText.substring(0, 50));
+        debug.log('📤 Emitting RECORDING_PROCESSED event with answer:', finalText.substring(0, 50));
         navigationBus.emit({
           type: 'RECORDING_PROCESSED',
           transcript: finalText,
@@ -364,7 +275,7 @@ export function RecordingOrchestrator() {
       } else if (phase === 'answer-waiting' && characterScene.answerText !== finalText) {
         // Fallback: Update answerText in answer-waiting phase (if we somehow skipped answer-processing)
         // This should rarely happen with proper state machine flow
-        console.warn('[RecordPanelOrchestrator] ⚠️ Updating answerText in answer-waiting phase (fallback path)');
+        debug.log('⚠️ Updating answerText in answer-waiting phase (fallback path)');
         updateCurrentSceneProperties({ answerText: finalText });
       }
     }
@@ -421,7 +332,7 @@ export function RecordingOrchestrator() {
 
       // STEP 1: START RECORDING IMMEDIATELY (critical for responsiveness)
       await Recording.start().catch((err) => {
-        console.error('[RecordPanelOrchestrator] Failed to start recording:', err);
+        debug.error('Failed to start recording:', err);
         throw err; // Re-throw to prevent state updates on failure
       });
 
@@ -436,7 +347,7 @@ export function RecordingOrchestrator() {
       const scene = currentNode?.scene;
 
       if (!currentNodeId) {
-        console.error('[RecordPanelOrchestrator] No current node ID - cannot insert recording scene');
+        debug.error('No current node ID - cannot insert recording scene');
         return;
       }
 
@@ -457,34 +368,34 @@ export function RecordingOrchestrator() {
       );
 
       // STEP 5: Insert scene into graph
-      console.log('[RecordPanelOrchestrator] Inserting recording scene after node:', currentNodeId);
+      debug.log('Inserting recording scene after node:', currentNodeId);
       const newNodeId = insertSceneNodes(currentNodeId, newScene);
 
       if (!newNodeId) {
-        console.error('[RecordPanelOrchestrator] Failed to insert recording scene - no node ID returned');
+        debug.error('Failed to insert recording scene - no node ID returned');
         return;
       }
 
       // STEP 6: Navigate forward to the new recording scene
-      console.log('[RecordPanelOrchestrator] Navigating to recording scene');
+      debug.log('Navigating to recording scene');
       advanceNavigation('forward');
 
       // STEP 7: Transition new scene to input-recording phase
       // This must happen AFTER navigation so the new node is current
-      console.log('[RecordPanelOrchestrator] Transitioning to input-recording phase');
+      debug.log('Transitioning to input-recording phase');
       useNavigationStore.getState().updateNodePhase(newNodeId, 'input-recording');
 
       // STEP 8: Emit success event to machine for state transition
-      console.log('[RecordPanelOrchestrator] 📤 Emitting RECORDING_STARTED event');
+      debug.log('📤 Emitting RECORDING_STARTED event');
       navigationBus.emit({
         type: 'RECORDING_STARTED',
         recordingId,
         nodeId: newNodeId
       });
 
-      console.log('[RecordPanelOrchestrator] Ask button flow completed successfully');
+      debug.log('Ask button flow completed successfully');
     } catch (error) {
-      console.error('[RecordPanelOrchestrator] Ask button flow failed:', error);
+      debug.error('Ask button flow failed:', error);
       // Emit error event to machine
       navigationBus.emit({
         type: 'RECORDING_FAILED',
@@ -508,7 +419,7 @@ export function RecordingOrchestrator() {
     const { phase, scene } = node;
     const characterScene = scene as CharacterScene;
 
-    console.log('[RecordPanelOrchestrator] 🛑 handleRecordStop called, phase:', phase);
+    debug.log('🛑 handleRecordStop called, phase:', phase);
 
     if (phase === 'record-answer') {
       // Answer recording: Emit RECORDING_STOPPED event to xState machine
@@ -521,7 +432,7 @@ export function RecordingOrchestrator() {
       }
 
       // Emit RECORDING_STOPPED event to navigation machine
-      console.log('[RecordPanelOrchestrator] 📤 Emitting RECORDING_STOPPED event (answer)');
+      debug.log('📤 Emitting RECORDING_STOPPED event (answer)');
       navigationBus.emit({
         type: 'RECORDING_STOPPED',
         nodeId: node.id,
@@ -538,7 +449,7 @@ export function RecordingOrchestrator() {
       }
 
       // Emit RECORDING_STOPPED event to navigation machine
-      console.log('[RecordPanelOrchestrator] 📤 Emitting RECORDING_STOPPED event');
+      debug.log('📤 Emitting RECORDING_STOPPED event');
       navigationBus.emit({
         type: 'RECORDING_STOPPED',
         nodeId: node.id,
@@ -580,7 +491,7 @@ export function RecordingOrchestrator() {
       // STEP 1: START RECORDING IMMEDIATELY (event-driven, not state-driven)
       // This happens FIRST, before any state changes
       await Recording.start().catch((err) => {
-        console.error('[RecordPanelOrchestrator] Failed to start answer recording:', err);
+        debug.error('Failed to start answer recording:', err);
         throw err; // Re-throw to prevent state updates on failure
       });
 
@@ -600,16 +511,16 @@ export function RecordingOrchestrator() {
       }
 
       // STEP 4: Emit event to machine - machine will route to answerRecording state
-      console.log('[RecordPanelOrchestrator] 📤 Emitting ANSWER_RECORDING_STARTED event');
+      debug.log('📤 Emitting ANSWER_RECORDING_STARTED event');
       navigationBus.emit({
         type: 'ANSWER_RECORDING_STARTED',
         recordingId,
         nodeId: currentNodeId || ''
       });
 
-      console.log('[RecordPanelOrchestrator] Answer button flow completed successfully');
+      debug.log('Answer button flow completed successfully');
     } catch (error) {
-      console.error('[RecordPanelOrchestrator] Answer button flow failed:', error);
+      debug.error('Answer button flow failed:', error);
     }
   }, []);
 

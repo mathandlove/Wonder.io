@@ -183,7 +183,8 @@ function createNode(
   } else if (scene.type === 'success-dance') {
     initialPhase = 'answer-right';
   } else {
-    initialPhase = 'static';
+    // Default for text, full, caption scenes and others: use 'basic' phase
+    initialPhase = 'basic';
   }
 
   // Get phaseSteps from scene or compute defaults
@@ -203,8 +204,8 @@ function createNode(
   } else if (scene.type === 'success-dance') {
     phaseSteps = ['success-dance']; // Matches the scene type for RecordPanel state checks
   } else {
-    // Default: single static phase
-    phaseSteps = ['static'];
+    // Default for text, full, caption scenes: single basic phase
+    phaseSteps = ['basic'];
   }
 
   // Calculate phaseIndex from initialPhase

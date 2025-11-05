@@ -6,6 +6,9 @@
  */
 
 import { useState, useRef, useCallback, useEffect } from 'react';
+import { createDebugger } from '../../../utils/createDebug';
+
+const debug = createDebugger('recording:transcripts');
 
 // ──────────────────────────────────────────────────────────────────────────────
 // Types
@@ -127,7 +130,7 @@ export function useSTT(callbacks?: UseSTTCallbacks): UseSTT {
   // ──────────────────────────────────────────────────────────────────────────────
 
   const cleanup = useCallback(() => {
-    console.log('🧹 [useSTT] Cleanup called');
+    debug.log('🧹 [useSTT] Cleanup called');
 
     // Reset all state flags
     isStoppingRef.current = false;
@@ -182,13 +185,13 @@ export function useSTT(callbacks?: UseSTTCallbacks): UseSTT {
     // Stop media stream - CRITICAL for releasing microphone
     if (mediaStreamRef.current) {
       const tracks = mediaStreamRef.current.getTracks();
-      console.log(`🛑 [Cleanup] Stopping ${tracks.length} media track(s)...`);
+      debug.log(`🛑 [Cleanup] Stopping ${tracks.length} media track(s)...`);
       tracks.forEach((track) => {
-        console.log(`  Stopping track: ${track.label} (state: ${track.readyState})`);
+        debug.log(`  Stopping track: ${track.label} (state: ${track.readyState})`);
         track.stop();
       });
       mediaStreamRef.current = null;
-      console.log('✅ [Cleanup] All media tracks stopped');
+      debug.log('✅ [Cleanup] All media tracks stopped');
     } 
 
     // Close audio context - this releases the microphone indicator
@@ -199,7 +202,7 @@ export function useSTT(callbacks?: UseSTTCallbacks): UseSTT {
       if (contextState !== 'closed') {
         context.close().then(() => {
         }).catch((err) => {
-          console.error('[Cleanup] ❌ Failed to close AudioContext:', err);
+          debug.error('[Cleanup] ❌ Failed to close AudioContext:', err);
         });
       } 
       audioContextRef.current = null;
@@ -215,12 +218,12 @@ export function useSTT(callbacks?: UseSTTCallbacks): UseSTT {
 
     // CRITICAL: Prevent duplicate start() calls (React StrictMode double-mount protection)
     if (isStartingRef.current) {
-      console.warn('⚠️ [useSTT] start() already in progress, ignoring duplicate call');
+      debug.log('⚠️ [useSTT] start() already in progress, ignoring duplicate call');
       return;
     }
 
     isStartingRef.current = true;
-    console.log('🎬 [useSTT] Starting recording session...');
+    debug.log('🎬 [useSTT] Starting recording session...');
 
     // CRITICAL: Clean up any existing resources before starting new recording
     // This prevents resource leaks if start() is called multiple times
@@ -282,7 +285,7 @@ export function useSTT(callbacks?: UseSTTCallbacks): UseSTT {
               break;
 
             case 'final':
-              console.log('✅ [useSTT] Received final transcription from backend:', {
+              debug.log('✅ [useSTT] Received final transcription from backend:', {
                 text: message.text,
                 length: message.text.length,
                 timestamp: new Date().toISOString()
@@ -298,7 +301,7 @@ export function useSTT(callbacks?: UseSTTCallbacks): UseSTT {
               break;
 
             case 'error':
-              console.error(`[FRONTEND] ERROR: ${message.message} (code: ${message.code})`);
+              debug.error(`ERROR: ${message.message} (code: ${message.code})`);
               setError(message.message);
               setStatus('error');
               // Invoke callback
@@ -309,7 +312,7 @@ export function useSTT(callbacks?: UseSTTCallbacks): UseSTT {
               break;
 
             case 'close':
-              console.log('🔚 [useSTT] Received close event from backend');
+              debug.log('🔚 [useSTT] Received close event from backend');
               // Invoke callback to signal that transcription is complete
               if (callbacksRef.current?.onFinalized) {
                 callbacksRef.current.onFinalized();
@@ -320,7 +323,7 @@ export function useSTT(callbacks?: UseSTTCallbacks): UseSTT {
               break;
           }
         } catch (error) {
-          console.error('[FRONTEND] Parse error:', error);
+          debug.error('[FRONTEND] Parse error:', error);
         }
       };
 
@@ -337,12 +340,12 @@ export function useSTT(callbacks?: UseSTTCallbacks): UseSTT {
       };
 
       // 2. Capture microphone IN PARALLEL (this may block on user permission)
-      console.log('🎤 [useSTT] Requesting microphone access...');
+      debug.log('🎤 [useSTT] Requesting microphone access...');
 
       // First, list all available audio input devices
       const devices = await navigator.mediaDevices.enumerateDevices();
       const audioInputs = devices.filter(d => d.kind === 'audioinput');
-      console.log('🎙️ [useSTT] Available audio input devices:', audioInputs.map(d => ({
+      debug.log('🎙️ [useSTT] Available audio input devices:', audioInputs.map(d => ({
         deviceId: d.deviceId,
         label: d.label,
         groupId: d.groupId
@@ -363,7 +366,7 @@ export function useSTT(callbacks?: UseSTTCallbacks): UseSTT {
       mediaStreamRef.current = stream;
       const tracks = stream.getTracks();
 
-      console.log('🎤 [useSTT] Microphone stream created:', {
+      debug.log('🎤 [useSTT] Microphone stream created:', {
         trackCount: tracks.length,
         tracks: tracks.map(track => ({
           kind: track.kind,
@@ -380,12 +383,12 @@ export function useSTT(callbacks?: UseSTTCallbacks): UseSTT {
       const unmutedTracks = await Promise.all(tracks.map(track => {
         return new Promise<MediaStreamTrack>((resolve) => {
           if (!track.muted) {
-            console.log('✅ [useSTT] Track already unmuted:', track.label);
+            debug.log('✅ [useSTT] Track already unmuted:', track.label);
             resolve(track);
             return;
           }
 
-          console.warn('⚠️ [useSTT] Track is muted, waiting for unmute...', {
+          debug.log('⚠️ [useSTT] Track is muted, waiting for unmute...', {
             label: track.label,
             readyState: track.readyState,
             muted: track.muted
@@ -394,18 +397,18 @@ export function useSTT(callbacks?: UseSTTCallbacks): UseSTT {
           // Wait up to 2 seconds for unmute
           const timeout = setTimeout(() => {
             if (track.muted) {
-              console.error('❌ [useSTT] Track still muted after 2s - may be browser/system issue');
-              console.log('💡 [useSTT] Possible fixes:');
-              console.log('  1. Close other apps/tabs using the microphone');
-              console.log('  2. Check browser microphone permissions in Settings');
-              console.log('  3. Try refreshing the page');
-              console.log('  4. Check System Preferences > Security & Privacy > Microphone');
+              debug.error('❌ Track still muted after 2s - may be browser/system issue');
+              debug.log('💡 Possible fixes:');
+              debug.log('  1. Close other apps/tabs using the microphone');
+              debug.log('  2. Check browser microphone permissions in Settings');
+              debug.log('  3. Try refreshing the page');
+              debug.log('  4. Check System Preferences > Security & Privacy > Microphone');
             }
             resolve(track);
           }, 2000);
 
           track.addEventListener('unmute', () => {
-            console.log('✅ [useSTT] Track unmuted!', track.label);
+            debug.log('✅ [useSTT] Track unmuted!', track.label);
             clearTimeout(timeout);
             resolve(track);
           }, { once: true });
@@ -416,7 +419,7 @@ export function useSTT(callbacks?: UseSTTCallbacks): UseSTT {
       unmutedTracks.forEach(track => {
         if (!track.enabled) {
           track.enabled = true;
-          console.log('🔧 [useSTT] Enabled track:', track.label);
+          debug.log('🔧 [useSTT] Enabled track:', track.label);
         }
       });
 
@@ -424,7 +427,7 @@ export function useSTT(callbacks?: UseSTTCallbacks): UseSTT {
       const audioContext = new AudioContext({ sampleRate: CONFIG.SAMPLE_RATE });
       audioContextRef.current = audioContext;
 
-      console.log('🎧 [useSTT] AudioContext created:', {
+      debug.log('🎧 [useSTT] AudioContext created:', {
         sampleRate: audioContext.sampleRate,
         state: audioContext.state,
         baseLatency: audioContext.baseLatency
@@ -432,25 +435,25 @@ export function useSTT(callbacks?: UseSTTCallbacks): UseSTT {
 
       // CRITICAL: AudioContext might be suspended, need to resume it
       if (audioContext.state === 'suspended') {
-        console.warn('⚠️ [useSTT] AudioContext is suspended, resuming...');
+        debug.log('⚠️ [useSTT] AudioContext is suspended, resuming...');
         await audioContext.resume();
-        console.log('✅ [useSTT] AudioContext resumed, state:', audioContext.state);
+        debug.log('✅ [useSTT] AudioContext resumed, state:', audioContext.state);
       }
 
       const source = audioContext.createMediaStreamSource(stream);
       sourceNodeRef.current = source;
 
-      console.log('🔌 [useSTT] MediaStreamSource created from stream');
+      debug.log('🔌 [useSTT] MediaStreamSource created from stream');
 
       // DEBUG: Verify the MediaStreamAudioSourceNode is actually receiving audio
       // This is a browser issue - sometimes the stream shows as "live" but produces silence
       const audioTracks = stream.getAudioTracks();
       if (audioTracks.length === 0) {
-        console.error('❌ [useSTT] NO AUDIO TRACKS in MediaStream!');
+        debug.error('❌ NO AUDIO TRACKS in MediaStream!');
       } else {
         audioTracks.forEach((track, idx) => {
           const settings = track.getSettings();
-          console.log(`🎤 [useSTT] Selected Audio Track ${idx}:`, {
+          debug.log(`🎤 Selected Audio Track ${idx}:`, {
             id: track.id,
             label: track.label,
             deviceId: settings.deviceId,
@@ -459,7 +462,7 @@ export function useSTT(callbacks?: UseSTTCallbacks): UseSTT {
             readyState: track.readyState,
             settings: settings
           });
-          console.log(`✅ [useSTT] Using microphone: "${track.label}"`);
+          debug.log(`✅ Using microphone: "${track.label}"`);
         });
       }
 
@@ -469,7 +472,7 @@ export function useSTT(callbacks?: UseSTTCallbacks): UseSTT {
       const workletNode = new AudioWorkletNode(audioContext, 'audio-processor');
       workletNodeRef.current = workletNode;
 
-      console.log('⚙️ [useSTT] AudioWorklet processor loaded');
+      debug.log('⚙️ [useSTT] AudioWorklet processor loaded');
 
       // Configure silence detection parameters
       workletNode.port.postMessage({
@@ -494,7 +497,7 @@ export function useSTT(callbacks?: UseSTTCallbacks): UseSTT {
             // Log first few chunks to verify data flow
             if (audioChunkCount <= 3) {
               const int16View = new Int16Array(audioBuffer);
-              console.log(`🎵 [useSTT] Audio chunk #${audioChunkCount}:`, {
+              debug.log(`🎵 Audio chunk #${audioChunkCount}:`, {
                 bufferSize: audioBuffer.byteLength,
                 sampleCount: int16View.length,
                 firstSamples: Array.from(int16View.slice(0, 5)),
@@ -605,7 +608,7 @@ export function useSTT(callbacks?: UseSTTCallbacks): UseSTT {
       source.connect(workletNode);
       workletNode.connect(audioContext.destination);
 
-      console.log('✅ [useSTT] Audio pipeline connected:', {
+      debug.log('✅ [useSTT] Audio pipeline connected:', {
         source: 'MediaStreamSource',
         processor: 'AudioWorklet',
         destination: 'AudioContext.destination',
@@ -614,10 +617,10 @@ export function useSTT(callbacks?: UseSTTCallbacks): UseSTT {
 
       // Recording started successfully
       isStartingRef.current = false;
-      console.log('✅ [useSTT] Recording session started successfully');
+      debug.log('✅ [useSTT] Recording session started successfully');
 
     } catch (err) {
-      console.error('[START] ❌ ERROR during start:', err);
+      debug.error('[START] ❌ ERROR during start:', err);
       setError(err instanceof Error ? err.message : 'Failed to start recording');
       setStatus('error');
       isStartingRef.current = false; // Reset flag on error
@@ -697,7 +700,7 @@ export function useSTT(callbacks?: UseSTTCallbacks): UseSTT {
           if (state !== 'closed') {
             context.close().then(() => {
             }).catch((err) => {
-              console.error('[useSTT] ❌ Failed to close AudioContext:', err);
+              debug.error('[useSTT] ❌ Failed to close AudioContext:', err);
             });
           } 
           // Note: Don't null the ref yet - cleanup will do that safely
@@ -740,8 +743,8 @@ export function useSTT(callbacks?: UseSTTCallbacks): UseSTT {
     // IMPORTANT: Increased to 30s to accommodate DEBUG_PLAYBACK mode in backend
     // (audio playback can take 10+ seconds for long recordings)
     cleanupSafetyTimerRef.current = setTimeout(() => {
-      console.warn('⚠️ [useSTT] Safety timeout fired - backend did not respond in time');
-      console.warn('💡 [useSTT] This may indicate a backend issue or network problem');
+      debug.log('⚠️ [useSTT] Safety timeout fired - backend did not respond in time');
+      debug.log('💡 [useSTT] This may indicate a backend issue or network problem');
       cleanup();
       setStatus('idle');
     }, 30000); // 30 seconds to allow for slow transcription + debug playback

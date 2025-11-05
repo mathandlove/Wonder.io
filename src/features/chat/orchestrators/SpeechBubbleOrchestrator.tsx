@@ -1,162 +1,216 @@
 /**
- * SpeechBubbleOrchestrator - Uses scroll-based transforms like BackgroundOrchestrator
- * but with delayed transitions to coordinate with character entrance animations.
+ * SpeechBubbleOrchestrator - Uses direction-based animations like BackgroundOrchestrator
+ * Animates bubbles in/out based on navigation direction (forward/backward) instead of indices
+ * This makes it immune to node deletions and provides cleaner animations
  */
-import React, { useMemo } from 'react';
+import { useMemo, useState, useEffect } from 'react';
 import { CardboardBubble } from '@features/chat/components/CardboardBubble';
 import { useNavigationStore, selectNavigationGraph, selectCurrentNodeId } from '@core/navigation/navigationStore';
 import { AudioVisualizer } from '@core/recording/AudioVisualizer';
 import { useRecording } from '@core/recording/RecordingContext';
-import type { Scene, CharacterScene } from '@core/types/scene';
-import type { Node } from '@core/navigation/types';
+import type { CharacterScene } from '@core/types/scene';
+import type { Node } from '@core/navigation/navigationGraphTypes';
 
-// Extended scene types that include commonly accessed properties
-type SceneWithId = Scene & {
-  sceneId?: string;
-  flowSequence?: boolean;
-  speaker?: "left" | "right";
-  "left-character"?: string;
-  "right-character"?: string;
-};
+// Bubble state for tracking previous/current bubbles
+interface BubbleState {
+  nodeId: string; // Use node ID as stable identifier
+  scene: CharacterScene;
+  navItem: Node;
+  leftCharacter?: string | null;
+  rightCharacter?: string | null;
+}
 
 export function SpeechBubbleOrchestrator() {
 
   // OPTIMIZED: Subscribe only to graph structure and currentId
-  // This prevents re-renders when other graph properties change (history, lifecycle events, etc.)
   const navigationGraph = useNavigationStore(selectNavigationGraph);
   const currentNodeId = useNavigationStore(selectCurrentNodeId);
   const { state: recordingState } = useRecording();
 
-  // Convert navigationGraph to array format for compatibility
-  // Map graph.order to Node objects for iteration
-  // OPTIMIZED: Only rebuild when order or byId changes, not on every graph mutation
-  const navigationArray = useMemo(() => {
-    return navigationGraph.order.map((nodeId, index) => {
-      const node = navigationGraph.byId[nodeId];
-      return {
-        ...node,
-        index,
-      };
-    });
-  }, [navigationGraph.order, navigationGraph.byId]);
+  // Get navigation direction from history
+  const navigationDirection = useMemo(() => {
+    const history = navigationGraph.navigationHistory;
+    if (!history || history.length === 0) return 'initial';
+    return history[history.length - 1]?.trigger || 'forward';
+  }, [navigationGraph.navigationHistory]);
 
-  // Calculate current navigation index from currentId
-  // OPTIMIZED: Only recalculate when currentId or order changes
-  const navigationIndex = useMemo(() => {
-    if (!currentNodeId) return 0;
-    return navigationGraph.order.indexOf(currentNodeId);
-  }, [currentNodeId, navigationGraph.order]);
+  // Get current bubble state
+  const currentBubble = useMemo((): BubbleState | null => {
+    if (!currentNodeId) return null;
 
-  // Use navigationIndex for scroll offset since we're working with navigationArray
-  // NOT currentIndex which is based on visible scenes array
-  const scrollOffset = navigationIndex;
+    const navItem = navigationGraph.byId[currentNodeId];
+    if (!navItem || navItem.scene?.type !== 'character') return null;
 
-  // Track scroll direction
-  const prevScrollOffsetRef = React.useRef(scrollOffset);
-  const scrollDirection = scrollOffset > prevScrollOffsetRef.current ? 'forward' : 'backward';
+    const scene = navItem.scene as CharacterScene;
 
-  // Update previous scroll offset for next render
-  React.useEffect(() => {
-    prevScrollOffsetRef.current = scrollOffset;
-  }, [scrollOffset]);
+    return {
+      nodeId: currentNodeId,
+      scene,
+      navItem,
+      leftCharacter: scene["left-character"],
+      rightCharacter: scene["right-character"],
+    };
+  }, [currentNodeId, navigationGraph.byId]);
 
-  // Find character scenes to render bubbles for
-  // IMPORTANT: Use navigationArray to get the actual scene objects (including dynamically created ones)
-  // STRATEGY: Group navigation items by sceneId to prevent unwanted animations when states change
-  // within the same scene (e.g., input-showInput → record-answer → answer-waiting)
-  const speechBubbles = useMemo(() => {
+  // Track previous and current bubbles for animation
+  const [bubbles, setBubbles] = useState<{
+    previous: BubbleState | null;
+    current: BubbleState | null;
+    direction: 'forward' | 'backward';
+  }>({
+    previous: null,
+    current: currentBubble,
+    direction: 'forward'
+  });
 
-    const bubbles: Array<{
-      scene: CharacterScene;
-      sceneIndex: number;
-      firstSceneIndex: number; // The first index where this scene appeared (stable position)
-      transform: string;
-    }> = [];
-
-    // Group navigation items by sceneId, tracking both first and latest appearances
-    // firstIndex = where the scene first appeared (used for positioning)
-    // latestIndex = the most recent state (used for getting current content)
-    const sceneIdToNavItem = new Map<string, {
-      navItem: Node & { index: number },
-      firstIndex: number,
-      latestIndex: number
-    }>();
-
-    // Build a map of sceneId -> array of indices for that scene
-    const sceneIdToIndices = new Map<string, number[]>();
-
-    // Process all navigation items
-    for (let i = 0; i < navigationArray.length; i++) {
-      const navItem = navigationArray[i];
-      const scene = navItem.scene;
-
-      if (scene?.type === 'character') {
-        const sceneId = navItem.sceneId || `unknown-${i}`;
-
-        // Track all indices for this scene
-        if (!sceneIdToIndices.has(sceneId)) {
-          sceneIdToIndices.set(sceneId, []);
-        }
-        sceneIdToIndices.get(sceneId)!.push(i);
-
-        const existing = sceneIdToNavItem.get(sceneId);
-        if (!existing) {
-          // First time seeing this scene - track its first position
-          sceneIdToNavItem.set(sceneId, {
-            navItem,
-            firstIndex: i,
-            latestIndex: i
-          });
-        } else if (i > existing.latestIndex) {
-          // Update to latest state, but keep the first position
-          sceneIdToNavItem.set(sceneId, {
-            navItem,
-            firstIndex: existing.firstIndex, // Keep original position
-            latestIndex: i
-          });
-        }
-      }
+  // Update bubbles when currentBubble changes
+  useEffect(() => {
+    if (!currentBubble) {
+      // If no character scene, clear bubbles
+      setBubbles({ previous: null, current: null, direction: 'forward' });
+      return;
     }
 
-    // Custom transform function that understands same-scene ranges
-    const translateForSameScene = (sceneId: string, firstIndex: number): string => {
-      const indices = sceneIdToIndices.get(sceneId) || [firstIndex];
-      const minIndex = Math.min(...indices);
-      const maxIndex = Math.max(...indices);
+    setBubbles(prev => {
+      if (currentBubble.nodeId !== prev.current?.nodeId) {
+        // Scene changed - animate transition
+        const isBackward = navigationDirection === 'backward' || navigationDirection === 'force-backward';
 
-      const tolerance = 0.1;
-
-      // Check if scrollOffset is within this scene's range
-      if (scrollOffset >= minIndex - tolerance && scrollOffset <= maxIndex + tolerance) {
-        // We're within this scene (any of its states) - show the bubble
-        return 'translateY(0)';
-      } else if (scrollOffset < minIndex - tolerance) {
-        // Bubble is waiting below (not reached yet)
-        const distance = minIndex - scrollOffset;
-        const translateY = Math.abs(distance - 1) < 0.02 ? 100 : distance * 100;
-        return `translateY(${translateY}vh)`;
+        return {
+          previous: prev.current,
+          current: currentBubble,
+          direction: isBackward ? 'backward' : 'forward'
+        };
       } else {
-        // Bubble has scrolled up and away
-        return `translateY(${(maxIndex - scrollOffset) * 100}vh)`;
+        // Same node, just update content (phase changes, etc.)
+        return {
+          ...prev,
+          current: currentBubble
+        };
       }
+    });
+  }, [currentBubble, navigationDirection]);
+
+  // Helper function to render a bubble
+  const renderBubble = (
+    bubbleState: BubbleState,
+    key: string,
+    animationStyle: string | null,
+    isSlideIn: boolean // true for slide-in animations, false for slide-out
+  ) => {
+    const characterScene = bubbleState.scene;
+    const navItem = bubbleState.navItem;
+    const phase = navItem.phase;
+
+    // Determine speaker and side
+    const speakerLabel = characterScene.speaker === "left"
+      ? characterScene["left-character"] || "Left"
+      : characterScene.speaker === "right"
+      ? characterScene["right-character"] || "Right"
+      : "Narrator";
+
+    const side = characterScene.speaker === 'left' ? 'left' :
+           characterScene.speaker === 'right' ? 'right' : 'center';
+
+    // Show AudioVisualizer placeholder when in input-recording phase
+    const isRecording = phase === 'input-recording';
+    const isProcessing = phase === 'input-processing';
+
+    // During recording, show transcript from scene or AudioVisualizer
+    // During processing, ALWAYS show AudioVisualizer with "Processing..." (ignore any text)
+    const hasTranscript = characterScene.questionText && characterScene.questionText.trim();
+    const hasFeedback = (characterScene as any).feedbackText && (characterScene as any).feedbackText.trim();
+
+    // Priority: feedback > processing > recording > normal text
+    const bubbleContent = hasFeedback
+      ? (characterScene as any).feedbackText // Show AI feedback if available
+      : isProcessing
+      ? null // Always null during processing - will show AudioVisualizer with "Processing..."
+      : isRecording
+      ? (hasTranscript ? characterScene.questionText : null) // During recording: show transcript or AudioVisualizer
+      : characterScene.text; // Normal phase: show scene text
+
+    // Show waiting bubble based solely on phase
+    const shouldShowWaitingBubble = phase === 'ai-waiting';
+
+    // Skip rendering if no content (unless recording/processing - show AudioVisualizer)
+    if (!bubbleContent && !(isRecording && !hasTranscript) && !isProcessing) return null;
+
+    // Check for character entrance animation (only matters for slide-in)
+    // Compare current bubble's characters with the ACTUAL previous bubble (where we came from)
+    // This correctly handles both forward and backward navigation
+    const leftCharacter = bubbleState.leftCharacter;
+    const rightCharacter = bubbleState.rightCharacter;
+
+    // Get characters from the bubble we're transitioning FROM
+    const prevLeftChar = bubbles.previous?.leftCharacter || 'NOCHARACTER';
+    const prevRightChar = bubbles.previous?.rightCharacter || 'NOCHARACTER';
+
+    const leftCharEntering = leftCharacter && leftCharacter !== prevLeftChar;
+    const rightCharEntering = rightCharacter && rightCharacter !== prevRightChar;
+    const hasEnteringAnimation = leftCharEntering || rightCharEntering;
+
+    // Determine animation delay
+    // - Slide-OUT animations: ALWAYS 0s (immediate exit)
+    // - Slide-IN animations with character entrance: 1.6s (both forward AND backward)
+    // - Slide-IN animations without character entrance: 0s
+    let animationDelay = '0s';
+    if (isSlideIn && animationStyle && hasEnteringAnimation) {
+      // Delay for slide-in when characters are entering (any direction)
+      // Text must wait for character entrance animation to complete
+      // This applies to both forward and backward scrolling with character changes
+      animationDelay = '1.6s';
+    }
+
+    // Simple flexbox positioning based on speaker side
+    const justifyContent = side === 'left' ? 'flex-start' :
+                         side === 'right' ? 'flex-end' :
+                         'center';
+
+    const bubbleStyle = {
+      position: 'absolute' as const,
+      top: '50vh',
+      left: 'var(--panel-left-width)', // Start after left panel
+      right: 'var(--panel-right-width)', // End before right panel
+      width: 'auto', // Let it fill available space between panels
+      transform: 'translateY(-50%)',
+      display: 'flex',
+      justifyContent,
+      alignItems: 'center',
+      animation: animationStyle ? `${animationStyle} 0.6s ease-out ${animationDelay} both` : 'none',
+      // Note: 'both' = backwards + forwards
+      // - 'backwards' applies the "from" keyframe state during the delay (keeps bubble off-screen)
+      // - 'forwards' keeps the "to" keyframe state after animation completes (keeps bubble on-screen)
+      pointerEvents: 'auto' as const,
     };
 
-    // Now convert our scene-based map to bubbles array
-    sceneIdToNavItem.forEach(({ navItem, firstIndex, latestIndex }, sceneId) => {
-      // Use custom transform that understands scene ranges
-      const transform = translateForSameScene(sceneId, firstIndex);
-      bubbles.push({
-        scene: navItem.scene as CharacterScene,
-        sceneIndex: latestIndex, // For other logic that needs to know current index
-        firstSceneIndex: firstIndex, // The stable position
-        transform
-      });
-    });
+    return (
+      <div
+        key={key}
+        style={bubbleStyle}
+      >
+        <CardboardBubble
+          side={side}
+          speakerLabel={speakerLabel}
+          showWaitingBubble={shouldShowWaitingBubble}
+          isPlaceholder={(isRecording && !hasTranscript) || isProcessing}
+        >
+          {bubbleContent ? (
+            bubbleContent
+          ) : (isRecording && !hasTranscript) ? (
+            <AudioVisualizer audioLevel={recordingState.audioLevel} className="bubble-variant" mode="listening" />
+          ) : isProcessing ? (
+            <AudioVisualizer audioLevel={0} className="bubble-variant" mode="processing" />
+          ) : null}
+        </CardboardBubble>
+      </div>
+    );
+  };
 
-    return bubbles;
-  }, [navigationArray, scrollOffset]);
-
-  // Waiting bubbles are now integrated into each CardboardBubble
+  // If no current bubble, don't render anything
+  if (!bubbles.current) {
+    return null;
+  }
 
   return (
     <div className="speech-bubble-layer" style={{
@@ -168,137 +222,68 @@ export function SpeechBubbleOrchestrator() {
       zIndex: 100,
       pointerEvents: 'none'
     }}>
-      {/* Main speech bubbles */}
-      {speechBubbles.map(({ scene, sceneIndex, transform }) => {
-        const characterScene = scene as CharacterScene;
-        const sceneId = (characterScene as SceneWithId).sceneId;
+      {/* Previous bubble - slides out in opposite direction */}
+      {bubbles.previous && bubbles.previous.nodeId !== bubbles.current.nodeId && (
+        renderBubble(
+          bubbles.previous,
+          `prev-${bubbles.previous.nodeId}`,
+          bubbles.direction === 'forward'
+            ? 'slideOutToTop'      // Forward: old slides up
+            : 'slideOutToBottom',  // Backward: old slides down
+          false // isSlideIn = false (this is a slide-out, no delay)
+        )
+      )}
 
-        // Get the navigation item to access phase
-        const navItem = navigationArray[sceneIndex];
-        const phase = navItem?.phase;
+      {/* Current bubble - slides in from opposite direction */}
+      {renderBubble(
+        bubbles.current,
+        `current-${bubbles.current.nodeId}`,
+        // Animate unless it's the same node (phase change within same scene)
+        !bubbles.previous || bubbles.previous.nodeId !== bubbles.current.nodeId
+          ? (bubbles.direction === 'forward' ? 'slideInFromBottom' : 'slideInFromTop')
+          : null,
+        true // isSlideIn = true (this is a slide-in, may have delay)
+      )}
 
-        // Determine speaker and side
-        const speakerLabel = characterScene.speaker === "left"
-          ? characterScene["left-character"] || "Left"
-          : characterScene.speaker === "right"
-          ? characterScene["right-character"] || "Right"
-          : "Narrator";
-
-        const side = characterScene.speaker === 'left' ? 'left' :
-               characterScene.speaker === 'right' ? 'right' : 'center';
-
-        // Show AudioVisualizer placeholder when in input-recording phase
-        const isRecording = phase === 'input-recording';
-        const isProcessing = phase === 'input-processing';
-
-        // During recording, show transcript from scene or AudioVisualizer
-        // During processing, ALWAYS show AudioVisualizer with "Processing..." (ignore any text)
-        // The scene text might be default placeholder like "Test words", so we check scene for actual transcript
-        const hasTranscript = characterScene.questionText && characterScene.questionText.trim();
-        const hasFeedback = (characterScene as any).feedbackText && (characterScene as any).feedbackText.trim();
-
-        // Priority: feedback > processing > recording > normal text
-        // Feedback takes priority to show AI explanation for wrong answers
-        const bubbleContent = hasFeedback
-          ? (characterScene as any).feedbackText // Show AI feedback if available
-          : isProcessing
-          ? null // Always null during processing - will show AudioVisualizer with "Processing..."
-          : isRecording
-          ? (hasTranscript ? characterScene.questionText : null) // During recording: show transcript or AudioVisualizer
-          : characterScene.text; // Normal phase: show scene text
-
-        // Show waiting bubble based solely on phase
-        // When phase is 'ai-waiting', show the animated ellipses bubble
-        const shouldShowWaitingBubble = phase === 'ai-waiting';
-
-        // Skip rendering if no content (unless recording/processing - show AudioVisualizer)
-        if (!bubbleContent && !(isRecording && !hasTranscript) && !isProcessing) return null;
-
-        // Detect if bubble is entering (visible)
-        const isVisible = transform === 'translateY(0)';
-        const isEntering = isVisible;
-
-        // Animation and transition logic
-        const leftCharacter = characterScene["left-character"];
-        const rightCharacter = characterScene["right-character"];
-
-        // Check previous scene in navigationArray to see if characters changed (indicating entrance)
-        const prevNavItem = sceneIndex > 0 ? navigationArray[sceneIndex - 1] : null;
-        const prevScene = prevNavItem?.scene;
-        // Treat missing character properties as 'NOCHARACTER' to match CharacterOrchestrator behavior
-        const prevLeftChar = prevScene && 'left-character' in prevScene ? prevScene["left-character"] : 'NOCHARACTER';
-        const prevRightChar = prevScene && 'right-character' in prevScene ? prevScene["right-character"] : 'NOCHARACTER';
-
-        const leftCharEntering = leftCharacter && leftCharacter !== prevLeftChar;
-        const rightCharEntering = rightCharacter && rightCharacter !== prevRightChar;
-        const hasEnteringAnimation = leftCharEntering || rightCharEntering;
-
-        // Check next scene in navigationArray to see if characters will change (indicating swap for backwards scroll)
-        // Note: Currently not used, but kept for future backward scroll optimizations
-        // const nextNavItem = sceneIndex < navigationArray.length - 1 ? navigationArray[sceneIndex + 1] : null;
-        // const nextSceneForSwap = nextNavItem?.scene;
-        // const nextLeftChar = nextSceneForSwap && 'left-character' in nextSceneForSwap ? nextSceneForSwap["left-character"] : 'NOCHARACTER';
-        // const nextRightChar = nextSceneForSwap && 'right-character' in nextSceneForSwap ? nextSceneForSwap["right-character"] : 'NOCHARACTER';
-        // const leftCharSwapping = leftCharacter && (leftCharacter !== nextLeftChar || nextLeftChar === 'NOCHARACTER');
-        // const rightCharSwapping = rightCharacter && (rightCharacter !== nextRightChar || nextRightChar === 'NOCHARACTER');
-        // const hasSwapAnimation = leftCharSwapping || rightCharSwapping;
-
-        let transition;
-        if (isEntering) {
-          // Only delay for FORWARD scrolling with character entrance animations
-          // Never delay for backward scrolling - kids will re-read the line
-          if (hasEnteringAnimation && scrollDirection === 'forward') {
-            transition = 'transform 0.4s ease-out 1.6s'; // Forward + character entrance: delay
-          } else {
-            transition = 'transform 0.4s ease-out 0s'; // No delay for backward or no entrance animation
+      <style>{`
+        /* Forward navigation: new slides up from bottom, old slides up to top */
+        @keyframes slideInFromBottom {
+          from {
+            transform: translateY(calc(-50% + 100vh));
           }
-        } else {
-          transition = 'transform 0.3s ease-out 0s'; // Default/waiting
+          to {
+            transform: translateY(-50%);
+          }
         }
 
-        // Simple flexbox positioning based on speaker side
-        const justifyContent = side === 'left' ? 'flex-start' :
-                             side === 'right' ? 'flex-end' :
-                             'center';
+        @keyframes slideOutToTop {
+          from {
+            transform: translateY(-50%);
+          }
+          to {
+            transform: translateY(calc(-50% - 100vh));
+          }
+        }
 
-        const bubbleStyle = {
-          position: 'absolute' as const,
-          top: '50vh',
-          left: 'var(--panel-left-width)', // Start after left panel
-          right: 'var(--panel-right-width)', // End before right panel
-          width: 'auto', // Let it fill available space between panels
-          transform: `translateY(-50%) ${transform}`,
-          display: 'flex',
-          justifyContent,
-          alignItems: 'center',
-          transition,
-          pointerEvents: 'auto' as const,
-        };
+        /* Backward navigation: new slides down from top, old slides down to bottom */
+        @keyframes slideInFromTop {
+          from {
+            transform: translateY(calc(-50% - 100vh));
+          }
+          to {
+            transform: translateY(-50%);
+          }
+        }
 
-        return (
-          <div
-            key={`bubble-${sceneId || `fallback-${sceneIndex}`}`}
-            style={bubbleStyle}
-          >
-            <CardboardBubble
-              side={side}
-              speakerLabel={speakerLabel}
-              showWaitingBubble={shouldShowWaitingBubble}
-              isPlaceholder={(isRecording && !hasTranscript) || isProcessing}
-            >
-              {bubbleContent ? (
-                bubbleContent
-              ) : (isRecording && !hasTranscript) ? (
-                <AudioVisualizer audioLevel={recordingState.audioLevel} className="bubble-variant" mode="listening" />
-              ) : isProcessing ? (
-                <AudioVisualizer audioLevel={0} className="bubble-variant" mode="processing" />
-              ) : null}
-            </CardboardBubble>
-          </div>
-        );
-      })}
-
-      {/* Waiting bubbles are now integrated into CardboardBubble components */}
+        @keyframes slideOutToBottom {
+          from {
+            transform: translateY(-50%);
+          }
+          to {
+            transform: translateY(calc(-50% + 100vh));
+          }
+        }
+      `}</style>
     </div>
   );
 }

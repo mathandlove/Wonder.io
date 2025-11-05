@@ -22,6 +22,9 @@ import { callAIService, setConversationMetadata, createAndInsertAIResponseScene,
 import { useNavigationStore } from '../navigationStore';
 import { getCurrentNodeId, getCurrentNode, initializeStoreWithStory, insertSceneNodes, deleteNode } from '../navigationHelpers';
 import { createAIResponseScene as createAIResponseSceneFactory } from '../sceneFactoryFunctions';
+import { createDebugger } from '../../../utils/createDebug';
+
+const debug = createDebugger('navigation:machine');
 
 /**
  * Navigation State Machine
@@ -52,6 +55,89 @@ export const navigationMachine = setup({
       input: { answerText: string; questionText?: string; successAnswer: string; conversationId?: string }
     }) => {
       return await validateAnswerService(input);
+    }),
+    // Success-dance creation actor - creates and inserts success-dance scene
+    createSuccessDance: fromPromise(async ({ input }: {
+      input: { answerRightNodeId: string }
+    }) => {
+      const { answerRightNodeId } = input;
+      const store = useNavigationStore.getState();
+      const answerRightNode = store.graph.byId[answerRightNodeId];
+
+      if (!answerRightNode) {
+        throw new Error(`Answer-right node not found: ${answerRightNodeId}`);
+      }
+
+      const scene = answerRightNode.scene;
+
+      // Extract scene context for success-dance
+      let character = 'bakerMom';
+      let leftCharacter: string | undefined;
+      let rightCharacter: string | undefined;
+      let background: string | undefined;
+
+      // Type guard for scenes with character properties
+      type SceneWithCharacters = typeof scene & {
+        'left-character'?: string;
+        'right-character'?: string;
+      };
+
+      if ('left-character' in scene || 'right-character' in scene) {
+        const charScene = scene as SceneWithCharacters;
+        leftCharacter = charScene['left-character'];
+        rightCharacter = charScene['right-character'];
+
+        if (rightCharacter) {
+          character = rightCharacter;
+        } else if (leftCharacter) {
+          character = leftCharacter;
+        }
+      }
+
+      if ('background' in scene) {
+        background = (scene as { background?: string }).background;
+      }
+
+      // Get answer text
+      const answerText = (scene as { answerText?: string }).answerText || '';
+
+      debug.log('🎨 Creating success-dance scene', {
+        answerRightNodeId,
+        character,
+        leftCharacter,
+        rightCharacter,
+        background,
+        answerText: answerText.substring(0, 50)
+      });
+
+      // Import scene factory
+      const { createSuccessDanceScene } = await import('@core/navigation/sceneFactoryFunctions');
+
+      // Create success-dance scene
+      const successDanceScene = createSuccessDanceScene(
+        character,
+        answerText,
+        background,
+        leftCharacter,
+        rightCharacter
+      );
+
+      // Insert scene after answer-right node
+      const successDanceNodeId = insertSceneNodes(answerRightNodeId, successDanceScene);
+
+      if (!successDanceNodeId) {
+        throw new Error('Failed to insert success-dance scene');
+      }
+
+      debug.log('✅ Success-dance scene created and inserted', {
+        successDanceNodeId,
+        answerRightNodeId
+      });
+
+      return {
+        successDanceNodeId,
+        answerRightNodeId,
+      };
     }),
   },
   actions: {
@@ -132,11 +218,11 @@ export const navigationMachine = setup({
       const doneEvent = event as any;
 
       if (!doneEvent.output?.fullStory) {
-        console.error('[NavigationMachine] initializeStore: No story data in event', event);
+        debug.error('initializeStore: No story data in event', event);
         return;
       }
 
-      console.log('[NavigationMachine] Initializing store with', doneEvent.output.fullStory.length, 'scenes');
+      debug.log('Initializing store with', doneEvent.output.fullStory.length, 'scenes');
 
       // Store conversation metadata for AI processing (module-level in AIOrchestrator)
       if (doneEvent.output.flowMetadata) {
@@ -157,11 +243,11 @@ export const navigationMachine = setup({
       const { transcript } = event;
 
       if (!transcript || !transcript.trim()) {
-        console.warn('[NavigationMachine] Received empty transcript, skipping store');
+        debug.log('Received empty transcript, skipping store');
         return;
       }
 
-      console.log('[NavigationMachine] 📝 Storing transcript in scene:', transcript.substring(0, 50));
+      debug.log('📝 Storing transcript in scene:', transcript.substring(0, 50));
 
       // Update current scene with transcript
       useNavigationStore.getState().updateCurrentSceneProperties({
@@ -169,7 +255,7 @@ export const navigationMachine = setup({
         questionText: transcript // For AI input
       });
 
-      console.log('[NavigationMachine] ✅ Transcript stored successfully');
+      debug.log('✅ Transcript stored successfully');
     },
 
     // =============================================================================
@@ -182,18 +268,18 @@ export const navigationMachine = setup({
       const { transcript } = event;
 
       if (!transcript || !transcript.trim()) {
-        console.warn('[NavigationMachine] Received empty answer transcript, skipping store');
+        debug.log('Received empty answer transcript, skipping store');
         return;
       }
 
-      console.log('[NavigationMachine] 📝 Storing answer in scene:', transcript.substring(0, 50));
+      debug.log('📝 Storing answer in scene:', transcript.substring(0, 50));
 
       // Update current scene with answer text
       useNavigationStore.getState().updateCurrentSceneProperties({
         answerText: transcript // For validation
       });
 
-      console.log('[NavigationMachine] ✅ Answer stored successfully');
+      debug.log('✅ Answer stored successfully');
     },
 
     // =============================================================================
@@ -219,13 +305,13 @@ export const navigationMachine = setup({
       }
 
       if (!responseText) {
-        console.warn('[NavigationMachine] No response text in event, skipping scene creation');
+        debug.log('No response text in event, skipping scene creation');
         return;
       }
 
       const currentNodeId = getCurrentNodeId();
       if (!currentNodeId) {
-        console.error('[NavigationMachine] No current node, cannot create AI response scene');
+        debug.error('No current node, cannot create AI response scene');
         return;
       }
 
@@ -237,8 +323,42 @@ export const navigationMachine = setup({
         currentNodeId,
       });
 
-      console.log('[NavigationMachine] Scene creation completed synchronously');
+      debug.log('Scene creation completed synchronously');
     },
+
+    // =============================================================================
+    // Success-Dance Cleanup Actions
+    // =============================================================================
+
+    captureSuccessDanceNodeId: assign({
+      successDanceNodeId: () => {
+        const nodeId = useNavigationStore.getState().currentId;
+        debug.log('📍 Captured success-dance node ID for cleanup:', nodeId);
+        return nodeId || undefined;
+      }
+    }),
+
+    navigateForwardFromSuccessDance: () => {
+      debug.log('➡️  Navigating forward from success-dance');
+      useNavigationStore.getState().advance('forward');
+
+      const newNodeId = useNavigationStore.getState().currentId;
+      debug.log('📍 New current node after navigation:', newNodeId);
+    },
+
+    deleteSuccessDanceNode: ({ context }) => {
+      if (!context.successDanceNodeId) {
+        debug.error('❌ No success-dance node ID to delete');
+        return;
+      }
+
+      debug.log('🗑️  Deleting success-dance node:', context.successDanceNodeId);
+      deleteNode(context.successDanceNodeId);
+    },
+
+    clearSuccessDanceNodeId: assign({
+      successDanceNodeId: undefined
+    }),
   },
   guards: {
     // Check if current node is in input phase
@@ -250,6 +370,11 @@ export const navigationMachine = setup({
     isBasic: () => {
       const currentPhase = useNavigationStore.getState().getCurrentPhase();
       return currentPhase === 'basic';
+    },
+    // Check if current node is in an image phase (image_only or caption)
+    isImagePhase: () => {
+      const currentPhase = useNavigationStore.getState().getCurrentPhase();
+      return currentPhase === 'image_only' || currentPhase === 'caption';
     },
     // Check if current node is showing a quest
     isQuestShowing: () => {
@@ -285,6 +410,47 @@ export const navigationMachine = setup({
     bothFailConditionsMet: ({ context }) => {
       return context.failVideoComplete === true && context.feedbackReceived === true;
     },
+
+    // Success-dance navigation guards
+    canNavigateFromSuccessDance: () => {
+      const store = useNavigationStore.getState();
+      const currentNode = store.graph.byId[store.currentId || ''];
+
+      // Must be on success-dance scene
+      if (!currentNode || currentNode.scene?.type !== 'success-dance') {
+        debug.log('⚠️ Guard failed: not on success-dance scene');
+        return false;
+      }
+
+      // Must have a next node
+      if (!currentNode.nextId) {
+        debug.log('⚠️ Guard failed: no next node after success-dance');
+        return false;
+      }
+
+      // Next node must be active
+      const nextNode = store.graph.byId[currentNode.nextId];
+      if (!nextNode || nextNode.status !== 'active') {
+        debug.log('⚠️ Guard failed: next node not active');
+        return false;
+      }
+
+      debug.log('✅ Guard passed: can navigate from success-dance');
+      return true;
+    },
+
+    navigationSucceeded: ({ context }) => {
+      const store = useNavigationStore.getState();
+      const succeeded = store.currentId !== context.successDanceNodeId;
+
+      if (succeeded) {
+        debug.log('✅ Navigation succeeded - moved away from success-dance');
+      } else {
+        debug.error('❌ Navigation failed - still on success-dance node');
+      }
+
+      return succeeded;
+    },
   },
 }).createMachine({
   id: 'navigation',
@@ -295,6 +461,7 @@ export const navigationMachine = setup({
     bootError: null,
     failVideoComplete: false,
     feedbackReceived: false,
+    successDanceNodeId: undefined,
   },
   on: {
     // Note: Global event handlers go here if needed
@@ -306,14 +473,14 @@ export const navigationMachine = setup({
      */
     boot: {
       initial: 'waiting_for_story',
-      entry: () => console.log('[NavigationMachine] Entered boot state'),
+      entry: () => debug.log('Entered boot state'),
       states: {
         /**
          * WAITING_FOR_STORY
          * Wait for LOAD_STORY_REQUESTED event before starting the load
          */
         waiting_for_story: {
-          entry: () => console.log('[NavigationMachine] Waiting for story load request...'),
+          entry: () => debug.log('Waiting for story load request...'),
           on: {
             LOAD_STORY_REQUESTED: {
               actions: ['assignStoryId', 'clearBootError'],
@@ -334,12 +501,12 @@ export const navigationMachine = setup({
             onDone: {
               target: '#navigation.scene.navigating',
               actions: [
-                () => console.log('[NavigationMachine] Story loaded successfully!'),
+                () => debug.log('Story loaded successfully!'),
                 assign({
                   graph: ({ event }) => event.output.minimalGraph,
                 }),
                 'initializeStore',
-                () => console.log('[NavigationMachine] Transitioning to scene.navigating...'),
+                () => debug.log('Transitioning to scene.navigating...'),
               ],
             },
             onError: {
@@ -411,7 +578,7 @@ export const navigationMachine = setup({
         route: {
           entry: () => {
             const phase = useNavigationStore.getState().getCurrentPhase();
-            console.log('[NavigationMachine] 🔀 Routing... current phase:', phase);
+            debug.log('🔀 Routing... current phase:', phase);
           },
           on: {
             SCROLL_DOWN_STEP: {},
@@ -451,6 +618,10 @@ export const navigationMachine = setup({
               target: 'dialogueBasic',
             },
             {
+              guard: 'isImagePhase',
+              target: 'defaultBehavior',
+            },
+            {
               target: 'unknown',
             },
           ],
@@ -462,15 +633,15 @@ export const navigationMachine = setup({
          * User must interact with quest UI to proceed
          */
         questShowing: {
-          entry: () => console.log('[NavigationMachine] 🎯 Entered questShowing state - navigation blocked'),
+          entry: () => debug.log('🎯 Entered questShowing state - navigation blocked'),
           on: {
             // Block scroll down - quest must be interacted with
             SCROLL_DOWN_STEP: {
-              actions: () => console.log('[NavigationMachine] ⛔ SCROLL_DOWN blocked during quest display'),
+              actions: () => debug.log('⛔ SCROLL_DOWN blocked during quest display'),
             },
             // Block scroll up - quest must be interacted with
             SCROLL_UP_STEP: {
-              actions: () => console.log('[NavigationMachine] ⛔ SCROLL_UP blocked during quest display'),
+              actions: () => debug.log('⛔ SCROLL_UP blocked during quest display'),
             },
             // When quest is accepted/started, transition to input phase
             REQUEST_NAV_NEXT: {
@@ -485,18 +656,18 @@ export const navigationMachine = setup({
          * Standard character dialogue with basic phase - allows normal scrolling
          */
         dialogueBasic: {
-          entry: () => console.log('[NavigationMachine] 🎯 Entered dialogueBasic state'),
+          entry: () => debug.log('🎯 Entered dialogueBasic state'),
           on: {
             SCROLL_DOWN_STEP: {
               actions: [
-                () => console.log('[NavigationMachine] ⬇️  SCROLL_DOWN_STEP in dialogueBasic → calling goNext'),
+                () => debug.log('⬇️  SCROLL_DOWN_STEP in dialogueBasic → calling goNext'),
                 'goNext',
               ],
               target: '#navigation.scene.route',
             },
             SCROLL_UP_STEP: {
               actions: [
-                () => console.log('[NavigationMachine] ⬆️  SCROLL_UP_STEP in dialogueBasic → calling goPrev'),
+                () => debug.log('⬆️  SCROLL_UP_STEP in dialogueBasic → calling goPrev'),
                 'goPrev',
               ],
               target: '#navigation.scene.route',
@@ -509,15 +680,15 @@ export const navigationMachine = setup({
          * When in input phase, block scroll navigation and wait for recording to start
          */
         dialogueInput: {
-          entry: () => console.log('[NavigationMachine] 🎯 Entered dialogueInput state'),
+          entry: () => debug.log('🎯 Entered dialogueInput state'),
           on: {
             // Block scroll down - do nothing when in input phase
             SCROLL_DOWN_STEP: {
-              actions: () => console.log('[NavigationMachine] ⛔ SCROLL_DOWN blocked in dialogueInput'),
+              actions: () => debug.log('⛔ SCROLL_DOWN blocked in dialogueInput'),
             },
             SCROLL_UP_STEP: {
               actions: [
-                () => console.log('[NavigationMachine] ⬆️  SCROLL_UP_STEP in dialogueInput → calling goPrev'),
+                () => debug.log('⬆️  SCROLL_UP_STEP in dialogueInput → calling goPrev'),
                 'goPrev',
               ],
               target: '#navigation.scene.route',
@@ -526,19 +697,19 @@ export const navigationMachine = setup({
             // Orchestrator handles: recording start, scene creation, insertion, navigation, phase update
             // Machine just transitions state to track that we're recording
             RECORDING_STARTED: {
-              actions: () => console.log('[NavigationMachine] 🎙️  Ask recording started by orchestrator'),
+              actions: () => debug.log('🎙️  Ask recording started by orchestrator'),
               target: 'askRecording',
             },
             // ANSWER_RECORDING_STARTED event comes from RecordPanelOrchestrator AFTER phase update
             // Orchestrator handles: recording start, phase update to 'record-answer'
             // Machine transitions to route, which will route to answerRecording based on phase
             ANSWER_RECORDING_STARTED: {
-              actions: () => console.log('[NavigationMachine] 🎙️  Answer recording started → routing'),
+              actions: () => debug.log('🎙️  Answer recording started → routing'),
               target: '#navigation.scene.route',
             },
             // Handle recording failure
             RECORDING_FAILED: {
-              actions: ({ event }) => console.error('[NavigationMachine] ❌ Recording failed:', event.error),
+              actions: ({ event }) => debug.error('❌ Recording failed:', event.error),
               // Stay in dialogueInput to allow retry
             },
           },
@@ -550,18 +721,18 @@ export const navigationMachine = setup({
          * Waits for RECORDING_STOPPED event
          */
         askRecording: {
-          entry: () => console.log('[NavigationMachine] 🎙️  Entered askRecording state - user is recording'),
+          entry: () => debug.log('🎙️  Entered askRecording state - user is recording'),
           on: {
             // Block all navigation while recording
             SCROLL_DOWN_STEP: {
-              actions: () => console.log('[NavigationMachine] ⛔ SCROLL blocked during recording'),
+              actions: () => debug.log('⛔ SCROLL blocked during recording'),
             },
             SCROLL_UP_STEP: {
-              actions: () => console.log('[NavigationMachine] ⛔ SCROLL blocked during recording'),
+              actions: () => debug.log('⛔ SCROLL blocked during recording'),
             },
             // When user stops recording, move to processing
             RECORDING_STOPPED: {
-              actions: () => console.log('[NavigationMachine] 🛑 Recording stopped → processing'),
+              actions: () => debug.log('🛑 Recording stopped → processing'),
               target: 'askProcessing',
             },
           },
@@ -574,7 +745,7 @@ export const navigationMachine = setup({
          */
         askProcessing: {
           entry: [
-            () => console.log('[NavigationMachine] ⚙️  Entered askProcessing state - transcribing audio'),
+            () => debug.log('⚙️  Entered askProcessing state - transcribing audio'),
             () => {
               const nodeId = getCurrentNodeId();
               if (nodeId) useNavigationStore.getState().updateNodePhase(nodeId, 'input-processing');
@@ -588,7 +759,7 @@ export const navigationMachine = setup({
             RECORDING_PROCESSED: {
               actions: [
                 'storeTranscriptInScene',
-                () => console.log('[NavigationMachine] ✅ Transcript stored → waiting for AI')
+                () => debug.log('✅ Transcript stored → waiting for AI')
               ],
               target: 'askWaitingForAI',
             },
@@ -601,7 +772,7 @@ export const navigationMachine = setup({
          */
         askWaitingForAI: {
           entry: [
-            () => console.log('[NavigationMachine] 🤖 Entered askWaitingForAI - invoking AI service'),
+            () => debug.log('🤖 Entered askWaitingForAI - invoking AI service'),
             () => {
               const nodeId = getCurrentNodeId();
               if (nodeId) useNavigationStore.getState().updateNodePhase(nodeId, 'ai-waiting');
@@ -616,7 +787,7 @@ export const navigationMachine = setup({
               const questionText = (scene as { questionText?: string })?.questionText;
               const conversationId = (scene as { conversationId?: string })?.conversationId;
 
-              console.log('[NavigationMachine] 📥 Preparing AI input:', {
+              debug.log('📥 Preparing AI input:', {
                 questionText: questionText?.substring(0, 50),
                 conversationId,
                 hasQuestionText: !!questionText,
@@ -632,13 +803,13 @@ export const navigationMachine = setup({
               target: '#navigation.scene.navigating',
               actions: [
                 'createAIResponseScene',
-                () => console.log('[NavigationMachine] ✅ AI service completed successfully')
+                () => debug.log('✅ AI service completed successfully')
               ]
             },
             onError: {
               target: 'dialogueInput',
               actions: [
-                ({ event }) => console.error('[NavigationMachine] ❌ AI service failed:', event.error),
+                ({ event }) => debug.error('❌ AI service failed:', event.error),
                 () => {
                   const nodeId = getCurrentNodeId();
                   if (nodeId) useNavigationStore.getState().updateNodePhase(nodeId, 'input');
@@ -649,17 +820,17 @@ export const navigationMachine = setup({
           on: {
             // Block navigation while AI is processing
             SCROLL_DOWN_STEP: {
-              actions: () => console.log('[NavigationMachine] ⛔ Scroll blocked while AI processing')
+              actions: () => debug.log('⛔ Scroll blocked while AI processing')
             },
             SCROLL_UP_STEP: {
-              actions: () => console.log('[NavigationMachine] ⛔ Scroll blocked while AI processing')
+              actions: () => debug.log('⛔ Scroll blocked while AI processing')
             },
             // Legacy event handler for backward compatibility with ChatFlowOrchestrator
             RECEIVED_AI_RESPONSE: {
               target: '#navigation.scene.route',
               actions: [
                 'createAIResponseScene',
-                () => console.log('[NavigationMachine] ✅ Received AI response via legacy event')
+                () => debug.log('✅ Received AI response via legacy event')
               ]
             },
           },
@@ -671,18 +842,18 @@ export const navigationMachine = setup({
          * Waits for RECORDING_STOPPED event
          */
         answerRecording: {
-          entry: () => console.log('[NavigationMachine] 🎙️  Entered answerRecording state - user recording answer'),
+          entry: () => debug.log('🎙️  Entered answerRecording state - user recording answer'),
           on: {
             // Block all navigation while recording
             SCROLL_DOWN_STEP: {
-              actions: () => console.log('[NavigationMachine] ⛔ SCROLL blocked during answer recording'),
+              actions: () => debug.log('⛔ SCROLL blocked during answer recording'),
             },
             SCROLL_UP_STEP: {
-              actions: () => console.log('[NavigationMachine] ⛔ SCROLL blocked during answer recording'),
+              actions: () => debug.log('⛔ SCROLL blocked during answer recording'),
             },
             // When user stops recording, move to processing
             RECORDING_STOPPED: {
-              actions: () => console.log('[NavigationMachine] 🛑 Answer recording stopped → processing'),
+              actions: () => debug.log('🛑 Answer recording stopped → processing'),
               target: 'answerProcessing',
             },
           },
@@ -695,7 +866,7 @@ export const navigationMachine = setup({
          */
         answerProcessing: {
           entry: [
-            () => console.log('[NavigationMachine] ⚙️  Entered answerProcessing state - transcribing answer'),
+            () => debug.log('⚙️  Entered answerProcessing state - transcribing answer'),
             () => {
               const nodeId = getCurrentNodeId();
               if (nodeId) useNavigationStore.getState().updateNodePhase(nodeId, 'answer-processing');
@@ -709,7 +880,7 @@ export const navigationMachine = setup({
             RECORDING_PROCESSED: {
               actions: [
                 'storeAnswerInScene',
-                () => console.log('[NavigationMachine] ✅ Answer transcript stored → validating')
+                () => debug.log('✅ Answer transcript stored → validating')
               ],
               target: 'answerValidating',
             },
@@ -722,7 +893,7 @@ export const navigationMachine = setup({
          */
         answerValidating: {
           entry: [
-            () => console.log('[NavigationMachine] 🤖 Entered answerValidating - invoking validation service'),
+            () => debug.log('🤖 Entered answerValidating - invoking validation service'),
             () => {
               const nodeId = getCurrentNodeId();
               if (nodeId) useNavigationStore.getState().updateNodePhase(nodeId, 'answer-waiting');
@@ -742,7 +913,7 @@ export const navigationMachine = setup({
               const metadata = getConversationMetadata(conversationId);
               const successAnswer = metadata?.successAnswer || '';
 
-              console.log('[NavigationMachine] 📥 Preparing validation input:', {
+              debug.log('📥 Preparing validation input:', {
                 answerText: answerText?.substring(0, 50),
                 successAnswer,
                 conversationId,
@@ -759,10 +930,10 @@ export const navigationMachine = setup({
             },
             onDone: [
               {
-                // If answer is correct, transition to answerRight
+                // If answer is correct, transition to creating success-dance
                 guard: ({ event }) => event.output.isCorrect,
-                target: 'answerRight',
-                actions: () => console.log('[NavigationMachine] ✅ Answer CORRECT → answerRight')
+                target: 'creatingSuccessDance',
+                actions: () => debug.log('✅ Answer CORRECT → creating success-dance')
               },
               {
                 // If answer is wrong, START FEEDBACK GENERATION IMMEDIATELY (fire-and-forget)
@@ -770,7 +941,7 @@ export const navigationMachine = setup({
                 target: 'answerWrong',
                 actions: [
                   () => {
-                    console.log('[NavigationMachine] ❌ Answer INCORRECT → starting feedback generation');
+                    debug.log('❌ Answer INCORRECT → starting feedback generation');
 
                     // Get current scene data to extract answer/question information
                     const scene = getCurrentNode()?.scene;
@@ -790,7 +961,7 @@ export const navigationMachine = setup({
                       conversationId
                     });
 
-                    console.log('[NavigationMachine] 🚀 Feedback generation started in background');
+                    debug.log('🚀 Feedback generation started in background');
 
                     // Get the pending feedback promise and await it asynchronously
                     // When feedback is ready, emit FEEDBACK_RECEIVED event
@@ -802,7 +973,7 @@ export const navigationMachine = setup({
                         let timeoutId: NodeJS.Timeout;
                         const timeoutPromise = new Promise<null>((resolve) => {
                           timeoutId = setTimeout(() => {
-                            console.warn('[NavigationMachine] ⏱️ Feedback timeout (10s) - using fallback');
+                            debug.log('⏱️ Feedback timeout (10s) - using fallback');
                             resolve(null);
                           }, 10000);
                         });
@@ -813,14 +984,14 @@ export const navigationMachine = setup({
                             clearTimeout(timeoutId);
 
                             if (feedback) {
-                              console.log('[NavigationMachine] 📨 Emitting FEEDBACK_RECEIVED event for node:', questionNodeId);
+                              debug.log('📨 Emitting FEEDBACK_RECEIVED event for node:', questionNodeId);
                               emit({
                                 type: 'FEEDBACK_RECEIVED',
                                 feedbackText: feedback,
                                 questionNodeId: questionNodeId
                               });
                             } else {
-                              console.warn('[NavigationMachine] ⚠️ Feedback timeout - sending fallback');
+                              debug.log('⚠️ Feedback timeout - sending fallback');
                               emit({
                                 type: 'FEEDBACK_RECEIVED',
                                 feedbackText: "Try thinking about what the correct answer might be.",
@@ -831,7 +1002,7 @@ export const navigationMachine = setup({
                             clearPendingFeedback();
                           })
                           .catch(err => {
-                            console.error('[NavigationMachine] Error waiting for feedback:', err);
+                            debug.error('Error waiting for feedback:', err);
 
                             // Clear the timeout in error case too
                             clearTimeout(timeoutId);
@@ -853,31 +1024,158 @@ export const navigationMachine = setup({
               // On validation error, treat as wrong answer
               target: 'answerWrong',
               actions: [
-                ({ event }) => console.error('[NavigationMachine] ❌ Validation error:', event.error),
-                () => console.log('[NavigationMachine] Treating validation error as incorrect answer')
+                ({ event }) => debug.error('❌ Validation error:', event.error),
+                () => debug.log('Treating validation error as incorrect answer')
               ]
             }
           },
           on: {
             // Block navigation while validating
             SCROLL_DOWN_STEP: {
-              actions: () => console.log('[NavigationMachine] ⛔ Scroll blocked while validating answer')
+              actions: () => debug.log('⛔ Scroll blocked while validating answer')
             },
             SCROLL_UP_STEP: {
-              actions: () => console.log('[NavigationMachine] ⛔ Scroll blocked while validating answer')
+              actions: () => debug.log('⛔ Scroll blocked while validating answer')
             },
           },
         },
 
         /**
-         * ANSWER RIGHT state
+         * CREATING SUCCESS DANCE state
+         * Answer was correct - create success-dance scene and navigate to it
+         */
+        creatingSuccessDance: {
+          entry: () => debug.log('🎨 Creating success-dance scene...'),
+          invoke: {
+            id: 'createSuccessDance',
+            src: 'createSuccessDance',
+            input: () => {
+              const answerRightNodeId = getCurrentNodeId();
+              if (!answerRightNodeId) {
+                throw new Error('No current node ID for success-dance creation');
+              }
+              return { answerRightNodeId };
+            },
+            onDone: {
+              target: 'successDanceCreated',
+              actions: [
+                ({ event }) => {
+                  debug.log('✅ Success-dance scene created', event.output);
+
+                  const { answerRightNodeId, successDanceNodeId } = event.output;
+
+                  // Update answer-right node to basic phase (cleanup for potential retry)
+                  useNavigationStore.getState().updateNodePhase(answerRightNodeId, 'basic');
+
+                  // Navigate to success-dance scene
+                  useNavigationStore.getState().advance('forward');
+
+                  debug.log('📍 Navigated to success-dance scene:', successDanceNodeId);
+                }
+              ]
+            },
+            onError: {
+              target: 'answerRight',
+              actions: ({ event }) => {
+                debug.error('❌ Failed to create success-dance:', event.error);
+                // Fallback: Just show answer-right animation without success-dance
+              }
+            }
+          },
+          on: {
+            // Block navigation while creating success-dance
+            SCROLL_DOWN_STEP: {
+              actions: () => debug.log('⛔ SCROLL blocked while creating success-dance')
+            },
+            SCROLL_UP_STEP: {
+              actions: () => debug.log('⛔ SCROLL blocked while creating success-dance')
+            },
+          }
+        },
+
+        /**
+         * SUCCESS DANCE CREATED state
+         * Success-dance scene has been created and we've navigated to it
+         * Wait for jiggle animation to complete (VIDEO_COMPLETE event)
+         */
+        successDanceCreated: {
+          entry: ['captureSuccessDanceNodeId', () => debug.log('🎊 Success-dance active - waiting for jiggle animation')],
+          on: {
+            // Block navigation during success-dance animation
+            SCROLL_DOWN_STEP: {
+              actions: () => debug.log('⛔ SCROLL blocked during success-dance')
+            },
+            SCROLL_UP_STEP: {
+              actions: () => debug.log('⛔ SCROLL blocked during success-dance')
+            },
+            // When jiggle animation completes, check if we can navigate
+            VIDEO_COMPLETE: [
+              {
+                // Can navigate: Go through cleanup flow
+                guard: ({ event }) => event.videoType === 'success-dance',
+                target: 'navigatingFromSuccessDance'
+              }
+            ]
+          }
+        },
+
+        /**
+         * NAVIGATING FROM SUCCESS DANCE state
+         * Attempting to navigate forward from success-dance scene
+         */
+        navigatingFromSuccessDance: {
+          entry: 'navigateForwardFromSuccessDance',
+          always: [
+            {
+              // Navigation succeeded - proceed to deletion
+              guard: 'navigationSucceeded',
+              target: 'deletingSuccessDance'
+            },
+            {
+              // Navigation failed - stay on success-dance
+              target: 'successDanceNavigationFailed'
+            }
+          ]
+        },
+
+        /**
+         * DELETING SUCCESS DANCE state
+         * Navigation succeeded - now delete the success-dance scene
+         */
+        deletingSuccessDance: {
+          entry: ['deleteSuccessDanceNode', () => debug.log('🎉 Success-dance cleanup complete')],
+          always: {
+            target: '#navigation.scene.navigating',
+            actions: 'clearSuccessDanceNodeId'
+          }
+        },
+
+        /**
+         * SUCCESS DANCE NAVIGATION FAILED state
+         * Could not navigate away from success-dance (e.g., last node or next node inactive)
+         * Stay on success-dance scene - user can manually scroll or wait for new content
+         */
+        successDanceNavigationFailed: {
+          entry: () => debug.log('⚠️ Cannot navigate from success-dance - staying here'),
+          on: {
+            SCROLL_DOWN_STEP: {
+              actions: () => debug.log('⛔ SCROLL blocked - no next scene available')
+            },
+            SCROLL_UP_STEP: {
+              actions: ['goPrev', 'clearSuccessDanceNodeId'],
+              target: '#navigation.scene.navigating'
+            }
+          }
+        },
+
+        /**
+         * ANSWER RIGHT state (DEPRECATED - kept for fallback)
          * User answered correctly - show success animation
-         * RecordPanelOrchestrator will handle success-dance scene insertion and navigation
-         * When success-dance video completes, navigate forward and delete the success-dance scene
+         * This state is now only used as a fallback if success-dance creation fails
          */
         answerRight: {
           entry: [
-            () => console.log('[NavigationMachine] 🎉 Entered answerRight - success animation'),
+            () => debug.log('🎉 Entered answerRight (fallback) - no success-dance'),
             () => {
               const nodeId = getCurrentNodeId();
               if (nodeId) useNavigationStore.getState().updateNodePhase(nodeId, 'answer-right');
@@ -886,49 +1184,104 @@ export const navigationMachine = setup({
           on: {
             // Block navigation during success animation
             SCROLL_DOWN_STEP: {
-              actions: () => console.log('[NavigationMachine] ⛔ SCROLL blocked during success animation'),
+              actions: () => debug.log('⛔ SCROLL blocked during success animation'),
             },
             SCROLL_UP_STEP: {
-              actions: () => console.log('[NavigationMachine] ⛔ SCROLL blocked during success animation'),
+              actions: () => debug.log('⛔ SCROLL blocked during success animation'),
             },
             // When success-dance animation completes, navigate forward and delete success-dance
-            VIDEO_COMPLETE: {
-              actions: [
-                ({ event }) => {
-                  if (event.videoType === 'success-dance') {
-                    console.log('[NavigationMachine] 🎬 Success-dance video complete - cleaning up');
+            VIDEO_COMPLETE: [
+              {
+                // Only transition to navigating if we successfully navigated away from success-dance
+                guard: ({ event }) => {
+                  if (event.videoType !== 'success-dance') return false;
 
-                    const store = useNavigationStore.getState();
-                    const successDanceNodeId = store.currentId;
+                  const store = useNavigationStore.getState();
+                  const successDanceNodeId = store.currentId;
+                  if (!successDanceNodeId) return false;
 
-                    if (!successDanceNodeId) {
-                      console.warn('[NavigationMachine] No current node ID for success-dance cleanup');
-                      return;
-                    }
+                  const successDanceNode = store.graph.byId[successDanceNodeId];
+                  if (!successDanceNode?.nextId) return false;
 
-                    // Navigate forward first (while success-dance still exists in graph)
-                    // This moves currentId to the next scene before we delete success-dance
-                    const successDanceNode = store.graph.byId[successDanceNodeId];
-                    console.log('[NavigationMachine] ➡️  Advancing to next scene from success-dance:', {
-                      successDanceNodeId,
-                      nextId: successDanceNode?.nextId,
-                      prevId: successDanceNode?.prevId
-                    });
-                    store.advance('forward');
-                    console.log('[NavigationMachine] ✅ Advanced to:', {
-                      newCurrentId: store.currentId,
-                      newCurrentNode: store.graph.byId[store.currentId || '']?.scene?.type
-                    });
-
-                    // Now delete the success-dance scene
-                    // Since currentId has moved forward, deletion won't affect current position
-                    console.log('[NavigationMachine] 🗑️  Deleting success-dance scene:', successDanceNodeId);
-                    deleteNode(successDanceNodeId);
-                  }
+                  const nextNode = store.graph.byId[successDanceNode.nextId];
+                  return nextNode && nextNode.status === 'active';
                 },
-              ],
-              target: '#navigation.scene.navigating',
-            },
+                actions: [
+                  ({ event }) => {
+                    if (event.videoType === 'success-dance') {
+                      debug.log('🎬 Success-dance video complete - cleaning up');
+
+                      const store = useNavigationStore.getState();
+                      const successDanceNodeId = store.currentId;
+
+                      if (!successDanceNodeId) {
+                        debug.log('No current node ID for success-dance cleanup');
+                        return;
+                      }
+
+                      const successDanceNode = store.graph.byId[successDanceNodeId];
+
+                      // Verify we're actually still on success-dance before attempting navigation
+                      // (Guard ran earlier, state might have changed)
+                      if (successDanceNode?.scene?.type !== 'success-dance') {
+                        debug.log('⚠️ No longer on success-dance scene (already navigated?), skipping cleanup');
+                        return;
+                      }
+
+                      debug.log('➡️  Attempting to advance from success-dance:', {
+                        successDanceNodeId,
+                        sceneType: successDanceNode?.scene?.type,
+                        currentPhase: successDanceNode?.phase,
+                        phaseIndex: successDanceNode?.phaseIndex,
+                        phaseSteps: successDanceNode?.phaseSteps,
+                        nextId: successDanceNode?.nextId,
+                        prevId: successDanceNode?.prevId,
+                        nextNodeExists: successDanceNode?.nextId ? !!store.graph.byId[successDanceNode.nextId] : false,
+                        nextNodeStatus: successDanceNode?.nextId ? store.graph.byId[successDanceNode.nextId]?.status : null,
+                      });
+
+                      // Attempt navigation (guard already verified next node exists and is active)
+                      store.advance('forward');
+
+                      // VERIFY: Ensure we actually moved away from success-dance before deletion
+                      const newCurrentId = store.currentId;
+                      if (newCurrentId === successDanceNodeId) {
+                        debug.error('❌ FAILED to navigate away from success-dance before deletion!', {
+                          successDanceNodeId,
+                          currentId: newCurrentId,
+                          stillOnSuccessDance: store.graph.byId[newCurrentId]?.scene?.type === 'success-dance',
+                          nextNode: successDanceNode?.nextId ? store.graph.byId[successDanceNode.nextId] : null
+                        });
+                        return; // Don't delete if we couldn't navigate away - prevents currentId reassignment
+                      }
+
+                      debug.log('✅ Verified navigation away from success-dance - safe to delete:', {
+                        oldCurrentId: successDanceNodeId,
+                        newCurrentId: newCurrentId,
+                        newCurrentNode: store.graph.byId[newCurrentId || '']?.scene?.type
+                      });
+
+                      // Now delete the success-dance scene
+                      // Since currentId has moved forward, deletion won't affect current position
+                      debug.log('🗑️  Deleting success-dance scene:', successDanceNodeId);
+                      deleteNode(successDanceNodeId);
+                    }
+                  },
+                ],
+                target: '#navigation.scene.navigating',
+              },
+              {
+                // Fallback: If we can't navigate (no next node), stay in answerRight state
+                // This keeps the success-dance visible until user manually scrolls or new content appears
+                guard: ({ event }) => event.videoType === 'success-dance',
+                actions: ({ event }) => {
+                  debug.log('⚠️ Success-dance complete but cannot navigate forward - staying on success-dance', {
+                    videoType: event.videoType
+                  });
+                },
+                // No target - stay in current state (answerRight)
+              },
+            ],
           },
         },
 
@@ -940,7 +1293,7 @@ export const navigationMachine = setup({
          */
         answerWrong: {
           entry: [
-            () => console.log('[NavigationMachine] 😞 Entered answerWrong - fail animation'),
+            () => debug.log('😞 Entered answerWrong - fail animation'),
             () => {
               // Update current scene (question scene) to answer-wrong phase for animation
               const nodeId = getCurrentNodeId();
@@ -954,17 +1307,17 @@ export const navigationMachine = setup({
           on: {
             // Block navigation during fail animation
             SCROLL_DOWN_STEP: {
-              actions: () => console.log('[NavigationMachine] ⛔ SCROLL blocked during fail animation'),
+              actions: () => debug.log('⛔ SCROLL blocked during fail animation'),
             },
             SCROLL_UP_STEP: {
-              actions: () => console.log('[NavigationMachine] ⛔ SCROLL blocked during fail animation'),
+              actions: () => debug.log('⛔ SCROLL blocked during fail animation'),
             },
             // When fail-dance animation completes, mark video as complete
             VIDEO_COMPLETE: {
               actions: [
                 ({ event }) => {
                   if (event.videoType === 'fail-dance') {
-                    console.log('[NavigationMachine] 🎬 Fail-dance video complete');
+                    debug.log('🎬 Fail-dance video complete');
                   }
                 },
                 'setFailVideoComplete',
@@ -976,19 +1329,19 @@ export const navigationMachine = setup({
             FEEDBACK_RECEIVED: {
               actions: [
                 ({ event }) => {
-                  console.log('[NavigationMachine] 💬 Feedback received:', event.feedbackText.substring(0, 100) + '...');
+                  debug.log('💬 Feedback received:', event.feedbackText.substring(0, 100) + '...');
 
                   // Get the question node to extract scene context
                   const questionNodeId = event.questionNodeId;
                   if (!questionNodeId) {
-                    console.error('[NavigationMachine] No questionNodeId provided with feedback');
+                    debug.error('No questionNodeId provided with feedback');
                     return;
                   }
 
                   const store = useNavigationStore.getState();
                   const questionNode = store.graph.byId[questionNodeId];
                   if (!questionNode?.scene) {
-                    console.error('[NavigationMachine] Question node not found:', questionNodeId);
+                    debug.error('Question node not found:', questionNodeId);
                     return;
                   }
 
@@ -1008,19 +1361,19 @@ export const navigationMachine = setup({
                     rightCharacter
                   );
 
-                  console.log('[NavigationMachine] Creating feedback scene with text:', event.feedbackText.substring(0, 50));
+                  debug.log('Creating feedback scene with text:', event.feedbackText.substring(0, 50));
 
                   // Get current node (should be fail-dance scene)
                   const currentNodeId = store.currentId;
                   if (!currentNodeId) {
-                    console.error('[NavigationMachine] No current node ID');
+                    debug.error('No current node ID');
                     return;
                   }
 
                   // Insert feedback scene after current fail-dance scene
                   insertSceneNodes(currentNodeId, feedbackScene);
 
-                  console.log('[NavigationMachine] ✅ Feedback scene created');
+                  debug.log('✅ Feedback scene created');
                 },
                 'setFeedbackReceived',
               ],
@@ -1033,7 +1386,7 @@ export const navigationMachine = setup({
             guard: 'bothFailConditionsMet',
             actions: [
               () => {
-                console.log('[NavigationMachine] ✅ Both conditions met - navigating to feedback scene');
+                debug.log('✅ Both conditions met - navigating to feedback scene');
 
                 const store = useNavigationStore.getState();
 
@@ -1041,13 +1394,13 @@ export const navigationMachine = setup({
                 const failDanceNodeId = store.currentId;
 
                 // Navigate forward to the feedback scene that was inserted
-                console.log('[NavigationMachine] ➡️  Advancing to feedback scene');
+                debug.log('➡️  Advancing to feedback scene');
                 store.advance('forward');
 
                 // Delete the fail-dance scene now that we've navigated past it
                 // This keeps the graph clean - fail-dance is just a temporary animation
                 if (failDanceNodeId) {
-                  console.log('[NavigationMachine] 🗑️  Deleting fail-dance scene:', failDanceNodeId);
+                  debug.log('🗑️  Deleting fail-dance scene:', failDanceNodeId);
                   deleteNode(failDanceNodeId);
                 }
               }
@@ -1057,14 +1410,33 @@ export const navigationMachine = setup({
         },
 
         /**
+         * DEFAULT BEHAVIOR
+         * For valid phases that just need standard scroll-through behavior
+         * (e.g., image_only, caption, text scenes)
+         * No special logic needed - just allow navigation
+         */
+        defaultBehavior: {
+          on: {
+            SCROLL_DOWN_STEP: {
+              actions: 'goNext',
+              target: '#navigation.scene.route',
+            },
+            SCROLL_UP_STEP: {
+              actions: 'goPrev',
+              target: '#navigation.scene.route',
+            },
+          },
+        },
+
+        /**
          * UNKNOWN phase (safety net)
-         * Fallback for phases that don't have explicit states
+         * Fallback for truly unexpected phases that shouldn't exist
          */
         unknown: {
           entry: () => {
             const node = useNavigationStore.getState().getCurrentNode();
             const phase = useNavigationStore.getState().getCurrentPhase();
-            console.warn('[NavigationMachine] Unknown phase:', phase, '(scene type:', node?.scene?.type + ')');
+            debug.log('Unknown phase:', phase, '(scene type:', node?.scene?.type + ')');
           },
           on: {
             // Fallback: allow scrolling through unknown scenes
