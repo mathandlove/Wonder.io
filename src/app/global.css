@@ -1,3 +1,6 @@
+/* Tailwind CSS v4 import */
+@import "tailwindcss";
+
 /* Global CSS reset to remove browser defaults */
 * {
   margin: 0;
@@ -13,7 +16,7 @@ body {
   height: 100vh;
 }
 
-#root {
+#root, #editor-root {
   margin: 0;
   padding: 0;
   width: 100vw;

@@ -15,4 +15,12 @@ export default defineConfig({
       '@stories': path.resolve(__dirname, './public/stories'),
     },
   },
+  build: {
+    rollupOptions: {
+      input: {
+        main: path.resolve(__dirname, 'index.html'),
+        editor: path.resolve(__dirname, 'editor.html'),
+      },
+    },
+  },
 })
