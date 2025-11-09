@@ -3,7 +3,17 @@
   "storyId": "leo-monster-hunter-001",
   "scenes": [
 
- 
+      {"type":"clueImage",
+      "clueDescriptions":[
+        {"hotspot":"Hair",
+        "dialog":"A bowl of hair. Why would a baker have hair?"},
+        {"hotspot":"Crumbs",
+        "dialog":"That's not dirt on the ground. I take a finger and lick it. Yes it tastes quite sugary with a strong cinnamon flavor."},
+                {"hotspot":"Potion",
+        "dialog":"This is a witch's potion. I should be"},
+      ]
+
+      },
       
       {
       "type": "character-flow",
