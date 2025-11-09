@@ -1,0 +1,322 @@
+/**
+ * Interactive Map Component
+ *
+ * Displays an image with overlay hotspots that can be drawn using lasso selection.
+ * Supports visual states (colored, glimmer) for highlighting selected regions.
+ */
+import React, { useState, useRef, useEffect } from 'react';
+import LassoSelection from './LassoSelection';
+import type { Hotspot, HotspotState } from '@shared/types/hotspot';
+import { calculateImageBounds, pointsToPixels } from '@shared/utils/coordinateUtils';
+
+interface InteractiveMapProps {
+  mapImage: string;
+  mapAlt: string;
+  hotspots: Hotspot[];
+  coloredMapImage?: string;
+  activeTool?: string | null;
+  onHotspotCreated?: (hotspot: Partial<Hotspot>) => void;
+  onHotspotHover?: (hotspotId: string | null) => void;
+  hoveredHotspot?: string | null;
+}
+
+const InteractiveMap: React.FC<InteractiveMapProps> = ({
+  mapImage,
+  mapAlt,
+  hotspots,
+  coloredMapImage,
+  activeTool,
+  onHotspotCreated,
+  onHotspotHover,
+  hoveredHotspot
+}) => {
+  const [hotspotStates, setHotspotStates] = useState<Map<string, HotspotState>>(new Map());
+  const [imageDimensions, setImageDimensions] = useState({ width: 0, height: 0 });
+  const [imageBounds, setImageBounds] = useState({ width: 0, height: 0, left: 0, top: 0 });
+  const [naturalDimensions, setNaturalDimensions] = useState({ width: 0, height: 0 });
+  const imgRef = useRef<HTMLImageElement>(null);
+  const containerRef = useRef<HTMLDivElement>(null);
+  const imageWrapperRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const updateDimensions = () => {
+      if (imgRef.current && containerRef.current) {
+        const natural = {
+          width: imgRef.current.naturalWidth,
+          height: imgRef.current.naturalHeight
+        };
+
+        const container = {
+          width: containerRef.current.offsetWidth,
+          height: containerRef.current.offsetHeight
+        };
+
+        // Calculate where the image will render with object-contain behavior
+        const bounds = calculateImageBounds(
+          container.width,
+          container.height,
+          natural.width,
+          natural.height
+        );
+
+        setNaturalDimensions(natural);
+        setImageBounds(bounds);
+        setImageDimensions({ width: bounds.width, height: bounds.height });
+      }
+    };
+
+    updateDimensions();
+    window.addEventListener('resize', updateDimensions);
+    return () => window.removeEventListener('resize', updateDimensions);
+  }, [mapImage]);
+
+  const handleHotspotClick = (hotspot: Hotspot) => {
+    setHotspotStates(prev => {
+      const newMap = new Map(prev);
+      const currentState = newMap.get(hotspot.id) || 'none';
+
+      // Cycle through states: none → colored → glimmer → none
+      let nextState: HotspotState;
+      switch (currentState) {
+        case 'none':
+          nextState = 'colored';
+          break;
+        case 'colored':
+          nextState = 'glimmer';
+          break;
+        case 'glimmer':
+          nextState = 'none';
+          break;
+        default:
+          nextState = 'colored';
+      }
+
+      console.log(`Hotspot ${hotspot.id}: ${currentState} → ${nextState}`);
+      newMap.set(hotspot.id, nextState);
+
+      return newMap;
+    });
+  };
+
+  const handleLassoComplete = (points: { x: number; y: number }[]) => {
+    console.log('Lasso selection completed with points:', points);
+  };
+
+  return (
+    <div className={`w-full h-full flex items-center justify-center ${activeTool === 'lasso' ? 'cursor-crosshair' : ''}`}>
+      <div ref={containerRef} className="relative" style={{
+        width: '100%',
+        height: '100%',
+        maxWidth: '100%',
+        maxHeight: '100%'
+      }}>
+
+        {/* Image wrapper - positioned exactly where the image renders */}
+        <div
+          ref={imageWrapperRef}
+          className="absolute"
+          style={{
+            left: `${imageBounds.left}px`,
+            top: `${imageBounds.top}px`,
+            width: `${imageBounds.width}px`,
+            height: `${imageBounds.height}px`,
+            pointerEvents: 'none'
+          }}
+        >
+          {/* Base image */}
+          <img
+            ref={imgRef}
+            src={mapImage}
+            alt={mapAlt}
+            draggable={false}
+            style={{
+              width: '100%',
+              height: '100%',
+              display: 'block',
+              pointerEvents: 'none'
+            }}
+            onLoad={() => {
+              if (imgRef.current && containerRef.current) {
+                const natural = {
+                  width: imgRef.current.naturalWidth,
+                  height: imgRef.current.naturalHeight
+                };
+
+                const container = {
+                  width: containerRef.current.offsetWidth,
+                  height: containerRef.current.offsetHeight
+                };
+
+                const bounds = calculateImageBounds(
+                  container.width,
+                  container.height,
+                  natural.width,
+                  natural.height
+                );
+
+                setNaturalDimensions(natural);
+                setImageBounds(bounds);
+                setImageDimensions({ width: bounds.width, height: bounds.height });
+              }
+            }}
+          />
+        </div>
+
+        {/* Overlay sections - colored and glimmer - positioned within image wrapper */}
+        {imageBounds.width > 0 && hotspots.map((hotspot) => {
+          const state = hotspotStates.get(hotspot.id) || 'none';
+
+          if (state === 'none') return null;
+
+          // Create clipPath from lasso points (stored as percentages)
+          let clipPathValue = '';
+          if (hotspot.points && hotspot.points.length > 0) {
+            // Points are stored as percentages (0-100%), convert to pixel coordinates for rendering
+            const pixelPoints = pointsToPixels(
+              hotspot.points,
+              imageBounds.width,
+              imageBounds.height
+            );
+            const polygonPoints = pixelPoints.map(point =>
+              `${point.x}px ${point.y}px`
+            ).join(', ');
+            clipPathValue = `polygon(${polygonPoints})`;
+          } else {
+            // Fallback to rectangle if no points available (using percentages)
+            clipPathValue = `polygon(${hotspot.x}% ${hotspot.y}%, ${hotspot.x + hotspot.width}% ${hotspot.y}%, ${hotspot.x + hotspot.width}% ${hotspot.y + hotspot.height}%, ${hotspot.x}% ${hotspot.y + hotspot.height}%)`;
+          }
+
+          return (
+            <div
+              key={`overlay-${hotspot.id}`}
+              className="absolute pointer-events-none"
+              style={{
+                left: `${imageBounds.left}px`,
+                top: `${imageBounds.top}px`,
+                width: `${imageBounds.width}px`,
+                height: `${imageBounds.height}px`,
+                zIndex: 10,
+                clipPath: clipPathValue,
+              }}
+            >
+              {state === 'colored' && coloredMapImage && (
+                <img
+                  src={coloredMapImage}
+                  alt=""
+                  className="absolute"
+                  draggable={false}
+                  style={{
+                    left: `0px`,
+                    top: `0px`,
+                    width: `${imageBounds.width}px`,
+                    height: `${imageBounds.height}px`,
+                  }}
+                />
+              )}
+              {state === 'glimmer' && (
+                <div
+                  className="absolute"
+                  style={{
+                    left: `0px`,
+                    top: `0px`,
+                    width: `${imageBounds.width}px`,
+                    height: `${imageBounds.height}px`,
+                    background: `linear-gradient(25deg, transparent 0%, transparent 37.5%, gold 50%, transparent 62.5%, transparent 100%)`,
+                    backgroundSize: '300% 300%',
+                    animation: 'diagonal-sweep 3s ease-in-out infinite',
+                  }}
+                />
+              )}
+            </div>
+          );
+        })}
+
+        {/* Config Highlights - Show hotspot outlines when config tool is active */}
+        {(activeTool === 'config-highlights' || activeTool === 'lasso') && imageBounds.width > 0 && (
+          <svg
+            style={{
+              position: 'absolute',
+              left: imageBounds.left,
+              top: imageBounds.top,
+              width: imageBounds.width,
+              height: imageBounds.height,
+              zIndex: 50,
+              pointerEvents: 'auto'
+            }}
+          >
+            {hotspots.map((hotspot) => {
+              if (!hotspot.points || hotspot.points.length === 0) return null;
+
+              // Convert percentage points to pixel coordinates for rendering
+              const pixelPoints = pointsToPixels(
+                hotspot.points,
+                imageBounds.width,
+                imageBounds.height
+              );
+
+              const pathData = pixelPoints.map((point, index) =>
+                `${index === 0 ? 'M' : 'L'} ${point.x} ${point.y}`
+              ).join(' ') + ' Z';
+
+              const isHovered = hoveredHotspot === hotspot.id;
+
+              return (
+                <path
+                  key={hotspot.id}
+                  d={pathData}
+                  fill={isHovered ? "rgba(34, 197, 94, 0.2)" : "rgba(59, 130, 246, 0.2)"}
+                  stroke={isHovered ? "#22c55e" : "#3b82f6"}
+                  strokeWidth="2"
+                  strokeDasharray="5,5"
+                  opacity="0.8"
+                  style={{ cursor: 'pointer', pointerEvents: 'auto' }}
+                  onMouseEnter={(e) => {
+                    e.stopPropagation();
+                    onHotspotHover?.(hotspot.id);
+                  }}
+                  onMouseLeave={(e) => {
+                    e.stopPropagation();
+                    onHotspotHover?.(null);
+                  }}
+                  onClick={() => handleHotspotClick(hotspot)}
+                />
+              );
+            })}
+          </svg>
+        )}
+
+        {/* Lasso Selection Tool - positioned on top layer - only active when explicitly requested */}
+        {activeTool === 'lasso' && imageBounds.width > 0 && (
+          <div style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', zIndex: 100, pointerEvents: 'auto' }}>
+            <LassoSelection
+              isActive={true}
+              containerRef={containerRef}
+              imageRef={imgRef}
+              imageBounds={imageBounds}
+              onSelectionComplete={handleLassoComplete}
+              onHotspotCreated={onHotspotCreated}
+              hotspots={hotspots}
+            />
+          </div>
+        )}
+      </div>
+
+      {/* Add CSS for glimmer animation */}
+      <style>{`
+        @keyframes diagonal-sweep {
+          0% {
+            background-position: 0% 0%;
+          }
+          50% {
+            background-position: 100% 100%;
+          }
+          100% {
+            background-position: 0% 0%;
+          }
+        }
+      `}</style>
+    </div>
+  );
+};
+
+export default InteractiveMap;
