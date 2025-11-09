@@ -15,6 +15,7 @@ export interface ConversationMetadata {
   characterDescription?: string; // For input items
   questText?: string; // For quest items
   successAnswer: string; // Success phrase for both
+  incorrectAnswer?: string[]; // Optional array of incorrect facts to penalize
 }
 
 export interface ConversationMetadataMap {

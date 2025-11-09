@@ -58,13 +58,13 @@ export type AnswerValidatedEvent = {
 
 /**
  * VIDEO_COMPLETE
- * Emitted when: Video/animation playback finishes (e.g., success/fail dance)
+ * Emitted when: Video/animation playback finishes (e.g., success/fail dance, answer-right stamp)
  * Payload: Which video/animation completed
  */
 export type VideoCompleteEvent = {
   type: 'VIDEO_COMPLETE';
   nodeId: string;
-  videoType: 'success-dance' | 'fail-dance' | 'celebration';
+  videoType: 'success-dance' | 'fail-dance' | 'celebration' | 'answer-right';
 };
 
 /**

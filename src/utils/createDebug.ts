@@ -240,12 +240,13 @@ export const debugUtils = {
    * Show only XState machine state transitions and changes
    */
   xstateOnly() {
-    const xstatePattern = 'wonder:navigation:machine,wonder:scenes:dialogue';
+    const xstatePattern = 'wonder:navigation:machine,wonder:scenes:dialogue,wonder:ai:*';
     localStorage.setItem('debug', xstatePattern);
     console.log('✅ Debug set to XState-only mode:');
     console.log('   ✓ Navigation machine state transitions');
     console.log('   ✓ Dialogue scene machine events');
-    console.log('   ✗ All other debug logs (AI, recording, store, graph, etc.)');
+    console.log('   ✓ AI service and validation logs');
+    console.log('   ✗ All other debug logs (recording, store, graph, etc.)');
     console.log('🔄 Refresh the page to apply changes');
   },
 };
@@ -276,7 +277,7 @@ if (typeof window !== 'undefined' && import.meta.env.DEV) {
   const currentDebug = localStorage.getItem('debug');
   if (!currentDebug) {
     const modeMap = {
-      xstate: 'wonder:navigation:machine,wonder:scenes:dialogue',
+      xstate: 'wonder:navigation:machine,wonder:scenes:dialogue,wonder:ai:*',
       recommended: 'wonder:*,-wonder:recording:transcripts,-wonder:scenes:renderer',
       all: 'wonder:*',
       none: null,

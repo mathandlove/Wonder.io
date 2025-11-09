@@ -117,11 +117,20 @@ export function RecordingOrchestrator() {
   }, []);
 
   // Callback for when answer-right video completes
-  // NEW: Just emit event - machine handles success-dance creation
+  // Emit VIDEO_COMPLETE event - machine will handle success-dance creation
   const handleAnswerRightVideoComplete = React.useCallback(() => {
-    debug.log('🎉 Answer-right video complete - emitting event');
-    // Machine will handle success-dance creation, insertion, and navigation
-    // No component logic needed!
+    const answerRightNodeId = getCurrentNodeId();
+    debug.log('🎉 Answer-right video complete - emitting VIDEO_COMPLETE event');
+
+    if (answerRightNodeId) {
+      navigationBus.emit({
+        type: 'VIDEO_COMPLETE',
+        nodeId: answerRightNodeId,
+        videoType: 'answer-right'
+      });
+    } else {
+      debug.error('No current node ID for answer-right video completion');
+    }
   }, []);
 
   // Effect: Auto-transition from answer-wrong to fail-dance scene, triggered 1 second AFTER video ends

@@ -1,7 +1,7 @@
 /**
  * RecordPanel - Pure presentational recording UI
  *
- * Displays: Stop button (above), Quest label, Ask button, Hint button, Answer button, Toast notifications
+ * Displays: Quest label, Ask button, Hint button, Answer button, Toast notifications, Video feedback
  * All logic handled by RecordPanelOrchestrator
  */
 import React from 'react';
@@ -39,29 +39,9 @@ export const RecordPanel: React.FC<RecordPanelProps> = ({
 }) => {
   const { toast, hideToast } = useToast();
   const { state: recordingState } = useRecording();
-  const [showStamp, setShowStamp] = React.useState(false);
-  const [videoComplete, setVideoComplete] = React.useState(false);
-  const [successDanceHidePanel, setSuccessDanceHidePanel] = React.useState(false);
-  const videoRef = React.useRef<HTMLVideoElement>(null);
   const containerRef = React.useRef<HTMLDivElement>(null);
 
-  // Determine visual state based on dialogueState (must be before effects that use these)
-  // - basic: Panel hidden below screen
-  // - quest-showing: Quest offered, panel visible with Accept button
-  // - input-showInput: Panel shown, all buttons enabled and ready
-  // - input-recording: Recording active, Stop button visible, Ask button appears pressed
-  // - input-processing: Processing audio after stop, all buttons disabled
-  // - show-hint: Hint displayed, Hint button appears pressed
-  // - record-answer: Recording answer, Stop button visible, Answer button appears pressed
-  // - answer-processing: Processing answer audio after stop, show answer text with all buttons disabled
-  // - answer-waiting: Waiting for answer validation, show answer text with all buttons disabled
-  // - answer-right: Correct answer, show answer text centered, no stop button
-  // - answer-wrong: Wrong answer, show answer text with error indication
-  // - waiting-for-finalize: Waiting for final transcripts from STT (Ask)
-  // - waiting-for-answer-finalize: Waiting for final transcripts from STT (Answer)
-  // - ai-waiting: All buttons disabled (waiting for AI response)
-  // - success-dance: Success celebration animation, show answer text below screen (hidden position)
-  // - fail-dance: Fail animation, show answer text with answer-wrong styling (red glow, seal visible)
+  // Determine visual state based on dialogueState
   const isBasic = dialogueState === 'basic';
   const isInputBasic = dialogueState === 'input-basic';
   const isQuestOffer = dialogueState === 'quest-showing';
@@ -79,78 +59,8 @@ export const RecordPanel: React.FC<RecordPanelProps> = ({
   const isFailDance = dialogueState === 'fail-dance';
   const isWaiting = dialogueState === 'ai-waiting' || isWaitingForFinalize || isWaitingForAnswerFinalize || isAnswerWaiting || isProcessing || isAnswerProcessing;
 
-
-
   // Hidden state (basic or input-basic) should use quest-offer visual styling
   const useQuestOfferStyling = isQuestOffer || isBasic || isInputBasic;
-
-  // Reset stamp visibility when leaving answer feedback states
-  React.useEffect(() => {
-    if (!isAnswerWaiting && !isAnswerRight && !isAnswerWrong && !isFailDance) {
-      setShowStamp(false);
-      setVideoComplete(false);
-    }
-  }, [isAnswerWaiting, isAnswerRight, isAnswerWrong, isFailDance]);
-
-  // Handle success-dance panel animation - hide after 0.5 seconds
-  // Use ref to track if we've already started the animation to prevent resets on re-renders
-  const hasStartedSuccessDanceRef = React.useRef(false);
-
-  React.useEffect(() => {
-    if (isSuccessDance) {
-      // Only start the animation sequence once
-      if (!hasStartedSuccessDanceRef.current) {
-        hasStartedSuccessDanceRef.current = true;
-
-        // Panel should already be centered from answer-right state
-        // Don't reset! Just wait and then hide
-        const timer = setTimeout(() => {
-
-          // Use requestAnimationFrame to ensure this happens in the next frame
-          requestAnimationFrame(() => {
-            setSuccessDanceHidePanel(true);
-
-  
-          });
-        }, 500);
-
-        return () => clearTimeout(timer);
-      }
-    } else {
-      // Reset when leaving success-dance
-      hasStartedSuccessDanceRef.current = false;
-      setSuccessDanceHidePanel(false);
-    }
-  }, [isSuccessDance]);
-
-  // Handle video playback with delay for answer-waiting
-  React.useEffect(() => {
-    if (isAnswerWaiting) {
-      // Wait 500ms before starting video in answer-waiting state
-      const timer = setTimeout(() => {
-        if (videoRef.current) {
-          videoRef.current.playbackRate = 0.7; // Play at 70% speed
-          videoRef.current.play();
-        }
-      }, 500);
-      return () => clearTimeout(timer);
-    } else if ((isAnswerRight || isAnswerWrong) && !videoComplete) {
-      // Play immediately for right/wrong states, but only if video hasn't already completed
-      // This prevents replay when transitioning to success-dance (which uses answer-right styling)
-      if (videoRef.current) {
-        videoRef.current.playbackRate = 0.7; // Play at 70% speed
-        videoRef.current.play();
-      }
-    } else if (isFailDance) {
-      // For fail-dance, show stamp immediately without video
-      setShowStamp(true);
-      setVideoComplete(true);
-    } else if (isSuccessDance) {
-      // For success-dance, show stamp immediately without video (same as fail-dance)
-      setShowStamp(true);
-      setVideoComplete(true);
-    }
-  }, [isAnswerWaiting, isAnswerRight, isAnswerWrong, isFailDance, isSuccessDance, videoComplete]);
 
   const handleHintClick = () => {
     if (disabled) return;
@@ -163,6 +73,7 @@ export const RecordPanel: React.FC<RecordPanelProps> = ({
       onAskClick();
     }
   };
+
   // Apply 'recording' class only when actively recording (triggers slide-down animation)
   const isRecording = isAskRecording || isAnswerRecording;
 
@@ -170,9 +81,9 @@ export const RecordPanel: React.FC<RecordPanelProps> = ({
   // - When Ask is recording: Hint and Answer are disabled, but Ask is enabled (so user can stop)
   // - When Answer is recording: Ask and Hint are disabled, but Answer is enabled (so user can stop)
   // - When waiting: all buttons disabled
-  const askButtonDisabled = isAnswerRecording || isWaiting || isAnswerWaiting || disabled; // Disabled when Answer recording or waiting
-  const hintButtonDisabled = isRecording || isWaiting || isAnswerWaiting || disabled; // Disabled when any recording or waiting
-  const answerButtonDisabled = isAskRecording || isWaiting || isAnswerWaiting || disabled; // Disabled when Ask recording or waiting
+  const askButtonDisabled = isAnswerRecording || isWaiting || isAnswerWaiting || disabled;
+  const hintButtonDisabled = isRecording || isWaiting || isAnswerWaiting || disabled;
+  const answerButtonDisabled = isAskRecording || isWaiting || isAnswerWaiting || disabled;
 
   // Show answer text for answer recording and all answer-related states (including success-dance and fail-dance)
   const showAnswerText = isAnswerRecording || isAnswerProcessing || isWaitingForAnswerFinalize || isAnswerWaiting || isAnswerRight || isAnswerWrong || isSuccessDance || isFailDance;
@@ -180,42 +91,25 @@ export const RecordPanel: React.FC<RecordPanelProps> = ({
   // Determine which positioning class to apply based on state
   const getContainerClass = () => {
     // Centered states (important moments)
-    // For answer-right: only show green glow after stamp appears, otherwise show golden glow
-    if (isAnswerRight) return videoComplete ? 'answer-right-centered' : 'quest-offer-centered';
-    // For success-dance: start centered, then animate down after 0.5 seconds
-    // Keep answer-right-centered class for styling, add hidden for positioning after delay
-    if (isSuccessDance) {
-      const className = successDanceHidePanel ? 'answer-right-centered hidden' : 'answer-right-centered';
-
-      return className;
-    }
-    // For answer-wrong: only show red glow after stamp appears, otherwise show golden glow
-    if (isAnswerWrong) return videoComplete ? 'answer-wrong-centered' : 'quest-offer-centered';
+    if (isAnswerRight) return 'answer-right-centered';
+    if (isSuccessDance) return 'answer-right-centered hidden';
+    if (isAnswerWrong) return 'answer-wrong-centered';
     if (isAnswerWaiting) return 'quest-offer-centered'; // Golden glow for waiting
     if (isQuestOffer) return 'quest-offer-centered'; // Golden glow for quest
 
     // Hidden state (completely off-screen) - includes basic, input-basic, and fail-dance
-    // For fail-dance: position off-screen but keep all answer-wrong styling (seal, text, red glow)
     if (isBasic || isInputBasic || isFailDance) return 'hidden';
 
     // Rest position - bottom anchored for interactive states
-    // (input-showInput, input-recording, show-hint, record-answer, ai-waiting)
     return 'bottom-anchored';
   };
 
-
   // Allow scroll events to pass through to the underlying scene scroll container
-  // This is needed because the panel has pointer-events: auto for button clicks,
-  // but we still want wheel/scroll events to bubble up to scroll the scenes
   const handleWheel = (e: React.WheelEvent) => {
-    // Re-dispatch the wheel event to the parent scroll container
-    // This allows users to scroll scenes even when the cursor is over the panel
     const scrollContainer = document.querySelector('.story-scroll');
     if (scrollContainer && e.target instanceof HTMLElement) {
-      // Only pass through if not scrolling within a scrollable element in the panel
       const isScrollableContent = e.target.scrollHeight > e.target.clientHeight;
       if (!isScrollableContent) {
-        // Create and dispatch a new wheel event to the scroll container
         const wheelEvent = new WheelEvent('wheel', {
           deltaX: e.deltaX,
           deltaY: e.deltaY,
@@ -350,55 +244,119 @@ export const RecordPanel: React.FC<RecordPanelProps> = ({
         onHide={hideToast}
       />
 
-      {/* Hand stamp video and seal for answer-waiting, answer-right, answer-wrong, success-dance, and fail-dance states */}
+      {/* Hand stamp video and seal - Orchestrator controls playback via CSS classes */}
       {(isAnswerWaiting || isAnswerRight || isAnswerWrong || isSuccessDance || isFailDance) && (
-        <div className="answer-stamp-container">
-          <div className={`answer-seal-stamp ${showStamp ? 'stamp-visible' : ''} ${isAnswerWaiting ? 'seal-hidden' : ''}`}>
-            <img
-              src={(isAnswerWrong || isFailDance) ? '/VisualAssets/angrySeal.png' : '/VisualAssets/happySeal.png'}
-              alt="Answer Seal"
-              className="answer-seal-image"
-            />
-          </div>
-          <video
-            ref={videoRef}
-            className="answer-hand-stamp-video"
-            src="/VisualAssets/hand-stamp.webm"
-            muted
-            playsInline
-            onTimeUpdate={(e) => {
-              const video = e.target as HTMLVideoElement;
-              // At halfway point
-              if (video.currentTime >= video.duration / 2) {
-                // Show seal for right/wrong states
-                if (!showStamp && (isAnswerRight || isAnswerWrong)) {
-                  setShowStamp(true);
-                  // Trigger color glow transition when stamp appears (synchronized timing)
-                  setVideoComplete(true);
-                  // For right/wrong, let video continue playing (no pause)
-                }
-                // Pause only for answer-waiting state
-                if (isAnswerWaiting && !video.paused) {
-                  video.pause();
-                }
-              }
-            }}
-            onEnded={(e) => {
-              // Mark video as complete (triggers green/red glow for answer-right/wrong)
-              setVideoComplete(true);
-              // Hide video after it ends
-              (e.target as HTMLVideoElement).style.display = 'none';
-              // Notify orchestrator that video has completed
-              if (isAnswerWrong && onAnswerWrongVideoComplete) {
-                onAnswerWrongVideoComplete();
-              }
-              if (isAnswerRight && onAnswerRightVideoComplete) {
-                onAnswerRightVideoComplete();
-              }
-            }}
-          />
-        </div>
+        <VideoFeedback
+          dialogueState={dialogueState}
+          onAnswerWrongVideoComplete={onAnswerWrongVideoComplete}
+          onAnswerRightVideoComplete={onAnswerRightVideoComplete}
+        />
       )}
+    </div>
+  );
+};
+
+/**
+ * VideoFeedback - Handles video playback and seal display
+ * Extracted as a separate component to manage its own lifecycle
+ */
+interface VideoFeedbackProps {
+  dialogueState: string;
+  onAnswerWrongVideoComplete?: () => void;
+  onAnswerRightVideoComplete?: () => void;
+}
+
+const VideoFeedback: React.FC<VideoFeedbackProps> = ({
+  dialogueState,
+  onAnswerWrongVideoComplete,
+  onAnswerRightVideoComplete
+}) => {
+  const videoRef = React.useRef<HTMLVideoElement>(null);
+  const [showStamp, setShowStamp] = React.useState(false);
+  const [videoComplete, setVideoComplete] = React.useState(false);
+
+  const isAnswerWaiting = dialogueState === 'answer-waiting';
+  const isAnswerRight = dialogueState === 'answer-right';
+  const isAnswerWrong = dialogueState === 'answer-wrong';
+  const isSuccessDance = dialogueState === 'success-dance';
+  const isFailDance = dialogueState === 'fail-dance';
+
+  // Reset state when leaving answer feedback states
+  React.useEffect(() => {
+    if (!isAnswerWaiting && !isAnswerRight && !isAnswerWrong && !isFailDance) {
+      setShowStamp(false);
+      setVideoComplete(false);
+    }
+  }, [isAnswerWaiting, isAnswerRight, isAnswerWrong, isFailDance]);
+
+  // Handle video playback
+  React.useEffect(() => {
+    if (isAnswerWaiting) {
+      // Wait 500ms before starting video in answer-waiting state
+      const timer = setTimeout(() => {
+        if (videoRef.current) {
+          videoRef.current.playbackRate = 0.7;
+          videoRef.current.play();
+        }
+      }, 500);
+      return () => clearTimeout(timer);
+    } else if ((isAnswerRight || isAnswerWrong) && !videoComplete) {
+      // Play immediately for right/wrong states
+      if (videoRef.current) {
+        videoRef.current.playbackRate = 0.7;
+        videoRef.current.play();
+      }
+    } else if (isFailDance || isSuccessDance) {
+      // For fail-dance and success-dance, show stamp immediately without video
+      setShowStamp(true);
+      setVideoComplete(true);
+    }
+  }, [isAnswerWaiting, isAnswerRight, isAnswerWrong, isFailDance, isSuccessDance, videoComplete]);
+
+  return (
+    <div className="answer-stamp-container">
+      <div className={`answer-seal-stamp ${showStamp ? 'stamp-visible' : ''} ${isAnswerWaiting ? 'seal-hidden' : ''}`}>
+        <img
+          src={(isAnswerWrong || isFailDance) ? '/VisualAssets/angrySeal.png' : '/VisualAssets/happySeal.png'}
+          alt="Answer Seal"
+          className="answer-seal-image"
+        />
+      </div>
+      <video
+        ref={videoRef}
+        className="answer-hand-stamp-video"
+        src="/VisualAssets/hand-stamp.webm"
+        muted
+        playsInline
+        onTimeUpdate={(e) => {
+          const video = e.target as HTMLVideoElement;
+          // At halfway point
+          if (video.currentTime >= video.duration / 2) {
+            // Show seal for right/wrong states
+            if (!showStamp && (isAnswerRight || isAnswerWrong)) {
+              setShowStamp(true);
+              setVideoComplete(true);
+            }
+            // Pause only for answer-waiting state
+            if (isAnswerWaiting && !video.paused) {
+              video.pause();
+            }
+          }
+        }}
+        onEnded={(e) => {
+          // Mark video as complete
+          setVideoComplete(true);
+          // Hide video after it ends
+          (e.target as HTMLVideoElement).style.display = 'none';
+          // Notify orchestrator that video has completed
+          if (isAnswerWrong && onAnswerWrongVideoComplete) {
+            onAnswerWrongVideoComplete();
+          }
+          if (isAnswerRight && onAnswerRightVideoComplete) {
+            onAnswerRightVideoComplete();
+          }
+        }}
+      />
     </div>
   );
 };

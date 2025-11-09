@@ -19,6 +19,7 @@ type RawFlowItem = {
   type?: "input" | "quest"; // Marks this as metadata item
   CharacterDescription?: string; // AI chat context (for input)
   successAnswer?: string; // Expected phrase for quest completion
+  incorrectAnswer?: string[]; // Optional array of incorrect facts to penalize
   "left-character"?: string;
   "right-character"?: string;
 };
@@ -73,7 +74,8 @@ function flattenScenes(rawScenes: RawScene[]): FlattenResult {
         flowMetadata[conversationId] = {
           characterDescription: inputMetadataItem?.CharacterDescription,
           questText: questMetadataItem?.text,
-          successAnswer: (questMetadataItem?.successAnswer || inputMetadataItem?.successAnswer)!
+          successAnswer: (questMetadataItem?.successAnswer || inputMetadataItem?.successAnswer)!,
+          incorrectAnswer: questMetadataItem?.incorrectAnswer || inputMetadataItem?.incorrectAnswer
         };
       }
 

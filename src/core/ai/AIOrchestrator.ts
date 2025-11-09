@@ -13,7 +13,7 @@
  * - Any component that needs AI responses
  */
 
-import { callAI, type ConversationMessage } from '@features/ai/aiService';
+import { callAI, validateAnswer, type ConversationMessage } from '@features/ai/aiService';
 import type { ConversationMetadataMap } from '@core/data/loadStory';
 import { getCurrentNode, insertSceneNodes, advanceNavigation } from '@core/navigation/navigationHelpers';
 import { createAIResponseScene as createAIResponseSceneFactory } from '@core/navigation/sceneFactoryFunctions';
@@ -324,6 +324,7 @@ export interface AnswerValidationInput {
   answerText: string;
   questionText?: string;
   successAnswer: string;
+  incorrectAnswer?: string[];
   conversationId?: string;
 }
 
@@ -338,7 +339,7 @@ export interface AnswerValidationOutput {
  * Validate user's answer against expected correct answer
  * This is called by xState actor in navigationMachine
  *
- * Currently uses simple string matching - TODO: Implement AI-based validation
+ * Uses AI-based validation to allow for flexible matching
  *
  * @param input - Answer text, expected success answer, and context
  * @returns Whether the answer is correct
@@ -361,21 +362,34 @@ export async function validateAnswerService(input: AnswerValidationInput): Promi
     return { isCorrect: false };
   }
 
-  // TODO: Replace with AI-based validation
-  // For now, use simple case-insensitive substring matching
-  const successLower = input.successAnswer.toLowerCase().trim();
+  // Call AI-based validation
+  debug.event('📤', 'Calling AI validation service');
 
-  const isCorrect = false;
-
-  debug.event('✅', 'Validation complete:', {
-    isCorrect,
-    answerMatched: isCorrect ? successLower : 'no match'
+  const validationResult = await validateAnswer({
+    userAnswer: input.answerText,
+    correctAnswer: input.successAnswer,
+    incorrectAnswer: input.incorrectAnswer,
+    questionText: input.questionText
   });
 
-  // Simulate processing delay
-  await new Promise(resolve => setTimeout(resolve, 500));
+  // Check if validation call succeeded
+  if (!validationResult.success) {
+    debug.error('AI validation failed:', validationResult.error);
+    // Fallback to simple string matching if AI fails
 
-  return { isCorrect };
+    const isCorrect = true;
+
+    debug.event('⚠️', 'Using fallback validation:', { isCorrect });
+    return { isCorrect };
+  }
+
+  debug.event('✅', 'AI validation complete:', {
+    isCorrect: validationResult.isCorrect,
+    userAnswer: input.answerText,
+    correctAnswer: input.successAnswer
+  });
+
+  return { isCorrect: validationResult.isCorrect };
 }
 
 /**

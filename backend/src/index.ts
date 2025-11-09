@@ -8,6 +8,7 @@ import { SelectionStore } from './store';
 import { Point } from './types';
 import { handleWhisperProxy } from './whisper-proxy-single'; // Using single-send approach
 import { handleAIChat } from './ai-conversation';
+import { handleAIValidation } from './ai-validation';
 
 const key = process.env.OPENAI_API_KEY;
 if (!key) throw new Error('Missing OPENAI_API_KEY');
@@ -162,6 +163,9 @@ app.delete('/api/hotspots/:id', async (req, res) => {
 
 // AI Chat route
 app.post('/api/ai/chat', handleAIChat);
+
+// AI Validation route
+app.post('/api/ai/validate', handleAIValidation);
 
 // Health check
 app.get('/api/health', (req, res) => {

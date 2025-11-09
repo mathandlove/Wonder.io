@@ -52,7 +52,7 @@ export const navigationMachine = setup({
     }),
     // Answer validation actor - validates user's answer
     validateAnswer: fromPromise(async ({ input }: {
-      input: { answerText: string; questionText?: string; successAnswer: string; conversationId?: string }
+      input: { answerText: string; questionText?: string; successAnswer: string; incorrectAnswer?: string[]; conversationId?: string }
     }) => {
       return await validateAnswerService(input);
     }),
@@ -909,31 +909,36 @@ export const navigationMachine = setup({
               const questionText = (scene as { questionText?: string })?.questionText;
               const conversationId = (scene as { conversationId?: string })?.conversationId;
 
-              // Get success answer from metadata
+              // Get success answer and incorrect answers from metadata
               const metadata = getConversationMetadata(conversationId);
               const successAnswer = metadata?.successAnswer || '';
+              const incorrectAnswer = metadata?.incorrectAnswer;
 
               debug.log('📥 Preparing validation input:', {
                 answerText: answerText?.substring(0, 50),
                 successAnswer,
+                incorrectAnswer,
                 conversationId,
                 hasAnswer: !!answerText,
-                hasSuccessAnswer: !!successAnswer
+                hasSuccessAnswer: !!successAnswer,
+                hasIncorrectAnswers: !!incorrectAnswer
               });
 
               return {
                 answerText: answerText || '',
                 questionText,
                 successAnswer,
+                incorrectAnswer,
                 conversationId
               };
             },
             onDone: [
               {
-                // If answer is correct, transition to creating success-dance
+                // If answer is correct, transition to answerRight to show video
+                // We'll wait for VIDEO_COMPLETE before creating success-dance
                 guard: ({ event }) => event.output.isCorrect,
-                target: 'creatingSuccessDance',
-                actions: () => debug.log('✅ Answer CORRECT → creating success-dance')
+                target: 'answerRight',
+                actions: () => debug.log('✅ Answer CORRECT → showing answer-right animation')
               },
               {
                 // If answer is wrong, START FEEDBACK GENERATION IMMEDIATELY (fire-and-forget)
@@ -1169,13 +1174,13 @@ export const navigationMachine = setup({
         },
 
         /**
-         * ANSWER RIGHT state (DEPRECATED - kept for fallback)
-         * User answered correctly - show success animation
-         * This state is now only used as a fallback if success-dance creation fails
+         * ANSWER RIGHT state
+         * User answered correctly - show answer-right animation (hand stamp video)
+         * Wait for video to complete before creating success-dance scene
          */
         answerRight: {
           entry: [
-            () => debug.log('🎉 Entered answerRight (fallback) - no success-dance'),
+            () => debug.log('🎉 Entered answerRight - showing hand stamp video'),
             () => {
               const nodeId = getCurrentNodeId();
               if (nodeId) useNavigationStore.getState().updateNodePhase(nodeId, 'answer-right');
@@ -1189,10 +1194,16 @@ export const navigationMachine = setup({
             SCROLL_UP_STEP: {
               actions: () => debug.log('⛔ SCROLL blocked during success animation'),
             },
-            // When success-dance animation completes, navigate forward and delete success-dance
+            // When answer-right video completes, create success-dance scene
             VIDEO_COMPLETE: [
               {
-                // Only transition to navigating if we successfully navigated away from success-dance
+                // Answer-right video completed - now create success-dance
+                guard: ({ event }) => event.videoType === 'answer-right',
+                target: 'creatingSuccessDance',
+                actions: () => debug.log('🎬 Answer-right video complete → creating success-dance')
+              },
+              {
+                // Success-dance video completed (legacy fallback path)
                 guard: ({ event }) => {
                   if (event.videoType !== 'success-dance') return false;
 
