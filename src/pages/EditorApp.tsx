@@ -18,6 +18,7 @@ const EditorApp: React.FC = () => {
   const [currentImage, setCurrentImage] = useState<string | null>(null);
   const [showImageSelector, setShowImageSelector] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
+  const [isGeneratingThumbnails, setIsGeneratingThumbnails] = useState(false);
 
   // Load hotspots from bundle when image changes
   useEffect(() => {
@@ -119,6 +120,33 @@ const EditorApp: React.FC = () => {
     setActiveTool(null);
   };
 
+  const handleGenerateThumbnails = async () => {
+    if (!currentImage) return;
+
+    setIsGeneratingThumbnails(true);
+    try {
+      const response = await fetch('http://localhost:3001/api/bundle/hotspots/generate-thumbnails', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ image: currentImage })
+      });
+
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.error || 'Failed to generate thumbnails');
+      }
+
+      const data = await response.json();
+      alert(`✅ Successfully generated ${data.count} thumbnail(s)!`);
+      console.log('Thumbnail generation result:', data);
+    } catch (err) {
+      console.error('Failed to generate thumbnails:', err);
+      alert(`❌ Error: ${err instanceof Error ? err.message : 'Failed to generate thumbnails'}`);
+    } finally {
+      setIsGeneratingThumbnails(false);
+    }
+  };
+
   return (
     <div className="h-screen w-screen bg-gray-100 flex overflow-hidden">
       {/* Left Toolbar */}
@@ -127,9 +155,11 @@ const EditorApp: React.FC = () => {
         onToolSelect={setActiveTool}
         onClearAll={handleClearAll}
         onChangeImage={() => setShowImageSelector(true)}
+        onGenerateThumbnails={handleGenerateThumbnails}
         hotspotCount={hotspots.length}
         currentImage={currentImage}
         isSaving={isSaving}
+        isGeneratingThumbnails={isGeneratingThumbnails}
       />
 
       {/* Config Highlights Sidebar (shows when config tool is active) */}

@@ -11,9 +11,11 @@ interface EditToolbarProps {
   onToolSelect: (tool: string | null) => void;
   onClearAll?: () => void;
   onChangeImage?: () => void;
+  onGenerateThumbnails?: () => void;
   hotspotCount: number;
   currentImage: string | null;
   isSaving?: boolean;
+  isGeneratingThumbnails?: boolean;
 }
 
 const EditToolbar: React.FC<EditToolbarProps> = ({
@@ -21,9 +23,11 @@ const EditToolbar: React.FC<EditToolbarProps> = ({
   onToolSelect,
   onClearAll,
   onChangeImage,
+  onGenerateThumbnails,
   hotspotCount,
   currentImage,
-  isSaving = false
+  isSaving = false,
+  isGeneratingThumbnails = false
 }) => {
   const tools = [
     {
@@ -83,6 +87,25 @@ const EditToolbar: React.FC<EditToolbarProps> = ({
               <div className="text-[10px] text-indigo-600 font-semibold uppercase tracking-wide">Hotspot{hotspotCount !== 1 ? 's' : ''}</div>
             </div>
           </div>
+
+          {/* Generate Thumbnails Button */}
+          {onGenerateThumbnails && hotspotCount > 0 && (
+            <div className="px-2 py-3 border-b border-indigo-200">
+              <button
+                onClick={onGenerateThumbnails}
+                disabled={isGeneratingThumbnails}
+                className={`w-full p-2 rounded-lg transition-colors text-xs flex flex-col items-center font-medium shadow-sm ${
+                  isGeneratingThumbnails
+                    ? 'bg-gray-300 text-gray-600 cursor-not-allowed'
+                    : 'bg-green-600 hover:bg-green-700 text-white'
+                }`}
+                title="Generate thumbnail images for all hotspots"
+              >
+                <span className="text-lg mb-0.5">{isGeneratingThumbnails ? '⏳' : '🖼️'}</span>
+                <span>{isGeneratingThumbnails ? 'Creating...' : 'Thumbnails'}</span>
+              </button>
+            </div>
+          )}
 
           {/* Change Image Button */}
           {onChangeImage && (

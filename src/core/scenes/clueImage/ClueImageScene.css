@@ -1,0 +1,246 @@
+/**
+ * ClueImageScene Styles
+ *
+ * Styles for interactive clue-finding scene including:
+ * - Base image display
+ * - Colored clue overlays
+ * - Hotspot hover effects
+ * - Dialog bubble positioning and animations
+ */
+
+.clue-image-scene {
+  position: relative;
+  width: 100vw;
+  height: 100vh;
+  display: block; /* Changed from flex to block to prevent layout shifts */
+  overflow: hidden;
+  background-color: #1a1a1a;
+}
+
+.clue-image-scene--loading,
+.clue-image-scene--error {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  font-size: 1.5rem;
+}
+
+/* Note: Base image styles are now inline for precise positioning */
+
+/* Hotspot regions */
+.hotspot-region {
+  fill: transparent;
+  stroke: transparent;
+  transition: fill 0.2s ease, stroke 0.2s ease;
+}
+
+/* Hover effect for unfound hotspots */
+.hotspot-region:not(.hotspot-region--found):hover {
+  fill: rgba(255, 255, 255, 0.1);
+  stroke: rgba(255, 255, 255, 0.3);
+  stroke-width: 0.5;
+}
+
+/* Found hotspots - subtle indicator */
+.hotspot-region--found {
+  cursor: pointer;
+  fill: rgba(100, 200, 255, 0.05);
+}
+
+.hotspot-region--found:hover {
+  fill: rgba(100, 200, 255, 0.15);
+}
+
+/* Dialog Bubble */
+.dialog-bubble {
+  position: absolute;
+  /* Transform is set by position-specific classes (dialog-bubble--bottom, etc.) */
+  background: linear-gradient(135deg, #f5e6d3 0%, #e8d4bd 100%);
+  border: 3px solid #8b6f47;
+  border-radius: 12px;
+  padding: 16px 20px;
+  max-width: 320px;
+  min-width: 200px;
+  box-shadow:
+    0 4px 12px rgba(0, 0, 0, 0.3),
+    inset 0 1px 0 rgba(255, 255, 255, 0.3);
+  z-index: 100;
+  cursor: pointer;
+  font-family: 'Comic Sans MS', 'Chalkboard SE', 'Arial Rounded MT Bold', sans-serif;
+}
+
+/* Position-specific animations */
+.dialog-bubble--bottom {
+  animation: dialog-appear-bottom 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.dialog-bubble--top {
+  animation: dialog-appear-top 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.dialog-bubble--left {
+  animation: dialog-appear-left 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.dialog-bubble--right {
+  animation: dialog-appear-right 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+@keyframes dialog-appear-bottom {
+  from {
+    opacity: 0;
+    transform: translate(-50%, 40px) scale(0.8);
+  }
+  to {
+    opacity: 1;
+    transform: translate(-50%, 40px) scale(1);
+  }
+}
+
+@keyframes dialog-appear-top {
+  from {
+    opacity: 0;
+    transform: translate(-50%, calc(-100% - 40px)) scale(0.8);
+  }
+  to {
+    opacity: 1;
+    transform: translate(-50%, calc(-100% - 40px)) scale(1);
+  }
+}
+
+@keyframes dialog-appear-left {
+  from {
+    opacity: 0;
+    transform: translate(calc(-100% - 40px), -50%) scale(0.8);
+  }
+  to {
+    opacity: 1;
+    transform: translate(calc(-100% - 40px), -50%) scale(1);
+  }
+}
+
+@keyframes dialog-appear-right {
+  from {
+    opacity: 0;
+    transform: translate(40px, -50%) scale(0.8);
+  }
+  to {
+    opacity: 1;
+    transform: translate(40px, -50%) scale(1);
+  }
+}
+
+.dialog-bubble__text {
+  margin: 0;
+  font-size: 16px;
+  line-height: 1.5;
+  color: #2c1810;
+  text-align: center;
+}
+
+/* Position-specific adjustments */
+.dialog-bubble--top {
+  transform: translate(-50%, calc(-100% - 40px));
+}
+
+.dialog-bubble--bottom {
+  transform: translate(-50%, 40px);
+}
+
+.dialog-bubble--left {
+  transform: translate(calc(-100% - 40px), -50%);
+}
+
+.dialog-bubble--right {
+  transform: translate(40px, -50%);
+}
+
+/* Pointer/arrow for dialog bubble */
+.dialog-bubble::after {
+  content: '';
+  position: absolute;
+  width: 0;
+  height: 0;
+  border: 10px solid transparent;
+}
+
+.dialog-bubble--top::after {
+  bottom: -20px;
+  left: 50%;
+  transform: translateX(-50%);
+  border-top-color: #8b6f47;
+}
+
+.dialog-bubble--bottom::after {
+  top: -20px;
+  left: 50%;
+  transform: translateX(-50%);
+  border-bottom-color: #8b6f47;
+}
+
+.dialog-bubble--left::after {
+  right: -20px;
+  top: 50%;
+  transform: translateY(-50%);
+  border-left-color: #8b6f47;
+}
+
+.dialog-bubble--right::after {
+  left: -20px;
+  top: 50%;
+  transform: translateY(-50%);
+  border-right-color: #8b6f47;
+}
+
+/* Hover effect for dialog - add scale without changing position */
+.dialog-bubble--bottom:hover {
+  transform: translate(-50%, 40px) scale(1.02);
+  box-shadow:
+    0 6px 16px rgba(0, 0, 0, 0.4),
+    inset 0 1px 0 rgba(255, 255, 255, 0.4);
+}
+
+.dialog-bubble--top:hover {
+  transform: translate(-50%, calc(-100% - 40px)) scale(1.02);
+  box-shadow:
+    0 6px 16px rgba(0, 0, 0, 0.4),
+    inset 0 1px 0 rgba(255, 255, 255, 0.4);
+}
+
+.dialog-bubble--left:hover {
+  transform: translate(calc(-100% - 40px), -50%) scale(1.02);
+  box-shadow:
+    0 6px 16px rgba(0, 0, 0, 0.4),
+    inset 0 1px 0 rgba(255, 255, 255, 0.4);
+}
+
+.dialog-bubble--right:hover {
+  transform: translate(40px, -50%) scale(1.02);
+  box-shadow:
+    0 6px 16px rgba(0, 0, 0, 0.4),
+    inset 0 1px 0 rgba(255, 255, 255, 0.4);
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .dialog-bubble {
+    max-width: 280px;
+    padding: 14px 18px;
+  }
+
+  .dialog-bubble__text {
+    font-size: 14px;
+  }
+}
+
+@media (max-width: 480px) {
+  .dialog-bubble {
+    max-width: 240px;
+    padding: 12px 16px;
+  }
+
+  .dialog-bubble__text {
+    font-size: 13px;
+  }
+}

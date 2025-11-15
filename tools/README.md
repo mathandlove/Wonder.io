@@ -182,6 +182,57 @@ node tools/make_cardboard_3d.js --all
 
 ### Support Tools
 
+#### `convert_jpg_to_png.js`
+Converts JPG/JPEG files to PNG format.
+
+```bash
+# Convert all JPGs in public/ directory (deletes originals by default)
+node tools/convert_jpg_to_png.js
+
+# Convert JPGs in specific directory
+node tools/convert_jpg_to_png.js path/to/folder
+
+# Keep original JPGs after conversion
+node tools/convert_jpg_to_png.js --keep
+
+# Show help
+node tools/convert_jpg_to_png.js --help
+```
+
+**Features:**
+- Recursively searches directories (skips node_modules)
+- Preserves EXIF orientation
+- High compression PNG output (level 9)
+- Size comparison before/after
+- Deletes original JPG files by default (use `--keep` to preserve)
+
+#### `generate_hotspot_thumbnails.js`
+Generates cropped PNG thumbnails from hotspot data with mask applied.
+
+```bash
+# Generate thumbnails for a specific hotspot file
+node tools/generate_hotspot_thumbnails.js public/stories/gingerbread.bundle/images/hotspots/cluesColored_insideBakery.json
+
+# Generate thumbnails for all hotspot files
+node tools/generate_hotspot_thumbnails.js --all
+
+# Show help
+node tools/generate_hotspot_thumbnails.js --help
+```
+
+**Features:**
+- Creates masked thumbnails cropped to hotspot bounds
+- Applies polygon mask from hotspot points
+- Outputs to `images/hotspotImages/` directory
+- Names thumbnails by hotspot ID
+- High compression PNG output (level 9)
+
+**Output:**
+Each hotspot gets a PNG file like `hotspot-1762710976568.png` containing:
+- The color clue image cropped to the hotspot's bounding box
+- A polygon mask applied to show only the hotspot region
+- Transparent background outside the mask
+
 #### `gen_outlines.js`
 Creates black outlines from maps/clues (different use case).
 

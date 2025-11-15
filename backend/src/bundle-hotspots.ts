@@ -1,10 +1,15 @@
 import { Request, Response } from 'express';
 import fs from 'fs';
 import path from 'path';
+import { exec } from 'child_process';
+import { promisify } from 'util';
 import { Hotspot } from './types';
+
+const execAsync = promisify(exec);
 
 // Path to public folder containing story bundles
 const PUBLIC_PATH = path.join(__dirname, '../../public');
+const PROJECT_ROOT = path.join(__dirname, '../..');
 
 /**
  * Get the hotspot file path for a specific image in a bundle
@@ -168,6 +173,59 @@ export async function handleListBundleImages(req: Request, res: Response) {
     console.error('Error listing bundle images:', error);
     res.status(500).json({
       error: 'Failed to list images',
+      details: error instanceof Error ? error.message : String(error)
+    });
+  }
+}
+
+/**
+ * Generate thumbnails for hotspots
+ * POST /api/bundle/hotspots/generate-thumbnails
+ * Body: { image: string }
+ */
+export async function handleGenerateThumbnails(req: Request, res: Response) {
+  try {
+    const { image } = req.body;
+
+    if (!image) {
+      return res.status(400).json({ error: 'Missing image parameter' });
+    }
+
+    const hotspotFilePath = getHotspotFilePath(image);
+
+    // Check if hotspot file exists
+    if (!fs.existsSync(hotspotFilePath)) {
+      return res.status(404).json({ error: 'No hotspots found for this image' });
+    }
+
+    // Run the thumbnail generation tool
+    const toolPath = path.join(PROJECT_ROOT, 'tools', 'generate_hotspot_thumbnails.js');
+    const command = `node "${toolPath}" "${hotspotFilePath}"`;
+
+    console.log(`🖼️  Generating thumbnails for ${image}...`);
+
+    const { stdout, stderr } = await execAsync(command);
+
+    if (stderr && !stderr.includes('ExperimentalWarning')) {
+      console.error('Thumbnail generation stderr:', stderr);
+    }
+
+    console.log('Thumbnail generation output:', stdout);
+
+    // Parse output to count successes
+    const successMatch = stdout.match(/(\d+) succeeded/);
+    const successCount = successMatch ? parseInt(successMatch[1]) : 0;
+
+    res.json({
+      success: true,
+      message: `Generated ${successCount} thumbnail(s)`,
+      count: successCount,
+      output: stdout
+    });
+  } catch (error) {
+    console.error('Error generating thumbnails:', error);
+    res.status(500).json({
+      error: 'Failed to generate thumbnails',
       details: error instanceof Error ? error.message : String(error)
     });
   }

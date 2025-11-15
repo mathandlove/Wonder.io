@@ -132,6 +132,23 @@ export type SuccessDanceScene = {
   };
 };
 
+export type ClueImageScene = {
+  type: "clue-image";
+  image?: string; // Base image path (optional, can be derived from hotspot data)
+  background?: string;
+  clueDescriptions: Array<{
+    hotspot: string; // Label matching hotspot JSON (e.g., "Hair", "Potion")
+    dialog: string;  // Dialog text to show when hotspot is clicked
+  }>;
+  flowSequence?: boolean;
+  isFirstInFlow?: boolean;
+  hidden?: boolean;
+  phase?: string; // Current phase: 'active' (finding clues) or 'complete' (all found)
+  phaseSteps?: string[]; // Available phases: ["active", "complete"]
+  // Runtime state (not persisted in JSON, managed by component)
+  foundClues?: string[]; // Array of found hotspot labels
+};
+
 // CaptionScene removed - captions are now handled within ImageScene
 
 export type Scene =
@@ -141,7 +158,8 @@ export type Scene =
   | FullScene
   | TextScene
   | FailDanceScene
-  | SuccessDanceScene;
+  | SuccessDanceScene
+  | ClueImageScene;
 
 export type Story = {
   scenes: Scene[];

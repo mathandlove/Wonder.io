@@ -81,7 +81,7 @@ export function startNavigationService(): ReturnType<typeof createActor> {
   // Kick off the boot sequence by requesting the gingerbread story to be loaded
   serviceInstance.send({
     type: 'LOAD_STORY_REQUESTED',
-    storyId: 'testStory'
+    storyId: 'gingerbread'
   });
 
   return serviceInstance;

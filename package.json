@@ -14,6 +14,7 @@
   },
   "dependencies": {
     "@statelyai/inspect": "^0.4.0",
+    "@xstate/react": "^6.0.0",
     "debug": "^4.4.3",
     "framer-motion": "^12.23.15",
     "potrace": "^2.1.8",
