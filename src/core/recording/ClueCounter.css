@@ -72,13 +72,26 @@
 .clues-panel .clues {
   color: #b2652a;
   font-family: "Inter-Bold", Helvetica, Arial, sans-serif;
-  font-size: 20px;
-  font-weight: 700;
   letter-spacing: 0;
   line-height: normal;
   position: relative;
   text-align: center;
   width: fit-content;
+}
+
+/* Title "Clues" - bold and larger */
+.clues-panel .clues__title {
+  font-size: 24px;
+  font-weight: 700;
+  display: block;
+}
+
+/* Count "4/4" - smaller and secondary */
+.clues-panel .clues__count {
+  font-size: 16px;
+  font-weight: 400;
+  opacity: 0.8;
+  display: block;
 }
 
 /* ===================================
@@ -100,23 +113,25 @@
 
 .clues-panel .frame {
   background: transparent; /* No background - just show the image */
-  height: 200px;
-  width: 200px;
-  min-width: 200px; /* Prevent shrinking */
-  min-height: 200px; /* Prevent shrinking */
-  max-width: 200px; /* Prevent growing */
-  max-height: 200px; /* Prevent growing */
+  height: 60px;
+  width: 60px;
+  min-width: 60px; /* Prevent shrinking */
+  min-height: 60px; /* Prevent shrinking */
+  max-width: 60px; /* Prevent growing */
+  max-height: 60px; /* Prevent growing */
   position: relative;
-  overflow: hidden;
+  overflow: visible; /* Allow scale to go beyond bounds */
   display: block;
   transition: transform 0.2s ease;
   border: none; /* No border - let image fill frame */
   border-radius: 0; /* Square corners - no rounding */
   flex-shrink: 0; /* Don't allow flex to shrink these */
+  cursor: pointer;
 }
 
 .clues-panel .frame:hover {
-  /* No scale effect - keep thumbnails at fixed 200×200px size */
+  transform: scale(1.2);
+  z-index: 10; /* Bring hovered thumbnail above others */
 }
 
 /* Question mark image for undiscovered clues */
@@ -169,94 +184,119 @@
 }
 
 /* ===================================
-   BUTTON - Continue Button
+   BUTTON - Continue Button (matches RecordPanel next-btn)
    =================================== */
 
 .clues-panel .button {
   all: unset;
   align-items: center;
-  background-image: url(/VisualAssets/constructionTexture.png);
-  background-position: 50% 50%;
-  background-size: cover;
+  background-image: url(/VisualAssets/cardboard.png);
+  background-position: center;
+  background-size: 360px 540px; /* 30% of original 1200×1800px */
+  background-repeat: repeat; /* Tile the texture instead of stretching */
   border: 3px solid;
   border-color: #49301d;
   border-radius: 16px;
   box-sizing: border-box;
   display: flex;
-  flex-direction: column;
-  gap: 10px;
-  height: 75px;
+  flex-direction: row;
+  gap: 0;
+  height: 55px;
   justify-content: center;
-  padding: 18px 38px;
+  padding: 8px 20px;
   position: relative;
-  width: 215px;
+  width: 192px;
   cursor: not-allowed;
-  opacity: 0.5; /* Locked state - same as next-btn.locked */
-  transition: all 0.3s ease;
+  transition: all 0.15s ease;
   flex-shrink: 0; /* Don't shrink the button */
+}
+
+/* Grey overlay for locked state */
+.clues-panel .button::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: rgba(128, 128, 128, 0.7); /* Stronger grey for locked state */
+  border-radius: 12px;
+  pointer-events: none;
+  z-index: 1;
 }
 
 /* Enabled state - when all clues are found */
 .clues-panel .button--enabled {
   cursor: pointer;
-  opacity: 1;
-  animation: pulse-glow 2s ease-in-out infinite;
 }
 
-@keyframes pulse-glow {
-  0%, 100% {
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
-    transform: scale(1);
-  }
-  50% {
-    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.4), 0 0 20px rgba(178, 101, 42, 0.4);
-    transform: scale(1.02);
-  }
+/* Bright green overlay when enabled */
+.clues-panel .button--enabled::before {
+  background: rgba(34, 197, 94, 0.6); /* Bright, vibrant green */
 }
 
-.clues-panel .button--enabled:hover {
-  transform: scale(1.05);
-  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.5), 0 0 24px rgba(178, 101, 42, 0.6);
-}
-
-.clues-panel .button--enabled:active {
-  transform: scale(0.98);
-}
-
-/* Locked state text and icon - matching NextButton */
-.clues-panel .answer-locked {
-  font-family: "Inter", Helvetica, Arial, sans-serif;
-  font-size: 14px;
-  font-weight: 700;
-  color: rgba(255, 255, 255, 0.3);
-  text-transform: uppercase;
-  letter-spacing: 1px;
+/* Hover effect - darken the green overlay */
+.clues-panel .button--enabled:hover::after {
+  content: '';
   position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    0deg,
+    rgba(0, 0, 0, 0.15) 0%,
+    rgba(0, 0, 0, 0.15) 100%
+  );
+  border-radius: 16px;
+  pointer-events: none;
+  z-index: 2; /* Above green overlay */
+}
+
+/* Active/pressed state - inset shadow */
+.clues-panel .button--enabled:active {
+  box-shadow: inset 8px 8px 4px rgba(0, 0, 0, 0.25);
+}
+
+/* Active state - darken more */
+.clues-panel .button--enabled:active::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    0deg,
+    rgba(0, 0, 0, 0.25) 0%,
+    rgba(0, 0, 0, 0.25) 100%
+  ) !important;
+  border-radius: 16px;
+  pointer-events: none;
   z-index: 2;
 }
 
-.clues-panel .lock-image-overlay {
-  width: 24px;
-  height: 24px;
-  object-fit: contain;
-  position: absolute;
-  z-index: 3;
-}
-
+/* Button text - same size for both locked and enabled states */
 .clues-panel .answer {
   color: #ffffff;
-  font-family: "Inter-Bold", Helvetica, Arial, sans-serif;
+  font-family: "Inter", Helvetica, Arial, sans-serif;
   font-size: 32px;
   font-weight: 700;
   letter-spacing: 0;
   line-height: normal;
   margin-left: -2.50px;
   margin-right: -2.50px;
-  margin-top: -3.00px;
+  margin-top: -3px;
   position: relative;
   text-align: center;
   width: fit-content;
-  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+  z-index: 2; /* Above green overlay */
+  opacity: 0.4; /* 40% opacity for locked state */
+}
+
+/* Full opacity text when enabled */
+.clues-panel .button--enabled .answer {
+  opacity: 1;
+}
+
+/* Lock icon overlay for disabled state */
+.clues-panel .lock-image-overlay {
+  width: 34px; /* 24px + 10px (5px on each side) */
+  height: 34px; /* 24px + 10px (5px on each side) */
+  object-fit: contain;
+  position: absolute;
+  z-index: 3;
 }
 
 /* ===================================

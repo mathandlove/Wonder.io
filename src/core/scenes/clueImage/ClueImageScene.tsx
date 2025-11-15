@@ -98,6 +98,7 @@ function HotspotOverlay({ hotspots, foundClues, onHotspotClick, imageBounds }: H
         width: imageBounds.width,
         height: imageBounds.height,
         pointerEvents: 'none',
+        zIndex: 200, // Above CharacterOrchestrator (z-index: 60) and ClueCounter (z-index: 50)
       }}
     >
       {hotspots.map((hotspot) => {

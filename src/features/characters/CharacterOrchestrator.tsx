@@ -26,7 +26,7 @@ export const CharacterOrchestrator: React.FC<Props> = ({ storyId, scenes }) => {
 
   // Compute panel data from current node in navigation graph
   // Use currentNode.nodeId as animation nonce
-  const { leftPanel, rightPanel, currentSpeaker, isJiggling, transitionNonce } = useMemo(() => {
+  const { leftPanel, rightPanel, currentSpeaker, isJiggling, isClueImageScene, transitionNonce } = useMemo(() => {
     const nodeId = currentId;
 
     if (!nodeId) {
@@ -41,6 +41,7 @@ export const CharacterOrchestrator: React.FC<Props> = ({ storyId, scenes }) => {
         },
         currentSpeaker: null,
         isJiggling: false,
+        isClueImageScene: false,
         transitionNonce: undefined
       };
     }
@@ -59,6 +60,7 @@ export const CharacterOrchestrator: React.FC<Props> = ({ storyId, scenes }) => {
         },
         currentSpeaker: null,
         isJiggling: false,
+        isClueImageScene: false,
         transitionNonce: undefined
       };
     }
@@ -71,6 +73,9 @@ export const CharacterOrchestrator: React.FC<Props> = ({ storyId, scenes }) => {
     const scene = currentNode.scene as Scene | undefined;
     const isSuccessDanceScene = scene?.type === 'success-dance';
     const shouldJiggle = isSuccessDanceScene; // Only jiggle during success-dance, not answer-right
+
+    // Check if we're in a clue-image scene (should disable pointer events)
+    const isClueImageScene = scene?.type === 'clue-image';
 
     // Get frozen snapshot node (the state BEFORE this transition started)
     const frozenNode = lastFrozenNode;
@@ -97,6 +102,7 @@ export const CharacterOrchestrator: React.FC<Props> = ({ storyId, scenes }) => {
       },
       currentSpeaker: speaker,
       isJiggling: shouldJiggle,
+      isClueImageScene,
       transitionNonce: currentNode.id // Use current node ID as animation nonce
     };
   }, [currentId, lastFrozenNode, graph]);
@@ -194,10 +200,14 @@ export const CharacterOrchestrator: React.FC<Props> = ({ storyId, scenes }) => {
   const rightPanelKey = 'character-panel-right';
 
   // Fixed overlay container
+  // Disable pointer events on character panels during clue-image scenes
+  // to allow hotspot clicks to pass through
+  const panelPointerEvents = isClueImageScene ? "none" : "auto";
+
   return (
     <div style={{ position: "fixed", inset: 0, pointerEvents: "none", zIndex: 60 }}>
       {/* Left gutter column - 22% of viewport width */}
-      <div className="character-panel--left" style={{ position: "absolute", left: 0, top: 0, bottom: 0, width: "22vw", pointerEvents: "auto" }}>
+      <div className="character-panel--left" style={{ position: "absolute", left: 0, top: 0, bottom: 0, width: "22vw", pointerEvents: panelPointerEvents }}>
         <CharacterPanel
           key={leftPanelKey}
           side="left"
@@ -214,7 +224,7 @@ export const CharacterOrchestrator: React.FC<Props> = ({ storyId, scenes }) => {
       </div>
 
       {/* Right gutter column - 22% of viewport width */}
-      <div className="character-panel--right" style={{ position: "absolute", right: 0, top: 0, bottom: 0, width: "22vw", pointerEvents: "auto" }}>
+      <div className="character-panel--right" style={{ position: "absolute", right: 0, top: 0, bottom: 0, width: "22vw", pointerEvents: panelPointerEvents }}>
         <CharacterPanel
           key={rightPanelKey}
           side="right"
