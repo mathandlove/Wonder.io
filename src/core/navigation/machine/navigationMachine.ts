@@ -18,7 +18,7 @@
 import { setup, assign, fromPromise } from 'xstate';
 import type { NavigationEvent, NavigationContext } from './types';
 import { loadStoryService } from '@core/data/services/loadStoryService';
-import { callAIService, setConversationMetadata, createAndInsertAIResponseScene, validateAnswerService, getConversationMetadata, startFeedbackGeneration, getPendingFeedbackPromise, clearPendingFeedback } from '@core/ai/AIOrchestrator';
+import { callAIService, setConversationMetadata, createAndInsertAIResponseScene, validateAnswerService, getConversationMetadata, startFeedbackGeneration, getPendingFeedbackPromise, clearPendingFeedback, setSelectedClue } from '@core/ai/AIOrchestrator';
 import { useNavigationStore } from '../navigationStore';
 import { getCurrentNodeId, getCurrentNode, initializeStoreWithStory, insertSceneNodes, deleteNode, updateCurrentSceneProperties } from '../navigationHelpers';
 import { createAIResponseScene as createAIResponseSceneFactory } from '../sceneFactoryFunctions';
@@ -26,6 +26,18 @@ import { RecordingOrchestratorAPI } from '@core/recording/RecordingOrchestrator'
 import { createDebugger } from '../../../utils/createDebug';
 
 const debug = createDebugger('navigation:machine');
+
+/**
+ * DEBUG FLAG: Auto-unlock answer button
+ * Set to true to bypass the requirement of asking a question before answering
+ * Useful for testing the answer flow directly
+ */
+const DEBUG_AUTO_UNLOCK_ANSWER_BUTTON = true;
+
+// Log when debug mode is enabled
+if (DEBUG_AUTO_UNLOCK_ANSWER_BUTTON) {
+  console.log('🐛 [DEBUG MODE] Answer button auto-unlock is ENABLED - answer button will be unlocked immediately');
+}
 
 /**
  * Navigation State Machine
@@ -190,6 +202,10 @@ export const navigationMachine = setup({
 
     setFeedbackReceived: assign({
       feedbackReceived: true,
+    }),
+
+    setUnlockAnswerButton: assign({
+      unlockAnswerButton: true,
     }),
 
     resetAnswerWrongFlags: assign({
@@ -565,6 +581,7 @@ export const navigationMachine = setup({
     failVideoComplete: false,
     feedbackReceived: false,
     successDanceNodeId: undefined,
+    unlockAnswerButton: DEBUG_AUTO_UNLOCK_ANSWER_BUTTON, // Debug: auto-unlock for testing
   },
   on: {
     // Note: Global event handlers go here if needed
@@ -925,19 +942,18 @@ export const navigationMachine = setup({
                 target: 'askRecording',
               }
             ],
+            // ANSWER_BUTTON_CLICKED - User clicked Answer button
+            // Transition directly to answerRecording state
+            ANSWER_BUTTON_CLICKED: {
+              actions: () => debug.log('🎯 ANSWER_BUTTON_CLICKED → starting answer recording'),
+              target: 'answerRecording',
+            },
             // RECORDING_STARTED event comes from RecordPanelOrchestrator AFTER it completes the complex flow
             // Orchestrator handles: recording start, scene creation, insertion, navigation, phase update
             // Machine just transitions state to track that we're recording
             RECORDING_STARTED: {
               actions: () => debug.log('🎙️  Ask recording started by orchestrator'),
               target: 'askRecording',
-            },
-            // ANSWER_RECORDING_STARTED event comes from RecordPanelOrchestrator AFTER phase update
-            // Orchestrator handles: recording start, phase update to 'record-answer'
-            // Machine transitions to route, which will route to answerRecording based on phase
-            ANSWER_RECORDING_STARTED: {
-              actions: () => debug.log('🎙️  Answer recording started → routing'),
-              target: '#navigation.scene.route',
             },
             // Handle recording failure
             RECORDING_FAILED: {
@@ -973,8 +989,19 @@ export const navigationMachine = setup({
                   if (event.type === 'CLUE_SELECTED') {
                     debug.log('🔍 Clue selected:', event.clueLabel, 'description:', event.clueDescription);
 
-                    // Store the selected clue description in the scene
-                    // This will be used when AI processes the question
+                    // Store the selected clue in AIOrchestrator memory
+                    // It will be held until the user question is received, then combined
+                    const scene = getCurrentNode()?.scene;
+                    const conversationId = (scene as { conversationId?: string })?.conversationId;
+
+                    if (conversationId) {
+                      setSelectedClue(conversationId, event.clueLabel, event.clueDescription);
+                      debug.log('✅ Stored selected clue in AIOrchestrator memory');
+                    } else {
+                      debug.error('❌ No conversationId found - cannot store selected clue');
+                    }
+
+                    // Store the selected clue description in the scene (for backward compatibility)
                     updateCurrentSceneProperties({
                       selectedClue: event.clueLabel,
                       selectedClueDescription: event.clueDescription
@@ -1096,6 +1123,7 @@ export const navigationMachine = setup({
             RECORDING_TRANSCRIBED: {
               actions: [
                 'storeTranscriptInScene',
+                'setUnlockAnswerButton',
                 () => debug.log('✅ Transcript stored → waiting for AI')
               ],
               target: 'askWaitingForAI',
@@ -1119,29 +1147,22 @@ export const navigationMachine = setup({
             id: 'callAI',
             src: 'callAI',
             input: () => {
-              // Extract questionText, conversationId, and clue info from current scene
+              // Extract questionText and conversationId from current scene
+              // Note: AIOrchestrator will automatically retrieve and combine the selected clue
+              // from its memory storage when the AI call is made
               const scene = getCurrentNode()?.scene;
               const questionText = (scene as { questionText?: string })?.questionText;
               const conversationId = (scene as { conversationId?: string })?.conversationId;
-              const selectedClueDescription = (scene as { selectedClueDescription?: string })?.selectedClueDescription;
-
-              // If user selected a clue, prepend the clue description to their question
-              let finalQuestionText = questionText || '';
-              if (selectedClueDescription) {
-                finalQuestionText = `Context: ${selectedClueDescription}\n\nQuestion: ${finalQuestionText}`;
-                debug.log('🔍 Prepending clue context to question');
-              }
 
               debug.log('📥 Preparing AI input:', {
-                questionText: finalQuestionText?.substring(0, 50),
+                questionText: questionText?.substring(0, 50),
                 conversationId,
-                hasQuestionText: !!finalQuestionText,
-                hasConversationId: !!conversationId,
-                hasClueContext: !!selectedClueDescription
+                hasQuestionText: !!questionText,
+                hasConversationId: !!conversationId
               });
 
               return {
-                questionText: finalQuestionText,
+                questionText: questionText || '',
                 conversationId
               };
             },

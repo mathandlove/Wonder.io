@@ -6,9 +6,11 @@
 .record-panel-container,
 .chat-composer-container {
   position: fixed;
-  top: 50%; /* Default: centered anchor point */
+  top: 50%;
+  /* Default: centered anchor point */
   left: 50%;
-  transform: translate(-50%, -50%); /* Default: centered positioning */
+  transform: translate(-50%, -50%);
+  /* Default: centered positioning */
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -18,49 +20,64 @@
   background: transparent;
   pointer-events: none;
   /* Smooth transitions for transform, top, and bottom (handles all position changes) */
-  transition: transform 0.6s cubic-bezier(0.34, 1.56, 0.64, 1),
-              top 0.6s cubic-bezier(0.34, 1.56, 0.64, 1),
-              bottom 0.6s cubic-bezier(0.34, 1.56, 0.64, 1);
+  transition: transform 0.6s cubic-bezier(0.25, 1, 0.5, 1),
+    top 0.6s cubic-bezier(0.25, 1, 0.5, 1),
+    bottom 0.6s cubic-bezier(0.25, 1, 0.5, 1);
 }
 
 /* Hidden state - completely below screen, top of panel at bottom of viewport */
 .record-panel-container.hidden {
-  top: auto; /* Use bottom positioning for consistency */
-  bottom: -100vh; /* Position completely below screen */
-  transform: translateX(-50%); /* Only center horizontally */
+  top: auto;
+  /* Use bottom positioning for consistency */
+  bottom: -100vh;
+  /* Position completely below screen */
+  transform: translateX(-50%);
+  /* Only center horizontally */
   justify-content: flex-end;
 }
 
 /* Rest state - bottom anchored with 32px hidden below screen */
 .record-panel-container.bottom-anchored {
-  top: auto; /* Remove top positioning */
-  bottom: -32px; /* 32px hidden below screen */
-  transform: translateX(-50%); /* Only center horizontally */
+  top: auto;
+  /* Remove top positioning */
+  bottom: -32px;
+  /* 32px hidden below screen */
+  transform: translateX(-50%);
+  /* Only center horizontally */
   justify-content: flex-end;
 }
 
 /* Quest Offer State - centered on screen */
 .record-panel-container.quest-offer-centered {
-  top: 50%; /* Explicitly set top positioning for centered states */
-  bottom: auto; /* Clear bottom positioning */
-  transform: translate(-50%, -50%); /* Perfectly centered */
+  top: 50%;
+  /* Explicitly set top positioning for centered states */
+  bottom: auto;
+  /* Clear bottom positioning */
+  transform: translate(-50%, -50%);
+  /* Perfectly centered */
   justify-content: center;
 }
 
 /* Answer Right State - centered on screen with green glow */
 .record-panel-container.answer-right-centered {
-  top: 50%; /* Explicitly set top positioning for centered states */
-  bottom: auto; /* Clear bottom positioning */
+  top: 50%;
+  /* Explicitly set top positioning for centered states */
+  bottom: auto;
+  /* Clear bottom positioning */
   left: 50%;
-  transform: translate(-50%, -50%); /* Perfectly centered */
+  transform: translate(-50%, -50%);
+  /* Perfectly centered */
   justify-content: center;
 }
 
 /* Answer Wrong State - centered on screen with red glow */
 .record-panel-container.answer-wrong-centered {
-  top: 50%; /* Explicitly set top positioning for centered states */
-  bottom: auto; /* Clear bottom positioning */
-  transform: translate(-50%, -50%); /* Perfectly centered */
+  top: 50%;
+  /* Explicitly set top positioning for centered states */
+  bottom: auto;
+  /* Clear bottom positioning */
+  transform: translate(-50%, -50%);
+  /* Perfectly centered */
   justify-content: center;
 }
 
@@ -68,19 +85,22 @@
 /* When both answer-right-centered and hidden are present, hidden positioning wins */
 /* Keep transform the same, only animate top/bottom to avoid transform snap */
 .record-panel-container.answer-right-centered.hidden {
-  top: 150vh !important; /* Move far below screen (100vh + extra for panel height and transform offset) */
-  bottom: auto !important; /* Keep bottom as auto */
+  top: 150vh !important;
+  /* Move far below screen (100vh + extra for panel height and transform offset) */
+  bottom: auto !important;
+  /* Keep bottom as auto */
   left: 50%;
-  transform: translate(-50%, -50%) !important; /* Keep same transform for smooth animation */
+  transform: translate(-50%, -50%) !important;
+  /* Keep same transform for smooth animation */
   justify-content: flex-end;
   /* Re-declare transition to ensure it applies */
-  transition: transform 0.6s cubic-bezier(0.34, 1.56, 0.64, 1),
-              top 0.6s cubic-bezier(0.34, 1.56, 0.64, 1),
-              bottom 0.6s cubic-bezier(0.34, 1.56, 0.64, 1);
+  transition: transform 0.6s cubic-bezier(0.25, 1, 0.5, 1),
+    top 0.6s cubic-bezier(0.25, 1, 0.5, 1),
+    bottom 0.6s cubic-bezier(0.25, 1, 0.5, 1);
 }
 
-.record-panel-container > *,
-.chat-composer-container > * {
+.record-panel-container>*,
+.chat-composer-container>* {
   pointer-events: auto;
   /* Allow touch scrolling to pass through */
   touch-action: pan-y pan-x;
@@ -94,8 +114,10 @@
   align-items: flex-start;
   background-image: url(/VisualAssets/cardboard.png);
   background-position: center;
-  background-size: 360px 540px; /* 30% of original 1200×1800px (1200×0.3=360, 1800×0.3=540) */
-  background-repeat: repeat; /* Tile the texture instead of stretching */
+  background-size: 360px 540px;
+  /* 30% of original 1200×1800px (1200×0.3=360, 1800×0.3=540) */
+  background-repeat: repeat;
+  /* Tile the texture instead of stretching */
   border-color: #49301d;
   border-left-style: solid;
   border-left-width: 7px;
@@ -108,64 +130,70 @@
   border-bottom-width: 7px;
   display: inline-flex;
   flex-direction: column;
-  padding: 10px; /* Equal padding on all sides for rounded frame */
+  padding: 10px;
+  /* Equal padding on all sides for rounded frame */
   position: relative;
-  max-width: 90vw; /* Never wider than 90% of viewport width */
-  min-width: 560px; /* Minimum width to fit all buttons: 192+15+59+40+192+40+20+2 = 560px */
-  box-sizing: border-box; /* Include borders in width calculation */
+  max-width: 90vw;
+  /* Never wider than 90% of viewport width */
+  min-width: 560px;
+  /* Minimum width to fit all buttons: 192+15+59+40+192+40+20+2 = 560px */
+  box-sizing: border-box;
+  /* Include borders in width calculation */
 }
 
 /* Quest Offer State - glowing yellow effect */
 .record-panel-container.quest-offer-centered .frame {
-  animation: breathingGlow 10s ease-in-out 0.2s infinite !important; /* 200ms delay after color transition */
-  position: relative; /* Ensure pseudo-element positioning works */
-  transition: filter 1.5s ease-in-out; /* Smooth transition when glow changes */
+  animation: breathingGlow 10s ease-in-out 0.2s infinite !important;
+  /* 200ms delay after color transition */
+  position: relative;
+  /* Ensure pseudo-element positioning works */
+  transition: filter 1.5s ease-in-out;
+  /* Smooth transition when glow changes */
 }
 
 /* Inward glow overlay using ::before pseudo-element */
 .record-panel-container.quest-offer-centered .frame::before {
   content: '';
   position: absolute;
-  inset: 0; /* Cover entire frame */
-  border-radius: 32px; /* Match frame's border-radius */
-  pointer-events: none; /* Don't block clicks */
-  animation: breathingGlowInset 10s ease-in-out 0.2s infinite; /* 200ms delay after color transition */
-  z-index: 1; /* Above background, below content */
+  inset: 0;
+  /* Cover entire frame */
+  border-radius: 32px;
+  /* Match frame's border-radius */
+  pointer-events: none;
+  /* Don't block clicks */
+  animation: breathingGlowInset 10s ease-in-out 0.2s infinite;
+  /* 200ms delay after color transition */
+  z-index: 1;
+  /* Above background, below content */
 }
 
 /* Breathing glow animation - outward golden aura */
 @keyframes breathingGlow {
-  0%, 100% {
+
+  0%,
+  100% {
     filter:
-      drop-shadow(0 0 25px rgba(255, 190, 60, 0.5))
-      drop-shadow(0 0 15px rgba(255, 200, 80, 0.6))
-      drop-shadow(0 0 10px rgba(255, 215, 100, 0.7))
-      drop-shadow(0 0 5px rgba(255, 230, 120, 0.3))
-      hue-rotate(-5deg)
-      brightness(1.03)
-      saturate(1.1);
+      drop-shadow(0 0 25px rgba(255, 190, 60, 0.5)) drop-shadow(0 0 15px rgba(255, 200, 80, 0.6)) drop-shadow(0 0 10px rgba(255, 215, 100, 0.7)) drop-shadow(0 0 5px rgba(255, 230, 120, 0.3)) hue-rotate(-5deg) brightness(1.03) saturate(1.1);
   }
+
   50% {
     filter:
-      drop-shadow(0 0 40px rgba(255, 190, 60, 0.7))
-      drop-shadow(0 0 25px rgba(255, 200, 80, 0.8))
-      drop-shadow(0 0 15px rgba(255, 215, 100, 0.9))
-      drop-shadow(0 0 8px rgba(255, 230, 120, 0.6))
-      hue-rotate(-3deg)
-      brightness(1.06)
-      saturate(1.15);
+      drop-shadow(0 0 40px rgba(255, 190, 60, 0.7)) drop-shadow(0 0 25px rgba(255, 200, 80, 0.8)) drop-shadow(0 0 15px rgba(255, 215, 100, 0.9)) drop-shadow(0 0 8px rgba(255, 230, 120, 0.6)) hue-rotate(-3deg) brightness(1.06) saturate(1.15);
   }
 }
 
 /* Breathing inset glow animation - subtle inward golden depth */
 @keyframes breathingGlowInset {
-  0%, 100% {
+
+  0%,
+  100% {
     box-shadow:
       inset 0 0 40px rgba(255, 190, 60, 0.25),
       inset 0 0 25px rgba(255, 200, 80, 0.3),
       inset 0 0 15px rgba(255, 215, 100, 0.35),
       inset 0 0 8px rgba(255, 230, 120, 0.25);
   }
+
   50% {
     box-shadow:
       inset 0 0 60px rgba(255, 190, 60, 0.4),
@@ -181,18 +209,14 @@
 
 /* Answer Right State - glowing green success effect */
 .record-panel-container.answer-right-centered .frame {
-  animation: breathingGlowGreen 10s ease-in-out 0.2s infinite !important; /* 200ms delay after color transition */
+  animation: breathingGlowGreen 10s ease-in-out 0.2s infinite !important;
+  /* 200ms delay after color transition */
   position: relative;
-  transition: filter 1.5s ease-in-out; /* Smooth transition when glow changes */
+  transition: filter 1.5s ease-in-out;
+  /* Smooth transition when glow changes */
   /* Initial golden glow (matches end of answer-waiting) - holds during 200ms delay */
   filter:
-    drop-shadow(0 0 25px rgba(255, 190, 60, 0.5))
-    drop-shadow(0 0 15px rgba(255, 200, 80, 0.6))
-    drop-shadow(0 0 10px rgba(255, 215, 100, 0.7))
-    drop-shadow(0 0 5px rgba(255, 230, 120, 0.3))
-    hue-rotate(-5deg)
-    brightness(1.03)
-    saturate(1.1);
+    drop-shadow(0 0 25px rgba(255, 190, 60, 0.5)) drop-shadow(0 0 15px rgba(255, 200, 80, 0.6)) drop-shadow(0 0 10px rgba(255, 215, 100, 0.7)) drop-shadow(0 0 5px rgba(255, 230, 120, 0.3)) hue-rotate(-5deg) brightness(1.03) saturate(1.1);
 }
 
 .record-panel-container.answer-right-centered .frame::before {
@@ -201,7 +225,8 @@
   inset: 0;
   border-radius: 32px;
   pointer-events: none;
-  animation: breathingGlowInsetGreen 10s ease-in-out 0.2s infinite; /* 200ms delay after color transition */
+  animation: breathingGlowInsetGreen 10s ease-in-out 0.2s infinite;
+  /* 200ms delay after color transition */
   z-index: 1;
   /* Initial golden inset glow - holds during 200ms delay */
   box-shadow:
@@ -213,37 +238,31 @@
 
 /* Breathing glow animation - outward green success aura */
 @keyframes breathingGlowGreen {
-  0%, 100% {
+
+  0%,
+  100% {
     filter:
-      drop-shadow(0 0 25px rgba(60, 255, 100, 0.35))
-      drop-shadow(0 0 15px rgba(80, 255, 120, 0.4))
-      drop-shadow(0 0 10px rgba(100, 255, 140, 0.45))
-      drop-shadow(0 0 5px rgba(120, 255, 160, 0.2))
-      hue-rotate(5deg)
-      brightness(1.02)
-      saturate(1.05);
+      drop-shadow(0 0 25px rgba(60, 255, 100, 0.35)) drop-shadow(0 0 15px rgba(80, 255, 120, 0.4)) drop-shadow(0 0 10px rgba(100, 255, 140, 0.45)) drop-shadow(0 0 5px rgba(120, 255, 160, 0.2)) hue-rotate(5deg) brightness(1.02) saturate(1.05);
   }
+
   50% {
     filter:
-      drop-shadow(0 0 40px rgba(60, 255, 100, 0.5))
-      drop-shadow(0 0 25px rgba(80, 255, 120, 0.55))
-      drop-shadow(0 0 15px rgba(100, 255, 140, 0.6))
-      drop-shadow(0 0 8px rgba(120, 255, 160, 0.4))
-      hue-rotate(3deg)
-      brightness(1.04)
-      saturate(1.1);
+      drop-shadow(0 0 40px rgba(60, 255, 100, 0.5)) drop-shadow(0 0 25px rgba(80, 255, 120, 0.55)) drop-shadow(0 0 15px rgba(100, 255, 140, 0.6)) drop-shadow(0 0 8px rgba(120, 255, 160, 0.4)) hue-rotate(3deg) brightness(1.04) saturate(1.1);
   }
 }
 
 /* Breathing inset glow animation - subtle inward green depth */
 @keyframes breathingGlowInsetGreen {
-  0%, 100% {
+
+  0%,
+  100% {
     box-shadow:
       inset 0 0 40px rgba(60, 255, 100, 0.15),
       inset 0 0 25px rgba(80, 255, 120, 0.2),
       inset 0 0 15px rgba(100, 255, 140, 0.22),
       inset 0 0 8px rgba(120, 255, 160, 0.15);
   }
+
   50% {
     box-shadow:
       inset 0 0 60px rgba(60, 255, 100, 0.25),
@@ -259,18 +278,14 @@
 
 /* Answer Wrong State - glowing red error effect */
 .record-panel-container.answer-wrong-centered .frame {
-  animation: breathingGlowRed 10s ease-in-out 0.2s infinite !important; /* 200ms delay after color transition */
+  animation: breathingGlowRed 10s ease-in-out 0.2s infinite !important;
+  /* 200ms delay after color transition */
   position: relative;
-  transition: filter 1.5s ease-in-out; /* Smooth transition when glow changes */
+  transition: filter 1.5s ease-in-out;
+  /* Smooth transition when glow changes */
   /* Initial golden glow (matches end of answer-waiting) - holds during 200ms delay */
   filter:
-    drop-shadow(0 0 25px rgba(255, 190, 60, 0.5))
-    drop-shadow(0 0 15px rgba(255, 200, 80, 0.6))
-    drop-shadow(0 0 10px rgba(255, 215, 100, 0.7))
-    drop-shadow(0 0 5px rgba(255, 230, 120, 0.3))
-    hue-rotate(-5deg)
-    brightness(1.03)
-    saturate(1.1);
+    drop-shadow(0 0 25px rgba(255, 190, 60, 0.5)) drop-shadow(0 0 15px rgba(255, 200, 80, 0.6)) drop-shadow(0 0 10px rgba(255, 215, 100, 0.7)) drop-shadow(0 0 5px rgba(255, 230, 120, 0.3)) hue-rotate(-5deg) brightness(1.03) saturate(1.1);
 }
 
 .record-panel-container.answer-wrong-centered .frame::before {
@@ -279,7 +294,8 @@
   inset: 0;
   border-radius: 32px;
   pointer-events: none;
-  animation: breathingGlowInsetRed 10s ease-in-out 0.2s infinite; /* 200ms delay after color transition */
+  animation: breathingGlowInsetRed 10s ease-in-out 0.2s infinite;
+  /* 200ms delay after color transition */
   z-index: 1;
   /* Initial golden inset glow - holds during 200ms delay */
   box-shadow:
@@ -291,37 +307,31 @@
 
 /* Breathing glow animation - outward red error aura */
 @keyframes breathingGlowRed {
-  0%, 100% {
+
+  0%,
+  100% {
     filter:
-      drop-shadow(0 0 25px rgba(255, 60, 60, 0.35))
-      drop-shadow(0 0 15px rgba(255, 80, 80, 0.4))
-      drop-shadow(0 0 10px rgba(255, 100, 100, 0.45))
-      drop-shadow(0 0 5px rgba(255, 120, 120, 0.2))
-      hue-rotate(-5deg)
-      brightness(1.02)
-      saturate(1.05);
+      drop-shadow(0 0 25px rgba(255, 60, 60, 0.35)) drop-shadow(0 0 15px rgba(255, 80, 80, 0.4)) drop-shadow(0 0 10px rgba(255, 100, 100, 0.45)) drop-shadow(0 0 5px rgba(255, 120, 120, 0.2)) hue-rotate(-5deg) brightness(1.02) saturate(1.05);
   }
+
   50% {
     filter:
-      drop-shadow(0 0 40px rgba(255, 60, 60, 0.5))
-      drop-shadow(0 0 25px rgba(255, 80, 80, 0.55))
-      drop-shadow(0 0 15px rgba(255, 100, 100, 0.6))
-      drop-shadow(0 0 8px rgba(255, 120, 120, 0.4))
-      hue-rotate(-3deg)
-      brightness(1.04)
-      saturate(1.1);
+      drop-shadow(0 0 40px rgba(255, 60, 60, 0.5)) drop-shadow(0 0 25px rgba(255, 80, 80, 0.55)) drop-shadow(0 0 15px rgba(255, 100, 100, 0.6)) drop-shadow(0 0 8px rgba(255, 120, 120, 0.4)) hue-rotate(-3deg) brightness(1.04) saturate(1.1);
   }
 }
 
 /* Breathing inset glow animation - subtle inward red depth */
 @keyframes breathingGlowInsetRed {
-  0%, 100% {
+
+  0%,
+  100% {
     box-shadow:
       inset 0 0 40px rgba(255, 60, 60, 0.15),
       inset 0 0 25px rgba(255, 80, 80, 0.2),
       inset 0 0 15px rgba(255, 100, 100, 0.22),
       inset 0 0 8px rgba(255, 120, 120, 0.15);
   }
+
   50% {
     box-shadow:
       inset 0 0 60px rgba(255, 60, 60, 0.25),
@@ -340,7 +350,8 @@
   height: 30px;
   width: 30px;
   object-fit: contain;
-  filter: brightness(0) invert(1); /* Make microphone white */
+  filter: brightness(0) invert(1);
+  /* Make microphone white */
   margin-right: 8px;
   z-index: 2;
 }
@@ -362,7 +373,8 @@
 .stop-square {
   width: 25px;
   height: 25px;
-  background-color: #ffffff; /* Pure white */
+  background-color: #ffffff;
+  /* Pure white */
   border-radius: 4px;
   margin-right: 8px;
   z-index: 2;
@@ -376,27 +388,25 @@
 
 .frame .whiteframe {
   align-items: center;
-  background: linear-gradient(
-      0deg,
+  background: linear-gradient(0deg,
       rgba(73, 48, 29, 0.2) 0%,
-      rgba(73, 48, 29, 0.2) 100%
-    ),
-    linear-gradient(
-      0deg,
+      rgba(73, 48, 29, 0.2) 100%),
+    linear-gradient(0deg,
       rgba(255, 255, 255, 1) 0%,
-      rgba(255, 255, 255, 1) 100%
-    );
+      rgba(255, 255, 255, 1) 100%);
   border-color: #49301d;
   border-left-style: solid;
   border-left-width: 1px;
-  border-radius: 16px 16px 0px 0px; /* Rounded top corners only - bottom meets button rail */
+  border-radius: 16px 16px 0px 0px;
+  /* Rounded top corners only - bottom meets button rail */
   border-right-style: solid;
   border-right-width: 1px;
   border-top-style: solid;
   border-top-width: 1px;
   border-bottom-style: solid;
   border-bottom-width: 1px;
-  box-shadow: inset 0px -1px 8px -3px #000000; /* Bottom-only shadow: negative spread clips sides, vertical offset down */
+  box-shadow: inset 0px -1px 8px -3px #000000;
+  /* Bottom-only shadow: negative spread clips sides, vertical offset down */
   display: flex;
   flex: 0 0 auto;
   flex-direction: column;
@@ -404,20 +414,29 @@
   justify-content: center;
   padding: 0px 20px;
   position: relative;
-  width: 100%; /* Expand to fill frame width instead of fixed 620px */
-  min-width: 540px; /* Match button rail minimum width (560px - 20px padding) */
-  box-sizing: border-box; /* Include padding and borders in width calculation */
+  width: 100%;
+  /* Expand to fill frame width instead of fixed 620px */
+  min-width: 540px;
+  /* Match button rail minimum width (560px - 20px padding) */
+  box-sizing: border-box;
+  /* Include padding and borders in width calculation */
 }
 
 .frame .quest {
-  align-items: flex-start; /* Align to start instead of center */
-  display: flex; /* Changed from inline-flex */
+  align-items: flex-start;
+  /* Align to start instead of center */
+  display: flex;
+  /* Changed from inline-flex */
   flex: 0 0 auto;
-  gap: 0; /* Remove internal gap */
-  justify-content: flex-start; /* Align to start instead of center */
-  padding: 21px 20px; /* Symmetric padding: 21px top/bottom, 20px left/right */
+  gap: 0;
+  /* Remove internal gap */
+  justify-content: flex-start;
+  /* Align to start instead of center */
+  padding: 21px 20px;
+  /* Symmetric padding: 21px top/bottom, 20px left/right */
   position: relative;
-  width: 100%; /* Full width of parent */
+  width: 100%;
+  /* Full width of parent */
 }
 
 /* ===================================
@@ -426,9 +445,11 @@
 
 /* Base quest text container */
 .frame .quest-find-out-what {
-  color: transparent; /* Transparent base, colors set on spans */
+  color: transparent;
+  /* Transparent base, colors set on spans */
   font-family: "Inter", Helvetica, sans-serif;
-  font-size: 24px; /* Base size for normal state */
+  font-size: 24px;
+  /* Base size for normal state */
   font-weight: 400;
   letter-spacing: 0;
   line-height: normal;
@@ -442,19 +463,25 @@
 
 /* Quest Label - "Quest:" heading */
 .frame .quest-label {
-  color: #b2652a; /* Orange */
+  color: #b2652a;
+  /* Orange */
   font-family: "Inter", Helvetica, sans-serif;
-  font-size: 24px; /* Inherits from parent, can be overridden */
-  font-weight: 700; /* Bold */
+  font-size: 24px;
+  /* Inherits from parent, can be overridden */
+  font-weight: 700;
+  /* Bold */
   letter-spacing: 0;
 }
 
 /* Quest Description - the actual quest text */
 .frame .quest-description {
-  color: #5c5c5c; /* Gray */
+  color: #5c5c5c;
+  /* Gray */
   font-family: "Inter", Helvetica, sans-serif;
-  font-size: 24px; /* Inherits from parent, can be overridden */
-  font-weight: 400; /* Regular */
+  font-size: 24px;
+  /* Inherits from parent, can be overridden */
+  font-weight: 400;
+  /* Regular */
   letter-spacing: 0;
 }
 
@@ -477,7 +504,8 @@
 
 /* Quest Offer: Larger, centered layout */
 .frame .quest-find-out-what.quest-offer {
-  font-size: 36px; /* Larger base size */
+  font-size: 36px;
+  /* Larger base size */
   text-align: center;
 }
 
@@ -509,18 +537,21 @@
 
 .frame .whiteframe.answer-frame {
   align-items: center;
-  background: #ffffff !important; /* Plain white background - override grey tint from .whiteframe */
+  background: #ffffff !important;
+  /* Plain white background - override grey tint from .whiteframe */
   border-color: #49301d;
   border-left-style: solid;
   border-left-width: 1px;
-  border-radius: 0px; /* No rounded corners - middle box */
+  border-radius: 0px;
+  /* No rounded corners - middle box */
   border-right-style: solid;
   border-right-width: 1px;
   border-top-style: solid;
   border-top-width: 1px;
   border-bottom-style: solid;
   border-bottom-width: 1px;
-  box-shadow: inset 0px -1px 8px -3px #000000; /* Bottom-only shadow */
+  box-shadow: inset 0px -1px 8px -3px #000000;
+  /* Bottom-only shadow */
   display: flex;
   flex: 0 0 auto;
   flex-direction: column;
@@ -535,13 +566,16 @@
 
 /* Answer frame's quest container - stack label and input box vertically */
 .frame .whiteframe.answer-frame .quest {
-  flex-direction: column; /* Stack children vertically instead of horizontally */
-  align-items: flex-start; /* Align items to the left */
+  flex-direction: column;
+  /* Stack children vertically instead of horizontally */
+  align-items: flex-start;
+  /* Align items to the left */
 }
 
 /* Answer frame in feedback states - rounded bottom corners when button rail is hidden */
 .frame .whiteframe.answer-frame.answer-feedback-state {
-  border-radius: 0px 0px 16px 16px; /* Rounded bottom corners to match where button rail would be */
+  border-radius: 0px 0px 16px 16px;
+  /* Rounded bottom corners to match where button rail would be */
 }
 
 /* ===================================
@@ -558,27 +592,34 @@
   border-left-width: 1px;
   border-right-style: solid;
   border-right-width: 1px;
-  border-radius: 0px 0px 16px 16px; /* Rounded bottom corners only */
+  border-radius: 0px 0px 16px 16px;
+  /* Rounded bottom corners only */
   display: flex;
   flex: 0 0 auto;
   flex-direction: column;
   gap: 34px;
-  padding: 18px 20px 32px 20px; /* Button padding: 18px top, 32px bottom */
+  padding: 18px 20px 32px 20px;
+  /* Button padding: 18px top, 32px bottom */
   position: relative;
-  width: 100%; /* Expand to fill frame width instead of fixed 620px */
-  min-width: 540px; /* Minimum to fit buttons: 192+15+59+40+192+40 = 538px, rounded to 540px */
-  box-sizing: border-box; /* Include padding and borders in width calculation */
+  width: 100%;
+  /* Expand to fill frame width instead of fixed 620px */
+  min-width: 540px;
+  /* Minimum to fit buttons: 192+15+59+40+192+40 = 538px, rounded to 540px */
+  box-sizing: border-box;
+  /* Include padding and borders in width calculation */
 }
 
 .frame .div {
   align-items: center;
   align-self: stretch;
   display: flex;
-  height: 55px; /* Reduced from 75px to match button height */
+  height: 55px;
+  /* Reduced from 75px to match button height */
   justify-content: space-between;
   position: relative;
   width: 100%;
-  gap: 60px; /* Minimum 60px spacing between Ask/Hint group and Answer button */
+  gap: 60px;
+  /* Minimum 60px spacing between Ask/Hint group and Answer button */
 }
 
 .frame .div-2 {
@@ -605,35 +646,40 @@
 /* Answer Input Box - styled to look like a text input field */
 .frame .answer-input-box {
   /* Background with subtle gradient for depth */
-  background: linear-gradient(
-    180deg,
-    #fafafa 0%,
-    #ffffff 100%
-  );
+  background: linear-gradient(180deg,
+      #fafafa 0%,
+      #ffffff 100%);
 
   /* Multi-layer border for realistic input appearance */
-  border: 1px solid #d4d4d4; /* Light grey outer border */
+  border: 1px solid #d4d4d4;
+  /* Light grey outer border */
   box-shadow:
-    inset 0px 1px 3px rgba(0, 0, 0, 0.12),  /* Inner shadow for recessed look */
-    0px 1px 0px rgba(255, 255, 255, 0.8),   /* Bottom highlight for 3D effect */
-    0px 0px 0px 1px rgba(73, 48, 29, 0.1);  /* Subtle brown tint border */
+    inset 0px 1px 3px rgba(0, 0, 0, 0.12),
+    /* Inner shadow for recessed look */
+    0px 1px 0px rgba(255, 255, 255, 0.8),
+    /* Bottom highlight for 3D effect */
+    0px 0px 0px 1px rgba(73, 48, 29, 0.1);
+  /* Subtle brown tint border */
 
   border-radius: 6px;
   padding: 12px 16px;
   min-height: 48px;
   display: flex;
   align-items: center;
-  margin-top: 8px; /* Space between "Answer:" label and input box */
+  margin-top: 8px;
+  /* Space between "Answer:" label and input box */
 
   /* Text styling */
   font-family: "Inter", Helvetica, sans-serif;
   font-size: 18px;
   font-weight: 400;
-  color: #3d3d3d; /* Darker text for better readability */
+  color: #3d3d3d;
+  /* Darker text for better readability */
   line-height: 1.5;
   word-wrap: break-word;
   box-sizing: border-box;
-  width: 100%; /* Span full width of parent container */
+  width: 100%;
+  /* Span full width of parent container */
 
   /* Smooth transitions for any state changes */
   transition: all 0.2s ease-in-out;
@@ -644,18 +690,24 @@
 
 /* Placeholder text styling - grey color to indicate it's not real content yet */
 .frame .answer-input-box .answer-placeholder {
-  color: #9ca3af; /* Medium grey - clearly different from real text */
-  font-style: italic; /* Italic to further distinguish from real content */
+  color: #9ca3af;
+  /* Medium grey - clearly different from real text */
+  font-style: italic;
+  /* Italic to further distinguish from real content */
   font-weight: 400;
 }
 
 /* Optional hover state for input box (subtle interaction feedback) */
 .frame .answer-input-box:hover {
-  border-color: #b8b8b8; /* Slightly darker border on hover */
+  border-color: #b8b8b8;
+  /* Slightly darker border on hover */
   box-shadow:
-    inset 0px 1px 3px rgba(0, 0, 0, 0.15),  /* Slightly stronger inner shadow */
-    0px 1px 0px rgba(255, 255, 255, 0.9),   /* Brighter bottom highlight */
-    0px 0px 0px 1px rgba(73, 48, 29, 0.15); /* Slightly stronger brown tint */
+    inset 0px 1px 3px rgba(0, 0, 0, 0.15),
+    /* Slightly stronger inner shadow */
+    0px 1px 0px rgba(255, 255, 255, 0.9),
+    /* Brighter bottom highlight */
+    0px 0px 0px 1px rgba(73, 48, 29, 0.15);
+  /* Slightly stronger brown tint */
 }
 
 /* Answer feedback states (waiting, right, wrong): Add subtle pulsing glow to indicate processing/result */
@@ -663,23 +715,29 @@
 .frame .quest.answer-right .answer-input-box,
 .frame .quest.answer-wrong .answer-input-box {
   animation: inputPulse 2s ease-in-out infinite;
-  border-color: #b2652a; /* Orange border to match quest theme */
+  border-color: #b2652a;
+  /* Orange border to match quest theme */
 }
 
 @keyframes inputPulse {
-  0%, 100% {
+
+  0%,
+  100% {
     box-shadow:
       inset 0px 1px 3px rgba(0, 0, 0, 0.12),
       0px 1px 0px rgba(255, 255, 255, 0.8),
       0px 0px 0px 1px rgba(178, 101, 42, 0.3),
-      0px 0px 8px rgba(178, 101, 42, 0.2); /* Subtle orange glow */
+      0px 0px 8px rgba(178, 101, 42, 0.2);
+    /* Subtle orange glow */
   }
+
   50% {
     box-shadow:
       inset 0px 1px 3px rgba(0, 0, 0, 0.12),
       0px 1px 0px rgba(255, 255, 255, 0.8),
       0px 0px 0px 1px rgba(178, 101, 42, 0.5),
-      0px 0px 12px rgba(178, 101, 42, 0.4); /* Stronger orange glow */
+      0px 0px 12px rgba(178, 101, 42, 0.4);
+    /* Stronger orange glow */
   }
 }
 
@@ -689,9 +747,12 @@
 }
 
 @keyframes subtleBreathing {
-  0%, 100% {
+
+  0%,
+  100% {
     opacity: 1;
   }
+
   50% {
     opacity: 0.85;
   }
@@ -709,18 +770,24 @@
   align-items: center;
   background-image: url(/VisualAssets/cardboard.png);
   background-position: center;
-  background-size: 360px 540px; /* 30% of original 1200×1800px (1200×0.3=360, 1800×0.3=540) */
-  background-repeat: repeat; /* Tile the texture instead of stretching */
+  background-size: 360px 540px;
+  /* 30% of original 1200×1800px (1200×0.3=360, 1800×0.3=540) */
+  background-repeat: repeat;
+  /* Tile the texture instead of stretching */
   border: 3px solid;
   border-color: #49301d;
   border-radius: 16px;
   box-sizing: border-box;
   display: flex;
-  flex-direction: row; /* Horizontal layout for icon + text */
-  gap: 0; /* No gap, margins handled on elements */
-  height: 55px; /* Reduced from 75px by 20px */
+  flex-direction: row;
+  /* Horizontal layout for icon + text */
+  gap: 0;
+  /* No gap, margins handled on elements */
+  height: 55px;
+  /* Reduced from 75px by 20px */
   justify-content: center;
-  padding: 8px 20px; /* Reduced padding to fit icon + text */
+  padding: 8px 20px;
+  /* Reduced padding to fit icon + text */
   position: relative;
   cursor: pointer;
   transition: all 0.15s ease;
@@ -750,7 +817,8 @@
 /* Hint button specific width - tight */
 .frame .hint-btn {
   width: 59px;
-  padding: 8px 0; /* Remove horizontal padding so icon fits */
+  padding: 8px 0;
+  /* Remove horizontal padding so icon fits */
 }
 
 /* Answer button specific width */
@@ -774,14 +842,14 @@
   content: '';
   position: absolute;
   inset: 0;
-  background: linear-gradient(
-    0deg,
-    rgba(0, 0, 0, 0.15) 0%,
-    rgba(0, 0, 0, 0.15) 100%
-  ); /* Darken effect on hover */
+  background: linear-gradient(0deg,
+      rgba(0, 0, 0, 0.15) 0%,
+      rgba(0, 0, 0, 0.15) 100%);
+  /* Darken effect on hover */
   border-radius: 16px;
   pointer-events: none;
-  z-index: 2; /* Above green overlay */
+  z-index: 2;
+  /* Above green overlay */
 }
 
 /* Hover state - Answer button darkens the purple */
@@ -789,14 +857,14 @@
   content: '';
   position: absolute;
   inset: 0;
-  background: linear-gradient(
-    0deg,
-    rgba(0, 0, 0, 0.15) 0%,
-    rgba(0, 0, 0, 0.15) 100%
-  ); /* Darken effect on hover */
+  background: linear-gradient(0deg,
+      rgba(0, 0, 0, 0.15) 0%,
+      rgba(0, 0, 0, 0.15) 100%);
+  /* Darken effect on hover */
   border-radius: 16px;
   pointer-events: none;
-  z-index: 2; /* Above purple overlay */
+  z-index: 2;
+  /* Above purple overlay */
 }
 
 /* Hover state - Hint button keeps red tint */
@@ -804,11 +872,10 @@
   content: '';
   position: absolute;
   inset: 0;
-  background: linear-gradient(
-    0deg,
-    rgba(216, 25, 25, 0.17) 0%,
-    rgba(216, 25, 25, 0.17) 100%
-  ); /* Red overlay for hint button */
+  background: linear-gradient(0deg,
+      rgba(216, 25, 25, 0.17) 0%,
+      rgba(216, 25, 25, 0.17) 100%);
+  /* Red overlay for hint button */
   border-radius: 16px;
   pointer-events: none;
   z-index: 1;
@@ -826,11 +893,10 @@
   content: '';
   position: absolute;
   inset: 0;
-  background: linear-gradient(
-    0deg,
-    rgba(0, 0, 0, 0.25) 0%,
-    rgba(0, 0, 0, 0.25) 100%
-  ) !important; /* Darker overlay on press */
+  background: linear-gradient(0deg,
+      rgba(0, 0, 0, 0.25) 0%,
+      rgba(0, 0, 0, 0.25) 100%) !important;
+  /* Darker overlay on press */
   border-radius: 16px;
   pointer-events: none;
   z-index: 2;
@@ -841,11 +907,10 @@
   content: '';
   position: absolute;
   inset: 0;
-  background: linear-gradient(
-    0deg,
-    rgba(0, 0, 0, 0.25) 0%,
-    rgba(0, 0, 0, 0.25) 100%
-  ) !important; /* Darker overlay on press */
+  background: linear-gradient(0deg,
+      rgba(0, 0, 0, 0.25) 0%,
+      rgba(0, 0, 0, 0.25) 100%) !important;
+  /* Darker overlay on press */
   border-radius: 16px;
   pointer-events: none;
   z-index: 2;
@@ -856,11 +921,10 @@
   content: '';
   position: absolute;
   inset: 0;
-  background: linear-gradient(
-    0deg,
-    rgba(216, 25, 25, 0.17) 0%,
-    rgba(216, 25, 25, 0.17) 100%
-  ) !important; /* Red overlay on press */
+  background: linear-gradient(0deg,
+      rgba(216, 25, 25, 0.17) 0%,
+      rgba(216, 25, 25, 0.17) 100%) !important;
+  /* Red overlay on press */
   border-radius: 16px;
   pointer-events: none;
   z-index: 1;
@@ -879,9 +943,11 @@
     url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.4' numOctaves='3' /%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.6' /%3E%3C/svg%3E"),
     linear-gradient(0deg, rgba(0, 0, 0, 0.3) 0%, rgba(0, 0, 0, 0.2) 100%) !important;
   background-blend-mode: overlay, normal !important;
-  background-size: 150px 150px, cover !important; /* Noise tiles at fixed size, gradient covers */
+  background-size: 150px 150px, cover !important;
+  /* Noise tiles at fixed size, gradient covers */
   background-position: center, center !important;
-  background-repeat: repeat, no-repeat !important; /* Noise repeats for texture, gradient doesn't */
+  background-repeat: repeat, no-repeat !important;
+  /* Noise repeats for texture, gradient doesn't */
   /* Brown border matching other buttons */
   border-color: #49301d !important;
   border-width: 3px !important;
@@ -900,9 +966,11 @@
     url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.4' numOctaves='3' /%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.6' /%3E%3C/svg%3E"),
     linear-gradient(0deg, rgba(0, 0, 0, 0.3) 0%, rgba(0, 0, 0, 0.2) 100%) !important;
   background-blend-mode: overlay, normal !important;
-  background-size: 150px 150px, cover !important; /* Noise tiles at fixed size, gradient covers */
+  background-size: 150px 150px, cover !important;
+  /* Noise tiles at fixed size, gradient covers */
   background-position: center, center !important;
-  background-repeat: repeat, no-repeat !important; /* Noise repeats for texture, gradient doesn't */
+  background-repeat: repeat, no-repeat !important;
+  /* Noise repeats for texture, gradient doesn't */
   /* Dark border matching other buttons */
   border-color: #49301d !important;
   border-width: 3px !important;
@@ -938,29 +1006,41 @@
 
 /* Recording pulse animation - Red (Ask button) */
 @keyframes recordingPulseRed {
-  0%, 100% {
+
+  0%,
+  100% {
     background-color: #d81919;
     box-shadow: inset 0px 0px 15px 0px rgba(255, 124, 124, 0.8);
     filter: brightness(1);
   }
+
   50% {
-    background-color: #ff4444; /* Bright vibrant red */
-    box-shadow: inset 0px 0px 20px 0px rgba(255, 124, 124, 1); /* Stronger glow for intense pulse */
-    filter: brightness(1.3); /* Extra brightness boost */
+    background-color: #ff4444;
+    /* Bright vibrant red */
+    box-shadow: inset 0px 0px 20px 0px rgba(255, 124, 124, 1);
+    /* Stronger glow for intense pulse */
+    filter: brightness(1.3);
+    /* Extra brightness boost */
   }
 }
 
 /* Recording pulse animation - Purple (Answer button) */
 @keyframes recordingPulsePurple {
-  0%, 100% {
+
+  0%,
+  100% {
     background-color: #6b3a8f;
     box-shadow: inset 0px 0px 15px 0px rgba(180, 120, 255, 0.5);
     filter: brightness(1);
   }
+
   50% {
-    background-color: #caa3e5; /* Brighter vibrant purple */
-    box-shadow: inset 0px 0px 20px 0px rgba(180, 120, 255, 0.8); /* Stronger glow for intense pulse */
-    filter: brightness(1.5); /* Extra brightness boost */
+    background-color: #caa3e5;
+    /* Brighter vibrant purple */
+    box-shadow: inset 0px 0px 20px 0px rgba(180, 120, 255, 0.8);
+    /* Stronger glow for intense pulse */
+    filter: brightness(1.5);
+    /* Extra brightness boost */
   }
 }
 
@@ -1018,8 +1098,10 @@
   width: 30px;
   object-fit: contain;
   position: relative;
-  filter: brightness(0) invert(1); /* Makes the icon white */
-  z-index: 2; /* Above any overlays */
+  filter: brightness(0) invert(1);
+  /* Makes the icon white */
+  z-index: 2;
+  /* Above any overlays */
   /* Compensate for lightbulb SVG's bottom-heavy viewBox (content extends to y=97.5 in 0-100 viewBox) */
   /* Shift up by 2px to visually align with Ask button text baseline */
   transform: translateY(-2px);
@@ -1055,12 +1137,14 @@
 /* Locked state - disable interactions but keep cardboard visible */
 .next-btn.locked {
   cursor: not-allowed;
-  opacity: 0.5; /* Dim when locked */
+  opacity: 0.5;
+  /* Dim when locked */
 }
 
 /* Locked state doesn't get hover/active effects */
 .next-btn.locked:hover::after {
-  display: none; /* No hover overlay when locked */
+  display: none;
+  /* No hover overlay when locked */
 }
 
 .next-btn.locked:active {
@@ -1068,7 +1152,8 @@
 }
 
 .next-btn.locked:active::after {
-  display: none; /* No red overlay when locked */
+  display: none;
+  /* No red overlay when locked */
 }
 
 .next-label-text {
@@ -1084,26 +1169,29 @@
   position: relative;
   text-align: center;
   width: fit-content;
-  z-index: 2; /* Above purple overlay (z-index: 1) */
+  z-index: 2;
+  /* Above purple overlay (z-index: 1) */
 }
 
 .next-label-background {
   font-family: "Inter", Helvetica, sans-serif;
-  font-size: 14px;
+  font-size: 32px;
   font-weight: 700;
   color: rgba(255, 255, 255, 0.3);
   text-transform: uppercase;
   letter-spacing: 1px;
   position: absolute;
-  z-index: 2; /* Above purple overlay */
+  z-index: 2;
+  /* Above purple overlay */
 }
 
 .lock-image-overlay {
-  width: 24px;
-  height: 24px;
+  width: 34px;
+  height: 34px;
   object-fit: contain;
   position: absolute;
-  z-index: 3; /* Above overlay and text */
+  z-index: 3;
+  /* Above overlay and text */
 }
 
 .next-btn .arrow {
@@ -1111,7 +1199,8 @@
   font-weight: bold;
   color: white;
   position: relative;
-  z-index: 2; /* Above purple overlay */
+  z-index: 2;
+  /* Above purple overlay */
 }
 
 /* ===================================
@@ -1139,6 +1228,7 @@
     opacity: 0;
     transform: translate(-50%, -50%) scale(0.9);
   }
+
   to {
     opacity: 1;
     transform: translate(-50%, -50%) scale(1);
@@ -1155,9 +1245,11 @@
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
-  height: 100%; /* Master size control - adjust this single value to scale everything */
+  height: 100%;
+  /* Master size control - adjust this single value to scale everything */
   width: auto;
-  aspect-ratio: 1; /* Keep square aspect ratio */
+  aspect-ratio: 1;
+  /* Keep square aspect ratio */
   pointer-events: none;
   z-index: 1102;
 }
@@ -1168,7 +1260,7 @@
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
-  height: 100%; 
+  height: 100%;
   width: auto;
   display: flex;
   align-items: center;
@@ -1197,13 +1289,20 @@
 /* Hand stamp video - positioned within container, scales with container */
 .answer-hand-stamp-video {
   position: absolute;
-  top: -130%; /* Offset upward so hand enters from above */
-  left: -40%; /* Offset slightly left for natural hand angle */
-  width: 450%; /* Slightly larger than container for hand to come from off-screen */
+  top: -130%;
+  /* Offset upward so hand enters from above */
+  left: -40%;
+  /* Offset slightly left for natural hand angle */
+  width: 450%;
+  /* Slightly larger than container for hand to come from off-screen */
+  max-width: none;
+  /* Override Tailwind base layer max-width: 100% */
   height: auto;
   object-fit: contain;
   opacity: 1;
   pointer-events: none;
+  z-index: 10;
+  /* Ensure video is above the seal */
 }
 
 /* ===================================
@@ -1224,36 +1323,36 @@
 
 /* Frame transitions for padding, size, and filter changes */
 .frame {
-  transition: padding 0.5s cubic-bezier(0.34, 1.56, 0.64, 1),
-              filter 1.5s ease-in-out,
-              transform 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
+  transition: padding 0.5s cubic-bezier(0.25, 1, 0.5, 1),
+    filter 1.5s ease-in-out,
+    transform 0.5s cubic-bezier(0.25, 1, 0.5, 1);
 }
 
 /* Quest box transitions */
 .frame .whiteframe {
   transition: padding 0.4s ease-in-out,
-              gap 0.4s ease-in-out,
-              transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+    gap 0.4s ease-in-out,
+    transform 0.4s cubic-bezier(0.25, 1, 0.5, 1);
 }
 
 /* Quest text transitions */
 .frame .quest {
   transition: padding 0.4s ease-in-out,
-              transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+    transform 0.4s cubic-bezier(0.25, 1, 0.5, 1);
 }
 
 .frame .quest-find-out-what {
   transition: font-size 0.4s ease-in-out,
-              text-align 0.4s ease-in-out,
-              transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+    text-align 0.4s ease-in-out,
+    transform 0.4s cubic-bezier(0.25, 1, 0.5, 1);
 }
 
 /* Button rail transitions */
 .frame .frame-wrapper {
   transition: padding 0.4s ease-in-out,
-              gap 0.4s ease-in-out,
-              opacity 0.3s ease-out,
-              transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+    gap 0.4s ease-in-out,
+    opacity 0.3s ease-out,
+    transform 0.4s cubic-bezier(0.25, 1, 0.5, 1);
 }
 
 /* Button transitions (Ask, Hint, Answer) */
@@ -1261,23 +1360,23 @@
 .frame .hint-btn,
 .next-btn {
   transition: opacity 0.3s ease-out,
-              transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1),
-              background 0.3s ease-in-out,
-              box-shadow 0.15s ease;
+    transform 0.3s cubic-bezier(0.25, 1, 0.5, 1),
+    background 0.3s ease-in-out,
+    box-shadow 0.15s ease;
 }
 
 /* Answer text transitions */
 .frame .answer-text-display {
   transition: opacity 0.4s ease-in-out,
-              padding 0.4s ease-in-out,
-              transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+    padding 0.4s ease-in-out,
+    transform 0.4s cubic-bezier(0.25, 1, 0.5, 1);
 }
 
 
 /* Glow pseudo-element transitions */
 .record-panel-container .frame::before {
   transition: box-shadow 1.5s ease-in-out,
-              opacity 1.2s ease-in-out;
+    opacity 1.2s ease-in-out;
 }
 
 /* ===================================
@@ -1293,6 +1392,7 @@
     bottom: 40px;
     opacity: 1;
   }
+
   to {
     bottom: -200px;
     opacity: 0;

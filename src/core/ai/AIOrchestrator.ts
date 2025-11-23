@@ -43,6 +43,14 @@ let pendingFeedbackGeneration: Promise<string | null> | null = null;
 let conversationHistories: Record<string, ConversationMessage[]> = {};
 
 /**
+ * Module-level storage for selected clues
+ * This stores the selected clue per conversationId until the user question is received
+ * When a user selects a clue, it's stored here. When they ask a question,
+ * the clue context is retrieved and combined with the question before sending to AI.
+ */
+let selectedClues: Record<string, { label: string; description: string }> = {};
+
+/**
  * Get conversation metadata for a specific conversationId
  * Used by AI processing to get character descriptions
  */
@@ -143,6 +151,48 @@ export function clearAllConversationHistories() {
 }
 
 /**
+ * Store a selected clue for a specific conversationId
+ * This is called when user selects a clue from the ClueSelectionPanel
+ * The clue will be stored until the question is asked, then automatically cleared
+ */
+export function setSelectedClue(conversationId: string, label: string, description: string) {
+  if (!conversationId) return;
+
+  selectedClues[conversationId] = { label, description };
+
+  debug.log('Stored selected clue:', {
+    conversationId,
+    label,
+    descriptionLength: description.length
+  });
+}
+
+/**
+ * Get the selected clue for a specific conversationId
+ * Returns undefined if no clue is selected
+ */
+export function getSelectedClue(conversationId: string | undefined): { label: string; description: string } | undefined {
+  if (!conversationId) return undefined;
+  return selectedClues[conversationId];
+}
+
+/**
+ * Clear the selected clue for a specific conversationId
+ * This is called after the clue context has been used in an AI call
+ */
+export function clearSelectedClue(conversationId: string) {
+  delete selectedClues[conversationId];
+  debug.log('Cleared selected clue for:', conversationId);
+}
+
+/**
+ * Clear all selected clues (useful for cleanup/testing)
+ */
+export function clearAllSelectedClues() {
+  selectedClues = {};
+}
+
+/**
  * AI Service Input
  */
 export interface AIServiceInput {
@@ -206,18 +256,34 @@ export async function callAIService(input: AIServiceInput): Promise<AIServiceOut
       conversationHistory.length, 'messages');
   }
 
-  // Add user message to history BEFORE calling AI
-  addUserMessage(input.conversationId, input.questionText);
+  // Check if user has a selected clue - if so, prepend it to the question
+  let finalQuestionText = input.questionText;
+  const selectedClue = getSelectedClue(input.conversationId);
+
+  if (selectedClue) {
+    finalQuestionText = `Context: ${selectedClue.description}\n\nQuestion: ${input.questionText}`;
+    debug.event('🔍', 'Prepending selected clue context to question:', {
+      clueLabel: selectedClue.label,
+      originalQuestionLength: input.questionText.length,
+      finalQuestionLength: finalQuestionText.length
+    });
+
+    // Clear the selected clue after using it
+    clearSelectedClue(input.conversationId);
+  }
+
+  // Add user message to history BEFORE calling AI (use the final combined text)
+  addUserMessage(input.conversationId, finalQuestionText);
 
   debug.event('📤', 'Calling AI with history:', {
-    questionLength: input.questionText.length,
+    questionLength: finalQuestionText.length,
     historyLength: conversationHistory.length,
     conversationId: input.conversationId
   });
 
-  // Call AI service with conversation history
+  // Call AI service with conversation history (using the combined question text)
   const response = await callAI({
-    questionText: input.questionText,
+    questionText: finalQuestionText,
     characterDescription: metadata.characterDescription,
     conversationHistory
   });

@@ -133,6 +133,15 @@ export type AskButtonClickedEvent = {
 };
 
 /**
+ * ANSWER_BUTTON_CLICKED
+ * Emitted when: User clicks the Answer button
+ * Purpose: Trigger answer recording start and phase transition
+ */
+export type AnswerButtonClickedEvent = {
+  type: 'ANSWER_BUTTON_CLICKED';
+};
+
+/**
  * RECORDING_STOPPED
  * Emitted when: User stops recording
  * Payload: Recording type
@@ -178,8 +187,8 @@ export type FeedbackReceivedEvent = {
 
 /**
  * ANSWER_RECORDING_STARTED
- * Emitted when: User clicks Answer button and recording starts
- * Payload: Recording ID for tracking
+ * @deprecated Use ANSWER_BUTTON_CLICKED instead (follows new state machine pattern)
+ * Legacy event from orchestrator pattern - no longer emitted
  */
 export type AnswerRecordingStartedEvent = {
   type: 'ANSWER_RECORDING_STARTED';
@@ -349,6 +358,7 @@ export type NavigationEvent =
   | ReceivedAIResponseEvent
   | FeedbackReceivedEvent
   | AskButtonClickedEvent
+  | AnswerButtonClickedEvent
   | AnswerRecordingStartedEvent
   | LoadStoryRequestedEvent
   | ApplyGraphEvent
@@ -409,6 +419,8 @@ export type NavigationContext = {
   feedbackReceived?: boolean;
   /** Track success-dance node ID for cleanup (for answer-right flow) */
   successDanceNodeId?: string;
+  /** Flag to unlock answer button (set to true after user asks a question or via debug mode) */
+  unlockAnswerButton: boolean;
 };
 
 // Note: Phase is NOT tracked in parent context - it lives in:

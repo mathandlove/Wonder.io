@@ -68,7 +68,7 @@ export function buildBackgroundRanges(storyContent: SceneContent[]): BackgroundR
   }
 
   // console.log('[buildBackgroundRanges] ✅ Built', backgroundRanges.length, 'ranges:',
-    backgroundRanges.map(r => `[${r.startIndex}-${r.endIndex}]: ${r.background}`).join(', '));
+  //   backgroundRanges.map(r => `[${r.startIndex}-${r.endIndex}]: ${r.background}`).join(', '));
 
   return backgroundRanges;
 }

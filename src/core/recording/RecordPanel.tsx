@@ -14,6 +14,8 @@ import { ClueSelectionPanel } from './ClueSelectionPanel';
 import { useClueStore } from '@core/data/ClueStore';
 import { getCurrentNode } from '@core/navigation/navigationHelpers';
 import { getConversationMetadata } from '@core/ai/AIOrchestrator';
+import { getServiceInstance } from '@core/navigation/machine/navigationInterpreter';
+import { useAudioLevel } from './RecordingOrchestrator';
 import * as navigationBus from '@core/navigation/events/navigationBus';
 import type { CharacterScene } from '@core/types/scene';
 import './css/RecordPanel.css';
@@ -33,6 +35,9 @@ export const RecordPanel: React.FC<RecordPanelProps> = ({
   const { toast, hideToast } = useToast();
   const containerRef = React.useRef<HTMLDivElement>(null);
 
+  // Get real-time audio level for visualization (updates at 60fps)
+  const audioLevel = useAudioLevel();
+
   // Get clues from ClueStore for clue selection
   const { clues } = useClueStore();
 
@@ -40,6 +45,19 @@ export const RecordPanel: React.FC<RecordPanelProps> = ({
   const currentNode = getCurrentNode();
   const scene = currentNode?.scene as CharacterScene;
   const dialogueState = currentNode?.phase || 'basic'; // Phase IS the dialogue state
+
+  // Get unlockAnswerButton flag from machine context
+  const [unlockAnswerButton, setUnlockAnswerButton] = React.useState(false);
+  React.useEffect(() => {
+    const service = getServiceInstance();
+    if (!service) return;
+
+    const subscription = service.subscribe((snapshot) => {
+      setUnlockAnswerButton(snapshot.context.unlockAnswerButton);
+    });
+
+    return () => subscription.unsubscribe();
+  }, []);
 
   // Debug: Log clues and phase changes
   React.useEffect(() => {
@@ -207,10 +225,10 @@ export const RecordPanel: React.FC<RecordPanelProps> = ({
                   answerText ? (
                     <span className="answer-placeholder">{answerText}</span>
                   ) : (
-                    <AudioVisualizer audioLevel={0.5} className="answer-variant" mode="listening" />
+                    <AudioVisualizer audioLevel={audioLevel} className="answer-variant" mode="listening" />
                   )
                 ) : isAnswerProcessing ? (
-                  <AudioVisualizer audioLevel={0} className="answer-variant" mode="processing" />
+                  <AudioVisualizer audioLevel={audioLevel} className="answer-variant" mode="processing" />
                 ) : (
                   <span className="quest-description">{answerText || 'Someone stole your cookies.'}</span>
                 )}
@@ -282,9 +300,9 @@ export const RecordPanel: React.FC<RecordPanelProps> = ({
                   </button>
                 </div>
 
-                {/* Answer Button - locked state controlled by quest completion, transforms when recording answer */}
+                {/* Answer Button - locked until first transcript received or quest complete, transforms when recording answer */}
                 <NextButton
-                  locked={questState !== 'complete'}
+                  locked={!unlockAnswerButton && questState !== 'complete'}
                   onClick={handleAnswerClick}
                   onRecordStop={onRecordStop}
                   label="Answer"
