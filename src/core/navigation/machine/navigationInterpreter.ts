@@ -23,7 +23,7 @@ let serviceInstance: ReturnType<typeof createActor> | null = null;
  * Create the browser inspector in development mode
  * This enables visualization at https://stately.ai/viz?inspect
  */
-const inspector = typeof window !== 'undefined' && window.location.hostname === 'localhost'
+const inspector = typeof window !== 'undefined' && import.meta.env.DEV
   ? createBrowserInspector()
   : undefined;
 
@@ -51,7 +51,7 @@ export function startNavigationService(): ReturnType<typeof createActor> {
   navigationBus.subscribe((event) => {
     if (!serviceInstance) return;
 
-    // console.log('[NavigationInterpreter] Received event:', event.type);
+    console.log('[NavigationInterpreter] Received event:', event.type);
     serviceInstance.send(event);
   });
 
@@ -61,14 +61,14 @@ export function startNavigationService(): ReturnType<typeof createActor> {
     const node = useNavigationStore.getState().getCurrentNode();
 
     // Build log info with machine state and complete node
-    // const logInfo: Record<string, unknown> = {
-    //   machineState: snapshot.value,
-    //   scene: node?.scene?.type || 'none',
-    //   phase: node?.phase || 'none',
-    //   nodeId: node?.id.substring(0, 8) + '...' || 'none',
-    // };
+    const logInfo: Record<string, unknown> = {
+      machineState: snapshot.value,
+      scene: node?.scene?.type || 'none',
+      phase: node?.phase || 'none',
+      nodeId: node?.id.substring(0, 8) + '...' || 'none',
+    };
 
-    // console.log('[NavigationInterpreter] State changed to:', logInfo);
+    console.log('[NavigationInterpreter] State changed to:', logInfo);
 
     // Note: Actions now call store methods directly, no queue processing needed
   });
@@ -76,7 +76,19 @@ export function startNavigationService(): ReturnType<typeof createActor> {
   // Start the machine
   serviceInstance.start();
 
-  // console.log('[NavigationInterpreter] Navigation service started');
+  console.log('[NavigationInterpreter] Navigation service started');
+  if (inspector) {
+    console.log('🔍 XState Inspector enabled - visit https://stately.ai/viz?inspect to visualize');
+  }
+
+  // Expose service instance on window for debugging in development
+  if (typeof window !== 'undefined' && import.meta.env.DEV) {
+    (window as Window & { __xstate?: typeof serviceInstance }).__xstate = serviceInstance;
+    console.log('🐛 XState service available as window.__xstate');
+    console.log('   - Get current state: __xstate.getSnapshot().value');
+    console.log('   - Get context: __xstate.getSnapshot().context');
+    console.log('   - Send event: __xstate.send({ type: "EVENT_NAME" })');
+  }
 
   // Kick off the boot sequence by requesting the gingerbread story to be loaded
   serviceInstance.send({
@@ -101,7 +113,7 @@ export function stopNavigationService(): void {
   serviceInstance.stop();
   serviceInstance = null;
 
-  // console.log('[NavigationInterpreter] Navigation service stopped');
+  console.log('[NavigationInterpreter] Navigation service stopped');
 }
 
 /**

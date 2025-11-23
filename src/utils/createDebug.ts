@@ -199,10 +199,11 @@ export const debugUtils = {
     console.log('  wonder:scenes:*      - All scene logs');
     console.log('  wonder:*             - All Wonder.io logs');
     console.log('\n🎯 Quick presets:');
-    console.log('  __debug.enableAll()    - Show all Wonder.io logs');
-    console.log('  __debug.recommended()  - Balanced (hide noisy logs)');
-    console.log('  __debug.xstateOnly()   - Only XState machine changes');
-    console.log('  __debug.disableAll()   - Hide all logs');
+    console.log('  __debug.enableAll()      - Show all Wonder.io logs');
+    console.log('  __debug.recommended()    - Balanced (hide noisy logs)');
+    console.log('  __debug.xstateOnly()     - Only XState machine changes');
+    console.log('  __debug.recordingOnly()  - Only recording logic (hide navigation)');
+    console.log('  __debug.disableAll()     - Hide all logs');
   },
 
   /**
@@ -249,6 +250,20 @@ export const debugUtils = {
     console.log('   ✗ All other debug logs (recording, store, graph, etc.)');
     console.log('🔄 Refresh the page to apply changes');
   },
+
+  /**
+   * Show only recording logs (hide navigation state changes)
+   */
+  recordingOnly() {
+    const recordingPattern = 'wonder:recording:*,-wonder:navigation:*';
+    localStorage.setItem('debug', recordingPattern);
+    console.log('✅ Debug set to Recording-only mode:');
+    console.log('   ✓ Recording orchestrator');
+    console.log('   ✓ Recording transcripts');
+    console.log('   ✓ Recording API lifecycle');
+    console.log('   ✗ Navigation state changes (machine, store, graph, events, queue)');
+    console.log('🔄 Refresh the page to apply changes');
+  },
 };
 
 /**
@@ -259,7 +274,7 @@ export const debugUtils = {
  * - 'all' - Everything
  * - 'none' - Nothing (you'll use __debug commands manually)
  */
-const DEFAULT_DEBUG_MODE: 'xstate' | 'recommended' | 'all' | 'none' = 'xstate';
+const DEFAULT_DEBUG_MODE: 'xstate' | 'recommended' | 'all' | 'none' = 'all';
 
 /**
  * Expose debug utilities on window in development for easy DevTools access

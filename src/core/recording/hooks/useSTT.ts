@@ -251,13 +251,17 @@ export function useSTT(callbacks?: UseSTTCallbacks): UseSTT {
 
 
       // 1. Start WebSocket connection (non-blocking)
+      console.log('🔌 [useSTT] Attempting WebSocket connection to:', CONFIG.WS_URL);
       const ws = new WebSocket(CONFIG.WS_URL);
       wsRef.current = ws;
 
       // Track if we've sent start_session
       let sessionStartSent = false;
+      let connectionEstablished = false;
 
       ws.onopen = () => {
+        connectionEstablished = true;
+        console.log('✅ [useSTT] WebSocket connected successfully');
         // Signal to backend that a new session is starting (reset accumulation)
         ws.send(JSON.stringify({ type: 'start_session' }));
         sessionStartSent = true;
@@ -327,13 +331,56 @@ export function useSTT(callbacks?: UseSTTCallbacks): UseSTT {
         }
       };
 
-      ws.onerror = () => {
-        setError('WebSocket connection failed - is backend running on port 3001?');
+      ws.onerror = (error) => {
+        const errorMsg = 'WebSocket connection failed - is backend running on port 3001?';
+        console.error('❌ [useSTT] WebSocket Connection Error:', {
+          message: errorMsg,
+          wsUrl: CONFIG.WS_URL,
+          error: error,
+          timestamp: new Date().toISOString()
+        });
+        console.error('💡 [useSTT] To fix this:');
+        console.error('   1. Navigate to backend directory: cd backend');
+        console.error('   2. Start the server: npm run dev');
+        console.error('   3. Verify it\'s running on port 3001');
+        setError(errorMsg);
         setStatus('error');
         cleanup();
       };
 
-      ws.onclose = () => {
+      ws.onclose = (event) => {
+        console.log('🔌 [useSTT] WebSocket closed:', {
+          code: event.code,
+          reason: event.reason,
+          wasClean: event.wasClean,
+          connectionEstablished: connectionEstablished,
+          timestamp: new Date().toISOString()
+        });
+
+        // If connection never established, this is a connection failure
+        if (!connectionEstablished) {
+          const errorMsg = 'Failed to connect to backend server on port 3001';
+          console.error('❌ [useSTT] Backend Connection Failed:', {
+            message: errorMsg,
+            wsUrl: CONFIG.WS_URL,
+            closeCode: event.code,
+            closeReason: event.reason || '(no reason provided)',
+            timestamp: new Date().toISOString()
+          });
+          console.error('💡 [useSTT] To fix this:');
+          console.error('   1. Navigate to backend directory: cd backend');
+          console.error('   2. Install dependencies: npm install');
+          console.error('   3. Start the server: npm run dev');
+          console.error('   4. Look for: "🚀 Server running on http://localhost:3001"');
+          console.error('   5. Look for: "🔌 WebSocket endpoint: ws://localhost:3001/api/stt/socket"');
+
+          setError(errorMsg);
+          setStatus('error');
+          if (callbacksRef.current?.onError) {
+            callbacksRef.current.onError(errorMsg);
+          }
+        }
+
         if (status === 'recording') {
           setStatus('idle');
         }

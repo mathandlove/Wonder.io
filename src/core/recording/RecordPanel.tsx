@@ -1,50 +1,80 @@
 /**
- * RecordPanel - Pure presentational recording UI
+ * RecordPanel - Reactive recording UI
+ *
+ * Reads state directly from currentNode and emits events to navigation bus.
+ * No longer needs orchestrator to pass props - derives everything from navigation state.
  *
  * Displays: Quest label, Ask button, Hint button, Answer button, Toast notifications, Video feedback
- * All logic handled by RecordPanelOrchestrator
  */
 import React from 'react';
 import NextButton from '../../features/chat/ui/NextButton';
 import { Toast, useToast } from '../../features/chat/ui/Toast';
 import { AudioVisualizer } from './AudioVisualizer';
-import { useRecording } from './RecordingContext';
+import { ClueSelectionPanel } from './ClueSelectionPanel';
+import { useClueStore } from '@core/data/ClueStore';
+import { getCurrentNode } from '@core/navigation/navigationHelpers';
+import { getConversationMetadata } from '@core/ai/AIOrchestrator';
+import * as navigationBus from '@core/navigation/events/navigationBus';
+import type { CharacterScene } from '@core/types/scene';
 import './css/RecordPanel.css';
 
 interface RecordPanelProps {
-  disabled: boolean;
-  questState: 'active' | 'complete' | 'failed';
-  dialogueState: string; // The scene's dialogue state (basic, input-recording, ai-waiting, etc.)
-  questText?: string;
-  answerText?: string; // The recorded answer text
-  onNext: () => void;
-  onRecordStop: () => void;
-  onRecordStart?: () => void; // Called when recording starts
-  onAskClick?: () => void;
-  onAnswerWrongVideoComplete?: () => void; // Called when answer-wrong video ends
-  onAnswerRightVideoComplete?: () => void; // Called when answer-right video ends
+  // Optional callbacks for video completion (orchestrator still needs these for coordination)
+  onAnswerWrongVideoComplete?: () => void;
+  onAnswerRightVideoComplete?: () => void;
+  onRecordStop: () => void; // Still needed for orchestrator to stop recording API
 }
 
 export const RecordPanel: React.FC<RecordPanelProps> = ({
-  disabled,
-  questState,
-  dialogueState,
-  questText = "Find out what going on.",
-  answerText,
-  onNext,
-  onRecordStop,
-  onAskClick,
   onAnswerWrongVideoComplete,
-  onAnswerRightVideoComplete
+  onAnswerRightVideoComplete,
+  onRecordStop
 }) => {
   const { toast, hideToast } = useToast();
-  const { state: recordingState } = useRecording();
   const containerRef = React.useRef<HTMLDivElement>(null);
+
+  // Get clues from ClueStore for clue selection
+  const { clues } = useClueStore();
+
+  // Read state directly from current node (reactive!)
+  const currentNode = getCurrentNode();
+  const scene = currentNode?.scene as CharacterScene;
+  const dialogueState = currentNode?.phase || 'basic'; // Phase IS the dialogue state
+
+  // Debug: Log clues and phase changes
+  React.useEffect(() => {
+    console.log('[RecordPanel] Phase changed to:', dialogueState, 'clues count:', clues.length);
+    if (dialogueState === 'askClue') {
+      console.log('[RecordPanel] In askClue state, clues:', clues);
+      if (clues.length === 0) {
+        console.warn('[RecordPanel] ⚠️ No clues in ClueStore! User may have navigated before clues were saved.');
+      }
+    }
+  }, [dialogueState, clues]);
+
+  // Derive quest state from phase (quest complete when we have answerText and it's correct)
+  const questState: 'active' | 'complete' | 'failed' = React.useMemo(() => {
+    if (dialogueState === 'answer-right') return 'complete';
+    if (dialogueState === 'answer-wrong') return 'failed';
+    return 'active';
+  }, [dialogueState]);
+
+  // Get quest text from conversation metadata
+  const conversationId = scene?.conversationId;
+  const metadata = conversationId ? getConversationMetadata(conversationId) : null;
+  const questText = metadata?.questText || "Find out what going on.";
+
+  // Get answer text from scene
+  const answerText = scene?.answerText || '';
+
+  // Disabled state (could be extended with additional logic)
+  const disabled = false;
 
   // Determine visual state based on dialogueState
   const isBasic = dialogueState === 'basic';
   const isInputBasic = dialogueState === 'input-basic';
   const isQuestOffer = dialogueState === 'quest-showing';
+  const isAskClue = dialogueState === 'askClue';
   const isAskRecording = dialogueState === 'input-recording';
   const isProcessing = dialogueState === 'input-processing';
   const isAnswerRecording = dialogueState === 'record-answer';
@@ -65,13 +95,25 @@ export const RecordPanel: React.FC<RecordPanelProps> = ({
   const handleHintClick = () => {
     if (disabled) return;
     // TODO: Implement hint functionality
+    navigationBus.emit({ type: 'HINT_BUTTON_CLICKED' });
   };
 
   const handleAskClick = () => {
     if (disabled) return;
-    if (onAskClick) {
-      onAskClick();
-    }
+    // Emit ASK_BUTTON_CLICKED event to machine
+    navigationBus.emit({ type: 'ASK_BUTTON_CLICKED' });
+  };
+
+  const handleAcceptQuest = () => {
+    if (disabled) return;
+    // Emit navigation request when quest is accepted
+    navigationBus.emit({ type: 'REQUEST_NAV_NEXT' });
+  };
+
+  const handleAnswerClick = () => {
+    if (disabled) return;
+    // Emit ANSWER_BUTTON_CLICKED event to machine
+    navigationBus.emit({ type: 'ANSWER_BUTTON_CLICKED' });
   };
 
   // Apply 'recording' class only when actively recording (triggers slide-down animation)
@@ -135,7 +177,9 @@ export const RecordPanel: React.FC<RecordPanelProps> = ({
         <div className={`whiteframe ${useQuestOfferStyling ? 'quest-offer' : ''}`}>
           <div className="quest">
             <p className={`quest-find-out-what ${useQuestOfferStyling ? 'quest-offer' : ''}`}>
-              {useQuestOfferStyling ? (
+              {isAskClue ? (
+                <span className="quest-label" style={{ color: '#b2652a' }}>Select a Clue to Ask About</span>
+              ) : useQuestOfferStyling ? (
                 <>
                   <span className="quest-label">Quest:</span>
                   <br />
@@ -163,7 +207,7 @@ export const RecordPanel: React.FC<RecordPanelProps> = ({
                   answerText ? (
                     <span className="answer-placeholder">{answerText}</span>
                   ) : (
-                    <AudioVisualizer audioLevel={recordingState.audioLevel} className="answer-variant" mode="listening" />
+                    <AudioVisualizer audioLevel={0.5} className="answer-variant" mode="listening" />
                   )
                 ) : isAnswerProcessing ? (
                   <AudioVisualizer audioLevel={0} className="answer-variant" mode="processing" />
@@ -179,10 +223,29 @@ export const RecordPanel: React.FC<RecordPanelProps> = ({
         {/* Hide button rail for answer feedback states (answer-waiting, answer-right, answer-wrong, success-dance, fail-dance) */}
         {!isAnswerWaiting && !isAnswerRight && !isAnswerWrong && !isSuccessDance && !isFailDance && (
           <div className="frame-wrapper">
-            {useQuestOfferStyling ? (
+            {isAskClue ? (
+              /* Ask Clue State: Show clue selection panel */
+              <ClueSelectionPanel
+                clues={clues}
+                onClueSelect={(label) => {
+                  console.log('[RecordPanel] Clue selected:', label);
+                  // Find the clue description for this label
+                  const selectedClue = clues.find(c => c.hotspotName === label);
+                  const clueDescription = selectedClue?.description || '';
+                  console.log('[RecordPanel] Clue description:', clueDescription);
+
+                  // Emit CLUE_SELECTED event to navigation machine with description
+                  navigationBus.emit({
+                    type: 'CLUE_SELECTED',
+                    clueLabel: label,
+                    clueDescription: clueDescription
+                  });
+                }}
+              />
+            ) : useQuestOfferStyling ? (
               /* Quest Offer: Single Accept button centered */
               <div className="button-wrapper">
-                <button className="button accept-btn" onClick={onNext} disabled={disabled}>
+                <button className="button accept-btn" onClick={handleAcceptQuest} disabled={disabled}>
                   <div className="answer">Accept</div>
                 </button>
               </div>
@@ -222,7 +285,7 @@ export const RecordPanel: React.FC<RecordPanelProps> = ({
                 {/* Answer Button - locked state controlled by quest completion, transforms when recording answer */}
                 <NextButton
                   locked={questState !== 'complete'}
-                  onClick={onNext}
+                  onClick={handleAnswerClick}
                   onRecordStop={onRecordStop}
                   label="Answer"
                   disabled={answerButtonDisabled}

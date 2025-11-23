@@ -14,12 +14,7 @@ type RawFlowItem = {
   side?: "left" | "right";
   text?: string;
   waiting?: boolean;
-  quest?: string;
-  input?: string;
-  type?: "input" | "quest" | "use-clues"; // Marks this as metadata item
-  CharacterDescription?: string; // AI chat context (for input)
-  successAnswer?: string; // Expected phrase for quest completion
-  incorrectAnswer?: string[]; // Optional array of incorrect facts to penalize
+  type?: "input" | "quest"; // Marks where to add input/quest phases
   "left-character"?: string;
   "right-character"?: string;
 };
@@ -33,6 +28,12 @@ type RawScene = {
   "right-character"?: string;
   image?: string;
   flow?: RawFlowItem[];
+  // Flow-level metadata (character-flow scenes)
+  CharacterDescription?: string; // AI chat context
+  useClues?: boolean; // Whether to use clues from most recent clue-image scene
+  successAnswer?: string; // Expected phrase for quest/input completion
+  incorrectAnswer?: string[]; // Optional array of incorrect facts to penalize
+  question?: string; // Legacy quest text field
   // ...other raw fields allowed in your JSON
 };
 
@@ -55,38 +56,32 @@ function flattenScenes(rawScenes: RawScene[]): FlattenResult {
 
   rawScenes.forEach((scene) => {
     if (scene.type === "character-flow" && scene.flow) {
-      // Scan for input metadata in this flow
-      const inputMetadataItem = scene.flow.find(
-        f => f.type === "input" && f.CharacterDescription
-      );
+      // Check if flow has input or quest markers
+      const hasInputMarker = scene.flow.some(f => f.type === "input");
+      const hasQuestMarker = scene.flow.some(f => f.type === "quest");
 
-      // Scan for quest metadata in this flow
-      const questMetadataItem = scene.flow.find(
-        f => f.type === "quest" && f.text && f.successAnswer
-      );
+      // Check if flow-level metadata exists
+      const hasFlowMetadata = scene.CharacterDescription || scene.successAnswer || scene.question;
 
-      // Scan for use-clues metadata in this flow
-      const useCluesItem = scene.flow.find(
-        f => f.type === "use-clues"
-      );
+      // Generate unique conversationId if this flow has metadata
+      const conversationId = (hasInputMarker || hasQuestMarker || hasFlowMetadata)
+        ? `conv-${flowCounter++}`
+        : undefined;
 
-      // Generate unique conversationId if this flow has either input or quest metadata
-      const hasMetadata = inputMetadataItem || questMetadataItem;
-      const conversationId = hasMetadata ? `conv-${flowCounter++}` : undefined;
-
-      // Store metadata if found
-      if (conversationId) {
+      // Store metadata if found (read from flow level)
+      if (conversationId && hasFlowMetadata) {
         flowMetadata[conversationId] = {
-          characterDescription: inputMetadataItem?.CharacterDescription,
-          questText: questMetadataItem?.text,
-          successAnswer: (questMetadataItem?.successAnswer || inputMetadataItem?.successAnswer)!,
-          incorrectAnswer: questMetadataItem?.incorrectAnswer || inputMetadataItem?.incorrectAnswer,
-          useClues: !!useCluesItem
+          characterDescription: scene.CharacterDescription,
+          questText: scene.question,
+          successAnswer: scene.successAnswer!,
+          incorrectAnswer: scene.incorrectAnswer,
+          useClues: scene.useClues
         };
       }
 
-      // Smart flow parsing: dialogue items "consume" following quest/input metadata
+      // Smart flow parsing: dialogue items "consume" following quest/input markers
       // Algorithm: Iterate through flow, build scenes with their phaseSteps
+      // Metadata (CharacterDescription, useClues, successAnswer) is read from flow level
 
       let currentLeftCharacter = scene["left-character"];
       let currentRightCharacter = scene["right-character"];
@@ -128,10 +123,10 @@ function flattenScenes(rawScenes: RawScene[]): FlattenResult {
           currentPhaseSteps = [PHASES.BASIC];
           isFirstInFlow = false;
         }
-        // Quest metadata - add quest-showing followed by appropriate next phase
+        // Quest marker - add quest-showing followed by appropriate next phase
         else if (f.type === "quest" && !f.side) {
           if (!currentDialogue) {
-            console.warn('[loadStory] Quest metadata found without preceding dialogue at flow index', flowIndex, '- skipping');
+            console.warn('[loadStory] Quest marker found without preceding dialogue at flow index', flowIndex, '- skipping');
             return;
           }
 
@@ -142,7 +137,7 @@ function flattenScenes(rawScenes: RawScene[]): FlattenResult {
           currentPhaseSteps.push(PHASES.QUEST_SHOWING);
 
           // Determine what should follow quest-showing:
-          // - If next item is input metadata → phases will be [basic, quest-showing, input]
+          // - If next item is input marker → phases will be [basic, quest-showing, input]
           // - If next item is dialogue or nothing → add basic again [basic, quest-showing, basic]
           if (nextFlowItem?.type === "input" && !nextFlowItem.text) {
             // Input follows quest - don't add basic yet, wait for input processing
@@ -153,15 +148,15 @@ function flattenScenes(rawScenes: RawScene[]): FlattenResult {
             currentPhaseSteps.push(PHASES.BASIC);
           }
         }
-        // Input metadata - add to current dialogue's phases
+        // Input marker - add to current dialogue's phases
         else if (f.type === "input" && !f.text) {
           if (!currentDialogue) {
-            console.warn('[loadStory] Input metadata found without preceding dialogue at flow index', flowIndex, '- skipping');
+            console.warn('[loadStory] Input marker found without preceding dialogue at flow index', flowIndex, '- skipping');
             return;
           }
           currentPhaseSteps.push(PHASES.INPUT);
         }
-        // Legacy: flow items with f.input or f.quest (old format) - ignore
+        // Unrecognized flow item - ignore
         else {
           // console.log('[loadStory] Skipping unrecognized flow item at index', flowIndex, f);
         }

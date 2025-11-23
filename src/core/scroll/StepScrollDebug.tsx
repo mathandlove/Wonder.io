@@ -13,6 +13,7 @@ import { useEffect, useState } from 'react';
 import { useNavigationStore, selectNavigationGraph, selectCurrentNode } from '@core/navigation/navigationStore';
 import { getServiceInstance } from '@core/navigation/machine/navigationInterpreter';
 import type { Scene } from '@core/types/scene';
+import { getConversationMetadata } from '@core/ai/AIOrchestrator';
 
 export function StepScrollDebug() {
 
@@ -59,7 +60,12 @@ export function StepScrollDebug() {
   const totalNodes = navigationGraph.order.length;
 
   // Get current scene
-  const currentScene = currentNode?.scene as (Scene & { sceneId?: string, flowId?: string }) | undefined;
+  const currentScene = currentNode?.scene as (Scene & { sceneId?: string, flowId?: string, conversationId?: string }) | undefined;
+
+  // Get flow metadata for current scene (from AIOrchestrator module-level store)
+  const flowMetadata = currentScene?.conversationId
+    ? getConversationMetadata(currentScene.conversationId)
+    : undefined;
 
   // Subscribe to xState machine state changes
   useEffect(() => {
@@ -286,15 +292,42 @@ export function StepScrollDebug() {
           </div>
         </div>
 
-        {/* Flow Metadata Section - Hidden for more space */}
-        {/*
+        {/* Flow Metadata Section */}
         <div style={{ marginBottom: '8px', paddingBottom: '8px', borderBottom: '1px solid #f0f' }}>
           <div style={{ color: '#f0f', marginBottom: '4px', fontWeight: 'bold' }}>🗃️ Flow Metadata</div>
-          <div style={{ color: currentScene?.flowId ? '#0f0' : '#666' }}>
-            🔑 Flow ID: <strong>{currentScene?.flowId || 'None'}</strong>
+          <div style={{
+            padding: '6px',
+            background: 'rgba(255,0,255,0.1)',
+            borderRadius: '4px',
+            border: '1px solid #f0f'
+          }}>
+            {flowMetadata ? (
+              <>
+                {flowMetadata.useClues !== undefined && (
+                  <div style={{ color: flowMetadata.useClues ? '#0f0' : '#ff0', fontSize: '10px', marginBottom: '4px' }}>
+                    🔍 Use Clues: <strong>{flowMetadata.useClues ? 'YES' : 'NO'}</strong>
+                  </div>
+                )}
+                {flowMetadata.characterDescription && (
+                  <div style={{ color: '#888', fontSize: '9px', marginTop: '4px' }}>
+                    📝 Character context defined
+                  </div>
+                )}
+                {currentScene?.conversationId && (
+                  <div style={{ color: '#666', fontSize: '8px', marginTop: '4px' }}>
+                    🔑 Conversation ID: {currentScene.conversationId.substring(0, 12)}...
+                  </div>
+                )}
+              </>
+            ) : (
+              <div style={{ color: '#666', fontSize: '9px', fontStyle: 'italic' }}>
+                {currentScene?.conversationId
+                  ? `No metadata for conversation ID: ${currentScene.conversationId}`
+                  : 'No conversation ID for this scene'}
+              </div>
+            )}
           </div>
         </div>
-        */}
 
         {/* Image Caption State Section - Only show for image scenes with captions */}
         {sceneType === 'image' && hasCaption && (

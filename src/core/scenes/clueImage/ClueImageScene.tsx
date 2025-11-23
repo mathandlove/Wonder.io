@@ -380,7 +380,7 @@ export default function ClueImageScene({ scene }: SceneProps<ClueImageSceneType>
     }
   }, [calculateLowestHotspotDistance]);
 
-  // Derive image name from scene data
+  // Derive image name from scene data and immediately save all clues to store
   useEffect(() => {
     async function loadData() {
       try {
@@ -395,6 +395,18 @@ export default function ClueImageScene({ scene }: SceneProps<ClueImageSceneType>
 
         setHotspotData(data);
         setIsLoading(false);
+
+        // Immediately save all clues to ClueStore for use in character-flow scenes
+        // This happens regardless of whether user clicks on them
+        const mapName = scene.image || 'insideBakery';
+        const clueData = scene.clueDescriptions.map(desc => ({
+          hotspotName: desc.hotspotName,
+          description: desc.description,
+          image: desc.image,
+          mapName: mapName
+        }));
+        console.log('[ClueImageScene] Auto-saving all clues to store on mount:', clueData);
+        setClues(clueData);
       } catch (err) {
         console.error('[ClueImageScene] Failed to load hotspot data:', err);
         setError(err instanceof Error ? err.message : 'Failed to load hotspot data');
@@ -403,7 +415,7 @@ export default function ClueImageScene({ scene }: SceneProps<ClueImageSceneType>
     }
 
     loadData();
-  }, [scene.image]);
+  }, [scene.image, scene.clueDescriptions, setClues]);
 
 
   const handleHotspotClick = (label: string) => {
@@ -442,10 +454,13 @@ export default function ClueImageScene({ scene }: SceneProps<ClueImageSceneType>
           console.log('[ClueImageScene] 🎯 All clues found! Emitting ALL_CLUES_FOUND event');
 
           // Save clues to ClueStore for use in subsequent character-flow scenes
+          // Extract map name from scene.image (e.g., "insideBakery" from scene.image)
+          const mapName = scene.image || 'insideBakery';
           const clueData = scene.clueDescriptions.map(desc => ({
             hotspotName: desc.hotspotName,
             description: desc.description,
-            image: desc.image
+            image: desc.image,
+            mapName: mapName
           }));
           console.log('[ClueImageScene] Saving clues to store:', clueData);
           setClues(clueData);

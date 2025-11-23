@@ -144,12 +144,12 @@ export type RecordingStoppedEvent = {
 };
 
 /**
- * RECORDING_PROCESSED
+ * RECORDING_TRANSCRIBED
  * Emitted when: Recording has been transcribed and text is ready
  * Payload: Transcript text and recording ID
  */
-export type RecordingProcessedEvent = {
-  type: 'RECORDING_PROCESSED';
+export type RecordingTranscribedEvent = {
+  type: 'RECORDING_TRANSCRIBED';
   transcript: string;
   recordingId: string;
 };
@@ -311,7 +311,25 @@ export type AllCluesFoundEvent = {
   type: 'ALL_CLUES_FOUND';
 };
 
+/**
+ * CLUE_SELECTED
+ * Emitted when: User selects a clue to ask about (in askClue phase when useClues=true)
+ * Payload: The label of the selected clue
+ */
+export type ClueSelectedEvent = {
+  type: 'CLUE_SELECTED';
+  clueLabel: string;
+  clueDescription: string;
+};
 
+/**
+ * START_RECORDING
+ * Emitted when: Machine determines recording should start (after ASK_BUTTON_CLICKED when useClues=false)
+ * Purpose: Trigger orchestrator to handle recording start flow
+ */
+export type StartRecordingEvent = {
+  type: 'START_RECORDING';
+};
 
 /**
  * Union of all domain events the machine can receive
@@ -327,7 +345,7 @@ export type NavigationEvent =
   | RecordingStartedEvent
   | RecordingFailedEvent
   | RecordingStoppedEvent
-  | RecordingProcessedEvent
+  | RecordingTranscribedEvent
   | ReceivedAIResponseEvent
   | FeedbackReceivedEvent
   | AskButtonClickedEvent
@@ -345,6 +363,8 @@ export type NavigationEvent =
   | deleteCurrentNodeandNavNext
   | ContinueEvent
   | AllCluesFoundEvent
+  | ClueSelectedEvent
+  | StartRecordingEvent
 
 // Note: SCENE_PHASE_CHANGED removed - phase lives in child machine state,
 // not as a parent event. Phase is persisted via meta when needed.

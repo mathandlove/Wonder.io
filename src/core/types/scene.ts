@@ -20,6 +20,8 @@ export type CharacterScene = {
   questionText?: string; // User's question in quest flow
   answerText?: string; // User's answer to quest question
   feedbackText?: string; // AI-generated feedback for wrong answers
+  selectedClue?: string; // Label of the selected clue (when useClues=true)
+  selectedClueDescription?: string; // Description of the selected clue to pass to AI
   meta?: {
     panelLeft?: { character: string; previousCharacter?: string; nextCharacter?: string; newCharacter?: boolean; aboutToSwap?: boolean };
     panelRight?: { character: string; previousCharacter?: string; nextCharacter?: string; newCharacter?: boolean; aboutToSwap?: boolean };

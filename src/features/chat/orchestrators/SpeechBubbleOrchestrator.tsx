@@ -7,7 +7,7 @@ import { useMemo, useState, useEffect } from 'react';
 import { CardboardBubble } from '@features/chat/components/CardboardBubble';
 import { useNavigationStore, selectNavigationGraph, selectCurrentNodeId, selectLastFrozenNode } from '@core/navigation/navigationStore';
 import { AudioVisualizer } from '@core/recording/AudioVisualizer';
-import { useRecording } from '@core/recording/RecordingContext';
+import { useAudioLevel } from '@core/recording/RecordingOrchestrator';
 import type { CharacterScene } from '@core/types/scene';
 import type { Node } from '@core/navigation/navigationGraphTypes';
 
@@ -23,12 +23,13 @@ interface BubbleState {
 }
 
 export function SpeechBubbleOrchestrator() {
+  // Get real-time audio level for visualization
+  const audioLevel = useAudioLevel();
 
   // OPTIMIZED: Subscribe only to graph structure, currentId, and lastFrozenNode
   const navigationGraph = useNavigationStore(selectNavigationGraph);
   const currentNodeId = useNavigationStore(selectCurrentNodeId);
   const lastFrozenNode = useNavigationStore(selectLastFrozenNode);
-  const { state: recordingState } = useRecording();
 
   // Get navigation direction from history
   const navigationDirection = useMemo(() => {
@@ -214,7 +215,7 @@ export function SpeechBubbleOrchestrator() {
           {bubbleContent ? (
             bubbleContent
           ) : (isRecording && !hasTranscript) ? (
-            <AudioVisualizer audioLevel={recordingState.audioLevel} className="bubble-variant" mode="listening" />
+            <AudioVisualizer audioLevel={audioLevel} className="bubble-variant" mode="listening" />
           ) : isProcessing ? (
             <AudioVisualizer audioLevel={0} className="bubble-variant" mode="processing" />
           ) : null}

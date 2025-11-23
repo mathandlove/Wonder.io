@@ -20,8 +20,9 @@ import type { NavigationEvent, NavigationContext } from './types';
 import { loadStoryService } from '@core/data/services/loadStoryService';
 import { callAIService, setConversationMetadata, createAndInsertAIResponseScene, validateAnswerService, getConversationMetadata, startFeedbackGeneration, getPendingFeedbackPromise, clearPendingFeedback } from '@core/ai/AIOrchestrator';
 import { useNavigationStore } from '../navigationStore';
-import { getCurrentNodeId, getCurrentNode, initializeStoreWithStory, insertSceneNodes, deleteNode } from '../navigationHelpers';
+import { getCurrentNodeId, getCurrentNode, initializeStoreWithStory, insertSceneNodes, deleteNode, updateCurrentSceneProperties } from '../navigationHelpers';
 import { createAIResponseScene as createAIResponseSceneFactory } from '../sceneFactoryFunctions';
+import { RecordingOrchestratorAPI } from '@core/recording/RecordingOrchestrator';
 import { createDebugger } from '../../../utils/createDebug';
 
 const debug = createDebugger('navigation:machine');
@@ -238,7 +239,7 @@ export const navigationMachine = setup({
     // =============================================================================
 
     storeTranscriptInScene: ({ event }) => {
-      if (event.type !== 'RECORDING_PROCESSED') return;
+      if (event.type !== 'RECORDING_TRANSCRIBED') return;
 
       const { transcript } = event;
 
@@ -263,7 +264,7 @@ export const navigationMachine = setup({
     // =============================================================================
 
     storeAnswerInScene: ({ event }) => {
-      if (event.type !== 'RECORDING_PROCESSED') return;
+      if (event.type !== 'RECORDING_TRANSCRIBED') return;
 
       const { transcript } = event;
 
@@ -373,6 +374,74 @@ export const navigationMachine = setup({
         debug.error('❌ Cannot mark clue scene complete - no current node ID');
       }
     },
+
+    // =============================================================================
+    // Recording Scene Management
+    // =============================================================================
+    // NOTE: Recording is now handled by RecordPanelOrchestrator
+    // The machine just updates phases and the orchestrator responds to those changes
+
+    createRecordingScene: async () => {
+      try {
+        // Generate unique recording ID
+        const recordingId = `rec-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+
+        // Get current scene context
+        const currentNode = getCurrentNode();
+        const currentNodeId = getCurrentNodeId();
+        const scene = currentNode?.scene;
+
+        if (!currentNodeId) {
+          debug.error('No current node ID - cannot insert recording scene');
+          return;
+        }
+
+        // Update current node phase from input to basic
+        useNavigationStore.getState().updateNodePhase(currentNodeId, 'basic');
+
+        // Extract scene properties to inherit
+        const currentBackground = scene && 'background' in scene ? scene.background : undefined;
+        const leftCharacter = scene && 'left-character' in scene ? (scene as { 'left-character'?: string })['left-character'] : 'leo';
+        const rightCharacter = scene && 'right-character' in scene ? (scene as { 'right-character'?: string })['right-character'] : 'bakerMom';
+        const conversationId = scene && 'conversationId' in scene ? (scene as { conversationId?: string }).conversationId : undefined;
+
+        // Create recording scene using factory function
+        const { createRecordingScene } = await import('@core/navigation/sceneFactoryFunctions');
+        const newScene = createRecordingScene(
+          recordingId,
+          conversationId,
+          currentBackground,
+          leftCharacter,
+          rightCharacter
+        );
+
+        // Insert scene into graph
+        debug.log('Inserting recording scene after node:', currentNodeId);
+        const newNodeId = insertSceneNodes(currentNodeId, newScene);
+
+        if (!newNodeId) {
+          debug.error('Failed to insert recording scene - no node ID returned');
+          return;
+        }
+
+        // Navigate forward to the new recording scene
+        debug.log('Navigating to recording scene');
+        useNavigationStore.getState().advance('forward');
+
+        // Transition new scene to input-recording phase
+        debug.log('Transitioning to input-recording phase');
+        useNavigationStore.getState().updateNodePhase(newNodeId, 'input-recording');
+
+        // Start recording
+        debug.log('🎙️ Starting recording via RecordingOrchestratorAPI');
+        await RecordingOrchestratorAPI.startRecording();
+
+        debug.log('✅ Recording scene created and activated');
+      } catch (error) {
+        debug.error('❌ Failed to create recording scene:', error);
+        throw error;
+      }
+    },
   },
   guards: {
     // Check if current node is in input phase
@@ -399,6 +468,16 @@ export const navigationMachine = setup({
     isRecordAnswer: () => {
       const currentPhase = useNavigationStore.getState().getCurrentPhase();
       return currentPhase === 'record-answer';
+    },
+    // Check if current node is in askClue phase (selecting clue to ask about)
+    isAskClue: () => {
+      const currentPhase = useNavigationStore.getState().getCurrentPhase();
+      return currentPhase === 'askClue';
+    },
+    // Check if current node is in answerClue phase (recording answer about selected clue)
+    isAnswerClue: () => {
+      const currentPhase = useNavigationStore.getState().getCurrentPhase();
+      return currentPhase === 'answerClue';
     },
     // Check if current node is processing answer transcript
     isAnswerProcessing: () => {
@@ -618,6 +697,14 @@ export const navigationMachine = setup({
               target: 'questShowing',
             },
             {
+              guard: 'isAskClue',
+              target: 'askClue',
+            },
+            {
+              guard: 'isAnswerClue',
+              target: 'answerClue',
+            },
+            {
               guard: 'isRecordAnswer',
               target: 'answerRecording',
             },
@@ -809,6 +896,35 @@ export const navigationMachine = setup({
               ],
               target: '#navigation.scene.route',
             },
+            // ASK_BUTTON_CLICKED - User clicked Ask button
+            // Check useClues metadata to decide: askClue phase or start recording
+            ASK_BUTTON_CLICKED: [
+              {
+                // If useClues is true, transition to askClue phase (clue selection)
+                guard: () => {
+                  const currentNode = getCurrentNode();
+                  const scene = currentNode?.scene;
+                  const conversationId = (scene as { conversationId?: string })?.conversationId;
+                  const metadata = conversationId ? getConversationMetadata(conversationId) : null;
+                  return metadata?.useClues === true;
+                },
+                actions: [
+                  () => {
+                    debug.log('🔍 ASK_BUTTON_CLICKED with useClues=true → askClue phase');
+                    const nodeId = getCurrentNodeId();
+                    if (nodeId) {
+                      useNavigationStore.getState().updateNodePhase(nodeId, 'askClue');
+                    }
+                  }
+                ],
+                target: '#navigation.scene.route',
+              },
+              {
+                // If useClues is false, start recording directly
+                actions: () => debug.log('🎯 ASK_BUTTON_CLICKED with useClues=false → starting recording'),
+                target: 'askRecording',
+              }
+            ],
             // RECORDING_STARTED event comes from RecordPanelOrchestrator AFTER it completes the complex flow
             // Orchestrator handles: recording start, scene creation, insertion, navigation, phase update
             // Machine just transitions state to track that we're recording
@@ -832,12 +948,94 @@ export const navigationMachine = setup({
         },
 
         /**
+         * ASK CLUE state
+         * User is selecting a clue to ask about (when useClues=true)
+         * Shows ClueSelectionPanel and waits for CLUE_SELECTED event
+         */
+        askClue: {
+          entry: () => debug.log('🔍 Entered askClue state - user selecting clue'),
+          on: {
+            // Block scroll navigation while in clue selection
+            SCROLL_DOWN_STEP: {
+              actions: () => debug.log('⛔ SCROLL_DOWN blocked in askClue'),
+            },
+            SCROLL_UP_STEP: {
+              actions: [
+                () => debug.log('⬆️  SCROLL_UP_STEP in askClue → calling goPrev'),
+                'goPrev',
+              ],
+              target: '#navigation.scene.route',
+            },
+            // When user selects a clue, store it and start recording
+            CLUE_SELECTED: {
+              actions: [
+                ({ event }) => {
+                  if (event.type === 'CLUE_SELECTED') {
+                    debug.log('🔍 Clue selected:', event.clueLabel, 'description:', event.clueDescription);
+
+                    // Store the selected clue description in the scene
+                    // This will be used when AI processes the question
+                    updateCurrentSceneProperties({
+                      selectedClue: event.clueLabel,
+                      selectedClueDescription: event.clueDescription
+                    });
+
+                    // Change phase to input-recording
+                    const nodeId = getCurrentNodeId();
+                    if (nodeId) {
+                      useNavigationStore.getState().updateNodePhase(nodeId, 'input-recording');
+                      debug.log('📝 Changed phase to input-recording');
+                    }
+                  }
+                },
+              ],
+              // Transition to askRecording state which will invoke RecordUtterance service
+              target: 'askRecording',
+            },
+            RECORDING_FAILED: {
+              actions: ({ event }) => debug.error('❌ Recording failed:', event.error),
+            },
+          },
+        },
+
+        /**
+         * ANSWER CLUE state
+         * User is recording answer about the selected clue (when useClues=true)
+         * Similar to answerRecording but for clue-based flow
+         */
+        answerClue: {
+          entry: () => debug.log('🎙️  Entered answerClue state - recording answer about clue'),
+          on: {
+            // Block navigation while recording
+            SCROLL_DOWN_STEP: {
+              actions: () => debug.log('⛔ SCROLL blocked during answerClue recording'),
+            },
+            SCROLL_UP_STEP: {
+              actions: () => debug.log('⛔ SCROLL blocked during answerClue recording'),
+            },
+            // When user stops recording, move to processing
+            RECORDING_STOPPED: {
+              actions: [
+                () => {
+                  debug.log('🛑 Answer recording stopped → calling stopRecordingAndTranscribe');
+                  RecordingOrchestratorAPI.stopRecordingAndTranscribe();
+                }
+              ],
+              target: 'answerProcessing',
+            },
+          },
+        },
+
+        /**
          * ASK RECORDING state
          * User is actively recording their question
-         * Waits for RECORDING_STOPPED event
+         * Machine manages Recording API lifecycle
          */
         askRecording: {
-          entry: () => debug.log('🎙️  Entered askRecording state - user is recording'),
+          entry: [
+            () => debug.log('🎙️  Entered askRecording state'),
+            'createRecordingScene'
+          ],
           on: {
             // Block all navigation while recording
             SCROLL_DOWN_STEP: {
@@ -846,10 +1044,33 @@ export const navigationMachine = setup({
             SCROLL_UP_STEP: {
               actions: () => debug.log('⛔ SCROLL blocked during recording'),
             },
-            // When user stops recording, move to processing
+            // When stop button clicked (event from RecordPanel/UI)
             RECORDING_STOPPED: {
-              actions: () => debug.log('🛑 Recording stopped → processing'),
+              actions: [
+                () => {
+                  debug.log('🛑 RECORDING_STOPPED received → calling stopRecordingAndTranscribe');
+                  RecordingOrchestratorAPI.stopRecordingAndTranscribe();
+                },
+                () => {
+                  // Update phase to input-processing
+                  // TODO: Update RecordPanel to show partial transcript text during processing
+                  // Currently RecordPanel shows AudioVisualizer with static level during processing
+                  // Should update scene.questionText with partial transcript if available
+                  const nodeId = getCurrentNodeId();
+                  if (nodeId) {
+                    debug.log('📝 Updating phase to input-processing');
+                    useNavigationStore.getState().updateNodePhase(nodeId, 'input-processing');
+                  }
+                }
+              ],
               target: 'askProcessing',
+            },
+            // Handle recording errors
+            RECORDING_FAILED: {
+              actions: ({ event }) => {
+                debug.error('❌ Recording error:', event.error);
+              },
+              target: 'dialogueInput',
             },
           },
         },
@@ -857,7 +1078,7 @@ export const navigationMachine = setup({
         /**
          * ASK PROCESSING state
          * Recording is being transcribed by backend
-         * Waits for RECORDING_PROCESSED event with transcript
+         * Waits for RECORDING_TRANSCRIBED event with transcript
          */
         askProcessing: {
           entry: [
@@ -872,7 +1093,7 @@ export const navigationMachine = setup({
             SCROLL_DOWN_STEP: {},
             SCROLL_UP_STEP: {},
             // When transcript is ready, store it and move to AI waiting
-            RECORDING_PROCESSED: {
+            RECORDING_TRANSCRIBED: {
               actions: [
                 'storeTranscriptInScene',
                 () => debug.log('✅ Transcript stored → waiting for AI')
@@ -898,20 +1119,29 @@ export const navigationMachine = setup({
             id: 'callAI',
             src: 'callAI',
             input: () => {
-              // Extract questionText and conversationId from current scene
+              // Extract questionText, conversationId, and clue info from current scene
               const scene = getCurrentNode()?.scene;
               const questionText = (scene as { questionText?: string })?.questionText;
               const conversationId = (scene as { conversationId?: string })?.conversationId;
+              const selectedClueDescription = (scene as { selectedClueDescription?: string })?.selectedClueDescription;
+
+              // If user selected a clue, prepend the clue description to their question
+              let finalQuestionText = questionText || '';
+              if (selectedClueDescription) {
+                finalQuestionText = `Context: ${selectedClueDescription}\n\nQuestion: ${finalQuestionText}`;
+                debug.log('🔍 Prepending clue context to question');
+              }
 
               debug.log('📥 Preparing AI input:', {
-                questionText: questionText?.substring(0, 50),
+                questionText: finalQuestionText?.substring(0, 50),
                 conversationId,
-                hasQuestionText: !!questionText,
-                hasConversationId: !!conversationId
+                hasQuestionText: !!finalQuestionText,
+                hasConversationId: !!conversationId,
+                hasClueContext: !!selectedClueDescription
               });
 
               return {
-                questionText: questionText || '',
+                questionText: finalQuestionText,
                 conversationId
               };
             },
@@ -955,10 +1185,24 @@ export const navigationMachine = setup({
         /**
          * ANSWER RECORDING state
          * User is actively recording their answer to a quest
-         * Waits for RECORDING_STOPPED event
+         * Machine manages Recording API lifecycle
          */
         answerRecording: {
-          entry: () => debug.log('🎙️  Entered answerRecording state - user recording answer'),
+          entry: [
+            () => debug.log('🎙️  Entered answerRecording state'),
+            async () => {
+              // Update phase to record-answer
+              const nodeId = getCurrentNodeId();
+              if (nodeId) {
+                debug.log('📝 Updating phase to record-answer');
+                useNavigationStore.getState().updateNodePhase(nodeId, 'record-answer');
+              }
+
+              // Start recording
+              debug.log('🎙️ Starting answer recording via RecordingOrchestratorAPI');
+              await RecordingOrchestratorAPI.startRecording();
+            }
+          ],
           on: {
             // Block all navigation while recording
             SCROLL_DOWN_STEP: {
@@ -967,10 +1211,30 @@ export const navigationMachine = setup({
             SCROLL_UP_STEP: {
               actions: () => debug.log('⛔ SCROLL blocked during answer recording'),
             },
-            // When user stops recording, move to processing
+            // When stop button clicked (event from RecordPanel/UI)
             RECORDING_STOPPED: {
-              actions: () => debug.log('🛑 Answer recording stopped → processing'),
+              actions: [
+                () => {
+                  debug.log('🛑 RECORDING_STOPPED received → calling stopRecordingAndTranscribe');
+                  RecordingOrchestratorAPI.stopRecordingAndTranscribe();
+                },
+                () => {
+                  // Update phase to answer-processing
+                  const nodeId = getCurrentNodeId();
+                  if (nodeId) {
+                    debug.log('📝 Updating phase to answer-processing');
+                    useNavigationStore.getState().updateNodePhase(nodeId, 'answer-processing');
+                  }
+                }
+              ],
               target: 'answerProcessing',
+            },
+            // Handle recording errors
+            RECORDING_FAILED: {
+              actions: ({ event }) => {
+                debug.error('❌ Recording error:', event.error);
+              },
+              target: 'questShowing', // Go back to quest showing on error
             },
           },
         },
@@ -978,7 +1242,7 @@ export const navigationMachine = setup({
         /**
          * ANSWER PROCESSING state
          * Recording is being transcribed by backend
-         * Waits for RECORDING_PROCESSED event with transcript
+         * Waits for RECORDING_TRANSCRIBED event with transcript
          */
         answerProcessing: {
           entry: [
@@ -993,7 +1257,7 @@ export const navigationMachine = setup({
             SCROLL_DOWN_STEP: {},
             SCROLL_UP_STEP: {},
             // When transcript is ready, store it and move to validation
-            RECORDING_PROCESSED: {
+            RECORDING_TRANSCRIBED: {
               actions: [
                 'storeAnswerInScene',
                 () => debug.log('✅ Answer transcript stored → validating')

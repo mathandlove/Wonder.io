@@ -68,6 +68,9 @@ export type Phase =
   | 'answer-waiting'
   | 'answer-right'
   | 'answer-wrong'
+  // Clue-based input phases (when useClues=true)
+  | 'askClue'      // Selecting a clue to ask about
+  | 'answerClue'   // Recording answer about selected clue
   // Quest phases
   | 'quest-showing'  // ⚠️ THE ONLY VALID QUEST PHASE - use this everywhere!
   | 'quest-accepted'
@@ -111,6 +114,10 @@ export const PHASES = {
   ANSWER_WAITING: 'answer-waiting' as const,
   ANSWER_RIGHT: 'answer-right' as const,
   ANSWER_WRONG: 'answer-wrong' as const,
+
+  // Clue-based input phases
+  ASK_CLUE: 'askClue' as const,
+  ANSWER_CLUE: 'answerClue' as const,
 
   // Quest phases
   QUEST_SHOWING: 'quest-showing' as const,  // ⚠️ THE ONLY VALID QUEST PHASE

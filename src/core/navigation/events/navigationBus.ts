@@ -31,6 +31,7 @@ export function emit(event: NavigationEvent): void {
   // Log the event first
   logEvent(event);
 
+  // Notify main subscriber (machine interpreter)
   if (!subscriber) {
     console.warn('[NavigationBus] No subscriber registered, event dropped:', event.type);
     return;

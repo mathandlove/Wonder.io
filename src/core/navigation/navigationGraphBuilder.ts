@@ -176,6 +176,9 @@ function createNode(
     initialPhase = scene.phase;
   } else if (scene.type === 'image') {
     initialPhase = 'image_only';
+  } else if (scene.type === 'clue-image') {
+    // DEBUG: Default clue-image scenes to 'complete' to skip clue finding
+    initialPhase = 'complete';
   } else if (scene.type === 'character' || scene.type === 'character-flow') {
     initialPhase = 'basic';
   } else if (scene.type === 'fail-dance') {
@@ -199,6 +202,9 @@ function createNode(
   } else if (scene.type === 'character' || scene.type === 'character-flow') {
     // Dialogue scenes: default to basic only (phaseSteps should be set by loadStory)
     phaseSteps = ['basic'];
+  } else if (scene.type === 'clue-image') {
+    // Clue scenes: active (finding clues) → complete (all found)
+    phaseSteps = ['active', 'complete'];
   } else if (scene.type === 'fail-dance') {
     phaseSteps = ['fail-dance']; // Matches the scene type for RecordPanel state checks
   } else if (scene.type === 'success-dance') {

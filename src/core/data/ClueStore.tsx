@@ -13,6 +13,7 @@ export interface ClueData {
   hotspotName: string; // Label matching hotspot JSON (e.g., "Hair", "Potion")
   description: string; // Human-readable description of the clue
   image: string; // Image name to find thumbnails
+  mapName?: string; // Map/scene name for resolving thumbnail paths (e.g., "insideBakery")
 }
 
 interface ClueStoreContextValue {
