@@ -71,6 +71,9 @@ export type Phase =
   // Quest phases
   | 'quest-showing'  // ⚠️ THE ONLY VALID QUEST PHASE - use this everywhere!
   | 'quest-accepted'
+  // Clue scene phases
+  | 'active'    // Finding clues
+  | 'complete'  // All clues found
   // Special scene phases
   | 'success-dance'
   | 'fail-dance'
@@ -112,6 +115,10 @@ export const PHASES = {
   // Quest phases
   QUEST_SHOWING: 'quest-showing' as const,  // ⚠️ THE ONLY VALID QUEST PHASE
   QUEST_ACCEPTED: 'quest-accepted' as const,
+
+  // Clue scene phases
+  ACTIVE: 'active' as const,
+  COMPLETE: 'complete' as const,
 
   // Special scene phases
   SUCCESS_DANCE: 'success-dance' as const,

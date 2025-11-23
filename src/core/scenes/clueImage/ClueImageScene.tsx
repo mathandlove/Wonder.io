@@ -12,7 +12,6 @@
  * 5. Enable Continue button when all clues found
  */
 import React, { useState, useEffect, useRef, useCallback } from 'react';
-import { useMachine } from '@xstate/react';
 import type { SceneProps } from '@features/scenes/registry';
 import type { ClueImageScene as ClueImageSceneType } from '@core/types/scene';
 import { resolveStoryImage } from '@core/data/imageResolver';
@@ -25,8 +24,8 @@ import {
 } from '@core/data/hotspotLoader';
 import { ClueCounter, type ClueCounterState } from '@core/recording/ClueCounter';
 import * as navigationBus from '@core/navigation/events/navigationBus';
-import { clueImageSceneMachine } from './clueImageSceneMachine';
 import { calculateImageBounds, pointsToPixels } from '@shared/utils/coordinateUtils';
+import { HotspotSparkles } from './HotspotSparkles';
 import './ClueImageScene.css';
 
 /**
@@ -40,9 +39,6 @@ interface DialogBubbleProps {
 }
 
 function DialogBubble({ text, hotspot, onDismiss }: DialogBubbleProps) {
-  // Fixed position - always show bubble below the hotspot
-  const position = 'bottom';
-
   const handleClick = (e: React.MouseEvent) => {
     e.stopPropagation(); // Prevent bubbling to background
     onDismiss();
@@ -50,6 +46,26 @@ function DialogBubble({ text, hotspot, onDismiss }: DialogBubbleProps) {
 
   // Calculate position based on hotspot center - this is static based on hotspot data
   const center = getHotspotCenter(hotspot);
+
+  // Determine best position based on hotspot location to avoid going off-screen
+  // Prioritize bottom, but use top/left/right if hotspot is near edges
+  let position: 'top' | 'bottom' | 'left' | 'right' = 'bottom';
+
+  if (center.y < 30) {
+    // Hotspot in top 30% - show bubble below
+    position = 'bottom';
+  } else if (center.y > 50) {
+    // Hotspot in bottom 50% - show bubble above
+    position = 'top';
+  } else if (center.x < 25) {
+    // Hotspot on left side - show bubble to the right
+    position = 'right';
+  } else if (center.x > 75) {
+    // Hotspot on right side - show bubble to the left
+    position = 'left';
+  }
+  // Otherwise default to bottom for center hotspots
+
   const style: React.CSSProperties = {
     position: 'absolute',
     left: `${center.x}%`,
@@ -62,7 +78,9 @@ function DialogBubble({ text, hotspot, onDismiss }: DialogBubbleProps) {
       style={style}
       onClick={handleClick}
     >
-      <p className="dialog-bubble__text">{text}</p>
+      <div className="dialog-bubble__inner">
+        <p className="dialog-bubble__text">{text}</p>
+      </div>
     </div>
   );
 }
@@ -200,7 +218,6 @@ export default function ClueImageScene({ scene }: SceneProps<ClueImageSceneType>
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [imageBounds, setImageBounds] = useState({ width: 0, height: 0, left: 0, top: 0 });
-  const [naturalDimensions, setNaturalDimensions] = useState({ width: 0, height: 0 });
 
   const imgRef = useRef<HTMLImageElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
@@ -208,15 +225,8 @@ export default function ClueImageScene({ scene }: SceneProps<ClueImageSceneType>
   // Check if scene was previously completed (for backward navigation)
   const wasPreviouslyCompleted = scene.phase === 'complete';
 
-  // Initialize state machine
-  const [state, send] = useMachine(clueImageSceneMachine, {
-    input: {
-      totalClues: hotspotData?.hotspots.length || 0,
-      foundClues: wasPreviouslyCompleted ? (hotspotData?.hotspots.length || 0) : foundClues.length,
-    },
-  });
-
-  const isComplete = state.matches('complete') || wasPreviouslyCompleted;
+  // Determine if all clues are found
+  const isComplete = wasPreviouslyCompleted || (hotspotData && foundClues.length === hotspotData.hotspots.length);
 
   // Update dimensions helper function
   const updateDimensions = useCallback(() => {
@@ -246,7 +256,6 @@ export default function ClueImageScene({ scene }: SceneProps<ClueImageSceneType>
       );
 
       console.log('[ClueImageScene] Updating image bounds:', bounds);
-      setNaturalDimensions(natural);
       setImageBounds(bounds);
     }
   }, []);
@@ -285,12 +294,6 @@ export default function ClueImageScene({ scene }: SceneProps<ClueImageSceneType>
     loadData();
   }, [scene.image]);
 
-  // Check if all clues are found and notify state machine
-  useEffect(() => {
-    if (hotspotData && foundClues.length === hotspotData.hotspots.length && foundClues.length > 0) {
-      send({ type: 'ALL_CLUES_FOUND' });
-    }
-  }, [foundClues, hotspotData, send]);
 
   const handleHotspotClick = (label: string) => {
     console.log('[ClueImageScene] Hotspot clicked:', label);
@@ -322,10 +325,16 @@ export default function ClueImageScene({ scene }: SceneProps<ClueImageSceneType>
       setFoundClues(prev => {
         const newFound = [...prev, label];
         console.log('[ClueImageScene] Updated foundClues:', newFound);
+
+        // Check if this is the 4th (last) clue
+        if (hotspotData && newFound.length === hotspotData.hotspots.length) {
+          console.log('[ClueImageScene] 🎯 All clues found! Emitting ALL_CLUES_FOUND event');
+          // Emit event to navigation machine to update phase
+          navigationBus.emit({ type: 'ALL_CLUES_FOUND' });
+        }
+
         return newFound;
       });
-      // Notify state machine
-      send({ type: 'CLUE_FOUND', clueLabel: label });
     } else {
       console.log('[ClueImageScene] Clue already found:', label);
     }
@@ -344,21 +353,12 @@ export default function ClueImageScene({ scene }: SceneProps<ClueImageSceneType>
   };
 
   const handleContinue = () => {
-    // Send CONTINUE event to state machine
-    send({ type: 'CONTINUE' });
+    console.log('[ClueImageScene] Continue button clicked - advancing to next scene');
+    // Emit navigation event to advance to next scene
+    navigationBus.emit({ type: 'CONTINUE' });
   };
 
-  // Listen to navigation events and forward to state machine
-  useEffect(() => {
-    const unsubscribe = navigationBus.subscribe((event) => {
-      if (event.type === 'SCROLL_DOWN_STEP' || event.type === 'SCROLL_UP_STEP') {
-        // Forward scroll events to state machine
-        send(event);
-      }
-    });
 
-    return unsubscribe;
-  }, [send]);
 
   if (isLoading) {
     return (
@@ -457,6 +457,38 @@ export default function ClueImageScene({ scene }: SceneProps<ClueImageSceneType>
         />
       )}
 
+      {/* Sparkle hints for unfound hotspots - positioned absolutely within viewport */}
+      {!wasPreviouslyCompleted && imageBounds.width > 0 && (
+        <div
+          style={{
+            position: 'absolute',
+            left: `${imageBounds.left}px`,
+            top: `${imageBounds.top}px`,
+            width: `${imageBounds.width}px`,
+            height: `${imageBounds.height}px`,
+            pointerEvents: 'none',
+          }}
+        >
+          {(() => {
+            // Filter to only unfound hotspots - timing will dynamically adjust based on remaining clues
+            const unfoundHotspots = hotspotData.hotspots
+              .filter((hotspot) => !displayFoundClues.includes(hotspot.label));
+
+            return unfoundHotspots.map((hotspot, unfoundIndex) => (
+              <HotspotSparkles
+                key={`sparkles-${hotspot.id}`}
+                hotspot={hotspot}
+                hotspotIndex={unfoundIndex}
+                totalHotspots={unfoundHotspots.length}
+                containerWidth={imageBounds.width}
+                containerHeight={imageBounds.height}
+                found={false}
+              />
+            ));
+          })()}
+        </div>
+      )}
+
       {/* Hotspot overlay (disabled if completed) */}
       {!wasPreviouslyCompleted && (
         <HotspotOverlay
@@ -467,8 +499,8 @@ export default function ClueImageScene({ scene }: SceneProps<ClueImageSceneType>
         />
       )}
 
-      {/* Dialog bubble (disabled if completed) */}
-      {!wasPreviouslyCompleted && activeDialog && (
+      {/* Dialog bubble */}
+      {activeDialog && (
         <DialogBubble
           key={activeDialog.hotspot.id}
           text={activeDialog.text}
@@ -497,26 +529,7 @@ export default function ClueImageScene({ scene }: SceneProps<ClueImageSceneType>
         />
       </div>
 
-      {/* Debug info (remove in production) */}
-      {process.env.NODE_ENV === 'development' && (
-        <div
-          style={{
-            position: 'absolute',
-            top: 10,
-            left: 10,
-            background: 'rgba(0,0,0,0.7)',
-            color: 'white',
-            padding: '8px',
-            borderRadius: '4px',
-            fontSize: '12px',
-            pointerEvents: 'none',
-          }}
-        >
-          <div>Found: {foundClues.length} / {hotspotData.hotspots.length}</div>
-          <div>Clues: {foundClues.join(', ')}</div>
-          <div>Complete: {isComplete ? 'Yes' : 'No'}</div>
-        </div>
-      )}
+
     </div>
   );
 }

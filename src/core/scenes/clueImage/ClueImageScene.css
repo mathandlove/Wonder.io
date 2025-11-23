@@ -28,6 +28,121 @@
 
 /* Note: Base image styles are now inline for precise positioning */
 
+/* Hotspot sparkles */
+.hotspot-sparkles {
+  /* Styles are primarily inline for dynamic positioning */
+  /* This class is available for additional styling if needed */
+}
+
+.sparkle {
+  /* Individual sparkle styles are inline */
+}
+
+/* Sparkle animations */
+@keyframes sparkle-twinkle {
+  0%, 100% {
+    opacity: 0.3;
+  }
+  50% {
+    opacity: 1;
+  }
+}
+
+@keyframes sparkle-float {
+  0%, 100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-10px);
+  }
+}
+
+/* Sparkle drift animations - multiple variants for natural movement */
+@keyframes sparkle-drift-1 {
+  0% {
+    transform: translate(0, 0);
+  }
+  33% {
+    transform: translate(15px, -10px);
+  }
+  66% {
+    transform: translate(-10px, 12px);
+  }
+  100% {
+    transform: translate(0, 0);
+  }
+}
+
+@keyframes sparkle-drift-2 {
+  0% {
+    transform: translate(0, 0);
+  }
+  33% {
+    transform: translate(-12px, 8px);
+  }
+  66% {
+    transform: translate(10px, -15px);
+  }
+  100% {
+    transform: translate(0, 0);
+  }
+}
+
+@keyframes sparkle-drift-3 {
+  0% {
+    transform: translate(0, 0);
+  }
+  33% {
+    transform: translate(8px, 12px);
+  }
+  66% {
+    transform: translate(-15px, -8px);
+  }
+  100% {
+    transform: translate(0, 0);
+  }
+}
+
+@keyframes sparkle-drift-4 {
+  0% {
+    transform: translate(0, 0);
+  }
+  33% {
+    transform: translate(-8px, -10px);
+  }
+  66% {
+    transform: translate(12px, 8px);
+  }
+  100% {
+    transform: translate(0, 0);
+  }
+}
+
+/* Sparkle reveal/hide cycle animation - controls outer container opacity */
+/* Pattern: 1s fade in, 2s visible, 1s fade out, 2s gap = 6s per hotspot, 24s total for 4 hotspots */
+/* Fade in: 0-1s, Fully visible: 1-3s, Fade out: 3-4s, Hidden: 4-6s */
+@keyframes sparkle-reveal-cycle {
+  /* Fade in from 0% to 16.67% (0-4s out of 24s) */
+  0% {
+    opacity: 0;
+  }
+  4.17% {
+    opacity: 1;
+  }
+  /* Stay fully visible until 12.5% (3s out of 24s) */
+  12.5% {
+    opacity: 1;
+  }
+  /* Fade out from 12.5% to 16.67% (3-4s) */
+  16.67% {
+    opacity: 0;
+  }
+  /* Stay hidden for the rest */
+  100% {
+    opacity: 0;
+  }
+}
+
 /* Hotspot regions */
 .hotspot-region {
   fill: transparent;
@@ -45,29 +160,34 @@
 /* Found hotspots - subtle indicator */
 .hotspot-region--found {
   cursor: pointer;
-  fill: rgba(100, 200, 255, 0.05);
+  fill: transparent;
 }
 
 .hotspot-region--found:hover {
-  fill: rgba(100, 200, 255, 0.15);
+  fill: transparent;
 }
 
-/* Dialog Bubble */
+/* Dialog Bubble - Cardboard style matching CardboardBubble component */
 .dialog-bubble {
   position: absolute;
   /* Transform is set by position-specific classes (dialog-bubble--bottom, etc.) */
-  background: linear-gradient(135deg, #f5e6d3 0%, #e8d4bd 100%);
-  border: 3px solid #8b6f47;
-  border-radius: 12px;
-  padding: 16px 20px;
-  max-width: 320px;
-  min-width: 200px;
-  box-shadow:
-    0 4px 12px rgba(0, 0, 0, 0.3),
-    inset 0 1px 0 rgba(255, 255, 255, 0.3);
+  width: fit-content;
+  height: fit-content;
+  min-height: 80px;
+  overflow: visible;
+  padding: 15px;
+  background-image: url('/VisualAssets/cardboard.png');
+  background-size: cover;
+  background-repeat: no-repeat;
+  background-position: center;
+  background-color: #d4b896; /* Fallback color if image doesn't load */
+  border-radius: 25px;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
   z-index: 100;
   cursor: pointer;
-  font-family: 'Comic Sans MS', 'Chalkboard SE', 'Arial Rounded MT Bold', sans-serif;
+  box-sizing: border-box;
+  max-width: 320px;
+  min-width: 200px;
 }
 
 /* Position-specific animations */
@@ -131,12 +251,24 @@
   }
 }
 
+/* Inner white/cream text box matching CardboardBubble */
+.dialog-bubble__inner {
+  background: #fdf8e4;
+  padding: 16px 32px;
+  margin: 0;
+  border-radius: 15px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+  position: relative;
+  text-align: left;
+}
+
 .dialog-bubble__text {
   margin: 0;
-  font-size: 16px;
+  font-size: 22px;
+  font-family: 'Nunito', sans-serif;
+  color: #333;
   line-height: 1.5;
-  color: #2c1810;
-  text-align: center;
+  text-align: left;
 }
 
 /* Position-specific adjustments */
@@ -156,41 +288,93 @@
   transform: translate(40px, -50%);
 }
 
-/* Pointer/arrow for dialog bubble */
-.dialog-bubble::after {
+/* Cardboard backing triangle for speech tail - using ::before for background layer */
+.dialog-bubble::before {
+  content: '';
+  position: absolute;
+  background-image: url('/VisualAssets/cardboard.png');
+  background-size: cover;
+  background-repeat: no-repeat;
+  background-position: center;
+  z-index: 1;
+}
+
+.dialog-bubble--top::before {
+  bottom: -20px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 30px;
+  height: 20px;
+  clip-path: polygon(50% 100%, 0 0, 100% 0);
+}
+
+.dialog-bubble--bottom::before {
+  top: -20px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 30px;
+  height: 20px;
+  clip-path: polygon(50% 0, 0 100%, 100% 100%);
+}
+
+.dialog-bubble--left::before {
+  right: -20px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 28px;
+  height: 30px;
+  clip-path: polygon(100% 50%, 0 0, 0 100%);
+}
+
+.dialog-bubble--right::before {
+  left: -20px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 28px;
+  height: 30px;
+  clip-path: polygon(0 50%, 100% 0, 100% 100%);
+}
+
+/* Cream/white triangle pointer overlay - using ::after on the inner element */
+.dialog-bubble__inner::after {
   content: '';
   position: absolute;
   width: 0;
   height: 0;
-  border: 10px solid transparent;
+  border-style: solid;
+  z-index: 2;
 }
 
-.dialog-bubble--top::after {
-  bottom: -20px;
+.dialog-bubble--top .dialog-bubble__inner::after {
+  bottom: -15px;
   left: 50%;
   transform: translateX(-50%);
-  border-top-color: #8b6f47;
+  border-width: 15px 15px 0 15px;
+  border-color: #fdf8e4 transparent transparent transparent;
 }
 
-.dialog-bubble--bottom::after {
-  top: -20px;
+.dialog-bubble--bottom .dialog-bubble__inner::after {
+  top: -15px;
   left: 50%;
   transform: translateX(-50%);
-  border-bottom-color: #8b6f47;
+  border-width: 0 15px 15px 15px;
+  border-color: transparent transparent #fdf8e4 transparent;
 }
 
-.dialog-bubble--left::after {
+.dialog-bubble--left .dialog-bubble__inner::after {
   right: -20px;
   top: 50%;
   transform: translateY(-50%);
-  border-left-color: #8b6f47;
+  border-width: 15px 0 15px 28px;
+  border-color: transparent transparent transparent #fdf8e4;
 }
 
-.dialog-bubble--right::after {
+.dialog-bubble--right .dialog-bubble__inner::after {
   left: -20px;
   top: 50%;
   transform: translateY(-50%);
-  border-right-color: #8b6f47;
+  border-width: 15px 28px 15px 0;
+  border-color: transparent #fdf8e4 transparent transparent;
 }
 
 /* Hover effect for dialog - add scale without changing position */

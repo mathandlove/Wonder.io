@@ -359,6 +359,20 @@ export const navigationMachine = setup({
     clearSuccessDanceNodeId: assign({
       successDanceNodeId: undefined
     }),
+
+    // =============================================================================
+    // Clue Scene Actions
+    // =============================================================================
+
+    markClueSceneComplete: () => {
+      const nodeId = getCurrentNodeId();
+      if (nodeId) {
+        debug.log('🔍 Marking clue scene as complete for node:', nodeId);
+        useNavigationStore.getState().updateNodePhase(nodeId, 'complete');
+      } else {
+        debug.error('❌ Cannot mark clue scene complete - no current node ID');
+      }
+    },
   },
   guards: {
     // Check if current node is in input phase
@@ -409,6 +423,16 @@ export const navigationMachine = setup({
     // Check if both fail video and feedback are ready (for answer-wrong transition)
     bothFailConditionsMet: ({ context }) => {
       return context.failVideoComplete === true && context.feedbackReceived === true;
+    },
+    // Check if current scene is a clue-image scene
+    isClueScene: () => {
+      const currentNode = useNavigationStore.getState().getCurrentNode();
+      return currentNode?.scene?.type === 'clue-image' && currentNode?.phase !== 'complete';
+    },
+    // Check if current scene is a completed clue-image scene
+    isClueSceneComplete: () => {
+      const currentNode = useNavigationStore.getState().getCurrentNode();
+      return currentNode?.scene?.type === 'clue-image' && currentNode?.phase === 'complete';
     },
 
     // Success-dance navigation guards
@@ -614,6 +638,14 @@ export const navigationMachine = setup({
               target: 'answerWrong',
             },
             {
+              guard: 'isClueSceneComplete',
+              target: 'completeClueScene',
+            },
+            {
+              guard: 'isClueScene',
+              target: 'clueScene',
+            },
+            {
               guard: 'isBasic',
               target: 'dialogueBasic',
             },
@@ -646,6 +678,90 @@ export const navigationMachine = setup({
             // When quest is accepted/started, transition to input phase
             REQUEST_NAV_NEXT: {
               actions: 'goNext',
+              target: '#navigation.scene.route',
+            },
+          },
+        },
+
+        /**
+         * CLUE SCENE state
+         * Clue-image scene where user finds clues by clicking hotspots
+         * Allows CONTINUE event to navigate forward when all clues are found
+         */
+        clueScene: {
+          entry: () => debug.log('🔍 Entered clueScene state'),
+          on: {
+            // Block scroll navigation - user must use Continue button
+            SCROLL_DOWN_STEP: {
+              actions: () => debug.log('⛔ SCROLL_DOWN blocked in clue scene - use Continue button'),
+            },
+            SCROLL_UP_STEP: {
+              actions: () => debug.log('⛔ SCROLL_UP blocked in clue scene'),
+            },
+            // Allow CONTINUE event to navigate forward
+            CONTINUE: {
+              actions: [
+                () => debug.log('➡️ CONTINUE in clueScene → navigating to next scene'),
+                'goNext',
+              ],
+              target: '#navigation.scene.route',
+            },
+            // Also handle REQUEST_NAV_NEXT for consistency
+            REQUEST_NAV_NEXT: {
+              actions: [
+                () => debug.log('➡️ REQUEST_NAV_NEXT in clueScene → navigating to next scene'),
+                'goNext',
+              ],
+              target: '#navigation.scene.route',
+            },
+            // Handle ALL_CLUES_FOUND - update phase to complete and transition
+            ALL_CLUES_FOUND: {
+              actions: [
+                () => debug.log('🎯 ALL_CLUES_FOUND in clueScene → marking as complete'),
+                'markClueSceneComplete',
+              ],
+              target: '#navigation.scene.route',
+            },
+          },
+        },
+
+        /**
+         * COMPLETE CLUE SCENE state
+         * All clues have been found - navigation is enabled
+         * User can scroll or click Continue to proceed
+         */
+        completeClueScene: {
+          entry: () => debug.log('✅ Entered completeClueScene state - navigation enabled'),
+          on: {
+            // Allow scroll navigation
+            SCROLL_DOWN_STEP: {
+              actions: [
+                () => debug.log('⬇️ SCROLL_DOWN in completeClueScene → navigating forward'),
+                'goNext',
+              ],
+              target: '#navigation.scene.route',
+            },
+            SCROLL_UP_STEP: {
+              actions: [
+                () => debug.log('⬆️ SCROLL_UP in completeClueScene → navigating backward'),
+                'goPrev',
+              ],
+              target: '#navigation.scene.route',
+            },
+            // Allow CONTINUE event to navigate forward
+            CONTINUE: {
+              actions: [
+                () => debug.log('➡️ CONTINUE in completeClueScene → navigating to next scene'),
+                'goNext',
+              ],
+              target: '#navigation.scene.route',
+            },
+            // Also handle REQUEST_NAV_NEXT for consistency
+            REQUEST_NAV_NEXT: {
+              actions: [
+                () => debug.log('➡️ REQUEST_NAV_NEXT in completeClueScene → navigating to next scene'),
+                'goNext',
+              ],
               target: '#navigation.scene.route',
             },
           },

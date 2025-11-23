@@ -293,6 +293,24 @@ export type deleteCurrentNodeandNavNext = {
   type: 'DELETE_CURRENT_NODE_AND_NAV_NEXT';
 };
 
+/**
+ * CONTINUE
+ * Emitted when: User clicks Continue button in clue scene after finding all clues
+ * Purpose: Request navigation to next scene
+ */
+export type ContinueEvent = {
+  type: 'CONTINUE';
+};
+
+/**
+ * ALL_CLUES_FOUND
+ * Emitted when: User clicks the 4th clue in a clue scene
+ * Purpose: Signal that all clues have been found and phase should be updated to 'complete'
+ */
+export type AllCluesFoundEvent = {
+  type: 'ALL_CLUES_FOUND';
+};
+
 
 
 /**
@@ -325,6 +343,8 @@ export type NavigationEvent =
   | RequestNavPrevEvent
   | UpdateNodePhaseEvent
   | deleteCurrentNodeandNavNext
+  | ContinueEvent
+  | AllCluesFoundEvent
 
 // Note: SCENE_PHASE_CHANGED removed - phase lives in child machine state,
 // not as a parent event. Phase is persisted via meta when needed.

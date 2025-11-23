@@ -14,6 +14,9 @@
   },
   "dependencies": {
     "@statelyai/inspect": "^0.4.0",
+    "@tsparticles/basic": "^3.9.1",
+    "@tsparticles/engine": "^3.9.1",
+    "@tsparticles/react": "^3.0.0",
     "@xstate/react": "^6.0.0",
     "debug": "^4.4.3",
     "framer-motion": "^12.23.15",
@@ -21,6 +24,7 @@
     "react": "^19.1.1",
     "react-dom": "^19.1.1",
     "sharp": "^0.34.3",
+    "tsparticles": "^3.9.1",
     "ulid": "^3.0.1",
     "xstate": "^5.23.0",
     "zustand": "^5.0.8"
