@@ -16,6 +16,7 @@ export interface ConversationMetadata {
   questText?: string; // For quest items
   successAnswer: string; // Success phrase for both
   incorrectAnswer?: string[]; // Optional array of incorrect facts to penalize
+  useClues?: boolean; // Whether to use clues from the most recent clue-image scene
 }
 
 export interface ConversationMetadataMap {

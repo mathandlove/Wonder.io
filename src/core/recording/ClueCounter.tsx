@@ -48,10 +48,11 @@ function ClueThumbnail({ hotspot, isFound, coloredImageSrc, animateReveal }: Clu
 
   // Build thumbnail path from hotspot label
   // coloredImageSrc is like: /stories/gingerbread.bundle/images/cluesColored/insideBakery.png
-  // We want: /stories/gingerbread.bundle/images/cluesColored/hotspotImages/{label}.png
+  // We want: /stories/gingerbread.bundle/images/hotspots/insideBakery/{label}.png
+  const imageName = coloredImageSrc.split('/').pop()?.replace(/\.(png|jpg|jpeg|webp)$/i, '') || '';
   const thumbnailSrc = coloredImageSrc.replace(
-    /cluesColored\/[^/]+\.png$/,
-    `cluesColored/hotspotImages/${hotspot.label.toLowerCase()}.png`
+    /cluesColored\/[^/]+\.png$/i,
+    `hotspots/${imageName}/${hotspot.label.toLowerCase()}.png`
   );
 
   return (

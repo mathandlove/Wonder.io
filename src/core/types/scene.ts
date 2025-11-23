@@ -137,8 +137,10 @@ export type ClueImageScene = {
   image?: string; // Base image path (optional, can be derived from hotspot data)
   background?: string;
   clueDescriptions: Array<{
-    hotspot: string; // Label matching hotspot JSON (e.g., "Hair", "Potion")
-    dialog: string;  // Dialog text to show when hotspot is clicked
+    hotspotName: string; // Label matching hotspot JSON (e.g., "Hair", "Potion")
+    description: string; // Human-readable description of the clue (e.g., "A bowl of human hair")
+    image: string; // Image name to find thumbnails
+    dialog?: string;  // Dialog text to show when hotspot is clicked (legacy, may be removed)
   }>;
   flowSequence?: boolean;
   isFirstInFlow?: boolean;

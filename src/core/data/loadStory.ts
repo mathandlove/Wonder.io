@@ -16,7 +16,7 @@ type RawFlowItem = {
   waiting?: boolean;
   quest?: string;
   input?: string;
-  type?: "input" | "quest"; // Marks this as metadata item
+  type?: "input" | "quest" | "use-clues"; // Marks this as metadata item
   CharacterDescription?: string; // AI chat context (for input)
   successAnswer?: string; // Expected phrase for quest completion
   incorrectAnswer?: string[]; // Optional array of incorrect facts to penalize
@@ -65,6 +65,11 @@ function flattenScenes(rawScenes: RawScene[]): FlattenResult {
         f => f.type === "quest" && f.text && f.successAnswer
       );
 
+      // Scan for use-clues metadata in this flow
+      const useCluesItem = scene.flow.find(
+        f => f.type === "use-clues"
+      );
+
       // Generate unique conversationId if this flow has either input or quest metadata
       const hasMetadata = inputMetadataItem || questMetadataItem;
       const conversationId = hasMetadata ? `conv-${flowCounter++}` : undefined;
@@ -75,7 +80,8 @@ function flattenScenes(rawScenes: RawScene[]): FlattenResult {
           characterDescription: inputMetadataItem?.CharacterDescription,
           questText: questMetadataItem?.text,
           successAnswer: (questMetadataItem?.successAnswer || inputMetadataItem?.successAnswer)!,
-          incorrectAnswer: questMetadataItem?.incorrectAnswer || inputMetadataItem?.incorrectAnswer
+          incorrectAnswer: questMetadataItem?.incorrectAnswer || inputMetadataItem?.incorrectAnswer,
+          useClues: !!useCluesItem
         };
       }
 

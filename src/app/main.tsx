@@ -6,6 +6,7 @@ import StoryModeScroll from '../pages/StoryModeScroll'
 import { DialogueProvider } from '@core/dialogue/DialogueContext'
 import { ChatDialogueProvider } from '@features/chat/context/ChatDialogueContext'
 import { RecordingProvider } from '@core/recording/RecordingContext'
+import { ClueStoreProvider } from '@core/data/ClueStore'
 import { startNavigationService } from '@core/navigation/machine/navigationInterpreter'
 import { start as startQueue, setExecutor } from '@core/navigation/queue/navigationQueue'
 import { executeCommand } from '@core/navigation/commands/commandExecutor'
@@ -26,9 +27,11 @@ ReactDOM.createRoot(document.getElementById('root')!).render(
   // <React.StrictMode>
   <DialogueProvider>
     <RecordingProvider>
-      <ChatDialogueProvider>
-        <StoryModeScroll />
-      </ChatDialogueProvider>
+      <ClueStoreProvider>
+        <ChatDialogueProvider>
+          <StoryModeScroll />
+        </ChatDialogueProvider>
+      </ClueStoreProvider>
     </RecordingProvider>
   </DialogueProvider>
   // </React.StrictMode>,

@@ -170,9 +170,12 @@ async function processHotspotFile(hotspotFilePath) {
     return;
   }
 
-  // Create output directory
-  const imageDir = path.dirname(absoluteImagePath);
-  const outputDir = path.join(imageDir, 'hotspotImages');
+  // Create output directory based on image name
+  // Example: /stories/gingerbread.bundle/images/cluesColored/insideBakery.png
+  // Output: /stories/gingerbread.bundle/images/hotspots/insideBakery/
+  const imageName = path.basename(absoluteImagePath, path.extname(absoluteImagePath));
+  const bundleImagesDir = path.dirname(path.dirname(absoluteImagePath)); // Go up two levels from cluesColored/image.png
+  const outputDir = path.join(bundleImagesDir, 'hotspots', imageName);
   await fs.mkdir(outputDir, { recursive: true });
   console.log(`  Output directory: ${outputDir}`);
 
@@ -255,8 +258,8 @@ Examples:
   node tools/generate_hotspot_thumbnails.js --all
 
 Output:
-  Thumbnails are saved as PNG files in images/hotspotImages/ next to the source image.
-  Each thumbnail is named with the hotspot ID (e.g., hotspot-1762710976568.png).
+  Thumbnails are saved as PNG files in images/hotspots/IMAGENAME/ folder.
+  Each thumbnail is named with the hotspot label (e.g., crumbs.png).
     `);
     process.exit(0);
   }

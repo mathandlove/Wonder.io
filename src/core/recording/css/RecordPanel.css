@@ -750,7 +750,7 @@
 /* Hint button specific width - tight */
 .frame .hint-btn {
   width: 59px;
-  padding: 8px 20px; /* Match Ask/Answer button padding exactly */
+  padding: 8px 0; /* Remove horizontal padding so icon fits */
 }
 
 /* Answer button specific width */

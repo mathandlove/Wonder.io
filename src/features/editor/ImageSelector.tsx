@@ -23,7 +23,7 @@ const ImageSelector: React.FC<ImageSelectorProps> = ({ onImageSelect, currentIma
   const [isLoading, setIsLoading] = useState(false);
 
   useEffect(() => {
-    // Load only cluesColored images from gingerbread bundle
+    // Load only cluesColored images from gingerbread bundle, excluding thumbnail subfolders
     const loadImages = async () => {
       setIsLoading(true);
       try {
@@ -33,9 +33,11 @@ const ImageSelector: React.FC<ImageSelectorProps> = ({ onImageSelect, currentIma
         }
         const data = await response.json();
 
-        // Filter and parse only cluesColored images
+        // Filter for cluesColored images but exclude thumbnail subfolders (old hotspotImages location)
         const imageInfos: ImageInfo[] = data.images
-          .filter((path: string) => path.includes('/cluesColored/'))
+          .filter((path: string) =>
+            path.includes('/cluesColored/') && !path.includes('/hotspotImages/')
+          )
           .map((path: string) => {
             // Extract filename for name
             const filename = path.split('/').pop() || '';
@@ -44,7 +46,7 @@ const ImageSelector: React.FC<ImageSelectorProps> = ({ onImageSelect, currentIma
             return {
               path,
               name,
-              category: 'cluesColored' as const,
+              category: 'clues' as const,
               bundle: 'gingerbread'
             };
           });

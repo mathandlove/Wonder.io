@@ -223,15 +223,16 @@ node tools/generate_hotspot_thumbnails.js --help
 **Features:**
 - Creates masked thumbnails cropped to hotspot bounds
 - Applies polygon mask from hotspot points
-- Outputs to `images/hotspotImages/` directory
-- Names thumbnails by hotspot ID
+- Outputs to `images/hotspots/IMAGENAME/` directory
+- Names thumbnails by hotspot label
 - High compression PNG output (level 9)
 
 **Output:**
-Each hotspot gets a PNG file like `hotspot-1762710976568.png` containing:
+Each hotspot gets a PNG file (e.g., `crumbs.png`, `frosting.png`) containing:
 - The color clue image cropped to the hotspot's bounding box
 - A polygon mask applied to show only the hotspot region
 - Transparent background outside the mask
+- Files organized by image name for better clue reusability
 
 #### `gen_outlines.js`
 Creates black outlines from maps/clues (different use case).
