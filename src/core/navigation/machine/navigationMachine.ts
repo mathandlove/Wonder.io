@@ -21,9 +21,10 @@ import { loadStoryService } from '@core/data/services/loadStoryService';
 import { callAIService, setConversationMetadata, createAndInsertAIResponseScene, validateAnswerService, getConversationMetadata, startFeedbackGeneration, getPendingFeedbackPromise, clearPendingFeedback, setSelectedClue } from '@core/ai/AIOrchestrator';
 import { useNavigationStore } from '../navigationStore';
 import { getCurrentNodeId, getCurrentNode, initializeStoreWithStory, insertSceneNodes, deleteNode, updateCurrentSceneProperties } from '../navigationHelpers';
-import { createAIResponseScene as createAIResponseSceneFactory } from '../sceneFactoryFunctions';
+import { createAIResponseScene as createAIResponseSceneFactory, createFailDanceScene } from '../sceneFactoryFunctions';
 import { RecordingOrchestratorAPI } from '@core/recording/RecordingOrchestrator';
 import { createDebugger } from '../../../utils/createDebug';
+import type { CharacterScene } from '@core/types/scene';
 
 const debug = createDebugger('navigation:machine');
 
@@ -1724,19 +1725,24 @@ export const navigationMachine = setup({
             SCROLL_UP_STEP: {
               actions: () => debug.log('⛔ SCROLL blocked during fail animation'),
             },
-            // When fail-dance animation completes, mark video as complete
-            VIDEO_COMPLETE: {
-              actions: [
-                ({ event }) => {
-                  if (event.videoType === 'fail-dance') {
-                    debug.log('🎬 Fail-dance video complete');
-                  }
-                },
-                'setFailVideoComplete',
-              ],
-              // Check if both conditions are met after setting video complete
-              target: '#navigation.scene.answerWrong', // Stay in same state (will check always transition)
-            },
+            // When hand stamp video completes (after 1s delay), handle different video types
+            VIDEO_COMPLETE: [
+              {
+                // Answer-wrong stamp video completed - transition to wrongStampVideo state
+                guard: ({ event }) => event.videoType === 'answer-wrong',
+                actions: () => debug.log('🎬 VIDEO_COMPLETE (answer-wrong) received - transitioning to wrongStampVideo'),
+                target: 'wrongStampVideo',
+              },
+              {
+                // Fail-dance animation completes
+                guard: ({ event }) => event.videoType === 'fail-dance',
+                actions: [
+                  () => debug.log('🎬 Fail-dance animation complete'),
+                  'setFailVideoComplete',
+                ],
+                target: '#navigation.scene.answerWrong', // Stay in same state (will check always transition)
+              }
+            ],
             // When feedback is received, create a new scene with the feedback text
             FEEDBACK_RECEIVED: {
               actions: [
@@ -1811,6 +1817,211 @@ export const navigationMachine = setup({
 
                 // Delete the fail-dance scene now that we've navigated past it
                 // This keeps the graph clean - fail-dance is just a temporary animation
+                if (failDanceNodeId) {
+                  debug.log('🗑️  Deleting fail-dance scene:', failDanceNodeId);
+                  deleteNode(failDanceNodeId);
+                }
+              }
+            ],
+            target: '#navigation.scene.navigating',
+          },
+        },
+
+        /**
+         * WRONG STAMP VIDEO state
+         * RecordPanel video has finished playing (f+1 second complete)
+         * Automatically transitions to failDance state
+         */
+        wrongStampVideo: {
+          entry: () => debug.log('🎬 Entered wrongStampVideo state - video finished'),
+          // Immediately transition to failDance
+          always: {
+            target: 'failDance',
+            actions: () => debug.log('➡️  Auto-transitioning to failDance'),
+          },
+        },
+
+        /**
+         * FAIL DANCE STATE
+         * Play the angry dance animation
+         * Create fail-dance scene and navigate to it
+         */
+        failDance: {
+          entry: [
+            () => {
+              console.log('😡 [STATE MACHINE] Entered failDance state - creating fail-dance scene');
+              debug.log('😡 Entered failDance - creating fail-dance scene');
+            },
+            () => {
+              const freshNode = getCurrentNode();
+              const currentNodeId = getCurrentNodeId();
+
+              if (!freshNode || !currentNodeId) {
+                debug.error('No current node - cannot create fail-dance scene');
+                return;
+              }
+
+              // Extract character information from current scene
+              const scene = freshNode.scene;
+              const characterScene = scene as CharacterScene;
+              const answerText = characterScene.answerText || '';
+              const questionText = characterScene.questionText || '';
+              const background = 'background' in scene ? scene.background : undefined;
+              const leftCharacter = 'left-character' in scene ? (scene as { 'left-character'?: string })['left-character'] : undefined;
+
+              // Create fail-dance scene
+              const failDanceScene = createFailDanceScene(
+                'bakerMom', // Character who gets angry
+                answerText,
+                questionText,
+                background,
+                leftCharacter,
+                undefined // right-character undefined to trigger exit animation
+              );
+
+              // Insert fail-dance scene after current node
+              insertSceneNodes(currentNodeId, failDanceScene);
+              debug.log('✅ Fail-dance scene created and inserted in failDance state');
+
+              // Reset current scene phase to basic (for potential retry)
+              useNavigationStore.getState().updateNodePhase(currentNodeId, 'basic');
+
+              // Navigate to fail-dance scene
+              setTimeout(() => {
+                useNavigationStore.getState().advance('forward');
+                debug.log('➡️  Navigated to fail-dance scene from failDance state');
+              }, 100);
+            }
+          ],
+          on: {
+            // Block navigation during angry dance
+            SCROLL_DOWN_STEP: {
+              actions: () => debug.log('⛔ SCROLL blocked during angry dance'),
+            },
+            SCROLL_UP_STEP: {
+              actions: () => debug.log('⛔ SCROLL blocked during angry dance'),
+            },
+            // When fail-dance animation completes
+            DANCE_DONE: {
+              actions: [
+                () => debug.log('🎬 DANCE_DONE received - fail-dance animation complete'),
+                'setFailVideoComplete',
+              ],
+              target: 'feedbackWaiting',
+            },
+            // When feedback is received
+            FEEDBACK_RECEIVED: {
+              actions: [
+                ({ event }) => {
+                  debug.log('💬 Feedback received in failDance state:', event.feedbackText.substring(0, 100) + '...');
+
+                  const questionNodeId = event.questionNodeId;
+                  if (!questionNodeId) {
+                    debug.error('No questionNodeId provided with feedback');
+                    return;
+                  }
+
+                  const store = useNavigationStore.getState();
+                  const questionNode = store.graph.byId[questionNodeId];
+                  if (!questionNode?.scene) {
+                    debug.error('Question node not found:', questionNodeId);
+                    return;
+                  }
+
+                  const scene = questionNode.scene;
+                  const conversationId = (scene as { conversationId?: string })?.conversationId;
+                  const currentBackground = 'background' in scene ? scene.background : undefined;
+                  const leftCharacter = 'left-character' in scene ? (scene as { 'left-character'?: string })['left-character'] : 'leo';
+                  const rightCharacter = 'right-character' in scene ? (scene as { 'right-character'?: string })['right-character'] : 'bakerMom';
+
+                  const feedbackScene = createAIResponseSceneFactory(
+                    event.feedbackText,
+                    conversationId,
+                    currentBackground,
+                    leftCharacter,
+                    rightCharacter
+                  );
+
+                  const currentNodeId = store.currentId;
+                  if (currentNodeId) {
+                    insertSceneNodes(currentNodeId, feedbackScene);
+                    debug.log('✅ Feedback scene created in failDance state');
+                  }
+                },
+                'setFeedbackReceived',
+              ],
+              target: 'feedbackWaiting',
+            },
+          },
+        },
+
+        /**
+         * FEEDBACK WAITING state
+         * Waiting for both fail video and feedback to complete
+         */
+        feedbackWaiting: {
+          entry: () => debug.log('⏳ Entered feedbackWaiting - checking if both conditions met'),
+          on: {
+            SCROLL_DOWN_STEP: {
+              actions: () => debug.log('⛔ SCROLL blocked while waiting for feedback'),
+            },
+            SCROLL_UP_STEP: {
+              actions: () => debug.log('⛔ SCROLL blocked while waiting for feedback'),
+            },
+            DANCE_DONE: {
+              actions: [
+                () => debug.log('🎬 DANCE_DONE received in feedbackWaiting'),
+                'setFailVideoComplete',
+              ],
+            },
+            FEEDBACK_RECEIVED: {
+              actions: [
+                ({ event }) => {
+                  debug.log('💬 Feedback received in feedbackWaiting');
+
+                  const questionNodeId = event.questionNodeId;
+                  if (!questionNodeId) return;
+
+                  const store = useNavigationStore.getState();
+                  const questionNode = store.graph.byId[questionNodeId];
+                  if (!questionNode?.scene) return;
+
+                  const scene = questionNode.scene;
+                  const conversationId = (scene as { conversationId?: string })?.conversationId;
+                  const currentBackground = 'background' in scene ? scene.background : undefined;
+                  const leftCharacter = 'left-character' in scene ? (scene as { 'left-character'?: string })['left-character'] : 'leo';
+                  const rightCharacter = 'right-character' in scene ? (scene as { 'right-character'?: string })['right-character'] : 'bakerMom';
+
+                  const feedbackScene = createAIResponseSceneFactory(
+                    event.feedbackText,
+                    conversationId,
+                    currentBackground,
+                    leftCharacter,
+                    rightCharacter
+                  );
+
+                  const currentNodeId = store.currentId;
+                  if (currentNodeId) {
+                    insertSceneNodes(currentNodeId, feedbackScene);
+                    debug.log('✅ Feedback scene created in feedbackWaiting');
+                  }
+                },
+                'setFeedbackReceived',
+              ],
+            },
+          },
+          always: {
+            guard: 'bothFailConditionsMet',
+            actions: [
+              () => {
+                debug.log('✅ Both conditions met in feedbackWaiting - navigating to feedback');
+
+                const store = useNavigationStore.getState();
+                const failDanceNodeId = store.currentId;
+
+                store.advance('forward');
+                debug.log('➡️  Advanced to feedback scene');
+
                 if (failDanceNodeId) {
                   debug.log('🗑️  Deleting fail-dance scene:', failDanceNodeId);
                   deleteNode(failDanceNodeId);

@@ -43,7 +43,7 @@ export const RecordPanel: React.FC<RecordPanelProps> = ({
 
   // Read state directly from current node (reactive!)
   const currentNode = getCurrentNode();
-  const scene = currentNode?.scene as CharacterScene;
+  const scene = currentNode?.scene;
   const dialogueState = currentNode?.phase || 'basic'; // Phase IS the dialogue state
 
   // Get unlockAnswerButton flag from machine context
@@ -78,12 +78,12 @@ export const RecordPanel: React.FC<RecordPanelProps> = ({
   }, [dialogueState]);
 
   // Get quest text from conversation metadata
-  const conversationId = scene?.conversationId;
+  const conversationId = (scene as CharacterScene)?.conversationId;
   const metadata = conversationId ? getConversationMetadata(conversationId) : null;
   const questText = metadata?.questText || "Find out what going on.";
 
   // Get answer text from scene
-  const answerText = scene?.answerText || '';
+  const answerText = (scene as CharacterScene)?.answerText || '';
 
   // Disabled state (could be extended with additional logic)
   const disabled = false;
@@ -104,7 +104,8 @@ export const RecordPanel: React.FC<RecordPanelProps> = ({
   const isWaitingForFinalize = dialogueState === 'waiting-for-finalize';
   const isWaitingForAnswerFinalize = dialogueState === 'waiting-for-answer-finalize';
   const isSuccessDance = dialogueState === 'success-dance';
-  const isFailDance = dialogueState === 'fail-dance';
+  // Check both phase and scene type for fail-dance
+  const isFailDance = dialogueState === 'fail-dance' || scene?.type === 'fail-dance';
   const isWaiting = dialogueState === 'ai-waiting' || isWaitingForFinalize || isWaitingForAnswerFinalize || isAnswerWaiting || isProcessing || isAnswerProcessing;
 
   // Hidden state (basic or input-basic) should use quest-offer visual styling
@@ -148,17 +149,39 @@ export const RecordPanel: React.FC<RecordPanelProps> = ({
   // Show answer text for answer recording and all answer-related states (including success-dance and fail-dance)
   const showAnswerText = isAnswerRecording || isAnswerProcessing || isWaitingForAnswerFinalize || isAnswerWaiting || isAnswerRight || isAnswerWrong || isSuccessDance || isFailDance;
 
+  // Track red glow state for answer-wrong and fail-dance
+  const [showRedGlow, setShowRedGlow] = React.useState(false);
+  // Track green glow state for answer-right
+  const [showGreenGlow, setShowGreenGlow] = React.useState(false);
+
+  // Reset red glow when leaving answer-wrong/fail-dance states
+  React.useEffect(() => {
+    if (!isAnswerWrong && !isFailDance) {
+      setShowRedGlow(false);
+    }
+  }, [isAnswerWrong, isFailDance]);
+
+  // Reset green glow when leaving answer-right/success-dance states
+  React.useEffect(() => {
+    if (!isAnswerRight && !isSuccessDance) {
+      setShowGreenGlow(false);
+    }
+  }, [isAnswerRight, isSuccessDance]);
+
   // Determine which positioning class to apply based on state
   const getContainerClass = () => {
     // Centered states (important moments)
-    if (isAnswerRight) return 'answer-right-centered';
-    if (isSuccessDance) return 'answer-right-centered hidden';
-    if (isAnswerWrong) return 'answer-wrong-centered';
+    if (isAnswerRight) return showGreenGlow ? 'answer-right-centered show-green' : 'answer-right-centered';
+    if (isSuccessDance) return 'answer-right-centered show-green hidden';
+    if (isAnswerWrong) return showRedGlow ? 'answer-wrong-centered show-red' : 'answer-wrong-centered';
     if (isAnswerWaiting) return 'quest-offer-centered'; // Golden glow for waiting
     if (isQuestOffer) return 'quest-offer-centered'; // Golden glow for quest
 
-    // Hidden state (completely off-screen) - includes basic, input-basic, and fail-dance
-    if (isBasic || isInputBasic || isFailDance) return 'hidden';
+    // Fail-dance state - same red glow as answer-wrong but off-screen
+    if (isFailDance) return 'answer-wrong-centered show-red hidden';
+
+    // Hidden state (completely off-screen) - includes basic and input-basic
+    if (isBasic || isInputBasic) return 'hidden';
 
     // Rest position - bottom anchored for interactive states
     return 'bottom-anchored';
@@ -331,6 +354,8 @@ export const RecordPanel: React.FC<RecordPanelProps> = ({
           dialogueState={dialogueState}
           onAnswerWrongVideoComplete={onAnswerWrongVideoComplete}
           onAnswerRightVideoComplete={onAnswerRightVideoComplete}
+          onRedGlowStart={() => setShowRedGlow(true)}
+          onGreenGlowStart={() => setShowGreenGlow(true)}
         />
       )}
     </div>
@@ -345,16 +370,21 @@ interface VideoFeedbackProps {
   dialogueState: string;
   onAnswerWrongVideoComplete?: () => void;
   onAnswerRightVideoComplete?: () => void;
+  onRedGlowStart?: () => void;
+  onGreenGlowStart?: () => void;
 }
 
 const VideoFeedback: React.FC<VideoFeedbackProps> = ({
   dialogueState,
   onAnswerWrongVideoComplete,
-  onAnswerRightVideoComplete
+  onAnswerRightVideoComplete,
+  onRedGlowStart,
+  onGreenGlowStart
 }) => {
   const videoRef = React.useRef<HTMLVideoElement>(null);
   const [showStamp, setShowStamp] = React.useState(false);
   const [videoComplete, setVideoComplete] = React.useState(false);
+  const [showRedGlow, setShowRedGlow] = React.useState(false);
 
   const isAnswerWaiting = dialogueState === 'answer-waiting';
   const isAnswerRight = dialogueState === 'answer-right';
@@ -367,6 +397,7 @@ const VideoFeedback: React.FC<VideoFeedbackProps> = ({
     if (!isAnswerWaiting && !isAnswerRight && !isAnswerWrong && !isFailDance) {
       setShowStamp(false);
       setVideoComplete(false);
+      setShowRedGlow(false);
     }
   }, [isAnswerWaiting, isAnswerRight, isAnswerWrong, isFailDance]);
 
@@ -418,6 +449,16 @@ const VideoFeedback: React.FC<VideoFeedbackProps> = ({
               setShowStamp(true);
               setVideoComplete(true);
             }
+            // Switch to red glow at halfway point for answer-wrong
+            if (isAnswerWrong && !showRedGlow) {
+              setShowRedGlow(true);
+              onRedGlowStart?.();
+            }
+            // Switch to green glow at halfway point for answer-right
+            if (isAnswerRight && !showRedGlow) {
+              setShowRedGlow(true);
+              onGreenGlowStart?.();
+            }
             // Pause only for answer-waiting state
             if (isAnswerWaiting && !video.paused) {
               video.pause();
@@ -429,10 +470,24 @@ const VideoFeedback: React.FC<VideoFeedbackProps> = ({
           setVideoComplete(true);
           // Hide video after it ends
           (e.target as HTMLVideoElement).style.display = 'none';
-          // Notify orchestrator that video has completed
-          if (isAnswerWrong && onAnswerWrongVideoComplete) {
-            onAnswerWrongVideoComplete();
+
+          // For answer-wrong: Wait 1 second to show red glow, then emit VIDEO_COMPLETE event
+          if (isAnswerWrong) {
+            setTimeout(() => {
+              navigationBus.emit({
+                type: 'VIDEO_COMPLETE',
+                nodeId: '', // Machine will determine the node
+                videoType: 'answer-wrong'
+              });
+            }, 1000);
+
+            // Call legacy callback if provided
+            if (onAnswerWrongVideoComplete) {
+              onAnswerWrongVideoComplete();
+            }
           }
+
+          // For answer-right: Call legacy callback
           if (isAnswerRight && onAnswerRightVideoComplete) {
             onAnswerRightVideoComplete();
           }

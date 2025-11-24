@@ -35,38 +35,27 @@ export default function FailDanceScene({ scene }: SceneProps<FailDanceSceneType>
 
   // Handle animation completion - emit event to navigation machine
   const handleAnimationEnd = useCallback((e: React.AnimationEvent) => {
-    // Only respond to the character container's animation ending (not sub-elements)
-    if (!e.currentTarget.classList.contains('fail-dance-character-container')) return;
+    console.log('[FailDanceScene] 🎬 Animation end triggered', {
+      targetClasses: e.currentTarget.className,
+      animationName: e.animationName
+    });
 
-    // Only act if we're still on THIS fail-dance scene (prevents double-trigger if user navigated away)
-    if (currentSceneId !== scene.sceneId) {
+    // Only respond to the character container's animation ending (not sub-elements)
+    if (!e.currentTarget.classList.contains('fail-dance-character-container')) {
+      console.log('[FailDanceScene] ⏭️  Skipping - not character container');
       return;
     }
 
-    // Only act if we have a current node ID
-    if (!currentNodeId) return;
+    console.log('[FailDanceScene] 🚀 Emitting DANCE_DONE event');
 
-    // Remember our current node for deletion tracking
-    const failDanceNodeId = currentNodeId;
-
-    // Set up pending deletion tracking
-    pendingDeletionRef.current = {
-      failDanceNodeId,
-      deleted: false
-    };
-
-    // Emit VIDEO_COMPLETE event to navigation machine
-    // Machine will handle navigation back and phase reset
-    // console.log('[FailDanceScene] 🎬 Animation complete - emitting VIDEO_COMPLETE event');
+    // Emit DANCE_DONE event to navigation machine
+    // Machine will handle navigation and feedback flow
     navigationBus.emit({
-      type: 'VIDEO_COMPLETE',
-      nodeId: failDanceNodeId,
-      videoType: 'fail-dance'
+      type: 'DANCE_DONE'
     });
 
-    // Note: fail-dance scene deletion is now handled by the machine
-    // The scene can be safely deleted after user navigates away
-  }, [currentSceneId, scene.sceneId, currentNodeId]);
+    console.log('[FailDanceScene] ✅ DANCE_DONE event emitted');
+  }, []);
 
   // Image paths with cache busting
   const version = `v${Date.now()}`;

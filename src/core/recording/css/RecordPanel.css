@@ -207,16 +207,14 @@
    ANSWER-RIGHT STATE - GREEN GLOW
    =================================== */
 
-/* Answer Right State - glowing green success effect */
+/* Answer Right State - starts with yellow glow, transitions to green at halfway point */
 .record-panel-container.answer-right-centered .frame {
-  animation: breathingGlowGreen 10s ease-in-out 0.2s infinite !important;
-  /* 200ms delay after color transition */
   position: relative;
   transition: filter 1.5s ease-in-out;
-  /* Smooth transition when glow changes */
-  /* Initial golden glow (matches end of answer-waiting) - holds during 200ms delay */
+  /* Initial golden glow (matches end of answer-waiting) */
   filter:
     drop-shadow(0 0 25px rgba(255, 190, 60, 0.5)) drop-shadow(0 0 15px rgba(255, 200, 80, 0.6)) drop-shadow(0 0 10px rgba(255, 215, 100, 0.7)) drop-shadow(0 0 5px rgba(255, 230, 120, 0.3)) hue-rotate(-5deg) brightness(1.03) saturate(1.1);
+  animation: breathingGlowGold 10s ease-in-out 0.2s infinite !important;
 }
 
 .record-panel-container.answer-right-centered .frame::before {
@@ -225,15 +223,23 @@
   inset: 0;
   border-radius: 32px;
   pointer-events: none;
-  animation: breathingGlowInsetGreen 10s ease-in-out 0.2s infinite;
-  /* 200ms delay after color transition */
   z-index: 1;
-  /* Initial golden inset glow - holds during 200ms delay */
+  /* Initial golden inset glow */
   box-shadow:
     inset 0 0 40px rgba(255, 190, 60, 0.25),
     inset 0 0 25px rgba(255, 200, 80, 0.3),
     inset 0 0 15px rgba(255, 215, 100, 0.35),
     inset 0 0 8px rgba(255, 230, 120, 0.25);
+  animation: breathingGlowInsetGold 10s ease-in-out 0.2s infinite;
+}
+
+/* When green glow is triggered (at halfway point), switch to green animations */
+.record-panel-container.answer-right-centered.show-green .frame {
+  animation: breathingGlowGreen 10s ease-in-out 0.2s infinite !important;
+}
+
+.record-panel-container.answer-right-centered.show-green .frame::before {
+  animation: breathingGlowInsetGreen 10s ease-in-out 0.2s infinite;
 }
 
 /* Breathing glow animation - outward green success aura */
@@ -276,16 +282,14 @@
    ANSWER-WRONG STATE - RED GLOW
    =================================== */
 
-/* Answer Wrong State - glowing red error effect */
+/* Answer Wrong State - starts with yellow glow, transitions to red at halfway point */
 .record-panel-container.answer-wrong-centered .frame {
-  animation: breathingGlowRed 10s ease-in-out 0.2s infinite !important;
-  /* 200ms delay after color transition */
   position: relative;
   transition: filter 1.5s ease-in-out;
-  /* Smooth transition when glow changes */
-  /* Initial golden glow (matches end of answer-waiting) - holds during 200ms delay */
+  /* Initial golden glow (matches end of answer-waiting) */
   filter:
     drop-shadow(0 0 25px rgba(255, 190, 60, 0.5)) drop-shadow(0 0 15px rgba(255, 200, 80, 0.6)) drop-shadow(0 0 10px rgba(255, 215, 100, 0.7)) drop-shadow(0 0 5px rgba(255, 230, 120, 0.3)) hue-rotate(-5deg) brightness(1.03) saturate(1.1);
+  animation: breathingGlowGold 10s ease-in-out 0.2s infinite !important;
 }
 
 .record-panel-container.answer-wrong-centered .frame::before {
@@ -294,15 +298,70 @@
   inset: 0;
   border-radius: 32px;
   pointer-events: none;
-  animation: breathingGlowInsetRed 10s ease-in-out 0.2s infinite;
-  /* 200ms delay after color transition */
   z-index: 1;
-  /* Initial golden inset glow - holds during 200ms delay */
+  /* Initial golden inset glow */
   box-shadow:
     inset 0 0 40px rgba(255, 190, 60, 0.25),
     inset 0 0 25px rgba(255, 200, 80, 0.3),
     inset 0 0 15px rgba(255, 215, 100, 0.35),
     inset 0 0 8px rgba(255, 230, 120, 0.25);
+  animation: breathingGlowInsetGold 10s ease-in-out 0.2s infinite;
+}
+
+/* When red glow is triggered (at halfway point), switch to red animations */
+.record-panel-container.answer-wrong-centered.show-red .frame {
+  animation: breathingGlowRed 10s ease-in-out 0.2s infinite !important;
+}
+
+.record-panel-container.answer-wrong-centered.show-red .frame::before {
+  animation: breathingGlowInsetRed 10s ease-in-out 0.2s infinite;
+}
+
+/* Fail-dance state - red glow but off-screen */
+.record-panel-container.answer-wrong-centered.show-red.hidden {
+  top: auto !important;
+  /* Use bottom positioning for consistency */
+  bottom: -100vh !important;
+  /* Position completely below screen */
+  transform: translateX(-50%) !important;
+  /* Only center horizontally */
+  justify-content: flex-end;
+}
+
+/* Breathing glow animation - golden (for first half of video) */
+@keyframes breathingGlowGold {
+
+  0%,
+  100% {
+    filter:
+      drop-shadow(0 0 25px rgba(255, 190, 60, 0.5)) drop-shadow(0 0 15px rgba(255, 200, 80, 0.6)) drop-shadow(0 0 10px rgba(255, 215, 100, 0.7)) drop-shadow(0 0 5px rgba(255, 230, 120, 0.3)) hue-rotate(-5deg) brightness(1.03) saturate(1.1);
+  }
+
+  50% {
+    filter:
+      drop-shadow(0 0 40px rgba(255, 190, 60, 0.7)) drop-shadow(0 0 25px rgba(255, 200, 80, 0.8)) drop-shadow(0 0 15px rgba(255, 215, 100, 0.9)) drop-shadow(0 0 8px rgba(255, 230, 120, 0.6)) hue-rotate(-3deg) brightness(1.06) saturate(1.15);
+  }
+}
+
+/* Breathing inset glow animation - golden (for first half of video) */
+@keyframes breathingGlowInsetGold {
+
+  0%,
+  100% {
+    box-shadow:
+      inset 0 0 40px rgba(255, 190, 60, 0.25),
+      inset 0 0 25px rgba(255, 200, 80, 0.3),
+      inset 0 0 15px rgba(255, 215, 100, 0.35),
+      inset 0 0 8px rgba(255, 230, 120, 0.25);
+  }
+
+  50% {
+    box-shadow:
+      inset 0 0 60px rgba(255, 190, 60, 0.4),
+      inset 0 0 40px rgba(255, 200, 80, 0.5),
+      inset 0 0 25px rgba(255, 215, 100, 0.6),
+      inset 0 0 12px rgba(255, 230, 120, 0.5);
+  }
 }
 
 /* Breathing glow animation - outward red error aura */

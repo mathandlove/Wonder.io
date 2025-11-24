@@ -58,13 +58,21 @@ export type AnswerValidatedEvent = {
 
 /**
  * VIDEO_COMPLETE
- * Emitted when: Video/animation playback finishes (e.g., success/fail dance, answer-right stamp)
+ * Emitted when: Video/animation playback finishes (e.g., success/fail dance, answer-right stamp, wrong stamp)
  * Payload: Which video/animation completed
  */
 export type VideoCompleteEvent = {
   type: 'VIDEO_COMPLETE';
   nodeId: string;
-  videoType: 'success-dance' | 'fail-dance' | 'celebration' | 'answer-right';
+  videoType: 'success-dance' | 'fail-dance' | 'celebration' | 'answer-right' | 'answer-wrong';
+};
+
+/**
+ * DANCE_DONE
+ * Emitted when: Fail-dance (angry dance) animation completes
+ */
+export type DanceDoneEvent = {
+  type: 'DANCE_DONE';
 };
 
 /**
@@ -348,6 +356,7 @@ export type NavigationEvent =
   | AiDoneEvent
   | AnswerValidatedEvent
   | VideoCompleteEvent
+  | DanceDoneEvent
   | TimeoutEvent
   | UserNavigateEvent
   | InternalErrorEvent
