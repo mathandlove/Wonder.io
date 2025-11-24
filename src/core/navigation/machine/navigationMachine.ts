@@ -18,7 +18,7 @@
 import { setup, assign, fromPromise } from 'xstate';
 import type { NavigationEvent, NavigationContext } from './types';
 import { loadStoryService } from '@core/data/services/loadStoryService';
-import { callAIService, setConversationMetadata, createAndInsertAIResponseScene, validateAnswerService, getConversationMetadata, startFeedbackGeneration, getPendingFeedbackPromise, clearPendingFeedback, setSelectedClue } from '@core/ai/AIOrchestrator';
+import { callAIService, setConversationMetadata, createAndInsertAIResponseScene, validateAnswerService, getConversationMetadata, startFeedbackGeneration, getPendingFeedbackPromise, clearPendingFeedback, setSelectedClue, getSelectedClue, clearSelectedClue } from '@core/ai/AIOrchestrator';
 import { useNavigationStore } from '../navigationStore';
 import { getCurrentNodeId, getCurrentNode, initializeStoreWithStory, insertSceneNodes, deleteNode, updateCurrentSceneProperties } from '../navigationHelpers';
 import { createAIResponseScene as createAIResponseSceneFactory, createFailDanceScene } from '../sceneFactoryFunctions';
@@ -292,9 +292,9 @@ export const navigationMachine = setup({
 
       debug.log('📝 Storing answer in scene:', transcript.substring(0, 50));
 
-      // Update current scene with answer text
+      // Store the original transcript for display
       useNavigationStore.getState().updateCurrentSceneProperties({
-        answerText: transcript // For validation
+        answerText: transcript // For display in UI
       });
 
       debug.log('✅ Answer stored successfully');
@@ -944,11 +944,34 @@ export const navigationMachine = setup({
               }
             ],
             // ANSWER_BUTTON_CLICKED - User clicked Answer button
-            // Transition directly to answerRecording state
-            ANSWER_BUTTON_CLICKED: {
-              actions: () => debug.log('🎯 ANSWER_BUTTON_CLICKED → starting answer recording'),
-              target: 'answerRecording',
-            },
+            // Check useClues metadata to decide: answerClue phase or start recording
+            ANSWER_BUTTON_CLICKED: [
+              {
+                // If useClues is true, transition to answerClue phase (clue selection)
+                guard: () => {
+                  const currentNode = getCurrentNode();
+                  const scene = currentNode?.scene;
+                  const conversationId = (scene as { conversationId?: string })?.conversationId;
+                  const metadata = conversationId ? getConversationMetadata(conversationId) : null;
+                  return metadata?.useClues === true;
+                },
+                actions: [
+                  () => {
+                    debug.log('🔍 ANSWER_BUTTON_CLICKED with useClues=true → answerClue phase');
+                    const nodeId = getCurrentNodeId();
+                    if (nodeId) {
+                      useNavigationStore.getState().updateNodePhase(nodeId, 'answerClue');
+                    }
+                  }
+                ],
+                target: '#navigation.scene.route',
+              },
+              {
+                // If useClues is false, start recording directly
+                actions: () => debug.log('🎯 ANSWER_BUTTON_CLICKED with useClues=false → starting answer recording'),
+                target: 'answerRecording',
+              }
+            ],
             // RECORDING_STARTED event comes from RecordPanelOrchestrator AFTER it completes the complex flow
             // Orchestrator handles: recording start, scene creation, insertion, navigation, phase update
             // Machine just transitions state to track that we're recording
@@ -1028,28 +1051,61 @@ export const navigationMachine = setup({
 
         /**
          * ANSWER CLUE state
-         * User is recording answer about the selected clue (when useClues=true)
-         * Similar to answerRecording but for clue-based flow
+         * User is selecting a clue to answer about (when useClues=true)
+         * Shows ClueSelectionPanel and waits for CLUE_SELECTED event
          */
         answerClue: {
-          entry: () => debug.log('🎙️  Entered answerClue state - recording answer about clue'),
+          entry: () => debug.log('🔍 Entered answerClue state - user selecting clue for answer'),
           on: {
-            // Block navigation while recording
+            // Block scroll navigation while in clue selection
             SCROLL_DOWN_STEP: {
-              actions: () => debug.log('⛔ SCROLL blocked during answerClue recording'),
+              actions: () => debug.log('⛔ SCROLL_DOWN blocked in answerClue'),
             },
             SCROLL_UP_STEP: {
-              actions: () => debug.log('⛔ SCROLL blocked during answerClue recording'),
-            },
-            // When user stops recording, move to processing
-            RECORDING_STOPPED: {
               actions: [
-                () => {
-                  debug.log('🛑 Answer recording stopped → calling stopRecordingAndTranscribe');
-                  RecordingOrchestratorAPI.stopRecordingAndTranscribe();
-                }
+                () => debug.log('⬆️  SCROLL_UP_STEP in answerClue → calling goPrev'),
+                'goPrev',
               ],
-              target: 'answerProcessing',
+              target: '#navigation.scene.route',
+            },
+            // When user selects a clue, store it and start recording answer
+            CLUE_SELECTED: {
+              actions: [
+                ({ event }) => {
+                  if (event.type === 'CLUE_SELECTED') {
+                    debug.log('🔍 Clue selected for answer:', event.clueLabel, 'description:', event.clueDescription);
+
+                    // Store the selected clue in AIOrchestrator memory
+                    const scene = getCurrentNode()?.scene;
+                    const conversationId = (scene as { conversationId?: string })?.conversationId;
+
+                    if (conversationId) {
+                      setSelectedClue(conversationId, event.clueLabel, event.clueDescription);
+                      debug.log('✅ Stored selected clue in AIOrchestrator memory');
+                    } else {
+                      debug.error('❌ No conversationId found - cannot store selected clue');
+                    }
+
+                    // Store the selected clue description in the scene (for backward compatibility)
+                    updateCurrentSceneProperties({
+                      selectedClue: event.clueLabel,
+                      selectedClueDescription: event.clueDescription
+                    });
+
+                    // Change phase to record-answer
+                    const nodeId = getCurrentNodeId();
+                    if (nodeId) {
+                      useNavigationStore.getState().updateNodePhase(nodeId, 'record-answer');
+                      debug.log('📝 Changed phase to record-answer');
+                    }
+                  }
+                },
+              ],
+              // Transition to answerRecording state which will start recording
+              target: 'answerRecording',
+            },
+            RECORDING_FAILED: {
+              actions: ({ event }) => debug.error('❌ Recording failed:', event.error),
             },
           },
         },
@@ -1311,23 +1367,39 @@ export const navigationMachine = setup({
               const questionText = (scene as { questionText?: string })?.questionText;
               const conversationId = (scene as { conversationId?: string })?.conversationId;
 
+              // Check if user has a selected clue - if so, prepend it to the answer FOR VALIDATION ONLY
+              const selectedClue = conversationId ? getSelectedClue(conversationId) : undefined;
+              let answerTextForValidation = answerText || '';
+
+              if (selectedClue) {
+                answerTextForValidation = `Context: ${selectedClue.description}\n\nAnswer: ${answerText}`;
+                debug.log('🔍 Prepending selected clue context for validation:', {
+                  clueLabel: selectedClue.label,
+                  originalAnswerLength: answerText?.length || 0,
+                  validationTextLength: answerTextForValidation.length
+                });
+
+                // Clear the selected clue after using it
+                clearSelectedClue(conversationId!);
+              }
+
               // Get success answer and incorrect answers from metadata
               const metadata = getConversationMetadata(conversationId);
               const successAnswer = metadata?.successAnswer || '';
               const incorrectAnswer = metadata?.incorrectAnswer;
 
               debug.log('📥 Preparing validation input:', {
-                answerText: answerText?.substring(0, 50),
+                answerText: answerTextForValidation.substring(0, 50),
                 successAnswer,
                 incorrectAnswer,
                 conversationId,
-                hasAnswer: !!answerText,
+                hasAnswer: !!answerTextForValidation,
                 hasSuccessAnswer: !!successAnswer,
                 hasIncorrectAnswers: !!incorrectAnswer
               });
 
               return {
-                answerText: answerText || '',
+                answerText: answerTextForValidation, // Send combined text with clue context to AI
                 questionText,
                 successAnswer,
                 incorrectAnswer,

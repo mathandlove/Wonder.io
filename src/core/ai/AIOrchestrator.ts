@@ -417,49 +417,45 @@ export async function validateAnswerService(input: AnswerValidationInput): Promi
     conversationId: input.conversationId
   });
 
-  // DEBUG MODE: Always return correct for testing
-  debug.event('🔧', 'DEBUG MODE: Always returning correct answer');
-  return { isCorrect: true };
-
   // Validate input
-  // if (!input.answerText?.trim()) {
-  //   debug.log('Empty answer text, marking as incorrect');
-  //   return { isCorrect: false };
-  // }
+  if (!input.answerText?.trim()) {
+    debug.log('Empty answer text, marking as incorrect');
+    return { isCorrect: false };
+  }
 
-  // if (!input.successAnswer?.trim()) {
-  //   debug.log('No success answer defined, cannot validate');
-  //   return { isCorrect: false };
-  // }
+  if (!input.successAnswer?.trim()) {
+    debug.log('No success answer defined, cannot validate');
+    return { isCorrect: false };
+  }
 
-  // // Call AI-based validation
-  // debug.event('📤', 'Calling AI validation service');
+  // Call AI-based validation
+  debug.event('📤', 'Calling AI validation service');
 
-  // const validationResult = await validateAnswer({
-  //   userAnswer: input.answerText,
-  //   correctAnswer: input.successAnswer,
-  //   incorrectAnswer: input.incorrectAnswer,
-  //   questionText: input.questionText
-  // });
+  const validationResult = await validateAnswer({
+    userAnswer: input.answerText,
+    correctAnswer: input.successAnswer,
+    incorrectAnswer: input.incorrectAnswer,
+    questionText: input.questionText
+  });
 
-  // // Check if validation call succeeded
-  // if (!validationResult.success) {
-  //   debug.error('AI validation failed:', validationResult.error);
-  //   // Fallback to simple string matching if AI fails
+  // Check if validation call succeeded
+  if (!validationResult.success) {
+    debug.error('AI validation failed:', validationResult.error);
+    // Fallback to simple string matching if AI fails
 
-  //   const isCorrect = true;
+    const isCorrect = true;
 
-  //   debug.event('⚠️', 'Using fallback validation:', { isCorrect });
-  //   return { isCorrect };
-  // }
+    debug.event('⚠️', 'Using fallback validation:', { isCorrect });
+    return { isCorrect };
+  }
 
-  // debug.event('✅', 'AI validation complete:', {
-  //   isCorrect: validationResult.isCorrect,
-  //   userAnswer: input.answerText,
-  //   correctAnswer: input.successAnswer
-  // });
+  debug.event('✅', 'AI validation complete:', {
+    isCorrect: validationResult.isCorrect,
+    userAnswer: input.answerText,
+    correctAnswer: input.successAnswer
+  });
 
-  // return { isCorrect: validationResult.isCorrect };
+  return { isCorrect: validationResult.isCorrect };
 }
 
 /**

@@ -93,6 +93,7 @@ export const RecordPanel: React.FC<RecordPanelProps> = ({
   const isInputBasic = dialogueState === 'input-basic';
   const isQuestOffer = dialogueState === 'quest-showing';
   const isAskClue = dialogueState === 'askClue';
+  const isAnswerClue = dialogueState === 'answerClue';
   const isAskRecording = dialogueState === 'input-recording';
   const isProcessing = dialogueState === 'input-processing';
   const isAnswerRecording = dialogueState === 'record-answer';
@@ -218,8 +219,8 @@ export const RecordPanel: React.FC<RecordPanelProps> = ({
         <div className={`whiteframe ${useQuestOfferStyling ? 'quest-offer' : ''}`}>
           <div className="quest">
             <p className={`quest-find-out-what ${useQuestOfferStyling ? 'quest-offer' : ''}`}>
-              {isAskClue ? (
-                <span className="quest-label" style={{ color: '#b2652a' }}>Select a Clue to Ask About</span>
+              {isAskClue || isAnswerClue ? (
+                <span className="quest-label" style={{ color: '#b2652a' }}>What clue leads to the answer?</span>
               ) : useQuestOfferStyling ? (
                 <>
                   <span className="quest-label">Quest:</span>
@@ -264,8 +265,8 @@ export const RecordPanel: React.FC<RecordPanelProps> = ({
         {/* Hide button rail for answer feedback states (answer-waiting, answer-right, answer-wrong, success-dance, fail-dance) */}
         {!isAnswerWaiting && !isAnswerRight && !isAnswerWrong && !isSuccessDance && !isFailDance && (
           <div className="frame-wrapper">
-            {isAskClue ? (
-              /* Ask Clue State: Show clue selection panel */
+            {isAskClue || isAnswerClue ? (
+              /* Ask/Answer Clue State: Show clue selection panel */
               <ClueSelectionPanel
                 clues={clues}
                 onClueSelect={(label) => {
