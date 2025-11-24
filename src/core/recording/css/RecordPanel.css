@@ -1247,9 +1247,8 @@
   transform: translate(-50%, -50%);
   height: 100%;
   /* Master size control - adjust this single value to scale everything */
-  width: auto;
-  aspect-ratio: 1;
-  /* Keep square aspect ratio */
+  width: 100%;
+  /* Full width of viewport */
   pointer-events: none;
   z-index: 1102;
 }
@@ -1289,11 +1288,11 @@
 /* Hand stamp video - positioned within container, scales with container */
 .answer-hand-stamp-video {
   position: absolute;
-  top: -130%;
+  top: -282%;
   /* Offset upward so hand enters from above */
-  left: -40%;
+  left: -17%;
   /* Offset slightly left for natural hand angle */
-  width: 450%;
+  width: 350%;
   /* Slightly larger than container for hand to come from off-screen */
   max-width: none;
   /* Override Tailwind base layer max-width: 100% */
