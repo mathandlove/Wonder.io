@@ -318,14 +318,20 @@
 }
 
 /* Fail-dance state - red glow but off-screen */
+/* Keep transform the same, only animate top to avoid transform snap */
 .record-panel-container.answer-wrong-centered.show-red.hidden {
-  top: auto !important;
-  /* Use bottom positioning for consistency */
-  bottom: -100vh !important;
-  /* Position completely below screen */
-  transform: translateX(-50%) !important;
-  /* Only center horizontally */
+  top: 150vh !important;
+  /* Move far below screen (100vh + extra for panel height and transform offset) */
+  bottom: auto !important;
+  /* Keep bottom as auto */
+  left: 50%;
+  transform: translate(-50%, -50%) !important;
+  /* Keep same transform for smooth animation */
   justify-content: flex-end;
+  /* Re-declare transition to ensure it applies */
+  transition: transform 0.6s cubic-bezier(0.25, 1, 0.5, 1),
+    top 0.6s cubic-bezier(0.25, 1, 0.5, 1),
+    bottom 0.6s cubic-bezier(0.25, 1, 0.5, 1);
 }
 
 /* Breathing glow animation - golden (for first half of video) */

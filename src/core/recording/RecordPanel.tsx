@@ -188,6 +188,12 @@ export const RecordPanel: React.FC<RecordPanelProps> = ({
     return 'bottom-anchored';
   };
 
+  // Debug: Log container class changes
+  const containerClass = getContainerClass();
+  React.useEffect(() => {
+    console.log('[RecordPanel] Container class:', containerClass, '| dialogueState:', dialogueState, '| showRedGlow:', showRedGlow, '| isFailDance:', isFailDance);
+  }, [containerClass, dialogueState, showRedGlow, isFailDance]);
+
   // Allow scroll events to pass through to the underlying scene scroll container
   const handleWheel = (e: React.WheelEvent) => {
     const scrollContainer = document.querySelector('.story-scroll');
@@ -210,7 +216,7 @@ export const RecordPanel: React.FC<RecordPanelProps> = ({
   return (
     <div
       ref={containerRef}
-      className={`record-panel-container ${getContainerClass()}`}
+      className={`record-panel-container ${containerClass}`}
       onWheel={handleWheel}
     >
       {/* Main Frame - matching Figma exactly */}

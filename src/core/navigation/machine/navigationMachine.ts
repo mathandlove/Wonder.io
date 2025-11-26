@@ -1955,13 +1955,15 @@ export const navigationMachine = setup({
               insertSceneNodes(currentNodeId, failDanceScene);
               debug.log('✅ Fail-dance scene created and inserted in failDance state');
 
-              // Reset current scene phase to basic (for potential retry)
-              useNavigationStore.getState().updateNodePhase(currentNodeId, 'basic');
-
-              // Navigate to fail-dance scene
+              // Navigate to fail-dance scene first, THEN reset the question scene phase
+              // This order is important: if we reset phase before navigating, RecordPanel
+              // will briefly see 'basic' phase and snap to hidden state before fail-dance kicks in
               setTimeout(() => {
                 useNavigationStore.getState().advance('forward');
                 debug.log('➡️  Navigated to fail-dance scene from failDance state');
+
+                // Reset question scene phase to basic AFTER navigating away (for potential retry)
+                useNavigationStore.getState().updateNodePhase(currentNodeId, 'basic');
               }, 100);
             }
           ],
