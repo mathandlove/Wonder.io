@@ -1,0 +1,21 @@
+/**
+ * MapScene Styles
+ * Styles for the map scene that displays a location highlight on a grayscale map
+ */
+
+.map-scene {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: #1a1a2e;
+}
+
+.map-scene--loading,
+.map-scene--error {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #fff;
+  font-family: 'Comic Sans MS', 'Chalkboard SE', sans-serif;
+  font-size: 1.5rem;
+}

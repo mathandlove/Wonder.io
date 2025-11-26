@@ -8,8 +8,10 @@ import React, { useState, useEffect } from 'react';
 import InteractiveMap from '../features/editor/InteractiveMap';
 import EditToolbar from '../features/editor/EditToolbar';
 import ConfigHighlights from '../features/editor/ConfigHighlights';
+import PathManager from '../features/editor/PathManager';
 import ImageSelector from '../features/editor/ImageSelector';
-import type { Hotspot } from '@shared/types/hotspot';
+import MapSelector from '../features/editor/MapSelector';
+import type { Hotspot, MapPath } from '@shared/types/hotspot';
 
 const EditorApp: React.FC = () => {
   const [activeTool, setActiveTool] = useState<string | null>(null);
@@ -19,6 +21,17 @@ const EditorApp: React.FC = () => {
   const [showImageSelector, setShowImageSelector] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
   const [isGeneratingThumbnails, setIsGeneratingThumbnails] = useState(false);
+
+  // Map trail mode state
+  const [currentMap, setCurrentMap] = useState<string | null>(null);
+  const [currentMapColored, setCurrentMapColored] = useState<string | null>(null);
+  const [mapHotspots, setMapHotspots] = useState<Hotspot[]>([]);
+  const [showMapSelector, setShowMapSelector] = useState(false);
+  const [isMapMode, setIsMapMode] = useState(false);
+
+  // Map paths state
+  const [mapPaths, setMapPaths] = useState<MapPath[]>([]);
+  const [hoveredPath, setHoveredPath] = useState<string | null>(null);
 
   // Load hotspots from bundle when image changes
   useEffect(() => {
@@ -118,6 +131,146 @@ const EditorApp: React.FC = () => {
     setCurrentImage(imagePath);
     setShowImageSelector(false);
     setActiveTool(null);
+    setIsMapMode(false);
+  };
+
+  const handleMapSelect = (mapPath: string, coloredMapPath: string) => {
+    setCurrentMap(mapPath);
+    setCurrentMapColored(coloredMapPath);
+    setShowMapSelector(false);
+    setIsMapMode(true);
+    // Stay in map-trail mode but switch to lasso for drawing
+    setActiveTool('lasso');
+  };
+
+  const handleToolSelect = (tool: string | null) => {
+    if (tool === 'map-trail') {
+      // Enter map mode - show map selector
+      setShowMapSelector(true);
+      setIsMapMode(true);
+      setActiveTool(tool);
+    } else {
+      setActiveTool(tool);
+      if (tool === 'lasso' || tool === 'config-highlights') {
+        // If switching back to clue editing tools, exit map mode
+        if (!isMapMode || !currentMap) {
+          setIsMapMode(false);
+        }
+      }
+    }
+  };
+
+  // Load map hotspots and paths when map changes
+  useEffect(() => {
+    if (!currentMap) return;
+
+    const loadMapData = async () => {
+      try {
+        const response = await fetch(`http://localhost:3001/api/bundle/hotspots?image=${encodeURIComponent(currentMap)}`);
+        if (!response.ok) {
+          throw new Error(`Failed to load map data: ${response.status}`);
+        }
+        const data = await response.json();
+        setMapHotspots(data.hotspots || []);
+        setMapPaths(data.paths || []);
+        console.log(`Loaded ${data.hotspots?.length || 0} hotspots and ${data.paths?.length || 0} paths for map ${currentMap}`);
+      } catch (err) {
+        console.error('Failed to load map data:', err);
+        setMapHotspots([]);
+        setMapPaths([]);
+      }
+    };
+
+    loadMapData();
+  }, [currentMap]);
+
+  // Auto-save map hotspots and paths when they change
+  useEffect(() => {
+    if (!currentMap) return;
+
+    const saveMapData = async () => {
+      setIsSaving(true);
+      try {
+        const response = await fetch('http://localhost:3001/api/bundle/hotspots', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            image: currentMap,
+            hotspots: mapHotspots,
+            paths: mapPaths
+          })
+        });
+
+        if (!response.ok) {
+          throw new Error(`Failed to save map data: ${response.status}`);
+        }
+
+        const data = await response.json();
+        console.log(`Saved ${data.count} map hotspots and ${mapPaths.length} paths to bundle`);
+      } catch (err) {
+        console.error('Failed to save map data:', err);
+      } finally {
+        setIsSaving(false);
+      }
+    };
+
+    const timeoutId = setTimeout(saveMapData, 1000);
+    return () => clearTimeout(timeoutId);
+  }, [mapHotspots, mapPaths, currentMap]);
+
+  const handleMapHotspotCreated = (newHotspot: Partial<Hotspot>) => {
+    const hotspot: Hotspot = {
+      id: `map-hotspot-${Date.now()}`,
+      x: newHotspot.x || 0,
+      y: newHotspot.y || 0,
+      width: newHotspot.width || 10,
+      height: newHotspot.height || 10,
+      label: newHotspot.label || `Location ${mapHotspots.length + 1}`,
+      description: newHotspot.description || '',
+      points: newHotspot.points || [],
+      createdAt: new Date().toISOString(),
+      mapId: currentMap || undefined,
+      imageUrl: currentMap || undefined
+    };
+
+    setMapHotspots(prev => [...prev, hotspot]);
+    console.log('Map location created:', hotspot);
+  };
+
+  const handleMapHotspotUpdate = async (id: string, updates: Partial<Hotspot>) => {
+    setMapHotspots(prev => prev.map(h =>
+      h.id === id ? { ...h, ...updates } : h
+    ));
+  };
+
+  const handleMapHotspotDelete = async (id: string) => {
+    setMapHotspots(prev => prev.filter(h => h.id !== id));
+  };
+
+  const handleClearAllMapHotspots = () => {
+    if (window.confirm('Are you sure you want to delete all map locations? This will save an empty file to the bundle.')) {
+      setMapHotspots([]);
+    }
+  };
+
+  // Path handlers
+  const handlePathCreated = (newPath: Partial<MapPath>) => {
+    const path: MapPath = {
+      id: newPath.id || `path-${Date.now()}`,
+      points: newPath.points || [],
+      orderNumber: newPath.orderNumber || mapPaths.length + 1,
+      createdAt: newPath.createdAt || new Date().toISOString(),
+      mapId: currentMap || undefined
+    };
+
+    setMapPaths(prev => [...prev, path]);
+    console.log('Path created:', path);
+  };
+
+  const handleClearAllPaths = () => {
+    if (window.confirm('Are you sure you want to delete all paths?')) {
+      setMapPaths([]);
+    }
   };
 
   const handleGenerateThumbnails = async () => {
@@ -147,17 +300,26 @@ const EditorApp: React.FC = () => {
     }
   };
 
+  // Determine which hotspots and handlers to use based on mode
+  const activeHotspots = isMapMode ? mapHotspots : hotspots;
+  const activeImage = isMapMode ? currentMapColored : currentImage;
+  const activeHotspotCreated = isMapMode ? handleMapHotspotCreated : handleHotspotCreated;
+  const activeHotspotUpdate = isMapMode ? handleMapHotspotUpdate : handleHotspotUpdate;
+  const activeHotspotDelete = isMapMode ? handleMapHotspotDelete : handleHotspotDelete;
+  const activeClearAll = isMapMode ? handleClearAllMapHotspots : handleClearAll;
+  const activeSetHotspots = isMapMode ? setMapHotspots : setHotspots;
+
   return (
     <div className="h-screen w-screen bg-gray-100 flex overflow-hidden">
       {/* Left Toolbar */}
       <EditToolbar
         activeTool={activeTool}
-        onToolSelect={setActiveTool}
-        onClearAll={handleClearAll}
-        onChangeImage={() => setShowImageSelector(true)}
-        onGenerateThumbnails={handleGenerateThumbnails}
-        hotspotCount={hotspots.length}
-        currentImage={currentImage}
+        onToolSelect={handleToolSelect}
+        onClearAll={activeClearAll}
+        onChangeImage={() => isMapMode ? setShowMapSelector(true) : setShowImageSelector(true)}
+        onGenerateThumbnails={isMapMode ? undefined : handleGenerateThumbnails}
+        hotspotCount={activeHotspots.length}
+        currentImage={activeImage}
         isSaving={isSaving}
         isGeneratingThumbnails={isGeneratingThumbnails}
       />
@@ -166,26 +328,62 @@ const EditorApp: React.FC = () => {
       {activeTool === 'config-highlights' && (
         <ConfigHighlights
           isActive={true}
-          hotspots={hotspots}
-          onHotspotsChange={setHotspots}
-          onHotspotUpdate={handleHotspotUpdate}
-          onHotspotDelete={handleHotspotDelete}
+          hotspots={activeHotspots}
+          onHotspotsChange={activeSetHotspots}
+          onHotspotUpdate={activeHotspotUpdate}
+          onHotspotDelete={activeHotspotDelete}
           onHotspotHover={setHoveredHotspot}
           hoveredHotspot={hoveredHotspot}
         />
       )}
 
+      {/* Path Manager Sidebar (shows when manage-paths tool is active) */}
+      {activeTool === 'manage-paths' && isMapMode && (
+        <PathManager
+          isActive={true}
+          paths={mapPaths}
+          onPathsChange={setMapPaths}
+          onPathHover={setHoveredPath}
+          hoveredPath={hoveredPath}
+        />
+      )}
+
       {/* Main Canvas Area */}
-      <div className="flex-1 flex items-center justify-center p-4" style={{ marginLeft: activeTool === 'config-highlights' ? '416px' : '96px' }}>
-        {!currentImage || showImageSelector ? (
+      <div className="flex-1 flex items-center justify-center p-4" style={{ marginLeft: (activeTool === 'config-highlights' || activeTool === 'manage-paths') ? '416px' : '96px' }}>
+        {/* Map Selector */}
+        {showMapSelector ? (
+          <MapSelector
+            onMapSelect={handleMapSelect}
+            currentMap={currentMap}
+          />
+        ) : /* Image Selector for clue mode */
+        (!isMapMode && (!currentImage || showImageSelector)) ? (
           <ImageSelector
             onImageSelect={handleImageSelect}
             currentImage={currentImage}
           />
-        ) : (
+        ) : /* Map editing mode */
+        (isMapMode && currentMapColored) ? (
           <div className="relative w-full h-full flex items-center justify-center">
             <InteractiveMap
-              mapImage={currentImage}
+              mapImage={currentMapColored}
+              mapAlt="Map being annotated"
+              hotspots={mapHotspots}
+              paths={mapPaths}
+              activeTool={activeTool}
+              onHotspotCreated={handleMapHotspotCreated}
+              onPathCreated={handlePathCreated}
+              onHotspotHover={setHoveredHotspot}
+              onPathHover={setHoveredPath}
+              hoveredHotspot={hoveredHotspot}
+              hoveredPath={hoveredPath}
+            />
+          </div>
+        ) : /* Clue editing mode */
+        (
+          <div className="relative w-full h-full flex items-center justify-center">
+            <InteractiveMap
+              mapImage={currentImage!}
               mapAlt="Image being annotated"
               hotspots={hotspots}
               activeTool={activeTool}

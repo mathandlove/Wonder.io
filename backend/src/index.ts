@@ -9,7 +9,7 @@ import { Point } from './types';
 import { handleWhisperProxy } from './whisper-proxy-single'; // Using single-send approach
 import { handleAIChat } from './ai-conversation';
 import { handleAIValidation } from './ai-validation';
-import { handleLoadBundleHotspots, handleSaveBundleHotspots, handleListBundleImages, handleGenerateThumbnails } from './bundle-hotspots';
+import { handleLoadBundleHotspots, handleSaveBundleHotspots, handleListBundleImages, handleGenerateThumbnails, handleListBundleMaps } from './bundle-hotspots';
 
 const key = process.env.OPENAI_API_KEY;
 if (!key) throw new Error('Missing OPENAI_API_KEY');
@@ -172,6 +172,7 @@ app.post('/api/ai/validate', handleAIValidation);
 app.get('/api/bundle/hotspots', handleLoadBundleHotspots);
 app.post('/api/bundle/hotspots', handleSaveBundleHotspots);
 app.get('/api/bundle/images', handleListBundleImages);
+app.get('/api/bundle/maps', handleListBundleMaps);
 app.post('/api/bundle/hotspots/generate-thumbnails', handleGenerateThumbnails);
 
 // Health check

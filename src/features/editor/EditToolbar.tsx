@@ -41,6 +41,24 @@ const EditToolbar: React.FC<EditToolbarProps> = ({
       name: 'Manage',
       icon: '⚙️',
       description: 'View and edit hotspots'
+    },
+    {
+      id: 'map-trail',
+      name: 'Map Trail',
+      icon: '🗺️',
+      description: 'Mark locations on maps'
+    },
+    {
+      id: 'create-path',
+      name: 'Draw Path',
+      icon: '✍️',
+      description: 'Draw paths between locations'
+    },
+    {
+      id: 'manage-paths',
+      name: 'Paths',
+      icon: '📋',
+      description: 'Manage and reorder paths'
     }
   ];
 

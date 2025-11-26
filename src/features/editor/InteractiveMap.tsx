@@ -6,29 +6,38 @@
  */
 import React, { useState, useRef, useEffect } from 'react';
 import LassoSelection from './LassoSelection';
-import type { Hotspot, HotspotState } from '@shared/types/hotspot';
+import PathDrawing from './PathDrawing';
+import type { Hotspot, HotspotState, MapPath } from '@shared/types/hotspot';
 import { calculateImageBounds, pointsToPixels } from '@shared/utils/coordinateUtils';
 
 interface InteractiveMapProps {
   mapImage: string;
   mapAlt: string;
   hotspots: Hotspot[];
+  paths?: MapPath[];
   coloredMapImage?: string;
   activeTool?: string | null;
   onHotspotCreated?: (hotspot: Partial<Hotspot>) => void;
+  onPathCreated?: (path: Partial<MapPath>) => void;
   onHotspotHover?: (hotspotId: string | null) => void;
+  onPathHover?: (pathId: string | null) => void;
   hoveredHotspot?: string | null;
+  hoveredPath?: string | null;
 }
 
 const InteractiveMap: React.FC<InteractiveMapProps> = ({
   mapImage,
   mapAlt,
   hotspots,
+  paths = [],
   coloredMapImage,
   activeTool,
   onHotspotCreated,
+  onPathCreated,
   onHotspotHover,
-  hoveredHotspot
+  onPathHover,
+  hoveredHotspot,
+  hoveredPath
 }) => {
   const [hotspotStates, setHotspotStates] = useState<Map<string, HotspotState>>(new Map());
   const [imageDimensions, setImageDimensions] = useState({ width: 0, height: 0 });
@@ -285,6 +294,96 @@ const InteractiveMap: React.FC<InteractiveMapProps> = ({
           </svg>
         )}
 
+        {/* Render existing paths - always visible when there are paths */}
+        {imageBounds.width > 0 && paths.length > 0 && (
+          <svg
+            style={{
+              position: 'absolute',
+              left: imageBounds.left,
+              top: imageBounds.top,
+              width: imageBounds.width,
+              height: imageBounds.height,
+              zIndex: 15,
+              pointerEvents: activeTool === 'manage-paths' ? 'auto' : 'none'
+            }}
+            viewBox={`0 0 ${imageBounds.width} ${imageBounds.height}`}
+          >
+            {paths.map((mapPath) => {
+              const pixelPoints = pointsToPixels(
+                mapPath.points,
+                imageBounds.width,
+                imageBounds.height
+              );
+
+              if (pixelPoints.length < 2) return null;
+
+              // Create path string
+              let pathD = `M ${pixelPoints[0].x} ${pixelPoints[0].y}`;
+              for (let i = 1; i < pixelPoints.length; i++) {
+                pathD += ` L ${pixelPoints[i].x} ${pixelPoints[i].y}`;
+              }
+
+              // Calculate midpoint for label
+              const midIndex = Math.floor(pixelPoints.length / 2);
+              const midpoint = pixelPoints[midIndex];
+
+              const isHovered = hoveredPath === mapPath.id;
+              const pathColor = isHovered ? '#3b82f6' : '#000000';
+
+              return (
+                <g
+                  key={`path-${mapPath.id}`}
+                  style={{ cursor: activeTool === 'manage-paths' ? 'pointer' : 'default' }}
+                  onMouseEnter={() => onPathHover?.(mapPath.id)}
+                  onMouseLeave={() => onPathHover?.(null)}
+                >
+                  {/* Path stroke - thick dotted line */}
+                  <path
+                    d={pathD}
+                    fill="none"
+                    stroke={pathColor}
+                    strokeWidth={isHovered ? 8 : 6}
+                    strokeDasharray="12,8"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  />
+                  {/* Invisible wider path for easier hover detection */}
+                  {activeTool === 'manage-paths' && (
+                    <path
+                      d={pathD}
+                      fill="none"
+                      stroke="transparent"
+                      strokeWidth="20"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    />
+                  )}
+                  {/* Number label background */}
+                  <circle
+                    cx={midpoint.x}
+                    cy={midpoint.y}
+                    r={isHovered ? 18 : 16}
+                    fill={pathColor}
+                  />
+                  {/* Number label */}
+                  <text
+                    x={midpoint.x}
+                    y={midpoint.y}
+                    textAnchor="middle"
+                    dominantBaseline="central"
+                    fill="#ffffff"
+                    fontSize={isHovered ? 16 : 14}
+                    fontWeight="bold"
+                    fontFamily="sans-serif"
+                  >
+                    {mapPath.orderNumber}
+                  </text>
+                </g>
+              );
+            })}
+          </svg>
+        )}
+
         {/* Lasso Selection Tool - positioned on top layer - only active when explicitly requested */}
         {activeTool === 'lasso' && imageBounds.width > 0 && (
           <div style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', zIndex: 100, pointerEvents: 'auto' }}>
@@ -296,6 +395,20 @@ const InteractiveMap: React.FC<InteractiveMapProps> = ({
               onSelectionComplete={handleLassoComplete}
               onHotspotCreated={onHotspotCreated}
               hotspots={hotspots}
+            />
+          </div>
+        )}
+
+        {/* Path Drawing Tool - for drawing paths between locations */}
+        {activeTool === 'create-path' && imageBounds.width > 0 && (
+          <div style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', zIndex: 100, pointerEvents: 'auto' }}>
+            <PathDrawing
+              isActive={true}
+              containerRef={containerRef}
+              imageRef={imgRef}
+              imageBounds={imageBounds}
+              onPathCreated={onPathCreated}
+              paths={paths}
             />
           </div>
         )}

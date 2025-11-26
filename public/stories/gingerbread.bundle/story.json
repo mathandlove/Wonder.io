@@ -2,6 +2,8 @@
   "title": "The Cookie Thief",
   "storyId": "leo-monster-hunter-001",
   "scenes": [
+   
+    
     {
       "type": "clue-image",
       "image": "brokenInCobbler",
@@ -32,6 +34,7 @@
         }
       ]
     },
+    
     {
       "type": "character-flow",
       "background": "bakery.png",
@@ -47,12 +50,16 @@
           "side": "left",
           "text": "Test1"
         },
-        {
-          "type": "input"
-        },
+            {
+      "type": "quest"
+    },
+
         {
           "side": "right",
           "text": "Test2"
+        },
+                {
+          "type": "input"
         },
         {
           "side": "right",
@@ -100,6 +107,18 @@
       "type": "image",
       "image": "story/dragonFeet.png",
       "text": "2"
+    },
+     {"type": "map",
+      "image": "cityMap.jpg",
+      "location": "Bakery"
+    },
+        {"type": "map",
+      "image": "cityMap.jpg",
+      "location": "Cobbler"
+    },
+            {"type": "map",
+      "image": "cityMap.jpg",
+      "location": "Market"
     },
     {
       "type": "image",
@@ -173,11 +192,7 @@
       "side": "right",
       "text": "Help!"
     },
-    {
-      "type": "quest",
-      "text": "Figure out what is wrong.",
-      "successAnswer": "Mrs. Baker's cookie was stolen."
-    },
+
     {
       "side": "right",
       "text": "Somebody please help me!",

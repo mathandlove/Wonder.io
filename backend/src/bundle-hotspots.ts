@@ -11,27 +11,47 @@ const execAsync = promisify(exec);
 const PUBLIC_PATH = path.join(__dirname, '../../public');
 const PROJECT_ROOT = path.join(__dirname, '../..');
 
+interface MapInfo {
+  path: string;
+  coloredPath: string;
+  name: string;
+  bundle: string;
+}
+
 /**
  * Get the hotspot file path for a specific image in a bundle
  * Example: /stories/gingerbread.bundle/images/clues/insideBakery.png
  * Returns: /stories/gingerbread.bundle/images/hotspots/clues_insideBakery.json
+ *
+ * Also supports maps (now under images/maps/):
+ * Example: /stories/gingerbread.bundle/images/maps/cityMap.jpg
+ * Returns: /stories/gingerbread.bundle/images/maps/hotspots/cityMap.json
  */
 function getHotspotFilePath(imagePath: string): string {
-  // Extract bundle and image path components
-  const match = imagePath.match(/stories\/([^/]+\.bundle)\/images\/(.+)/);
-  if (!match) {
-    throw new Error(`Invalid image path format: ${imagePath}`);
+  // Match images path (includes maps since they're now under images/maps/)
+  const imageMatch = imagePath.match(/stories\/([^/]+\.bundle)\/images\/(.+)/);
+  if (imageMatch) {
+    const [, bundlePath, imageRelativePath] = imageMatch;
+
+    // Check if this is a map (images/maps/*)
+    if (imageRelativePath.startsWith('maps/')) {
+      // For maps, save hotspots in images/maps/hotspots/
+      const mapFileName = imageRelativePath.replace('maps/', '');
+      const hotspotFileName = mapFileName
+        .replace(/\.(png|jpg|jpeg|webp)$/i, '.json');
+
+      return path.join(PUBLIC_PATH, 'stories', bundlePath, 'images', 'maps', 'hotspots', hotspotFileName);
+    }
+
+    // For other images (clues, etc.), save in images/hotspots/
+    const hotspotFileName = imageRelativePath
+      .replace(/\.(png|jpg|jpeg|webp)$/i, '.json')
+      .replace(/\//g, '_');
+
+    return path.join(PUBLIC_PATH, 'stories', bundlePath, 'images', 'hotspots', hotspotFileName);
   }
 
-  const [, bundlePath, imageRelativePath] = match;
-
-  // Convert image path to hotspot filename
-  // clues/insideBakery.png -> clues_insideBakery.json
-  const hotspotFileName = imageRelativePath
-    .replace(/\.(png|jpg|jpeg|webp)$/i, '.json')
-    .replace(/\//g, '_');
-
-  return path.join(PUBLIC_PATH, 'stories', bundlePath, 'images', 'hotspots', hotspotFileName);
+  throw new Error(`Invalid image/map path format: ${imagePath}`);
 }
 
 /**
@@ -60,6 +80,7 @@ export async function handleLoadBundleHotspots(req: Request, res: Response) {
 
     res.json({
       hotspots: parsed.hotspots || [],
+      paths: parsed.paths || [],
       imagePath,
       lastModified: parsed.lastModified
     });
@@ -79,7 +100,7 @@ export async function handleLoadBundleHotspots(req: Request, res: Response) {
  */
 export async function handleSaveBundleHotspots(req: Request, res: Response) {
   try {
-    const { image, hotspots } = req.body;
+    const { image, hotspots, paths } = req.body;
 
     if (!image || !Array.isArray(hotspots)) {
       return res.status(400).json({ error: 'Missing image or hotspots data' });
@@ -93,23 +114,25 @@ export async function handleSaveBundleHotspots(req: Request, res: Response) {
       fs.mkdirSync(hotspotDir, { recursive: true });
     }
 
-    // Prepare data to save
+    // Prepare data to save (include paths if provided)
     const data = {
       version: '1.0.0',
       imagePath: image,
       hotspots,
+      paths: paths || [],
       lastModified: new Date().toISOString()
     };
 
     // Write to file
     fs.writeFileSync(hotspotFilePath, JSON.stringify(data, null, 2), 'utf8');
 
-    console.log(`✅ Saved ${hotspots.length} hotspots to ${hotspotFilePath}`);
+    console.log(`✅ Saved ${hotspots.length} hotspots and ${(paths || []).length} paths to ${hotspotFilePath}`);
 
     res.json({
       success: true,
       path: hotspotFilePath.replace(PUBLIC_PATH, ''),
-      count: hotspots.length
+      count: hotspots.length,
+      pathCount: (paths || []).length
     });
   } catch (error) {
     console.error('Error saving bundle hotspots:', error);
@@ -226,6 +249,76 @@ export async function handleGenerateThumbnails(req: Request, res: Response) {
     console.error('Error generating thumbnails:', error);
     res.status(500).json({
       error: 'Failed to generate thumbnails',
+      details: error instanceof Error ? error.message : String(error)
+    });
+  }
+}
+
+/**
+ * List all maps in a bundle
+ * GET /api/bundle/maps?bundle=gingerbread.bundle
+ *
+ * Maps are stored in the images/maps/ folder with naming convention:
+ * - mapName.png/jpg (black & white version)
+ * - mapNameColored.png/jpg (colored version)
+ */
+export async function handleListBundleMaps(req: Request, res: Response) {
+  try {
+    const bundleName = req.query.bundle as string;
+
+    if (!bundleName) {
+      return res.status(400).json({ error: 'Missing bundle parameter' });
+    }
+
+    const bundlePath = path.join(PUBLIC_PATH, 'stories', bundleName);
+    const mapsPath = path.join(bundlePath, 'images', 'maps');
+
+    if (!fs.existsSync(mapsPath)) {
+      return res.status(404).json({ error: 'Bundle maps folder not found' });
+    }
+
+    // Find all map files
+    const entries = fs.readdirSync(mapsPath, { withFileTypes: true });
+    const maps: MapInfo[] = [];
+
+    // Group by base name (without "Colored" suffix)
+    const mapFiles = entries
+      .filter(entry => !entry.isDirectory() && /\.(png|jpg|jpeg|webp)$/i.test(entry.name))
+      .map(entry => entry.name);
+
+    // Find base maps (non-Colored versions)
+    const baseMaps = mapFiles.filter(name => !name.includes('Colored'));
+
+    for (const baseMap of baseMaps) {
+      const baseName = baseMap.replace(/\.(png|jpg|jpeg|webp)$/i, '');
+      const ext = baseMap.match(/\.(png|jpg|jpeg|webp)$/i)?.[0] || '.png';
+
+      // Look for colored version
+      const coloredName = `${baseName}Colored${ext}`;
+      const hasColored = mapFiles.includes(coloredName);
+
+      if (hasColored) {
+        const webPath = `/stories/${bundleName}/images/maps/${baseMap}`.replace(/\\/g, '/');
+        const coloredWebPath = `/stories/${bundleName}/images/maps/${coloredName}`.replace(/\\/g, '/');
+
+        maps.push({
+          path: webPath,
+          coloredPath: coloredWebPath,
+          name: baseName.replace(/([A-Z])/g, ' $1').trim(), // Convert camelCase to words
+          bundle: bundleName.replace('.bundle', '')
+        });
+      }
+    }
+
+    res.json({
+      bundle: bundleName,
+      maps,
+      count: maps.length
+    });
+  } catch (error) {
+    console.error('Error listing bundle maps:', error);
+    res.status(500).json({
+      error: 'Failed to list maps',
       details: error instanceof Error ? error.message : String(error)
     });
   }

@@ -153,6 +153,18 @@ export type ClueImageScene = {
   foundClues?: string[]; // Array of found hotspot labels
 };
 
+export type MapScene = {
+  type: "map";
+  image: string; // Map image filename (e.g., "cityMap.jpg")
+  location: string; // Location to highlight via hotspot (e.g., "Bakery", "Cobbler")
+  character?: string; // Optional character associated with this location
+  flowSequence?: boolean;
+  isFirstInFlow?: boolean;
+  hidden?: boolean;
+  phase?: string;
+  phaseSteps?: string[];
+};
+
 // CaptionScene removed - captions are now handled within ImageScene
 
 export type Scene =
@@ -163,7 +175,8 @@ export type Scene =
   | TextScene
   | FailDanceScene
   | SuccessDanceScene
-  | ClueImageScene;
+  | ClueImageScene
+  | MapScene;
 
 export type Story = {
   scenes: Scene[];

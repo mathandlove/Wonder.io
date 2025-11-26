@@ -32,4 +32,12 @@ export interface Hotspot {
   imageUrl?: string; // Path to the image being annotated
 }
 
+export interface MapPath {
+  id: string;
+  points: Point[]; // Path vertices as percentages (0-100) relative to image dimensions
+  orderNumber: number; // 1, 2, 3, etc. for labeling
+  createdAt: string;
+  mapId?: string;
+}
+
 export type HotspotState = 'none' | 'colored' | 'glimmer';
