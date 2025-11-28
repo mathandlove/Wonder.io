@@ -59,6 +59,9 @@ export const RecordPanel: React.FC<RecordPanelProps> = ({
     return () => subscription.unsubscribe();
   }, []);
 
+  // Local state for hint toggle (internal to RecordPanel)
+  const [showHint, setShowHint] = React.useState(false);
+
   // Debug: Log clues and phase changes
   React.useEffect(() => {
     console.log('[RecordPanel] Phase changed to:', dialogueState, 'clues count:', clues.length);
@@ -77,10 +80,11 @@ export const RecordPanel: React.FC<RecordPanelProps> = ({
     return 'active';
   }, [dialogueState]);
 
-  // Get quest text from conversation metadata
+  // Get quest text and hint from conversation metadata
   const conversationId = (scene as CharacterScene)?.conversationId;
   const metadata = conversationId ? getConversationMetadata(conversationId) : null;
   const questText = metadata?.questText || "Find out what going on.";
+  const hintText = metadata?.hint || "";
 
   // Get answer text from scene
   const answerText = (scene as CharacterScene)?.answerText || '';
@@ -101,7 +105,6 @@ export const RecordPanel: React.FC<RecordPanelProps> = ({
   const isAnswerWaiting = dialogueState === 'answer-waiting';
   const isAnswerRight = dialogueState === 'answer-right';
   const isAnswerWrong = dialogueState === 'answer-wrong';
-  const isHintShowing = dialogueState === 'show-hint';
   const isWaitingForFinalize = dialogueState === 'waiting-for-finalize';
   const isWaitingForAnswerFinalize = dialogueState === 'waiting-for-answer-finalize';
   const isSuccessDance = dialogueState === 'success-dance';
@@ -114,8 +117,8 @@ export const RecordPanel: React.FC<RecordPanelProps> = ({
 
   const handleHintClick = () => {
     if (disabled) return;
-    // TODO: Implement hint functionality
-    navigationBus.emit({ type: 'HINT_BUTTON_CLICKED' });
+    // Toggle hint visibility (local state)
+    setShowHint(prev => !prev);
   };
 
   const handleAskClick = () => {
@@ -219,6 +222,12 @@ export const RecordPanel: React.FC<RecordPanelProps> = ({
       className={`record-panel-container ${containerClass}`}
       onWheel={handleWheel}
     >
+      {/* Hint Toast - slides up from under record panel */}
+      <div className={`hint-toast ${showHint ? 'visible' : ''}`}>
+        <img className="hint-toast-icon" src="/VisualAssets/lightbulb.svg" alt="" />
+        <span className="hint-toast-text">{hintText}</span>
+      </div>
+
       {/* Main Frame - matching Figma exactly */}
       <div className="frame">
         {/* Quest Section - white card with shadow */}
@@ -321,7 +330,7 @@ export const RecordPanel: React.FC<RecordPanelProps> = ({
 
                   {/* Hint Button - cardboard button with lightbulb, pressed when hint showing */}
                   <button
-                    className={`hint-btn ${isHintShowing ? 'recording' : ''} ${hintButtonDisabled ? 'disabled' : ''}`}
+                    className={`hint-btn ${showHint ? 'active' : ''} ${hintButtonDisabled ? 'disabled' : ''}`}
                     onClick={handleHintClick}
                     disabled={hintButtonDisabled}
                     title="Get a hint"

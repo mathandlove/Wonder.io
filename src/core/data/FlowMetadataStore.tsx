@@ -17,6 +17,7 @@ export interface ConversationMetadata {
   successAnswer: string; // Success phrase for both
   incorrectAnswer?: string[]; // Optional array of incorrect facts to penalize
   useClues?: boolean; // Whether to use clues from the most recent clue-image scene
+  hint?: string; // Hint text to help the player
 }
 
 export interface ConversationMetadataMap {

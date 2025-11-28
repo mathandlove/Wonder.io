@@ -65,6 +65,7 @@ type RawScene = {
   successAnswer?: string; // Expected phrase for quest/input completion
   incorrectAnswer?: string[]; // Optional array of incorrect facts to penalize
   question?: string; // Legacy quest text field
+  hint?: string; // Hint text to help the player
   // ...other raw fields allowed in your JSON
 };
 
@@ -106,7 +107,8 @@ function flattenScenes(rawScenes: RawScene[]): FlattenResult {
           questText: scene.question,
           successAnswer: scene.successAnswer!,
           incorrectAnswer: scene.incorrectAnswer,
-          useClues: scene.useClues
+          useClues: scene.useClues,
+          hint: scene.hint
         };
       }
 

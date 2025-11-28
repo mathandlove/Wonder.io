@@ -4,18 +4,7 @@
   "scenes": [
    
     
-         {"type": "map",
-      "image": "cityMap.jpg",
-      "location": "Bakery"
-    },
-        {"type": "map",
-      "image": "cityMap.jpg",
-      "location": "Cobbler"
-    },
-            {"type": "map",
-      "image": "cityMap.jpg",
-      "location": "Market"
-    },
+
         {
       "type": "clue-image",
       "image": "insideBakery",
@@ -56,22 +45,21 @@
       "question": "Where did the cookie thief go?",
       "successAnswer": "Context: cookie crumbs on the ground. We should follow those crumbs that lead out the door.",
       "wrongAnswers": ["Context: bowl of hair", "Context: potion","Context: frosting."],
+      "hint": "Ask about that brown trail and where it leads.",
       "flow": [
         {
           "side": "left",
           "text": "Test1"
         },
-            {
-      "type": "quest"
-    },
+                        {
+          "type": "input"
+        },
 
         {
           "side": "right",
           "text": "Test2"
         },
-                {
-          "type": "input"
-        },
+
         {
           "side": "right",
           "text": "Test3-fox",
@@ -101,8 +89,24 @@
         {
           "side": "right",
           "text": "Tell me about your last adventure Ms. Baker. What happened? Look I added a sthirsa line here. HOpefully I can see it."
-        }
+        },
+                    {
+      "type": "quest"
+    }
+        
       ]
+    },
+             {"type": "map",
+      "image": "cityMap.jpg",
+      "location": "Bakery"
+    },
+        {"type": "map",
+      "image": "cityMap.jpg",
+      "location": "Cobbler"
+    },
+            {"type": "map",
+      "image": "cityMap.jpg",
+      "location": "Market"
     },
     {
       "type": "image",

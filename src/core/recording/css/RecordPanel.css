@@ -995,6 +995,16 @@
   z-index: 1;
 }
 
+/* Hint button toggled on - darker background matching hint toast */
+.frame .hint-btn.active {
+  background-color: #2a1f1a;
+  /* Dark brown matching hint toast */
+  background-image: url(/VisualAssets/cardboard.png);
+  background-blend-mode: overlay;
+  box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.3);
+  /* Subtle inset shadow for pressed look */
+}
+
 /* ===================================
    BUTTON STATE CLASSES
    =================================== */
@@ -1461,4 +1471,79 @@
     bottom: -200px;
     opacity: 0;
   }
+}
+
+/* ===================================
+   HINT TOAST
+   =================================== */
+
+/* Hint toast - dark background with paper texture, slides up from under panel */
+.hint-toast {
+  position: absolute;
+  top: 0;
+  /* Align with top of frame */
+  left: 50%;
+  transform: translateX(-50%) translateY(0);
+  /* Hidden: at same position as frame top */
+  width: 88%;
+  /* Slightly wider for breathing room */
+  max-width: 540px;
+  min-width: 320px;
+
+  /* Dark background with paper texture */
+  background-color: #2a1f1a;
+  background-image: url(/VisualAssets/cardboard.png);
+  background-position: center;
+  background-size: 360px 540px;
+  background-repeat: repeat;
+  background-blend-mode: overlay;
+
+  /* Border darker than background */
+  border: 3px solid #1a1210;
+  border-radius: 16px;
+
+  /* Layout - align items center for vertical centering */
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 18px 30px;
+  /* More padding for storybook comfy feel */
+
+  /* Shadow for depth */
+  box-shadow:
+    0 4px 12px rgba(0, 0, 0, 0.4),
+    inset 0 1px 0 rgba(255, 255, 255, 0.05);
+
+  /* Hidden by default - under the panel via DOM order (rendered before .frame) */
+  pointer-events: none;
+  transition: transform 0.3s cubic-bezier(0.25, 1, 0.5, 1);
+  /* No z-index needed - DOM order puts it behind .frame */
+}
+
+/* Visible state - slides up above the panel */
+.hint-toast.visible {
+  transform: translateX(-50%) translateY(calc(-100% - 12px));
+  /* Slide up above panel with gap */
+  pointer-events: auto;
+}
+
+/* Lightbulb icon - white */
+.hint-toast-icon {
+  width: 28px;
+  height: 28px;
+  object-fit: contain;
+  filter: brightness(0) invert(1);
+  /* White */
+  flex-shrink: 0;
+}
+
+/* Hint text - pure white, vertically centered with icon */
+.hint-toast-text {
+  color: #ffffff;
+  font-family: "Inter", Helvetica, sans-serif;
+  font-size: 18px;
+  font-weight: 500;
+  line-height: 28px;
+  /* Match icon height for vertical alignment */
+  letter-spacing: 0.01em;
 }
