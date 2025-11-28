@@ -33,6 +33,7 @@
   align-self: flex-start;
   margin-left: 30px; /* Account for speech tail */
   margin-right: 10px;
+  max-width: 75%; /* Prevent bubble from extending too far toward opposite character */
 }
 
 /* Right side positioning */
@@ -40,6 +41,7 @@
   align-self: flex-end;
   margin-left: 10px;
   margin-right: 40px; /* Add right margin for proper spacing */
+  max-width: 75%; /* Prevent bubble from extending too far toward opposite character */
 }
 
 /* Inner white/cream text box */
