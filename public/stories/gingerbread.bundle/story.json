@@ -4,7 +4,14 @@
   "scenes": [
    
     
-
+    {
+      "type": "title",
+      "lvl1": "The",
+      "lvl2": "Cookie Thief",
+      "author": "Elliott Hedman",
+      "illustrator": "Silvia Pardo",
+      "background": "bakery.png"
+    },
         {
       "type": "clue-image",
       "image": "insideBakery",
@@ -202,13 +209,7 @@
       "quest": "key",
       "text": "Ask Ms. Baker what happened"
     },
-    {
-      "type": "title",
-      "lvl1": "The",
-      "lvl2": "Cookie Thief",
-      "author": "Elliott Hedman",
-      "background": "bakery.png"
-    },
+
     {
       "side": "right",
       "text": "Help!"

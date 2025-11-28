@@ -165,6 +165,20 @@ export type MapScene = {
   phaseSteps?: string[];
 };
 
+export type TitleScene = {
+  type: "title";
+  lvl1?: string; // First line of the title (e.g., "The")
+  lvl2?: string; // Second line of the title (e.g., "Cookie Thief")
+  author?: string; // Author name
+  illustrator?: string; // Illustrator name
+  background?: string; // Background image filename
+  flowSequence?: boolean;
+  isFirstInFlow?: boolean;
+  hidden?: boolean;
+  phase?: string;
+  phaseSteps?: string[];
+};
+
 // CaptionScene removed - captions are now handled within ImageScene
 
 export type Scene =
@@ -176,7 +190,8 @@ export type Scene =
   | FailDanceScene
   | SuccessDanceScene
   | ClueImageScene
-  | MapScene;
+  | MapScene
+  | TitleScene;
 
 export type Story = {
   scenes: Scene[];

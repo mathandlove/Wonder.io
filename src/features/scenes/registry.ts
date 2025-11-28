@@ -12,6 +12,7 @@ import CharacterScene from "./CharacterScene";
 import ImageScene from "@core/scenes/image/ImageScene";
 import FullScene from "./FullScene";
 import TextScene from "./TextScene";
+import TitleScene from "./TitleScene";
 import FailDanceScene from "./FailDanceScene";
 import SuccessDanceScene from "./SuccessDanceScene";
 import ClueImageScene from "@core/scenes/clueImage/ClueImageScene";
@@ -32,6 +33,7 @@ export const sceneRegistry: Record<string, ComponentType<SceneProps>> = {
   map: MapScene as ComponentType<SceneProps>,
   full: FullScene as ComponentType<SceneProps>,
   text: TextScene as ComponentType<SceneProps>,
+  title: TitleScene as ComponentType<SceneProps>,
   "fail-dance": FailDanceScene as ComponentType<SceneProps>,
   "success-dance": SuccessDanceScene as ComponentType<SceneProps>,
   // caption: removed - captions are now handled within ImageScene
