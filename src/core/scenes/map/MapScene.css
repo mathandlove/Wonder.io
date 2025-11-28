@@ -23,6 +23,8 @@
 /* Animation for path number label appearing */
 .map-path-label-appear {
   animation: labelAppear 0.4s ease-out forwards;
+  transform-box: fill-box;
+  transform-origin: center center;
 }
 
 @keyframes labelAppear {

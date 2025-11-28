@@ -162,7 +162,11 @@ function PathLine({ path, imageBounds, isHighlighted, shouldAnimate, onAnimation
 
   // Run the drawing animation when shouldAnimate becomes true and we have pathLength
   useEffect(() => {
+    console.log('[PathLine] Animation effect:', { shouldAnimate, pathLength, animationStarted, pathId: path.id });
+
     if (!shouldAnimate || pathLength === 0 || animationStarted) return;
+
+    console.log('[PathLine] Starting animation for path:', path.id);
 
     // Mark animation as started so it only runs once
     setAnimationStarted(true);
@@ -183,13 +187,14 @@ function PathLine({ path, imageBounds, isHighlighted, shouldAnimate, onAnimation
         requestAnimationFrame(animate);
       } else {
         // Animation complete - show the label and notify parent
+        console.log('[PathLine] Animation complete for path:', path.id);
         setShowLabel(true);
         onAnimationComplete?.();
       }
     };
 
     requestAnimationFrame(animate);
-  }, [shouldAnimate, pathLength, animationStarted, onAnimationComplete]);
+  }, [shouldAnimate, pathLength, animationStarted, onAnimationComplete, path.id]);
 
   if (imageBounds.width === 0 || path.points.length < 2) {
     return null;
@@ -210,30 +215,22 @@ function PathLine({ path, imageBounds, isHighlighted, shouldAnimate, onAnimation
   // Opacity based on whether this is the highlighted (most recent) path
   const pathOpacity = isHighlighted ? 1 : 0.35;
 
-  // Calculate dash offset for animation (starts at full length, animates to 0)
-  const dashOffset = pathLength * (1 - animationProgress);
-
-  // Determine display state based on animation mode:
-  // - If shouldAnimate is true: this path will animate, so hide it until animation starts
-  // - If shouldAnimate is false: this is an older path, show it immediately
+  // Determine display state based on animation mode
   const isAnimating = shouldAnimate && animationStarted;
   const isWaitingToAnimate = shouldAnimate && !animationStarted;
-
-  // When waiting to animate (or animating), use pathLength for dasharray to enable the offset trick
-  // When not animating at all, use the dotted pattern
-  const useAnimationMode = (isAnimating || isWaitingToAnimate) && pathLength > 0;
-  const displayDasharray = useAnimationMode ? pathLength : "14,10";
-
-  // Hide path completely while waiting to animate (offset = full length means nothing visible)
-  // During animation, offset decreases from pathLength to 0
-  // When not animating, offset is 0 (full path visible)
-  const displayDashOffset = isWaitingToAnimate ? pathLength : (isAnimating ? dashOffset : 0);
 
   // Show label only after animation completes, or immediately if not animating
   const displayLabel = isAnimating ? showLabel : !isWaitingToAnimate;
 
   // If shouldAnimate but we don't have pathLength yet, hide everything with opacity
   const shouldHide = shouldAnimate && pathLength === 0;
+
+  // Calculate how much of the path to reveal (for clip path)
+  // During animation, reveal progressively; when waiting, hide completely; otherwise show all
+  const revealLength = isWaitingToAnimate ? 0 : (isAnimating ? pathLength * animationProgress : pathLength);
+
+  // Generate a unique ID for this path's mask
+  const maskId = `path-mask-${path.id}`;
 
   return (
     <svg
@@ -249,19 +246,35 @@ function PathLine({ path, imageBounds, isHighlighted, shouldAnimate, onAnimation
       }}
       viewBox={`0 0 ${imageBounds.width} ${imageBounds.height}`}
     >
+      <defs>
+        {/* Mask that reveals the dotted line progressively using stroke animation */}
+        <mask id={maskId}>
+          <path
+            d={pathData}
+            fill="none"
+            stroke="white"
+            strokeWidth="20"
+            strokeDasharray={pathLength}
+            strokeDashoffset={pathLength - revealLength}
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          />
+        </mask>
+      </defs>
       <g opacity={shouldHide ? 0 : pathOpacity}>
-        {/* Path stroke - thick pale blue dotted line */}
-        <path
-          ref={pathRef}
-          d={pathData}
-          fill="none"
-          stroke="#87CEEB"
-          strokeWidth="8"
-          strokeDasharray={displayDasharray}
-          strokeDashoffset={displayDashOffset}
-          strokeLinecap="round"
-          strokeLinejoin="round"
-        />
+        {/* Path stroke - thick pale blue dotted line, masked to reveal progressively */}
+        <g mask={isAnimating || isWaitingToAnimate ? `url(#${maskId})` : undefined}>
+          <path
+            ref={pathRef}
+            d={pathData}
+            fill="none"
+            stroke="#87CEEB"
+            strokeWidth="8"
+            strokeDasharray="14,10"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          />
+        </g>
         {/* Number label - shown after animation or immediately if not animating */}
         {displayLabel && (
           <>
@@ -313,6 +326,9 @@ export default function MapScene({ scene, sceneIndex }: SceneProps<MapSceneType>
   // Intersection Observer to detect when map scrolls into view
   // Depends on isLoading so it runs after the container is rendered
   useEffect(() => {
+    // eslint-disable-next-line no-console
+    console.log('[MapScene] IntersectionObserver effect:', { isLoading, hasContainer: !!containerRef.current });
+
     if (isLoading) return; // Wait until loading is complete
 
     const container = containerRef.current;
@@ -321,6 +337,8 @@ export default function MapScene({ scene, sceneIndex }: SceneProps<MapSceneType>
     const observer = new IntersectionObserver(
       (entries) => {
         const entry = entries[0];
+        // eslint-disable-next-line no-console
+        console.log('[MapScene] IntersectionObserver callback:', { isIntersecting: entry.isIntersecting, ratio: entry.intersectionRatio });
         if (entry.isIntersecting) {
           setIsInView(true);
           // Once triggered, disconnect - we only want to animate once
