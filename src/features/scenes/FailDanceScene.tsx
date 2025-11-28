@@ -35,10 +35,10 @@ export default function FailDanceScene({ scene }: SceneProps<FailDanceSceneType>
 
   // Handle animation completion - emit event to navigation machine
   const handleAnimationEnd = useCallback((e: React.AnimationEvent) => {
-    console.log('[FailDanceScene] 🎬 Animation end triggered', {
-      targetClasses: e.currentTarget.className,
-      animationName: e.animationName
-    });
+    const animationName = e.animationName;
+    const targetClasses = e.currentTarget.className;
+
+    console.log('[FailDanceScene] 🎬 Animation end triggered:', animationName, 'on', targetClasses);
 
     // Only respond to the character container's animation ending (not sub-elements)
     if (!e.currentTarget.classList.contains('fail-dance-character-container')) {
@@ -46,7 +46,13 @@ export default function FailDanceScene({ scene }: SceneProps<FailDanceSceneType>
       return;
     }
 
-    console.log('[FailDanceScene] 🚀 Emitting DANCE_DONE event');
+    // Only respond to the main dancing animation, not other animations
+    if (!animationName.includes('fail-dance-jump-and-move')) {
+      console.log('[FailDanceScene] ⏭️  Skipping animation:', animationName);
+      return;
+    }
+
+    console.log('[FailDanceScene] 🚀 Emitting DANCE_DONE event for animation:', animationName);
 
     // Emit DANCE_DONE event to navigation machine
     // Machine will handle navigation and feedback flow
@@ -86,10 +92,9 @@ export default function FailDanceScene({ scene }: SceneProps<FailDanceSceneType>
         style={{
           position: 'absolute',
           top: '30vh',
-          'right': '-35vw',
+          right: '-35vw',
           width: '22vw',
           height: '400px',
-          transform: 'translateX(0)',
           transformOrigin: 'left bottom',
           zIndex: 100 // Above normal character panels
         }}

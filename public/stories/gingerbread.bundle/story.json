@@ -4,15 +4,7 @@
   "scenes": [
    
     
-    {
-      "type": "title",
-      "lvl1": "The",
-      "lvl2": "Cookie Thief",
-      "author": "Elliott Hedman",
-      "illustrator": "Silvia Pardo",
-      "background": "bakery.png"
-    },
-        {
+     {
       "type": "clue-image",
       "image": "insideBakery",
       "clueDescriptions": [
@@ -42,21 +34,6 @@
         }
       ]
     },
-        {
-      "type": "image",
-      "image": "story/dragonFeet.png",
-      "text": "I protect my city by searching for clues. I protect my city by searching for clues. I protect my city by searching for clues. "
-    },
-        {
-      "type": "image",
-      "image": "story/dragonFeet.png",
-      "text": "I protect my city by searching for clues."
-    },
-        {
-      "type": "image",
-      "image": "story/dragonFeet.png",
-      "text": "I protect my city by searching for clues."
-    },
     {
       "type": "character-flow",
       "background": "bakery.png",
@@ -64,6 +41,7 @@
       "right-character": "bakerMom",
       "CharacterDescription": "bakerMom",
       "useClues": true,
+      
       "question": "Where did the cookie thief go?",
       "successAnswer": "Context: cookie crumbs on the ground. We should follow those crumbs that lead out the door.",
       "wrongAnswers": ["Context: bowl of hair", "Context: potion","Context: frosting."],
@@ -71,26 +49,24 @@
       "flow": [
         {
           "side": "left",
-          "text": "Test1"
+          "text": "Here is some long text. I shouldn't make dialog this long. And yet here we are. No kid will read this. Or will they? I hope not."
         },
-                            {
-      "type": "quest"
-    },        
-    {
-          "side": "right",
-          "text": "Test2"
-        },
+  
+
                         {
           "type": "input"
         },
-
-
-
-        {
+                {
           "side": "right",
           "text": "Test3-fox",
           "right-character": "fox"
         },
+
+                            {
+      "type": "quest"
+    },      
+
+
         {
           "side": "right",
           "text": "Test4"
@@ -172,6 +148,31 @@
       "type": "image",
       "image": "story/dragonFight.png",
       "text": "Sometimes I have to fight the monsters."
+    },
+     {
+      "type": "title",
+      "lvl1": "The",
+      "lvl2": "Cookie Thief",
+      "author": "Elliott Hedman",
+      "illustrator": "Silvia Pardo",
+      "background": "bakery.png"
+    },
+      
+    
+        {
+      "type": "image",
+      "image": "story/dragonFeet.png",
+      "text": "I protect my city by searching for clues. I protect my city by searching for clues. I protect my city by searching for clues. "
+    },
+        {
+      "type": "image",
+      "image": "story/dragonFeet.png",
+      "text": "I protect my city by searching for clues."
+    },
+        {
+      "type": "image",
+      "image": "story/dragonFeet.png",
+      "text": "I protect my city by searching for clues."
     },
     {
       "type": "clue-image",
