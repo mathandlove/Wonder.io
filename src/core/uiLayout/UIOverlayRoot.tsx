@@ -6,6 +6,7 @@
  */
 import React from 'react';
 import { RecordPanel } from '@core/recording/RecordPanel';
+import { ScrollDownToast } from './ScrollDownToast';
 import { getCurrentNode } from '@core/navigation/navigationHelpers';
 import { useNavigationStore } from '@core/navigation/navigationStore';
 import * as navigationBus from '@core/navigation/events/navigationBus';
@@ -66,21 +67,19 @@ export function UIOverlayRoot() {
     }
   }, []);
 
-  // Don't render if panel shouldn't be visible
-  if (!shouldShowPanel) {
-    return null;
-  }
-
   return (
     <>
       {/* Recording panel - controlled by navigation machine */}
-      <RecordPanel
-        onRecordStop={handleRecordStop}
-        onAnswerWrongVideoComplete={handleAnswerWrongVideoComplete}
-        onAnswerRightVideoComplete={handleAnswerRightVideoComplete}
-      />
+      {shouldShowPanel && (
+        <RecordPanel
+          onRecordStop={handleRecordStop}
+          onAnswerWrongVideoComplete={handleAnswerWrongVideoComplete}
+          onAnswerRightVideoComplete={handleAnswerRightVideoComplete}
+        />
+      )}
 
-      {/* Future overlays can be added here */}
+      {/* Scroll down toast - always rendered, visibility controlled internally */}
+      <ScrollDownToast />
     </>
   );
 }

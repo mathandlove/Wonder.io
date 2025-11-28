@@ -39,6 +39,7 @@ interface HotspotSparklesProps {
   containerWidth: number;
   containerHeight: number;
   found?: boolean;
+  initialDelaySeconds?: number; // Additional delay before sparkles start (e.g., 10 seconds at scene start or after click)
 }
 
 // Check if a point is inside a polygon using ray casting algorithm
@@ -117,6 +118,7 @@ export const HotspotSparkles: React.FC<HotspotSparklesProps> = ({
   containerWidth,
   containerHeight,
   found = false,
+  initialDelaySeconds = 0,
 }) => {
   // Calculate hotspot bounds from bounding box
   const bounds = useMemo(() => {
@@ -247,7 +249,7 @@ export const HotspotSparkles: React.FC<HotspotSparklesProps> = ({
             animationDuration: SPARKLE_CONFIG.enableRevealCycle ? `${cycleDuration}s` : undefined,
             animationTimingFunction: SPARKLE_CONFIG.enableRevealCycle ? 'linear' : undefined,
             animationIterationCount: SPARKLE_CONFIG.enableRevealCycle ? 'infinite' : undefined,
-            animationDelay: SPARKLE_CONFIG.enableRevealCycle ? `${hotspotRevealDelay}s` : undefined,
+            animationDelay: SPARKLE_CONFIG.enableRevealCycle ? `${hotspotRevealDelay + initialDelaySeconds}s` : undefined,
           };
 
           // Inner sparkle style - controls twinkle and visual appearance

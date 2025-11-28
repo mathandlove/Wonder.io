@@ -230,6 +230,8 @@ export default function ClueImageScene({ scene }: SceneProps<ClueImageSceneType>
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [imageBounds, setImageBounds] = useState({ width: 0, height: 0, left: 0, top: 0 });
+  // Track sparkle delay - resets to 10 seconds at scene start and after each clue click
+  const [sparkleDelayKey, setSparkleDelayKey] = useState(0); // Increment to force re-render with fresh delay
   const [lowestHotspotInfo, setLowestHotspotInfo] = useState<{
     lowestHotspot: string | null;
     bottomEdgePercent: number;
@@ -445,6 +447,8 @@ export default function ClueImageScene({ scene }: SceneProps<ClueImageSceneType>
     // Mark as found if not already
     if (!foundClues.includes(label)) {
       console.log('[ClueImageScene] Marking clue as found:', label);
+      // Reset sparkle delay to 10 seconds after each click
+      setSparkleDelayKey(prev => prev + 1);
       setFoundClues(prev => {
         const newFound = [...prev, label];
         console.log('[ClueImageScene] Updated foundClues:', newFound);
@@ -604,13 +608,14 @@ export default function ClueImageScene({ scene }: SceneProps<ClueImageSceneType>
 
             return unfoundHotspots.map((hotspot, unfoundIndex) => (
               <HotspotSparkles
-                key={`sparkles-${hotspot.id}`}
+                key={`sparkles-${hotspot.id}-${sparkleDelayKey}`}
                 hotspot={hotspot}
                 hotspotIndex={unfoundIndex}
                 totalHotspots={unfoundHotspots.length}
                 containerWidth={imageBounds.width}
                 containerHeight={imageBounds.height}
                 found={false}
+                initialDelaySeconds={10}
               />
             ));
           })()}

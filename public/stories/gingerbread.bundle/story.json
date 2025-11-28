@@ -35,6 +35,21 @@
         }
       ]
     },
+        {
+      "type": "image",
+      "image": "story/dragonFeet.png",
+      "text": "I protect my city by searching for clues. I protect my city by searching for clues. I protect my city by searching for clues. "
+    },
+        {
+      "type": "image",
+      "image": "story/dragonFeet.png",
+      "text": "I protect my city by searching for clues."
+    },
+        {
+      "type": "image",
+      "image": "story/dragonFeet.png",
+      "text": "I protect my city by searching for clues."
+    },
     {
       "type": "character-flow",
       "background": "bakery.png",
@@ -51,14 +66,18 @@
           "side": "left",
           "text": "Test1"
         },
+                            {
+      "type": "quest"
+    },        
+    {
+          "side": "right",
+          "text": "Test2"
+        },
                         {
           "type": "input"
         },
 
-        {
-          "side": "right",
-          "text": "Test2"
-        },
+
 
         {
           "side": "right",
@@ -89,10 +108,8 @@
         {
           "side": "right",
           "text": "Tell me about your last adventure Ms. Baker. What happened? Look I added a sthirsa line here. HOpefully I can see it."
-        },
-                    {
-      "type": "quest"
-    }
+        }
+
         
       ]
     },

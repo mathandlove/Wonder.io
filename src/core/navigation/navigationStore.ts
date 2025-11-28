@@ -914,3 +914,15 @@ export const selectNavigationGraph = (state: NavigationState) => state.graph;
  * Selector: Get last frozen node
  */
 export const selectLastFrozenNode = (state: NavigationState) => state.lastFrozenNode;
+
+/**
+ * Selector: Check if scroll down is allowed in current state
+ * Returns true for phases where the user can freely scroll to the next scene
+ */
+export const selectCanScrollDown = (state: NavigationState) => {
+  const node = selectCurrentNode(state);
+  if (!node) return false;
+
+  const allowedPhases: Phase[] = ['basic', 'complete', 'image_only', 'caption'];
+  return allowedPhases.includes(node.phase);
+};

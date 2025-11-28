@@ -1,0 +1,117 @@
+/* ===================================
+   SCROLL DOWN TOAST
+   Styled to match the hint-toast component
+   =================================== */
+
+.scroll-down-toast {
+  position: fixed;
+  bottom: 32px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 1150; /* Above RecordPanel (1100) and hand stamp video (1102) */
+  pointer-events: none;
+
+  /* Fade in animation */
+  animation: scrollToastFadeIn 0.4s ease-out;
+}
+
+@keyframes scrollToastFadeIn {
+  from {
+    opacity: 0;
+    transform: translateX(-50%) translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
+  }
+}
+
+.scroll-down-content {
+  /* Layout - align items center for vertical centering (matching hint-toast) */
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 18px 30px;
+  /* More padding for storybook comfy feel */
+
+  /* Dark background with paper texture (matching hint-toast exactly) */
+  background-color: #2a1f1a;
+  background-image: url(/VisualAssets/cardboard.png);
+  background-position: center;
+  background-size: 360px 540px;
+  background-repeat: repeat;
+  background-blend-mode: overlay;
+
+  /* Border darker than background (matching hint-toast) */
+  border: 3px solid #1a1210;
+  border-radius: 16px;
+
+  /* Shadow for depth (matching hint-toast) */
+  box-shadow:
+    0 4px 12px rgba(0, 0, 0, 0.4),
+    inset 0 1px 0 rgba(255, 255, 255, 0.05);
+}
+
+/* Finger icon container - provides scrolling animation space */
+.scroll-finger-container {
+  width: 28px;
+  height: 28px;
+  position: relative;
+  overflow: visible;
+  flex-shrink: 0;
+}
+
+/* Animated finger icon - styled like hint-toast-icon */
+.scroll-finger-icon {
+  width: 28px;
+  height: 28px;
+  color: #ffffff;
+  /* White icon matching hint-toast-icon filter */
+  filter: brightness(0) invert(1);
+
+  /* Scrolling animation - moves up and down */
+  animation: fingerScroll 1.5s ease-in-out infinite;
+}
+
+@keyframes fingerScroll {
+  0%, 100% {
+    transform: translateY(0);
+    opacity: 1;
+  }
+  50% {
+    transform: translateY(6px);
+    opacity: 0.7;
+  }
+}
+
+/* Toast text - styled like hint-toast-text */
+.scroll-down-text {
+  color: #ffffff;
+  font-family: "Inter", Helvetica, sans-serif;
+  font-size: 18px;
+  font-weight: 500;
+  line-height: 28px;
+  /* Match icon height for vertical alignment */
+  letter-spacing: 0.01em;
+}
+
+/* Position above caption on caption phase pages */
+.scroll-down-toast--above-caption {
+  bottom: calc(35vh + 32px); /* Caption is 35vh tall, plus original 32px offset */
+}
+
+/* Animate out on scroll */
+.scroll-down-toast--animate-out {
+  animation: scrollToastFadeOut 0.3s ease-out forwards;
+}
+
+@keyframes scrollToastFadeOut {
+  from {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
+  }
+  to {
+    opacity: 0;
+    transform: translateX(-50%) translateY(20px);
+  }
+}
