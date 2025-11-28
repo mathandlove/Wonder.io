@@ -87,10 +87,12 @@ interface LocationHighlightProps {
   coloredImageSrc: string;
   hotspot: Hotspot;
   imageBounds: { width: number; height: number; left: number; top: number };
+  isVisible: boolean; // controls whether the highlight is shown
+  shouldAnimate: boolean; // true to fade in, false to show immediately
 }
 
-function LocationHighlight({ coloredImageSrc, hotspot, imageBounds }: LocationHighlightProps) {
-  if (imageBounds.width === 0) {
+function LocationHighlight({ coloredImageSrc, hotspot, imageBounds, isVisible, shouldAnimate }: LocationHighlightProps) {
+  if (imageBounds.width === 0 || !isVisible) {
     return null;
   }
 
@@ -104,6 +106,7 @@ function LocationHighlight({ coloredImageSrc, hotspot, imageBounds }: LocationHi
     <img
       src={coloredImageSrc}
       alt={`Highlighted location: ${hotspot.label}`}
+      className={shouldAnimate ? "map-hotspot-reveal" : ""}
       style={{
         position: 'absolute',
         left: `${imageBounds.left}px`,
@@ -121,14 +124,73 @@ function LocationHighlight({ coloredImageSrc, hotspot, imageBounds }: LocationHi
 /**
  * Path Line Component
  * Renders an SVG path line between locations
+ * Supports animated drawing for highlighted (newest) paths
  */
 interface PathLineProps {
   path: MapPath;
   imageBounds: { width: number; height: number; left: number; top: number };
   isHighlighted: boolean; // true for the most recent path, false for older paths
+  shouldAnimate: boolean; // true to animate drawing, false to show immediately
+  onAnimationComplete?: () => void; // callback when animation finishes
 }
 
-function PathLine({ path, imageBounds, isHighlighted }: PathLineProps) {
+function PathLine({ path, imageBounds, isHighlighted, shouldAnimate, onAnimationComplete }: PathLineProps) {
+  const pathRef = useRef<SVGPathElement>(null);
+  const [pathLength, setPathLength] = useState(0);
+  const [animationStarted, setAnimationStarted] = useState(false);
+  const [animationProgress, setAnimationProgress] = useState(0);
+  const [showLabel, setShowLabel] = useState(false);
+
+  // Animation duration in milliseconds
+  const ANIMATION_DURATION = 1500;
+
+  // Get path length after render - use useLayoutEffect for synchronous measurement
+  useEffect(() => {
+    const measurePath = () => {
+      if (pathRef.current) {
+        const length = pathRef.current.getTotalLength();
+        if (length > 0) {
+          setPathLength(length);
+        }
+      }
+    };
+    measurePath();
+    // Also measure after a short delay in case the path isn't ready immediately
+    const timeoutId = setTimeout(measurePath, 50);
+    return () => clearTimeout(timeoutId);
+  }, [imageBounds, path.points]);
+
+  // Run the drawing animation when shouldAnimate becomes true and we have pathLength
+  useEffect(() => {
+    if (!shouldAnimate || pathLength === 0 || animationStarted) return;
+
+    // Mark animation as started so it only runs once
+    setAnimationStarted(true);
+    setAnimationProgress(0);
+    setShowLabel(false);
+
+    const startTime = performance.now();
+
+    const animate = (currentTime: number) => {
+      const elapsed = currentTime - startTime;
+      const progress = Math.min(elapsed / ANIMATION_DURATION, 1);
+
+      // Easing function for smooth animation (ease-out)
+      const easedProgress = 1 - Math.pow(1 - progress, 3);
+      setAnimationProgress(easedProgress);
+
+      if (progress < 1) {
+        requestAnimationFrame(animate);
+      } else {
+        // Animation complete - show the label and notify parent
+        setShowLabel(true);
+        onAnimationComplete?.();
+      }
+    };
+
+    requestAnimationFrame(animate);
+  }, [shouldAnimate, pathLength, animationStarted, onAnimationComplete]);
+
   if (imageBounds.width === 0 || path.points.length < 2) {
     return null;
   }
@@ -148,6 +210,31 @@ function PathLine({ path, imageBounds, isHighlighted }: PathLineProps) {
   // Opacity based on whether this is the highlighted (most recent) path
   const pathOpacity = isHighlighted ? 1 : 0.35;
 
+  // Calculate dash offset for animation (starts at full length, animates to 0)
+  const dashOffset = pathLength * (1 - animationProgress);
+
+  // Determine display state based on animation mode:
+  // - If shouldAnimate is true: this path will animate, so hide it until animation starts
+  // - If shouldAnimate is false: this is an older path, show it immediately
+  const isAnimating = shouldAnimate && animationStarted;
+  const isWaitingToAnimate = shouldAnimate && !animationStarted;
+
+  // When waiting to animate (or animating), use pathLength for dasharray to enable the offset trick
+  // When not animating at all, use the dotted pattern
+  const useAnimationMode = (isAnimating || isWaitingToAnimate) && pathLength > 0;
+  const displayDasharray = useAnimationMode ? pathLength : "14,10";
+
+  // Hide path completely while waiting to animate (offset = full length means nothing visible)
+  // During animation, offset decreases from pathLength to 0
+  // When not animating, offset is 0 (full path visible)
+  const displayDashOffset = isWaitingToAnimate ? pathLength : (isAnimating ? dashOffset : 0);
+
+  // Show label only after animation completes, or immediately if not animating
+  const displayLabel = isAnimating ? showLabel : !isWaitingToAnimate;
+
+  // If shouldAnimate but we don't have pathLength yet, hide everything with opacity
+  const shouldHide = shouldAnimate && pathLength === 0;
+
   return (
     <svg
       className="map-path-overlay"
@@ -162,37 +249,46 @@ function PathLine({ path, imageBounds, isHighlighted }: PathLineProps) {
       }}
       viewBox={`0 0 ${imageBounds.width} ${imageBounds.height}`}
     >
-      <g opacity={pathOpacity}>
+      <g opacity={shouldHide ? 0 : pathOpacity}>
         {/* Path stroke - thick pale blue dotted line */}
         <path
+          ref={pathRef}
           d={pathData}
           fill="none"
           stroke="#87CEEB"
           strokeWidth="8"
-          strokeDasharray="14,10"
+          strokeDasharray={displayDasharray}
+          strokeDashoffset={displayDashOffset}
           strokeLinecap="round"
           strokeLinejoin="round"
         />
-        {/* Number label background */}
-        <circle
-          cx={midpoint.x}
-          cy={midpoint.y}
-          r="18"
-          fill="#87CEEB"
-        />
-        {/* Number label */}
-        <text
-          x={midpoint.x}
-          y={midpoint.y}
-          textAnchor="middle"
-          dominantBaseline="central"
-          fill="#1a365d"
-          fontSize="16"
-          fontWeight="bold"
-          fontFamily="sans-serif"
-        >
-          {path.orderNumber}
-        </text>
+        {/* Number label - shown after animation or immediately if not animating */}
+        {displayLabel && (
+          <>
+            {/* Number label background */}
+            <circle
+              cx={midpoint.x}
+              cy={midpoint.y}
+              r="18"
+              fill="#87CEEB"
+              className={isAnimating ? "map-path-label-appear" : ""}
+            />
+            {/* Number label */}
+            <text
+              x={midpoint.x}
+              y={midpoint.y}
+              textAnchor="middle"
+              dominantBaseline="central"
+              fill="#1a365d"
+              fontSize="16"
+              fontWeight="bold"
+              fontFamily="sans-serif"
+              className={isAnimating ? "map-path-label-appear" : ""}
+            >
+              {path.orderNumber}
+            </text>
+          </>
+        )}
       </g>
     </svg>
   );
@@ -203,9 +299,41 @@ export default function MapScene({ scene, sceneIndex }: SceneProps<MapSceneType>
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [imageBounds, setImageBounds] = useState({ width: 0, height: 0, left: 0, top: 0 });
+  const [pathAnimationComplete, setPathAnimationComplete] = useState(false);
+  const [isInView, setIsInView] = useState(false);
 
   const imgRef = useRef<HTMLImageElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
+
+  // Callback when path animation finishes - reveals the new hotspot
+  const handlePathAnimationComplete = useCallback(() => {
+    setPathAnimationComplete(true);
+  }, []);
+
+  // Intersection Observer to detect when map scrolls into view
+  // Depends on isLoading so it runs after the container is rendered
+  useEffect(() => {
+    if (isLoading) return; // Wait until loading is complete
+
+    const container = containerRef.current;
+    if (!container) return;
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        const entry = entries[0];
+        if (entry.isIntersecting) {
+          setIsInView(true);
+          // Once triggered, disconnect - we only want to animate once
+          observer.disconnect();
+        }
+      },
+      { threshold: 0.3 } // Trigger when 30% of the map is visible
+    );
+
+    observer.observe(container);
+
+    return () => observer.disconnect();
+  }, [isLoading]);
 
   // Get navigation graph to access all scenes
   const navigationGraph = useNavigationStore(selectNavigationGraph);
@@ -385,24 +513,42 @@ export default function MapScene({ scene, sceneIndex }: SceneProps<MapSceneType>
       </div>
 
       {/* Paths between locations - rendered before locations so they appear underneath */}
-      {visiblePaths.map((path) => (
-        <PathLine
-          key={path.id}
-          path={path}
-          imageBounds={imageBounds}
-          isHighlighted={path.orderNumber === highlightedPathOrder}
-        />
-      ))}
+      {visiblePaths.map((path) => {
+        const isHighlighted = path.orderNumber === highlightedPathOrder;
+        // Only animate the newest (highlighted) path, and only when in view
+        const shouldAnimate = isHighlighted && highlightedPathOrder > 0 && isInView;
+        return (
+          <PathLine
+            key={path.id}
+            path={path}
+            imageBounds={imageBounds}
+            isHighlighted={isHighlighted}
+            shouldAnimate={shouldAnimate}
+            onAnimationComplete={shouldAnimate ? handlePathAnimationComplete : undefined}
+          />
+        );
+      })}
 
       {/* Highlighted locations using colored version */}
-      {visitedHotspots.map((hotspot) => (
-        <LocationHighlight
-          key={hotspot.id}
-          coloredImageSrc={coloredImageSrc}
-          hotspot={hotspot}
-          imageBounds={imageBounds}
-        />
-      ))}
+      {visitedHotspots.map((hotspot, index) => {
+        const isCurrentLocation = index === visitedHotspots.length - 1;
+        const hasIncomingPath = highlightedPathOrder > 0;
+        // Current location is hidden until path animation completes (if there's a path)
+        // Previous locations are always visible
+        const isVisible = !isCurrentLocation || !hasIncomingPath || pathAnimationComplete;
+        // Animate fade-in only for current location after path animation
+        const shouldAnimate = isCurrentLocation && hasIncomingPath && pathAnimationComplete;
+        return (
+          <LocationHighlight
+            key={hotspot.id}
+            coloredImageSrc={coloredImageSrc}
+            hotspot={hotspot}
+            imageBounds={imageBounds}
+            isVisible={isVisible}
+            shouldAnimate={shouldAnimate}
+          />
+        );
+      })}
 
     </div>
   );

@@ -1,6 +1,7 @@
 /**
  * Loads and processes story data from JSON files.
  * Flattens character-flow scenes into individual scenes and validates data structure.
+ * Character descriptions are loaded from external .txt files in the depositions folder.
  */
 // src/data/loadStory.ts
 import type { Scene, Story } from '@core/types/scene';
@@ -9,6 +10,36 @@ import { PHASES, type Phase } from '@core/navigation/navigationGraphTypes';
 
 // Re-export for convenience
 export type { ConversationMetadataMap } from '@core/data/FlowMetadataStore';
+
+/**
+ * Loads a character description from a .txt file in the depositions folder.
+ * @param characterRef - The character name (e.g., "bakerMom") or path to the txt file
+ * @param storyBasePath - The base path to the story bundle (e.g., "/stories/gingerbread.bundle")
+ * @returns The character description text, or null if loading fails
+ */
+async function loadCharacterDescription(
+  characterRef: string,
+  storyBasePath: string
+): Promise<string | null> {
+  // Construct the path to the deposition file
+  const filename = characterRef.endsWith('.txt')
+    ? characterRef
+    : `${characterRef}.txt`;
+
+  const url = `${storyBasePath}/images/depositions/${filename}`;
+
+  try {
+    const response = await fetch(url);
+    if (!response.ok) {
+      console.warn(`[loadStory] Could not load deposition from ${url}: ${response.status}`);
+      return null;
+    }
+    return await response.text();
+  } catch (error) {
+    console.warn(`[loadStory] Failed to load deposition from ${url}:`, error);
+    return null;
+  }
+}
 
 type RawFlowItem = {
   side?: "left" | "right";
@@ -216,5 +247,26 @@ export async function loadStory(url: string): Promise<{ story: Story; flowMetada
   const data = (await res.json()) as RawStory;
   const rawScenes = data.scenes ?? [];
   const { scenes, flowMetadata } = flattenScenes(rawScenes);
+
+  // Extract the story base path from the URL (e.g., "/stories/gingerbread.bundle" from "/stories/gingerbread.bundle/story.json")
+  const storyBasePath = url.substring(0, url.lastIndexOf('/'));
+
+  // Load character descriptions from depositions folder
+  // The CharacterDescription field now references a txt file in images/depositions/
+  await Promise.all(
+    Object.entries(flowMetadata).map(async ([conversationId, metadata]) => {
+      if (metadata.characterDescription) {
+        const loadedDescription = await loadCharacterDescription(
+          metadata.characterDescription,
+          storyBasePath
+        );
+        if (loadedDescription) {
+          flowMetadata[conversationId].characterDescription = loadedDescription;
+        }
+        // If loading fails, keep the original value (for backward compatibility with inline descriptions)
+      }
+    })
+  );
+
   return { story: { scenes }, flowMetadata };
 }

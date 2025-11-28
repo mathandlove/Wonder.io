@@ -12,7 +12,7 @@ import { Toast, useToast } from '../../features/chat/ui/Toast';
 import { AudioVisualizer } from './AudioVisualizer';
 import { ClueSelectionPanel } from './ClueSelectionPanel';
 import { useClueStore } from '@core/data/ClueStore';
-import { getCurrentNode } from '@core/navigation/navigationHelpers';
+import { useNavigationStore, selectCurrentNode } from '@core/navigation/navigationStore';
 import { getConversationMetadata } from '@core/ai/AIOrchestrator';
 import { getServiceInstance } from '@core/navigation/machine/navigationInterpreter';
 import { useAudioLevel } from './RecordingOrchestrator';
@@ -41,8 +41,8 @@ export const RecordPanel: React.FC<RecordPanelProps> = ({
   // Get clues from ClueStore for clue selection
   const { clues } = useClueStore();
 
-  // Read state directly from current node (reactive!)
-  const currentNode = getCurrentNode();
+  // Read state reactively from navigation store (triggers re-render on phase changes)
+  const currentNode = useNavigationStore(selectCurrentNode);
   const scene = currentNode?.scene;
   const dialogueState = currentNode?.phase || 'basic'; // Phase IS the dialogue state
 

@@ -4,47 +4,58 @@
   "scenes": [
    
     
-    {
+         {"type": "map",
+      "image": "cityMap.jpg",
+      "location": "Bakery"
+    },
+        {"type": "map",
+      "image": "cityMap.jpg",
+      "location": "Cobbler"
+    },
+            {"type": "map",
+      "image": "cityMap.jpg",
+      "location": "Market"
+    },
+        {
       "type": "clue-image",
-      "image": "brokenInCobbler",
+      "image": "insideBakery",
       "clueDescriptions": [
         {
-          "hotspotName": "brokenwindow",
-          "description": "A broken window with cookie crumbs on it",
-          "image": "brokenwindow",
-          "dialog": "Looking closer, I see the window is covered in more cookie crumbs. Why would a thief throw a stolen cookie into a window?"
+          "hotspotName": "Hair",
+          "description": "A bowl of human hair",
+          "image": "hair",
+          "dialog": "A bowl of hair. Why would a baker have a bowl of human hair?"
         },
         {
-          "hotspotName": "crumbtrail",
-          "description": "A trail of cookie crumbs leading to the shoe shop",
-          "image": "crumbtrail",
-          "dialog": "The trail leads all the way to the shoe shop. The thief must be inside."
+          "hotspotName": "Crumbs",
+          "description": "Cookie crumbs on the ground",
+          "image": "crumbs",
+          "dialog": "That's not dirt on the ground. I take a finger and lick it. Yes it tastes quite sugary with a strong cinnamon flavor."
         },
         {
-          "hotspotName": "door",
-          "description": "A locked door",
-          "image": "door",
-          "dialog": "The door is locked. How did the thief get inside?"
+          "hotspotName": "Potion",
+          "description": "A witch's potion bottle, half empty",
+          "image": "potion",
+          "dialog": "This looks like a witch's potion. And it's half empty. What was Ms. Butterbuns doing with a potion?"
         },
         {
-          "hotspotName": "pedestal",
-          "description": "A pedestal with cookie crumbs on it that used to hold baby shoes",
-          "image": "pedestal",
-          "dialog": "It looks like there used to be something on this pedestal. And it's covered in cookie crumbs now."
+          "hotspotName": "Frosting",
+          "description": "White frosting and cookie-making supplies",
+          "image": "frosting",
+          "dialog": "It looks like Ms. Butterbuns was making cookies with white frosting."
         }
       ]
     },
-    
     {
       "type": "character-flow",
       "background": "bakery.png",
       "left-character": "leo",
       "right-character": "bakerMom",
-      "CharacterDescription": "I am Ms. Butterbuns, the baker at the Drury Lane Bakery. Oh my, what a night I had! I'm talking to you, Investigator Leo, because you're trying to find my missing cookie. I hope you can help me, dear.\n\nLast night, I was baking a very special cookie. It was a big one—about two feet tall—and I shaped it just like a child. I used white frosting to draw a cute little face and a tiny shirt on it. I wanted it to be perfect.\n\nI also bought a secret potion from a witch. I know, I know… it sounds strange. She told me I needed to put the hair of a child in the potion. I didn't want to, but I wanted this cookie to be extra special for my secret reason. So I sneaked over and took a little hair from Little Jimmy down the block. He was not happy about that.\n\nWhen I was mixing the potion, I tripped and—oopsie!—I spilled the potion right on my cookie. A puff of magic smoke came out, but the cookie still looked fine, so I didn't think much of it.\n\nNow this morning, my cookie is gone! If you point to the crumbs on the floor, I'll give them a little lick and say, \"Yes sir, I'm a professional baker, and I know this is the same cinnamon flavor I used!\" I'll also notice that the crumbs look like they're leading right out the door.\n\nIf you ask about the bowl of hair, I'll tell you it's a little strange, but it's a secret. But if you ask me again about the hair or the potion, I'll tell the truth. I'll say that I wanted a child so very much, and the witch gave me the potion and told me to put the hair in it. I didn't mean to spill it on the cookie. I just hope we can find my cookie, so maybe—just maybe—the potion will still work.",
+      "CharacterDescription": "bakerMom",
       "useClues": true,
       "question": "Where did the cookie thief go?",
       "successAnswer": "Context: cookie crumbs on the ground. We should follow those crumbs that lead out the door.",
-      "wrongAnswers": ["Context: Pointing at the bowl of hair", "Context: potion","Context: frosting."],
+      "wrongAnswers": ["Context: bowl of hair", "Context: potion","Context: frosting."],
       "flow": [
         {
           "side": "left",
@@ -108,18 +119,7 @@
       "image": "story/dragonFeet.png",
       "text": "2"
     },
-     {"type": "map",
-      "image": "cityMap.jpg",
-      "location": "Bakery"
-    },
-        {"type": "map",
-      "image": "cityMap.jpg",
-      "location": "Cobbler"
-    },
-            {"type": "map",
-      "image": "cityMap.jpg",
-      "location": "Market"
-    },
+
     {
       "type": "image",
       "image": "story/dragonFeet.png",
@@ -147,31 +147,31 @@
     },
     {
       "type": "clue-image",
-      "image": "insideBakery",
+      "image": "brokenInCobbler",
       "clueDescriptions": [
         {
-          "hotspotName": "Hair",
-          "description": "A bowl of human hair",
-          "image": "hair",
-          "dialog": "A bowl of hair. Why would a baker have a bowl of human hair?"
+          "hotspotName": "brokenwindow",
+          "description": "A broken window with cookie crumbs on it",
+          "image": "brokenwindow",
+          "dialog": "Looking closer, I see the window is covered in more cookie crumbs. Why would a thief throw a stolen cookie into a window?"
         },
         {
-          "hotspotName": "Crumbs",
-          "description": "Cookie crumbs on the ground",
-          "image": "crumbs",
-          "dialog": "That's not dirt on the ground. I take a finger and lick it. Yes it tastes quite sugary with a strong cinnamon flavor."
+          "hotspotName": "crumbtrail",
+          "description": "A trail of cookie crumbs leading to the shoe shop",
+          "image": "crumbtrail",
+          "dialog": "The trail leads all the way to the shoe shop. The thief must be inside."
         },
         {
-          "hotspotName": "Potion",
-          "description": "A witch's potion bottle, half empty",
-          "image": "potion",
-          "dialog": "This looks like a witch's potion. And it's half empty. What was Ms. Butterbuns doing with a potion?"
+          "hotspotName": "door",
+          "description": "A locked door",
+          "image": "door",
+          "dialog": "The door is locked. How did the thief get inside?"
         },
         {
-          "hotspotName": "Frosting",
-          "description": "White frosting and cookie-making supplies",
-          "image": "frosting",
-          "dialog": "It looks like Ms. Butterbuns was making cookies with white frosting."
+          "hotspotName": "pedestal",
+          "description": "A pedestal with cookie crumbs on it that used to hold baby shoes",
+          "image": "pedestal",
+          "dialog": "It looks like there used to be something on this pedestal. And it's covered in cookie crumbs now."
         }
       ]
     }
