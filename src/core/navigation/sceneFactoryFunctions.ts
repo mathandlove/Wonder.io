@@ -83,6 +83,7 @@ export function createRecordingScene(
  * @param currentBackground - Inherited background
  * @param leftCharacter - User's character
  * @param rightCharacter - NPC/AI character (speaker)
+ * @param monologue - If true, speaker is "left" (user thinking to themselves)
  * @returns CharacterScene with phase='input' for immediate follow-up
  */
 export function createAIResponseScene(
@@ -90,7 +91,8 @@ export function createAIResponseScene(
   conversationId: string | undefined,
   currentBackground?: string,
   leftCharacter?: string,
-  rightCharacter?: string
+  rightCharacter?: string,
+  monologue?: boolean
 ): CharacterScene {
   const sceneId = `ai-response-${Date.now()}-${Math.random().toString(36).substring(2, 9)}`;
 
@@ -98,14 +100,15 @@ export function createAIResponseScene(
   //   background: currentBackground,
   //   conversationId,
   //   leftCharacter,
-  //   rightCharacter
+  //   rightCharacter,
+  //   monologue
   // });
 
   const newScene: CharacterScene = {
     type: "character",
     sceneId,
     text: responseText, // AI's response text
-    speaker: "right", // AI character speaks
+    speaker: monologue ? "left" : "right", // Monologue: left character speaks to themselves; Otherwise: right (NPC) speaks
     conversationId, // Preserve conversationId for conversation continuity
     "left-character": leftCharacter || "leo", // User's character
     "right-character": rightCharacter || "bakerMom", // AI character

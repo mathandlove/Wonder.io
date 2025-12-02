@@ -66,6 +66,8 @@ type RawScene = {
   incorrectAnswer?: string[]; // Optional array of incorrect facts to penalize
   question?: string; // Legacy quest text field
   hint?: string; // Hint text to help the player
+  requiredAsk?: boolean; // Whether player must ask questions before answering
+  monologue?: boolean; // Whether this is a monologue (single character speaking)
   // ...other raw fields allowed in your JSON
 };
 
@@ -108,7 +110,9 @@ function flattenScenes(rawScenes: RawScene[]): FlattenResult {
           successAnswer: scene.successAnswer!,
           incorrectAnswer: scene.incorrectAnswer,
           useClues: scene.useClues,
-          hint: scene.hint
+          hint: scene.hint,
+          requiredAsk: scene.requiredAsk,
+          monologue: scene.monologue
         };
       }
 

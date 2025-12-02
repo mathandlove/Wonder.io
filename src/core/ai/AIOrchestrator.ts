@@ -341,6 +341,10 @@ export function createAndInsertAIResponseScene(input: CreateAIResponseInput): st
     const leftCharacter = scene && 'left-character' in scene ? (scene as { 'left-character'?: string })['left-character'] : 'leo';
     const rightCharacter = scene && 'right-character' in scene ? (scene as { 'right-character'?: string })['right-character'] : 'bakerMom';
 
+    // Get monologue metadata for the conversation
+    const metadata = input.conversationId ? getConversationMetadata(input.conversationId) : null;
+    const monologue = metadata?.monologue;
+
     debug.event('🔍', 'Extracting scene properties:', {
       currentNodeId: input.currentNodeId,
       sceneType: scene?.type,
@@ -348,6 +352,7 @@ export function createAndInsertAIResponseScene(input: CreateAIResponseInput): st
       hasBackground: 'background' in (scene || {}),
       leftCharacter,
       rightCharacter,
+      monologue,
       fullScene: scene
     });
 
@@ -357,7 +362,8 @@ export function createAndInsertAIResponseScene(input: CreateAIResponseInput): st
       input.conversationId,
       currentBackground,
       leftCharacter,
-      rightCharacter
+      rightCharacter,
+      monologue
     );
 
     debug.log('Creating AI response scene with text:', input.responseText.substring(0, 50));

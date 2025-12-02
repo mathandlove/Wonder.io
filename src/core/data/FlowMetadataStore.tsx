@@ -18,6 +18,8 @@ export interface ConversationMetadata {
   incorrectAnswer?: string[]; // Optional array of incorrect facts to penalize
   useClues?: boolean; // Whether to use clues from the most recent clue-image scene
   hint?: string; // Hint text to help the player
+  requiredAsk?: boolean; // Whether the player must ask questions before answering
+  monologue?: boolean; // Whether this is a monologue (single character speaking)
 }
 
 export interface ConversationMetadataMap {

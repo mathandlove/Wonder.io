@@ -1,9 +1,99 @@
 {
-  "title": "The Cookie Thief",
-  "storyId": "leo-monster-hunter-001",
+  "title": "The Runaway Cookie",
+  "storyId": "001-runaway-cookie",
   "scenes": [
+       {
+      "type": "character-flow",
+      "background": "park.png",
+      "left-character": "leo",
+      "right-character": "none",
+      "CharacterDescription": "chaseScene",
+      "useClues": false,
+      "monologue": true,
+      "requiredAsk": false,
+      "question": "What was the child covered in?",
+      "successAnswer": "The child is covered in cookie or the child is a cookie.",
+      "wrongAnswers": ["mud"],
+      "hint": "Ask what does the taste remind you of?",
+
+      "flow": [
+        {
+          "side": "left",
+          "text": "I run as fast as I can, chasing the cookie thief."
+        },
    
-    
+                        {
+          "type": "input"
+        },
+                                                          {
+          "side": "left",
+          "text": "That's where the cookie went! The child covered himself!"
+        },
+                        {
+          "side": "left",
+          "text": "As I get closer, I can see the thief is indeed covered in a thick brown mud."
+        },
+                                {
+          "side": "left",
+          "text": "At one point I get so close I can almost grab him!"
+        },
+                                        {
+          "side": "left",
+          "text": "But I slip and fall right on my face!"
+        },
+                                                {
+          "side": "left",
+          "text": "He runs off again, and now my hand is covered in this brown mud."
+        },
+                                                        {
+          "side": "left",
+          "text": "I lick the brown substance, and it doesn't taste like mud at all. It tastes like cinnamon and white frosting."
+        },
+                                                          {
+          "side": "left",
+          "text": "That child isn't covered in mud at all. He's covered in..."
+        },
+        
+                              {
+      "type": "quest"
+    }
+      ]},
+
+         {
+      "type": "title",
+      "lvl1": "The",
+      "lvl2": "Runaway Cookie",
+      "author": "Elliott Hedman",
+      "illustrator": "Silvia Pardo",
+      "background": "bakery.png"
+    },
+        {
+      "type": "image",
+      "image": "story/cheers.png",
+      "text": "My name is Leo, and I’m a monster hunter."
+    },
+        {
+      "type": "image",
+      "image": "story/dragonFight.png",
+      "text": "I keep my city safe, even when things get a little scary."
+    },
+        {
+      "type": "image",
+      "image": "story/cheers.png",
+      "text": "It’s worth it, because I’m protecting all my friends."
+    },
+    {
+      "type": "text",
+      "text": "Today, I was visiting the Drury Lane Bakery, to buy my favorite muffin.",
+      "background": "bakery.png"
+    },
+    {
+      "type": "text",
+      "text": "When I heard a loud cry for help from Betsy the baker.",
+      "background": "bakery.png"
+    },
+
+
      {
       "type": "clue-image",
       "image": "insideBakery",
@@ -38,12 +128,13 @@
       "type": "character-flow",
       "background": "bakery.png",
       "left-character": "leo",
-      "right-character": "bakerMom",
-      "CharacterDescription": "bakerMom",
+      "right-character": "NOCHARACTER",
+      "CharacterDescription": "chaseScene",
       "useClues": true,
+      "monologue": true,
       
-      "question": "Where did the cookie thief go?",
-      "successAnswer": "Context: cookie crumbs on the ground. We should follow those crumbs that lead out the door.",
+      "question": "What is the child covered",
+      "successAnswer": "Cookie.",
       "wrongAnswers": ["Context: bowl of hair", "Context: potion","Context: frosting."],
       "hint": "Ask about that brown trail and where it leads.",
       "flow": [
@@ -55,47 +146,11 @@
 
                         {
           "type": "input"
-        },
-                {
-          "side": "right",
-          "text": "Test3-fox",
-          "right-character": "fox"
-        },
-
-                            {
-      "type": "quest"
-    },      
-
-
-        {
-          "side": "right",
-          "text": "Test4"
-        },
-        {
-          "side": "right",
-          "text": "Test5"
-        },
-        {
-          "side": "right",
-          "text": "test6",
-          "right-character": "bakerMom"
-        },
-        {
-          "side": "test7",
-          "text": "Works"
-        },
-        {
-          "side": "right",
-          "text": "Somebody please help me!"
-        },
-        {
-          "side": "right",
-          "text": "Tell me about your last adventure Ms. Baker. What happened? Look I added a sthirsa line here. HOpefully I can see it."
         }
-
-        
       ]
-    },
+      },
+
+
              {"type": "map",
       "image": "cityMap.jpg",
       "location": "Bakery"
@@ -108,37 +163,8 @@
       "image": "cityMap.jpg",
       "location": "Market"
     },
-    {
-      "type": "image",
-      "image": "story/cheers.png",
-      "text": "It is worth it because I am protecting all my friends."
-    },
-    {
-      "type": "image",
-      "image": "story/dragonFeet.png",
-      "text": "I protect my city by searching for clues."
-    },
-    {
-      "type": "image",
-      "image": "story/dragonFeet.png",
-      "text": "2"
-    },
 
-    {
-      "type": "image",
-      "image": "story/dragonFeet.png",
-      "text": "I protect my city by searching for clues."
-    },
-    {
-      "type": "text",
-      "text": "Today, I was visiting the Drury Lane Bakery, for my daily Muffin.",
-      "background": "bakery.png"
-    },
-    {
-      "type": "text",
-      "text": "When I heard a loud cry for help from Betsy the baker.",
-      "background": "bakery.png"
-    },
+
     {
       "type": "text",
       "background": "cobbler.png",
@@ -149,14 +175,7 @@
       "image": "story/dragonFight.png",
       "text": "Sometimes I have to fight the monsters."
     },
-     {
-      "type": "title",
-      "lvl1": "The",
-      "lvl2": "Cookie Thief",
-      "author": "Elliott Hedman",
-      "illustrator": "Silvia Pardo",
-      "background": "bakery.png"
-    },
+
       
     
         {

@@ -85,7 +85,10 @@ export const CharacterOrchestrator: React.FC<Props> = ({ storyId, scenes }) => {
       if (!node) return 'NOCHARACTER';
       const key = side === 'left' ? 'left-character' : 'right-character';
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      return (node.scene as any)?.[key] || 'NOCHARACTER';
+      const value = (node.scene as any)?.[key];
+      // Normalize all "no character" representations to 'NOCHARACTER'
+      if (!value || value === 'none' || value === 'NOCHARACTER') return 'NOCHARACTER';
+      return value;
     };
 
     const leftChar = getChar(currentNode, 'left');

@@ -33,7 +33,7 @@ const debug = createDebugger('navigation:machine');
  * Set to true to bypass the requirement of asking a question before answering
  * Useful for testing the answer flow directly
  */
-const DEBUG_AUTO_UNLOCK_ANSWER_BUTTON = true;
+const DEBUG_AUTO_UNLOCK_ANSWER_BUTTON = false;
 
 // Log when debug mode is enabled
 if (DEBUG_AUTO_UNLOCK_ANSWER_BUTTON) {
@@ -207,6 +207,29 @@ export const navigationMachine = setup({
 
     setUnlockAnswerButton: assign({
       unlockAnswerButton: true,
+    }),
+
+    // Check requiredAsk metadata and unlock answer button if requiredAsk is false
+    checkRequiredAskAndUnlock: assign({
+      unlockAnswerButton: () => {
+        // If debug mode is on, always unlock
+        if (DEBUG_AUTO_UNLOCK_ANSWER_BUTTON) return true;
+
+        // Check the requiredAsk metadata for the current scene
+        const currentNode = getCurrentNode();
+        const scene = currentNode?.scene;
+        const conversationId = (scene as { conversationId?: string })?.conversationId;
+        const metadata = conversationId ? getConversationMetadata(conversationId) : null;
+
+        // If requiredAsk is explicitly false, unlock the answer button
+        if (metadata?.requiredAsk === false) {
+          debug.log('🔓 requiredAsk=false → unlocking answer button immediately');
+          return true;
+        }
+
+        // Otherwise keep it locked (default behavior)
+        return false;
+      },
     }),
 
     resetAnswerWrongFlags: assign({
@@ -709,6 +732,7 @@ export const navigationMachine = setup({
             {
               guard: 'isInput',
               target: 'dialogueInput',
+              actions: 'checkRequiredAskAndUnlock',
             },
             {
               guard: 'isQuestShowing',
@@ -1842,13 +1866,18 @@ export const navigationMachine = setup({
                   const leftCharacter = 'left-character' in scene ? (scene as { 'left-character'?: string })['left-character'] : 'leo';
                   const rightCharacter = 'right-character' in scene ? (scene as { 'right-character'?: string })['right-character'] : 'bakerMom';
 
+                  // Get monologue metadata for the conversation
+                  const metadata = conversationId ? getConversationMetadata(conversationId) : null;
+                  const monologue = metadata?.monologue;
+
                   // Create feedback scene using the same factory as AI responses
                   const feedbackScene = createAIResponseSceneFactory(
                     event.feedbackText,
                     conversationId,
                     currentBackground,
                     leftCharacter,
-                    rightCharacter
+                    rightCharacter,
+                    monologue
                   );
 
                   debug.log('Creating feedback scene with text:', event.feedbackText.substring(0, 50));
@@ -2008,12 +2037,17 @@ export const navigationMachine = setup({
                   const leftCharacter = 'left-character' in scene ? (scene as { 'left-character'?: string })['left-character'] : 'leo';
                   const rightCharacter = 'right-character' in scene ? (scene as { 'right-character'?: string })['right-character'] : 'bakerMom';
 
+                  // Get monologue metadata for the conversation
+                  const metadata = conversationId ? getConversationMetadata(conversationId) : null;
+                  const monologue = metadata?.monologue;
+
                   const feedbackScene = createAIResponseSceneFactory(
                     event.feedbackText,
                     conversationId,
                     currentBackground,
                     leftCharacter,
-                    rightCharacter
+                    rightCharacter,
+                    monologue
                   );
 
                   const currentNodeId = store.currentId;
@@ -2066,12 +2100,17 @@ export const navigationMachine = setup({
                   const leftCharacter = 'left-character' in scene ? (scene as { 'left-character'?: string })['left-character'] : 'leo';
                   const rightCharacter = 'right-character' in scene ? (scene as { 'right-character'?: string })['right-character'] : 'bakerMom';
 
+                  // Get monologue metadata for the conversation
+                  const metadata = conversationId ? getConversationMetadata(conversationId) : null;
+                  const monologue = metadata?.monologue;
+
                   const feedbackScene = createAIResponseSceneFactory(
                     event.feedbackText,
                     conversationId,
                     currentBackground,
                     leftCharacter,
-                    rightCharacter
+                    rightCharacter,
+                    monologue
                   );
 
                   const currentNodeId = store.currentId;
