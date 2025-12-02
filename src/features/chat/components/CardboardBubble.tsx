@@ -76,7 +76,10 @@ export const CardboardBubble: React.FC<CardboardBubbleProps> = ({
         <div style={{ display: 'flex', width: '100%', justifyContent: containerStyle.alignItems }}>
           <div className={finalClassName}>
             {showTail && (
-              <div className={`cardboard-bubble-tail-${side}`}></div>
+              <div className={`cardboard-bubble-tail-${side}`}>
+                <div className={`cardboard-triangle-${side}`}></div>
+                <div className={`white-triangle-${side}`}></div>
+              </div>
             )}
             <div className="cardboard-bubble-inner">
               <p className={`cardboard-bubble-text ${isPlaceholder ? 'placeholder' : ''}`}>

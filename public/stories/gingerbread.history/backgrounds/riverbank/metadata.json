@@ -1,0 +1,15 @@
+{
+  "imageId": "riverbank",
+  "category": "backgrounds",
+  "versions": [
+    {
+      "version": 1,
+      "filename": "v1-1764699210506.png",
+      "timestamp": 1764699210506,
+      "prompt": "A peaceful riverbank with gentle flowing water. Tall reeds grow along the shore, a wooden dock extends into the water with a small ferry boat tied to it. Willow trees drape over the scene.",
+      "charactersReferenced": [],
+      "isModification": false
+    }
+  ],
+  "currentVersion": 1
+}

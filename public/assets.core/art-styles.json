@@ -1,0 +1,18 @@
+{
+  "styles": {
+    "backgrounds": {
+      "name": "Background Style",
+      "prompt": "Create a soft pastel paper-craft diorama scene made from layered cut-paper shapes, with simple rounded forms, subtle drop-shadow depth, and a gentle, child-friendly pastel color palette. The scene should fill a full 16:9 frame and extend completely to the edges. Do not show people."
+    },
+    "default": {
+      "name": "Character & Scene Style",
+      "prompt": "Whimsical children's book illustration style with bold outlines, warm friendly colors, and expressive characters. Soft shading with a hand-drawn quality. Charming and approachable aesthetic suitable for young readers."
+    }
+  },
+  "categoryMapping": {
+    "backgrounds": "backgrounds",
+    "characters": "default",
+    "clueImages": "default",
+    "storyImages": "default"
+  }
+}

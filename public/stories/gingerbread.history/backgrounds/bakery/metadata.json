@@ -1,0 +1,55 @@
+{
+  "imageId": "bakery",
+  "category": "backgrounds",
+  "versions": [
+    {
+      "version": 1,
+      "filename": "v1-1764703356028.png",
+      "timestamp": 1764703356028,
+      "prompt": "A medieval bakery, it is Christmas. Cookies and muffins are on display sign shaped like a cupcake. Cobblestone street in front.",
+      "charactersReferenced": [],
+      "isModification": false
+    },
+    {
+      "version": 2,
+      "filename": "v2-1764703397363.png",
+      "timestamp": 1764703397363,
+      "prompt": "A medieval bakery, it is Christmas. Cookies and muffins are on display",
+      "charactersReferenced": [],
+      "isModification": false
+    },
+    {
+      "version": 3,
+      "filename": "v3-1764703481160.png",
+      "timestamp": 1764703481160,
+      "prompt": "The outside of a medieval bakery, it is Christmas. Cookies and muffins are on display",
+      "charactersReferenced": [],
+      "isModification": false
+    },
+    {
+      "version": 4,
+      "filename": "v4-1764703620036.jpeg",
+      "timestamp": 1764703620036,
+      "prompt": "Scene: A medieval bakery, it is Christmas. Cookies and muffins are on display",
+      "charactersReferenced": [],
+      "isModification": false
+    },
+    {
+      "version": 5,
+      "filename": "v5-1764703691336.jpeg",
+      "timestamp": 1764703691336,
+      "prompt": "Scene: A medieval bakery, it is Christmas. Cookies and muffins are on display",
+      "charactersReferenced": [],
+      "isModification": false
+    },
+    {
+      "version": 6,
+      "filename": "v6-1764704678939.jpeg",
+      "timestamp": 1764704678939,
+      "prompt": "The exterior of Ms. Butterbuns' cozy bakery shop. A charming storefront with a striped awning, warm golden light spilling from the windows, and a wooden sign shaped like a cupcake. Cobblestone street in front.",
+      "charactersReferenced": [],
+      "isModification": false
+    }
+  ],
+  "currentVersion": 5
+}

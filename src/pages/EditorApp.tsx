@@ -12,7 +12,7 @@ import ConfigHighlights from '../features/editor/ConfigHighlights';
 import PathManager from '../features/editor/PathManager';
 import ImageSelector from '../features/editor/ImageSelector';
 import MapSelector from '../features/editor/MapSelector';
-import ImageGeneratorPanel from '../features/editor/ImageGeneratorPanel';
+import AIGenerationPanel from '../features/editor/AIGenerationPanel';
 import type { Hotspot, MapPath } from '@shared/types/hotspot';
 
 const EditorApp: React.FC = () => {
@@ -34,6 +34,7 @@ const EditorApp: React.FC = () => {
   // Map paths state
   const [mapPaths, setMapPaths] = useState<MapPath[]>([]);
   const [hoveredPath, setHoveredPath] = useState<string | null>(null);
+
 
   // Load hotspots from bundle when image changes
   useEffect(() => {
@@ -312,7 +313,24 @@ const EditorApp: React.FC = () => {
   const activeSetHotspots = isMapMode ? setMapHotspots : setHotspots;
 
   // Check if a side panel is open
-  const hasSidePanel = activeTool === 'config-highlights' || activeTool === 'manage-paths' || activeTool === 'image-generator';
+  const hasSidePanel = activeTool === 'config-highlights' || activeTool === 'manage-paths';
+  const isAIGeneratorMode = activeTool === 'image-generator';
+
+  // AI Generator takes over the full screen
+  if (isAIGeneratorMode) {
+    return (
+      <div className="h-screen w-screen bg-gray-100 flex flex-col overflow-hidden">
+        <AIGenerationPanel
+          isActive={true}
+          storyId="gingerbread"
+          onImageUpdated={(sceneIndex, newImagePath) => {
+            console.log(`Scene ${sceneIndex} updated with: ${newImagePath}`);
+          }}
+          onClose={() => setActiveTool(null)}
+        />
+      </div>
+    );
+  }
 
   return (
     <div className="h-screen w-screen bg-gray-50 flex flex-col overflow-hidden">
@@ -355,17 +373,6 @@ const EditorApp: React.FC = () => {
             onPathHover={setHoveredPath}
             hoveredPath={hoveredPath}
             onClose={() => setActiveTool(null)}
-          />
-        )}
-
-        {/* Image Generator Panel (shows when image-generator tool is active) */}
-        {activeTool === 'image-generator' && (
-          <ImageGeneratorPanel
-            isActive={true}
-            storyId="gingerbread"
-            onImageUpdated={(sceneIndex, newImagePath) => {
-              console.log(`Scene ${sceneIndex} updated with: ${newImagePath}`);
-            }}
           />
         )}
 

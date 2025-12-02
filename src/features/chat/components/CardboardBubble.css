@@ -7,6 +7,7 @@
 /* Cardboard Bubble Base Styles */
 .cardboard-bubble {
   position: relative;
+  z-index: 1;
   width: fit-content;
   height: fit-content;
   min-height: 80px; /* Reduced minimum height */
@@ -18,7 +19,8 @@
   background-position: center;
   background-color: #d4b896; /* Fallback color if image doesn't load */
   border-radius: 25px;
-  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+  border: 1px solid #FFFFFF;
+  box-shadow: 0 24px 64px rgba(0, 0, 0, 0.85), 0 12px 32px rgba(0, 0, 0, 0.7);
   transform-origin: center center;
   box-sizing: border-box; /* Include padding in width calculation */
 }
@@ -46,7 +48,7 @@
 
 /* Inner white/cream text box */
 .cardboard-bubble-inner {
-  background: #fdf8e4;
+  background: #FFFFFF;
   padding: 16px 32px; /* Reduced vertical padding from 24px to 16px for visualizer */
   margin: 0;
   border-radius: 15px;
@@ -91,6 +93,7 @@
   transform: translateY(-50%);
   width: 0;
   height: 0;
+  z-index: -1;
 }
 
 /* Speech tail - Right side */
@@ -101,68 +104,65 @@
   transform: translateY(-50%);
   width: 0;
   height: 0;
+  z-index: -1;
 }
 
-/* Cardboard backing triangle - Left side */
-.cardboard-bubble-tail-left::before {
-  content: '';
+/* Cardboard triangle - Left side */
+.cardboard-triangle-left {
   position: absolute;
-  left: 0;
+  left: -8px;
   top: -15px;
   width: 28px;
   height: 30px;
   background-image: url('/VisualAssets/cardboard.png');
-  background-size: cover;
+  background-size: 300px 300px;
   background-repeat: no-repeat;
   background-position: center;
   clip-path: polygon(100% 0, 100% 100%, 0 50%);
-  z-index: 1;
+  z-index: 2;
 }
 
-/* Cardboard backing triangle - Right side */
-.cardboard-bubble-tail-right::before {
-  content: '';
+/* Cardboard triangle - Right side */
+.cardboard-triangle-right {
   position: absolute;
-  right: 0;
+  right: -8px;
   top: -15px;
   width: 28px;
   height: 30px;
   background-image: url('/VisualAssets/cardboard.png');
-  background-size: cover;
+  background-size: 300px 300px;
   background-repeat: no-repeat;
   background-position: center;
   clip-path: polygon(0 0, 0 100%, 100% 50%);
+  z-index: 2;
+}
+
+/* White triangle - Left side */
+.white-triangle-left {
+  position: absolute;
+  left: -9px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 0;
+  height: 0;
+  border-style: solid;
+  border-width: 17px 28px 17px 0;
+  border-color: transparent #FFFFFF transparent transparent;
   z-index: 1;
 }
 
-/* White triangle pointer for left bubbles */
-.cardboard-bubble-left .cardboard-bubble-inner::after {
-  content: '';
+/* White triangle - Right side */
+.white-triangle-right {
   position: absolute;
-  left: -20px;
+  right: -9px;
   top: 50%;
   transform: translateY(-50%);
   width: 0;
   height: 0;
   border-style: solid;
-  border-width: 15px 28px 15px 0;
-  border-color: transparent #fdf8e4 transparent transparent;
-  z-index: 2;
-}
-
-/* White triangle pointer for right bubbles */
-.cardboard-bubble-right .cardboard-bubble-inner::after {
-  content: '';
-  position: absolute;
-  right: -20px;
-  top: 50%;
-  transform: translateY(-50%);
-  width: 0;
-  height: 0;
-  border-style: solid;
-  border-width: 15px 0 15px 28px;
-  border-color: transparent transparent transparent #fdf8e4;
-  z-index: 2;
+  border-width: 17px 0 17px 28px;
+  border-color: transparent transparent transparent #FFFFFF;
+  z-index: 1;
 }
 
 /* Default animation for immediate bubbles */

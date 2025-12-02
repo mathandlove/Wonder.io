@@ -10,7 +10,6 @@
     "riverbank": "A peaceful riverbank with gentle flowing water. Tall reeds grow along the shore, a wooden dock extends into the water with a small ferry boat tied to it. Willow trees drape over the scene."
   },
   "scenes": [
-
     {
       "type": "map",
       "image": "cityMap.jpg",
@@ -18,7 +17,7 @@
     },
     {
       "type": "character-flow",
-      "background": "bakery",
+      "background": "bakery.jpeg",
       "left-character": "leo",
       "right-character": "butterbuns",
       "CharacterDescription": "butterbuns",
@@ -44,7 +43,6 @@
         {
           "type": "input"
         },
-
         {
           "side": "right",
           "text": "Yes! My very important cookie has been taken, Leo. Please help me."
@@ -305,7 +303,9 @@
       "requiredAsk": true,
       "question": "What was the child covered in?",
       "successAnswer": "The child is covered in cookie or the child is a cookie.",
-      "wrongAnswers": ["mud"],
+      "wrongAnswers": [
+        "mud"
+      ],
       "hint": "What does the taste remind you of?",
       "flow": [
         {
@@ -374,7 +374,9 @@
       "requiredAsk": true,
       "question": "How did the cookie get across the water?",
       "successAnswer": "Franky helped the thief ferry across the river.",
-      "wrongAnswers": ["He swam across by himself."],
+      "wrongAnswers": [
+        "He swam across by himself."
+      ],
       "hint": "Why is Franky wet?",
       "flow": [
         {
@@ -486,7 +488,9 @@
       "requiredAsk": false,
       "question": "What did the thief do with the stolen cookie?",
       "successAnswer": "The thief is the stolen cookie.",
-      "wrongAnswers": ["Fox"],
+      "wrongAnswers": [
+        "Fox"
+      ],
       "hint": "",
       "flow": [
         {
@@ -512,7 +516,7 @@
     },
     {
       "type": "character-flow",
-      "background": "bakery.png",
+      "background": "bakery.jpeg",
       "left-character": "leo",
       "right-character": "butterbuns",
       "useClues": false,
@@ -557,7 +561,7 @@
     },
     {
       "type": "character-flow",
-      "background": "bakery.png",
+      "background": "bakery.jpeg",
       "left-character": "leo",
       "right-character": "butterbuns",
       "useClues": false,

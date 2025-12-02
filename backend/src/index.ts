@@ -10,7 +10,17 @@ import { handleWhisperProxy } from './whisper-proxy-single'; // Using single-sen
 import { handleAIChat } from './ai-conversation';
 import { handleAIValidation } from './ai-validation';
 import { handleLoadBundleHotspots, handleSaveBundleHotspots, handleListBundleImages, handleGenerateThumbnails, handleListBundleMaps } from './bundle-hotspots';
-import { handleImageGeneration, handleGetStoryImages, handleUpdateSceneImage } from './image-generation';
+import {
+  handleImageGeneration,
+  handleGetStoryImages,
+  handleUpdateSceneImage,
+  handleGetHistory,
+  handleGetQueue,
+  handleRenameImage,
+  handleUseVersion,
+  handleWipeHistory,
+  handleWipeAllHistory
+} from './image-generation';
 
 const key = process.env.OPENAI_API_KEY;
 if (!key) throw new Error('Missing OPENAI_API_KEY');
@@ -180,6 +190,14 @@ app.post('/api/bundle/hotspots/generate-thumbnails', handleGenerateThumbnails);
 app.post('/api/images/generate', handleImageGeneration);
 app.get('/api/images/story', handleGetStoryImages);
 app.post('/api/images/update-scene', handleUpdateSceneImage);
+
+// Image history and queue routes
+app.get('/api/images/history', handleGetHistory);
+app.get('/api/images/queue', handleGetQueue);
+app.post('/api/images/rename', handleRenameImage);
+app.post('/api/images/use-version', handleUseVersion);
+app.post('/api/images/wipe-history', handleWipeHistory);
+app.post('/api/images/wipe-all-history', handleWipeAllHistory);
 
 // Health check
 app.get('/api/health', (req, res) => {
