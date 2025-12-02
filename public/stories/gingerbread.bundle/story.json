@@ -1,6 +1,14 @@
 {
   "title": "The Runaway Cookie",
   "storyId": "001-runaway-cookie",
+  "backgroundDescriptions": {
+    "bakery": "The exterior of Ms. Butterbuns' cozy bakery shop. A charming storefront with a striped awning, warm golden light spilling from the windows, and a wooden sign shaped like a cupcake. Cobblestone street in front.",
+    "insideBakery": "Inside the warm bakery kitchen. Wooden counters covered in flour, shelves lined with fresh bread and pastries, a large brick oven glowing with warmth, hanging copper pots, and the soft morning light streaming through a window.",
+    "cobbler": "The front of Mr. Shoe's cobbler shop. An old-fashioned shoe repair store with a giant boot-shaped sign, dusty display window full of shoes, and a worn wooden door. The building looks weathered but well-loved.",
+    "outsideCobbler": "The back alley behind the cobbler shop. A narrow passage with cobblestones, broken glass scattered on the ground near a shattered window, and small footprints in the dust leading away.",
+    "path": "A winding dirt path through a grassy meadow. Wildflowers dot the sides, trees line the horizon, and the path leads toward a distant river. Soft afternoon sunlight.",
+    "riverbank": "A peaceful riverbank with gentle flowing water. Tall reeds grow along the shore, a wooden dock extends into the water with a small ferry boat tied to it. Willow trees drape over the scene."
+  },
   "scenes": [
 
     {

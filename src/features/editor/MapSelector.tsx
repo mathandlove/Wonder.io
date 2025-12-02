@@ -46,20 +46,40 @@ const MapSelector: React.FC<MapSelectorProps> = ({ onMapSelect, currentMap }) =>
     loadMaps();
   }, []);
 
+  // SVG Icons
+  const MapIcon = (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" className="w-12 h-12">
+      <path d="M9 20l-5.447-2.724A1 1 0 0 1 3 16.382V5.618a1 1 0 0 1 1.447-.894L9 7m0 13l6-3m-6 3V7m6 10l5.447 2.724A1 1 0 0 0 21 18.382V7.618a1 1 0 0 0-1.447-.894L15 9m0 8V9m0 0l-6-2" strokeLinecap="round" strokeLinejoin="round" />
+    </svg>
+  );
+
+  const CheckIcon = (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" className="w-4 h-4">
+      <path d="M5 13l4 4L19 7" strokeLinecap="round" strokeLinejoin="round" />
+    </svg>
+  );
+
   return (
-    <div className="w-full h-full flex flex-col bg-gray-50">
+    <div className="w-full h-full flex flex-col bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
       {/* Header */}
-      <div className="px-6 py-5 border-b border-gray-200 bg-white">
-        <h1 className="text-2xl font-semibold text-gray-900">Select a Map</h1>
-        <p className="text-sm text-gray-500 mt-1">Choose a map from the Gingerbread bundle to mark trail locations</p>
+      <div className="px-6 py-4 border-b border-gray-100 bg-gray-50/50">
+        <div className="flex items-center gap-3">
+          <div className="text-green-600">{MapIcon}</div>
+          <div>
+            <h1 className="text-lg font-semibold text-gray-900">Select a Map</h1>
+            <p className="text-sm text-gray-500">Choose a map to mark trail locations</p>
+          </div>
+        </div>
       </div>
 
       {/* Map Grid */}
-      <div className="flex-1 overflow-y-auto p-6">
+      <div className="flex-1 overflow-y-auto p-6 bg-gray-50">
         {isLoading ? (
-          <div className="text-center py-16">
-            <div className="text-6xl mb-4 opacity-40">⏳</div>
-            <p className="text-sm font-medium text-gray-900">Loading maps...</p>
+          <div className="flex flex-col items-center justify-center h-full">
+            <div className="w-16 h-16 rounded-full bg-gray-100 flex items-center justify-center mb-4 animate-pulse">
+              <div className="text-gray-400">{MapIcon}</div>
+            </div>
+            <p className="text-sm font-medium text-gray-600">Loading maps...</p>
           </div>
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
@@ -67,10 +87,10 @@ const MapSelector: React.FC<MapSelectorProps> = ({ onMapSelect, currentMap }) =>
             <div
               key={map.path}
               onClick={() => onMapSelect(map.path, map.coloredPath)}
-              className={`group relative bg-white rounded-lg overflow-hidden cursor-pointer transition-all border-2 ${
+              className={`group relative bg-white rounded-lg overflow-hidden cursor-pointer transition-all shadow-sm ${
                 currentMap === map.path
-                  ? 'border-green-500 ring-2 ring-green-200'
-                  : 'border-gray-200 hover:border-gray-300 hover:shadow-md'
+                  ? 'ring-2 ring-green-500 shadow-md'
+                  : 'hover:shadow-md border border-gray-200 hover:border-gray-300'
               }`}
             >
               {/* Map Preview - show colored version */}
@@ -78,7 +98,7 @@ const MapSelector: React.FC<MapSelectorProps> = ({ onMapSelect, currentMap }) =>
                 <img
                   src={map.coloredPath}
                   alt={map.name}
-                  className="w-full h-full object-contain"
+                  className="w-full h-full object-contain transition-transform group-hover:scale-105"
                   onError={(e) => {
                     (e.target as HTMLImageElement).src = 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="100" height="100"%3E%3Crect fill="%23f3f4f6" width="100" height="100"/%3E%3Ctext x="50%25" y="50%25" text-anchor="middle" dy=".3em" fill="%239ca3af" font-family="sans-serif" font-size="12"%3ENo Map%3C/text%3E%3C/svg%3E';
                   }}
@@ -92,8 +112,8 @@ const MapSelector: React.FC<MapSelectorProps> = ({ onMapSelect, currentMap }) =>
 
               {/* Selected Indicator */}
               {currentMap === map.path && (
-                <div className="absolute top-2 right-2 bg-green-600 text-white rounded-full w-7 h-7 flex items-center justify-center shadow-lg text-sm font-bold">
-                  ✓
+                <div className="absolute top-2 right-2 bg-green-600 text-white rounded-full w-6 h-6 flex items-center justify-center shadow-md">
+                  {CheckIcon}
                 </div>
               )}
             </div>
@@ -102,8 +122,10 @@ const MapSelector: React.FC<MapSelectorProps> = ({ onMapSelect, currentMap }) =>
         )}
 
         {!isLoading && maps.length === 0 && (
-          <div className="text-center py-16">
-            <div className="text-6xl mb-4 opacity-40">🗺️</div>
+          <div className="flex flex-col items-center justify-center h-full">
+            <div className="w-16 h-16 rounded-full bg-gray-100 flex items-center justify-center mb-4">
+              <div className="text-gray-400">{MapIcon}</div>
+            </div>
             <p className="text-sm font-medium text-gray-900">No maps found</p>
             <p className="text-xs text-gray-500 mt-1">Make sure maps folder exists in the bundle</p>
           </div>

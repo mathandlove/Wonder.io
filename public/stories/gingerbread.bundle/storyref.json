@@ -1,6 +1,11 @@
 {
   "title": "The Runaway Cookie",
   "storyId": "001-runaway-cookie",
+  "backgroundDescriptions": {
+    "bakery": "A cozy medieval bakery thatokies on has festive christmas treats out front.",
+    "insideBakery": "A cozy bakery interior with candies, cakes, bread, and co display."
+    "cobbler": "A quaint cobbler's shop with shoes displayed in the window and a workbench inside.",
+  },
   "scenes": [
         {
       "type": "title",

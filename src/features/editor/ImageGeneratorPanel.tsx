@@ -220,17 +220,130 @@ const ImageGeneratorPanel: React.FC<ImageGeneratorPanelProps> = ({
     return `/stories/${storyId}.bundle/images/${imagePath}`;
   };
 
+  // Helper to render an image category section
+  const renderImageCategory = (
+    category: ImageCategory,
+    title: string,
+    images: ImageItem[],
+    bgColor: string,
+    borderColor: string
+  ) => {
+    const isExpanded = expandedCategory === category;
+    const missingCount = images.filter(img => !img.exists).length;
+    const categoryIcons: Record<ImageCategory, string> = {
+      backgrounds: '🏞️',
+      storyImages: '📖',
+      clueImages: '🔍'
+    };
+
+    return (
+      <div className="border-b border-gray-100">
+        {/* Category Header - Collapsible */}
+        <button
+          onClick={() => toggleCategory(category)}
+          className={`w-full p-3 flex items-center justify-between hover:bg-gray-50 transition-colors ${isExpanded ? bgColor : ''}`}
+        >
+          <div className="flex items-center gap-2">
+            <span>{categoryIcons[category]}</span>
+            <span className="text-sm font-semibold text-gray-700">{title}</span>
+            <span className="text-xs bg-gray-200 text-gray-600 px-2 py-0.5 rounded-full">
+              {images.length}
+            </span>
+            {missingCount > 0 && (
+              <span className="text-xs bg-red-100 text-red-600 px-2 py-0.5 rounded-full">
+                {missingCount} missing
+              </span>
+            )}
+          </div>
+          <span className={`transition-transform ${isExpanded ? 'rotate-180' : ''}`}>
+            ▼
+          </span>
+        </button>
+
+        {/* Category Content */}
+        {isExpanded && (
+          <div className="p-3 space-y-2 max-h-64 overflow-y-auto">
+            {images.length === 0 ? (
+              <div className="text-sm text-gray-500 text-center py-4">
+                No {title.toLowerCase()} required
+              </div>
+            ) : (
+              images.map((image) => (
+                <div
+                  key={image.id}
+                  onClick={() => handleSelectImage(image, category)}
+                  className={`p-2 border rounded-lg cursor-pointer transition-all flex gap-3 ${
+                    selectedImage?.id === image.id
+                      ? `${borderColor} ${bgColor} border-2`
+                      : 'border-gray-200 hover:border-gray-300 hover:bg-gray-50'
+                  }`}
+                >
+                  {/* Thumbnail */}
+                  <div className={`w-14 h-14 flex-shrink-0 rounded overflow-hidden ${image.exists ? 'bg-gray-100' : 'bg-red-50 border-2 border-dashed border-red-200'}`}>
+                    {image.exists ? (
+                      <img
+                        src={getImageUrl(image.imagePath)}
+                        alt={image.name}
+                        className="w-full h-full object-cover"
+                        onError={(e) => {
+                          (e.target as HTMLImageElement).style.display = 'none';
+                        }}
+                      />
+                    ) : (
+                      <div className="w-full h-full flex items-center justify-center text-red-400 text-xl">
+                        ?
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Info */}
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-2">
+                      <span className="text-sm font-medium text-gray-900 truncate">
+                        {image.name}
+                      </span>
+                      {!image.exists && (
+                        <span className="text-xs bg-red-100 text-red-600 px-1.5 py-0.5 rounded">
+                          missing
+                        </span>
+                      )}
+                    </div>
+                    <div className="text-xs text-gray-500 truncate mt-0.5">
+                      {image.description || 'No description'}
+                    </div>
+                    <div className="text-xs text-gray-400 mt-0.5">
+                      Used in scene{image.usedInScenes.length > 1 ? 's' : ''}: {image.usedInScenes.map(s => s + 1).join(', ')}
+                    </div>
+                  </div>
+                </div>
+              ))
+            )}
+          </div>
+        )}
+      </div>
+    );
+  };
+
   if (!isActive) return null;
 
+  // Icon for sparkles/AI
+  const SparklesIcon = (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" className="w-5 h-5">
+      <path d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 1 1 7.072 0l-.548.547A3.374 3.374 0 0 0 14 18.469V19a2 2 0 1 1-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" strokeLinecap="round" strokeLinejoin="round" />
+    </svg>
+  );
+
   return (
-    <div className="fixed left-24 top-0 w-96 h-full bg-white border-r border-gray-200 z-30 flex flex-col shadow-lg">
+    <div className="fixed left-0 top-[148px] w-96 h-[calc(100vh-148px-24px)] bg-white border-r border-gray-200 z-30 flex flex-col shadow-lg">
       {/* Header */}
-      <div className="p-5 border-b border-gray-200 bg-gradient-to-r from-purple-50 to-pink-50">
-        <h2 className="text-lg font-semibold text-gray-900 flex items-center gap-2">
-          <span className="text-2xl">🎨</span>
-          Image Generator
-        </h2>
-        <p className="text-sm text-gray-500 mt-0.5">AI-powered image generation with Gemini</p>
+      <div className="px-4 py-3 border-b border-gray-100 bg-gray-50/50">
+        <div className="flex items-center gap-2">
+          <div className="text-purple-600">{SparklesIcon}</div>
+          <div>
+            <h2 className="text-sm font-semibold text-gray-900">AI Image Generator</h2>
+            <p className="text-xs text-gray-500">Powered by Google Gemini</p>
+          </div>
+        </div>
       </div>
 
       {/* Loading State */}
@@ -306,12 +419,19 @@ const ImageGeneratorPanel: React.FC<ImageGeneratorPanelProps> = ({
             </div>
           )}
 
-          {/* Selected Scene Editor */}
-          {selectedScene && (
+          {/* Selected Image Editor */}
+          {selectedImage && (
             <div className="p-4 bg-gray-50">
-              <label className="block text-xs font-semibold text-gray-700 mb-2 uppercase tracking-wide">
-                Scene {selectedScene.index + 1} Description
-              </label>
+              <div className="flex items-center gap-2 mb-2">
+                <label className="block text-xs font-semibold text-gray-700 uppercase tracking-wide">
+                  {selectedImage.name}
+                </label>
+                {!selectedImage.exists && (
+                  <span className="text-xs bg-red-100 text-red-600 px-2 py-0.5 rounded">
+                    needs generation
+                  </span>
+                )}
+              </div>
               <textarea
                 value={description}
                 onChange={(e) => setDescription(e.target.value)}
@@ -321,11 +441,11 @@ const ImageGeneratorPanel: React.FC<ImageGeneratorPanelProps> = ({
               />
 
               {/* Current Image Preview */}
-              {selectedScene.image && !generatedPreview && (
+              {selectedImage.exists && !generatedPreview && (
                 <div className="mt-3">
                   <div className="text-xs text-gray-500 mb-1">Current Image:</div>
                   <img
-                    src={getImageUrl(selectedScene.image)}
+                    src={getImageUrl(selectedImage.imagePath)}
                     alt="Current"
                     className="w-full h-40 object-contain bg-gray-100 rounded-lg"
                   />
@@ -377,7 +497,7 @@ const ImageGeneratorPanel: React.FC<ImageGeneratorPanelProps> = ({
                   ) : (
                     <>
                       <span>✨</span>
-                      Generate New Image
+                      {selectedImage.exists ? 'Regenerate Image' : 'Generate Image'}
                     </>
                   )}
                 </button>
@@ -386,10 +506,10 @@ const ImageGeneratorPanel: React.FC<ImageGeneratorPanelProps> = ({
           )}
 
           {/* Empty State */}
-          {!selectedScene && (
+          {!selectedImage && (
             <div className="p-8 text-center text-gray-500">
               <div className="text-4xl mb-2 opacity-40">👆</div>
-              <p className="text-sm">Select a scene above to generate an image</p>
+              <p className="text-sm">Select an image above to generate or regenerate</p>
             </div>
           )}
         </div>

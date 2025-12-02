@@ -2,11 +2,12 @@
  * Hotspot Image Editor Application
  *
  * Main component for the image hotspot editor interface.
- * Allows users to load images and annotate them with polygon hotspots.
+ * Professional Word-style UI with ribbon toolbar, sidebars, and status bar.
  */
 import React, { useState, useEffect } from 'react';
 import InteractiveMap from '../features/editor/InteractiveMap';
-import EditToolbar from '../features/editor/EditToolbar';
+import EditorRibbon from '../features/editor/EditorRibbon';
+import EditorStatusBar from '../features/editor/EditorStatusBar';
 import ConfigHighlights from '../features/editor/ConfigHighlights';
 import PathManager from '../features/editor/PathManager';
 import ImageSelector from '../features/editor/ImageSelector';
@@ -310,10 +311,13 @@ const EditorApp: React.FC = () => {
   const activeClearAll = isMapMode ? handleClearAllMapHotspots : handleClearAll;
   const activeSetHotspots = isMapMode ? setMapHotspots : setHotspots;
 
+  // Check if a side panel is open
+  const hasSidePanel = activeTool === 'config-highlights' || activeTool === 'manage-paths' || activeTool === 'image-generator';
+
   return (
-    <div className="h-screen w-screen bg-gray-100 flex overflow-hidden">
-      {/* Left Toolbar */}
-      <EditToolbar
+    <div className="h-screen w-screen bg-gray-50 flex flex-col overflow-hidden">
+      {/* Top Ribbon Toolbar */}
+      <EditorRibbon
         activeTool={activeTool}
         onToolSelect={handleToolSelect}
         onClearAll={activeClearAll}
@@ -323,89 +327,108 @@ const EditorApp: React.FC = () => {
         currentImage={activeImage}
         isSaving={isSaving}
         isGeneratingThumbnails={isGeneratingThumbnails}
+        isMapMode={isMapMode}
       />
 
-      {/* Config Highlights Sidebar (shows when config tool is active) */}
-      {activeTool === 'config-highlights' && (
-        <ConfigHighlights
-          isActive={true}
-          hotspots={activeHotspots}
-          onHotspotsChange={activeSetHotspots}
-          onHotspotUpdate={activeHotspotUpdate}
-          onHotspotDelete={activeHotspotDelete}
-          onHotspotHover={setHoveredHotspot}
-          hoveredHotspot={hoveredHotspot}
-        />
-      )}
-
-      {/* Path Manager Sidebar (shows when manage-paths tool is active) */}
-      {activeTool === 'manage-paths' && isMapMode && (
-        <PathManager
-          isActive={true}
-          paths={mapPaths}
-          onPathsChange={setMapPaths}
-          onPathHover={setHoveredPath}
-          hoveredPath={hoveredPath}
-        />
-      )}
-
-      {/* Image Generator Panel (shows when image-generator tool is active) */}
-      {activeTool === 'image-generator' && (
-        <ImageGeneratorPanel
-          isActive={true}
-          storyId="gingerbread"
-          onImageUpdated={(sceneIndex, newImagePath) => {
-            console.log(`Scene ${sceneIndex} updated with: ${newImagePath}`);
-          }}
-        />
-      )}
-
-      {/* Main Canvas Area */}
-      <div className="flex-1 flex items-center justify-center p-4" style={{ marginLeft: (activeTool === 'config-highlights' || activeTool === 'manage-paths' || activeTool === 'image-generator') ? '480px' : '96px' }}>
-        {/* Map Selector */}
-        {showMapSelector ? (
-          <MapSelector
-            onMapSelect={handleMapSelect}
-            currentMap={currentMap}
+      {/* Main Content Area */}
+      <div className="flex-1 flex overflow-hidden" style={{ marginTop: '176px', marginBottom: '24px' }}>
+        {/* Config Highlights Sidebar (shows when config tool is active) */}
+        {activeTool === 'config-highlights' && (
+          <ConfigHighlights
+            isActive={true}
+            hotspots={activeHotspots}
+            onHotspotsChange={activeSetHotspots}
+            onHotspotUpdate={activeHotspotUpdate}
+            onHotspotDelete={activeHotspotDelete}
+            onHotspotHover={setHoveredHotspot}
+            hoveredHotspot={hoveredHotspot}
+            onClose={() => setActiveTool(null)}
           />
-        ) : /* Image Selector for clue mode */
-        (!isMapMode && (!currentImage || showImageSelector)) ? (
-          <ImageSelector
-            onImageSelect={handleImageSelect}
-            currentImage={currentImage}
-          />
-        ) : /* Map editing mode */
-        (isMapMode && currentMapColored) ? (
-          <div className="relative w-full h-full flex items-center justify-center">
-            <InteractiveMap
-              mapImage={currentMapColored}
-              mapAlt="Map being annotated"
-              hotspots={mapHotspots}
-              paths={mapPaths}
-              activeTool={activeTool}
-              onHotspotCreated={handleMapHotspotCreated}
-              onPathCreated={handlePathCreated}
-              onHotspotHover={setHoveredHotspot}
-              onPathHover={setHoveredPath}
-              hoveredHotspot={hoveredHotspot}
-              hoveredPath={hoveredPath}
-            />
-          </div>
-        ) : /* Clue editing mode */
-        (
-          <div className="relative w-full h-full flex items-center justify-center">
-            <InteractiveMap
-              mapImage={currentImage!}
-              mapAlt="Image being annotated"
-              hotspots={hotspots}
-              activeTool={activeTool}
-              onHotspotCreated={handleHotspotCreated}
-              onHotspotHover={setHoveredHotspot}
-              hoveredHotspot={hoveredHotspot}
-            />
-          </div>
         )}
+
+        {/* Path Manager Sidebar (shows when manage-paths tool is active) */}
+        {activeTool === 'manage-paths' && isMapMode && (
+          <PathManager
+            isActive={true}
+            paths={mapPaths}
+            onPathsChange={setMapPaths}
+            onPathHover={setHoveredPath}
+            hoveredPath={hoveredPath}
+            onClose={() => setActiveTool(null)}
+          />
+        )}
+
+        {/* Image Generator Panel (shows when image-generator tool is active) */}
+        {activeTool === 'image-generator' && (
+          <ImageGeneratorPanel
+            isActive={true}
+            storyId="gingerbread"
+            onImageUpdated={(sceneIndex, newImagePath) => {
+              console.log(`Scene ${sceneIndex} updated with: ${newImagePath}`);
+            }}
+          />
+        )}
+
+        {/* Main Canvas Area */}
+        <div
+          className="flex-1 flex items-center justify-center p-6 bg-gray-100"
+          style={{ marginLeft: hasSidePanel ? '320px' : '0' }}
+        >
+          {/* Map Selector */}
+          {showMapSelector ? (
+            <MapSelector
+              onMapSelect={handleMapSelect}
+              currentMap={currentMap}
+            />
+          ) : /* Image Selector for clue mode */
+          (!isMapMode && (!currentImage || showImageSelector)) ? (
+            <ImageSelector
+              onImageSelect={handleImageSelect}
+              currentImage={currentImage}
+            />
+          ) : /* Map editing mode */
+          (isMapMode && currentMapColored) ? (
+            <div className="relative w-full h-full flex items-center justify-center bg-white rounded-lg shadow-sm border border-gray-200">
+              <InteractiveMap
+                mapImage={currentMapColored}
+                mapAlt="Map being annotated"
+                hotspots={mapHotspots}
+                paths={mapPaths}
+                activeTool={activeTool}
+                onHotspotCreated={handleMapHotspotCreated}
+                onPathCreated={handlePathCreated}
+                onHotspotHover={setHoveredHotspot}
+                onPathHover={setHoveredPath}
+                hoveredHotspot={hoveredHotspot}
+                hoveredPath={hoveredPath}
+              />
+            </div>
+          ) : /* Clue editing mode */
+          (
+            <div className="relative w-full h-full flex items-center justify-center bg-white rounded-lg shadow-sm border border-gray-200">
+              <InteractiveMap
+                mapImage={currentImage!}
+                mapAlt="Image being annotated"
+                hotspots={hotspots}
+                activeTool={activeTool}
+                onHotspotCreated={handleHotspotCreated}
+                onHotspotHover={setHoveredHotspot}
+                hoveredHotspot={hoveredHotspot}
+              />
+            </div>
+          )}
+        </div>
       </div>
+
+      {/* Bottom Status Bar */}
+      <EditorStatusBar
+        hotspotCount={activeHotspots.length}
+        pathCount={mapPaths.length}
+        currentImage={activeImage}
+        isMapMode={isMapMode}
+        activeTool={activeTool}
+        isSaving={isSaving}
+      />
     </div>
   );
 };

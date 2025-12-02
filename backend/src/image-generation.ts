@@ -255,6 +255,9 @@ export async function handleGetStoryImages(req: Request, res: Response) {
 
     const storyData = JSON.parse(fs.readFileSync(storyPath, 'utf-8'));
 
+    // Get background descriptions from story.json (if present)
+    const backgroundDescriptions: Record<string, string> = storyData.backgroundDescriptions || {};
+
     // Track all required images from story.json
     const backgroundsNeeded = new Map<string, { scenes: number[]; description?: string }>();
     const storyImagesNeeded = new Map<string, { scenes: number[]; description?: string }>();
@@ -269,7 +272,10 @@ export async function handleGetStoryImages(req: Request, res: Response) {
         const bgName = (scene.background as string).replace(/\.(png|jpg|jpeg|webp)$/i, '');
         const existing = backgroundsNeeded.get(bgName) || { scenes: [] };
         existing.scenes.push(index);
-        if (scene.text) existing.description = scene.text as string;
+        // Use backgroundDescriptions if available, otherwise fall back to scene text
+        if (!existing.description) {
+          existing.description = backgroundDescriptions[bgName] || (scene.text as string | undefined);
+        }
         backgroundsNeeded.set(bgName, existing);
       }
 
