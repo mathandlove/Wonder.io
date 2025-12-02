@@ -41,6 +41,42 @@ async function loadCharacterDescription(
   }
 }
 
+/**
+ * Ensures an image path has a file extension, defaulting to .png if none specified.
+ * @param imagePath - The image path from the JSON
+ * @returns The image path with .png extension if no extension was present
+ */
+function ensureImageExtension(imagePath: string | undefined): string | undefined {
+  if (!imagePath) return imagePath;
+  // Check if the path already has an extension (contains a dot in the filename portion)
+  const lastSlashIndex = imagePath.lastIndexOf('/');
+  const filename = lastSlashIndex >= 0 ? imagePath.substring(lastSlashIndex + 1) : imagePath;
+  if (filename.includes('.')) {
+    return imagePath; // Already has an extension
+  }
+  return `${imagePath}.png`;
+}
+
+/**
+ * Ensures a story image path is prefixed with "story/" and has .png extension.
+ * Used for image scenes that should load from the story subfolder.
+ * @param imagePath - The image path from the JSON
+ * @returns The image path with story/ prefix and .png extension
+ */
+function ensureStoryImagePath(imagePath: string | undefined): string | undefined {
+  if (!imagePath) return imagePath;
+
+  // First ensure the extension
+  let result = ensureImageExtension(imagePath)!;
+
+  // Add story/ prefix if not already present
+  if (!result.startsWith('story/')) {
+    result = `story/${result}`;
+  }
+
+  return result;
+}
+
 type RawFlowItem = {
   side?: "left" | "right";
   text?: string;
@@ -150,7 +186,7 @@ function flattenScenes(rawScenes: RawScene[]): FlattenResult {
             type: "character",
             text: f.text,
             speaker: f.side,
-            background: scene.background,
+            background: ensureImageExtension(scene.background),
             "left-character": currentLeftCharacter,
             "right-character": currentRightCharacter,
             flowSequence: true,
@@ -224,9 +260,9 @@ function flattenScenes(rawScenes: RawScene[]): FlattenResult {
       out.push({
         type: "image",
         sceneId: `scene-${sceneCounter++}`,
-        image: scene.image,
+        image: ensureStoryImagePath(scene.image),
         text: scene.text, // Include caption text from the JSON
-        background: scene.background,
+        background: ensureImageExtension(scene.background),
         flowSequence: false,
         isFirstInFlow: false,
         phaseSteps, // Explicitly set phaseSteps
@@ -234,9 +270,12 @@ function flattenScenes(rawScenes: RawScene[]): FlattenResult {
     } else {
       // Pass-through for any already-flat scene types you might have
       // Add flowSequence and isFirstInFlow properties for background system compatibility
+      // Apply image extension normalization to image and background fields
       out.push({
         ...scene,
         sceneId: `scene-${sceneCounter++}`,
+        image: ensureImageExtension(scene.image),
+        background: ensureImageExtension(scene.background),
         flowSequence: false,
         isFirstInFlow: false,
         panelRestricted: false,

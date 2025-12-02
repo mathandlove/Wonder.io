@@ -10,6 +10,7 @@ import { handleWhisperProxy } from './whisper-proxy-single'; // Using single-sen
 import { handleAIChat } from './ai-conversation';
 import { handleAIValidation } from './ai-validation';
 import { handleLoadBundleHotspots, handleSaveBundleHotspots, handleListBundleImages, handleGenerateThumbnails, handleListBundleMaps } from './bundle-hotspots';
+import { handleImageGeneration, handleGetStoryImages, handleUpdateSceneImage } from './image-generation';
 
 const key = process.env.OPENAI_API_KEY;
 if (!key) throw new Error('Missing OPENAI_API_KEY');
@@ -174,6 +175,11 @@ app.post('/api/bundle/hotspots', handleSaveBundleHotspots);
 app.get('/api/bundle/images', handleListBundleImages);
 app.get('/api/bundle/maps', handleListBundleMaps);
 app.post('/api/bundle/hotspots/generate-thumbnails', handleGenerateThumbnails);
+
+// Image generation routes (Gemini API)
+app.post('/api/images/generate', handleImageGeneration);
+app.get('/api/images/story', handleGetStoryImages);
+app.post('/api/images/update-scene', handleUpdateSceneImage);
 
 // Health check
 app.get('/api/health', (req, res) => {

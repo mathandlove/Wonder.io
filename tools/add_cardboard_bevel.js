@@ -172,16 +172,19 @@ async function main(){
 
   // --- Composite only shadow pass over original ---
   // Start with original RGBA buffer, apply only shadows (multiply for darkening)
-  let comp = sharp(rgba, { raw:{ width:W, height:H, channels:4 } })
+  const compositedPng = await sharp(rgba, { raw:{ width:W, height:H, channels:4 } })
     .composite([
       { input: shadowRGBA, raw:{ width:W, height:H, channels:4 }, blend: 'multiply' }
-    ]);
+    ])
+    .png()
+    .toBuffer();
 
+  // Trim transparent edges in a second pass
   const outExt = output.toLowerCase().endsWith(".png") ? "png" : "webp";
   if (outExt==="png") {
-    await comp.png().toFile(output);
+    await sharp(compositedPng).trim().png().toFile(output);
   } else {
-    await comp.webp({ quality:100, lossless:true }).toFile(output);
+    await sharp(compositedPng).trim().webp({ quality:100, lossless:true }).toFile(output);
   }
 
 }

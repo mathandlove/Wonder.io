@@ -59,6 +59,12 @@ const EditToolbar: React.FC<EditToolbarProps> = ({
       name: 'Paths',
       icon: '📋',
       description: 'Manage and reorder paths'
+    },
+    {
+      id: 'image-generator',
+      name: 'AI Images',
+      icon: '🎨',
+      description: 'Generate images with AI'
     }
   ];
 

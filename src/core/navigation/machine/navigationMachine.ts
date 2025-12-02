@@ -210,8 +210,15 @@ export const navigationMachine = setup({
     }),
 
     // Check requiredAsk metadata and unlock answer button if requiredAsk is false
+    // IMPORTANT: This should NOT reset an already-unlocked button back to locked
     checkRequiredAskAndUnlock: assign({
-      unlockAnswerButton: () => {
+      unlockAnswerButton: ({ context }) => {
+        // If already unlocked (user has asked a question), keep it unlocked
+        if (context.unlockAnswerButton) {
+          debug.log('🔓 Answer button already unlocked, keeping it unlocked');
+          return true;
+        }
+
         // If debug mode is on, always unlock
         if (DEBUG_AUTO_UNLOCK_ANSWER_BUTTON) return true;
 

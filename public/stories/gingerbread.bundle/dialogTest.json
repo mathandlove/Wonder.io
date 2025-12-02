@@ -9,7 +9,7 @@
       "type": "character-flow",
       "background":"bakery.png",
       "left-character": "leo",
-      "right-character": "bakerMom",
+      "right-character": "butterbuns",
       "flow": [
  
                 {
@@ -27,7 +27,7 @@
             {
           "side": "right",
           "text": "Test3-fox",
-          "right-character": "fox"
+          "right-character": "franky"
         },
                     {
         
@@ -141,6 +141,6 @@
         {
           "side": "right",
           "text": "Somebody please help me!",
-          "right-character": "fox"
+          "right-character": "franky"
         }]
 }

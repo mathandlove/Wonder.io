@@ -1,0 +1,243 @@
+Image: My name is Leo, and I’m a monster hunter.
+Image: I keep my city safe, even when things get a little scary.
+Image: It’s worth it, because I’m protecting all my friends.
+
+This morning, I was on my way to the Drury Lane Bakery to buy my favorite muffin when the bakery door suddenly burst open and Ms. Butterbuns tumbled out.
+
+Map
+
+Ms. Butterbuns: “Help! Help! Oh Leo, you must help me!”
+Leo: “What happened?”
+
+Quest: What is wrong?
+Answer: A cookie has been stolen!
+
+Ms. Butterbuns: “Yes! My very important cookie has been taken, Leo. Please help me.”
+Leo: “Don’t worry, Ms. Butterbuns. I’ll find out what happened. Let’s look inside.”
+
+Warm, sweet smells filled the bakery. Vanilla, cinnamon, and sugar drifted through the air.
+But today, something else drifted too—trouble.
+ 
+
+ImageClue: Inside the Bakery
+
+Clue: Hair
+Description: A bowl of human hair
+Dialog: “A bowl of hair. Why would a baker have a bowl of human hair?”
+
+Clue: Crumbs
+Description: Cookie crumbs on the ground
+Dialog: “These crumbs are sugary and taste like cinnamon. They must be from the stolen cookie.”
+
+Clue: Potion
+Description: A half-empty witch’s potion bottle
+Dialog: “A witch’s potion? And it’s half gone. What was Ms. Butterbuns doing with this?”
+
+Clue: Frosting
+Description: White frosting and cookie-making tools
+Dialog: “It looks like Ms. Butterbuns was making a cookie with white frosting.”
+
+Ms. Butterbuns: “Can you figure out where my cookie went?”
+
+Quest: How can we find the cookie?
+Answer: Follow the cookie crumbs!
+
+Ms. Butterbuns: “Exactly. Follow that crumb trail and report back.”
+
+Map
+ 
+A bright trail of cookie crumbs led me across town, all the way to the cobbler’s shop.
+ 
+Cobbler’s Shop
+
+ImageClue: Broken Window in the Cobbler’s Shop
+
+Clue: Broken Window
+Description: A broken window with cookie crumbs
+Dialog: “Someone broke this window… and they tracked cookie crumbs with them.”
+
+Clue: Crumb Trail
+Description: Crumbs leading inside
+Dialog: “The crumbs go right through the window.”
+
+Clue: Door
+Description: A locked door
+Dialog: “The door is locked. The thief must have gone in through the window.”
+
+Clue: Pedestal
+Description: A pedestal dusted with crumbs
+Dialog: “This pedestal is covered in crumbs. Something was taken from here.”
+
+Suddenly the shop door flew open.
+
+Mr. Shoe stomped out, grouchy as ever.
+
+Mr. Shoe: “What’s all the racket? We’re closed.”
+Leo: “Someone broke your window.”
+Mr. Shoe: “My window? What did they steal?”
+
+Quest: What did the thief steal?
+Answer: Baby shoes!
+
+Mr. Shoe: “Baby shoes? Oh dear. Leo, please bring them back.”
+Leo: “I’ll look around outside.”
+ 
+Outside the Cobbler’s Shop
+
+ImageClue: Footprints in Front of Cobbler
+
+Clue: Broken Glass
+Description: Shattered glass
+Dialog: “The thief jumped out the window onto the glass. Ouch.”
+
+Clue: Crumb Trail
+Description: Crumbs near the window
+Dialog: “Here’s where the crumb trail ends.”
+
+Clue: Baby Shoe Prints
+Description: Tiny shoe prints leading away
+Dialog: “These prints are tiny—baby shoes. The thief must be wearing them.”
+
+Clue: Note
+Description: A note left behind
+Dialog: “A note! It says, ‘You can’t catch me!’ We’ll see about that.”
+
+
+Leo: “I think I know where I need to go next”
+
+Quest: What clue will lead us to the thief?
+Answer: Follow the baby shoe trail!
+Hint: Look at the tiny prints.
+Monolog
+No Required Ask
+
+The tiny baby shoe prints continued across the street, past the park, and straight toward the river.
+
+Map
+ 
+River Chase
+
+Image: I spotted the thief in the distance, running toward the riverbank. His pink baby shoes flashed as he darted between trees. 
+Description: Back of gingerbread wearing pink baby shoes. Leo chasing behind him. River in the distance. We don’t see gingerbread’s face.
+
+I sprinted closer. Just close enough to grab him
+but WHOOSH!
+Image: Leo grabbing gingerbread man by the back, holds a clump of the cookie, but the cookie runs away. We don’t see gingerbread’s face. Leo slips in a puddle with a big splash.
+My feet slipped, and I fell flat on my face.
+
+The thief raced away. When I pushed myself up, I noticed my hand was smeared with the thief’s thick brown mud.
+
+Leo licking the mud while sitting on the forest ground.
+I sniffed it, then tasted it carefully.
+It didn’t taste like mud at all. It tasted like cinnamon and white frosting.
+
+Dialog:
+“That child isn’t covered in mud,” 
+“He’s covered in…”
+
+Quest: What was the child covered in?
+Answer: The child is covered in cookie or the child is a cookie.
+
+
+Image: Gingerbread man runs behind a thick group of trees towards a river. We only see the backside of him.
+I watched the the cookie-covered child dashed behind the trees and vanished.
+
+I dash over to the trees but fear I am too late.
+ 
+Riverbank Clues
+
+ImageClue: Riverbank
+
+Clue: Baby Shoes
+Description: Baby shoes floating in the water
+Dialog: “There are the baby shoes. He must have lost them in the river.”
+
+Clue: Wooden Sign
+Description: Franky the Fox’s Ferry sign
+Dialog: “A ferry sign. Maybe Franky gave our thief a ride.”
+
+Clue: Fox
+Description: A wet fox hiding
+Dialog: “There’s Franky’s tail—and it’s dripping wet. Why is he hiding?”
+
+Clue: Shoe Prints
+Description: Prints leading into the water
+Dialog: “The tiny shoe prints stop right at the river.”
+
+Leo: “I think I know how the thief got across.”
+
+Quest: How did the cookie get across the water?
+Answer: Franky helped the thief ferry across the river.
+Wrong: He swam across by himself. / Context: Baby shoes / Context: Footprints
+Hint: Why is Franky wet?
+ 
+Franky the Fox
+
+Image: Franky peeked out with a guilty smile.
+
+Franky: “Hello, Leo. Need a ride?”
+Leo: “Franky, you’re soaking wet.”
+Franky: “The river splashed me.”
+Leo: “And the cookie thief’s shoes are floating right next to your ferry.”
+Franky: “Oh… that.”
+
+Leo: “Franky. What did you do?”
+
+Quest: What did Franky do with the thief?
+Answer: He ate them!
+
+Leo: “Franky, you can’t eat people. Spit him out.”
+Franky: “It wasn’t a person. It was a cookie.”
+Leo: “Franky. Spit. Him. Out.”
+
+Image: Franky swiped at me. 
+Description: Leo dodges Franky’s sharp claws.
+
+Image: I dodged and tackled him into a soft patch of moss.
+Description: Leo tackles Franky onto the ground.
+
+
+Image: I reached right into his mouth.
+Description: Leo uses both his hands to reach into Franky’s mouth. Franky is laying down on the ground.
+
+A tiny voice whispered, “It’s so dark in here.”
+I pulled out the thief.
+
+Image: A cookie-shaped boy with frosting hair stood blinking up at me.
+Description: Gingerbread man is covered in wet saliva. He is rubbing his eyes. Leo’s hand is on the gingerbread man’s shoulder.
+
+Cookie Boy: “Hi Leo. You caught me.”
+
+Leo: “I know what happened to Ms. Butterbun’s cookie now.”
+
+Quest: What did the thief do with the stolen cookie?
+Answer: The thief is the stolen cookie.
+Wrong: Fox
+Monolog
+No Ask Required
+ 
+Back to the Bakery
+
+Image: I carried the cookie boy back to the bakery.
+Description: Gingerbread man rides back on Leo’s shoulders.
+
+Leo: “Ms. Butterbuns, I found your cookie.”
+Ms. Butterbuns: “My sweet sugar stars. Thank you!”
+Ms. Butterbuns: “And the thief?”
+Leo: “There was no thief.”
+Ms. Butterbuns: “There wasn’t?”
+Cookie Boy: “Mommy.”
+Ms. Butterbuns: “Oh my. The potion worked!”
+
+Image: She scooped him into her arms.
+Description: Butterbuns gives Gingerbread man a big hug.
+
+Leo: “Be careful. He really likes to run.”
+Ms. Butterbuns: “He’s perfect. I’ll go get a little leash.”
+Cookie Boy: “Run, run, as fast as you can. You can’t catch me again!”
+Leo: “Uh oh…”
+
+Image: Bakery with the door wide open.
+
+The end.
+

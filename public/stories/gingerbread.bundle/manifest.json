@@ -19,17 +19,17 @@
         "type": "character",
         "image": "images/runningGingerBreadMan.png"
       },
-      "baker-mom": {
-        "id": "baker-mom",
-        "name": "Baker Mom",
+      "butterbuns": {
+        "id": "butterbuns",
+        "name": "Butterbuns",
         "type": "character",
-        "image": "images/bakerMom.png"
+        "image": "images/butterbuns.png"
       },
-      "fox": {
-        "id": "fox",
-        "name": "Fox",
+      "franky": {
+        "id": "franky",
+        "name": "Franky",
         "type": "character",
-        "image": "images/fox.png"
+        "image": "images/franky.png"
       },
       "farmer": {
         "id": "farmer",

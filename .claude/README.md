@@ -19,6 +19,16 @@ This directory contains documentation and configuration files to help Claude Cod
 
 ### State Management & Navigation
 
+- **[Ask Flow Architecture](./architecture/ask-flow-architecture.md)** - Complete flow diagram from Ask button click to AI response page
+  - File-by-file breakdown of all components involved
+  - Visual ASCII flow diagrams showing the complete data path
+  - State machine state transitions
+  - Key data structures (Scene, Node, ConversationMetadata)
+  - Quick reference tables for all functions
+  - Common debugging points and troubleshooting guide
+
+  **When to reference:** Debugging Ask/Answer button issues, understanding how pages are built, tracing event flow, scene creation problems
+
 - **[Ask State Flow Architecture](./architecture/ask-state-flow-architecture.md)** - Comprehensive guide to the xState-based ask flow pattern
   - Event-driven architecture principles
   - State machine flow (dialogueInput → askRecording → askProcessing → askWaitingForAI)
@@ -70,7 +80,8 @@ See [Ask State Flow Architecture](./architecture/ask-state-flow-architecture.md#
 Wonder.io-2.0/
 ├── .claude/                          # Claude Code context
 │   ├── architecture/                 # Architecture documentation
-│   │   └── ask-state-flow-architecture.md
+│   │   ├── ask-flow-architecture.md        # Ask button → AI response flow
+│   │   └── ask-state-flow-architecture.md  # xState patterns guide
 │   ├── settings.local.json          # Claude Code settings
 │   └── README.md                    # This file
 ├── src/

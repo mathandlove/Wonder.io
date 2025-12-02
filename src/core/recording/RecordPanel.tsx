@@ -50,13 +50,22 @@ export const RecordPanel: React.FC<RecordPanelProps> = ({
   const [unlockAnswerButton, setUnlockAnswerButton] = React.useState(false);
   React.useEffect(() => {
     const service = getServiceInstance();
-    if (!service) return;
+    if (!service) {
+      console.warn('[RecordPanel] ⚠️ No service instance available for unlockAnswerButton subscription');
+      return;
+    }
 
+    console.log('[RecordPanel] 🔗 Subscribing to machine for unlockAnswerButton');
     const subscription = service.subscribe((snapshot) => {
-      setUnlockAnswerButton(snapshot.context.unlockAnswerButton);
+      const newValue = snapshot.context.unlockAnswerButton;
+      console.log('[RecordPanel] 🔓 unlockAnswerButton changed:', newValue, 'state:', snapshot.value);
+      setUnlockAnswerButton(newValue);
     });
 
-    return () => subscription.unsubscribe();
+    return () => {
+      console.log('[RecordPanel] 🔌 Unsubscribing from machine');
+      subscription.unsubscribe();
+    };
   }, []);
 
   // Local state for hint toggle (internal to RecordPanel)

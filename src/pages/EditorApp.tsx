@@ -11,6 +11,7 @@ import ConfigHighlights from '../features/editor/ConfigHighlights';
 import PathManager from '../features/editor/PathManager';
 import ImageSelector from '../features/editor/ImageSelector';
 import MapSelector from '../features/editor/MapSelector';
+import ImageGeneratorPanel from '../features/editor/ImageGeneratorPanel';
 import type { Hotspot, MapPath } from '@shared/types/hotspot';
 
 const EditorApp: React.FC = () => {
@@ -348,8 +349,19 @@ const EditorApp: React.FC = () => {
         />
       )}
 
+      {/* Image Generator Panel (shows when image-generator tool is active) */}
+      {activeTool === 'image-generator' && (
+        <ImageGeneratorPanel
+          isActive={true}
+          storyId="gingerbread"
+          onImageUpdated={(sceneIndex, newImagePath) => {
+            console.log(`Scene ${sceneIndex} updated with: ${newImagePath}`);
+          }}
+        />
+      )}
+
       {/* Main Canvas Area */}
-      <div className="flex-1 flex items-center justify-center p-4" style={{ marginLeft: (activeTool === 'config-highlights' || activeTool === 'manage-paths') ? '416px' : '96px' }}>
+      <div className="flex-1 flex items-center justify-center p-4" style={{ marginLeft: (activeTool === 'config-highlights' || activeTool === 'manage-paths' || activeTool === 'image-generator') ? '480px' : '96px' }}>
         {/* Map Selector */}
         {showMapSelector ? (
           <MapSelector

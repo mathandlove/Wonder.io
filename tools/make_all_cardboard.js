@@ -312,6 +312,19 @@ async function processImage(image, processing, dryRun = false) {
   }
 
   if (success) {
+    // Clean up intermediate files - keep only original and final cardboard
+    try {
+      await fs.unlink(files.cutout);
+      log(`      🗑️  Deleted intermediate ${baseName}.cutout.webp`, 'gray');
+    } catch {
+      // Ignore if file doesn't exist
+    }
+    try {
+      await fs.unlink(files.sticker);
+      log(`      🗑️  Deleted intermediate ${baseName}.sticker.webp`, 'gray');
+    } catch {
+      // Ignore if file doesn't exist
+    }
     log(`  ✨ Complete!`, 'bright');
   }
 
