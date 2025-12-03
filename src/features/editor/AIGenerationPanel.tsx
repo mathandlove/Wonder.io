@@ -6,7 +6,8 @@
  * - Center: Large image preview with "Use as Current Image" button
  * - Right: Version history (always visible)
  */
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
+import './AIGenerationPanel.css';
 
 // ============================================================================
 // Types
@@ -24,6 +25,8 @@ interface ImageItem {
 interface CharacterImage {
   name: string;
   imagePath: string;
+  exists: boolean;
+  usedInScenes: number[];
 }
 
 interface StoryData {
@@ -32,10 +35,11 @@ interface StoryData {
   backgrounds: ImageItem[];
   storyImages: ImageItem[];
   clueImages: ImageItem[];
+  coloredClueImages: ImageItem[];
   characterImages: CharacterImage[];
 }
 
-type ImageCategory = 'backgrounds' | 'characters' | 'clueImages' | 'storyImages';
+type ImageCategory = 'backgrounds' | 'characters' | 'clueImages' | 'coloredClueImages' | 'storyImages';
 
 interface HistoryVersion {
   version: number;
@@ -69,41 +73,51 @@ const BACKEND_URL = 'http://localhost:3001';
 
 const Icons = {
   back: (
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="w-5 h-5">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" width="20" height="20">
       <path d="M19 12H5M12 19l-7-7 7-7" strokeLinecap="round" strokeLinejoin="round" />
     </svg>
   ),
   sparkles: (
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" className="w-5 h-5">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" width="20" height="20">
       <path d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 1 1 7.072 0l-.548.547A3.374 3.374 0 0 0 14 18.469V19a2 2 0 1 1-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" strokeLinecap="round" strokeLinejoin="round" />
     </svg>
   ),
   edit: (
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" className="w-4 h-4">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" width="16" height="16">
       <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" strokeLinecap="round" strokeLinejoin="round" />
       <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" strokeLinecap="round" strokeLinejoin="round" />
     </svg>
   ),
   clock: (
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" className="w-5 h-5">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" width="20" height="20">
       <circle cx="12" cy="12" r="10" />
       <path d="M12 6v6l4 2" strokeLinecap="round" strokeLinejoin="round" />
     </svg>
   ),
   spinner: (
-    <svg className="animate-spin w-5 h-5" viewBox="0 0 24 24" fill="none">
-      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
+    <svg className="ai-panel-spinner" viewBox="0 0 24 24" fill="none" width="20" height="20">
+      <circle style={{ opacity: 0.25 }} cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+      <path style={{ opacity: 0.75 }} fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
     </svg>
   ),
   check: (
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="w-5 h-5">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" width="20" height="20">
       <path d="M5 13l4 4L19 7" strokeLinecap="round" strokeLinejoin="round" />
     </svg>
   ),
   x: (
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="w-5 h-5">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" width="20" height="20">
       <path d="M18 6L6 18M6 6l12 12" strokeLinecap="round" strokeLinejoin="round" />
+    </svg>
+  ),
+  trash: (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" width="18" height="18">
+      <path d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" strokeLinecap="round" strokeLinejoin="round" />
+    </svg>
+  ),
+  upload: (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" width="16" height="16">
+      <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M17 8l-5-5-5 5M12 3v12" strokeLinecap="round" strokeLinejoin="round" />
     </svg>
   ),
 };
@@ -117,6 +131,7 @@ const getCategoryLabel = (category: ImageCategory): string => {
     backgrounds: 'Backgrounds',
     characters: 'Characters',
     clueImages: 'Clue Images',
+    coloredClueImages: 'Colored Clues',
     storyImages: 'Story Images',
   };
   return labels[category];
@@ -161,10 +176,16 @@ const AIGenerationPanel: React.FC<AIGenerationPanelProps> = ({
   // Generation state
   const [isGenerating, setIsGenerating] = useState(false);
 
+  // Cache-busting key to force image reload after generation
+  const [imageCacheKey, setImageCacheKey] = useState(Date.now());
+
   // Gallery expansion state
   const [expandedCategories, setExpandedCategories] = useState<Set<ImageCategory>>(
     new Set(['backgrounds'])
   );
+
+  // File upload ref
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   // Load story data
   useEffect(() => {
@@ -218,23 +239,26 @@ const AIGenerationPanel: React.FC<AIGenerationPanelProps> = ({
     loadHistory();
   }, [selectedImage, selectedCategory, storyId]);
 
-  // Update description when image is selected
+  // Update description when a DIFFERENT image is selected (not just when selectedImage object changes)
+  const selectedImageId = selectedImage?.id;
   useEffect(() => {
     if (selectedImage) {
       setDescription(selectedImage.description || '');
       setSelectedVersion('current');
       setModificationText('');
     }
-  }, [selectedImage]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [selectedImageId]); // Only trigger when the image ID changes, not on every object update
 
   const getImageUrl = useCallback((imagePath: string): string => {
     if (!imagePath) return '';
     if (imagePath.startsWith('http')) return imagePath;
+    const cacheBust = `?t=${imageCacheKey}`;
     if (imagePath.startsWith('history/')) {
-      return `/stories/${storyId}.history/${imagePath.replace('history/', '')}`;
+      return `/stories/${storyId}.history/${imagePath.replace('history/', '')}${cacheBust}`;
     }
-    return `/stories/${storyId}.bundle/images/${imagePath}`;
-  }, [storyId]);
+    return `/stories/${storyId}.bundle/images/${imagePath}${cacheBust}`;
+  }, [storyId, imageCacheKey]);
 
   const getSelectedImagePath = (): string => {
     if (!selectedImage) return '';
@@ -291,6 +315,7 @@ const AIGenerationPanel: React.FC<AIGenerationPanelProps> = ({
           type: 'new',
           prompt: description,
           characters: selectedCharacters,
+          numImages: 4,
         }),
       });
 
@@ -306,7 +331,10 @@ const AIGenerationPanel: React.FC<AIGenerationPanelProps> = ({
       const data = await response.json();
 
       if (data.success && data.imagePath) {
-        console.log(`Image generated: ${data.imagePath}`);
+        console.log(`Generated ${data.generatedCount || 1} images, current: ${data.imagePath}`);
+
+        // Update cache key to force image reload
+        setImageCacheKey(Date.now());
 
         setSelectedImage(prev => prev ? {
           ...prev,
@@ -321,7 +349,7 @@ const AIGenerationPanel: React.FC<AIGenerationPanelProps> = ({
           setStoryData(newStoryData);
         }
 
-        // Reload history
+        // Reload history to show all generated versions
         const historyResponse = await fetch(
           `${BACKEND_URL}/api/images/history?storyId=${encodeURIComponent(storyId)}&imageId=${encodeURIComponent(selectedImage.name)}&category=${selectedCategory}`
         );
@@ -362,6 +390,7 @@ const AIGenerationPanel: React.FC<AIGenerationPanelProps> = ({
           baseVersion: selectedVersion,
           prompt: modificationText,
           characters: selectedCharacters,
+          numImages: 4,
         }),
       });
 
@@ -377,7 +406,10 @@ const AIGenerationPanel: React.FC<AIGenerationPanelProps> = ({
       const data = await response.json();
 
       if (data.success && data.imagePath) {
-        console.log(`Image modified: ${data.imagePath}`);
+        console.log(`Generated ${data.generatedCount || 1} modified images, current: ${data.imagePath}`);
+
+        // Update cache key to force image reload
+        setImageCacheKey(Date.now());
 
         setSelectedImage(prev => prev ? {
           ...prev,
@@ -392,7 +424,7 @@ const AIGenerationPanel: React.FC<AIGenerationPanelProps> = ({
           setStoryData(newStoryData);
         }
 
-        // Reload history
+        // Reload history to show all generated versions
         const historyResponse = await fetch(
           `${BACKEND_URL}/api/images/history?storyId=${encodeURIComponent(storyId)}&imageId=${encodeURIComponent(selectedImage.name)}&category=${selectedCategory}`
         );
@@ -436,17 +468,193 @@ const AIGenerationPanel: React.FC<AIGenerationPanelProps> = ({
         throw new Error('Failed to update image');
       }
 
+      const data = await response.json();
+
+      // Update cache key to force image reload
+      setImageCacheKey(Date.now());
+
+      // Update selected image with new path
+      if (data.imagePath) {
+        setSelectedImage(prev => prev ? {
+          ...prev,
+          imagePath: data.imagePath,
+          exists: true,
+        } : null);
+      }
+
       // Refresh story data
       const storyResponse = await fetch(`${BACKEND_URL}/api/images/story?storyId=${encodeURIComponent(storyId)}`);
       if (storyResponse.ok) {
-        const data = await storyResponse.json();
-        setStoryData(data);
+        const storyData = await storyResponse.json();
+        setStoryData(storyData);
       }
 
+      // Switch to current view
       setSelectedVersion('current');
 
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to update image');
+    }
+  };
+
+  const handleWipeHistory = async () => {
+    if (!selectedImage || !selectedCategory) return;
+    if (!history || history.versions.length === 0) return;
+
+    const confirmed = window.confirm(
+      `Delete all ${history.versions.length} version(s) from history for "${selectedImage.name}"?\n\nThis will keep the current image but remove all historical versions.`
+    );
+
+    if (!confirmed) return;
+
+    try {
+      const response = await fetch(`${BACKEND_URL}/api/images/wipe-history`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          storyId,
+          imageId: selectedImage.name,
+          category: selectedCategory,
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to wipe history');
+      }
+
+      // Clear local history state
+      setHistory(null);
+      setSelectedVersion('current');
+
+      console.log(`Wiped history for ${selectedImage.name}`);
+
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to wipe history');
+    }
+  };
+
+  const handleUploadClick = () => {
+    fileInputRef.current?.click();
+  };
+
+  const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file || !selectedImage || !selectedCategory) return;
+
+    // Reset file input for future uploads
+    e.target.value = '';
+
+    setIsGenerating(true);
+    try {
+      const formData = new FormData();
+      formData.append('file', file);
+      formData.append('storyId', storyId);
+      formData.append('imageName', selectedImage.name);
+      formData.append('category', selectedCategory);
+
+      const response = await fetch(`${BACKEND_URL}/api/images/upload`, {
+        method: 'POST',
+        body: formData,
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.error || `Upload failed (${response.status})`);
+      }
+
+      const data = await response.json();
+
+      if (data.success && data.imagePath) {
+        console.log(`Uploaded image: ${data.imagePath}`);
+
+        // Update cache key to force image reload
+        setImageCacheKey(Date.now());
+
+        // Update selected image
+        setSelectedImage(prev => prev ? {
+          ...prev,
+          imagePath: data.imagePath,
+          exists: true,
+        } : null);
+
+        // Refresh story data
+        const storyResponse = await fetch(`${BACKEND_URL}/api/images/story?storyId=${encodeURIComponent(storyId)}`);
+        if (storyResponse.ok) {
+          const newStoryData = await storyResponse.json();
+          setStoryData(newStoryData);
+        }
+
+        // Reload history
+        const historyResponse = await fetch(
+          `${BACKEND_URL}/api/images/history?storyId=${encodeURIComponent(storyId)}&imageId=${encodeURIComponent(selectedImage.name)}&category=${selectedCategory}`
+        );
+        if (historyResponse.ok) {
+          const historyData = await historyResponse.json();
+          setHistory(historyData);
+        }
+
+        if (onImageUpdated && selectedImage.usedInScenes.length > 0) {
+          onImageUpdated(selectedImage.usedInScenes[0], data.imagePath);
+        }
+      }
+
+    } catch (err) {
+      const message = err instanceof Error ? err.message : 'Failed to upload image';
+      setError(message);
+      console.error('Upload error:', message);
+    } finally {
+      setIsGenerating(false);
+    }
+  };
+
+  // Save description to story.json
+  const handleSaveDescription = async () => {
+    if (!selectedImage || !selectedCategory) return;
+
+    // Don't save if description hasn't changed
+    if (description.trim() === (selectedImage.description || '').trim()) return;
+
+    try {
+      const response = await fetch(`${BACKEND_URL}/api/images/update-description`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          storyId,
+          imageId: selectedImage.name,
+          category: selectedCategory,
+          description: description.trim(),
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to save description');
+      }
+
+      console.log(`Saved description for ${selectedImage.name}`);
+
+      // Refresh story data so the new description persists when switching images
+      const storyResponse = await fetch(`${BACKEND_URL}/api/images/story?storyId=${encodeURIComponent(storyId)}`);
+      if (storyResponse.ok) {
+        const data = await storyResponse.json();
+        setStoryData(data);
+
+        // Find and update the selected image with new description
+        const allImages = [
+          ...data.backgrounds.map((img: ImageItem) => ({ ...img, category: 'backgrounds' as ImageCategory })),
+          ...data.storyImages.map((img: ImageItem) => ({ ...img, category: 'storyImages' as ImageCategory })),
+          ...data.clueImages.map((img: ImageItem) => ({ ...img, category: 'clueImages' as ImageCategory })),
+          ...(data.coloredClueImages || []).map((img: ImageItem) => ({ ...img, category: 'coloredClueImages' as ImageCategory })),
+        ];
+        const updatedImage = allImages.find((img: ImageItem & { category: ImageCategory }) =>
+          img.name === selectedImage.name && img.category === selectedCategory
+        );
+        if (updatedImage) {
+          setSelectedImage(updatedImage);
+        }
+      }
+
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to save description');
     }
   };
 
@@ -455,10 +663,10 @@ const AIGenerationPanel: React.FC<AIGenerationPanelProps> = ({
   // Loading state
   if (isLoading) {
     return (
-      <div className="flex-1 flex items-center justify-center">
-        <div className="text-center">
-          <div className="text-6xl animate-pulse mb-4">🎨</div>
-          <p className="text-gray-500">Loading story...</p>
+      <div className="ai-panel-loading">
+        <div className="ai-panel-loading-content">
+          <div className="icon">🎨</div>
+          <p>Loading story...</p>
         </div>
       </div>
     );
@@ -469,142 +677,152 @@ const AIGenerationPanel: React.FC<AIGenerationPanelProps> = ({
     id: char.name,
     name: char.name,
     imagePath: char.imagePath,
-    exists: true,
-    usedInScenes: [],
+    exists: char.exists,
+    usedInScenes: char.usedInScenes,
   })) || [];
 
   const categories: { key: ImageCategory; items: ImageItem[] }[] = [
     { key: 'backgrounds', items: storyData?.backgrounds || [] },
     { key: 'characters', items: characterItems },
     { key: 'clueImages', items: storyData?.clueImages || [] },
+    { key: 'coloredClueImages', items: storyData?.coloredClueImages || [] },
     { key: 'storyImages', items: storyData?.storyImages || [] },
   ];
 
   return (
-    <div className="flex-1 flex flex-col h-full">
+    <div className="ai-panel">
       {/* Header Bar */}
-      <div className="flex items-center justify-between px-6 py-4 bg-white border-b border-gray-200 shrink-0">
-        <div className="flex items-center gap-4">
-          <button
-            onClick={onClose}
-            className="flex items-center gap-2 px-4 py-2 text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded-lg transition-colors"
-          >
+      <div className="ai-panel-header">
+        <div className="ai-panel-header-left">
+          <button onClick={onClose} className="ai-panel-back-btn">
             {Icons.back}
-            <span className="font-medium">Back to Editor</span>
+            <span>Back to Editor</span>
           </button>
-          <div className="h-6 w-px bg-gray-300" />
-          <div className="flex items-center gap-2 text-purple-600">
-            {Icons.sparkles}
-            <h1 className="text-lg font-semibold text-gray-900">AI Image Generator</h1>
+          <div className="ai-panel-divider" />
+          <div className="ai-panel-title">
+            <span className="ai-panel-title-icon">{Icons.sparkles}</span>
+            <h1>AI Image Generator</h1>
           </div>
         </div>
-        <p className="text-sm text-gray-500">Powered by Google Gemini</p>
+        <span className="ai-panel-subtitle">Powered by Google Gemini</span>
       </div>
 
       {/* Error Banner */}
       {error && (
-        <div className="mx-6 mt-4 p-4 bg-red-50 border border-red-200 rounded-lg flex items-center justify-between shrink-0">
-          <p className="text-red-700">{error}</p>
-          <button
-            onClick={() => setError(null)}
-            className="text-red-600 hover:text-red-800"
-          >
-            {Icons.x}
-          </button>
+        <div className="ai-panel-error">
+          <p>{error}</p>
+          <button onClick={() => setError(null)}>{Icons.x}</button>
         </div>
       )}
 
       {/* Main 3-Column Layout */}
-      <div className="flex-1 flex overflow-hidden min-h-0">
-        {/* LEFT COLUMN: Gallery & Controls */}
-        <div className="w-80 bg-white border-r border-gray-200 flex flex-col overflow-hidden shrink-0">
-          {/* Image Gallery */}
-          <div className="flex-1 overflow-y-auto min-h-0">
-            {categories.map(({ key, items }) => {
-              const isExpanded = expandedCategories.has(key);
-              const missingCount = items.filter(img => !img.exists).length;
+      <div className="ai-panel-main">
+        {/* LEFT COLUMN: Gallery OR Controls (multi-step flow) */}
+        <div className="ai-panel-left">
+          {/* Step 1: Image Gallery (only when no image selected) */}
+          {!selectedImage && (
+            <div className="ai-panel-gallery">
+              <div className="ai-panel-step-header">
+                <span className="ai-panel-step-number">1</span>
+                <span className="ai-panel-step-title">Select an Image</span>
+              </div>
+              {categories.map(({ key, items }) => {
+                const isExpanded = expandedCategories.has(key);
+                const missingCount = items.filter(img => !img.exists).length;
 
-              return (
-                <div key={key} className="border-b border-gray-100">
-                  <button
-                    onClick={() => toggleCategory(key)}
-                    className={`w-full px-4 py-3 flex items-center justify-between hover:bg-gray-50 transition-colors ${
-                      isExpanded ? 'bg-gray-50' : ''
-                    }`}
-                  >
-                    <div className="flex items-center gap-2">
-                      <span className="font-medium text-gray-700">{getCategoryLabel(key)}</span>
-                      <span className="text-xs bg-gray-200 text-gray-600 px-2 py-0.5 rounded-full">
-                        {items.length}
-                      </span>
-                      {missingCount > 0 && (
-                        <span className="text-xs bg-red-100 text-red-600 px-2 py-0.5 rounded-full">
-                          {missingCount} missing
-                        </span>
-                      )}
-                    </div>
-                    <span className={`text-gray-400 transition-transform ${isExpanded ? 'rotate-180' : ''}`}>
-                      ▼
-                    </span>
-                  </button>
+                return (
+                  <div key={key} className="ai-panel-category">
+                    <button
+                      onClick={() => toggleCategory(key)}
+                      className={`ai-panel-category-btn ${isExpanded ? 'expanded' : ''}`}
+                    >
+                      <div className="ai-panel-category-info">
+                        <span className="ai-panel-category-name">{getCategoryLabel(key)}</span>
+                        <span className="ai-panel-category-count">{items.length}</span>
+                        {missingCount > 0 && (
+                          <span className="ai-panel-category-missing">{missingCount} missing</span>
+                        )}
+                      </div>
+                      <span className={`ai-panel-category-arrow ${isExpanded ? 'expanded' : ''}`}>▼</span>
+                    </button>
 
-                  {isExpanded && (
-                    <div className="px-4 py-3 grid grid-cols-3 gap-4">
-                      {items.length === 0 ? (
-                        <div className="col-span-3 text-sm text-gray-400 text-center py-4">
-                          No images
-                        </div>
-                      ) : (
-                        items.map(image => (
-                          <div
-                            key={image.id}
-                            onClick={() => handleImageSelect(image, key)}
-                            className={`relative cursor-pointer rounded-xl overflow-hidden border-2 transition-all shadow-md hover:shadow-xl ${
-                              selectedImage?.id === image.id
-                                ? 'border-purple-500 ring-2 ring-purple-300 shadow-purple-200'
-                                : image.exists
-                                ? 'border-gray-300 hover:border-gray-400 shadow-gray-300'
-                                : 'border-red-300 hover:border-red-400 shadow-red-200'
-                            }`}
-                          >
-                            <div className="aspect-square bg-gray-100">
-                              {image.exists ? (
-                                <img
-                                  src={getImageUrl(image.imagePath)}
-                                  alt={image.name}
-                                  className="w-full h-full object-cover"
-                                />
-                              ) : (
-                                <div className="w-full h-full flex items-center justify-center bg-red-50 text-red-400 text-2xl">
-                                  ?
-                                </div>
-                              )}
+                    {isExpanded && (
+                      <div className="ai-panel-grid">
+                        {items.length === 0 ? (
+                          <div className="ai-panel-grid-empty">No images</div>
+                        ) : (
+                          items.map(image => (
+                            <div
+                              key={image.id}
+                              onClick={() => handleImageSelect(image, key)}
+                              className={`ai-panel-thumb ${
+                                selectedImage?.id === image.id ? 'selected' : ''
+                              } ${!image.exists ? 'missing' : ''}`}
+                            >
+                              <div className="ai-panel-thumb-img">
+                                {image.exists ? (
+                                  <img src={getImageUrl(image.imagePath)} alt={image.name} />
+                                ) : (
+                                  <div className="ai-panel-thumb-placeholder">?</div>
+                                )}
+                              </div>
+                              <div className="ai-panel-thumb-label">
+                                <span>{image.name}</span>
+                              </div>
                             </div>
-                            <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/70 to-transparent p-1.5">
-                              <div className="text-xs text-white truncate">{image.name}</div>
-                            </div>
-                          </div>
-                        ))
-                      )}
-                    </div>
+                          ))
+                        )}
+                      </div>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
+          )}
+
+          {/* Step 2: Controls (only when image is selected) */}
+          {selectedImage && selectedCategory && (
+            <div className="ai-panel-controls">
+              {/* Selected Image Header with Change Button */}
+              <div className="ai-panel-selected-header">
+                <div className="ai-panel-selected-info">
+                  <span className="ai-panel-step-number">2</span>
+                  <span className="ai-panel-step-title">Generate</span>
+                </div>
+                <button
+                  onClick={() => {
+                    setSelectedImage(null);
+                    setSelectedCategory(null);
+                  }}
+                  className="ai-panel-change-btn"
+                >
+                  Change Image
+                </button>
+              </div>
+
+              {/* Current Selection Display */}
+              <div className="ai-panel-current-selection">
+                <div className="ai-panel-current-thumb">
+                  {selectedImage.exists ? (
+                    <img src={getImageUrl(selectedImage.imagePath)} alt={selectedImage.name} />
+                  ) : (
+                    <div className="ai-panel-thumb-placeholder">?</div>
                   )}
                 </div>
-              );
-            })}
-          </div>
+                <div className="ai-panel-current-info">
+                  <span className="ai-panel-current-name">{selectedImage.name}</span>
+                  <span className="ai-panel-current-category">{getCategoryLabel(selectedCategory)}</span>
+                </div>
+              </div>
 
-          {/* Controls Section (only when image selected) */}
-          {selectedImage && selectedCategory && (
-            <div className="border-t border-gray-200 p-4 space-y-4 bg-gray-50 shrink-0 max-h-[50%] overflow-y-auto">
               {/* Description */}
               <div>
-                <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wide mb-2">
-                  Description
-                </label>
+                <label className="ai-panel-label">Description</label>
                 <textarea
                   value={description}
                   onChange={(e) => setDescription(e.target.value)}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-purple-500 focus:border-purple-500 resize-none"
+                  onBlur={handleSaveDescription}
+                  className="ai-panel-textarea"
                   placeholder="Describe what you want..."
                   rows={3}
                 />
@@ -613,31 +831,23 @@ const AIGenerationPanel: React.FC<AIGenerationPanelProps> = ({
               {/* Characters */}
               {storyData && storyData.characterImages.length > 0 && (
                 <div>
-                  <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wide mb-2">
-                    Characters (for compositing)
-                  </label>
-                  <div className="flex flex-wrap gap-2">
+                  <label className="ai-panel-label">Characters (for compositing)</label>
+                  <div className="ai-panel-characters">
                     {storyData.characterImages.map(char => {
                       const isSelected = selectedCharacters.includes(char.name);
                       return (
                         <div
                           key={char.name}
-                          onClick={() => handleCharacterToggle(char.name)}
-                          className={`relative cursor-pointer transition-all ${
-                            isSelected
-                              ? 'ring-2 ring-purple-500 ring-offset-2 rounded-lg'
-                              : 'opacity-60 hover:opacity-100'
-                          }`}
-                          title={char.name}
+                          onClick={() => char.exists && handleCharacterToggle(char.name)}
+                          className={`ai-panel-char ${isSelected ? 'selected' : ''} ${!char.exists ? 'missing' : ''}`}
+                          title={char.exists ? char.name : `${char.name} (not generated)`}
                         >
-                          <img
-                            src={getImageUrl(char.imagePath)}
-                            alt={char.name}
-                            className="w-10 h-10 object-cover rounded-lg"
-                          />
-                          {isSelected && (
-                            <div className="absolute -top-1 -right-1 w-4 h-4 bg-purple-500 rounded-full flex items-center justify-center">
-                              <span className="text-white text-xs">✓</span>
+                          {char.exists ? (
+                            <img src={getImageUrl(char.imagePath)} alt={char.name} />
+                          ) : (
+                            <div className="ai-panel-char-missing">
+                              <span className="ai-panel-char-missing-icon">?</span>
+                              <span className="ai-panel-char-missing-name">{char.name}</span>
                             </div>
                           )}
                         </div>
@@ -651,11 +861,7 @@ const AIGenerationPanel: React.FC<AIGenerationPanelProps> = ({
               <button
                 onClick={handleNewGeneration}
                 disabled={isGenerating || !description.trim()}
-                className={`w-full px-4 py-3 rounded-lg font-medium transition-all flex items-center justify-center gap-2 ${
-                  isGenerating || !description.trim()
-                    ? 'bg-gray-200 text-gray-500 cursor-not-allowed'
-                    : 'bg-gradient-to-r from-purple-600 to-pink-600 text-white hover:from-purple-700 hover:to-pink-700 shadow-lg hover:shadow-xl'
-                }`}
+                className="ai-panel-btn-generate"
               >
                 {isGenerating ? (
                   <>
@@ -671,59 +877,84 @@ const AIGenerationPanel: React.FC<AIGenerationPanelProps> = ({
               </button>
 
               {/* Modification Section */}
-              <div className="pt-4 border-t border-gray-200">
-                <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wide mb-2">
-                  Modification Instructions
-                </label>
+              <div className="ai-panel-modify-section">
+                <label className="ai-panel-label">Modify Selected Version</label>
+
+                {/* Show which version will be modified */}
+                <div className="ai-panel-modify-source">
+                  <div className="ai-panel-modify-thumb">
+                    {(selectedImage.exists || selectedVersion !== 'current') ? (
+                      <img src={getImageUrl(getSelectedImagePath())} alt="Source" />
+                    ) : (
+                      <div className="ai-panel-thumb-placeholder">?</div>
+                    )}
+                  </div>
+                  <div className="ai-panel-modify-info">
+                    <span className="ai-panel-modify-name">
+                      {selectedVersion === 'current' ? 'Current Version' : `Version ${selectedVersion}`}
+                    </span>
+                    <span className="ai-panel-modify-hint">
+                      {(!selectedImage.exists && selectedVersion === 'current')
+                        ? 'No image to modify'
+                        : 'Will be used as base'}
+                    </span>
+                  </div>
+                </div>
+
                 <textarea
                   value={modificationText}
                   onChange={(e) => setModificationText(e.target.value)}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-purple-500 focus:border-purple-500 resize-none"
-                  placeholder="Describe changes..."
+                  className="ai-panel-textarea"
+                  placeholder="Describe changes to make..."
                   rows={2}
                 />
                 <button
                   onClick={handleModify}
                   disabled={isGenerating || !modificationText.trim() || (!selectedImage.exists && selectedVersion === 'current')}
-                  className={`w-full mt-2 px-4 py-2 rounded-lg font-medium transition-all flex items-center justify-center gap-2 ${
-                    isGenerating || !modificationText.trim() || (!selectedImage.exists && selectedVersion === 'current')
-                      ? 'bg-gray-200 text-gray-500 cursor-not-allowed'
-                      : 'bg-blue-600 text-white hover:bg-blue-700'
-                  }`}
+                  className="ai-panel-btn-modify"
                 >
                   {Icons.edit}
                   Modify
                 </button>
+                <button
+                  onClick={handleUploadClick}
+                  disabled={isGenerating}
+                  className="ai-panel-btn-upload"
+                >
+                  {Icons.upload}
+                  Upload
+                </button>
+                <input
+                  ref={fileInputRef}
+                  type="file"
+                  accept="image/*"
+                  onChange={handleFileUpload}
+                  style={{ display: 'none' }}
+                />
               </div>
             </div>
           )}
         </div>
 
         {/* CENTER COLUMN: Image Preview */}
-        <div className="flex-1 flex flex-col items-center justify-center p-8 bg-gray-100 min-w-0">
+        <div className="ai-panel-center">
           {selectedImage ? (
             <>
               {/* Image Name */}
-              <h2 className="text-xl font-semibold text-gray-800 mb-4 shrink-0">
+              <h2 className="ai-panel-image-name">
                 {selectedImage.name}
                 {selectedVersion !== 'current' && (
-                  <span className="ml-2 text-sm font-normal text-blue-600">
-                    (viewing v{selectedVersion})
-                  </span>
+                  <span className="version">(viewing v{selectedVersion})</span>
                 )}
               </h2>
 
               {/* Large Image Preview */}
-              <div className="flex-1 w-full max-w-4xl bg-white rounded-xl shadow-lg border border-gray-200 overflow-hidden flex items-center justify-center min-h-0">
+              <div className="ai-panel-preview">
                 {selectedImage.exists || selectedVersion !== 'current' ? (
-                  <img
-                    src={getImageUrl(getSelectedImagePath())}
-                    alt={selectedImage.name}
-                    className="max-w-full max-h-full object-contain"
-                  />
+                  <img src={getImageUrl(getSelectedImagePath())} alt={selectedImage.name} />
                 ) : (
-                  <div className="text-center text-gray-400">
-                    <div className="text-6xl mb-4">?</div>
+                  <div className="ai-panel-preview-empty">
+                    <div className="icon">?</div>
                     <p>Image not generated yet</p>
                   </div>
                 )}
@@ -731,60 +962,58 @@ const AIGenerationPanel: React.FC<AIGenerationPanelProps> = ({
 
               {/* Use as Current Image Button */}
               {selectedVersion !== 'current' && (
-                <button
-                  onClick={handleUseAsCurrentImage}
-                  className="mt-6 px-8 py-3 bg-green-600 text-white font-medium rounded-lg hover:bg-green-700 transition-colors shadow-lg flex items-center gap-2 shrink-0"
-                >
+                <button onClick={handleUseAsCurrentImage} className="ai-panel-btn-use">
                   {Icons.check}
                   Use as Current Image
                 </button>
               )}
             </>
           ) : (
-            <div className="text-center text-gray-400">
-              <div className="text-6xl mb-4">🖼️</div>
-              <p className="text-lg">Select an image from the gallery</p>
+            <div className="ai-panel-empty">
+              <div className="icon">🖼️</div>
+              <p>Select an image from the gallery</p>
             </div>
           )}
         </div>
 
         {/* RIGHT COLUMN: Version History */}
-        <div className="w-72 bg-white border-l border-gray-200 flex flex-col overflow-hidden shrink-0">
-          <div className="px-4 py-3 border-b border-gray-200 bg-gray-50 shrink-0">
-            <div className="flex items-center gap-2">
+        <div className="ai-panel-right">
+          <div className="ai-panel-history-header">
+            <div className="ai-panel-history-title">
               {Icons.clock}
-              <h3 className="font-semibold text-gray-700">Version History</h3>
+              <h3>Version History</h3>
             </div>
+            {history && history.versions.length > 0 && (
+              <button
+                onClick={handleWipeHistory}
+                className="ai-panel-history-clear"
+                title="Clear all history"
+              >
+                {Icons.trash}
+              </button>
+            )}
           </div>
 
-          <div className="flex-1 overflow-y-auto p-4 min-h-0">
+          <div className="ai-panel-history-list">
             {selectedImage ? (
-              <div className="space-y-2">
+              <>
                 {/* Current version */}
                 <div
                   onClick={() => setSelectedVersion('current')}
-                  className={`flex items-center gap-3 p-3 rounded-lg cursor-pointer transition-colors ${
-                    selectedVersion === 'current'
-                      ? 'bg-purple-100 border-2 border-purple-400'
-                      : 'hover:bg-gray-100 border-2 border-transparent'
-                  }`}
+                  className={`ai-panel-history-item ${selectedVersion === 'current' ? 'selected' : ''}`}
                 >
-                  <div className="w-14 h-14 rounded-lg bg-gray-100 overflow-hidden shrink-0">
+                  <div className="ai-panel-history-thumb">
                     {selectedImage.exists ? (
-                      <img
-                        src={getImageUrl(selectedImage.imagePath)}
-                        alt="Current"
-                        className="w-full h-full object-cover"
-                      />
+                      <img src={getImageUrl(selectedImage.imagePath)} alt="Current" />
                     ) : (
-                      <div className="w-full h-full flex items-center justify-center text-gray-400">?</div>
+                      <div className="ai-panel-history-thumb-empty">?</div>
                     )}
                   </div>
-                  <div className="flex-1 min-w-0">
-                    <div className="font-medium text-gray-900">Current</div>
-                    <div className="text-xs text-gray-500">in story.json</div>
+                  <div className="ai-panel-history-info">
+                    <div className="title">Current</div>
+                    <div className="meta">in story.json</div>
                   </div>
-                  <div className="w-3 h-3 rounded-full bg-green-500 shrink-0" />
+                  <div className="ai-panel-history-current" />
                 </div>
 
                 {/* Historical versions */}
@@ -792,40 +1021,27 @@ const AIGenerationPanel: React.FC<AIGenerationPanelProps> = ({
                   <div
                     key={version.version}
                     onClick={() => setSelectedVersion(version.version)}
-                    className={`flex items-center gap-3 p-3 rounded-lg cursor-pointer transition-colors ${
-                      selectedVersion === version.version
-                        ? 'bg-purple-100 border-2 border-purple-400'
-                        : 'hover:bg-gray-100 border-2 border-transparent'
-                    }`}
+                    className={`ai-panel-history-item ${selectedVersion === version.version ? 'selected' : ''}`}
                   >
-                    <div className="w-14 h-14 rounded-lg bg-gray-100 overflow-hidden shrink-0">
+                    <div className="ai-panel-history-thumb">
                       <img
                         src={getImageUrl(`history/${history.category}/${history.imageId}/${version.filename}`)}
                         alt={`v${version.version}`}
-                        className="w-full h-full object-cover"
                       />
                     </div>
-                    <div className="flex-1 min-w-0">
-                      <div className="font-medium text-gray-900 truncate">
-                        {version.isModification ? 'Modified' : 'Generated'}
-                      </div>
-                      <div className="text-xs text-gray-500">
-                        v{version.version} • {formatTimestamp(version.timestamp)}
-                      </div>
+                    <div className="ai-panel-history-info">
+                      <div className="title">{version.isModification ? 'Modified' : 'Generated'}</div>
+                      <div className="meta">v{version.version} • {formatTimestamp(version.timestamp)}</div>
                     </div>
                   </div>
                 ))}
 
                 {(!history || history.versions.length === 0) && (
-                  <div className="text-sm text-gray-400 text-center py-8">
-                    No history yet
-                  </div>
+                  <div className="ai-panel-history-empty">No history yet</div>
                 )}
-              </div>
+              </>
             ) : (
-              <div className="text-sm text-gray-400 text-center py-8">
-                Select an image to see history
-              </div>
+              <div className="ai-panel-history-empty">Select an image to see history</div>
             )}
           </div>
         </div>

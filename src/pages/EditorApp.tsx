@@ -13,6 +13,7 @@ import PathManager from '../features/editor/PathManager';
 import ImageSelector from '../features/editor/ImageSelector';
 import MapSelector from '../features/editor/MapSelector';
 import AIGenerationPanel from '../features/editor/AIGenerationPanel';
+import ClueImageEditor from '../features/editor/ClueImageEditor';
 import type { Hotspot, MapPath } from '@shared/types/hotspot';
 
 const EditorApp: React.FC = () => {
@@ -315,6 +316,7 @@ const EditorApp: React.FC = () => {
   // Check if a side panel is open
   const hasSidePanel = activeTool === 'config-highlights' || activeTool === 'manage-paths';
   const isAIGeneratorMode = activeTool === 'image-generator';
+  const isClueEditorMode = activeTool === 'clue-editor';
 
   // AI Generator takes over the full screen
   if (isAIGeneratorMode) {
@@ -326,6 +328,19 @@ const EditorApp: React.FC = () => {
           onImageUpdated={(sceneIndex, newImagePath) => {
             console.log(`Scene ${sceneIndex} updated with: ${newImagePath}`);
           }}
+          onClose={() => setActiveTool(null)}
+        />
+      </div>
+    );
+  }
+
+  // Clue Image Editor takes over the full screen
+  if (isClueEditorMode) {
+    return (
+      <div className="h-screen w-screen bg-gray-100 flex flex-col overflow-hidden">
+        <ClueImageEditor
+          isActive={true}
+          storyId="gingerbread"
           onClose={() => setActiveTool(null)}
         />
       </div>

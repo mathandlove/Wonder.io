@@ -1,0 +1,594 @@
+/* Clue Image Editor Styles - Matching AI Generation Panel Design */
+
+.clue-editor {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  background: var(--ai-bg, #9ab4b8);
+}
+
+/* Header */
+.clue-editor-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 20px 32px;
+  background: var(--ai-white, #ffffff);
+  border-bottom: 1px solid var(--ai-border, #d0dfe1);
+  flex-shrink: 0;
+}
+
+.clue-editor-header-left {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+}
+
+.clue-editor-header-right {
+  display: flex;
+  align-items: center;
+}
+
+.clue-editor-back-btn {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 16px;
+  color: var(--ai-text-muted, #5a6a6c);
+  background: transparent;
+  border: 1px solid var(--ai-border, #d0dfe1);
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: 500;
+  font-size: 14px;
+  transition: all 0.15s ease;
+}
+
+.clue-editor-back-btn:hover {
+  color: var(--ai-text, #2d3a3c);
+  background: var(--ai-bg-light, #c5d5d8);
+  border-color: var(--ai-teal, #5ba3a0);
+}
+
+.clue-editor-divider {
+  width: 1px;
+  height: 28px;
+  background: var(--ai-border, #d0dfe1);
+}
+
+.clue-editor-title {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.clue-editor-title-icon {
+  color: var(--ai-teal, #5ba3a0);
+}
+
+.clue-editor-title h1 {
+  font-size: 20px;
+  font-weight: 600;
+  color: var(--ai-text, #2d3a3c);
+  margin: 0;
+  letter-spacing: -0.02em;
+}
+
+.clue-editor-status {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 14px;
+  border-radius: 6px;
+  font-size: 13px;
+  font-weight: 500;
+}
+
+.clue-editor-status.saving {
+  color: var(--ai-text-muted, #5a6a6c);
+  background: var(--ai-bg-light, #c5d5d8);
+}
+
+.clue-editor-status.saved {
+  color: var(--ai-green, #5a9a5a);
+  background: rgba(90, 154, 90, 0.1);
+}
+
+/* Error Banner */
+.clue-editor-error {
+  margin: 20px 32px;
+  padding: 16px 20px;
+  background: #fef8f8;
+  border: 1px solid var(--ai-coral, #c97878);
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-shrink: 0;
+}
+
+.clue-editor-error p {
+  color: var(--ai-coral, #c97878);
+  margin: 0;
+  font-size: 14px;
+}
+
+.clue-editor-error button {
+  color: var(--ai-coral, #c97878);
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  padding: 4px;
+  border-radius: 4px;
+}
+
+/* Main 3-Column Layout */
+.clue-editor-main {
+  flex: 1;
+  display: flex;
+  overflow: hidden;
+  min-height: 0;
+  padding: 24px;
+  gap: 24px;
+}
+
+/* Left Column - Thumbnails */
+.clue-editor-left {
+  width: 200px;
+  background: var(--ai-white, #ffffff);
+  border-radius: 12px;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  flex-shrink: 0;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+}
+
+.clue-editor-section-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 16px;
+  border-bottom: 1px solid var(--ai-border, #d0dfe1);
+  background: var(--ai-white, #ffffff);
+  flex-shrink: 0;
+}
+
+.clue-editor-section-title-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.clue-editor-section-title {
+  font-weight: 600;
+  font-size: 14px;
+  color: var(--ai-text, #2d3a3c);
+}
+
+.clue-editor-section-count {
+  font-size: 12px;
+  background: var(--ai-bg-light, #c5d5d8);
+  color: var(--ai-text-muted, #5a6a6c);
+  padding: 2px 8px;
+  border-radius: 12px;
+  font-weight: 500;
+}
+
+.clue-editor-thumb-list {
+  flex: 1;
+  overflow-y: auto;
+  padding: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.clue-editor-thumb {
+  position: relative;
+  cursor: pointer;
+  border-radius: 8px;
+  overflow: hidden;
+  border: 2px solid transparent;
+  background: var(--ai-white, #ffffff);
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.06);
+  transition: all 0.15s ease;
+}
+
+.clue-editor-thumb:hover {
+  border-color: var(--ai-teal, #5ba3a0);
+  box-shadow: 0 4px 12px rgba(91, 163, 160, 0.15);
+}
+
+.clue-editor-thumb.selected {
+  border-color: var(--ai-teal, #5ba3a0);
+  box-shadow: 0 0 0 3px rgba(91, 163, 160, 0.2);
+}
+
+.clue-editor-thumb-img {
+  aspect-ratio: 16/9;
+  background: #f5f7f8;
+}
+
+.clue-editor-thumb-img img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.clue-editor-thumb-label {
+  padding: 8px 10px;
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--ai-text, #2d3a3c);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  background: var(--ai-white, #ffffff);
+  border-top: 1px solid var(--ai-border, #d0dfe1);
+}
+
+.clue-editor-thumb-check {
+  position: absolute;
+  top: 6px;
+  right: 6px;
+  width: 22px;
+  height: 22px;
+  background: var(--ai-teal, #5ba3a0);
+  color: white;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Center Column - Image Preview */
+.clue-editor-center {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  background: var(--ai-white, #ffffff);
+  border-radius: 12px;
+  min-width: 0;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+  overflow: hidden;
+}
+
+.clue-editor-image-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 24px;
+  border-bottom: 1px solid var(--ai-border, #d0dfe1);
+  flex-shrink: 0;
+}
+
+.clue-editor-image-header h2 {
+  font-size: 18px;
+  font-weight: 600;
+  color: var(--ai-text, #2d3a3c);
+  margin: 0;
+}
+
+.clue-editor-drawing-hint {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 14px;
+  background: var(--ai-bg-light, #c5d5d8);
+  border-radius: 6px;
+  font-size: 13px;
+  color: var(--ai-text-muted, #5a6a6c);
+}
+
+.clue-editor-drawing-hint .icon {
+  color: var(--ai-teal, #5ba3a0);
+}
+
+.clue-editor-preview {
+  flex: 1;
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #f5f7f8;
+  cursor: crosshair;
+  overflow: hidden;
+  min-height: 0;
+}
+
+.clue-editor-preview img {
+  max-width: 100%;
+  max-height: 100%;
+  object-fit: contain;
+  user-select: none;
+  -webkit-user-drag: none;
+}
+
+.clue-editor-svg-overlay {
+  position: absolute;
+  pointer-events: none;
+}
+
+.clue-editor-svg-overlay g {
+  pointer-events: all;
+}
+
+.clue-editor-empty {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  color: var(--ai-text-muted, #5a6a6c);
+}
+
+.clue-editor-empty .icon {
+  font-size: 48px;
+  margin-bottom: 16px;
+  opacity: 0.5;
+}
+
+.clue-editor-empty p {
+  font-size: 15px;
+  font-weight: 500;
+}
+
+/* Right Column - Hotspot List */
+.clue-editor-right {
+  width: 300px;
+  background: var(--ai-white, #ffffff);
+  border-radius: 12px;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  flex-shrink: 0;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+}
+
+.clue-editor-gen-thumbs-btn {
+  padding: 6px 12px;
+  font-size: 11px;
+  font-weight: 500;
+  color: var(--ai-text-muted, #5a6a6c);
+  background: var(--ai-bg-light, #c5d5d8);
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.clue-editor-gen-thumbs-btn:hover:not(:disabled) {
+  background: var(--ai-teal, #5ba3a0);
+  color: white;
+}
+
+.clue-editor-gen-thumbs-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.clue-editor-hotspot-list {
+  flex: 1;
+  overflow-y: auto;
+  padding: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.clue-editor-hotspot-empty {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 32px 16px;
+  text-align: center;
+}
+
+.clue-editor-hotspot-empty p {
+  margin: 0;
+  color: var(--ai-text-muted, #5a6a6c);
+  font-size: 14px;
+}
+
+.clue-editor-hotspot-empty .hint {
+  font-size: 12px;
+  margin-top: 4px;
+  opacity: 0.7;
+}
+
+.clue-editor-hotspot-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 12px;
+  border-radius: 8px;
+  cursor: pointer;
+  border: 1px solid transparent;
+  transition: all 0.15s ease;
+  background: #fafbfc;
+}
+
+.clue-editor-hotspot-item:hover {
+  background: var(--ai-bg-light, #c5d5d8);
+  border-color: var(--ai-border, #d0dfe1);
+}
+
+.clue-editor-hotspot-item.selected {
+  background: rgba(91, 163, 160, 0.1);
+  border-color: var(--ai-teal, #5ba3a0);
+}
+
+.clue-editor-hotspot-index {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: var(--ai-bg-light, #c5d5d8);
+  color: var(--ai-text, #2d3a3c);
+  font-size: 13px;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.clue-editor-hotspot-item.selected .clue-editor-hotspot-index {
+  background: var(--ai-teal, #5ba3a0);
+  color: white;
+}
+
+.clue-editor-hotspot-content {
+  flex: 1;
+  min-width: 0;
+}
+
+.clue-editor-hotspot-select {
+  width: 100%;
+  padding: 8px 10px;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--ai-text, #2d3a3c);
+  background: var(--ai-white, #ffffff);
+  border: 1px solid var(--ai-border, #d0dfe1);
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.clue-editor-hotspot-select:focus {
+  outline: none;
+  border-color: var(--ai-teal, #5ba3a0);
+  box-shadow: 0 0 0 3px rgba(91, 163, 160, 0.15);
+}
+
+.clue-editor-hotspot-desc {
+  margin-top: 6px;
+  font-size: 12px;
+  color: var(--ai-text-muted, #5a6a6c);
+  line-height: 1.4;
+}
+
+.clue-editor-hotspot-delete {
+  padding: 6px;
+  background: transparent;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  color: var(--ai-text-muted, #5a6a6c);
+  transition: all 0.15s ease;
+  flex-shrink: 0;
+}
+
+.clue-editor-hotspot-delete:hover {
+  background: #fef8f8;
+  color: var(--ai-coral, #c97878);
+}
+
+/* Available Names Section */
+.clue-editor-available-names {
+  padding: 16px;
+  border-top: 1px solid var(--ai-border, #d0dfe1);
+  background: #fafbfc;
+}
+
+.clue-editor-available-header {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--ai-text-muted, #5a6a6c);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  margin-bottom: 10px;
+}
+
+.clue-editor-available-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.clue-editor-name-tag {
+  padding: 4px 10px;
+  font-size: 11px;
+  font-weight: 500;
+  background: var(--ai-white, #ffffff);
+  color: var(--ai-text, #2d3a3c);
+  border: 1px solid var(--ai-border, #d0dfe1);
+  border-radius: 12px;
+}
+
+.clue-editor-name-tag.used {
+  background: var(--ai-teal, #5ba3a0);
+  color: white;
+  border-color: var(--ai-teal, #5ba3a0);
+  opacity: 0.7;
+  text-decoration: line-through;
+}
+
+/* Loading State */
+.clue-editor-loading {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--ai-bg, #9ab4b8);
+}
+
+.clue-editor-loading-content {
+  text-align: center;
+}
+
+.clue-editor-loading-content .icon {
+  font-size: 40px;
+  animation: clue-editor-pulse 2s infinite;
+  margin-bottom: 16px;
+  color: var(--ai-teal, #5ba3a0);
+}
+
+.clue-editor-loading-content p {
+  color: var(--ai-text-muted, #5a6a6c);
+  font-size: 14px;
+}
+
+@keyframes clue-editor-pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.5; }
+}
+
+/* Spinner */
+.clue-editor-spinner {
+  animation: clue-editor-spin 1s linear infinite;
+}
+
+@keyframes clue-editor-spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+/* Scrollbar styling */
+.clue-editor-thumb-list::-webkit-scrollbar,
+.clue-editor-hotspot-list::-webkit-scrollbar {
+  width: 6px;
+}
+
+.clue-editor-thumb-list::-webkit-scrollbar-track,
+.clue-editor-hotspot-list::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.clue-editor-thumb-list::-webkit-scrollbar-thumb,
+.clue-editor-hotspot-list::-webkit-scrollbar-thumb {
+  background: var(--ai-border, #d0dfe1);
+  border-radius: 3px;
+}
+
+.clue-editor-thumb-list::-webkit-scrollbar-thumb:hover,
+.clue-editor-hotspot-list::-webkit-scrollbar-thumb:hover {
+  background: var(--ai-text-muted, #5a6a6c);
+}

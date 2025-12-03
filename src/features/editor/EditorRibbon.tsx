@@ -104,6 +104,14 @@ const Icons = {
       <circle cx="11" cy="11" r="2" />
     </svg>
   ),
+  palette: (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" className="w-5 h-5">
+      <path d="M12 2C6.5 2 2 6.5 2 12s4.5 10 10 10c.93 0 1.5-.67 1.5-1.5 0-.39-.15-.74-.39-1.04-.23-.29-.38-.63-.38-1.04 0-.83.67-1.5 1.5-1.5H16c2.76 0 5-2.24 5-5 0-4.42-4.03-8-9-8z" strokeLinecap="round" strokeLinejoin="round" />
+      <circle cx="7.5" cy="11.5" r="1.5" fill="currentColor" />
+      <circle cx="12" cy="7.5" r="1.5" fill="currentColor" />
+      <circle cx="16.5" cy="11.5" r="1.5" fill="currentColor" />
+    </svg>
+  ),
 };
 
 const EditorRibbon: React.FC<EditorRibbonProps> = ({
@@ -126,6 +134,18 @@ const EditorRibbon: React.FC<EditorRibbonProps> = ({
     { id: 'ai-generation', label: 'AI Generation' },
   ];
 
+  // Handle tab change - auto-activate tools when certain tabs are selected
+  const handleTabChange = (tabId: TabId) => {
+    setActiveTab(tabId);
+    if (tabId === 'ai-generation') {
+      // Automatically activate the image generator tool
+      onToolSelect('image-generator');
+    } else if (tabId === 'clue-image') {
+      // Automatically activate the clue image editor
+      onToolSelect('clue-editor');
+    }
+  };
+
   const renderToolButton = (tool: Tool, size: 'small' | 'large' = 'small') => {
     const isActive = activeTool === tool.id;
     const isLarge = size === 'large';
@@ -146,9 +166,9 @@ const EditorRibbon: React.FC<EditorRibbonProps> = ({
           paddingRight: isLarge ? 20 : 16,
           minWidth: isLarge ? 80 : 64,
           borderRadius: 8,
-          backgroundColor: isActive ? '#eff6ff' : 'transparent',
-          color: isActive ? '#1d4ed8' : '#4b5563',
-          border: isActive ? '1px solid #bfdbfe' : '1px solid transparent',
+          backgroundColor: isActive ? '#e6f4f4' : 'transparent',
+          color: isActive ? '#4a9290' : '#4b5563',
+          border: isActive ? '1px solid #a8d4d2' : '1px solid transparent',
           cursor: 'pointer',
           transition: 'all 0.15s',
         }}
@@ -202,69 +222,46 @@ const EditorRibbon: React.FC<EditorRibbonProps> = ({
     ],
   };
 
-  // AI Generation tab tools
-  const aiTools = {
-    generate: [
-      { id: 'image-generator', name: 'Generate', icon: Icons.sparkles, description: 'Generate images with AI' },
-    ],
-  };
 
   const renderTabContent = () => {
     switch (activeTab) {
       case 'clue-image':
         return (
-          <div style={{ display: 'flex', alignItems: 'stretch' }}>
-            {renderToolGroup('Selection', clueImageTools.selection, 'large')}
-            {renderToolGroup('Manage', clueImageTools.manage, 'large')}
+          <div style={{ display: 'flex', alignItems: 'center', gap: 20 }}>
+            {/* Open Full Editor Button */}
+            <button
+              onClick={() => onToolSelect('clue-editor')}
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: 10,
+                padding: '14px 24px',
+                backgroundColor: '#4a9290',
+                color: 'white',
+                border: 'none',
+                borderRadius: 8,
+                fontSize: 14,
+                fontWeight: 600,
+                cursor: 'pointer',
+                boxShadow: '0 2px 8px rgba(74, 146, 144, 0.3)',
+                transition: 'all 0.15s ease'
+              }}
+            >
+              <div style={{ width: 20, height: 20 }}>{Icons.target}</div>
+              <span>Open Clue Image Editor</span>
+            </button>
 
-            {/* Image Actions */}
-            <div style={{ display: 'flex', flexDirection: 'column', borderRight: '1px solid #e5e7eb', paddingRight: 20, marginRight: 20 }}>
-              <div style={{ display: 'flex', alignItems: 'flex-end', gap: 8, flex: 1 }}>
-                <button
-                  onClick={onChangeImage}
-                  title="Change image"
-                  style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', paddingTop: 12, paddingBottom: 12, paddingLeft: 20, paddingRight: 20, minWidth: 80, borderRadius: 8, color: '#4b5563', backgroundColor: 'transparent', border: '1px solid transparent', cursor: 'pointer' }}
-                >
-                  <div style={{ width: 24, height: 24, marginBottom: 6, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>{Icons.folder}</div>
-                  <span style={{ fontSize: 12, fontWeight: 500, lineHeight: 1.2 }}>Change</span>
-                </button>
-                {onGenerateThumbnails && hotspotCount > 0 && (
-                  <button
-                    onClick={onGenerateThumbnails}
-                    disabled={isGeneratingThumbnails}
-                    title="Generate thumbnails for all hotspots"
-                    style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', paddingTop: 12, paddingBottom: 12, paddingLeft: 20, paddingRight: 20, minWidth: 80, borderRadius: 8, color: isGeneratingThumbnails ? '#9ca3af' : '#4b5563', backgroundColor: 'transparent', border: '1px solid transparent', cursor: isGeneratingThumbnails ? 'not-allowed' : 'pointer' }}
-                  >
-                    <div style={{ width: 24, height: 24, marginBottom: 6, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>{Icons.thumbnails}</div>
-                    <span style={{ fontSize: 12, fontWeight: 500, lineHeight: 1.2 }}>
-                      {isGeneratingThumbnails ? 'Working...' : 'Thumbs'}
-                    </span>
-                  </button>
-                )}
-              </div>
-              <div style={{ fontSize: 10, color: '#9ca3af', textAlign: 'center', marginTop: 8, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.05em' }}>
-                Image
-              </div>
+            {/* Info Text */}
+            <div style={{ color: '#6b7280', fontSize: 13 }}>
+              Create and manage hotspots on clue images
             </div>
 
             {/* Status */}
-            <div style={{ display: 'flex', flexDirection: 'column', marginLeft: 'auto' }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 12, fontSize: 14 }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: 8, paddingLeft: 12, paddingRight: 12, paddingTop: 4, paddingBottom: 4, backgroundColor: '#f9fafb', borderRadius: 6 }}>
-                  <div style={{ color: '#6b7280' }}>{Icons.target}</div>
-                  <span style={{ fontWeight: 600, color: '#374151' }}>{hotspotCount}</span>
-                  <span style={{ color: '#6b7280', fontSize: 12 }}>hotspot{hotspotCount !== 1 ? 's' : ''}</span>
-                </div>
-                {onClearAll && hotspotCount > 0 && (
-                  <button
-                    onClick={onClearAll}
-                    title="Clear all hotspots"
-                    style={{ display: 'flex', alignItems: 'center', gap: 6, paddingLeft: 8, paddingRight: 8, paddingTop: 4, paddingBottom: 4, color: '#dc2626', backgroundColor: 'transparent', border: 'none', borderRadius: 6, cursor: 'pointer' }}
-                  >
-                    <div style={{ width: 16, height: 16 }}>{Icons.trash}</div>
-                    <span style={{ fontSize: 12, fontWeight: 500 }}>Clear</span>
-                  </button>
-                )}
+            <div style={{ display: 'flex', alignItems: 'center', gap: 12, fontSize: 14, marginLeft: 'auto' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 8, paddingLeft: 12, paddingRight: 12, paddingTop: 4, paddingBottom: 4, backgroundColor: '#f9fafb', borderRadius: 6 }}>
+                <div style={{ color: '#6b7280' }}>{Icons.target}</div>
+                <span style={{ fontWeight: 600, color: '#374151' }}>{hotspotCount}</span>
+                <span style={{ color: '#6b7280', fontSize: 12 }}>hotspot{hotspotCount !== 1 ? 's' : ''}</span>
               </div>
             </div>
           </div>
@@ -318,8 +315,9 @@ const EditorRibbon: React.FC<EditorRibbonProps> = ({
 
       case 'ai-generation':
         return (
-          <div style={{ display: 'flex', alignItems: 'stretch' }}>
-            {renderToolGroup('Generate', aiTools.generate, 'large', true)}
+          <div style={{ display: 'flex', alignItems: 'center', gap: 12, color: '#6b7280' }}>
+            <div style={{ width: 24, height: 24 }}>{Icons.sparkles}</div>
+            <span style={{ fontSize: 14, fontWeight: 500 }}>AI Image Generation Active</span>
           </div>
         );
 
@@ -331,36 +329,36 @@ const EditorRibbon: React.FC<EditorRibbonProps> = ({
   return (
     <div className="fixed top-0 left-0 right-0 z-50 bg-white border-b border-gray-300 shadow-sm">
       {/* Title Bar - Compact but professional */}
-      <div className="flex items-center justify-between px-4 py-2 bg-gradient-to-r from-blue-600 via-blue-600 to-blue-700 text-white">
-        <div className="flex items-center gap-3">
-          <div className="flex items-center gap-2">
-            <div className="w-6 h-6 bg-white/20 rounded flex items-center justify-center">
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '8px 16px', background: '#4a9290', color: 'white' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+            <div style={{ width: 24, height: 24, backgroundColor: 'rgba(255,255,255,0.2)', borderRadius: 4, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
               {Icons.target}
             </div>
-            <span className="font-semibold text-base tracking-tight">Wonder Editor</span>
+            <span style={{ fontWeight: 600, fontSize: 16, letterSpacing: '-0.02em' }}>Wonder Editor</span>
           </div>
           {isMapMode && (
-            <span className="px-2.5 py-1 bg-white/20 rounded-full text-xs font-medium backdrop-blur-sm">
+            <span style={{ padding: '4px 10px', backgroundColor: 'rgba(255,255,255,0.2)', borderRadius: 12, fontSize: 12, fontWeight: 500 }}>
               Map Mode
             </span>
           )}
         </div>
-        <div className="flex items-center gap-4 text-sm">
-          <span className={`flex items-center gap-2 px-3 py-1 rounded-full ${isSaving ? 'bg-white/10' : 'bg-white/10'}`}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 16, fontSize: 14 }}>
+          <span style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '4px 12px', borderRadius: 12, backgroundColor: 'rgba(255,255,255,0.1)' }}>
             {isSaving ? (
               <>
-                <svg className="w-3.5 h-3.5 animate-spin" viewBox="0 0 24 24" fill="none">
-                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
+                <svg style={{ width: 14, height: 14, animation: 'spin 1s linear infinite' }} viewBox="0 0 24 24" fill="none">
+                  <circle style={{ opacity: 0.25 }} cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                  <path style={{ opacity: 0.75 }} fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
                 </svg>
-                <span className="text-blue-100">Saving...</span>
+                <span style={{ opacity: 0.9 }}>Saving...</span>
               </>
             ) : (
               <>
-                <svg className="w-3.5 h-3.5 text-green-300" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+                <svg style={{ width: 14, height: 14, color: '#a7f3d0' }} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
                   <path d="M5 13l4 4L19 7" strokeLinecap="round" strokeLinejoin="round" />
                 </svg>
-                <span className="text-white/90">All changes saved</span>
+                <span style={{ opacity: 0.9 }}>All changes saved</span>
               </>
             )}
           </span>
@@ -374,7 +372,7 @@ const EditorRibbon: React.FC<EditorRibbonProps> = ({
           return (
             <button
               key={tab.id}
-              onClick={() => setActiveTab(tab.id)}
+              onClick={() => handleTabChange(tab.id)}
               style={{
                 position: 'relative',
                 paddingTop: 16,
@@ -384,7 +382,7 @@ const EditorRibbon: React.FC<EditorRibbonProps> = ({
                 marginRight: 8,
                 fontSize: 15,
                 fontWeight: 500,
-                color: isActive ? '#2563eb' : '#4b5563',
+                color: isActive ? '#4a9290' : '#4b5563',
                 backgroundColor: 'transparent',
                 border: 'none',
                 cursor: 'pointer',
@@ -393,7 +391,7 @@ const EditorRibbon: React.FC<EditorRibbonProps> = ({
               <span>{tab.label}</span>
               {/* Underline indicator for active tab */}
               {isActive && (
-                <div style={{ position: 'absolute', bottom: 0, left: 16, right: 16, height: 3, backgroundColor: '#2563eb', borderTopLeftRadius: 2, borderTopRightRadius: 2 }} />
+                <div style={{ position: 'absolute', bottom: 0, left: 16, right: 16, height: 3, backgroundColor: '#4a9290', borderTopLeftRadius: 2, borderTopRightRadius: 2 }} />
               )}
             </button>
           );

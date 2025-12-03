@@ -1,5 +1,6 @@
 import express from 'express';
 import cors from 'cors';
+import multer from 'multer';
 import 'dotenv/config';
 import { WebSocketServer } from 'ws';
 import { IncomingMessage } from 'http';
@@ -19,8 +20,13 @@ import {
   handleRenameImage,
   handleUseVersion,
   handleWipeHistory,
-  handleWipeAllHistory
+  handleWipeAllHistory,
+  handleUpdateDescription,
+  handleImageUpload
 } from './image-generation';
+
+// Configure multer for memory storage
+const upload = multer({ storage: multer.memoryStorage() });
 
 const key = process.env.OPENAI_API_KEY;
 if (!key) throw new Error('Missing OPENAI_API_KEY');
@@ -198,6 +204,8 @@ app.post('/api/images/rename', handleRenameImage);
 app.post('/api/images/use-version', handleUseVersion);
 app.post('/api/images/wipe-history', handleWipeHistory);
 app.post('/api/images/wipe-all-history', handleWipeAllHistory);
+app.post('/api/images/update-description', handleUpdateDescription);
+app.post('/api/images/upload', upload.single('file'), handleImageUpload);
 
 // Health check
 app.get('/api/health', (req, res) => {

@@ -93,7 +93,7 @@
   /* Removed transition - using data-attribute driven animations instead */
   position: relative;
   z-index: 2;
-  filter: drop-shadow(0 10px 20px rgba(0,0,0,0.3));
+  filter: drop-shadow(0 24px 48px rgba(0,0,0,0.5)) drop-shadow(0 12px 24px rgba(0,0,0,0.4));
 }
 
 .story-wooden-dowel {
@@ -110,6 +110,7 @@
   /* Default to hidden - only visible through animations or when in idle phase */
   opacity: 0;
   visibility: hidden;
+  filter: drop-shadow(0 24px 48px rgba(0,0,0,0.5)) drop-shadow(0 12px 24px rgba(0,0,0,0.4));
 }
 
 /* Speaking animations - driven by data-phase attribute */

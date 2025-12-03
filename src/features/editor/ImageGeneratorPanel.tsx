@@ -22,6 +22,8 @@ interface ImageItem {
 interface CharacterImage {
   name: string;
   imagePath: string;
+  exists: boolean;
+  usedInScenes: number[];
 }
 
 interface StoryData {
@@ -395,20 +397,29 @@ const ImageGeneratorPanel: React.FC<ImageGeneratorPanelProps> = ({
                 {storyData.characterImages.map((char) => (
                   <div
                     key={char.name}
-                    onClick={() => toggleReferenceImage(char.imagePath)}
-                    className={`relative cursor-pointer transition-all ${
-                      selectedReferences.includes(char.imagePath)
-                        ? 'ring-2 ring-purple-500 ring-offset-2'
-                        : 'opacity-60 hover:opacity-100'
+                    onClick={() => char.exists && toggleReferenceImage(char.imagePath)}
+                    className={`relative transition-all ${
+                      !char.exists
+                        ? 'opacity-50 cursor-default'
+                        : selectedReferences.includes(char.imagePath)
+                          ? 'ring-2 ring-purple-500 ring-offset-2 cursor-pointer'
+                          : 'opacity-60 hover:opacity-100 cursor-pointer'
                     }`}
+                    title={char.exists ? char.name : `${char.name} (not generated)`}
                   >
-                    <img
-                      src={getImageUrl(char.imagePath)}
-                      alt={char.name}
-                      className="w-12 h-12 object-cover rounded-lg"
-                      title={char.name}
-                    />
-                    {selectedReferences.includes(char.imagePath) && (
+                    {char.exists ? (
+                      <img
+                        src={getImageUrl(char.imagePath)}
+                        alt={char.name}
+                        className="w-12 h-12 object-cover rounded-lg"
+                      />
+                    ) : (
+                      <div className="w-12 h-12 rounded-lg border-2 border-dashed border-gray-300 bg-gray-50 flex flex-col items-center justify-center">
+                        <span className="text-gray-400 text-sm font-semibold">?</span>
+                        <span className="text-gray-400 text-[8px] truncate max-w-[40px]">{char.name}</span>
+                      </div>
+                    )}
+                    {char.exists && selectedReferences.includes(char.imagePath) && (
                       <div className="absolute -top-1 -right-1 w-4 h-4 bg-purple-500 rounded-full flex items-center justify-center">
                         <span className="text-white text-xs">✓</span>
                       </div>

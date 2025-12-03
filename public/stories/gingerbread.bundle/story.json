@@ -2,12 +2,9 @@
   "title": "The Runaway Cookie",
   "storyId": "001-runaway-cookie",
   "backgroundDescriptions": {
-    "bakery": "The exterior of Ms. Butterbuns' cozy bakery shop. A charming storefront with a striped awning, warm golden light spilling from the windows, and a wooden sign shaped like a cupcake. Cobblestone street in front.",
-    "insideBakery": "Inside the warm bakery kitchen. Wooden counters covered in flour, shelves lined with fresh bread and pastries, a large brick oven glowing with warmth, hanging copper pots, and the soft morning light streaming through a window.",
-    "cobbler": "The front of Mr. Shoe's cobbler shop. An old-fashioned shoe repair store with a giant boot-shaped sign, dusty display window full of shoes, and a worn wooden door. The building looks weathered but well-loved.",
-    "outsideCobbler": "The back alley behind the cobbler shop. A narrow passage with cobblestones, broken glass scattered on the ground near a shattered window, and small footprints in the dust leading away.",
-    "path": "A winding dirt path through a grassy meadow. Wildflowers dot the sides, trees line the horizon, and the path leads toward a distant river. Soft afternoon sunlight.",
-    "riverbank": "A peaceful riverbank with gentle flowing water. Tall reeds grow along the shore, a wooden dock extends into the water with a small ferry boat tied to it. Willow trees drape over the scene."
+    "bakery": "A medieval bakery, it is Christmas. Cookies and muffins are on display.",
+    "cobbler": "A medieval cobblers.",
+    "riverbank": "A large river surrounded by snow covered trees. There is no ice on the river. There are bushes and catails."
   },
   "scenes": [
     {
@@ -56,7 +53,7 @@
     {
       "type": "text",
       "text": "Warm, sweet smells filled the bakery. Vanilla, cinnamon, and sugar drifted through the air. But today, something else drifted too—trouble.",
-      "background": "insideBakery.png"
+      "background": "Bakery.png"
     },
     {
       "type": "clue-image",
@@ -81,16 +78,17 @@
           "dialog": "A witch's potion? And it's half gone. What was Ms. Butterbuns doing with this?"
         },
         {
-          "hotspotName": "Frosting",
-          "description": "White frosting and cookie-making tools",
-          "image": "frosting",
-          "dialog": "It looks like Ms. Butterbuns was making a cookie with white frosting."
+          "hotspotName": "Pan",
+          "description": "An empty cookie pan",
+          "image": "pan",
+          "dialog": "This pan is awfully large for just one cookie. What was she making?"
         }
-      ]
+      ],
+      "sceneDescription": "Inside a baker's medieval bakery. It's Christmas there are muffins, cookies, and cakes. We can see a large empty tray. The tray must be empty! A tube of frosting lays on the table.. A bowl of hair. And a half empty potion bottle sit on a shelf. On the ground is a trail of crumbs leading out the door."
     },
     {
       "type": "character-flow",
-      "background": "insideBakery.png",
+      "background": "Bakery.png",
       "left-character": "leo",
       "right-character": "butterbuns",
       "useClues": true,
@@ -125,11 +123,11 @@
     {
       "type": "text",
       "text": "A bright trail of cookie crumbs led me across town, all the way to the cobbler's shop.",
-      "background": "cobbler.png"
+      "background": "cobbler.jpeg"
     },
     {
       "type": "clue-image",
-      "image": "brokenWindowCobbler",
+      "image": "brokenWindow",
       "clueDescriptions": [
         {
           "hotspotName": "BrokenWindow",
@@ -155,16 +153,17 @@
           "image": "pedestal",
           "dialog": "This pedestal is covered in crumbs. Something was taken from here."
         }
-      ]
+      ],
+      "sceneDescription": "Outside of a medieval shoe store. There is a window that has 3 pedestals,. On each pedestal is a shoe except for the third it is empty. There is a large crack/hole in the window. A sign on the ground says baby shoes on sale. A door on the left side is closed. It's christmas and there is snow and christmas decorations. There is mud on the empty pedestal"
     },
     {
       "type": "text",
       "text": "Suddenly the shop door flew open. Mr. Shoe stomped out, grouchy as ever.",
-      "background": "cobbler.png"
+      "background": "cobbler.jpeg"
     },
     {
       "type": "character-flow",
-      "background": "cobbler.png",
+      "background": "cobbler.jpeg",
       "left-character": "leo",
       "right-character": "mrshoe",
       "useClues": true,
@@ -231,11 +230,12 @@
           "image": "note",
           "dialog": "A note! It says, 'You can't catch me!' We'll see about that."
         }
-      ]
+      ],
+      "sceneDescription": "A downward view of a sidewalk. ON the sid"
     },
     {
       "type": "character-flow",
-      "background": "outsideCobbler.png",
+      "background": "Cobbler.png",
       "left-character": "leo",
       "right-character": "none",
       "useClues": true,
@@ -259,9 +259,10 @@
       ]
     },
     {
-      "type": "text",
-      "text": "The tiny baby shoe prints continued across the street, past the park, and straight toward the river.",
-      "background": "path.png"
+      "type": "image",
+      "text": "A shoe prints lead out to snow covered trees and a river in the far distance. No characters or animals should be in the picture.",
+      "description": "Show shoe prints in snow and on cobble stone heading out toward a river surrounded by trees. It's christmas time.",
+      "image": "story/path.png"
     },
     {
       "type": "map",
@@ -271,31 +272,34 @@
     {
       "type": "image",
       "image": "story/riverChase1.png",
-      "text": "I spotted the thief in the distance, running toward the riverbank. His pink baby shoes flashed as he darted between trees."
+      "text": "I spotted the thief in the distance, running toward the riverbank. His pink baby shoes flashed as he darted between trees.",
+      "description": "The backside of a gingerbread man running through snow covered trees. He is wearing pink baby shoes. And leaving foot prints."
     },
     {
       "type": "text",
       "text": "I sprinted closer. Just close enough to grab him—but WHOOSH!",
-      "background": "riverbank.png"
+      "background": "riverbank.jpeg"
     },
     {
       "type": "image",
       "image": "story/riverChase2.png",
-      "text": "My feet slipped, and I fell flat on my face."
+      "text": "My feet slipped on a patch of ice, and I fell flat on my face.",
+      "description": "Leo slipping on a patch of ice. Surrounded by snow covered trees."
     },
     {
       "type": "text",
       "text": "The thief raced away. When I pushed myself up, I noticed my hand was smeared with the thief's thick brown mud.",
-      "background": "riverbank.png"
+      "background": "riverbank.jpeg"
     },
     {
       "type": "image",
       "image": "story/leoTastingMud.png",
-      "text": "I sniffed it, then tasted it carefully. It didn't taste like mud at all. It tasted like cinnamon and white frosting."
+      "text": "I sniffed it, then tasted it carefully. It didn't taste like mud at all. It tasted like cinnamon and white frosting.",
+      "description": "Leo licking a gooey substance that looks like mud, with an interest look. He is sitting in a snowpile surrounded by snow covered trees"
     },
     {
       "type": "character-flow",
-      "background": "riverbank.png",
+      "background": "riverbank.jpeg",
       "left-character": "leo",
       "right-character": "none",
       "useClues": false,
@@ -327,12 +331,13 @@
     {
       "type": "image",
       "image": "story/thiefRunsAway.png",
-      "text": "I watched the cookie-covered child dash behind the trees and vanish."
+      "text": "I watched the cookie-covered child dash behind the trees and vanish.",
+      "description": "Show the backside of a gingerbread man wearing pink tennishoes running behind a line of thick snow covered trees. There is a river behind the trees. We should only see the back legs of him as the rest of him is already hidden by the trees. The rest is hidden behind the trees. The trees are much larger than him."
     },
     {
       "type": "text",
       "text": "I dash over to the trees but fear I am too late.",
-      "background": "riverbank.png"
+      "background": "riverbank.jpeg"
     },
     {
       "type": "clue-image",
@@ -362,11 +367,12 @@
           "image": "shoePrints",
           "dialog": "The tiny shoe prints stop right at the river."
         }
-      ]
+      ],
+      "sceneDescription": "It's winter and we are looking at a river surrounded by snow covered trees and cattails. There's a wooden sign on the near side of the river that says \"Franky the Fox's Ferry Service.\" The text is hand painted. There are two shoes floating in the river. There are shoe prints in the snow leading all the way up to the river but then they disapear. On the *FAR SIDE* of the river is a bush with a fox tail sticking out of it. We do not see the fox's face, only his tail. Make sure the bush on the far side of the river."
     },
     {
       "type": "character-flow",
-      "background": "riverbank.png",
+      "background": "riverbank.jpeg",
       "left-character": "leo",
       "right-character": "none",
       "useClues": true,
@@ -394,11 +400,12 @@
     {
       "type": "image",
       "image": "story/frankyPeeks.png",
-      "text": "Franky peeked out with a guilty smile."
+      "text": "Franky peeked out with a guilty smile.",
+      "description": "FRANKY PEEKS OUT BEHIND SOME SNOW COVERED BUSHES THAT ARE ACROSS A RIVER."
     },
     {
       "type": "character-flow",
-      "background": "riverbank.png",
+      "background": "riverbank.jpeg",
       "left-character": "leo",
       "right-character": "franky",
       "useClues": false,
@@ -471,7 +478,7 @@
     {
       "type": "text",
       "text": "A tiny voice whispered, \"It's so dark in here.\" I pulled out the thief.",
-      "background": "riverbank.png"
+      "background": "riverbank.jpeg"
     },
     {
       "type": "image",
@@ -480,7 +487,7 @@
     },
     {
       "type": "character-flow",
-      "background": "riverbank.png",
+      "background": "riverbank.jpeg",
       "left-character": "leo",
       "right-character": "gingerbread-man",
       "useClues": false,

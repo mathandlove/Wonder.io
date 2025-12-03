@@ -11,6 +11,76 @@ const execAsync = promisify(exec);
 const PUBLIC_PATH = path.join(__dirname, '../../public');
 const PROJECT_ROOT = path.join(__dirname, '../..');
 
+/**
+ * Extract bundle name and image name from an image path
+ * Example: /stories/gingerbread.bundle/images/clues/insideBakery.png
+ * Returns: { bundleName: 'gingerbread.bundle', imageName: 'insideBakery' }
+ */
+function extractImageInfo(imagePath: string): { bundleName: string; imageName: string } | null {
+  const match = imagePath.match(/stories\/([^/]+\.bundle)\/images\/(?:clues\/)?([^/]+)\.(png|jpg|jpeg|webp)$/i);
+  if (match) {
+    return {
+      bundleName: match[1],
+      imageName: match[2]
+    };
+  }
+  return null;
+}
+
+/**
+ * Sync hotspot descriptions to story.json clueDescriptions
+ * This keeps the story.json in sync when descriptions are edited in the hotspot editor
+ */
+function syncDescriptionsToStoryJson(imagePath: string, hotspots: Hotspot[]): void {
+  const imageInfo = extractImageInfo(imagePath);
+  if (!imageInfo) {
+    console.log(`⏭️  Skipping story.json sync - not a clue image: ${imagePath}`);
+    return;
+  }
+
+  const { bundleName, imageName } = imageInfo;
+  const storyJsonPath = path.join(PUBLIC_PATH, 'stories', bundleName, 'story.json');
+
+  if (!fs.existsSync(storyJsonPath)) {
+    console.log(`⚠️  story.json not found at ${storyJsonPath}`);
+    return;
+  }
+
+  try {
+    const storyData = JSON.parse(fs.readFileSync(storyJsonPath, 'utf8'));
+
+    // Find clue-image scenes that reference this image
+    let updated = false;
+    for (const scene of storyData.scenes || []) {
+      if (scene.type === 'clue-image' && scene.image === imageName) {
+        // Update clueDescriptions from hotspots
+        if (scene.clueDescriptions && Array.isArray(scene.clueDescriptions)) {
+          for (const clueDesc of scene.clueDescriptions) {
+            // Find matching hotspot by label/hotspotName
+            const matchingHotspot = hotspots.find(
+              h => h.label === clueDesc.hotspotName || h.label === clueDesc.image
+            );
+            if (matchingHotspot && matchingHotspot.description) {
+              if (clueDesc.description !== matchingHotspot.description) {
+                clueDesc.description = matchingHotspot.description;
+                updated = true;
+                console.log(`📝 Updated description for "${clueDesc.hotspotName}" in story.json`);
+              }
+            }
+          }
+        }
+      }
+    }
+
+    if (updated) {
+      fs.writeFileSync(storyJsonPath, JSON.stringify(storyData, null, 2), 'utf8');
+      console.log(`✅ Synced descriptions to ${storyJsonPath}`);
+    }
+  } catch (error) {
+    console.error(`❌ Failed to sync descriptions to story.json:`, error);
+  }
+}
+
 interface MapInfo {
   path: string;
   coloredPath: string;
@@ -127,6 +197,9 @@ export async function handleSaveBundleHotspots(req: Request, res: Response) {
     fs.writeFileSync(hotspotFilePath, JSON.stringify(data, null, 2), 'utf8');
 
     console.log(`✅ Saved ${hotspots.length} hotspots and ${(paths || []).length} paths to ${hotspotFilePath}`);
+
+    // Sync descriptions to story.json
+    syncDescriptionsToStoryJson(image, hotspots);
 
     res.json({
       success: true,
