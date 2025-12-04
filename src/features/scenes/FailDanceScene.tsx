@@ -70,7 +70,8 @@ export default function FailDanceScene({ scene }: SceneProps<FailDanceSceneType>
   };
 
   const getFallbackImage = (characterName: string) => {
-    return `/assets.core/images/characters/${characterName}.sticker-cardboard-3d.webp?${version}`;
+    // Fallback to the same bundle path (no separate assets.core)
+    return `/stories/${storyId}.bundle/images/characters/${characterName}.sticker-cardboard-3d.webp?${version}`;
   };
 
   return (

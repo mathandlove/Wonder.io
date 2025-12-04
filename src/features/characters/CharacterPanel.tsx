@@ -149,7 +149,8 @@ export const CharacterPanel: React.FC<CharacterPanelProps> = ({
 
   const getFallbackImage = (char: string) => {
     if (char === 'NOCHARACTER') return '';
-    return `/assets.core/images/characters/${char}.sticker-cardboard-3d.webp?v=${assetVersion}`;
+    // Fallback to the same bundle path (no separate assets.core)
+    return `/stories/${storyId}.bundle/images/characters/${char}.sticker-cardboard-3d.webp?v=${assetVersion}`;
   };
 
 

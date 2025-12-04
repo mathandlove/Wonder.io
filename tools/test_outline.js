@@ -1,6 +1,6 @@
 import sharp from 'sharp';
 
-const testFile = 'public/assets.core/maps/cityMap.png';
+const testFile = 'public/stories/gingerbread.bundle/images/mapsColored/cityMapColored.jpg';
 
 async function test() {
   

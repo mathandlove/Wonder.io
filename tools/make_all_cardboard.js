@@ -9,7 +9,6 @@
  *
  * Searches for images in:
  * - public/stories/*.bundle/images/characters/
- * - public/assets.core/images/characters/
  *
  * Usage:
  *   node tools/make_all_cardboard.js              # Process all missing cardboard cutouts
@@ -88,9 +87,7 @@ async function findCharacterFolders() {
 
   const searchPaths = [
     'stories/*.bundle/images/characters',
-    'stories/*.bundle/characters',
-    'assets.core/images/characters',
-    'assets.core/characters'
+    'stories/*.bundle/characters'
   ];
 
   for (const searchPath of searchPaths) {
@@ -390,7 +387,6 @@ async function main() {
     log('  4. 3D Bevel Effect     → .sticker-cardboard-3d.webp', 'gray');
     log('\nSearches in:', 'cyan');
     log('  • public/stories/*.bundle/images/characters/', 'gray');
-    log('  • public/assets.core/images/characters/', 'gray');
     log('');
     return;
   }
@@ -426,7 +422,6 @@ async function main() {
     log('\n⚠️  No character folders found!', 'yellow');
     log('Expected locations:', 'gray');
     log('  • public/stories/*.bundle/images/characters/', 'gray');
-    log('  • public/assets.core/images/characters/', 'gray');
     return;
   }
 

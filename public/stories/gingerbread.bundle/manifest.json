@@ -4,7 +4,7 @@
   "type": "story",
   "name": "The Gingerbread Man",
   "description": "Classic tale of the Gingerbread Man's adventure",
-  "dependsOn": ["assets.core"],
+  "dependsOn": [],
   "metadata": {
     "author": "Traditional",
     "difficulty": "beginner",

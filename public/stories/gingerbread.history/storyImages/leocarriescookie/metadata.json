@@ -1,0 +1,51 @@
+{
+  "imageId": "leocarriescookie",
+  "category": "storyImages",
+  "versions": [
+    {
+      "version": 1,
+      "filename": "v1-1764817311612.jpeg",
+      "timestamp": 1764817311612,
+      "prompt": "Leo carries the gingerbread man on his shoulders back up the snow drift, surrounded by snow covered trees. There's a river far in the background. DO NOT show any foot prints.",
+      "charactersReferenced": [
+        "leo",
+        "gingerbread-man"
+      ],
+      "isModification": false
+    },
+    {
+      "version": 2,
+      "filename": "v2-1764817311613.jpeg",
+      "timestamp": 1764817311613,
+      "prompt": "Leo carries the gingerbread man on his shoulders back up the snow drift, surrounded by snow covered trees. There's a river far in the background. DO NOT show any foot prints.",
+      "charactersReferenced": [
+        "leo",
+        "gingerbread-man"
+      ],
+      "isModification": false
+    },
+    {
+      "version": 3,
+      "filename": "v3-1764817311614.jpeg",
+      "timestamp": 1764817311614,
+      "prompt": "Leo carries the gingerbread man on his shoulders back up the snow drift, surrounded by snow covered trees. There's a river far in the background. DO NOT show any foot prints.",
+      "charactersReferenced": [
+        "leo",
+        "gingerbread-man"
+      ],
+      "isModification": false
+    },
+    {
+      "version": 4,
+      "filename": "v4-1764817311615.jpeg",
+      "timestamp": 1764817311615,
+      "prompt": "Leo carries the gingerbread man on his shoulders back up the snow drift, surrounded by snow covered trees. There's a river far in the background. DO NOT show any foot prints.",
+      "charactersReferenced": [
+        "leo",
+        "gingerbread-man"
+      ],
+      "isModification": false
+    }
+  ],
+  "currentVersion": 1
+}

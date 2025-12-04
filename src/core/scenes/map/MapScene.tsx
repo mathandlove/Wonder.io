@@ -1,137 +1,79 @@
 /**
- * MapScene - Displays a map image with highlighted locations and paths
+ * MapScene - Displays a colored map image with animated trail paths
  *
- * Shows a black & white map image with locations highlighted via hotspot polygons
- * using the colored version of those regions. Also shows paths between locations:
+ * Shows the colored map with paths/trails between locations:
  * - Older paths are shown faded
- * - The most recent path (leading to current location) is highlighted
+ * - The most recent path (leading to current location) is highlighted and animated
  *
  * Flow:
- * 1. Load base grayscale map image + hotspot data (including paths)
+ * 1. Load colored map image + path data
  * 2. Get all map scenes from story up to current index
- * 3. Find hotspots matching all visited locations
- * 4. Show paths with orderNumber <= visitedLocations.length - 1
- * 5. Tap to continue to next scene
+ * 3. Show paths with orderNumber <= visitedLocations.length - 1
+ * 4. Tap to continue to next scene
  */
 import React, { useState, useEffect, useRef, useCallback, useMemo } from 'react';
 import type { SceneProps } from '@features/scenes/registry';
-import type { MapScene as MapSceneType, Scene } from '@core/types/scene';
+import type { MapScene as MapSceneType } from '@core/types/scene';
 import { resolveStoryImage } from '@core/data/imageResolver';
-import {
-  getHotspotByLabel,
-  type Hotspot,
-  type HotspotData,
-  type HotspotPoint,
-} from '@core/data/hotspotLoader';
 import { calculateImageBounds, pointsToPixels } from '@shared/utils/coordinateUtils';
 import * as navigationBus from '@core/navigation/events/navigationBus';
 import { useNavigationStore, selectNavigationGraph } from '@core/navigation/navigationStore';
 import './MapScene.css';
 
 /**
- * Path data structure from hotspot JSON
+ * Path data structure from paths JSON
  */
 interface MapPath {
   id: string;
-  points: HotspotPoint[];
+  points: { x: number; y: number }[];
   orderNumber: number;
   createdAt: string;
-  mapId: string;
+  mapId?: string;
 }
 
 /**
- * Extended hotspot data that includes paths
+ * Map data that includes paths
  */
-interface MapHotspotData extends HotspotData {
-  paths?: MapPath[];
+interface MapData {
+  paths: MapPath[];
 }
 
 /**
- * Load hotspot data for a map image
- * @param mapName - The base name of the map (e.g., "cityMap")
- * @param storyPath - Path to story bundle
- * @returns Parsed hotspot data
+ * Load path data for a map image
  */
-async function loadMapHotspotData(
+async function loadMapPathData(
   mapName: string,
   storyPath: string = "/stories/gingerbread.bundle"
-): Promise<MapHotspotData> {
-  // Remove file extension if present
-  const baseName = mapName.replace(/\.(jpg|png|webp)$/, '');
-  const hotspotPath = `${storyPath}/images/maps/hotspots/${baseName}.json`;
+): Promise<MapData> {
+  const baseName = mapName.replace(/\.(jpg|jpeg|png|webp)$/i, '');
+  const pathsFile = `${storyPath}/images/hotspots/maps_${baseName}.json`;
 
   try {
-    const response = await fetch(hotspotPath);
+    const response = await fetch(pathsFile);
     if (!response.ok) {
-      throw new Error(`Failed to load map hotspot data: ${response.statusText}`);
+      // Return empty paths if file doesn't exist
+      console.log(`[MapScene] No paths file found at ${pathsFile}`);
+      return { paths: [] };
     }
 
-    const data: MapHotspotData = await response.json();
-
-    if (!data.hotspots || !Array.isArray(data.hotspots)) {
-      throw new Error('Invalid hotspot data: missing hotspots array');
-    }
-
-    return data;
+    const data = await response.json();
+    return { paths: data.paths || [] };
   } catch (error) {
-    console.error(`[MapScene] Error loading ${hotspotPath}:`, error);
-    throw error;
+    console.error(`[MapScene] Error loading ${pathsFile}:`, error);
+    return { paths: [] };
   }
-}
-
-/**
- * Location Highlight Component
- * Shows the colored version of a specific location using CSS clip-path
- */
-interface LocationHighlightProps {
-  coloredImageSrc: string;
-  hotspot: Hotspot;
-  imageBounds: { width: number; height: number; left: number; top: number };
-  isVisible: boolean; // controls whether the highlight is shown
-  shouldAnimate: boolean; // true to fade in, false to show immediately
-}
-
-function LocationHighlight({ coloredImageSrc, hotspot, imageBounds, isVisible, shouldAnimate }: LocationHighlightProps) {
-  if (imageBounds.width === 0 || !isVisible) {
-    return null;
-  }
-
-  // Build clip-path for this hotspot
-  const points = hotspot.points
-    .map(p => `${p.x}% ${p.y}%`)
-    .join(', ');
-  const clipPath = `polygon(${points})`;
-
-  return (
-    <img
-      src={coloredImageSrc}
-      alt={`Highlighted location: ${hotspot.label}`}
-      className={shouldAnimate ? "map-hotspot-reveal" : ""}
-      style={{
-        position: 'absolute',
-        left: `${imageBounds.left}px`,
-        top: `${imageBounds.top}px`,
-        width: `${imageBounds.width}px`,
-        height: `${imageBounds.height}px`,
-        pointerEvents: 'none',
-        userSelect: 'none',
-        clipPath: clipPath,
-      }}
-    />
-  );
 }
 
 /**
  * Path Line Component
- * Renders an SVG path line between locations
- * Supports animated drawing for highlighted (newest) paths
+ * Renders an SVG path line with optional animation
  */
 interface PathLineProps {
   path: MapPath;
   imageBounds: { width: number; height: number; left: number; top: number };
-  isHighlighted: boolean; // true for the most recent path, false for older paths
-  shouldAnimate: boolean; // true to animate drawing, false to show immediately
-  onAnimationComplete?: () => void; // callback when animation finishes
+  isHighlighted: boolean;
+  shouldAnimate: boolean;
+  onAnimationComplete?: () => void;
 }
 
 function PathLine({ path, imageBounds, isHighlighted, shouldAnimate, onAnimationComplete }: PathLineProps) {
@@ -141,10 +83,8 @@ function PathLine({ path, imageBounds, isHighlighted, shouldAnimate, onAnimation
   const [animationProgress, setAnimationProgress] = useState(0);
   const [showLabel, setShowLabel] = useState(false);
 
-  // Animation duration in milliseconds
   const ANIMATION_DURATION = 1500;
 
-  // Get path length after render - use useLayoutEffect for synchronous measurement
   useEffect(() => {
     const measurePath = () => {
       if (pathRef.current) {
@@ -155,20 +95,13 @@ function PathLine({ path, imageBounds, isHighlighted, shouldAnimate, onAnimation
       }
     };
     measurePath();
-    // Also measure after a short delay in case the path isn't ready immediately
     const timeoutId = setTimeout(measurePath, 50);
     return () => clearTimeout(timeoutId);
   }, [imageBounds, path.points]);
 
-  // Run the drawing animation when shouldAnimate becomes true and we have pathLength
   useEffect(() => {
-    console.log('[PathLine] Animation effect:', { shouldAnimate, pathLength, animationStarted, pathId: path.id });
-
     if (!shouldAnimate || pathLength === 0 || animationStarted) return;
 
-    console.log('[PathLine] Starting animation for path:', path.id);
-
-    // Mark animation as started so it only runs once
     setAnimationStarted(true);
     setAnimationProgress(0);
     setShowLabel(false);
@@ -178,58 +111,41 @@ function PathLine({ path, imageBounds, isHighlighted, shouldAnimate, onAnimation
     const animate = (currentTime: number) => {
       const elapsed = currentTime - startTime;
       const progress = Math.min(elapsed / ANIMATION_DURATION, 1);
-
-      // Easing function for smooth animation (ease-out)
       const easedProgress = 1 - Math.pow(1 - progress, 3);
       setAnimationProgress(easedProgress);
 
       if (progress < 1) {
         requestAnimationFrame(animate);
       } else {
-        // Animation complete - show the label and notify parent
-        console.log('[PathLine] Animation complete for path:', path.id);
         setShowLabel(true);
         onAnimationComplete?.();
       }
     };
 
     requestAnimationFrame(animate);
-  }, [shouldAnimate, pathLength, animationStarted, onAnimationComplete, path.id]);
+  }, [shouldAnimate, pathLength, animationStarted, onAnimationComplete]);
 
   if (imageBounds.width === 0 || path.points.length < 2) {
     return null;
   }
 
-  // Convert percentage points to pixel coordinates
   const pixelPoints = pointsToPixels(path.points, imageBounds.width, imageBounds.height);
 
-  // Build SVG path data
   const pathData = pixelPoints.map((point, index) =>
     `${index === 0 ? 'M' : 'L'} ${point.x} ${point.y}`
   ).join(' ');
 
-  // Calculate midpoint for number label
   const midIndex = Math.floor(pixelPoints.length / 2);
   const midpoint = pixelPoints[midIndex];
 
-  // Opacity based on whether this is the highlighted (most recent) path
   const pathOpacity = isHighlighted ? 1 : 0.35;
 
-  // Determine display state based on animation mode
   const isAnimating = shouldAnimate && animationStarted;
   const isWaitingToAnimate = shouldAnimate && !animationStarted;
-
-  // Show label only after animation completes, or immediately if not animating
   const displayLabel = isAnimating ? showLabel : !isWaitingToAnimate;
-
-  // If shouldAnimate but we don't have pathLength yet, hide everything with opacity
   const shouldHide = shouldAnimate && pathLength === 0;
-
-  // Calculate how much of the path to reveal (for clip path)
-  // During animation, reveal progressively; when waiting, hide completely; otherwise show all
   const revealLength = isWaitingToAnimate ? 0 : (isAnimating ? pathLength * animationProgress : pathLength);
 
-  // Generate a unique ID for this path's mask
   const maskId = `path-mask-${path.id}`;
 
   return (
@@ -247,7 +163,6 @@ function PathLine({ path, imageBounds, isHighlighted, shouldAnimate, onAnimation
       viewBox={`0 0 ${imageBounds.width} ${imageBounds.height}`}
     >
       <defs>
-        {/* Mask that reveals the dotted line progressively using stroke animation */}
         <mask id={maskId}>
           <path
             d={pathData}
@@ -262,7 +177,6 @@ function PathLine({ path, imageBounds, isHighlighted, shouldAnimate, onAnimation
         </mask>
       </defs>
       <g opacity={shouldHide ? 0 : pathOpacity}>
-        {/* Path stroke - thick pale blue dotted line, masked to reveal progressively */}
         <g mask={isAnimating || isWaitingToAnimate ? `url(#${maskId})` : undefined}>
           <path
             ref={pathRef}
@@ -275,10 +189,8 @@ function PathLine({ path, imageBounds, isHighlighted, shouldAnimate, onAnimation
             strokeLinejoin="round"
           />
         </g>
-        {/* Number label - shown after animation or immediately if not animating */}
         {displayLabel && (
           <>
-            {/* Number label background */}
             <circle
               cx={midpoint.x}
               cy={midpoint.y}
@@ -286,7 +198,6 @@ function PathLine({ path, imageBounds, isHighlighted, shouldAnimate, onAnimation
               fill="#87CEEB"
               className={isAnimating ? "map-path-label-appear" : ""}
             />
-            {/* Number label */}
             <text
               x={midpoint.x}
               y={midpoint.y}
@@ -308,28 +219,18 @@ function PathLine({ path, imageBounds, isHighlighted, shouldAnimate, onAnimation
 }
 
 export default function MapScene({ scene, sceneIndex }: SceneProps<MapSceneType>) {
-  const [hotspotData, setHotspotData] = useState<MapHotspotData | null>(null);
+  const [mapData, setMapData] = useState<MapData | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [imageBounds, setImageBounds] = useState({ width: 0, height: 0, left: 0, top: 0 });
-  const [pathAnimationComplete, setPathAnimationComplete] = useState(false);
   const [isInView, setIsInView] = useState(false);
 
   const imgRef = useRef<HTMLImageElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
 
-  // Callback when path animation finishes - reveals the new hotspot
-  const handlePathAnimationComplete = useCallback(() => {
-    setPathAnimationComplete(true);
-  }, []);
-
   // Intersection Observer to detect when map scrolls into view
-  // Depends on isLoading so it runs after the container is rendered
   useEffect(() => {
-    // eslint-disable-next-line no-console
-    console.log('[MapScene] IntersectionObserver effect:', { isLoading, hasContainer: !!containerRef.current });
-
-    if (isLoading) return; // Wait until loading is complete
+    if (isLoading) return;
 
     const container = containerRef.current;
     if (!container) return;
@@ -337,75 +238,52 @@ export default function MapScene({ scene, sceneIndex }: SceneProps<MapSceneType>
     const observer = new IntersectionObserver(
       (entries) => {
         const entry = entries[0];
-        // eslint-disable-next-line no-console
-        console.log('[MapScene] IntersectionObserver callback:', { isIntersecting: entry.isIntersecting, ratio: entry.intersectionRatio });
         if (entry.isIntersecting) {
           setIsInView(true);
-          // Once triggered, disconnect - we only want to animate once
           observer.disconnect();
         }
       },
-      { threshold: 0.3 } // Trigger when 30% of the map is visible
+      { threshold: 0.3 }
     );
 
     observer.observe(container);
-
     return () => observer.disconnect();
   }, [isLoading]);
 
   // Get navigation graph to access all scenes
   const navigationGraph = useNavigationStore(selectNavigationGraph);
 
-  // Derive all visited locations from map scenes up to and including current index
-  const visitedLocations = useMemo(() => {
-    const locations: string[] = [];
+  // Count visited locations from map scenes up to current index
+  const visitedLocationCount = useMemo(() => {
+    let count = 0;
     const currentIndex = sceneIndex ?? 0;
 
-    // Iterate through nodes up to current index
     for (let i = 0; i <= currentIndex && i < navigationGraph.order.length; i++) {
       const nodeId = navigationGraph.order[i];
       const node = navigationGraph.byId[nodeId];
       if (node?.scene?.type === 'map') {
-        const mapScene = node.scene as MapSceneType;
-        if (mapScene.location && !locations.includes(mapScene.location)) {
-          locations.push(mapScene.location);
-        }
+        count++;
       }
     }
 
-    return locations;
+    return count;
   }, [navigationGraph, sceneIndex]);
 
-  // Find hotspots for all visited locations
-  const visitedHotspots = useMemo(() => {
-    if (!hotspotData) return [];
-
-    return visitedLocations
-      .map(location => getHotspotByLabel(hotspotData.hotspots, location))
-      .filter((h): h is Hotspot => h !== undefined);
-  }, [hotspotData, visitedLocations]);
-
   // Get paths to show based on visited locations count
-  // Path with orderNumber N leads to the (N+1)th location
-  // So for N visited locations, we show paths with orderNumber 1 to N-1
   const visiblePaths = useMemo(() => {
-    if (!hotspotData?.paths) return [];
+    if (!mapData?.paths) return [];
 
-    const numLocations = visitedLocations.length;
-    // For 1 location: no paths (first location has no incoming path)
-    // For 2 locations: show path 1 (leads to 2nd location)
-    // For 3 locations: show paths 1, 2 (leads to 2nd and 3rd locations)
-    const maxPathOrder = numLocations - 1;
+    // For N visited locations, show paths with orderNumber 1 to N-1
+    const maxPathOrder = visitedLocationCount - 1;
 
-    return hotspotData.paths
+    return mapData.paths
       .filter(path => path.orderNumber <= maxPathOrder)
       .sort((a, b) => a.orderNumber - b.orderNumber);
-  }, [hotspotData, visitedLocations.length]);
+  }, [mapData, visitedLocationCount]);
 
-  // The highlighted path is the one with the highest orderNumber (most recent)
-  const highlightedPathOrder = visitedLocations.length - 1;
+  // The highlighted path is the most recent one
+  const highlightedPathOrder = visitedLocationCount - 1;
 
-  // Update dimensions helper function
   const updateDimensions = useCallback(() => {
     if (imgRef.current && containerRef.current) {
       const natural = {
@@ -413,7 +291,6 @@ export default function MapScene({ scene, sceneIndex }: SceneProps<MapSceneType>
         height: imgRef.current.naturalHeight
       };
 
-      // Skip if image hasn't loaded yet
       if (natural.width === 0 || natural.height === 0) {
         return;
       }
@@ -434,27 +311,22 @@ export default function MapScene({ scene, sceneIndex }: SceneProps<MapSceneType>
     }
   }, []);
 
-  // Calculate image bounds on window resize
   useEffect(() => {
     window.addEventListener('resize', updateDimensions);
     return () => window.removeEventListener('resize', updateDimensions);
   }, [updateDimensions]);
 
-  // Load hotspot data for the map
+  // Load path data for the map
   useEffect(() => {
     async function loadData() {
       try {
         setIsLoading(true);
-
-        // Extract map name from scene.image
-        const mapName = scene.image.replace(/\.(jpg|png|webp)$/, '');
-
-        const data = await loadMapHotspotData(mapName);
-        setHotspotData(data);
-
+        const mapName = scene.image.replace(/\.(jpg|jpeg|png|webp)$/i, '');
+        const data = await loadMapPathData(mapName);
+        setMapData(data);
         setIsLoading(false);
       } catch (err) {
-        console.error('[MapScene] Failed to load hotspot data:', err);
+        console.error('[MapScene] Failed to load path data:', err);
         setError(err instanceof Error ? err.message : 'Failed to load map data');
         setIsLoading(false);
       }
@@ -464,7 +336,6 @@ export default function MapScene({ scene, sceneIndex }: SceneProps<MapSceneType>
   }, [scene.image]);
 
   const handleContinue = () => {
-    console.log('[MapScene] Continue - advancing to next scene');
     navigationBus.emit({ type: 'CONTINUE' });
   };
 
@@ -484,11 +355,9 @@ export default function MapScene({ scene, sceneIndex }: SceneProps<MapSceneType>
     );
   }
 
-  // Derive image paths
-  // Map images are in /stories/gingerbread.bundle/images/maps/
-  const mapName = scene.image.replace(/\.(jpg|png|webp)$/, '');
-  const baseImageSrc = resolveStoryImage(`maps/${mapName}.jpg`);
-  const coloredImageSrc = resolveStoryImage(`maps/${mapName}Colored.jpg`);
+  // Use map from maps folder
+  const mapName = scene.image.replace(/\.(jpg|jpeg|png|webp)$/i, '');
+  const coloredImageSrc = resolveStoryImage(`maps/${scene.image}`);
 
   return (
     <div
@@ -503,7 +372,7 @@ export default function MapScene({ scene, sceneIndex }: SceneProps<MapSceneType>
         cursor: 'pointer',
       }}
     >
-      {/* Image wrapper - positioned exactly where the image renders */}
+      {/* Image wrapper */}
       <div
         style={{
           position: 'absolute',
@@ -514,10 +383,10 @@ export default function MapScene({ scene, sceneIndex }: SceneProps<MapSceneType>
           pointerEvents: 'none',
         }}
       >
-        {/* Base grayscale map image */}
+        {/* Colored map image */}
         <img
           ref={imgRef}
-          src={baseImageSrc}
+          src={coloredImageSrc}
           alt={`Map showing ${scene.location}`}
           draggable={false}
           style={{
@@ -530,10 +399,9 @@ export default function MapScene({ scene, sceneIndex }: SceneProps<MapSceneType>
         />
       </div>
 
-      {/* Paths between locations - rendered before locations so they appear underneath */}
+      {/* Paths/trails between locations */}
       {visiblePaths.map((path) => {
         const isHighlighted = path.orderNumber === highlightedPathOrder;
-        // Only animate the newest (highlighted) path, and only when in view
         const shouldAnimate = isHighlighted && highlightedPathOrder > 0 && isInView;
         return (
           <PathLine
@@ -542,32 +410,9 @@ export default function MapScene({ scene, sceneIndex }: SceneProps<MapSceneType>
             imageBounds={imageBounds}
             isHighlighted={isHighlighted}
             shouldAnimate={shouldAnimate}
-            onAnimationComplete={shouldAnimate ? handlePathAnimationComplete : undefined}
           />
         );
       })}
-
-      {/* Highlighted locations using colored version */}
-      {visitedHotspots.map((hotspot, index) => {
-        const isCurrentLocation = index === visitedHotspots.length - 1;
-        const hasIncomingPath = highlightedPathOrder > 0;
-        // Current location is hidden until path animation completes (if there's a path)
-        // Previous locations are always visible
-        const isVisible = !isCurrentLocation || !hasIncomingPath || pathAnimationComplete;
-        // Animate fade-in only for current location after path animation
-        const shouldAnimate = isCurrentLocation && hasIncomingPath && pathAnimationComplete;
-        return (
-          <LocationHighlight
-            key={hotspot.id}
-            coloredImageSrc={coloredImageSrc}
-            hotspot={hotspot}
-            imageBounds={imageBounds}
-            isVisible={isVisible}
-            shouldAnimate={shouldAnimate}
-          />
-        );
-      })}
-
     </div>
   );
 }

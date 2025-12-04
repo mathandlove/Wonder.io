@@ -10,7 +10,7 @@ import { Point } from './types';
 import { handleWhisperProxy } from './whisper-proxy-single'; // Using single-send approach
 import { handleAIChat } from './ai-conversation';
 import { handleAIValidation } from './ai-validation';
-import { handleLoadBundleHotspots, handleSaveBundleHotspots, handleListBundleImages, handleGenerateThumbnails, handleListBundleMaps } from './bundle-hotspots';
+import { handleLoadBundleHotspots, handleSaveBundleHotspots, handleListBundleImages, handleGenerateThumbnails, handleListBundleMaps, handleSaveStory, handleLoadMapPaths, handleSaveMapPaths } from './bundle-hotspots';
 import {
   handleImageGeneration,
   handleGetStoryImages,
@@ -22,7 +22,8 @@ import {
   handleWipeHistory,
   handleWipeAllHistory,
   handleUpdateDescription,
-  handleImageUpload
+  handleImageUpload,
+  handleFixImageReferences
 } from './image-generation';
 
 // Configure multer for memory storage
@@ -190,7 +191,10 @@ app.get('/api/bundle/hotspots', handleLoadBundleHotspots);
 app.post('/api/bundle/hotspots', handleSaveBundleHotspots);
 app.get('/api/bundle/images', handleListBundleImages);
 app.get('/api/bundle/maps', handleListBundleMaps);
+app.get('/api/bundle/map-paths', handleLoadMapPaths);
+app.post('/api/bundle/map-paths', handleSaveMapPaths);
 app.post('/api/bundle/hotspots/generate-thumbnails', handleGenerateThumbnails);
+app.post('/api/bundle/story', handleSaveStory);
 
 // Image generation routes (Gemini API)
 app.post('/api/images/generate', handleImageGeneration);
@@ -206,6 +210,7 @@ app.post('/api/images/wipe-history', handleWipeHistory);
 app.post('/api/images/wipe-all-history', handleWipeAllHistory);
 app.post('/api/images/update-description', handleUpdateDescription);
 app.post('/api/images/upload', upload.single('file'), handleImageUpload);
+app.post('/api/images/fix-references', handleFixImageReferences);
 
 // Health check
 app.get('/api/health', (req, res) => {

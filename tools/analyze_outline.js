@@ -1,8 +1,8 @@
 import sharp from 'sharp';
 
 async function analyze() {
-  const originalFile = 'public/assets.core/maps/cityMap.png';
-  const outlineFile = 'public/assets.core/maps/cityMap.outline.webp';
+  const originalFile = 'public/stories/gingerbread.bundle/images/mapsColored/cityMapColored.jpg';
+  const outlineFile = 'public/stories/gingerbread.bundle/images/mapsColored/cityMapColored.outline.webp';
   
   
   // Get original image data

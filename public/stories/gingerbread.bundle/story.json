@@ -9,7 +9,7 @@
   "scenes": [
     {
       "type": "map",
-      "image": "cityMap.jpg",
+      "image": "cityMap.jpeg",
       "location": "Bakery"
     },
     {
@@ -53,11 +53,11 @@
     {
       "type": "text",
       "text": "Warm, sweet smells filled the bakery. Vanilla, cinnamon, and sugar drifted through the air. But today, something else drifted too—trouble.",
-      "background": "Bakery.png"
+      "background": "bakery.jpeg"
     },
     {
       "type": "clue-image",
-      "image": "insideBakery",
+      "image": "insideBakery.jpg",
       "clueDescriptions": [
         {
           "hotspotName": "Hair",
@@ -88,7 +88,7 @@
     },
     {
       "type": "character-flow",
-      "background": "Bakery.png",
+      "background": "bakery.jpeg",
       "left-character": "leo",
       "right-character": "butterbuns",
       "useClues": true,
@@ -117,7 +117,7 @@
     },
     {
       "type": "map",
-      "image": "cityMap.jpg",
+      "image": "cityMap.jpeg",
       "location": "Cobbler"
     },
     {
@@ -127,12 +127,12 @@
     },
     {
       "type": "clue-image",
-      "image": "brokenWindow",
+      "image": "brokenWindow.jpeg",
       "clueDescriptions": [
         {
-          "hotspotName": "BrokenWindow",
+          "hotspotName": "crackedWindow",
           "description": "A broken window with cookie crumbs",
-          "image": "brokenWindow",
+          "image": "crackedWindow",
           "dialog": "Someone broke this window… and they tracked cookie crumbs with them."
         },
         {
@@ -204,7 +204,7 @@
     },
     {
       "type": "clue-image",
-      "image": "outsideCobbler",
+      "image": "outsideCobbler.jpeg",
       "clueDescriptions": [
         {
           "hotspotName": "BrokenGlass",
@@ -235,7 +235,7 @@
     },
     {
       "type": "character-flow",
-      "background": "Cobbler.png",
+      "background": "Cobbler.jpeg",
       "left-character": "leo",
       "right-character": "none",
       "useClues": true,
@@ -262,16 +262,16 @@
       "type": "image",
       "text": "A shoe prints lead out to snow covered trees and a river in the far distance. No characters or animals should be in the picture.",
       "description": "Show shoe prints in snow and on cobble stone heading out toward a river surrounded by trees. It's christmas time.",
-      "image": "story/path.png"
+      "image": "story/path.jpeg"
     },
     {
       "type": "map",
-      "image": "cityMap.jpg",
+      "image": "cityMap.jpeg",
       "location": "River"
     },
     {
       "type": "image",
-      "image": "story/riverChase1.png",
+      "image": "story/riverChase1.jpeg",
       "text": "I spotted the thief in the distance, running toward the riverbank. His pink baby shoes flashed as he darted between trees.",
       "description": "The backside of a gingerbread man running through snow covered trees. He is wearing pink baby shoes. And leaving foot prints."
     },
@@ -282,7 +282,7 @@
     },
     {
       "type": "image",
-      "image": "story/riverChase2.png",
+      "image": "story/riverChase2.jpeg",
       "text": "My feet slipped on a patch of ice, and I fell flat on my face.",
       "description": "Leo slipping on a patch of ice. Surrounded by snow covered trees."
     },
@@ -293,7 +293,7 @@
     },
     {
       "type": "image",
-      "image": "story/leoTastingMud.png",
+      "image": "story/leoTastingMud.jpeg",
       "text": "I sniffed it, then tasted it carefully. It didn't taste like mud at all. It tasted like cinnamon and white frosting.",
       "description": "Leo licking a gooey substance that looks like mud, with an interest look. He is sitting in a snowpile surrounded by snow covered trees"
     },
@@ -330,7 +330,7 @@
     },
     {
       "type": "image",
-      "image": "story/thiefRunsAway.png",
+      "image": "story/thiefRunsAway.jpeg",
       "text": "I watched the cookie-covered child dash behind the trees and vanish.",
       "description": "Show the backside of a gingerbread man wearing pink tennishoes running behind a line of thick snow covered trees. There is a river behind the trees. We should only see the back legs of him as the rest of him is already hidden by the trees. The rest is hidden behind the trees. The trees are much larger than him."
     },
@@ -341,7 +341,7 @@
     },
     {
       "type": "clue-image",
-      "image": "riverbank",
+      "image": "riverbank.jpg",
       "clueDescriptions": [
         {
           "hotspotName": "BabyShoes",
@@ -399,7 +399,7 @@
     },
     {
       "type": "image",
-      "image": "story/frankyPeeks.png",
+      "image": "story/frankypeeks.jpg",
       "text": "Franky peeked out with a guilty smile.",
       "description": "FRANKY PEEKS OUT BEHIND SOME SNOW COVERED BUSHES THAT ARE ACROSS A RIVER."
     },
@@ -462,18 +462,21 @@
     },
     {
       "type": "image",
-      "image": "story/frankySwiped.png",
-      "text": "Franky swiped at me."
+      "image": "story/frankyswiped.jpeg",
+      "text": "Franky swiped at me.",
+      "description": "Franky swipes at leo with his sharp claws. They are near a river and there are snow covered trees with christmas lights. There are cattails by the river."
     },
     {
       "type": "image",
-      "image": "story/leoTacklesFranky.png",
-      "text": "I dodged and tackled him into a soft patch of moss."
+      "image": "story/leoTacklesFranky.jpeg",
+      "text": "I dodged and tackled him into a soft patch of moss.",
+      "description": "Use the same characters and setting. But have the hero tackling the fox into the snow."
     },
     {
       "type": "image",
-      "image": "story/leoReachesInMouth.png",
-      "text": "I reached right into his mouth."
+      "image": "story/leoreachesinmouth.jpeg",
+      "text": "I reached right into his mouth.",
+      "description": "The fox lays on his back and the hero uses both of his hands to look inside the fox's mouth."
     },
     {
       "type": "text",
@@ -482,8 +485,9 @@
     },
     {
       "type": "image",
-      "image": "story/cookieBoyRevealed.png",
-      "text": "A cookie-shaped boy with frosting hair stood blinking up at me."
+      "image": "story/cookieboyrevealed.jpeg",
+      "text": "A cookie-shaped boy with frosting hair stood blinking up at me.",
+      "description": "The gingerbread man stands up and looks big eyed at Leo. The fox lays exhausted on the side."
     },
     {
       "type": "character-flow",
@@ -518,8 +522,9 @@
     },
     {
       "type": "image",
-      "image": "story/leoCarriesCookie.png",
-      "text": "I carried the cookie boy back to the bakery."
+      "image": "story/leocarriescookie.jpeg",
+      "text": "I carried the cookie boy back to the bakery.",
+      "description": "Leo carries the gingerbread man on his shoulders back up the snow drift, surrounded by snow covered trees. There's a river far in the background. DO NOT show any foot prints."
     },
     {
       "type": "character-flow",
@@ -563,8 +568,9 @@
     },
     {
       "type": "image",
-      "image": "story/butterbunHugsCookie.png",
-      "text": "She scooped him into her arms."
+      "image": "story/butterbunhugscookie.jpeg",
+      "text": "She scooped him into her arms.",
+      "description": "Ms. Butterbuns sweeps the gingerbread man into her arms and gives him a big hug. Don't add any other background"
     },
     {
       "type": "character-flow",
@@ -596,8 +602,9 @@
     },
     {
       "type": "image",
-      "image": "story/bakeryDoorOpen.png",
-      "text": "The end."
+      "image": "story/bakerydooropen.jpeg",
+      "text": "The end.",
+      "description": ""
     }
   ]
 }

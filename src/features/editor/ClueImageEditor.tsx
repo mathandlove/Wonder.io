@@ -158,6 +158,10 @@ const ClueImageEditor: React.FC<ClueImageEditorProps> = ({
         });
 
         setImages(imageInfos);
+        // Auto-select the first image to go directly to the editor
+        if (imageInfos.length > 0) {
+          setSelectedImage(imageInfos[0]);
+        }
       } catch (err) {
         setError(err instanceof Error ? err.message : 'Failed to load images');
       } finally {
@@ -192,11 +196,14 @@ const ClueImageEditor: React.FC<ClueImageEditorProps> = ({
         if (storyResponse.ok) {
           const storyData = await storyResponse.json();
           // Find clue-image scene matching this image
-          const imageName = selectedImage.name.replace(/ /g, '');
-          const clueScene = storyData.scenes.find((scene: any) =>
-            scene.type === 'clue-image' &&
-            scene.image.toLowerCase() === imageName.toLowerCase()
-          );
+          // Remove spaces from name and compare without extension
+          const imageName = selectedImage.name.replace(/ /g, '').toLowerCase();
+          const clueScene = storyData.scenes.find((scene: any) => {
+            if (scene.type !== 'clue-image') return false;
+            // Remove extension from scene.image for comparison
+            const sceneImageName = scene.image.replace(/\.(png|jpg|jpeg|webp)$/i, '').toLowerCase();
+            return sceneImageName === imageName;
+          });
           if (clueScene?.clueDescriptions) {
             setAvailableNames(clueScene.clueDescriptions);
           } else {

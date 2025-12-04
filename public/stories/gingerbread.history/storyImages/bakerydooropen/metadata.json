@@ -1,0 +1,143 @@
+{
+  "imageId": "bakerydooropen",
+  "category": "storyImages",
+  "versions": [
+    {
+      "version": 1,
+      "filename": "v1-1764817596356.jpeg",
+      "timestamp": 1764817596356,
+      "prompt": "The bakery door is wide open and we see a gingerbread running outside.\nSimplify this drawing - less details\n",
+      "charactersReferenced": [],
+      "isModification": false
+    },
+    {
+      "version": 2,
+      "filename": "v2-1764817596357.jpeg",
+      "timestamp": 1764817596357,
+      "prompt": "The bakery door is wide open and we see a gingerbread running outside.\nSimplify this drawing - less details\n",
+      "charactersReferenced": [],
+      "isModification": false
+    },
+    {
+      "version": 3,
+      "filename": "v3-1764817596358.jpeg",
+      "timestamp": 1764817596358,
+      "prompt": "The bakery door is wide open and we see a gingerbread running outside.\nSimplify this drawing - less details\n",
+      "charactersReferenced": [],
+      "isModification": false
+    },
+    {
+      "version": 4,
+      "filename": "v4-1764817596359.jpeg",
+      "timestamp": 1764817596359,
+      "prompt": "The bakery door is wide open and we see a gingerbread running outside.\nSimplify this drawing - less details\n",
+      "charactersReferenced": [],
+      "isModification": false
+    },
+    {
+      "version": 5,
+      "filename": "v5-1764817723395.jpeg",
+      "timestamp": 1764817723395,
+      "prompt": "turn the gingerbread man around so we see his back side, including his butcheeks. There should be a door that goes inward ",
+      "charactersReferenced": [],
+      "isModification": true,
+      "baseVersion": 4
+    },
+    {
+      "version": 6,
+      "filename": "v6-1764817723396.jpeg",
+      "timestamp": 1764817723396,
+      "prompt": "turn the gingerbread man around so we see his back side, including his butcheeks. There should be a door that goes inward ",
+      "charactersReferenced": [],
+      "isModification": true,
+      "baseVersion": 4
+    },
+    {
+      "version": 7,
+      "filename": "v7-1764817723397.jpeg",
+      "timestamp": 1764817723397,
+      "prompt": "turn the gingerbread man around so we see his back side, including his butcheeks. There should be a door that goes inward ",
+      "charactersReferenced": [],
+      "isModification": true,
+      "baseVersion": 4
+    },
+    {
+      "version": 8,
+      "filename": "v8-1764817723398.jpeg",
+      "timestamp": 1764817723398,
+      "prompt": "turn the gingerbread man around so we see his back side, including his butcheeks. There should be a door that goes inward ",
+      "charactersReferenced": [],
+      "isModification": true,
+      "baseVersion": 4
+    },
+    {
+      "version": 9,
+      "filename": "v9-1764817826502.jpeg",
+      "timestamp": 1764817826502,
+      "prompt": "The door should open from the other side (right side) and the gingerbread man should like he is running",
+      "charactersReferenced": [],
+      "isModification": true,
+      "baseVersion": 6
+    },
+    {
+      "version": 10,
+      "filename": "v10-1764817826503.jpeg",
+      "timestamp": 1764817826503,
+      "prompt": "The door should open from the other side (right side) and the gingerbread man should like he is running",
+      "charactersReferenced": [],
+      "isModification": true,
+      "baseVersion": 6
+    },
+    {
+      "version": 11,
+      "filename": "v11-1764817826504.jpeg",
+      "timestamp": 1764817826504,
+      "prompt": "The door should open from the other side (right side) and the gingerbread man should like he is running",
+      "charactersReferenced": [],
+      "isModification": true,
+      "baseVersion": 6
+    },
+    {
+      "version": 12,
+      "filename": "v12-1764817826505.jpeg",
+      "timestamp": 1764817826505,
+      "prompt": "The door should open from the other side (right side) and the gingerbread man should like he is running",
+      "charactersReferenced": [],
+      "isModification": true,
+      "baseVersion": 6
+    },
+    {
+      "version": 13,
+      "filename": "v13-1764817899023.jpeg",
+      "timestamp": 1764817899023,
+      "prompt": "give the gingerbread man more pronounced butt cheeks\n",
+      "charactersReferenced": [],
+      "isModification": true
+    },
+    {
+      "version": 14,
+      "filename": "v14-1764817899024.jpeg",
+      "timestamp": 1764817899024,
+      "prompt": "give the gingerbread man more pronounced butt cheeks\n",
+      "charactersReferenced": [],
+      "isModification": true
+    },
+    {
+      "version": 15,
+      "filename": "v15-1764817899025.jpeg",
+      "timestamp": 1764817899025,
+      "prompt": "give the gingerbread man more pronounced butt cheeks\n",
+      "charactersReferenced": [],
+      "isModification": true
+    },
+    {
+      "version": 16,
+      "filename": "v16-1764817899026.jpeg",
+      "timestamp": 1764817899026,
+      "prompt": "give the gingerbread man more pronounced butt cheeks\n",
+      "charactersReferenced": [],
+      "isModification": true
+    }
+  ],
+  "currentVersion": 14
+}

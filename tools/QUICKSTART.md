@@ -43,8 +43,6 @@ The tool automatically searches these folders:
 
 - `public/stories/*.bundle/images/characters/`
 - `public/stories/*.bundle/characters/`
-- `public/assets.core/images/characters/`
-- `public/assets.core/characters/`
 
 Just drop PNG or JPG files in any of these locations!
 

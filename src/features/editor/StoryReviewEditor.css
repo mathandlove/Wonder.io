@@ -1,0 +1,945 @@
+/**
+ * Story Review Editor Styles
+ */
+
+/* Animations */
+@keyframes story-review-spin {
+  to { transform: rotate(360deg); }
+}
+
+.story-review-spinner {
+  animation: story-review-spin 1s linear infinite;
+}
+
+/* Main Container */
+.story-review {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  width: 100vw;
+  background: #f8fafc;
+  overflow: hidden;
+}
+
+/* Loading State */
+.story-review-loading {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100vh;
+  width: 100vw;
+  background: #f8fafc;
+}
+
+.story-review-loading-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+  color: #4a9290;
+}
+
+.story-review-loading-content .icon {
+  width: 48px;
+  height: 48px;
+}
+
+/* Error State */
+.story-review-error {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100vh;
+  gap: 16px;
+  color: #dc2626;
+}
+
+/* Header */
+.story-review-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 20px;
+  background: #4a9290;
+  color: white;
+  flex-shrink: 0;
+}
+
+.story-review-header-left {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.story-review-header-right {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.story-review-back-btn {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 12px;
+  background: rgba(255, 255, 255, 0.15);
+  border: none;
+  border-radius: 6px;
+  color: white;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+
+.story-review-back-btn:hover {
+  background: rgba(255, 255, 255, 0.25);
+}
+
+.story-review-divider {
+  width: 1px;
+  height: 24px;
+  background: rgba(255, 255, 255, 0.3);
+}
+
+.story-review-title {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.story-review-title-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  background: rgba(255, 255, 255, 0.2);
+  border-radius: 6px;
+}
+
+.story-review-title h1 {
+  font-size: 18px;
+  font-weight: 600;
+  margin: 0;
+}
+
+.story-review-story-title {
+  padding: 6px 14px;
+  background: rgba(255, 255, 255, 0.15);
+  border-radius: 20px;
+  font-size: 14px;
+  font-weight: 500;
+}
+
+.story-review-save-btn {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 16px;
+  background: white;
+  border: none;
+  border-radius: 6px;
+  color: #4a9290;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+.story-review-save-btn:hover {
+  background: #f0fdf4;
+}
+
+.story-review-save-btn:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+}
+
+.story-review-fix-btn {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 16px;
+  background: rgba(255, 255, 255, 0.15);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  border-radius: 6px;
+  color: white;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+.story-review-fix-btn:hover {
+  background: rgba(255, 255, 255, 0.25);
+}
+
+.story-review-fix-btn:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+}
+
+.story-review-fix-result {
+  padding: 6px 12px;
+  border-radius: 6px;
+  font-size: 13px;
+  font-weight: 500;
+}
+
+.story-review-fix-result.success {
+  background: #22c55e;
+  color: white;
+}
+
+.story-review-fix-result.error {
+  background: #ef4444;
+  color: white;
+}
+
+.story-review-fix-result.info {
+  background: rgba(255, 255, 255, 0.2);
+  color: white;
+}
+
+.story-review-status {
+  padding: 6px 14px;
+  background: rgba(255, 255, 255, 0.15);
+  border-radius: 20px;
+  font-size: 13px;
+}
+
+/* Main Content Area */
+.story-review-main {
+  display: flex;
+  flex: 1;
+  overflow: hidden;
+}
+
+/* Left Navigation Sidebar */
+.story-review-nav {
+  display: flex;
+  flex-direction: column;
+  width: 220px;
+  background: #1e293b;
+  flex-shrink: 0;
+}
+
+.story-review-nav-arrow {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 48px;
+  background: #334155;
+  border: none;
+  color: white;
+  cursor: pointer;
+  transition: all 0.15s;
+  flex-shrink: 0;
+}
+
+.story-review-nav-arrow:hover:not(:disabled) {
+  background: #475569;
+}
+
+.story-review-nav-arrow:disabled {
+  opacity: 0.3;
+  cursor: not-allowed;
+}
+
+.story-review-nav-arrow--up {
+  border-bottom: 1px solid #475569;
+}
+
+.story-review-nav-arrow--down {
+  border-top: 1px solid #475569;
+}
+
+.story-review-nav-list {
+  flex: 1;
+  overflow-y: auto;
+  padding: 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+/* Scene Thumbnails */
+.story-review-thumb {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 10px;
+  background: #334155;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.15s;
+  border: 2px solid transparent;
+}
+
+.story-review-thumb:hover {
+  background: #475569;
+}
+
+.story-review-thumb.active {
+  background: #4a9290;
+  border-color: #5dc7c4;
+}
+
+.story-review-thumb-index {
+  font-size: 11px;
+  font-weight: 700;
+  color: rgba(255, 255, 255, 0.5);
+}
+
+.story-review-thumb.active .story-review-thumb-index {
+  color: rgba(255, 255, 255, 0.8);
+}
+
+.story-review-thumb-content {
+  min-height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  border-radius: 4px;
+  background: rgba(0, 0, 0, 0.2);
+}
+
+.story-review-thumb-content img {
+  width: 100%;
+  height: 50px;
+  object-fit: cover;
+}
+
+.story-review-thumb-text {
+  font-size: 11px;
+  color: rgba(255, 255, 255, 0.7);
+  padding: 6px;
+  line-height: 1.3;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.story-review-thumb-characters {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 10px;
+  color: rgba(255, 255, 255, 0.8);
+  padding: 6px;
+}
+
+.story-review-thumb-clue,
+.story-review-thumb-map,
+.story-review-thumb-default {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 11px;
+  color: rgba(255, 255, 255, 0.8);
+  padding: 6px;
+}
+
+/* Center Preview Area */
+.story-review-center {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  background: #e2e8f0;
+  overflow: hidden;
+}
+
+/* Simulator Container - landscape monitor aspect ratio */
+.story-review-simulator-container {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  max-width: 1200px;
+  max-height: 800px;
+  aspect-ratio: 16 / 10;
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+  background: #000;
+}
+
+/* Scene Preview (legacy - kept for backwards compat) */
+.story-review-preview {
+  position: relative;
+  width: 100%;
+  max-width: 600px;
+  aspect-ratio: 9 / 16;
+  background: #1e293b;
+  border-radius: 16px;
+  overflow: hidden;
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+}
+
+.story-review-preview-content {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  background: rgba(0, 0, 0, 0.3);
+}
+
+/* Text Scene Preview */
+.story-review-preview-text {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 100%;
+}
+
+.story-review-preview-bubble {
+  background: #fef3c7;
+  padding: 24px 32px;
+  border-radius: 16px;
+  max-width: 90%;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.story-review-preview-bubble p {
+  margin: 0;
+  font-size: 16px;
+  line-height: 1.6;
+  color: #1e293b;
+}
+
+/* Image Scene Preview */
+.story-review-preview-image {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.story-review-preview-image img {
+  max-width: 100%;
+  max-height: 100%;
+  object-fit: contain;
+  border-radius: 8px;
+}
+
+.story-review-preview-caption {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background: linear-gradient(transparent, rgba(0, 0, 0, 0.8));
+  padding: 32px 24px 24px;
+}
+
+.story-review-preview-caption p {
+  margin: 0;
+  color: white;
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+/* Character Flow Preview */
+.story-review-preview-flow {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  width: 100%;
+  height: 100%;
+  padding: 16px 0;
+}
+
+.story-review-preview-characters {
+  display: flex;
+  justify-content: space-between;
+  padding: 0 16px;
+}
+
+.story-review-preview-char {
+  padding: 8px 16px;
+  background: rgba(255, 255, 255, 0.15);
+  border-radius: 20px;
+  color: white;
+  font-size: 12px;
+  font-weight: 600;
+  text-transform: capitalize;
+}
+
+.story-review-preview-char.left {
+  background: rgba(59, 130, 246, 0.3);
+}
+
+.story-review-preview-char.right {
+  background: rgba(16, 185, 129, 0.3);
+}
+
+.story-review-preview-dialogue {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  overflow-y: auto;
+  padding: 0 16px;
+}
+
+.story-review-preview-speech {
+  display: flex;
+  gap: 10px;
+  align-items: flex-start;
+}
+
+.story-review-preview-speech-side {
+  flex-shrink: 0;
+  width: 24px;
+  height: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  font-size: 11px;
+  font-weight: 700;
+  color: white;
+}
+
+.story-review-preview-speech.left .story-review-preview-speech-side {
+  background: #3b82f6;
+}
+
+.story-review-preview-speech.right .story-review-preview-speech-side {
+  background: #10b981;
+}
+
+.story-review-preview-speech p {
+  margin: 0;
+  padding: 10px 14px;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 12px;
+  color: white;
+  font-size: 13px;
+  line-height: 1.4;
+}
+
+.story-review-preview-flow-action {
+  text-align: center;
+  padding: 8px;
+  color: rgba(255, 255, 255, 0.5);
+  font-size: 12px;
+  font-style: italic;
+}
+
+.story-review-preview-more {
+  text-align: center;
+  color: rgba(255, 255, 255, 0.4);
+  font-size: 12px;
+  padding: 8px;
+}
+
+.story-review-preview-quest {
+  margin-top: auto;
+  padding: 12px 16px;
+  background: rgba(234, 179, 8, 0.2);
+  border-radius: 8px;
+  color: #fef3c7;
+  font-size: 13px;
+}
+
+.story-review-preview-quest strong {
+  color: #fcd34d;
+}
+
+/* Clue Image Preview */
+.story-review-preview-clue {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  width: 100%;
+  height: 100%;
+}
+
+.story-review-preview-clue-image {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+}
+
+.story-review-preview-clue-image img {
+  max-width: 100%;
+  max-height: 100%;
+  object-fit: contain;
+  border-radius: 8px;
+}
+
+.story-review-preview-clue-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  max-height: 200px;
+  overflow-y: auto;
+}
+
+.story-review-preview-clue-item {
+  display: flex;
+  gap: 12px;
+  padding: 10px 14px;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 8px;
+}
+
+.story-review-preview-clue-name {
+  flex-shrink: 0;
+  padding: 4px 10px;
+  background: rgba(16, 185, 129, 0.3);
+  border-radius: 12px;
+  color: #a7f3d0;
+  font-size: 11px;
+  font-weight: 600;
+}
+
+.story-review-preview-clue-desc {
+  color: rgba(255, 255, 255, 0.8);
+  font-size: 12px;
+  line-height: 1.4;
+}
+
+/* Map Preview */
+.story-review-preview-map {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.story-review-preview-map img {
+  max-width: 100%;
+  max-height: 100%;
+  object-fit: contain;
+  border-radius: 8px;
+}
+
+.story-review-preview-location {
+  position: absolute;
+  bottom: 24px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 20px;
+  background: rgba(0, 0, 0, 0.8);
+  border-radius: 24px;
+  color: white;
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.story-review-preview-location-marker {
+  font-size: 18px;
+}
+
+/* Title Preview */
+.story-review-preview-title {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  gap: 12px;
+  color: white;
+}
+
+.story-review-preview-title h2 {
+  margin: 0;
+  font-size: 24px;
+  font-weight: 400;
+  opacity: 0.8;
+}
+
+.story-review-preview-title h1 {
+  margin: 0;
+  font-size: 36px;
+  font-weight: 700;
+}
+
+.story-review-preview-title .author,
+.story-review-preview-title .illustrator {
+  margin: 0;
+  font-size: 14px;
+  opacity: 0.7;
+}
+
+/* Unknown Scene Preview */
+.story-review-preview-unknown {
+  color: white;
+  text-align: center;
+}
+
+.story-review-preview-unknown pre {
+  margin-top: 16px;
+  padding: 16px;
+  background: rgba(0, 0, 0, 0.3);
+  border-radius: 8px;
+  font-size: 11px;
+  text-align: left;
+  overflow: auto;
+  max-height: 300px;
+}
+
+/* Right Sidebar: Property Editor */
+.story-review-sidebar {
+  width: 360px;
+  background: white;
+  border-left: 1px solid #e2e8f0;
+  overflow-y: auto;
+  flex-shrink: 0;
+}
+
+/* Property Editor */
+.story-review-properties {
+  padding: 20px;
+}
+
+.story-review-properties-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 20px;
+  padding-bottom: 16px;
+  border-bottom: 1px solid #e2e8f0;
+}
+
+.story-review-properties-header h3 {
+  margin: 0;
+  font-size: 16px;
+  font-weight: 600;
+  color: #1e293b;
+}
+
+.story-review-reset-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  background: #f1f5f9;
+  border: none;
+  border-radius: 8px;
+  color: #64748b;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+.story-review-reset-btn:hover {
+  background: #e2e8f0;
+  color: #475569;
+}
+
+.story-review-properties-list {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.story-review-property {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.story-review-property label {
+  font-size: 12px;
+  font-weight: 600;
+  color: #64748b;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.story-review-property input[type="text"] {
+  padding: 10px 14px;
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  font-size: 14px;
+  color: #1e293b;
+  transition: all 0.15s;
+}
+
+.story-review-property input[type="text"]:focus {
+  outline: none;
+  border-color: #4a9290;
+  box-shadow: 0 0 0 3px rgba(74, 146, 144, 0.1);
+}
+
+.story-review-property textarea {
+  padding: 10px 14px;
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  font-size: 14px;
+  color: #1e293b;
+  resize: vertical;
+  min-height: 80px;
+  font-family: inherit;
+  line-height: 1.5;
+  transition: all 0.15s;
+}
+
+.story-review-property textarea:focus {
+  outline: none;
+  border-color: #4a9290;
+  box-shadow: 0 0 0 3px rgba(74, 146, 144, 0.1);
+}
+
+.story-review-property-value {
+  padding: 8px 0;
+}
+
+.story-review-property-toggle {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.story-review-property-toggle input[type="checkbox"] {
+  width: 18px;
+  height: 18px;
+  accent-color: #4a9290;
+  cursor: pointer;
+}
+
+.story-review-property-toggle span {
+  font-size: 14px;
+  color: #475569;
+}
+
+.story-review-property--full {
+  grid-column: 1 / -1;
+}
+
+/* Flow List in Property Editor */
+.story-review-flow-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  max-height: 300px;
+  overflow-y: auto;
+  padding: 12px;
+  background: #f8fafc;
+  border-radius: 8px;
+  border: 1px solid #e2e8f0;
+}
+
+.story-review-flow-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 12px;
+  background: white;
+  border-radius: 6px;
+  border: 1px solid #e2e8f0;
+}
+
+.story-review-flow-type {
+  width: 100%;
+  text-align: center;
+}
+
+.story-review-flow-side {
+  flex-shrink: 0;
+  width: 24px;
+  height: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  font-size: 11px;
+  font-weight: 700;
+  color: white;
+}
+
+.story-review-flow-side.left {
+  background: #3b82f6;
+}
+
+.story-review-flow-side.right {
+  background: #10b981;
+}
+
+.story-review-flow-text {
+  font-size: 13px;
+  color: #475569;
+  line-height: 1.4;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* Clue List in Property Editor */
+.story-review-clue-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  max-height: 250px;
+  overflow-y: auto;
+  padding: 12px;
+  background: #f8fafc;
+  border-radius: 8px;
+  border: 1px solid #e2e8f0;
+}
+
+.story-review-clue-item {
+  padding: 10px 12px;
+  background: white;
+  border-radius: 6px;
+  border: 1px solid #e2e8f0;
+}
+
+.story-review-clue-item strong {
+  display: block;
+  font-size: 13px;
+  color: #1e293b;
+  margin-bottom: 4px;
+}
+
+.story-review-clue-item p {
+  margin: 0;
+  font-size: 12px;
+  color: #64748b;
+  line-height: 1.4;
+}
+
+/* Scrollbar styling */
+.story-review-nav-list::-webkit-scrollbar,
+.story-review-sidebar::-webkit-scrollbar,
+.story-review-flow-list::-webkit-scrollbar,
+.story-review-clue-list::-webkit-scrollbar {
+  width: 6px;
+}
+
+.story-review-nav-list::-webkit-scrollbar-track,
+.story-review-sidebar::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.story-review-nav-list::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.2);
+  border-radius: 3px;
+}
+
+.story-review-sidebar::-webkit-scrollbar-thumb,
+.story-review-flow-list::-webkit-scrollbar-thumb,
+.story-review-clue-list::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 3px;
+}

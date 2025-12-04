@@ -1,0 +1,71 @@
+{
+  "imageId": "leoreachesinmouth",
+  "category": "storyImages",
+  "versions": [
+    {
+      "version": 1,
+      "filename": "v1-1764816635978.jpeg",
+      "timestamp": 1764816635978,
+      "prompt": "The fox lays on his back and the hero uses both of his hands to look inside the fox's mouth.",
+      "charactersReferenced": [],
+      "isModification": false
+    },
+    {
+      "version": 2,
+      "filename": "v2-1764816635979.jpeg",
+      "timestamp": 1764816635979,
+      "prompt": "The fox lays on his back and the hero uses both of his hands to look inside the fox's mouth.",
+      "charactersReferenced": [],
+      "isModification": false
+    },
+    {
+      "version": 3,
+      "filename": "v3-1764816635980.jpeg",
+      "timestamp": 1764816635980,
+      "prompt": "The fox lays on his back and the hero uses both of his hands to look inside the fox's mouth.",
+      "charactersReferenced": [],
+      "isModification": false
+    },
+    {
+      "version": 4,
+      "filename": "v4-1764816635981.jpeg",
+      "timestamp": 1764816635981,
+      "prompt": "The fox lays on his back and the hero uses both of his hands to look inside the fox's mouth.",
+      "charactersReferenced": [],
+      "isModification": false
+    },
+    {
+      "version": 5,
+      "filename": "v5-1764816935744.jpeg",
+      "timestamp": 1764816935744,
+      "prompt": "The hero, Leo should be angry and struggling to open the mouth. The fox should be resisting. The fox should have a big belly as if he has something stuck in his tummy.",
+      "charactersReferenced": [],
+      "isModification": true
+    },
+    {
+      "version": 6,
+      "filename": "v6-1764816935745.jpeg",
+      "timestamp": 1764816935745,
+      "prompt": "The hero, Leo should be angry and struggling to open the mouth. The fox should be resisting. The fox should have a big belly as if he has something stuck in his tummy.",
+      "charactersReferenced": [],
+      "isModification": true
+    },
+    {
+      "version": 7,
+      "filename": "v7-1764816935746.jpeg",
+      "timestamp": 1764816935746,
+      "prompt": "The hero, Leo should be angry and struggling to open the mouth. The fox should be resisting. The fox should have a big belly as if he has something stuck in his tummy.",
+      "charactersReferenced": [],
+      "isModification": true
+    },
+    {
+      "version": 8,
+      "filename": "v8-1764816935747.jpeg",
+      "timestamp": 1764816935747,
+      "prompt": "The hero, Leo should be angry and struggling to open the mouth. The fox should be resisting. The fox should have a big belly as if he has something stuck in his tummy.",
+      "charactersReferenced": [],
+      "isModification": true
+    }
+  ],
+  "currentVersion": 5
+}

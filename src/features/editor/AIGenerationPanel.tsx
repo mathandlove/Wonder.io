@@ -36,10 +36,11 @@ interface StoryData {
   storyImages: ImageItem[];
   clueImages: ImageItem[];
   coloredClueImages: ImageItem[];
+  mapImages: ImageItem[];
   characterImages: CharacterImage[];
 }
 
-type ImageCategory = 'backgrounds' | 'characters' | 'clueImages' | 'coloredClueImages' | 'storyImages';
+type ImageCategory = 'backgrounds' | 'characters' | 'clueImages' | 'coloredClueImages' | 'storyImages' | 'maps';
 
 interface HistoryVersion {
   version: number;
@@ -63,6 +64,23 @@ interface AIGenerationPanelProps {
   storyId: string;
   onImageUpdated?: (sceneIndex: number, newImagePath: string) => void;
   onClose?: () => void;
+}
+
+// Scene data from story.json for displaying story text
+interface StoryScene {
+  type: string;
+  text?: string;
+  image?: string;
+  background?: string;
+  sceneDescription?: string;
+  description?: string;
+  flow?: Array<{ side?: string; text?: string; type?: string }>;
+}
+
+interface FullStoryData {
+  title: string;
+  storyId: string;
+  scenes: StoryScene[];
 }
 
 const BACKEND_URL = 'http://localhost:3001';
@@ -120,6 +138,18 @@ const Icons = {
       <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M17 8l-5-5-5 5M12 3v12" strokeLinecap="round" strokeLinejoin="round" />
     </svg>
   ),
+  image: (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" width="16" height="16">
+      <rect x="3" y="3" width="18" height="18" rx="2" ry="2" strokeLinecap="round" strokeLinejoin="round" />
+      <circle cx="8.5" cy="8.5" r="1.5" strokeLinecap="round" strokeLinejoin="round" />
+      <path d="M21 15l-5-5L5 21" strokeLinecap="round" strokeLinejoin="round" />
+    </svg>
+  ),
+  plus: (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" width="16" height="16">
+      <path d="M12 5v14M5 12h14" strokeLinecap="round" strokeLinejoin="round" />
+    </svg>
+  ),
 };
 
 // ============================================================================
@@ -133,6 +163,7 @@ const getCategoryLabel = (category: ImageCategory): string => {
     clueImages: 'Clue Images',
     coloredClueImages: 'Colored Clues',
     storyImages: 'Story Images',
+    maps: 'Maps',
   };
   return labels[category];
 };
@@ -187,6 +218,13 @@ const AIGenerationPanel: React.FC<AIGenerationPanelProps> = ({
   // File upload ref
   const fileInputRef = useRef<HTMLInputElement>(null);
 
+  // Scene reference state
+  const [showSceneSelector, setShowSceneSelector] = useState(false);
+  const [selectedSceneRefs, setSelectedSceneRefs] = useState<string[]>([]);
+
+  // Full story data for showing scene text
+  const [fullStoryData, setFullStoryData] = useState<FullStoryData | null>(null);
+
   // Load story data
   useEffect(() => {
     if (!isActive || !storyId) return;
@@ -195,12 +233,20 @@ const AIGenerationPanel: React.FC<AIGenerationPanelProps> = ({
       setIsLoading(true);
       setError(null);
       try {
+        // Load image data
         const response = await fetch(`${BACKEND_URL}/api/images/story?storyId=${encodeURIComponent(storyId)}`);
         if (!response.ok) {
           throw new Error(`Failed to load story: ${response.status}`);
         }
         const data = await response.json();
         setStoryData(data);
+
+        // Also load full story.json for scene text display
+        const fullStoryResponse = await fetch(`/stories/${storyId}.bundle/story.json`);
+        if (fullStoryResponse.ok) {
+          const fullData = await fullStoryResponse.json();
+          setFullStoryData(fullData);
+        }
       } catch (err) {
         setError(err instanceof Error ? err.message : 'Failed to load story data');
         console.error('Error loading story data:', err);
@@ -254,6 +300,11 @@ const AIGenerationPanel: React.FC<AIGenerationPanelProps> = ({
     if (!imagePath) return '';
     if (imagePath.startsWith('http')) return imagePath;
     const cacheBust = `?t=${imageCacheKey}`;
+    // Handle special "bw-base:" prefix for B&W base images in coloredClueImages
+    if (imagePath.startsWith('bw-base:')) {
+      const actualPath = imagePath.replace('bw-base:', '');
+      return `/stories/${storyId}.bundle/images/${actualPath}${cacheBust}`;
+    }
     if (imagePath.startsWith('history/')) {
       return `/stories/${storyId}.history/${imagePath.replace('history/', '')}${cacheBust}`;
     }
@@ -267,15 +318,50 @@ const AIGenerationPanel: React.FC<AIGenerationPanelProps> = ({
     }
     const version = history?.versions.find(v => v.version === selectedVersion);
     if (version && history) {
+      // Handle special "bw-base:" prefix - return it directly (getImageUrl will handle it)
+      if (version.filename.startsWith('bw-base:')) {
+        return version.filename;
+      }
       return `history/${history.category}/${history.imageId}/${version.filename}`;
     }
     return selectedImage.imagePath;
   };
 
+  // Get story text for scenes that use the selected image
+  const getSceneTexts = useCallback((): Array<{ sceneIndex: number; text: string; type: string }> => {
+    if (!selectedImage || !fullStoryData?.scenes) return [];
+
+    const texts: Array<{ sceneIndex: number; text: string; type: string }> = [];
+
+    for (const sceneIndex of selectedImage.usedInScenes) {
+      const scene = fullStoryData.scenes[sceneIndex];
+      if (!scene) continue;
+
+      // Get text based on scene type
+      if (scene.text) {
+        texts.push({ sceneIndex, text: scene.text, type: scene.type });
+      } else if (scene.sceneDescription) {
+        texts.push({ sceneIndex, text: scene.sceneDescription, type: scene.type });
+      } else if (scene.flow && scene.flow.length > 0) {
+        // For character-flow scenes, concatenate dialogue
+        const dialogueTexts = scene.flow
+          .filter(item => item.text)
+          .map(item => item.text)
+          .join(' ... ');
+        if (dialogueTexts) {
+          texts.push({ sceneIndex, text: dialogueTexts, type: scene.type });
+        }
+      }
+    }
+
+    return texts;
+  }, [selectedImage, fullStoryData]);
+
   const handleImageSelect = (image: ImageItem, category: ImageCategory) => {
     setSelectedImage(image);
     setSelectedCategory(category);
     setSelectedCharacters([]);
+    setSelectedSceneRefs([]);
     setSelectedVersion('current');
   };
 
@@ -284,6 +370,14 @@ const AIGenerationPanel: React.FC<AIGenerationPanelProps> = ({
       prev.includes(name)
         ? prev.filter(n => n !== name)
         : [...prev, name]
+    );
+  };
+
+  const handleSceneRefToggle = (imagePath: string) => {
+    setSelectedSceneRefs(prev =>
+      prev.includes(imagePath)
+        ? prev.filter(p => p !== imagePath)
+        : [...prev, imagePath]
     );
   };
 
@@ -315,6 +409,7 @@ const AIGenerationPanel: React.FC<AIGenerationPanelProps> = ({
           type: 'new',
           prompt: description,
           characters: selectedCharacters,
+          referenceImages: selectedSceneRefs,
           numImages: 4,
         }),
       });
@@ -390,6 +485,7 @@ const AIGenerationPanel: React.FC<AIGenerationPanelProps> = ({
           baseVersion: selectedVersion,
           prompt: modificationText,
           characters: selectedCharacters,
+          referenceImages: selectedSceneRefs,
           numImages: 4,
         }),
       });
@@ -687,6 +783,7 @@ const AIGenerationPanel: React.FC<AIGenerationPanelProps> = ({
     { key: 'clueImages', items: storyData?.clueImages || [] },
     { key: 'coloredClueImages', items: storyData?.coloredClueImages || [] },
     { key: 'storyImages', items: storyData?.storyImages || [] },
+    { key: 'maps', items: storyData?.mapImages || [] },
   ];
 
   return (
@@ -857,24 +954,55 @@ const AIGenerationPanel: React.FC<AIGenerationPanelProps> = ({
                 </div>
               )}
 
-              {/* New Generation Button */}
-              <button
-                onClick={handleNewGeneration}
-                disabled={isGenerating || !description.trim()}
-                className="ai-panel-btn-generate"
-              >
-                {isGenerating ? (
-                  <>
-                    {Icons.spinner}
-                    Generating...
-                  </>
-                ) : (
-                  <>
-                    {Icons.sparkles}
-                    New Generation
-                  </>
-                )}
-              </button>
+              {/* Scene References */}
+              <div>
+                <label className="ai-panel-label">Reference Scenes</label>
+                <div className="ai-panel-scene-refs">
+                  {selectedSceneRefs.length > 0 && (
+                    <div className="ai-panel-scene-refs-selected">
+                      {selectedSceneRefs.map(path => (
+                        <div
+                          key={path}
+                          className="ai-panel-scene-ref-thumb"
+                          onClick={() => handleSceneRefToggle(path)}
+                          title="Click to remove"
+                        >
+                          <img src={getImageUrl(path)} alt={path} />
+                          <span className="ai-panel-scene-ref-remove">{Icons.x}</span>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                  <button
+                    onClick={() => setShowSceneSelector(true)}
+                    className="ai-panel-btn-add-scenes"
+                  >
+                    {Icons.plus}
+                    {selectedSceneRefs.length > 0 ? 'Add More Scenes' : 'Add Reference Scenes'}
+                  </button>
+                </div>
+              </div>
+
+              {/* New Generation Button - hidden for coloredClueImages (modify only) */}
+              {selectedCategory !== 'coloredClueImages' && (
+                <button
+                  onClick={handleNewGeneration}
+                  disabled={isGenerating || !description.trim()}
+                  className="ai-panel-btn-generate"
+                >
+                  {isGenerating ? (
+                    <>
+                      {Icons.spinner}
+                      Generating...
+                    </>
+                  ) : (
+                    <>
+                      {Icons.sparkles}
+                      New Generation
+                    </>
+                  )}
+                </button>
+              )}
 
               {/* Modification Section */}
               <div className="ai-panel-modify-section">
@@ -891,7 +1019,11 @@ const AIGenerationPanel: React.FC<AIGenerationPanelProps> = ({
                   </div>
                   <div className="ai-panel-modify-info">
                     <span className="ai-panel-modify-name">
-                      {selectedVersion === 'current' ? 'Current Version' : `Version ${selectedVersion}`}
+                      {selectedVersion === 'current'
+                        ? 'Current Version'
+                        : selectedVersion === 0
+                          ? 'Original B&W'
+                          : `Version ${selectedVersion}`}
                     </span>
                     <span className="ai-panel-modify-hint">
                       {(!selectedImage.exists && selectedVersion === 'current')
@@ -944,7 +1076,9 @@ const AIGenerationPanel: React.FC<AIGenerationPanelProps> = ({
               <h2 className="ai-panel-image-name">
                 {selectedImage.name}
                 {selectedVersion !== 'current' && (
-                  <span className="version">(viewing v{selectedVersion})</span>
+                  <span className="version">
+                    (viewing {selectedVersion === 0 ? 'Original B&W' : `v${selectedVersion}`})
+                  </span>
                 )}
               </h2>
 
@@ -960,12 +1094,34 @@ const AIGenerationPanel: React.FC<AIGenerationPanelProps> = ({
                 )}
               </div>
 
-              {/* Use as Current Image Button */}
-              {selectedVersion !== 'current' && (
+              {/* Use as Current Image Button - hidden for version 0 (B&W base) */}
+              {selectedVersion !== 'current' && selectedVersion !== 0 && (
                 <button onClick={handleUseAsCurrentImage} className="ai-panel-btn-use">
                   {Icons.check}
                   Use as Current Image
                 </button>
+              )}
+
+              {/* Story Text Display */}
+              {getSceneTexts().length > 0 && (
+                <div className="ai-panel-story-text">
+                  <div className="ai-panel-story-text-header">
+                    <span className="ai-panel-story-text-icon">📖</span>
+                    <span>Story Text</span>
+                  </div>
+                  <div className="ai-panel-story-text-content">
+                    {getSceneTexts().map(({ sceneIndex, text, type }) => (
+                      <div key={sceneIndex} className="ai-panel-story-text-item">
+                        <div className="ai-panel-story-text-meta">
+                          Scene {sceneIndex + 1} • {type}
+                        </div>
+                        <div className="ai-panel-story-text-body">
+                          {text}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
               )}
             </>
           ) : (
@@ -1017,24 +1173,38 @@ const AIGenerationPanel: React.FC<AIGenerationPanelProps> = ({
                 </div>
 
                 {/* Historical versions */}
-                {history?.versions.slice().reverse().map(version => (
-                  <div
-                    key={version.version}
-                    onClick={() => setSelectedVersion(version.version)}
-                    className={`ai-panel-history-item ${selectedVersion === version.version ? 'selected' : ''}`}
-                  >
-                    <div className="ai-panel-history-thumb">
-                      <img
-                        src={getImageUrl(`history/${history.category}/${history.imageId}/${version.filename}`)}
-                        alt={`v${version.version}`}
-                      />
+                {history?.versions.slice().reverse().map(version => {
+                  // Handle special bw-base: prefix for B&W versions
+                  const isBwBase = version.filename.startsWith('bw-base:');
+                  const imageSrc = isBwBase
+                    ? getImageUrl(version.filename)
+                    : getImageUrl(`history/${history.category}/${history.imageId}/${version.filename}`);
+                  const title = isBwBase
+                    ? 'Original B&W'
+                    : version.isModification ? 'Modified' : 'Generated';
+                  const meta = isBwBase
+                    ? 'base for coloring'
+                    : `v${version.version} • ${formatTimestamp(version.timestamp)}`;
+
+                  return (
+                    <div
+                      key={version.version}
+                      onClick={() => setSelectedVersion(version.version)}
+                      className={`ai-panel-history-item ${selectedVersion === version.version ? 'selected' : ''}`}
+                    >
+                      <div className="ai-panel-history-thumb">
+                        <img
+                          src={imageSrc}
+                          alt={`v${version.version}`}
+                        />
+                      </div>
+                      <div className="ai-panel-history-info">
+                        <div className="title">{title}</div>
+                        <div className="meta">{meta}</div>
+                      </div>
                     </div>
-                    <div className="ai-panel-history-info">
-                      <div className="title">{version.isModification ? 'Modified' : 'Generated'}</div>
-                      <div className="meta">v{version.version} • {formatTimestamp(version.timestamp)}</div>
-                    </div>
-                  </div>
-                ))}
+                  );
+                })}
 
                 {(!history || history.versions.length === 0) && (
                   <div className="ai-panel-history-empty">No history yet</div>
@@ -1046,6 +1216,143 @@ const AIGenerationPanel: React.FC<AIGenerationPanelProps> = ({
           </div>
         </div>
       </div>
+
+      {/* Scene Selector Modal */}
+      {showSceneSelector && storyData && (
+        <div className="ai-panel-modal-overlay" onClick={() => setShowSceneSelector(false)}>
+          <div className="ai-panel-modal" onClick={e => e.stopPropagation()}>
+            <div className="ai-panel-modal-header">
+              <h3>Select Reference Scenes</h3>
+              <button onClick={() => setShowSceneSelector(false)} className="ai-panel-modal-close">
+                {Icons.x}
+              </button>
+            </div>
+            <div className="ai-panel-modal-body">
+              <p className="ai-panel-modal-hint">
+                Select existing images to use as style/content references for generation.
+              </p>
+
+              {/* Backgrounds */}
+              {storyData.backgrounds.filter(img => img.exists).length > 0 && (
+                <div className="ai-panel-modal-section">
+                  <h4>Backgrounds</h4>
+                  <div className="ai-panel-modal-grid">
+                    {storyData.backgrounds.filter(img => img.exists).map(img => (
+                      <div
+                        key={img.id}
+                        className={`ai-panel-modal-item ${selectedSceneRefs.includes(img.imagePath) ? 'selected' : ''}`}
+                        onClick={() => handleSceneRefToggle(img.imagePath)}
+                      >
+                        <img src={getImageUrl(img.imagePath)} alt={img.name} />
+                        <span className="ai-panel-modal-item-label">{img.name}</span>
+                        {selectedSceneRefs.includes(img.imagePath) && (
+                          <span className="ai-panel-modal-item-check">{Icons.check}</span>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* Story Images */}
+              {storyData.storyImages.filter(img => img.exists).length > 0 && (
+                <div className="ai-panel-modal-section">
+                  <h4>Story Images</h4>
+                  <div className="ai-panel-modal-grid">
+                    {storyData.storyImages.filter(img => img.exists).map(img => (
+                      <div
+                        key={img.id}
+                        className={`ai-panel-modal-item ${selectedSceneRefs.includes(img.imagePath) ? 'selected' : ''}`}
+                        onClick={() => handleSceneRefToggle(img.imagePath)}
+                      >
+                        <img src={getImageUrl(img.imagePath)} alt={img.name} />
+                        <span className="ai-panel-modal-item-label">{img.name}</span>
+                        {selectedSceneRefs.includes(img.imagePath) && (
+                          <span className="ai-panel-modal-item-check">{Icons.check}</span>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* Clue Images */}
+              {storyData.clueImages.filter(img => img.exists).length > 0 && (
+                <div className="ai-panel-modal-section">
+                  <h4>Clue Images</h4>
+                  <div className="ai-panel-modal-grid">
+                    {storyData.clueImages.filter(img => img.exists).map(img => (
+                      <div
+                        key={img.id}
+                        className={`ai-panel-modal-item ${selectedSceneRefs.includes(img.imagePath) ? 'selected' : ''}`}
+                        onClick={() => handleSceneRefToggle(img.imagePath)}
+                      >
+                        <img src={getImageUrl(img.imagePath)} alt={img.name} />
+                        <span className="ai-panel-modal-item-label">{img.name}</span>
+                        {selectedSceneRefs.includes(img.imagePath) && (
+                          <span className="ai-panel-modal-item-check">{Icons.check}</span>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* Colored Clue Images */}
+              {storyData.coloredClueImages.filter(img => img.exists).length > 0 && (
+                <div className="ai-panel-modal-section">
+                  <h4>Colored Clues</h4>
+                  <div className="ai-panel-modal-grid">
+                    {storyData.coloredClueImages.filter(img => img.exists).map(img => (
+                      <div
+                        key={img.id}
+                        className={`ai-panel-modal-item ${selectedSceneRefs.includes(img.imagePath) ? 'selected' : ''}`}
+                        onClick={() => handleSceneRefToggle(img.imagePath)}
+                      >
+                        <img src={getImageUrl(img.imagePath)} alt={img.name} />
+                        <span className="ai-panel-modal-item-label">{img.name}</span>
+                        {selectedSceneRefs.includes(img.imagePath) && (
+                          <span className="ai-panel-modal-item-check">{Icons.check}</span>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* Map Images */}
+              {storyData.mapImages.filter(img => img.exists).length > 0 && (
+                <div className="ai-panel-modal-section">
+                  <h4>Maps</h4>
+                  <div className="ai-panel-modal-grid">
+                    {storyData.mapImages.filter(img => img.exists).map(img => (
+                      <div
+                        key={img.id}
+                        className={`ai-panel-modal-item ${selectedSceneRefs.includes(img.imagePath) ? 'selected' : ''}`}
+                        onClick={() => handleSceneRefToggle(img.imagePath)}
+                      >
+                        <img src={getImageUrl(img.imagePath)} alt={img.name} />
+                        <span className="ai-panel-modal-item-label">{img.name}</span>
+                        {selectedSceneRefs.includes(img.imagePath) && (
+                          <span className="ai-panel-modal-item-check">{Icons.check}</span>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </div>
+            <div className="ai-panel-modal-footer">
+              <span className="ai-panel-modal-count">
+                {selectedSceneRefs.length} scene{selectedSceneRefs.length !== 1 ? 's' : ''} selected
+              </span>
+              <button onClick={() => setShowSceneSelector(false)} className="ai-panel-btn-generate">
+                Done
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

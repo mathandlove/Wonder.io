@@ -9,7 +9,87 @@
       "prompt": "Uploaded image",
       "charactersReferenced": [],
       "isModification": false
+    },
+    {
+      "version": 2,
+      "filename": "v2-1764816190051.jpeg",
+      "timestamp": 1764816190051,
+      "prompt": "Color the pedestals light brown.\nAdd small brown mud around the cracked window. \nColor the sign pink with black text.\nColor the door.",
+      "charactersReferenced": [],
+      "isModification": true,
+      "baseVersion": 0
+    },
+    {
+      "version": 3,
+      "filename": "v3-1764816190052.jpeg",
+      "timestamp": 1764816190052,
+      "prompt": "Color the pedestals light brown.\nAdd small brown mud around the cracked window. \nColor the sign pink with black text.\nColor the door.",
+      "charactersReferenced": [],
+      "isModification": true,
+      "baseVersion": 0
+    },
+    {
+      "version": 4,
+      "filename": "v4-1764816190053.jpeg",
+      "timestamp": 1764816190053,
+      "prompt": "Color the pedestals light brown.\nAdd small brown mud around the cracked window. \nColor the sign pink with black text.\nColor the door.",
+      "charactersReferenced": [],
+      "isModification": true,
+      "baseVersion": 0
+    },
+    {
+      "version": 5,
+      "filename": "v5-1764816190054.jpeg",
+      "timestamp": 1764816190054,
+      "prompt": "Color the pedestals light brown.\nAdd small brown mud around the cracked window. \nColor the sign pink with black text.\nColor the door.",
+      "charactersReferenced": [],
+      "isModification": true,
+      "baseVersion": 0
+    },
+    {
+      "version": 6,
+      "filename": "v6-1764816306734.jpeg",
+      "timestamp": 1764816306734,
+      "prompt": "modify the mud around the crack of the window to be clumped up next to the black hole as if it got stuck on the broken glass window.",
+      "charactersReferenced": [],
+      "isModification": true,
+      "baseVersion": 3
+    },
+    {
+      "version": 7,
+      "filename": "v7-1764816306735.jpeg",
+      "timestamp": 1764816306735,
+      "prompt": "modify the mud around the crack of the window to be clumped up next to the black hole as if it got stuck on the broken glass window.",
+      "charactersReferenced": [],
+      "isModification": true,
+      "baseVersion": 3
+    },
+    {
+      "version": 8,
+      "filename": "v8-1764816306736.jpeg",
+      "timestamp": 1764816306736,
+      "prompt": "modify the mud around the crack of the window to be clumped up next to the black hole as if it got stuck on the broken glass window.",
+      "charactersReferenced": [],
+      "isModification": true,
+      "baseVersion": 3
+    },
+    {
+      "version": 9,
+      "filename": "v9-1764816306737.jpeg",
+      "timestamp": 1764816306737,
+      "prompt": "modify the mud around the crack of the window to be clumped up next to the black hole as if it got stuck on the broken glass window.",
+      "charactersReferenced": [],
+      "isModification": true,
+      "baseVersion": 3
+    },
+    {
+      "version": 10,
+      "filename": "v10.jpg",
+      "timestamp": 1764817997118,
+      "prompt": "Uploaded image",
+      "charactersReferenced": [],
+      "isModification": false
     }
   ],
-  "currentVersion": 1
+  "currentVersion": 10
 }

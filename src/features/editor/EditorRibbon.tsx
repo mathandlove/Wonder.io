@@ -19,7 +19,7 @@ interface EditorRibbonProps {
   isMapMode?: boolean;
 }
 
-type TabId = 'clue-image' | 'map' | 'ai-generation';
+type TabId = 'clue-image' | 'map' | 'ai-generation' | 'story-review';
 
 interface Tool {
   id: string;
@@ -132,18 +132,23 @@ const EditorRibbon: React.FC<EditorRibbonProps> = ({
     { id: 'clue-image', label: 'Clue Image' },
     { id: 'map', label: 'Map' },
     { id: 'ai-generation', label: 'AI Generation' },
+    { id: 'story-review', label: 'Story Review' },
   ];
 
   // Handle tab change - auto-activate tools when certain tabs are selected
   const handleTabChange = (tabId: TabId) => {
-    setActiveTab(tabId);
+    // For tabs that open fullscreen editors, call onToolSelect first
+    // This ensures the parent component switches to fullscreen mode immediately
     if (tabId === 'ai-generation') {
-      // Automatically activate the image generator tool
       onToolSelect('image-generator');
     } else if (tabId === 'clue-image') {
-      // Automatically activate the clue image editor
       onToolSelect('clue-editor');
+    } else if (tabId === 'story-review') {
+      onToolSelect('story-review');
+    } else if (tabId === 'map') {
+      onToolSelect('map-editor');
     }
+    setActiveTab(tabId);
   };
 
   const renderToolButton = (tool: Tool, size: 'small' | 'large' = 'small') => {
@@ -269,45 +274,41 @@ const EditorRibbon: React.FC<EditorRibbonProps> = ({
 
       case 'map':
         return (
-          <div style={{ display: 'flex', alignItems: 'stretch' }}>
-            {renderToolGroup('Drawing', mapTools.drawing, 'large')}
-            {renderToolGroup('Manage', mapTools.manage, 'large')}
+          <div style={{ display: 'flex', alignItems: 'center', gap: 20 }}>
+            {/* Open Full Map Editor Button */}
+            <button
+              onClick={() => onToolSelect('map-editor')}
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: 10,
+                padding: '14px 24px',
+                backgroundColor: '#4a9290',
+                color: 'white',
+                border: 'none',
+                borderRadius: 8,
+                fontSize: 14,
+                fontWeight: 600,
+                cursor: 'pointer',
+                boxShadow: '0 2px 8px rgba(74, 146, 144, 0.3)',
+                transition: 'all 0.15s ease'
+              }}
+            >
+              <div style={{ width: 20, height: 20 }}>{Icons.map}</div>
+              <span>Open Map Editor</span>
+            </button>
 
-            {/* Map Actions */}
-            <div style={{ display: 'flex', flexDirection: 'column', borderRight: '1px solid #e5e7eb', paddingRight: 20, marginRight: 20 }}>
-              <div style={{ display: 'flex', alignItems: 'flex-end', gap: 8, flex: 1 }}>
-                <button
-                  onClick={onChangeImage}
-                  title="Change map"
-                  style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', paddingTop: 12, paddingBottom: 12, paddingLeft: 20, paddingRight: 20, minWidth: 80, borderRadius: 8, color: '#4b5563', backgroundColor: 'transparent', border: '1px solid transparent', cursor: 'pointer' }}
-                >
-                  <div style={{ width: 24, height: 24, marginBottom: 6, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>{Icons.map}</div>
-                  <span style={{ fontSize: 12, fontWeight: 500, lineHeight: 1.2 }}>Change</span>
-                </button>
-              </div>
-              <div style={{ fontSize: 10, color: '#9ca3af', textAlign: 'center', marginTop: 8, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.05em' }}>
-                Map
-              </div>
+            {/* Info Text */}
+            <div style={{ color: '#6b7280', fontSize: 13 }}>
+              Create and manage locations and paths on maps
             </div>
 
             {/* Status */}
-            <div style={{ display: 'flex', flexDirection: 'column', marginLeft: 'auto' }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 12, fontSize: 14 }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: 8, paddingLeft: 12, paddingRight: 12, paddingTop: 4, paddingBottom: 4, backgroundColor: '#f9fafb', borderRadius: 6 }}>
-                  <div style={{ color: '#6b7280' }}>{Icons.target}</div>
-                  <span style={{ fontWeight: 600, color: '#374151' }}>{hotspotCount}</span>
-                  <span style={{ color: '#6b7280', fontSize: 12 }}>location{hotspotCount !== 1 ? 's' : ''}</span>
-                </div>
-                {onClearAll && hotspotCount > 0 && (
-                  <button
-                    onClick={onClearAll}
-                    title="Clear all locations"
-                    style={{ display: 'flex', alignItems: 'center', gap: 6, paddingLeft: 8, paddingRight: 8, paddingTop: 4, paddingBottom: 4, color: '#dc2626', backgroundColor: 'transparent', border: 'none', borderRadius: 6, cursor: 'pointer' }}
-                  >
-                    <div style={{ width: 16, height: 16 }}>{Icons.trash}</div>
-                    <span style={{ fontSize: 12, fontWeight: 500 }}>Clear</span>
-                  </button>
-                )}
+            <div style={{ display: 'flex', alignItems: 'center', gap: 12, fontSize: 14, marginLeft: 'auto' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 8, paddingLeft: 12, paddingRight: 12, paddingTop: 4, paddingBottom: 4, backgroundColor: '#f9fafb', borderRadius: 6 }}>
+                <div style={{ color: '#6b7280' }}>{Icons.target}</div>
+                <span style={{ fontWeight: 600, color: '#374151' }}>{hotspotCount}</span>
+                <span style={{ color: '#6b7280', fontSize: 12 }}>location{hotspotCount !== 1 ? 's' : ''}</span>
               </div>
             </div>
           </div>
@@ -318,6 +319,41 @@ const EditorRibbon: React.FC<EditorRibbonProps> = ({
           <div style={{ display: 'flex', alignItems: 'center', gap: 12, color: '#6b7280' }}>
             <div style={{ width: 24, height: 24 }}>{Icons.sparkles}</div>
             <span style={{ fontSize: 14, fontWeight: 500 }}>AI Image Generation Active</span>
+          </div>
+        );
+
+      case 'story-review':
+        return (
+          <div style={{ display: 'flex', alignItems: 'center', gap: 20 }}>
+            {/* Open Story Review Button */}
+            <button
+              onClick={() => onToolSelect('story-review')}
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: 10,
+                padding: '14px 24px',
+                backgroundColor: '#4a9290',
+                color: 'white',
+                border: 'none',
+                borderRadius: 8,
+                fontSize: 14,
+                fontWeight: 600,
+                cursor: 'pointer',
+                boxShadow: '0 2px 8px rgba(74, 146, 144, 0.3)',
+                transition: 'all 0.15s ease'
+              }}
+            >
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" style={{ width: 20, height: 20 }}>
+                <polygon points="5 3 19 12 5 21 5 3" fill="currentColor" />
+              </svg>
+              <span>Open Story Review</span>
+            </button>
+
+            {/* Info Text */}
+            <div style={{ color: '#6b7280', fontSize: 13 }}>
+              Navigate through scenes and edit JSON properties
+            </div>
           </div>
         );
 

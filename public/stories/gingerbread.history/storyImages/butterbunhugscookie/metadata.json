@@ -1,0 +1,83 @@
+{
+  "imageId": "butterbunhugscookie",
+  "category": "storyImages",
+  "versions": [
+    {
+      "version": 1,
+      "filename": "v1-1764817456075.jpeg",
+      "timestamp": 1764817456075,
+      "prompt": "Ms. Butterbuns sweeps the gingerbread man into her arms and gives him a big hug. Don't add any other background",
+      "charactersReferenced": [
+        "gingerbread-man",
+        "butterbuns"
+      ],
+      "isModification": false
+    },
+    {
+      "version": 2,
+      "filename": "v2-1764817456076.jpeg",
+      "timestamp": 1764817456076,
+      "prompt": "Ms. Butterbuns sweeps the gingerbread man into her arms and gives him a big hug. Don't add any other background",
+      "charactersReferenced": [
+        "gingerbread-man",
+        "butterbuns"
+      ],
+      "isModification": false
+    },
+    {
+      "version": 3,
+      "filename": "v3-1764817456077.jpeg",
+      "timestamp": 1764817456077,
+      "prompt": "Ms. Butterbuns sweeps the gingerbread man into her arms and gives him a big hug. Don't add any other background",
+      "charactersReferenced": [
+        "gingerbread-man",
+        "butterbuns"
+      ],
+      "isModification": false
+    },
+    {
+      "version": 4,
+      "filename": "v4-1764817456078.jpeg",
+      "timestamp": 1764817456078,
+      "prompt": "Ms. Butterbuns sweeps the gingerbread man into her arms and gives him a big hug. Don't add any other background",
+      "charactersReferenced": [
+        "gingerbread-man",
+        "butterbuns"
+      ],
+      "isModification": false
+    },
+    {
+      "version": 5,
+      "filename": "v5-1764817501229.jpeg",
+      "timestamp": 1764817501229,
+      "prompt": "remove the rolling pin from the picture",
+      "charactersReferenced": [],
+      "isModification": true
+    },
+    {
+      "version": 6,
+      "filename": "v6-1764817501230.jpeg",
+      "timestamp": 1764817501230,
+      "prompt": "remove the rolling pin from the picture",
+      "charactersReferenced": [],
+      "isModification": true
+    },
+    {
+      "version": 7,
+      "filename": "v7-1764817501231.jpeg",
+      "timestamp": 1764817501231,
+      "prompt": "remove the rolling pin from the picture",
+      "charactersReferenced": [],
+      "isModification": true
+    },
+    {
+      "version": 8,
+      "filename": "v8-1764817501232.jpeg",
+      "timestamp": 1764817501232,
+      "prompt": "remove the rolling pin from the picture",
+      "charactersReferenced": [],
+      "isModification": true
+    }
+  ],
+  "currentVersion": 8
+}

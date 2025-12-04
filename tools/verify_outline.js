@@ -1,6 +1,6 @@
 import sharp from 'sharp';
 
-const outlineFile = 'public/assets.core/maps/cityMap.outline.webp';
+const outlineFile = 'public/stories/gingerbread.bundle/images/mapsColored/cityMapColored.outline.webp';
 
 async function verify() {
   

@@ -9,14 +9,13 @@ import React, { useState, useEffect } from 'react';
 import './MapSelector.css';
 
 interface MapInfo {
-  path: string;           // Path to B&W map (e.g., /stories/gingerbread.bundle/maps/cityMap.png)
-  coloredPath: string;    // Path to colored map (e.g., /stories/gingerbread.bundle/maps/cityMapColored.png)
+  path: string;           // Path to map (e.g., /stories/gingerbread.bundle/images/maps/cityMap.png)
   name: string;
   bundle: string;
 }
 
 interface MapSelectorProps {
-  onMapSelect: (mapPath: string, coloredMapPath: string) => void;
+  onMapSelect: (mapPath: string) => void;
   currentMap: string | null;
 }
 
@@ -96,13 +95,13 @@ const MapSelector: React.FC<MapSelectorProps> = ({ onMapSelect, currentMap }) =>
             {maps.map((map) => (
               <div
                 key={map.path}
-                onClick={() => onMapSelect(map.path, map.coloredPath)}
+                onClick={() => onMapSelect(map.path)}
                 className={`map-selector-card ${currentMap === map.path ? 'selected' : ''}`}
               >
-                {/* Map Preview - show colored version */}
+                {/* Map Preview */}
                 <div className="map-selector-preview">
                   <img
-                    src={map.coloredPath}
+                    src={map.path}
                     alt={map.name}
                     onError={(e) => {
                       (e.target as HTMLImageElement).src = 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="100" height="100"%3E%3Crect fill="%23f5f7f8" width="100" height="100"/%3E%3Ctext x="50%25" y="50%25" text-anchor="middle" dy=".3em" fill="%235a6a6c" font-family="sans-serif" font-size="12"%3ENo Map%3C/text%3E%3C/svg%3E';

@@ -86,12 +86,13 @@
   background-position: center;
   background-color: #d4b896; /* Fallback color if image doesn't load */
   border-radius: 25px;
-  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+  border: 1px solid #FFFFFF; /* White outline matching speech bubbles */
+  box-shadow: 0 32px 72px rgba(0, 0, 0, 0.45), 0 16px 40px rgba(0, 0, 0, 0.35); /* Match speech bubble shadow */
   margin: 0 auto; /* Center the bubble */
 }
 
 .text-bubble-inner {
-  background: #fdf8e4;
+  background: #FFFFFF; /* White background matching speech bubbles */
   padding: 24px 32px;
   margin: 0;
   border-radius: 15px;

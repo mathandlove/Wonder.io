@@ -82,7 +82,6 @@ Single file:
 
 **Searches in:**
 - `public/stories/*.bundle/images/characters/`
-- `public/assets.core/images/characters/`
 
 ### Pipeline Components
 

@@ -83,7 +83,6 @@ function syncDescriptionsToStoryJson(imagePath: string, hotspots: Hotspot[]): vo
 
 interface MapInfo {
   path: string;
-  coloredPath: string;
   name: string;
   bundle: string;
 }
@@ -93,9 +92,9 @@ interface MapInfo {
  * Example: /stories/gingerbread.bundle/images/clues/insideBakery.png
  * Returns: /stories/gingerbread.bundle/images/hotspots/clues_insideBakery.json
  *
- * Also supports maps (now under images/maps/):
- * Example: /stories/gingerbread.bundle/images/maps/cityMap.jpg
- * Returns: /stories/gingerbread.bundle/images/maps/hotspots/cityMap.json
+ * Also supports maps (under images/maps/):
+ * Example: /stories/gingerbread.bundle/images/maps/cityMap.jpeg
+ * Returns: /stories/gingerbread.bundle/images/hotspots/maps_cityMap.json
  */
 function getHotspotFilePath(imagePath: string): string {
   // Match images path (includes maps since they're now under images/maps/)
@@ -105,12 +104,12 @@ function getHotspotFilePath(imagePath: string): string {
 
     // Check if this is a map (images/maps/*)
     if (imageRelativePath.startsWith('maps/')) {
-      // For maps, save hotspots in images/maps/hotspots/
-      const mapFileName = imageRelativePath.replace('maps/', '');
-      const hotspotFileName = mapFileName
+      // For maps, save hotspots in images/hotspots/ with maps_ prefix
+      const mapFileName = imageRelativePath.replace(/^maps\//, '');
+      const hotspotFileName = `maps_${mapFileName}`
         .replace(/\.(png|jpg|jpeg|webp)$/i, '.json');
 
-      return path.join(PUBLIC_PATH, 'stories', bundlePath, 'images', 'maps', 'hotspots', hotspotFileName);
+      return path.join(PUBLIC_PATH, 'stories', bundlePath, 'images', 'hotspots', hotspotFileName);
     }
 
     // For other images (clues, etc.), save in images/hotspots/
@@ -328,12 +327,50 @@ export async function handleGenerateThumbnails(req: Request, res: Response) {
 }
 
 /**
+ * Save story.json for a bundle
+ * POST /api/bundle/story
+ * Body: { bundle: string, story: StoryData }
+ */
+export async function handleSaveStory(req: Request, res: Response) {
+  try {
+    const { bundle, story } = req.body;
+
+    if (!bundle || !story) {
+      return res.status(400).json({ error: 'Missing bundle or story data' });
+    }
+
+    const storyFilePath = path.join(PUBLIC_PATH, 'stories', bundle, 'story.json');
+
+    // Check if bundle exists
+    const bundlePath = path.join(PUBLIC_PATH, 'stories', bundle);
+    if (!fs.existsSync(bundlePath)) {
+      return res.status(404).json({ error: `Bundle not found: ${bundle}` });
+    }
+
+    // Write the story.json file
+    fs.writeFileSync(storyFilePath, JSON.stringify(story, null, 2), 'utf8');
+
+    console.log(`✅ Saved story.json for ${bundle} (${story.scenes?.length || 0} scenes)`);
+
+    res.json({
+      success: true,
+      path: `/stories/${bundle}/story.json`,
+      sceneCount: story.scenes?.length || 0
+    });
+  } catch (error) {
+    console.error('Error saving story:', error);
+    res.status(500).json({
+      error: 'Failed to save story',
+      details: error instanceof Error ? error.message : String(error)
+    });
+  }
+}
+
+/**
  * List all maps in a bundle
  * GET /api/bundle/maps?bundle=gingerbread.bundle
  *
- * Maps are stored in the images/maps/ folder with naming convention:
- * - mapName.png/jpg (black & white version)
- * - mapNameColored.png/jpg (colored version)
+ * Maps are stored in images/maps/ folder
  */
 export async function handleListBundleMaps(req: Request, res: Response) {
   try {
@@ -350,37 +387,23 @@ export async function handleListBundleMaps(req: Request, res: Response) {
       return res.status(404).json({ error: 'Bundle maps folder not found' });
     }
 
-    // Find all map files
-    const entries = fs.readdirSync(mapsPath, { withFileTypes: true });
     const maps: MapInfo[] = [];
 
-    // Group by base name (without "Colored" suffix)
-    const mapFiles = entries
+    // Get map files
+    const mapFiles = fs.readdirSync(mapsPath, { withFileTypes: true })
       .filter(entry => !entry.isDirectory() && /\.(png|jpg|jpeg|webp)$/i.test(entry.name))
       .map(entry => entry.name);
 
-    // Find base maps (non-Colored versions)
-    const baseMaps = mapFiles.filter(name => !name.includes('Colored'));
+    // Build map list
+    for (const mapFile of mapFiles) {
+      const baseName = mapFile.replace(/\.(png|jpg|jpeg|webp)$/i, '');
+      const webPath = `/stories/${bundleName}/images/maps/${mapFile}`.replace(/\\/g, '/');
 
-    for (const baseMap of baseMaps) {
-      const baseName = baseMap.replace(/\.(png|jpg|jpeg|webp)$/i, '');
-      const ext = baseMap.match(/\.(png|jpg|jpeg|webp)$/i)?.[0] || '.png';
-
-      // Look for colored version
-      const coloredName = `${baseName}Colored${ext}`;
-      const hasColored = mapFiles.includes(coloredName);
-
-      if (hasColored) {
-        const webPath = `/stories/${bundleName}/images/maps/${baseMap}`.replace(/\\/g, '/');
-        const coloredWebPath = `/stories/${bundleName}/images/maps/${coloredName}`.replace(/\\/g, '/');
-
-        maps.push({
-          path: webPath,
-          coloredPath: coloredWebPath,
-          name: baseName.replace(/([A-Z])/g, ' $1').trim(), // Convert camelCase to words
-          bundle: bundleName.replace('.bundle', '')
-        });
-      }
+      maps.push({
+        path: webPath,
+        name: baseName.replace(/([A-Z])/g, ' $1').trim(), // Convert camelCase to words
+        bundle: bundleName.replace('.bundle', '')
+      });
     }
 
     res.json({
@@ -392,6 +415,91 @@ export async function handleListBundleMaps(req: Request, res: Response) {
     console.error('Error listing bundle maps:', error);
     res.status(500).json({
       error: 'Failed to list maps',
+      details: error instanceof Error ? error.message : String(error)
+    });
+  }
+}
+
+/**
+ * Get the paths file path for a map
+ * Example: /stories/gingerbread.bundle/images/mapsColored/cityMapColored.jpg
+ * Returns: /public/stories/gingerbread.bundle/images/mapsColored/paths/cityMap.json
+ */
+function getMapPathsFilePath(mapPath: string): string {
+  // Match mapsColored path
+  const match = mapPath.match(/stories\/([^/]+\.bundle)\/images\/mapsColored\/([^/]+)/);
+  if (match) {
+    const [, bundlePath, mapFile] = match;
+    // Remove "Colored" suffix and extension to get base name
+    const baseName = mapFile
+      .replace(/Colored\.(jpg|jpeg|png|webp)$/i, '')
+      .replace(/\.(jpg|jpeg|png|webp)$/i, '');
+
+    return path.join(PUBLIC_PATH, 'stories', bundlePath, 'images', 'mapsColored', 'paths', `${baseName}.json`);
+  }
+
+  throw new Error(`Invalid map path format: ${mapPath}`);
+}
+
+/**
+ * Load paths for a specific map
+ * GET /api/bundle/map-paths?map=/stories/gingerbread.bundle/images/mapsColored/cityMapColored.jpg
+ */
+export async function handleLoadMapPaths(req: Request, res: Response) {
+  try {
+    const mapPath = req.query.map as string;
+
+    if (!mapPath) {
+      return res.status(400).json({ error: 'Missing map parameter' });
+    }
+
+    const pathsFilePath = getMapPathsFilePath(mapPath);
+
+    if (!fs.existsSync(pathsFilePath)) {
+      // Return empty paths if file doesn't exist
+      return res.json({ paths: [] });
+    }
+
+    const data = JSON.parse(fs.readFileSync(pathsFilePath, 'utf-8'));
+    res.json({ paths: data.paths || [] });
+  } catch (error) {
+    console.error('Error loading map paths:', error);
+    res.status(500).json({
+      error: 'Failed to load map paths',
+      details: error instanceof Error ? error.message : String(error)
+    });
+  }
+}
+
+/**
+ * Save paths for a specific map
+ * POST /api/bundle/map-paths
+ * Body: { map: string, paths: MapPath[] }
+ */
+export async function handleSaveMapPaths(req: Request, res: Response) {
+  try {
+    const { map, paths } = req.body;
+
+    if (!map) {
+      return res.status(400).json({ error: 'Missing map parameter' });
+    }
+
+    const pathsFilePath = getMapPathsFilePath(map);
+
+    // Ensure directory exists
+    const dir = path.dirname(pathsFilePath);
+    if (!fs.existsSync(dir)) {
+      fs.mkdirSync(dir, { recursive: true });
+    }
+
+    // Save paths
+    fs.writeFileSync(pathsFilePath, JSON.stringify({ paths: paths || [] }, null, 2));
+
+    res.json({ success: true, path: pathsFilePath });
+  } catch (error) {
+    console.error('Error saving map paths:', error);
+    res.status(500).json({
+      error: 'Failed to save map paths',
       details: error instanceof Error ? error.message : String(error)
     });
   }

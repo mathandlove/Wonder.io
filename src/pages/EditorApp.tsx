@@ -14,6 +14,8 @@ import ImageSelector from '../features/editor/ImageSelector';
 import MapSelector from '../features/editor/MapSelector';
 import AIGenerationPanel from '../features/editor/AIGenerationPanel';
 import ClueImageEditor from '../features/editor/ClueImageEditor';
+import StoryReviewEditor from '../features/editor/StoryReviewEditor';
+import MapEditor from '../features/editor/MapEditor';
 import type { Hotspot, MapPath } from '@shared/types/hotspot';
 
 const EditorApp: React.FC = () => {
@@ -27,7 +29,6 @@ const EditorApp: React.FC = () => {
 
   // Map trail mode state
   const [currentMap, setCurrentMap] = useState<string | null>(null);
-  const [currentMapColored, setCurrentMapColored] = useState<string | null>(null);
   const [mapHotspots, setMapHotspots] = useState<Hotspot[]>([]);
   const [showMapSelector, setShowMapSelector] = useState(false);
   const [isMapMode, setIsMapMode] = useState(false);
@@ -138,9 +139,8 @@ const EditorApp: React.FC = () => {
     setIsMapMode(false);
   };
 
-  const handleMapSelect = (mapPath: string, coloredMapPath: string) => {
+  const handleMapSelect = (mapPath: string) => {
     setCurrentMap(mapPath);
-    setCurrentMapColored(coloredMapPath);
     setShowMapSelector(false);
     setIsMapMode(true);
     // Stay in map-trail mode but switch to lasso for drawing
@@ -306,7 +306,7 @@ const EditorApp: React.FC = () => {
 
   // Determine which hotspots and handlers to use based on mode
   const activeHotspots = isMapMode ? mapHotspots : hotspots;
-  const activeImage = isMapMode ? currentMapColored : currentImage;
+  const activeImage = isMapMode ? currentMap : currentImage;
   const activeHotspotCreated = isMapMode ? handleMapHotspotCreated : handleHotspotCreated;
   const activeHotspotUpdate = isMapMode ? handleMapHotspotUpdate : handleHotspotUpdate;
   const activeHotspotDelete = isMapMode ? handleMapHotspotDelete : handleHotspotDelete;
@@ -317,6 +317,8 @@ const EditorApp: React.FC = () => {
   const hasSidePanel = activeTool === 'config-highlights' || activeTool === 'manage-paths';
   const isAIGeneratorMode = activeTool === 'image-generator';
   const isClueEditorMode = activeTool === 'clue-editor';
+  const isStoryReviewMode = activeTool === 'story-review';
+  const isMapEditorMode = activeTool === 'map-editor';
 
   // AI Generator takes over the full screen
   if (isAIGeneratorMode) {
@@ -339,6 +341,32 @@ const EditorApp: React.FC = () => {
     return (
       <div className="h-screen w-screen bg-gray-100 flex flex-col overflow-hidden">
         <ClueImageEditor
+          isActive={true}
+          storyId="gingerbread"
+          onClose={() => setActiveTool(null)}
+        />
+      </div>
+    );
+  }
+
+  // Story Review Editor takes over the full screen
+  if (isStoryReviewMode) {
+    return (
+      <div className="h-screen w-screen bg-gray-100 flex flex-col overflow-hidden">
+        <StoryReviewEditor
+          isActive={true}
+          storyId="gingerbread"
+          onClose={() => setActiveTool(null)}
+        />
+      </div>
+    );
+  }
+
+  // Map Editor takes over the full screen
+  if (isMapEditorMode) {
+    return (
+      <div className="h-screen w-screen bg-gray-100 flex flex-col overflow-hidden">
+        <MapEditor
           isActive={true}
           storyId="gingerbread"
           onClose={() => setActiveTool(null)}
@@ -409,10 +437,10 @@ const EditorApp: React.FC = () => {
               currentImage={currentImage}
             />
           ) : /* Map editing mode */
-          (isMapMode && currentMapColored) ? (
+          (isMapMode && currentMap) ? (
             <div className="relative w-full h-full flex items-center justify-center bg-white rounded-lg shadow-sm border border-gray-200">
               <InteractiveMap
-                mapImage={currentMapColored}
+                mapImage={currentMap}
                 mapAlt="Map being annotated"
                 hotspots={mapHotspots}
                 paths={mapPaths}

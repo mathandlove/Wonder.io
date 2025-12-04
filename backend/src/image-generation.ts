@@ -25,7 +25,7 @@ const execAsync = promisify(exec);
 // Types
 // ============================================================================
 
-type ImageCategory = 'backgrounds' | 'characters' | 'clueImages' | 'coloredClueImages' | 'storyImages';
+type ImageCategory = 'backgrounds' | 'characters' | 'clueImages' | 'coloredClueImages' | 'storyImages' | 'maps';
 
 interface HistoryVersion {
   version: number;
@@ -138,10 +138,10 @@ interface ArtStylesConfig {
 }
 
 /**
- * Load art styles from assets.core/art-styles.json
+ * Load art styles from the story bundle's art-styles.json if it exists
  */
 function loadArtStyles(): ArtStylesConfig | null {
-  const stylesPath = path.join(__dirname, '../../public/assets.core/art-styles.json');
+  const stylesPath = path.join(__dirname, '../../public/stories/gingerbread.bundle/art-styles.json');
 
   if (!fs.existsSync(stylesPath)) {
     return null;
@@ -466,13 +466,30 @@ export async function handleImageGeneration(req: Request, res: Response) {
               break;
             }
           }
+        } else if (baseVersion === 0 && category === 'coloredClueImages') {
+          // Version 0 for coloredClueImages is the B&W base from clues/ folder
+          const cluesPath = path.join(bundlePath, 'clues');
+          const extensions = ['.png', '.jpg', '.jpeg', '.webp'];
+          for (const ext of extensions) {
+            const testPath = path.join(cluesPath, imageName + ext);
+            if (fs.existsSync(testPath)) {
+              baseImagePath = testPath;
+              break;
+            }
+          }
         } else {
           // Use historical version
           const history = loadImageHistory(storyId, category, imageName);
           const versionData = history?.versions.find(v => v.version === baseVersion);
           if (versionData) {
-            const historyDir = getImageHistoryPath(storyId, category, imageName);
-            baseImagePath = path.join(historyDir, versionData.filename);
+            // Handle special bw-base: prefix
+            if (versionData.filename.startsWith('bw-base:')) {
+              const relativePath = versionData.filename.replace('bw-base:', '');
+              baseImagePath = path.join(bundlePath, relativePath);
+            } else {
+              const historyDir = getImageHistoryPath(storyId, category, imageName);
+              baseImagePath = path.join(historyDir, versionData.filename);
+            }
           }
         }
 
@@ -838,6 +855,7 @@ export async function handleGetStoryImages(req: Request, res: Response) {
     const backgroundsNeeded = new Map<string, { scenes: number[]; description?: string }>();
     const storyImagesNeeded = new Map<string, { scenes: number[]; description?: string }>();
     const clueImagesNeeded = new Map<string, { scenes: number[]; clueDescriptions?: Array<{ hotspotName: string; description: string; image: string }>; sceneDescription?: string }>();
+    const mapImagesNeeded = new Map<string, { scenes: number[]; location?: string }>();
 
     // Extract characters for reference images
     const characters = new Set<string>();
@@ -886,6 +904,17 @@ export async function handleGetStoryImages(req: Request, res: Response) {
           existing.sceneDescription = scene.sceneDescription as string;
         }
         clueImagesNeeded.set(imgName, existing);
+      }
+
+      // Collect map images (from map type scenes)
+      if (scene.type === 'map' && scene.image) {
+        const imgName = (scene.image as string).replace(/\.(png|jpg|jpeg|webp)$/i, '');
+        const existing = mapImagesNeeded.get(imgName) || { scenes: [] };
+        existing.scenes.push(index);
+        if (scene.location) {
+          existing.location = scene.location as string;
+        }
+        mapImagesNeeded.set(imgName, existing);
       }
 
       // Collect characters
@@ -989,6 +1018,20 @@ export async function handleGetStoryImages(req: Request, res: Response) {
       });
     }
 
+    // Build map images list
+    const mapImages: ImageItem[] = [];
+    for (const [name, data] of mapImagesNeeded) {
+      const existingPath = findImageFile('maps', name);
+      mapImages.push({
+        id: `map-${name}`,
+        name,
+        imagePath: existingPath || `maps/${name}.png`,
+        exists: !!existingPath,
+        usedInScenes: data.scenes,
+        description: data.location ? `Location: ${data.location}` : undefined
+      });
+    }
+
     // Get character images - both from folder AND referenced in story (to show missing ones)
     // Track which characters have images and which are referenced but missing
     const characterImages: Array<{ name: string; imagePath: string; exists: boolean; usedInScenes: number[] }> = [];
@@ -1078,6 +1121,7 @@ export async function handleGetStoryImages(req: Request, res: Response) {
     storyImages.sort(sortByFirstScene);
     clueImages.sort(sortByFirstScene);
     coloredClueImages.sort(sortByFirstScene);
+    mapImages.sort(sortByFirstScene);
 
     res.json({
       storyId,
@@ -1086,6 +1130,7 @@ export async function handleGetStoryImages(req: Request, res: Response) {
       storyImages,
       clueImages,
       coloredClueImages,
+      mapImages,
       characterImages
     });
 
@@ -1200,6 +1245,7 @@ function saveImageHistory(storyId: string, history: ImageHistory): void {
 
 /**
  * Get image history
+ * For coloredClueImages: Always includes the B&W version from clues/ as version 0 (base for modification)
  */
 export async function handleGetHistory(req: Request, res: Response) {
   const { storyId, imageId, category } = req.query;
@@ -1209,11 +1255,58 @@ export async function handleGetHistory(req: Request, res: Response) {
   }
 
   try {
-    const history = loadImageHistory(
+    let history = loadImageHistory(
       storyId as string,
       category as ImageCategory,
       imageId as string
     );
+
+    // For coloredClueImages, always include the B&W version as a base option
+    if (category === 'coloredClueImages') {
+      const bundlePath = path.join(__dirname, '../../public/stories', `${storyId}.bundle/images/clues`);
+      const extensions = ['.png', '.jpg', '.jpeg', '.webp'];
+      let bwImagePath: string | null = null;
+      let bwFilename: string | null = null;
+
+      // Find the B&W version in clues/ folder
+      for (const ext of extensions) {
+        const testPath = path.join(bundlePath, `${imageId}${ext}`);
+        if (fs.existsSync(testPath)) {
+          bwImagePath = testPath;
+          bwFilename = `${imageId}${ext}`;
+          break;
+        }
+      }
+
+      if (bwImagePath && bwFilename) {
+        // Create a special "version 0" entry for the B&W base image
+        // Use a special prefix "bw-base:" to indicate this is from clues/ folder
+        const bwVersion: HistoryVersion = {
+          version: 0,
+          filename: `bw-base:clues/${bwFilename}`,
+          timestamp: fs.statSync(bwImagePath).mtimeMs,
+          prompt: 'Original B&W version (from clues folder)',
+          charactersReferenced: [],
+          isModification: false,
+        };
+
+        if (!history) {
+          // No history yet - create one with just the B&W base
+          history = {
+            imageId: imageId as string,
+            category: category as ImageCategory,
+            versions: [bwVersion],
+            currentVersion: 0,
+          };
+        } else {
+          // History exists - prepend B&W version if not already there
+          const hasBaseVersion = history.versions.some(v => v.version === 0);
+          if (!hasBaseVersion) {
+            history.versions = [bwVersion, ...history.versions];
+          }
+        }
+      }
+    }
 
     if (!history) {
       return res.status(404).json({ error: 'No history found' });
@@ -1301,6 +1394,7 @@ function getCategoryMapping(category: ImageCategory): { folder: string; field: s
     clueImages: { folder: 'clues', field: 'image' },
     coloredClueImages: { folder: 'cluesColored', field: 'image' },
     storyImages: { folder: 'story', field: 'image' },
+    maps: { folder: 'maps', field: 'image' },
   };
   return mapping[category];
 }
@@ -1493,6 +1587,57 @@ export async function handleUseVersion(req: Request, res: Response) {
     saveImageHistory(storyId, history);
 
     console.log(`✅ Set version ${version} as current for ${imageId} (filename: ${imageName})`);
+
+    // Update story.json with new image path (important when extension changes, e.g., png -> jpg)
+    const storyPath = path.join(bundlePath, 'story.json');
+    if (fs.existsSync(storyPath)) {
+      const storyData = JSON.parse(fs.readFileSync(storyPath, 'utf-8'));
+      let updatedCount = 0;
+      const newFilename = imageName + ext;
+
+      for (const scene of storyData.scenes) {
+        // Handle backgrounds
+        if (category === 'backgrounds' && scene.background) {
+          const bgName = scene.background.replace(/\.(png|jpg|jpeg|webp)$/i, '');
+          if (bgName.toLowerCase() === imageName.toLowerCase()) {
+            scene.background = newFilename;
+            updatedCount++;
+          }
+        }
+
+        // Handle clue images
+        if ((category === 'clueImages' || category === 'coloredClueImages') && scene.type === 'clue-image' && scene.image) {
+          const imgName = scene.image.replace(/\.(png|jpg|jpeg|webp)$/i, '');
+          if (imgName.toLowerCase() === imageName.toLowerCase()) {
+            scene.image = newFilename;
+            updatedCount++;
+          }
+        }
+
+        // Handle story images
+        if (category === 'storyImages' && scene.image) {
+          const imgName = scene.image.replace(/^story\//, '').replace(/\.(png|jpg|jpeg|webp)$/i, '');
+          if (imgName.toLowerCase() === imageName.toLowerCase()) {
+            scene.image = `story/${newFilename}`;
+            updatedCount++;
+          }
+        }
+
+        // Handle map images
+        if (scene.type === 'map' && scene.image) {
+          const imgName = scene.image.replace(/\.(png|jpg|jpeg|webp)$/i, '');
+          if (imgName.toLowerCase() === imageName.toLowerCase()) {
+            scene.image = newFilename;
+            updatedCount++;
+          }
+        }
+      }
+
+      if (updatedCount > 0) {
+        fs.writeFileSync(storyPath, JSON.stringify(storyData, null, 2));
+        console.log(`📝 Updated ${updatedCount} reference(s) in story.json to use ${newFilename}`);
+      }
+    }
 
     // For characters, regenerate the cardboard 3D version
     if (category === 'characters') {
@@ -1761,6 +1906,160 @@ export async function handleImageUpload(req: Request, res: Response) {
     console.error('Error uploading image:', error);
     res.status(500).json({
       error: 'Failed to upload image',
+      details: error instanceof Error ? error.message : 'Unknown error'
+    });
+  }
+}
+
+// ============================================================================
+// Fix Image References
+// ============================================================================
+
+/**
+ * Fix all image references in story.json to match actual files on disk.
+ * This handles cases where extensions are missing or incorrect.
+ */
+export async function handleFixImageReferences(req: Request, res: Response) {
+  const { storyId } = req.body;
+
+  if (!storyId) {
+    return res.status(400).json({ error: 'storyId is required' });
+  }
+
+  try {
+    const bundlePath = path.join(__dirname, '../../public/stories', `${storyId}.bundle`);
+    const storyPath = path.join(bundlePath, 'story.json');
+
+    if (!fs.existsSync(storyPath)) {
+      return res.status(404).json({ error: `Story not found: ${storyId}` });
+    }
+
+    const storyData = JSON.parse(fs.readFileSync(storyPath, 'utf-8'));
+    const fixes: Array<{ field: string; sceneIndex: number; oldValue: string; newValue: string }> = [];
+
+    // Helper to find the actual file with any extension
+    const findActualFile = (folder: string, baseName: string): string | null => {
+      const imagesFolder = path.join(bundlePath, 'images', folder);
+      if (!fs.existsSync(imagesFolder)) return null;
+
+      // Strip any existing extension from baseName
+      const nameWithoutExt = baseName.replace(/\.(png|jpg|jpeg|webp)$/i, '');
+      const extensions = ['.png', '.jpg', '.jpeg', '.webp'];
+
+      for (const ext of extensions) {
+        // Try exact case
+        const exactPath = path.join(imagesFolder, nameWithoutExt + ext);
+        if (fs.existsSync(exactPath)) {
+          return nameWithoutExt + ext;
+        }
+        // Try lowercase
+        const lowerPath = path.join(imagesFolder, nameWithoutExt.toLowerCase() + ext);
+        if (fs.existsSync(lowerPath)) {
+          return nameWithoutExt.toLowerCase() + ext;
+        }
+      }
+
+      // Also check for case-insensitive match
+      const files = fs.readdirSync(imagesFolder);
+      for (const file of files) {
+        const fileWithoutExt = file.replace(/\.(png|jpg|jpeg|webp)$/i, '');
+        if (fileWithoutExt.toLowerCase() === nameWithoutExt.toLowerCase()) {
+          return file;
+        }
+      }
+
+      return null;
+    };
+
+    // Process each scene
+    for (let i = 0; i < storyData.scenes.length; i++) {
+      const scene = storyData.scenes[i];
+
+      // Fix background references
+      if (scene.background) {
+        const actualFile = findActualFile('backgrounds', scene.background);
+        if (actualFile && actualFile !== scene.background) {
+          fixes.push({
+            field: 'background',
+            sceneIndex: i,
+            oldValue: scene.background,
+            newValue: actualFile
+          });
+          scene.background = actualFile;
+        }
+      }
+
+      // Fix clue-image references
+      if (scene.type === 'clue-image' && scene.image) {
+        const actualFile = findActualFile('clues', scene.image);
+        if (actualFile && actualFile !== scene.image) {
+          fixes.push({
+            field: 'image',
+            sceneIndex: i,
+            oldValue: scene.image,
+            newValue: actualFile
+          });
+          scene.image = actualFile;
+        }
+      }
+
+      // Fix map image references
+      if (scene.type === 'map' && scene.image) {
+        const actualFile = findActualFile('maps', scene.image);
+        if (actualFile && actualFile !== scene.image) {
+          fixes.push({
+            field: 'image',
+            sceneIndex: i,
+            oldValue: scene.image,
+            newValue: actualFile
+          });
+          scene.image = actualFile;
+        }
+      }
+
+      // Fix story image references (with story/ prefix)
+      if (scene.type === 'image' && scene.image) {
+        const imagePath = scene.image;
+        if (imagePath.startsWith('story/')) {
+          const baseName = imagePath.replace('story/', '');
+          const actualFile = findActualFile('story', baseName);
+          if (actualFile) {
+            const newPath = `story/${actualFile}`;
+            if (newPath !== scene.image) {
+              fixes.push({
+                field: 'image',
+                sceneIndex: i,
+                oldValue: scene.image,
+                newValue: newPath
+              });
+              scene.image = newPath;
+            }
+          }
+        }
+      }
+    }
+
+    // Write back if there were fixes
+    if (fixes.length > 0) {
+      fs.writeFileSync(storyPath, JSON.stringify(storyData, null, 2));
+      console.log(`✅ Fixed ${fixes.length} image reference(s) in story.json`);
+      for (const fix of fixes) {
+        console.log(`   Scene ${fix.sceneIndex}: ${fix.field} "${fix.oldValue}" → "${fix.newValue}"`);
+      }
+    } else {
+      console.log(`✅ No image reference fixes needed for ${storyId}`);
+    }
+
+    res.json({
+      success: true,
+      fixCount: fixes.length,
+      fixes
+    });
+
+  } catch (error) {
+    console.error('Error fixing image references:', error);
+    res.status(500).json({
+      error: 'Failed to fix image references',
       details: error instanceof Error ? error.message : 'Unknown error'
     });
   }

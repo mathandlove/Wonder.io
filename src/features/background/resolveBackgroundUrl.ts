@@ -1,5 +1,5 @@
 /**
- * Resolve background URLs with fallback strategy from original main branch
+ * Resolve background URLs for story bundles
  */
 
 export function resolveBackgroundUrl(background: string, isImage: boolean = false, storyId?: string): string {
@@ -7,24 +7,20 @@ export function resolveBackgroundUrl(background: string, isImage: boolean = fals
     return `url('/VisualAssets/comicBackground.png')`;
   }
 
-  // Check if background already contains a full path (starts with assets.core or other path indicators)
-  const isFullPath = background.startsWith('assets.core/') || background.startsWith('/');
+  // Check if background already contains a full path
+  const isFullPath = background.startsWith('/') || background.startsWith('stories/');
 
   let storyPath: string;
-  let corePath: string;
 
   if (isFullPath) {
     // Background already contains full path, just prepend with root slash if needed
-    const normalizedPath = background.startsWith('/') ? background : `/${background}`;
-    storyPath = normalizedPath;
-    corePath = normalizedPath;
+    storyPath = background.startsWith('/') ? background : `/${background}`;
   } else {
-    // Background is just a filename, build full paths
-    storyPath = storyId ? `/stories/${storyId}.bundle/images/backgrounds/${background}` : `/stories/gingerbread.bundle/images/backgrounds/${background}`;
-    corePath = `/assets.core/images/backgrounds/${background}`;
+    // Background is just a filename, build full path to bundle
+    storyPath = storyId
+      ? `/stories/${storyId}.bundle/images/backgrounds/${background}`
+      : `/stories/gingerbread.bundle/images/backgrounds/${background}`;
   }
 
-  const result = `url('${storyPath}'), url('${corePath}')`;
-
-  return result;
+  return `url('${storyPath}')`;
 }

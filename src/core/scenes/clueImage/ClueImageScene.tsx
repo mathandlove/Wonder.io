@@ -390,7 +390,7 @@ export default function ClueImageScene({ scene }: SceneProps<ClueImageSceneType>
         // Extract image name from scene.image or derive from hotspot data
         // For insideBakery example: /stories/gingerbread.bundle/images/clues/insideBakery.png
         const imageName = scene.image
-          ? scene.image.split('/').pop()?.replace(/\.(jpg|png|webp)$/, '') || 'insideBakery'
+          ? scene.image.split('/').pop()?.replace(/\.(jpg|jpeg|png|webp)$/i, '') || 'insideBakery'
           : 'insideBakery';
 
         const data = await loadHotspotData(imageName);
@@ -518,11 +518,13 @@ export default function ClueImageScene({ scene }: SceneProps<ClueImageSceneType>
 
   // Derive image paths
   // If scene.image is provided, it should be the path relative to images/ directory
-  // e.g., "insideBakery" becomes "/stories/gingerbread.bundle/images/clues/insideBakery.png"
-  const baseImageSrc = scene.image
-    ? resolveStoryImage(`clues/${scene.image}.png`)
-    : resolveStoryImage('clues/insideBakery.png');
+  // The image name may or may not include the extension
+  const imageName = scene.image || 'insideBakery.jpg';
+  // Check if the image name already has an extension
+  const hasExtension = /\.(png|jpg|jpeg|webp)$/i.test(imageName);
+  const fullImageName = hasExtension ? imageName : `${imageName}.png`;
 
+  const baseImageSrc = resolveStoryImage(`clues/${fullImageName}`);
   const coloredImageSrc = baseImageSrc.replace('/clues/', '/cluesColored/');
 
   // If previously completed, show all clues as found

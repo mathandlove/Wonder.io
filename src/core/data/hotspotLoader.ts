@@ -41,6 +41,7 @@ export async function loadHotspotData(
   imageName: string,
   storyPath: string = "/stories/gingerbread.bundle"
 ): Promise<HotspotData> {
+  // imageName should already have extension stripped by caller
   const hotspotPath = `${storyPath}/images/hotspots/cluesColored_${imageName}.json`;
 
   try {

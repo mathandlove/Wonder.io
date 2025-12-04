@@ -1,45 +1,43 @@
 /**
- * Utility functions for resolving image paths from multiple asset sources.
- * Supports both gingerbread.bundle and assets.core directories.
+ * Utility functions for resolving image paths from story bundles.
  */
 
 /**
- * Resolves background image path, checking both asset locations
+ * Resolves background image path from the story bundle
  */
 export function resolveBackgroundImage(imageName: string): string {
-  // First check if it's explicitly prefixed
-  if (imageName.startsWith('assets.core/')) {
-    return `/${imageName}`;
+  // Check if it's already a full path
+  if (imageName.startsWith('/') || imageName.startsWith('stories/')) {
+    return imageName.startsWith('/') ? imageName : `/${imageName}`;
   }
 
   if (imageName.startsWith('gingerbread.bundle/')) {
     return `/stories/${imageName}`;
   }
 
-  // For unprefixed images, try gingerbread.bundle first (primary source)
-  // The browser will handle 404s gracefully, but ideally we'd check availability
+  // For unprefixed images, use gingerbread.bundle
   return `/stories/gingerbread.bundle/images/backgrounds/${imageName}`;
 }
 
 /**
- * Resolves story image path, checking both asset locations
+ * Resolves story image path from the story bundle
  */
 export function resolveStoryImage(imageName: string): string {
-  // First check if it's explicitly prefixed
-  if (imageName.startsWith('assets.core/')) {
-    return `/${imageName}`;
+  // Check if it's already a full path
+  if (imageName.startsWith('/') || imageName.startsWith('stories/')) {
+    return imageName.startsWith('/') ? imageName : `/${imageName}`;
   }
 
   if (imageName.startsWith('gingerbread.bundle/')) {
     return `/stories/${imageName}`;
   }
 
-  // For unprefixed images, try gingerbread.bundle first (primary source)
+  // For unprefixed images, use gingerbread.bundle
   return `/stories/gingerbread.bundle/images/${imageName}`;
 }
 
 /**
- * Gets the full URL for a background image that might be in either asset location
+ * Gets the full URL for a background image
  */
 export function getBackgroundImageUrl(imageName: string): string {
   const imagePath = resolveBackgroundImage(imageName);
