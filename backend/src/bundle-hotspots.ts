@@ -424,18 +424,29 @@ export async function handleListBundleMaps(req: Request, res: Response) {
  * Get the paths file path for a map
  * Example: /stories/gingerbread.bundle/images/mapsColored/cityMapColored.jpg
  * Returns: /public/stories/gingerbread.bundle/images/mapsColored/paths/cityMap.json
+ *
+ * Also supports: /stories/gingerbread.bundle/images/maps/cityMap.jpeg
+ * Returns: /public/stories/gingerbread.bundle/images/hotspots/maps_cityMap.json
  */
 function getMapPathsFilePath(mapPath: string): string {
   // Match mapsColored path
-  const match = mapPath.match(/stories\/([^/]+\.bundle)\/images\/mapsColored\/([^/]+)/);
-  if (match) {
-    const [, bundlePath, mapFile] = match;
+  const mapsColoredMatch = mapPath.match(/stories\/([^/]+\.bundle)\/images\/mapsColored\/([^/]+)/);
+  if (mapsColoredMatch) {
+    const [, bundlePath, mapFile] = mapsColoredMatch;
     // Remove "Colored" suffix and extension to get base name
     const baseName = mapFile
       .replace(/Colored\.(jpg|jpeg|png|webp)$/i, '')
       .replace(/\.(jpg|jpeg|png|webp)$/i, '');
 
     return path.join(PUBLIC_PATH, 'stories', bundlePath, 'images', 'mapsColored', 'paths', `${baseName}.json`);
+  }
+
+  // Match regular maps path (images/maps/)
+  const mapsMatch = mapPath.match(/stories\/([^/]+\.bundle)\/images\/maps\/([^/]+)/);
+  if (mapsMatch) {
+    const [, bundlePath, mapFile] = mapsMatch;
+    const baseName = mapFile.replace(/\.(jpg|jpeg|png|webp)$/i, '');
+    return path.join(PUBLIC_PATH, 'stories', bundlePath, 'images', 'hotspots', `maps_${baseName}.json`);
   }
 
   throw new Error(`Invalid map path format: ${mapPath}`);

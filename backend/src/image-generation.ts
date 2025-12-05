@@ -1938,34 +1938,26 @@ export async function handleFixImageReferences(req: Request, res: Response) {
     const fixes: Array<{ field: string; sceneIndex: number; oldValue: string; newValue: string }> = [];
 
     // Helper to find the actual file with any extension
+    // Returns the actual filename from disk (with correct case)
     const findActualFile = (folder: string, baseName: string): string | null => {
       const imagesFolder = path.join(bundlePath, 'images', folder);
       if (!fs.existsSync(imagesFolder)) return null;
 
       // Strip any existing extension from baseName
       const nameWithoutExt = baseName.replace(/\.(png|jpg|jpeg|webp)$/i, '');
-      const extensions = ['.png', '.jpg', '.jpeg', '.webp'];
 
-      for (const ext of extensions) {
-        // Try exact case
-        const exactPath = path.join(imagesFolder, nameWithoutExt + ext);
-        if (fs.existsSync(exactPath)) {
-          return nameWithoutExt + ext;
+      // Read all files and do case-insensitive matching
+      // This ensures we return the actual filename from disk
+      try {
+        const files = fs.readdirSync(imagesFolder);
+        for (const file of files) {
+          const fileWithoutExt = file.replace(/\.(png|jpg|jpeg|webp)$/i, '');
+          if (fileWithoutExt.toLowerCase() === nameWithoutExt.toLowerCase()) {
+            return file;
+          }
         }
-        // Try lowercase
-        const lowerPath = path.join(imagesFolder, nameWithoutExt.toLowerCase() + ext);
-        if (fs.existsSync(lowerPath)) {
-          return nameWithoutExt.toLowerCase() + ext;
-        }
-      }
-
-      // Also check for case-insensitive match
-      const files = fs.readdirSync(imagesFolder);
-      for (const file of files) {
-        const fileWithoutExt = file.replace(/\.(png|jpg|jpeg|webp)$/i, '');
-        if (fileWithoutExt.toLowerCase() === nameWithoutExt.toLowerCase()) {
-          return file;
-        }
+      } catch {
+        // Ignore read errors
       }
 
       return null;

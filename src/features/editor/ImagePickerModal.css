@@ -1,0 +1,254 @@
+/**
+ * Image Picker Modal Styles
+ */
+
+/* Overlay */
+.image-picker-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.6);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  padding: 24px;
+}
+
+/* Modal */
+.image-picker-modal {
+  background: white;
+  border-radius: 12px;
+  width: 100%;
+  max-width: 800px;
+  max-height: 80vh;
+  display: flex;
+  flex-direction: column;
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.4);
+  overflow: hidden;
+}
+
+/* Header */
+.image-picker-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 20px;
+  background: #4a9290;
+  color: white;
+  flex-shrink: 0;
+}
+
+.image-picker-header-left {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.image-picker-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  background: rgba(255, 255, 255, 0.2);
+  border-radius: 8px;
+}
+
+.image-picker-icon svg {
+  width: 24px;
+  height: 24px;
+}
+
+.image-picker-header h2 {
+  margin: 0;
+  font-size: 18px;
+  font-weight: 600;
+}
+
+.image-picker-close {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  background: rgba(255, 255, 255, 0.15);
+  border: none;
+  border-radius: 6px;
+  color: white;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+
+.image-picker-close:hover {
+  background: rgba(255, 255, 255, 0.25);
+}
+
+/* Content */
+.image-picker-content {
+  flex: 1;
+  overflow-y: auto;
+  padding: 20px;
+  background: #f8fafc;
+}
+
+/* Loading */
+.image-picker-loading {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 60px 20px;
+  color: #64748b;
+}
+
+/* Error */
+.image-picker-error {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 60px 20px;
+  color: #dc2626;
+}
+
+/* Empty */
+.image-picker-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 60px 20px;
+  color: #94a3b8;
+}
+
+.image-picker-empty-icon {
+  width: 48px;
+  height: 48px;
+  margin-bottom: 16px;
+  opacity: 0.5;
+}
+
+.image-picker-empty-icon svg {
+  width: 48px;
+  height: 48px;
+}
+
+/* Grid */
+.image-picker-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+  gap: 16px;
+}
+
+/* Item */
+.image-picker-item {
+  position: relative;
+  background: white;
+  border-radius: 8px;
+  padding: 8px;
+  border: 2px solid #e2e8f0;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+.image-picker-item:hover {
+  border-color: #4a9290;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(74, 146, 144, 0.15);
+}
+
+.image-picker-item.selected {
+  border-color: #4a9290;
+  background: #f0fdfa;
+}
+
+/* Thumbnail */
+.image-picker-thumbnail {
+  width: 100%;
+  aspect-ratio: 1;
+  border-radius: 6px;
+  overflow: hidden;
+  background: #f1f5f9;
+  margin-bottom: 8px;
+}
+
+.image-picker-thumbnail img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+/* Name */
+.image-picker-name {
+  display: block;
+  font-size: 12px;
+  font-weight: 500;
+  color: #475569;
+  text-align: center;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* Check indicator */
+.image-picker-check {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  width: 24px;
+  height: 24px;
+  background: #4a9290;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+}
+
+/* Footer */
+.image-picker-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 20px;
+  background: white;
+  border-top: 1px solid #e2e8f0;
+  flex-shrink: 0;
+}
+
+.image-picker-count {
+  font-size: 13px;
+  color: #64748b;
+}
+
+.image-picker-cancel {
+  padding: 8px 16px;
+  background: #f1f5f9;
+  border: 1px solid #e2e8f0;
+  border-radius: 6px;
+  font-size: 14px;
+  font-weight: 500;
+  color: #475569;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+.image-picker-cancel:hover {
+  background: #e2e8f0;
+}
+
+/* Scrollbar */
+.image-picker-content::-webkit-scrollbar {
+  width: 8px;
+}
+
+.image-picker-content::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.image-picker-content::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 4px;
+}
+
+.image-picker-content::-webkit-scrollbar-thumb:hover {
+  background: #94a3b8;
+}

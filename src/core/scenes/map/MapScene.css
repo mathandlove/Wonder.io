@@ -3,12 +3,16 @@
  * Styles for the map scene that displays a location highlight on a grayscale map
  */
 
+@import '@shared/styles/constructionPaperBackground.css';
+
 .map-scene {
+  position: relative;
   display: flex;
   align-items: center;
   justify-content: center;
-  background-color: #1a1a2e;
 }
+
+/* Note: Add .construction-paper-bg class to component for background */
 
 .map-scene--loading,
 .map-scene--error {

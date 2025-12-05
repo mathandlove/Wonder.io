@@ -25,6 +25,7 @@ import { createAIResponseScene as createAIResponseSceneFactory, createFailDanceS
 import { RecordingOrchestratorAPI } from '@core/recording/RecordingOrchestrator';
 import { createDebugger } from '../../../utils/createDebug';
 import type { CharacterScene } from '@core/types/scene';
+import { debugConfig } from '../../../debugConfig';
 
 const debug = createDebugger('navigation:machine');
 
@@ -33,11 +34,31 @@ const debug = createDebugger('navigation:machine');
  * Set to true to bypass the requirement of asking a question before answering
  * Useful for testing the answer flow directly
  */
-const DEBUG_AUTO_UNLOCK_ANSWER_BUTTON = false;
+const DEBUG_AUTO_UNLOCK_ANSWER_BUTTON = true;
 
-// Log when debug mode is enabled
+/**
+ * DEBUG FLAG: Allow scroll navigation during recording
+ * Set to true to allow scrolling past the record panel during recording states
+ * Useful for testing/debugging without going through the full recording flow
+ */
+const DEBUG_ALLOW_SCROLL_DURING_RECORDING = true;
+
+/**
+ * DEBUG FLAG: Allow scroll navigation during quest display
+ * Set to true to allow scrolling past quest scenes without accepting them
+ * Useful for testing/debugging story flow without interacting with quest UI
+ */
+const DEBUG_ALLOW_SCROLL_DURING_QUEST = true;
+
+// Log when debug modes are enabled
 if (DEBUG_AUTO_UNLOCK_ANSWER_BUTTON) {
   console.log('🐛 [DEBUG MODE] Answer button auto-unlock is ENABLED - answer button will be unlocked immediately');
+}
+if (DEBUG_ALLOW_SCROLL_DURING_RECORDING) {
+  console.log('🐛 [DEBUG MODE] Scroll during recording is ENABLED - can scroll past record panel');
+}
+if (DEBUG_ALLOW_SCROLL_DURING_QUEST) {
+  console.log('🐛 [DEBUG MODE] Scroll during quest is ENABLED - can scroll past quest scenes');
 }
 
 /**
@@ -278,7 +299,10 @@ export const navigationMachine = setup({
       }
 
       // Initialize store with scenes (helper handles graph building and navigation)
-      initializeStoreWithStory(doneEvent.output.fullStory);
+      // Uses debugConfig.startingSlideIndex to skip to a specific slide for debugging
+      initializeStoreWithStory(doneEvent.output.fullStory, {
+        startingIndex: debugConfig.startingSlideIndex,
+      });
     },
 
     // =============================================================================
@@ -407,6 +431,55 @@ export const navigationMachine = setup({
     clearSuccessDanceNodeId: assign({
       successDanceNodeId: undefined
     }),
+
+    // =============================================================================
+    // Fail Dance Actions
+    // =============================================================================
+
+    createAndInsertFailDanceScene: ({ context }) => {
+      const freshNode = getCurrentNode();
+      const currentNodeId = getCurrentNodeId();
+
+      if (!freshNode || !currentNodeId) {
+        debug.error('No current node - cannot create fail-dance scene');
+        return;
+      }
+
+      // Extract character information from current scene
+      const scene = freshNode.scene;
+      const characterScene = scene as CharacterScene;
+      const answerText = characterScene.answerText || '';
+      const questionText = characterScene.questionText || '';
+      const background = 'background' in scene ? scene.background : undefined;
+      const leftCharacter = 'left-character' in scene ? (scene as { 'left-character'?: string })['left-character'] : undefined;
+      const rightCharacter = 'right-character' in scene ? (scene as { 'right-character'?: string })['right-character'] : undefined;
+
+      // Create fail-dance scene using wrongCharacter from story config if available
+      const failDanceScene = createFailDanceScene(
+        rightCharacter || 'bakerMom', // Character who gets angry (use right-character from scene)
+        answerText,
+        questionText,
+        background,
+        leftCharacter,
+        undefined, // right-character undefined to trigger exit animation
+        context.wrongCharacter // Use wrongCharacter from story config
+      );
+
+      // Insert fail-dance scene after current node
+      insertSceneNodes(currentNodeId, failDanceScene);
+      debug.log('✅ Fail-dance scene created and inserted in failDance state');
+
+      // Navigate to fail-dance scene first, THEN reset the question scene phase
+      // This order is important: if we reset phase before navigating, RecordPanel
+      // will briefly see 'basic' phase and snap to hidden state before fail-dance kicks in
+      setTimeout(() => {
+        useNavigationStore.getState().advance('forward');
+        debug.log('➡️  Navigated to fail-dance scene from failDance state');
+
+        // Reset question scene phase to basic AFTER navigating away (for potential retry)
+        useNavigationStore.getState().updateNodePhase(currentNodeId, 'basic');
+      }, 100);
+    },
 
     // =============================================================================
     // Clue Scene Actions
@@ -655,6 +728,7 @@ export const navigationMachine = setup({
                 () => debug.log('Story loaded successfully!'),
                 assign({
                   graph: ({ event }) => event.output.minimalGraph,
+                  wrongCharacter: ({ event }) => event.output.wrongCharacter,
                 }),
                 'initializeStore',
                 () => debug.log('Transitioning to scene.navigating...'),
@@ -799,18 +873,35 @@ export const navigationMachine = setup({
          * QUEST SHOWING state
          * Quest is being displayed to the user - block all navigation
          * User must interact with quest UI to proceed
+         * (Unless DEBUG_ALLOW_SCROLL_DURING_QUEST is enabled)
          */
         questShowing: {
           entry: () => debug.log('🎯 Entered questShowing state - navigation blocked'),
           on: {
-            // Block scroll down - quest must be interacted with
-            SCROLL_DOWN_STEP: {
-              actions: () => debug.log('⛔ SCROLL_DOWN blocked during quest display'),
-            },
-            // Block scroll up - quest must be interacted with
-            SCROLL_UP_STEP: {
-              actions: () => debug.log('⛔ SCROLL_UP blocked during quest display'),
-            },
+            // Block scroll down - quest must be interacted with (unless debug mode)
+            SCROLL_DOWN_STEP: DEBUG_ALLOW_SCROLL_DURING_QUEST
+              ? {
+                  actions: [
+                    () => debug.log('🐛 SCROLL_DOWN during quest - DEBUG MODE allowed'),
+                    'goNext',
+                  ],
+                  target: '#navigation.scene.route',
+                }
+              : {
+                  actions: () => debug.log('⛔ SCROLL_DOWN blocked during quest display'),
+                },
+            // Block scroll up - quest must be interacted with (unless debug mode)
+            SCROLL_UP_STEP: DEBUG_ALLOW_SCROLL_DURING_QUEST
+              ? {
+                  actions: [
+                    () => debug.log('🐛 SCROLL_UP during quest - DEBUG MODE allowed'),
+                    'goPrev',
+                  ],
+                  target: '#navigation.scene.route',
+                }
+              : {
+                  actions: () => debug.log('⛔ SCROLL_UP blocked during quest display'),
+                },
             // When quest is accepted/started, transition to input phase
             REQUEST_NAV_NEXT: {
               actions: 'goNext',
@@ -934,10 +1025,18 @@ export const navigationMachine = setup({
         dialogueInput: {
           entry: () => debug.log('🎯 Entered dialogueInput state'),
           on: {
-            // Block scroll down - do nothing when in input phase
-            SCROLL_DOWN_STEP: {
-              actions: () => debug.log('⛔ SCROLL_DOWN blocked in dialogueInput'),
-            },
+            // Block scroll down - do nothing when in input phase (unless debug mode)
+            SCROLL_DOWN_STEP: DEBUG_ALLOW_SCROLL_DURING_RECORDING
+              ? {
+                  actions: [
+                    () => debug.log('⬇️ [DEBUG] SCROLL_DOWN in dialogueInput → navigating forward'),
+                    'goNext',
+                  ],
+                  target: '#navigation.scene.route',
+                }
+              : {
+                  actions: () => debug.log('⛔ SCROLL_DOWN blocked in dialogueInput'),
+                },
             SCROLL_UP_STEP: {
               actions: [
                 () => debug.log('⬆️  SCROLL_UP_STEP in dialogueInput → calling goPrev'),
@@ -1152,13 +1251,29 @@ export const navigationMachine = setup({
             'createRecordingScene'
           ],
           on: {
-            // Block all navigation while recording
-            SCROLL_DOWN_STEP: {
-              actions: () => debug.log('⛔ SCROLL blocked during recording'),
-            },
-            SCROLL_UP_STEP: {
-              actions: () => debug.log('⛔ SCROLL blocked during recording'),
-            },
+            // Block all navigation while recording (unless debug mode)
+            SCROLL_DOWN_STEP: DEBUG_ALLOW_SCROLL_DURING_RECORDING
+              ? {
+                  actions: [
+                    () => debug.log('⬇️ [DEBUG] SCROLL_DOWN during recording → navigating forward'),
+                    'goNext',
+                  ],
+                  target: '#navigation.scene.route',
+                }
+              : {
+                  actions: () => debug.log('⛔ SCROLL blocked during recording'),
+                },
+            SCROLL_UP_STEP: DEBUG_ALLOW_SCROLL_DURING_RECORDING
+              ? {
+                  actions: [
+                    () => debug.log('⬆️ [DEBUG] SCROLL_UP during recording → navigating backward'),
+                    'goPrev',
+                  ],
+                  target: '#navigation.scene.route',
+                }
+              : {
+                  actions: () => debug.log('⛔ SCROLL blocked during recording'),
+                },
             // When stop button clicked (event from RecordPanel/UI)
             RECORDING_STOPPED: {
               actions: [
@@ -1204,9 +1319,25 @@ export const navigationMachine = setup({
             },
           ],
           on: {
-            // Block navigation while processing
-            SCROLL_DOWN_STEP: {},
-            SCROLL_UP_STEP: {},
+            // Block navigation while processing (unless debug mode)
+            SCROLL_DOWN_STEP: DEBUG_ALLOW_SCROLL_DURING_RECORDING
+              ? {
+                  actions: [
+                    () => debug.log('⬇️ [DEBUG] SCROLL_DOWN during processing → navigating forward'),
+                    'goNext',
+                  ],
+                  target: '#navigation.scene.route',
+                }
+              : {},
+            SCROLL_UP_STEP: DEBUG_ALLOW_SCROLL_DURING_RECORDING
+              ? {
+                  actions: [
+                    () => debug.log('⬆️ [DEBUG] SCROLL_UP during processing → navigating backward'),
+                    'goPrev',
+                  ],
+                  target: '#navigation.scene.route',
+                }
+              : {},
             // When transcript is ready, store it and move to AI waiting
             RECORDING_TRANSCRIBED: {
               actions: [
@@ -1273,13 +1404,29 @@ export const navigationMachine = setup({
             }
           },
           on: {
-            // Block navigation while AI is processing
-            SCROLL_DOWN_STEP: {
-              actions: () => debug.log('⛔ Scroll blocked while AI processing')
-            },
-            SCROLL_UP_STEP: {
-              actions: () => debug.log('⛔ Scroll blocked while AI processing')
-            },
+            // Block navigation while AI is processing (unless debug mode)
+            SCROLL_DOWN_STEP: DEBUG_ALLOW_SCROLL_DURING_RECORDING
+              ? {
+                  actions: [
+                    () => debug.log('⬇️ [DEBUG] SCROLL_DOWN while AI processing → navigating forward'),
+                    'goNext',
+                  ],
+                  target: '#navigation.scene.route',
+                }
+              : {
+                  actions: () => debug.log('⛔ Scroll blocked while AI processing')
+                },
+            SCROLL_UP_STEP: DEBUG_ALLOW_SCROLL_DURING_RECORDING
+              ? {
+                  actions: [
+                    () => debug.log('⬆️ [DEBUG] SCROLL_UP while AI processing → navigating backward'),
+                    'goPrev',
+                  ],
+                  target: '#navigation.scene.route',
+                }
+              : {
+                  actions: () => debug.log('⛔ Scroll blocked while AI processing')
+                },
             // Legacy event handler for backward compatibility with ChatFlowOrchestrator
             RECEIVED_AI_RESPONSE: {
               target: '#navigation.scene.route',
@@ -1313,13 +1460,29 @@ export const navigationMachine = setup({
             }
           ],
           on: {
-            // Block all navigation while recording
-            SCROLL_DOWN_STEP: {
-              actions: () => debug.log('⛔ SCROLL blocked during answer recording'),
-            },
-            SCROLL_UP_STEP: {
-              actions: () => debug.log('⛔ SCROLL blocked during answer recording'),
-            },
+            // Block all navigation while recording (unless debug mode)
+            SCROLL_DOWN_STEP: DEBUG_ALLOW_SCROLL_DURING_RECORDING
+              ? {
+                  actions: [
+                    () => debug.log('⬇️ [DEBUG] SCROLL_DOWN during answer recording → navigating forward'),
+                    'goNext',
+                  ],
+                  target: '#navigation.scene.route',
+                }
+              : {
+                  actions: () => debug.log('⛔ SCROLL blocked during answer recording'),
+                },
+            SCROLL_UP_STEP: DEBUG_ALLOW_SCROLL_DURING_RECORDING
+              ? {
+                  actions: [
+                    () => debug.log('⬆️ [DEBUG] SCROLL_UP during answer recording → navigating backward'),
+                    'goPrev',
+                  ],
+                  target: '#navigation.scene.route',
+                }
+              : {
+                  actions: () => debug.log('⛔ SCROLL blocked during answer recording'),
+                },
             // When stop button clicked (event from RecordPanel/UI)
             RECORDING_STOPPED: {
               actions: [
@@ -1362,9 +1525,25 @@ export const navigationMachine = setup({
             },
           ],
           on: {
-            // Block navigation while processing
-            SCROLL_DOWN_STEP: {},
-            SCROLL_UP_STEP: {},
+            // Block navigation while processing (unless debug mode)
+            SCROLL_DOWN_STEP: DEBUG_ALLOW_SCROLL_DURING_RECORDING
+              ? {
+                  actions: [
+                    () => debug.log('⬇️ [DEBUG] SCROLL_DOWN during answer processing → navigating forward'),
+                    'goNext',
+                  ],
+                  target: '#navigation.scene.route',
+                }
+              : {},
+            SCROLL_UP_STEP: DEBUG_ALLOW_SCROLL_DURING_RECORDING
+              ? {
+                  actions: [
+                    () => debug.log('⬆️ [DEBUG] SCROLL_UP during answer processing → navigating backward'),
+                    'goPrev',
+                  ],
+                  target: '#navigation.scene.route',
+                }
+              : {},
             // When transcript is ready, store it and move to validation
             RECORDING_TRANSCRIBED: {
               actions: [
@@ -1960,48 +2139,7 @@ export const navigationMachine = setup({
               console.log('😡 [STATE MACHINE] Entered failDance state - creating fail-dance scene');
               debug.log('😡 Entered failDance - creating fail-dance scene');
             },
-            () => {
-              const freshNode = getCurrentNode();
-              const currentNodeId = getCurrentNodeId();
-
-              if (!freshNode || !currentNodeId) {
-                debug.error('No current node - cannot create fail-dance scene');
-                return;
-              }
-
-              // Extract character information from current scene
-              const scene = freshNode.scene;
-              const characterScene = scene as CharacterScene;
-              const answerText = characterScene.answerText || '';
-              const questionText = characterScene.questionText || '';
-              const background = 'background' in scene ? scene.background : undefined;
-              const leftCharacter = 'left-character' in scene ? (scene as { 'left-character'?: string })['left-character'] : undefined;
-
-              // Create fail-dance scene
-              const failDanceScene = createFailDanceScene(
-                'bakerMom', // Character who gets angry
-                answerText,
-                questionText,
-                background,
-                leftCharacter,
-                undefined // right-character undefined to trigger exit animation
-              );
-
-              // Insert fail-dance scene after current node
-              insertSceneNodes(currentNodeId, failDanceScene);
-              debug.log('✅ Fail-dance scene created and inserted in failDance state');
-
-              // Navigate to fail-dance scene first, THEN reset the question scene phase
-              // This order is important: if we reset phase before navigating, RecordPanel
-              // will briefly see 'basic' phase and snap to hidden state before fail-dance kicks in
-              setTimeout(() => {
-                useNavigationStore.getState().advance('forward');
-                debug.log('➡️  Navigated to fail-dance scene from failDance state');
-
-                // Reset question scene phase to basic AFTER navigating away (for potential retry)
-                useNavigationStore.getState().updateNodePhase(currentNodeId, 'basic');
-              }, 100);
-            }
+            'createAndInsertFailDanceScene'
           ],
           on: {
             // Block navigation during angry dance

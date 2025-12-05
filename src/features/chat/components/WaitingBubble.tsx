@@ -42,6 +42,7 @@ export function WaitingBubble({
         backgroundPosition: 'center',
         backgroundColor: '#d4b896',
         borderRadius: '12.5px', // Half of original 25px
+        border: '1px solid #FFFFFF',
         boxShadow: '0 5px 20px rgba(0, 0, 0, 0.3)', // Half the blur and spread
         transformOrigin: 'center center',
         boxSizing: 'border-box',
@@ -72,7 +73,7 @@ export function WaitingBubble({
       <div
         className="waiting-bubble-inner"
         style={{
-          background: 'rgb(253, 248, 228)',
+          background: '#FFFFFF',
           padding: side === 'right' ? '15px 15px 25px 15px' : '15px',
           margin: '0px',
           borderRadius: '10px',

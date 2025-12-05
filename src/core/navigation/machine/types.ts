@@ -430,6 +430,8 @@ export type NavigationContext = {
   successDanceNodeId?: string;
   /** Flag to unlock answer button (set to true after user asks a question or via debug mode) */
   unlockAnswerButton: boolean;
+  /** Character image for fail-dance scenes (e.g., "angrybutterbuns.png") */
+  wrongCharacter?: string;
 };
 
 // Note: Phase is NOT tracked in parent context - it lives in:

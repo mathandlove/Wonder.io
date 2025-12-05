@@ -11,17 +11,26 @@ import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import type { Scene } from '@core/types/scene';
 import { resolveStoryImage } from '@core/data/imageResolver';
 import StorySimulator from './StorySimulator';
+import ImagePickerModal from './ImagePickerModal';
+import type { ImageCategory } from './ImagePickerModal';
 import './StoryReviewEditor.css';
 
 // ============================================================================
 // Types
 // ============================================================================
 
+interface Deposition {
+  character: string;
+  title: string;
+  content: string;
+}
+
 interface StoryData {
   title: string;
   storyId: string;
   scenes: Scene[];
   backgroundDescriptions?: Record<string, string>;
+  depositions?: Deposition[];
 }
 
 interface StoryReviewEditorProps {
@@ -91,7 +100,57 @@ const Icons = {
       <path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z" />
     </svg>
   ),
+  warning: (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" width="16" height="16">
+      <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z" />
+      <line x1="12" y1="9" x2="12" y2="13" />
+      <line x1="12" y1="17" x2="12.01" y2="17" />
+    </svg>
+  ),
 };
+
+// ============================================================================
+// Missing Deposition Warning Helper
+// ============================================================================
+
+interface DepositionWarning {
+  type: 'missing' | 'no-deposition';
+  characterName?: string;
+}
+
+/**
+ * Checks if a character-flow scene has deposition issues:
+ * 1. CharacterDescription that doesn't match any deposition
+ * 2. Flow with input marker but no CharacterDescription at all
+ * @returns Warning object if issue found, or null if valid/not applicable
+ */
+function getMissingDeposition(scene: Scene, depositions?: Deposition[]): DepositionWarning | null {
+  if (scene.type !== 'character-flow') return null;
+
+  const characterDescription = (scene as any).CharacterDescription;
+  const flow = (scene as any).flow as Array<{ type?: string }> | undefined;
+  const hasInputMarker = flow?.some(f => f.type === 'input') ?? false;
+
+  // If no CharacterDescription but has input marker, warn about missing deposition
+  if (!characterDescription && hasInputMarker) {
+    return { type: 'no-deposition' };
+  }
+
+  if (!characterDescription) return null;
+
+  // Remove .txt extension if present for matching
+  const characterName = characterDescription.endsWith('.txt')
+    ? characterDescription.slice(0, -4)
+    : characterDescription;
+
+  // Check if this character exists in depositions
+  if (!depositions || depositions.length === 0) {
+    return { type: 'missing', characterName };
+  }
+
+  const found = depositions.some(d => d.character === characterName);
+  return found ? null : { type: 'missing', characterName };
+}
 
 // ============================================================================
 // Scene Type Badge Component
@@ -138,9 +197,32 @@ interface PropertyEditorProps {
   sceneIndex: number;
   onChange: (updates: Partial<Scene>) => void;
   onReset: () => void;
+  selectedFlowIndex: number | null;
+  onFlowItemSelect: (index: number | null) => void;
+  onFlowItemChange: (index: number, updates: { text?: string; side?: 'left' | 'right' }) => void;
+  onOpenImagePicker: (fieldKey: string, category: ImageCategory) => void;
+  selectedClueIndex: number | null;
+  onClueSelect: (index: number | null) => void;
+  onClueChange: (index: number, updates: { hotspotName?: string; description?: string }) => void;
+  depositions?: Deposition[];
 }
 
-function PropertyEditor({ scene, sceneIndex, onChange, onReset }: PropertyEditorProps) {
+function PropertyEditor({ scene, sceneIndex, onChange, onReset, selectedFlowIndex, onFlowItemSelect, onFlowItemChange, onOpenImagePicker, selectedClueIndex, onClueSelect, onClueChange, depositions }: PropertyEditorProps) {
+  // Check for missing deposition
+  const missingDeposition = getMissingDeposition(scene, depositions);
+
+  // Determine which fields should have image pickers
+  const getImagePickerCategory = (key: string, sceneType: string): ImageCategory | null => {
+    if (key === 'background') return 'backgrounds';
+    if (key === 'left-character' || key === 'right-character') return 'characters';
+    if (key === 'image') {
+      if (sceneType === 'clue-image') return 'clues';
+      if (sceneType === 'map') return 'maps';
+      return 'story';
+    }
+    return null;
+  };
+
   // Get editable properties based on scene type
   const getEditableProperties = (scene: Scene): Array<{ key: string; label: string; type: 'text' | 'textarea' | 'select' | 'array' | 'boolean' }> => {
     const baseProps: Array<{ key: string; label: string; type: 'text' | 'textarea' | 'select' | 'array' | 'boolean' }> = [
@@ -220,6 +302,20 @@ function PropertyEditor({ scene, sceneIndex, onChange, onReset }: PropertyEditor
       </div>
 
       <div className="story-review-properties-list">
+        {/* Missing Deposition Warning */}
+        {missingDeposition && (
+          <div className="story-review-warning">
+            <span className="story-review-warning-icon">{Icons.warning}</span>
+            <span className="story-review-warning-text">
+              {missingDeposition.type === 'no-deposition' ? (
+                <>This flow has an input scene but no <strong>CharacterDescription</strong>. Add a CharacterDescription to enable AI conversations.</>
+              ) : (
+                <>Missing deposition for "<strong>{missingDeposition.characterName}</strong>". Add it to the depositions array in story.json.</>
+              )}
+            </span>
+          </div>
+        )}
+
         {/* Scene Type (read-only) */}
         <div className="story-review-property">
           <label>Type</label>
@@ -269,14 +365,31 @@ function PropertyEditor({ scene, sceneIndex, onChange, onReset }: PropertyEditor
             );
           }
 
+          const imageCategory = getImagePickerCategory(prop.key, scene.type);
+
           return (
             <div key={prop.key} className="story-review-property">
               <label>{prop.label}</label>
-              <input
-                type="text"
-                value={value || ''}
-                onChange={(e) => handleChange(prop.key, e.target.value)}
-              />
+              <div className={`story-review-property-input-row ${imageCategory ? 'has-picker' : ''}`}>
+                <input
+                  type="text"
+                  value={value || ''}
+                  onChange={(e) => handleChange(prop.key, e.target.value)}
+                />
+                {imageCategory && (
+                  <button
+                    className="story-review-image-picker-btn"
+                    onClick={() => onOpenImagePicker(prop.key, imageCategory)}
+                    title={`Browse ${imageCategory}`}
+                  >
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" width="18" height="18">
+                      <rect x="3" y="3" width="18" height="18" rx="2" ry="2" />
+                      <circle cx="8.5" cy="8.5" r="1.5" />
+                      <path d="M21 15l-5-5L5 21" />
+                    </svg>
+                  </button>
+                )}
+              </div>
             </div>
           );
         })}
@@ -284,17 +397,30 @@ function PropertyEditor({ scene, sceneIndex, onChange, onReset }: PropertyEditor
         {/* Flow items for character-flow scenes */}
         {scene.type === 'character-flow' && (scene as any).flow && (
           <div className="story-review-property story-review-property--full">
-            <label>Dialogue Flow ({(scene as any).flow.length} items)</label>
+            <label>Dialogue Flow ({(scene as any).flow.length} items) — Click to edit</label>
             <div className="story-review-flow-list">
               {(scene as any).flow.map((item: any, idx: number) => (
-                <div key={idx} className="story-review-flow-item">
+                <div
+                  key={idx}
+                  className={`story-review-flow-item ${selectedFlowIndex === idx ? 'selected' : ''} ${!item.type ? 'clickable' : ''}`}
+                  onClick={() => !item.type && onFlowItemSelect(selectedFlowIndex === idx ? null : idx)}
+                >
                   {item.type ? (
                     <div className="story-review-flow-type">
                       <SceneTypeBadge type={item.type} />
                     </div>
                   ) : (
                     <>
-                      <span className={`story-review-flow-side ${item.side}`}>
+                      <span
+                        className={`story-review-flow-side ${item.side}`}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          if (selectedFlowIndex === idx) {
+                            onFlowItemChange(idx, { side: item.side === 'left' ? 'right' : 'left' });
+                          }
+                        }}
+                        title={selectedFlowIndex === idx ? 'Click to switch speaker' : undefined}
+                      >
                         {item.side === 'left' ? 'L' : 'R'}
                       </span>
                       <span className="story-review-flow-text">{item.text}</span>
@@ -303,21 +429,112 @@ function PropertyEditor({ scene, sceneIndex, onChange, onReset }: PropertyEditor
                 </div>
               ))}
             </div>
+
+            {/* Inline editor for selected flow item */}
+            {selectedFlowIndex !== null && (scene as any).flow[selectedFlowIndex] && !(scene as any).flow[selectedFlowIndex].type && (
+              <div className="story-review-flow-editor">
+                <div className="story-review-flow-editor-header">
+                  <span className="story-review-flow-editor-label">
+                    Editing line {selectedFlowIndex + 1}
+                    <span className={`story-review-flow-editor-speaker ${(scene as any).flow[selectedFlowIndex].side}`}>
+                      ({(scene as any).flow[selectedFlowIndex].side === 'left' ? (scene as any)['left-character'] : (scene as any)['right-character']})
+                    </span>
+                  </span>
+                  <button
+                    className="story-review-flow-editor-close"
+                    onClick={() => onFlowItemSelect(null)}
+                    title="Close editor"
+                  >
+                    ✕
+                  </button>
+                </div>
+                <textarea
+                  className="story-review-flow-editor-textarea"
+                  value={(scene as any).flow[selectedFlowIndex].text || ''}
+                  onChange={(e) => onFlowItemChange(selectedFlowIndex, { text: e.target.value })}
+                  rows={4}
+                  autoFocus
+                />
+                <div className="story-review-flow-editor-actions">
+                  <button
+                    className={`story-review-flow-editor-side-btn ${(scene as any).flow[selectedFlowIndex].side === 'left' ? 'active' : ''}`}
+                    onClick={() => onFlowItemChange(selectedFlowIndex, { side: 'left' })}
+                  >
+                    Left ({(scene as any)['left-character'] || '?'})
+                  </button>
+                  <button
+                    className={`story-review-flow-editor-side-btn ${(scene as any).flow[selectedFlowIndex].side === 'right' ? 'active' : ''}`}
+                    onClick={() => onFlowItemChange(selectedFlowIndex, { side: 'right' })}
+                  >
+                    Right ({(scene as any)['right-character'] || '?'})
+                  </button>
+                </div>
+              </div>
+            )}
           </div>
         )}
 
         {/* Clue descriptions for clue-image scenes */}
         {scene.type === 'clue-image' && (scene as any).clueDescriptions && (
           <div className="story-review-property story-review-property--full">
-            <label>Clue Descriptions ({(scene as any).clueDescriptions.length} clues)</label>
+            <label>Clue Descriptions ({(scene as any).clueDescriptions.length} clues) — Click to edit</label>
             <div className="story-review-clue-list">
               {(scene as any).clueDescriptions.map((clue: any, idx: number) => (
-                <div key={idx} className="story-review-clue-item">
-                  <strong>{clue.hotspotName}</strong>
+                <div
+                  key={idx}
+                  className={`story-review-clue-item clickable ${selectedClueIndex === idx ? 'selected' : ''}`}
+                  onClick={() => onClueSelect(selectedClueIndex === idx ? null : idx)}
+                >
+                  <div className="story-review-clue-item-header">
+                    <strong>{clue.hotspotName}</strong>
+                    {clue.image && (
+                      <img
+                        className="story-review-clue-thumb"
+                        src={`/stories/gingerbread.bundle/images/hotspots/${(scene as any).image}/${clue.image}.png`}
+                        alt={clue.hotspotName}
+                        onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }}
+                      />
+                    )}
+                  </div>
                   <p>{clue.description}</p>
                 </div>
               ))}
             </div>
+
+            {/* Inline editor for selected clue */}
+            {selectedClueIndex !== null && (scene as any).clueDescriptions[selectedClueIndex] && (
+              <div className="story-review-clue-editor">
+                <div className="story-review-clue-editor-header">
+                  <span className="story-review-clue-editor-label">
+                    Editing clue {selectedClueIndex + 1}
+                  </span>
+                  <button
+                    className="story-review-clue-editor-close"
+                    onClick={() => onClueSelect(null)}
+                    title="Close editor"
+                  >
+                    ✕
+                  </button>
+                </div>
+                <div className="story-review-clue-editor-field">
+                  <label>Hotspot Name</label>
+                  <input
+                    type="text"
+                    value={(scene as any).clueDescriptions[selectedClueIndex].hotspotName || ''}
+                    onChange={(e) => onClueChange(selectedClueIndex, { hotspotName: e.target.value })}
+                  />
+                </div>
+                <div className="story-review-clue-editor-field">
+                  <label>Description (Dialog Text)</label>
+                  <textarea
+                    className="story-review-clue-editor-textarea"
+                    value={(scene as any).clueDescriptions[selectedClueIndex].description || ''}
+                    onChange={(e) => onClueChange(selectedClueIndex, { description: e.target.value })}
+                    rows={4}
+                  />
+                </div>
+              </div>
+            )}
           </div>
         )}
       </div>
@@ -577,6 +794,17 @@ const StoryReviewEditor: React.FC<StoryReviewEditorProps> = ({
   // Navigation state
   const [currentSceneIndex, setCurrentSceneIndex] = useState(0);
 
+  // Flow item selection state
+  const [selectedFlowIndex, setSelectedFlowIndex] = useState<number | null>(null);
+
+  // Clue selection state
+  const [selectedClueIndex, setSelectedClueIndex] = useState<number | null>(null);
+
+  // Image picker state
+  const [imagePickerOpen, setImagePickerOpen] = useState(false);
+  const [imagePickerField, setImagePickerField] = useState<string | null>(null);
+  const [imagePickerCategory, setImagePickerCategory] = useState<ImageCategory>('backgrounds');
+
   // ============================================================================
   // Data Loading
   // ============================================================================
@@ -610,6 +838,8 @@ const StoryReviewEditor: React.FC<StoryReviewEditorProps> = ({
     if (!storyData) return;
     const clampedIndex = Math.max(0, Math.min(index, storyData.scenes.length - 1));
     setCurrentSceneIndex(clampedIndex);
+    setSelectedFlowIndex(null); // Reset flow selection when changing scenes
+    setSelectedClueIndex(null); // Reset clue selection when changing scenes
   }, [storyData]);
 
   const goToPrevious = useCallback(() => {
@@ -706,10 +936,114 @@ const StoryReviewEditor: React.FC<StoryReviewEditorProps> = ({
 
     setStoryData(newStoryData);
     setHasChanges(true);
+    setSelectedFlowIndex(null); // Reset flow selection on scene reset
+    setSelectedClueIndex(null); // Reset clue selection on scene reset
 
     // Auto-save immediately
     saveToFile(newStoryData);
   }, [storyData, originalStoryData, currentSceneIndex, saveToFile]);
+
+  // ============================================================================
+  // Flow Item Editing
+  // ============================================================================
+
+  const handleFlowItemSelect = useCallback((index: number | null) => {
+    setSelectedFlowIndex(index);
+  }, []);
+
+  const handleFlowItemChange = useCallback((index: number, updates: { text?: string; side?: 'left' | 'right' }) => {
+    if (!storyData) return;
+    const currentScene = storyData.scenes[currentSceneIndex] as any;
+    if (!currentScene.flow || !currentScene.flow[index]) return;
+
+    const newFlow = [...currentScene.flow];
+    newFlow[index] = { ...newFlow[index], ...updates };
+
+    const newScenes = [...storyData.scenes];
+    newScenes[currentSceneIndex] = {
+      ...currentScene,
+      flow: newFlow,
+    };
+
+    const newStoryData = {
+      ...storyData,
+      scenes: newScenes,
+    };
+
+    setStoryData(newStoryData);
+    setHasChanges(true);
+
+    // Auto-save immediately
+    saveToFile(newStoryData);
+  }, [storyData, currentSceneIndex, saveToFile]);
+
+  // ============================================================================
+  // Clue Editing
+  // ============================================================================
+
+  const handleClueSelect = useCallback((index: number | null) => {
+    setSelectedClueIndex(index);
+  }, []);
+
+  const handleClueChange = useCallback((index: number, updates: { hotspotName?: string; description?: string }) => {
+    if (!storyData) return;
+    const currentScene = storyData.scenes[currentSceneIndex] as any;
+    if (!currentScene.clueDescriptions || !currentScene.clueDescriptions[index]) return;
+
+    const newClues = [...currentScene.clueDescriptions];
+    newClues[index] = { ...newClues[index], ...updates };
+
+    const newScenes = [...storyData.scenes];
+    newScenes[currentSceneIndex] = {
+      ...currentScene,
+      clueDescriptions: newClues,
+    };
+
+    const newStoryData = {
+      ...storyData,
+      scenes: newScenes,
+    };
+
+    setStoryData(newStoryData);
+    setHasChanges(true);
+
+    // Auto-save immediately
+    saveToFile(newStoryData);
+  }, [storyData, currentSceneIndex, saveToFile]);
+
+  // ============================================================================
+  // Image Picker
+  // ============================================================================
+
+  const handleOpenImagePicker = useCallback((fieldKey: string, category: ImageCategory) => {
+    setImagePickerField(fieldKey);
+    setImagePickerCategory(category);
+    setImagePickerOpen(true);
+  }, []);
+
+  const handleImageSelect = useCallback((imagePath: string) => {
+    if (!imagePickerField || !storyData) return;
+
+    const newScenes = [...storyData.scenes];
+    newScenes[currentSceneIndex] = {
+      ...newScenes[currentSceneIndex],
+      [imagePickerField]: imagePath,
+    } as Scene;
+
+    const newStoryData = {
+      ...storyData,
+      scenes: newScenes,
+    };
+
+    setStoryData(newStoryData);
+    setHasChanges(true);
+    saveToFile(newStoryData);
+  }, [imagePickerField, storyData, currentSceneIndex, saveToFile]);
+
+  const handleCloseImagePicker = useCallback(() => {
+    setImagePickerOpen(false);
+    setImagePickerField(null);
+  }, []);
 
   // ============================================================================
   // Manual Save (kept for backup button)
@@ -904,9 +1238,26 @@ const StoryReviewEditor: React.FC<StoryReviewEditorProps> = ({
             sceneIndex={currentSceneIndex}
             onChange={handleSceneChange}
             onReset={handleResetScene}
+            selectedFlowIndex={selectedFlowIndex}
+            onFlowItemSelect={handleFlowItemSelect}
+            onFlowItemChange={handleFlowItemChange}
+            onOpenImagePicker={handleOpenImagePicker}
+            selectedClueIndex={selectedClueIndex}
+            onClueSelect={handleClueSelect}
+            onClueChange={handleClueChange}
+            depositions={storyData.depositions}
           />
         </div>
       </div>
+
+      {/* Image Picker Modal */}
+      <ImagePickerModal
+        isOpen={imagePickerOpen}
+        category={imagePickerCategory}
+        currentValue={(currentScene as any)[imagePickerField || ''] || null}
+        onSelect={handleImageSelect}
+        onClose={handleCloseImagePicker}
+      />
     </div>
   );
 };

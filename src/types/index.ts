@@ -174,6 +174,7 @@ export type Scene =
  */
 export type Story = {
   scenes: Scene[];
+  wrongCharacter?: string; // Character image for fail-dance scenes (e.g., "angrybutterbuns.png")
 };
 
 // ============================================================================

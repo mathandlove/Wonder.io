@@ -27,6 +27,7 @@ import * as navigationBus from '@core/navigation/events/navigationBus';
 import { calculateImageBounds, pointsToPixels } from '@shared/utils/coordinateUtils';
 import { HotspotSparkles } from './HotspotSparkles';
 import { useClueStore } from '@core/data/ClueStore';
+import { useSceneVisibility } from '@core/scroll/useSceneVisibility';
 import './ClueImageScene.css';
 
 /**
@@ -37,9 +38,10 @@ interface DialogBubbleProps {
   text: string;
   hotspot: Hotspot;
   onDismiss: () => void;
+  imageBounds: { width: number; height: number; left: number; top: number };
 }
 
-function DialogBubble({ text, hotspot, onDismiss }: DialogBubbleProps) {
+function DialogBubble({ text, hotspot, onDismiss, imageBounds }: DialogBubbleProps) {
   const handleClick = (e: React.MouseEvent) => {
     e.stopPropagation(); // Prevent bubbling to background
     onDismiss();
@@ -68,23 +70,29 @@ function DialogBubble({ text, hotspot, onDismiss }: DialogBubbleProps) {
   }
   // Otherwise default to bottom for center hotspots
 
-  // For left-positioned bubbles, use the left edge of the hotspot
-  // For right-positioned bubbles, use the right edge of the hotspot
-  // For top/bottom, use the center
-  const bubbleX = position === 'left'
-    ? hotspot.x  // Left edge of hotspot
+  // For left-positioned bubbles (bubble to left of hotspot), point to the left edge of the hotspot
+  // For right-positioned bubbles (bubble to right of hotspot), point to the right edge of the hotspot
+  // For top/bottom, use the horizontal center
+  const bubbleXPercent = position === 'left'
+    ? hotspot.x  // Left edge of hotspot (bubble appears to the left, pointing right)
     : position === 'right'
-      ? hotspot.x + hotspot.width  // Right edge of hotspot
+      ? hotspot.x + hotspot.width  // Right edge of hotspot (bubble appears to the right, pointing left)
       : center.x;  // Center for top/bottom
 
-  const bubbleY = position === 'top' || position === 'bottom'
-    ? center.y  // Use center Y for top/bottom
-    : center.y;  // Use center Y for left/right
+  // Always use the vertical center of the hotspot for the pointer target
+  // Calculate from actual polygon bounds, clamped to visible area (0-100%)
+  const minY = Math.max(0, Math.min(...hotspot.points.map(p => p.y)));
+  const maxY = Math.min(100, Math.max(...hotspot.points.map(p => p.y)));
+  const bubbleYPercent = (minY + maxY) / 2;
+
+  // Convert percentage positions to pixel positions relative to the image
+  const bubbleX = imageBounds.left + (bubbleXPercent / 100) * imageBounds.width;
+  const bubbleY = imageBounds.top + (bubbleYPercent / 100) * imageBounds.height;
 
   const style: React.CSSProperties = {
     position: 'absolute',
-    left: `${bubbleX}%`,
-    top: `${bubbleY}%`,
+    left: `${bubbleX}px`,
+    top: `${bubbleY}px`,
   };
 
   return (
@@ -232,17 +240,13 @@ export default function ClueImageScene({ scene }: SceneProps<ClueImageSceneType>
   const [imageBounds, setImageBounds] = useState({ width: 0, height: 0, left: 0, top: 0 });
   // Track sparkle delay - resets to 10 seconds at scene start and after each clue click
   const [sparkleDelayKey, setSparkleDelayKey] = useState(0); // Increment to force re-render with fresh delay
-  const [lowestHotspotInfo, setLowestHotspotInfo] = useState<{
-    lowestHotspot: string | null;
-    bottomEdgePercent: number;
-    bottomEdgePixelsInImage: number;
-    distanceFromImageBottom: number;
-    distanceFromViewportBottom: number;
-  } | null>(null);
-  const [bottomPadding, setBottomPadding] = useState(0);
 
   const imgRef = useRef<HTMLImageElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
+
+  // Track when the scene becomes visible (user scrolls to it)
+  // The 10-second sparkle delay should only start after visibility
+  const isVisible = useSceneVisibility(containerRef, { threshold: 0.5 });
 
   // Get ClueStore to save clues when all are found
   const { setClues } = useClueStore();
@@ -253,48 +257,12 @@ export default function ClueImageScene({ scene }: SceneProps<ClueImageSceneType>
   // Determine if all clues are found
   const isComplete = wasPreviouslyCompleted || (hotspotData && foundClues.length === hotspotData.hotspots.length);
 
-  // Calculate lowest hotspot distance helper function
-  const calculateLowestHotspotDistance = useCallback(() => {
-    if (!hotspotData || imageBounds.height === 0) {
-      return null;
-    }
-
-    // Find the lowest point across all hotspots
-    let maxYPercent = 0;
-    let lowestHotspot: Hotspot | null = null;
-
-    hotspotData.hotspots.forEach((hotspot) => {
-      // Calculate the bottom edge of this hotspot (y + height)
-      const bottomEdge = hotspot.y + hotspot.height;
-      if (bottomEdge > maxYPercent) {
-        maxYPercent = bottomEdge;
-        lowestHotspot = hotspot;
-      }
-    });
-
-    // Convert percentage to pixels within the image bounds
-    const bottomEdgePixels = (maxYPercent / 100) * imageBounds.height;
-
-    // Calculate distance from the bottom of the image
-    const distanceFromImageBottomPixels = imageBounds.height - bottomEdgePixels;
-
-    // Calculate distance from the bottom of the viewport
-    const imageBottomY = imageBounds.top + imageBounds.height;
-    const viewportHeight = window.innerHeight;
-    const distanceFromViewportBottomPixels = viewportHeight - imageBottomY;
-
-    return {
-      lowestHotspot: lowestHotspot?.label || null,
-      bottomEdgePercent: maxYPercent,
-      bottomEdgePixelsInImage: bottomEdgePixels,
-      distanceFromImageBottom: distanceFromImageBottomPixels,
-      distanceFromViewportBottom: distanceFromViewportBottomPixels,
-    };
-  }, [hotspotData, imageBounds]);
+  // Height of the clue panel + 10px gap above it
+  const CLUE_PANEL_CLEARANCE = 100;
 
   // Update dimensions helper function
   const updateDimensions = useCallback(() => {
-    if (imgRef.current && containerRef.current && hotspotData) {
+    if (imgRef.current && containerRef.current) {
       const natural = {
         width: imgRef.current.naturalWidth,
         height: imgRef.current.naturalHeight
@@ -310,77 +278,23 @@ export default function ClueImageScene({ scene }: SceneProps<ClueImageSceneType>
         height: containerRef.current.offsetHeight
       };
 
-      const TARGET_CLEARANCE = 150;
+      // Calculate bounds with clearance for the clue panel at the bottom
+      const bounds = calculateImageBounds(
+        container.width,
+        container.height - CLUE_PANEL_CLEARANCE,
+        natural.width,
+        natural.height
+      );
 
-      // Find the lowest hotspot percentage first
-      let maxYPercent = 0;
-      hotspotData.hotspots.forEach((hotspot) => {
-        const bottomEdge = hotspot.y + hotspot.height;
-        if (bottomEdge > maxYPercent) {
-          maxYPercent = bottomEdge;
-        }
-      });
-
-      // Iteratively calculate bounds and padding
-      // Start from the previously calculated padding to maintain state
-      let currentPadding = bottomPadding;
-      let bounds;
-      let lowestHotspotDistanceFromBottom = 0;
-
-      // Maximum 3 iterations to converge
-      for (let i = 0; i < 3; i++) {
-        // Calculate where the image will render with current padding
-        bounds = calculateImageBounds(
-          container.width,
-          container.height - currentPadding,
-          natural.width,
-          natural.height
-        );
-
-        // Calculate where the lowest hotspot ends up
-        const bottomEdgePixels = (maxYPercent / 100) * bounds.height;
-        const lowestHotspotY = bounds.top + bottomEdgePixels;
-        lowestHotspotDistanceFromBottom = window.innerHeight - lowestHotspotY;
-
-        // Calculate required padding
-        const newPadding = Math.max(0, TARGET_CLEARANCE - lowestHotspotDistanceFromBottom);
-
-        // If padding hasn't changed significantly, we're done
-        if (Math.abs(newPadding - currentPadding) < 1) {
-          currentPadding = newPadding;
-          break;
-        }
-
-        currentPadding = newPadding;
-      }
-
-      console.log('[ClueImageScene] Dimension calculation:', {
-        lowestHotspotDistanceFromBottom: `${lowestHotspotDistanceFromBottom.toFixed(2)}px`,
-        requiredPadding: `${currentPadding.toFixed(2)}px`,
-        boundsHeight: `${bounds!.height.toFixed(2)}px`,
-        boundsTop: `${bounds!.top.toFixed(2)}px`,
-        containerHeight: `${container.height}px`,
-        adjustedHeight: `${(container.height - currentPadding).toFixed(2)}px`,
-      });
-
-      setImageBounds(bounds!);
-      setBottomPadding(currentPadding);
+      setImageBounds(bounds);
     }
-  }, [hotspotData, bottomPadding]);
+  }, []);
 
   // Calculate image bounds on window resize
   useEffect(() => {
     window.addEventListener('resize', updateDimensions);
     return () => window.removeEventListener('resize', updateDimensions);
   }, [updateDimensions]);
-
-  // Calculate lowest hotspot distance whenever bounds or hotspot data changes
-  useEffect(() => {
-    const info = calculateLowestHotspotDistance();
-    if (info) {
-      setLowestHotspotInfo(info);
-    }
-  }, [calculateLowestHotspotDistance]);
 
   // Derive image name from scene data and immediately save all clues to store
   useEffect(() => {
@@ -400,7 +314,8 @@ export default function ClueImageScene({ scene }: SceneProps<ClueImageSceneType>
 
         // Immediately save all clues to ClueStore for use in character-flow scenes
         // This happens regardless of whether user clicks on them
-        const mapName = scene.image || 'insideBakery';
+        // Strip file extension from scene.image to get just the map name (e.g., "insideBakery.jpg" -> "insideBakery")
+        const mapName = (scene.image || 'insideBakery').replace(/\.(png|jpg|jpeg|webp)$/i, '');
         const clueData = scene.clueDescriptions.map(desc => ({
           hotspotName: desc.hotspotName,
           description: desc.description,
@@ -458,8 +373,8 @@ export default function ClueImageScene({ scene }: SceneProps<ClueImageSceneType>
           console.log('[ClueImageScene] 🎯 All clues found! Emitting ALL_CLUES_FOUND event');
 
           // Save clues to ClueStore for use in subsequent character-flow scenes
-          // Extract map name from scene.image (e.g., "insideBakery" from scene.image)
-          const mapName = scene.image || 'insideBakery';
+          // Strip file extension from scene.image to get just the map name (e.g., "insideBakery.jpg" -> "insideBakery")
+          const mapName = (scene.image || 'insideBakery').replace(/\.(png|jpg|jpeg|webp)$/i, '');
           const clueData = scene.clueDescriptions.map(desc => ({
             hotspotName: desc.hotspotName,
             description: desc.description,
@@ -543,7 +458,7 @@ export default function ClueImageScene({ scene }: SceneProps<ClueImageSceneType>
   return (
     <div
       ref={containerRef}
-      className="clue-image-scene"
+      className="clue-image-scene construction-paper-bg"
       onClick={handleBackgroundClick}
       style={{
         position: 'relative',
@@ -592,7 +507,8 @@ export default function ClueImageScene({ scene }: SceneProps<ClueImageSceneType>
       )}
 
       {/* Sparkle hints for unfound hotspots - positioned absolutely within viewport */}
-      {!wasPreviouslyCompleted && imageBounds.width > 0 && (
+      {/* Only render sparkles once the scene is visible (user has scrolled to it) */}
+      {!wasPreviouslyCompleted && imageBounds.width > 0 && isVisible && (
         <div
           style={{
             position: 'absolute',
@@ -641,6 +557,7 @@ export default function ClueImageScene({ scene }: SceneProps<ClueImageSceneType>
           text={activeDialog.text}
           hotspot={activeDialog.hotspot}
           onDismiss={handleDismissDialog}
+          imageBounds={imageBounds}
         />
       )}
 

@@ -36,6 +36,7 @@ const EditorApp: React.FC = () => {
   // Map paths state
   const [mapPaths, setMapPaths] = useState<MapPath[]>([]);
   const [hoveredPath, setHoveredPath] = useState<string | null>(null);
+  const [isMapDataLoaded, setIsMapDataLoaded] = useState(false);
 
 
   // Load hotspots from bundle when image changes
@@ -168,6 +169,9 @@ const EditorApp: React.FC = () => {
   useEffect(() => {
     if (!currentMap) return;
 
+    // Reset loaded flag when map changes to prevent saving stale data
+    setIsMapDataLoaded(false);
+
     const loadMapData = async () => {
       try {
         const response = await fetch(`http://localhost:3001/api/bundle/hotspots?image=${encodeURIComponent(currentMap)}`);
@@ -177,11 +181,13 @@ const EditorApp: React.FC = () => {
         const data = await response.json();
         setMapHotspots(data.hotspots || []);
         setMapPaths(data.paths || []);
+        setIsMapDataLoaded(true);
         console.log(`Loaded ${data.hotspots?.length || 0} hotspots and ${data.paths?.length || 0} paths for map ${currentMap}`);
       } catch (err) {
         console.error('Failed to load map data:', err);
         setMapHotspots([]);
         setMapPaths([]);
+        setIsMapDataLoaded(true);
       }
     };
 
@@ -190,7 +196,8 @@ const EditorApp: React.FC = () => {
 
   // Auto-save map hotspots and paths when they change
   useEffect(() => {
-    if (!currentMap) return;
+    // Don't save until data has been loaded to prevent overwriting with empty data
+    if (!currentMap || !isMapDataLoaded) return;
 
     const saveMapData = async () => {
       setIsSaving(true);
@@ -220,7 +227,7 @@ const EditorApp: React.FC = () => {
 
     const timeoutId = setTimeout(saveMapData, 1000);
     return () => clearTimeout(timeoutId);
-  }, [mapHotspots, mapPaths, currentMap]);
+  }, [mapHotspots, mapPaths, currentMap, isMapDataLoaded]);
 
   const handleMapHotspotCreated = (newHotspot: Partial<Hotspot>) => {
     const hotspot: Hotspot = {

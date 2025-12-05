@@ -362,7 +362,7 @@ export default function MapScene({ scene, sceneIndex }: SceneProps<MapSceneType>
   return (
     <div
       ref={containerRef}
-      className="map-scene"
+      className="map-scene construction-paper-bg"
       onClick={handleContinue}
       style={{
         position: 'relative',

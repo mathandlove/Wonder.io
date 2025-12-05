@@ -1,3 +1,7 @@
+@import '@shared/styles/constructionPaperBackground.css';
+
+/* Note: Add .construction-paper-bg class to component for background */
+
 /* Base caption styling - container that animates as one unit */
 .caption {
   position: absolute;

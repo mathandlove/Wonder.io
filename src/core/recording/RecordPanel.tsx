@@ -244,7 +244,7 @@ export const RecordPanel: React.FC<RecordPanelProps> = ({
           <div className="quest">
             <p className={`quest-find-out-what ${useQuestOfferStyling ? 'quest-offer' : ''}`}>
               {isAskClue || isAnswerClue ? (
-                <span className="quest-label" style={{ color: '#b2652a' }}>What clue leads to the answer?</span>
+                <span className="quest-label" style={{ color: '#b2652a' }}>Which clue do you want to ask about?</span>
               ) : useQuestOfferStyling ? (
                 <>
                   <span className="quest-label">Quest:</span>

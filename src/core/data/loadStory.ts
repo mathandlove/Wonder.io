@@ -1,7 +1,7 @@
 /**
  * Loads and processes story data from JSON files.
  * Flattens character-flow scenes into individual scenes and validates data structure.
- * Character descriptions are loaded from external .txt files in the depositions folder.
+ * Character descriptions are loaded from the depositions array in story.json.
  */
 // src/data/loadStory.ts
 import type { Scene, Story } from '@core/types/scene';
@@ -11,34 +11,31 @@ import { PHASES, type Phase } from '@core/navigation/navigationGraphTypes';
 // Re-export for convenience
 export type { ConversationMetadataMap } from '@core/data/FlowMetadataStore';
 
+type Deposition = {
+  character: string;
+  title: string;
+  content: string;
+};
+
 /**
- * Loads a character description from a .txt file in the depositions folder.
- * @param characterRef - The character name (e.g., "bakerMom") or path to the txt file
- * @param storyBasePath - The base path to the story bundle (e.g., "/stories/gingerbread.bundle")
- * @returns The character description text, or null if loading fails
+ * Looks up a character description from the depositions array in story.json.
+ * @param characterRef - The character name (e.g., "butterbuns")
+ * @param depositions - The depositions array from story.json
+ * @returns The character description content, or null if not found
  */
-async function loadCharacterDescription(
+function getCharacterDescription(
   characterRef: string,
-  storyBasePath: string
-): Promise<string | null> {
-  // Construct the path to the deposition file
-  const filename = characterRef.endsWith('.txt')
-    ? characterRef
-    : `${characterRef}.txt`;
+  depositions: Deposition[] | undefined
+): string | null {
+  if (!depositions) return null;
 
-  const url = `${storyBasePath}/images/depositions/${filename}`;
+  // Remove .txt extension if present for matching
+  const characterName = characterRef.endsWith('.txt')
+    ? characterRef.slice(0, -4)
+    : characterRef;
 
-  try {
-    const response = await fetch(url);
-    if (!response.ok) {
-      console.warn(`[loadStory] Could not load deposition from ${url}: ${response.status}`);
-      return null;
-    }
-    return await response.text();
-  } catch (error) {
-    console.warn(`[loadStory] Failed to load deposition from ${url}:`, error);
-    return null;
-  }
+  const deposition = depositions.find(d => d.character === characterName);
+  return deposition?.content ?? null;
 }
 
 /**
@@ -109,6 +106,7 @@ type RawScene = {
 
 type RawStory = {
   scenes?: RawScene[];
+  depositions?: Deposition[];
   [k: string]: unknown;
 };
 
@@ -291,27 +289,23 @@ export async function loadStory(url: string): Promise<{ story: Story; flowMetada
   if (!res.ok) throw new Error(`Failed to load story: ${res.status}`);
   const data = (await res.json()) as RawStory;
   const rawScenes = data.scenes ?? [];
+  const depositions = data.depositions;
   const { scenes, flowMetadata } = flattenScenes(rawScenes);
 
-  // Extract the story base path from the URL (e.g., "/stories/gingerbread.bundle" from "/stories/gingerbread.bundle/story.json")
-  const storyBasePath = url.substring(0, url.lastIndexOf('/'));
-
-  // Load character descriptions from depositions folder
-  // The CharacterDescription field now references a txt file in images/depositions/
-  await Promise.all(
-    Object.entries(flowMetadata).map(async ([conversationId, metadata]) => {
-      if (metadata.characterDescription) {
-        const loadedDescription = await loadCharacterDescription(
-          metadata.characterDescription,
-          storyBasePath
-        );
-        if (loadedDescription) {
-          flowMetadata[conversationId].characterDescription = loadedDescription;
-        }
-        // If loading fails, keep the original value (for backward compatibility with inline descriptions)
+  // Load character descriptions from depositions array in story.json
+  // The CharacterDescription field references a character name that matches a deposition
+  Object.entries(flowMetadata).forEach(([conversationId, metadata]) => {
+    if (metadata.characterDescription) {
+      const loadedDescription = getCharacterDescription(
+        metadata.characterDescription,
+        depositions
+      );
+      if (loadedDescription) {
+        flowMetadata[conversationId].characterDescription = loadedDescription;
       }
-    })
-  );
+      // If not found, keep the original value (for backward compatibility with inline descriptions)
+    }
+  });
 
-  return { story: { scenes }, flowMetadata };
+  return { story: { scenes, wrongCharacter: data.wrongCharacter as string | undefined }, flowMetadata };
 }

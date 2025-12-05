@@ -184,16 +184,34 @@ export function deleteNode(nodeId: NodeId): void {
  * Called by navigationMachine after story is loaded
  *
  * @param fullStory - Array of scenes from story JSON
- * @param firstNodeId - ID of the first node to navigate to (optional)
+ * @param options - Optional configuration
+ * @param options.firstNodeId - ID of the first node to navigate to
+ * @param options.startingIndex - Index (0-based) of the slide to start on
  */
-export function initializeStoreWithStory(fullStory: Scene[], firstNodeId?: string): void {
+export function initializeStoreWithStory(
+  fullStory: Scene[],
+  options?: { firstNodeId?: string; startingIndex?: number }
+): void {
 
   // Load scenes into store
   setScenes(fullStory);
 
   // Navigate to first node (or use store's default)
   const store = useNavigationStore.getState();
-  const targetNodeId = firstNodeId || store.graph.order[0];
+
+  // Determine target node: explicit nodeId > startingIndex > first node
+  let targetNodeId: string | null = null;
+
+  if (options?.firstNodeId) {
+    targetNodeId = options.firstNodeId;
+  } else if (options?.startingIndex !== undefined && options.startingIndex > 0) {
+    // Use starting index if provided and valid
+    const index = Math.min(options.startingIndex, store.graph.order.length - 1);
+    targetNodeId = store.graph.order[index] || store.graph.order[0];
+    console.log(`🐛 [DEBUG] Starting at slide index ${index} (node: ${targetNodeId})`);
+  } else {
+    targetNodeId = store.graph.order[0];
+  }
 
   if (targetNodeId) {
     // Set initial position directly - no frozen node needed for very first load

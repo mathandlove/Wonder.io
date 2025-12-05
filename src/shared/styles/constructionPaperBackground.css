@@ -1,0 +1,26 @@
+/**
+ * Construction Paper Background
+ *
+ * Shared background style for scenes that display content on construction paper.
+ * Used by: ClueImageScene, MapScene, ImageScene
+ *
+ * Usage: Add the .construction-paper-bg class to your scene container
+ */
+
+.construction-paper-bg {
+  background-color: #a8d5a2; /* Fallback pastel green if image doesn't load */
+}
+
+/* Construction paper background with lightening effect for pastel look */
+.construction-paper-bg::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background-image: url('/VisualAssets/constructionPaper.png');
+  background-size: cover;
+  background-repeat: no-repeat;
+  background-position: center;
+  filter: brightness(1.8) saturate(0.5);
+  z-index: 0;
+  pointer-events: none;
+}

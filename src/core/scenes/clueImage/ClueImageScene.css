@@ -8,14 +8,17 @@
  * - Dialog bubble positioning and animations
  */
 
+@import '@shared/styles/constructionPaperBackground.css';
+
 .clue-image-scene {
   position: relative;
   width: 100vw;
   height: 100vh;
   display: block; /* Changed from flex to block to prevent layout shifts */
   overflow: hidden;
-  background-color: #1a1a1a;
 }
+
+/* Note: Add .construction-paper-bg class to component for background */
 
 .clue-image-scene--loading,
 .clue-image-scene--error {

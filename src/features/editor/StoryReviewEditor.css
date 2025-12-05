@@ -848,6 +848,22 @@
   background: white;
   border-radius: 6px;
   border: 1px solid #e2e8f0;
+  transition: all 0.15s;
+}
+
+.story-review-flow-item.clickable {
+  cursor: pointer;
+}
+
+.story-review-flow-item.clickable:hover {
+  border-color: #4a9290;
+  background: #f0fdfa;
+}
+
+.story-review-flow-item.selected {
+  border-color: #4a9290;
+  background: #ccfbf1;
+  box-shadow: 0 0 0 2px rgba(74, 146, 144, 0.2);
 }
 
 .story-review-flow-type {
@@ -942,4 +958,329 @@
 .story-review-clue-list::-webkit-scrollbar-thumb {
   background: #cbd5e1;
   border-radius: 3px;
+}
+
+/* Flow Item Editor */
+.story-review-flow-editor {
+  margin-top: 12px;
+  padding: 14px;
+  background: white;
+  border-radius: 8px;
+  border: 2px solid #4a9290;
+  box-shadow: 0 4px 12px rgba(74, 146, 144, 0.15);
+}
+
+.story-review-flow-editor-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 10px;
+}
+
+.story-review-flow-editor-label {
+  font-size: 13px;
+  font-weight: 600;
+  color: #1e293b;
+}
+
+.story-review-flow-editor-speaker {
+  margin-left: 6px;
+  font-weight: 500;
+  font-size: 12px;
+}
+
+.story-review-flow-editor-speaker.left {
+  color: #3b82f6;
+}
+
+.story-review-flow-editor-speaker.right {
+  color: #10b981;
+}
+
+.story-review-flow-editor-close {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  background: #f1f5f9;
+  border: none;
+  border-radius: 4px;
+  color: #64748b;
+  cursor: pointer;
+  font-size: 14px;
+  transition: all 0.15s;
+}
+
+.story-review-flow-editor-close:hover {
+  background: #e2e8f0;
+  color: #475569;
+}
+
+.story-review-flow-editor-textarea {
+  width: 100%;
+  padding: 10px 12px;
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 6px;
+  font-size: 14px;
+  font-family: inherit;
+  color: #1e293b;
+  line-height: 1.5;
+  resize: vertical;
+  min-height: 80px;
+  transition: all 0.15s;
+}
+
+.story-review-flow-editor-textarea:focus {
+  outline: none;
+  border-color: #4a9290;
+  box-shadow: 0 0 0 3px rgba(74, 146, 144, 0.1);
+}
+
+.story-review-flow-editor-actions {
+  display: flex;
+  gap: 8px;
+  margin-top: 10px;
+}
+
+.story-review-flow-editor-side-btn {
+  flex: 1;
+  padding: 8px 12px;
+  background: #f1f5f9;
+  border: 1px solid #e2e8f0;
+  border-radius: 6px;
+  font-size: 12px;
+  font-weight: 500;
+  color: #64748b;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+.story-review-flow-editor-side-btn:hover {
+  background: #e2e8f0;
+}
+
+.story-review-flow-editor-side-btn.active {
+  background: #4a9290;
+  border-color: #4a9290;
+  color: white;
+}
+
+/* Make side badge clickable when selected */
+.story-review-flow-item.selected .story-review-flow-side {
+  cursor: pointer;
+  transition: transform 0.15s;
+}
+
+.story-review-flow-item.selected .story-review-flow-side:hover {
+  transform: scale(1.1);
+}
+
+/* Property Input Row with Picker */
+.story-review-property-input-row {
+  display: flex;
+  gap: 8px;
+}
+
+.story-review-property-input-row input[type="text"] {
+  flex: 1;
+  padding: 10px 14px;
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  font-size: 14px;
+  color: #1e293b;
+  transition: all 0.15s;
+}
+
+.story-review-property-input-row input[type="text"]:focus {
+  outline: none;
+  border-color: #4a9290;
+  box-shadow: 0 0 0 3px rgba(74, 146, 144, 0.1);
+}
+
+.story-review-image-picker-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  background: #4a9290;
+  border: none;
+  border-radius: 8px;
+  color: white;
+  cursor: pointer;
+  flex-shrink: 0;
+  transition: all 0.15s;
+}
+
+.story-review-image-picker-btn:hover {
+  background: #3d7a78;
+  transform: scale(1.05);
+}
+
+.story-review-image-picker-btn svg {
+  width: 18px;
+  height: 18px;
+}
+
+/* Clue Item Clickable & Selected States */
+.story-review-clue-item.clickable {
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+.story-review-clue-item.clickable:hover {
+  border-color: #4a9290;
+  background: #f0fdfa;
+}
+
+.story-review-clue-item.selected {
+  border-color: #4a9290;
+  background: #ccfbf1;
+  box-shadow: 0 0 0 2px rgba(74, 146, 144, 0.2);
+}
+
+.story-review-clue-item-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 4px;
+}
+
+.story-review-clue-thumb {
+  width: 32px;
+  height: 32px;
+  border-radius: 4px;
+  object-fit: cover;
+  background: #f1f5f9;
+}
+
+/* Clue Editor */
+.story-review-clue-editor {
+  margin-top: 12px;
+  padding: 14px;
+  background: white;
+  border-radius: 8px;
+  border: 2px solid #4a9290;
+  box-shadow: 0 4px 12px rgba(74, 146, 144, 0.15);
+}
+
+.story-review-clue-editor-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 12px;
+}
+
+.story-review-clue-editor-label {
+  font-size: 13px;
+  font-weight: 600;
+  color: #1e293b;
+}
+
+.story-review-clue-editor-close {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  background: #f1f5f9;
+  border: none;
+  border-radius: 4px;
+  color: #64748b;
+  cursor: pointer;
+  font-size: 14px;
+  transition: all 0.15s;
+}
+
+.story-review-clue-editor-close:hover {
+  background: #e2e8f0;
+  color: #475569;
+}
+
+.story-review-clue-editor-field {
+  margin-bottom: 12px;
+}
+
+.story-review-clue-editor-field:last-child {
+  margin-bottom: 0;
+}
+
+.story-review-clue-editor-field label {
+  display: block;
+  font-size: 11px;
+  font-weight: 600;
+  color: #64748b;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin-bottom: 6px;
+}
+
+.story-review-clue-editor-field input[type="text"] {
+  width: 100%;
+  padding: 8px 12px;
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 6px;
+  font-size: 14px;
+  color: #1e293b;
+  transition: all 0.15s;
+}
+
+.story-review-clue-editor-field input[type="text"]:focus {
+  outline: none;
+  border-color: #4a9290;
+  box-shadow: 0 0 0 3px rgba(74, 146, 144, 0.1);
+}
+
+.story-review-clue-editor-textarea {
+  width: 100%;
+  padding: 10px 12px;
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 6px;
+  font-size: 14px;
+  font-family: inherit;
+  color: #1e293b;
+  line-height: 1.5;
+  resize: vertical;
+  min-height: 80px;
+  transition: all 0.15s;
+}
+
+.story-review-clue-editor-textarea:focus {
+  outline: none;
+  border-color: #4a9290;
+  box-shadow: 0 0 0 3px rgba(74, 146, 144, 0.1);
+}
+
+/* Missing Deposition Warning */
+.story-review-warning {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 12px 14px;
+  background: #fef3c7;
+  border: 1px solid #f59e0b;
+  border-radius: 8px;
+  margin-bottom: 16px;
+}
+
+.story-review-warning-icon {
+  flex-shrink: 0;
+  color: #d97706;
+  margin-top: 1px;
+}
+
+.story-review-warning-text {
+  font-size: 13px;
+  color: #92400e;
+  line-height: 1.4;
+}
+
+.story-review-warning-text strong {
+  font-weight: 600;
+  color: #78350f;
 }

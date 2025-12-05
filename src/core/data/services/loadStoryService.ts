@@ -32,6 +32,7 @@ export interface LoadStoryOutput {
   minimalGraph: MachineGraph;
   initialNodeId: string;
   flowMetadata: ConversationMetadataMap;
+  wrongCharacter?: string; // Character image for fail-dance scenes
 }
 
 /**
@@ -70,5 +71,6 @@ export async function loadStoryService(input: LoadStoryInput): Promise<LoadStory
     minimalGraph,
     initialNodeId,
     flowMetadata,
+    wrongCharacter: story.wrongCharacter,
   };
 }

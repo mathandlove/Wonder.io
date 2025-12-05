@@ -145,6 +145,7 @@ export function createAIResponseScene(
  * @param currentBackground - Inherited background
  * @param leftCharacter - User's character (visible)
  * @param rightCharacter - Usually NOCHARACTER to trigger exit
+ * @param wrongCharacter - Optional custom wrong character image (from story.json)
  * @returns FailDanceScene that will expand to answer-wrong node
  */
 export function createFailDanceScene(
@@ -153,7 +154,8 @@ export function createFailDanceScene(
   questionText: string,
   currentBackground?: string,
   leftCharacter?: string,
-  rightCharacter?: string
+  rightCharacter?: string,
+  wrongCharacter?: string
 ): FailDanceScene {
   const sceneId = `fail-dance-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
 
@@ -167,7 +169,7 @@ export function createFailDanceScene(
     type: "fail-dance",
     sceneId,
     character: character,
-    angryCharacter: `angry${character}`,
+    angryCharacter: wrongCharacter || `angry${character}`,
     side: "right",
     "left-character": leftCharacter || "leo", // Inherit or fallback
     "right-character": rightCharacter || NOCHARACTER, // Use NOCHARACTER to trigger exit animation
