@@ -1101,6 +1101,18 @@ const StoryReviewEditor: React.FC<StoryReviewEditorProps> = ({
     }
   };
 
+  // Transform scenes for the simulator to show caption phase for image scenes
+  // This allows the editor to preview the final state with captions visible
+  const scenesForSimulator = useMemo(() => {
+    if (!storyData) return [];
+    return storyData.scenes.map(scene => {
+      if (scene.type === 'image') {
+        return { ...scene, phase: 'caption' };
+      }
+      return scene;
+    });
+  }, [storyData?.scenes]);
+
   // ============================================================================
   // Render
   // ============================================================================
@@ -1226,7 +1238,7 @@ const StoryReviewEditor: React.FC<StoryReviewEditorProps> = ({
               scene={currentScene}
               sceneIndex={currentSceneIndex}
               storyId={storyId}
-              allScenes={storyData.scenes}
+              allScenes={scenesForSimulator}
             />
           </div>
         </div>

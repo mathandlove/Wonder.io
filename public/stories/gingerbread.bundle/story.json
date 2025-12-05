@@ -173,6 +173,7 @@
       "background": "cobbler.jpeg",
       "left-character": "leo",
       "right-character": "mrshoe",
+      "CharacterDescription": "mrshoe",
       "useClues": true,
       "monologue": false,
       "requiredAsk": true,
@@ -194,10 +195,10 @@
           "text": "My window? What did they steal?"
         },
         {
-          "type": "input"
+          "type": "quest"
         },
         {
-          "type": "quest"
+          "type": "input"
         },
         {
           "side": "right",
@@ -241,33 +242,8 @@
       "sceneDescription": "A downward view of a sidewalk. ON the sid"
     },
     {
-      "type": "character-flow",
-      "background": "cobbler.jpeg",
-      "left-character": "leo",
-      "right-character": "none",
-      "useClues": true,
-      "monologue": true,
-      "requiredAsk": false,
-      "question": "What clue will lead us to the thief?",
-      "successAnswer": "Follow the baby shoe trail!",
-      "wrongAnswers": [],
-      "hint": "Look at the tiny prints.",
-      "flow": [
-        {
-          "side": "left",
-          "text": "I think I know where I need to go next."
-        },
-        {
-          "type": "input"
-        },
-        {
-          "type": "quest"
-        }
-      ]
-    },
-    {
       "type": "image",
-      "text": "A shoe prints lead out to snow covered trees and a river in the far distance. No characters or animals should be in the picture.",
+      "text": "I follow the baby shoe prints out into the snow woods towards the river.",
       "description": "Show shoe prints in snow and on cobble stone heading out toward a river surrounded by trees. It's christmas time.",
       "image": "story/path.jpeg"
     },
@@ -279,12 +255,17 @@
     {
       "type": "image",
       "image": "story/riverchase1.jpeg",
-      "text": "I spotted the thief in the distance, running toward the riverbank. His pink baby shoes flashed as he darted between trees.",
+      "text": "On top of the hill, I could see the thief in the distance. He yelled \" Run, Run, as fast as you can! You can't catch me!",
       "description": "The backside of a gingerbread man running through snow covered trees. He is wearing pink baby shoes. And leaving foot prints."
     },
     {
       "type": "text",
-      "text": "I sprinted closer. Just close enough to grab him—but WHOOSH!",
+      "text": "I noticed that the thief was covered in thick brown mud. Why would he cover himself in mud? Perhaps to hide the cookie?",
+      "background": "riverbank.jpeg"
+    },
+    {
+      "type": "text",
+      "text": "I sprinted with all my might down the snowy hill. Right when I almost caught him...",
       "background": "riverbank.jpeg"
     },
     {
@@ -295,7 +276,7 @@
     },
     {
       "type": "text",
-      "text": "The thief raced away. When I pushed myself up, I noticed my hand was smeared with the thief's thick brown mud.",
+      "text": "The thief got away, but I did get some of the thick brown mud he was covered in.",
       "background": "riverbank.jpeg"
     },
     {
@@ -312,6 +293,7 @@
       "useClues": false,
       "monologue": true,
       "requiredAsk": true,
+      "CharacterDescription": "leoChase",
       "question": "What was the child covered in?",
       "successAnswer": "The child is covered in cookie or the child is a cookie.",
       "wrongAnswers": [
@@ -328,22 +310,22 @@
           "text": "He's covered in…"
         },
         {
-          "type": "input"
+          "type": "quest"
         },
         {
-          "type": "quest"
+          "type": "input"
         }
       ]
     },
     {
       "type": "image",
       "image": "story/thiefrunsaway.jpeg",
-      "text": "I watched the cookie-covered child dash behind the trees and vanish.",
-      "description": "Show the backside of a gingerbread man wearing pink tennishoes running behind a line of thick snow covered trees. There is a river behind the trees. We should only see the back legs of him as the rest of him is already hidden by the trees. The trees are much larger than him."
+      "text": "I watched the cookie-covered child dash towards the river. I had him trapped.",
+      "description": "Make a landscape scene with a light snow covered plane and trees on the side. A river is in the background. There are NO CHARACTERS."
     },
     {
       "type": "text",
-      "text": "I dash over to the trees but fear I am too late.",
+      "text": "But as I arrived at the river, I fear I was too late.",
       "background": "riverbank.jpeg"
     },
     {
@@ -382,9 +364,10 @@
       "background": "riverbank.jpeg",
       "left-character": "leo",
       "right-character": "none",
+      "CharacterDescription": "leoRiver",
       "useClues": true,
       "monologue": true,
-      "requiredAsk": true,
+      "requiredAsk": false,
       "question": "How did the cookie get across the water?",
       "successAnswer": "Franky helped the thief ferry across the river.",
       "wrongAnswers": [
@@ -406,7 +389,7 @@
     },
     {
       "type": "image",
-      "image": "story/frankypeeks.jpg",
+      "image": "story/frankypeeks.jpeg",
       "text": "Franky peeked out with a guilty smile.",
       "description": "FRANKY PEEKS OUT BEHIND SOME SNOW COVERED BUSHES THAT ARE ACROSS A RIVER."
     },
@@ -415,6 +398,7 @@
       "background": "riverbank.jpeg",
       "left-character": "leo",
       "right-character": "franky",
+      "CharacterDescription": "franky",
       "useClues": false,
       "monologue": false,
       "requiredAsk": true,
@@ -448,10 +432,10 @@
           "text": "Franky. What did you do?"
         },
         {
-          "type": "input"
+          "type": "quest"
         },
         {
-          "type": "quest"
+          "type": "input"
         },
         {
           "side": "left",
@@ -476,7 +460,7 @@
     {
       "type": "image",
       "image": "story/leotacklesfranky.jpeg",
-      "text": "I dodged and tackled him into a soft patch of moss.",
+      "text": "I dodged and tackled him into a soft patch of snow.",
       "description": "Use the same characters and setting. But have the hero tackling the fox into the snow."
     },
     {
@@ -501,6 +485,7 @@
       "background": "riverbank.jpeg",
       "left-character": "leo",
       "right-character": "gingerbread-man",
+      "CharacterDescription": "gingerbreadstory",
       "useClues": false,
       "monologue": true,
       "requiredAsk": false,
@@ -509,7 +494,7 @@
       "wrongAnswers": [
         "Fox"
       ],
-      "hint": "",
+      "hint": "Tell me your story.",
       "flow": [
         {
           "side": "right",
@@ -519,12 +504,13 @@
           "side": "left",
           "text": "I know what happened to Ms. Butterbun's cookie now."
         },
-        {
-          "type": "input"
+           {
+          "type": "quest"
         },
         {
-          "type": "quest"
+          "type": "input"
         }
+     
       ]
     },
     {
@@ -602,7 +588,7 @@
           "left-character": "gingerbread-man"
         },
         {
-          "side": "left",
+          "side": "right",
           "text": "Uh oh…"
         }
       ]
@@ -621,9 +607,30 @@
       "content": "Hello, dearie! I'm Ms. Butterbuns, the baker at the Drury Lane Bakery, and oh my gumdrops—what a night I had!\nMy very special cookie has gone missing, and I need your help, Leo, to find it!\n\nLast night, I was baking the biggest, cutest cookie ever—why, it was almost as tall as you! I shaped it like a little kid and decorated it with white frosting to give it a happy face and a tiny shirt. It was simply adorable. I wanted it to be perfect.\n\nI also bought a teeny-tiny potion from a witch. Sounds silly, doesn't it? She told me I had to put a child's hair in the potion and drink it. Why, you ask?\nOh, ho ho! That's a secret! [Only tell the reason for the potion if Leo if he asks why twice]\n\nSo… I sneaked over and snipped a little hair from Little Jimmy down the street. He didn't like that one bit, no sir.\n\nBut then—oh fudge and flour!—I tripped while holding the potion, and SPLASH! It spilled all over my big cookie! Whoosh! A little cloud of magic smoke puffed out. The cookie looked fine afterward, so I thought, \"Well, that's lucky!\"\nBut I was also sad, because I needed that potion.\n\nIf you point to the crumbs on the floor, I'll give one a careful little lick and say,\n\"Mm-mm! I know this cinnamon anywhere! These crumbs came from my cookie—and look! They're leading right out the door!\"\n\nIf you ask about the bowl of hair, I'll giggle and say, \"Yes, yes, it's a teensy bit weird to have hair in a bakery, but it doesn't really help us find my cookie.\"\n\nBut if you ask again—nicely—about the hair or the potion, I'll tell you the real truth.\nI'll say, \"I wanted a child of my very own so, so much. The witch told me that if I mixed the hair into the potion and drank it, I would get a new child of my own. But clumsy old me spilled it on my cookie instead! Oh dear… I just hope we can find it. Maybe—just maybe—if I eat it, the magic will still work.\""
     },
     {
-      "character": "leo",
+      "character": "mrshoe",
+      "title": "Mr.Shoe's description of the break in",
+      "content": "Hello. My name is Mr. Shoe. I am the cobbler in our magic village. I fix shoes and make new ones too. Last night, I was sleeping when I heard a BIG crash! It sounded like someone threw glass on the ground. I ran outside, and my shop window was broken. There was gooey cookie stuff all over it. Yuck! I looked at my display pedestal. It is where I keep my famous pink baby shoes. But the shoes were gone! Someone stole them! I felt very sad. I worked on those shoes for a whole week. They were very special. I always lock my door at night. My door was still locked when I woke up. So I do not know how the thief got out. Maybe the thief is still inside my shop! That makes me feel worried and mad. I put the baby shoes on sale because it is cold outside, and I do not want babies to get cold feet. I hope I find who took them. I want my pink baby shoes back!"
+    },
+    {
+      "character": "leoChase",
       "title": "Chase Scene Deposition",
       "content": "I am Leo and I'm chasing after a thief. The thief is covered in a brown gooey substance. The goo is not mud because it smells like cinnamon and tastes like sugar. I remember at the bakery Ms. Butterbuns told me that her cookie was cinnamon flavored. The goo tastes really good. The thief I am chasing must be covered in cookie. I can see white streaks on the outside too that look like the drawing of clothes. The white streaks taste like white frosting. I am starting to think that this thief is a cookie himself. The pink baby shoes he is wearing are not covered in goo at all which means he has been covered in cookie for awhile."
+    },
+    {
+      "character": "leoRiver",
+      "title": "Chase Scene Deposition",
+      "content": "I am Leo and I'm chasing after a cookie covered thief. From the footprints I can tell the theif ran to the freezing cold river. But when he got to the river the foot prints stopped. I knew the thief wore pink baby shoes and I see them floating in the river. But then I notice the pink baby shoes don't have any cookie crumbs on them and there are no cookie crumbs in the water. I'm curious why would the thief take off his shoes? I am guessing someone made him take his shoes off. I see Franky the Fox's Ferry service sign. Franky is a tricky fox that charges a lot of money to go across the river. I don't think the thief had any money. So why would Franky help him? But then I notice there is a fox tail sticking out of the bushes. That's Franky. And I notice that Franky's tail is really wet. That means he just swam across the river. I bet he helped the thief go across the river. He should know where the cookie thief is now."
+    },
+    {
+      "character": "franky",
+      "title": "Chase Scene Deposition",
+      "content": "I am Franky, the trickiest fox in the whole forest. I was taking a nice nap by the river when a real gingerbread man ran up to me. He said someone big and ugly was chasing him. I think that was you, Leo.\n\nThe gingerbread man said he needed to cross the river, but he didn’t want to get soggy. I felt a little helpful, so I told him he could ride on my back. I am a great swimmer, after all.\n\nBut when we got halfway across, I got super hungry. Foxes get hungry a lot, you know. So I flicked my tail, opened my mouth, and chomp! I ate the gingerbread man whole.\n\nI felt a tiny bit bad… but mostly full.\n\nHe was wearing pink tennis shoes. I spit them out because rubber tastes yucky. Now my belly is huge, and the gingerbread man keeps talking inside me. He keeps saying, “You can’t catch me!”\n\nAnd honestly, it’s giving me a tummy ache."
+    },
+    {
+      "character": "gingerbreadstory",
+      "title": "Chase Scene Deposition",
+        "content": "I am the Gingerbread Man! Run, run, as fast as you can! You can't catch me, I'm the Gingerbread Man! I was baked last night by my mommy, Ms. Butterbuns. She used a magic potion that made me come to life! I was so happy that I started running right away.\n\nI ran through the village because running is my favorite thing ever. I zoomed past Mr. Shoe's cobbler shop and saw his pink baby shoes. They looked SUPER fast, so I tried them on and kept running! Then you, Leo, started chasing me! So I ran even faster all the way to the river.\n\nI didn't want to get wet, so when a friendly fox named Franky said he could help me across, I hopped on his back. But guess what? Franky got hungry and ATE me! It was dark and squishy inside his tummy, and I didn't like it at all.\n\nBut then YOU, Leo, saved me! Now I'm free again. Can you please take me back to my mommy, Ms. Butterbuns? I miss her a whole bunch! If asked what I did with the cookie, I will say, \"I am the cookie! Hee hee!\"\n"
+
     }
   ]
 }

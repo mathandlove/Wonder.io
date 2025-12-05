@@ -99,12 +99,12 @@ export const ScrollDownToast: React.FC = () => {
     };
   }, [showAfterDelay, canScrollDown, isAnimatingOut, startTimer]);
 
-  if (!canScrollDown || !showAfterDelay || isClueImageScene) {
+  if (!canScrollDown || !showAfterDelay || isClueImageScene || isCaptionPhase) {
     return null;
   }
 
   return (
-    <div className={`scroll-down-toast ${isCaptionPhase ? 'scroll-down-toast--above-caption' : ''} ${isAnimatingOut ? 'scroll-down-toast--animate-out' : ''}`}>
+    <div className={`scroll-down-toast ${isAnimatingOut ? 'scroll-down-toast--animate-out' : ''}`}>
       <div className="scroll-down-content">
         <div className="scroll-finger-container">
           <svg

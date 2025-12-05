@@ -99,6 +99,8 @@ A dialog sequence between characters, potentially with player input.
 
 #### Flow Item Types
 
+**IMPORTANT:** When using both `quest` and `input` in a flow, `quest` must ALWAYS come before `input`.
+
 **Dialog line:**
 ```json
 {

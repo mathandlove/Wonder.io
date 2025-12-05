@@ -481,7 +481,75 @@
         "leo"
       ],
       "isModification": true
+    },
+    {
+      "version": 51,
+      "filename": "v51-1764907960586.jpeg",
+      "timestamp": 1764907960586,
+      "prompt": "Make sure the gingerbread man is also black and white. Only the shoes should stay pink.",
+      "charactersReferenced": [],
+      "isModification": true,
+      "baseVersion": 50
+    },
+    {
+      "version": 52,
+      "filename": "v52-1764907960587.jpeg",
+      "timestamp": 1764907960587,
+      "prompt": "Make sure the gingerbread man is also black and white. Only the shoes should stay pink.",
+      "charactersReferenced": [],
+      "isModification": true,
+      "baseVersion": 50
+    },
+    {
+      "version": 53,
+      "filename": "v53-1764907960588.jpeg",
+      "timestamp": 1764907960588,
+      "prompt": "Make sure the gingerbread man is also black and white. Only the shoes should stay pink.",
+      "charactersReferenced": [],
+      "isModification": true,
+      "baseVersion": 50
+    },
+    {
+      "version": 54,
+      "filename": "v54-1764907960589.jpeg",
+      "timestamp": 1764907960589,
+      "prompt": "Make sure the gingerbread man is also black and white. Only the shoes should stay pink.",
+      "charactersReferenced": [],
+      "isModification": true,
+      "baseVersion": 50
+    },
+    {
+      "version": 55,
+      "filename": "v55-1764908019658.jpeg",
+      "timestamp": 1764908019658,
+      "prompt": "make the hero character falling face forward. His hands are grasping forward to try to grab the gingerbread man.",
+      "charactersReferenced": [],
+      "isModification": true
+    },
+    {
+      "version": 56,
+      "filename": "v56-1764908019659.jpeg",
+      "timestamp": 1764908019659,
+      "prompt": "make the hero character falling face forward. His hands are grasping forward to try to grab the gingerbread man.",
+      "charactersReferenced": [],
+      "isModification": true
+    },
+    {
+      "version": 57,
+      "filename": "v57-1764908019660.jpeg",
+      "timestamp": 1764908019660,
+      "prompt": "make the hero character falling face forward. His hands are grasping forward to try to grab the gingerbread man.",
+      "charactersReferenced": [],
+      "isModification": true
+    },
+    {
+      "version": 58,
+      "filename": "v58-1764908019661.jpeg",
+      "timestamp": 1764908019661,
+      "prompt": "make the hero character falling face forward. His hands are grasping forward to try to grab the gingerbread man.",
+      "charactersReferenced": [],
+      "isModification": true
     }
   ],
-  "currentVersion": 50
+  "currentVersion": 56
 }

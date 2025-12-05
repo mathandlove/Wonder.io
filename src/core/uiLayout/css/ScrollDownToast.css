@@ -91,7 +91,7 @@
 
 /* Position above caption on caption phase pages */
 .scroll-down-toast--above-caption {
-  bottom: calc(35vh + 32px); /* Caption is 35vh tall, plus original 32px offset */
+  bottom: calc(50px + 80px + 32px); /* Caption is 50px from bottom + approx caption height + margin */
 }
 
 /* Animate out on scroll */
