@@ -157,6 +157,24 @@ export function ScrollControl({
     };
   }, []);
 
+  // Keep current scene in view on window resize
+  // Without this, vh-based scene heights cause scroll drift during resize
+  React.useEffect(() => {
+    const el = containerRef.current;
+    if (!el) return;
+
+    const handleResize = () => {
+      const section = el.querySelectorAll<HTMLElement>('.scene')[currentIndex];
+      if (section) {
+        // Instantly snap to current scene (no animation)
+        el.scrollTop = section.offsetTop;
+      }
+    };
+
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, [currentIndex]);
+
   // Focus management for accessibility
   useLayoutEffect(() => {
     const el = containerRef.current;

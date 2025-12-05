@@ -66,6 +66,8 @@ export default function ImageScene({ scene, nodeId }: SceneProps<ImageSceneType>
           maxWidth: '100%',
           maxHeight: '100%',
           objectFit: 'contain',
+          position: 'relative',
+          zIndex: 1,
         }}
       />
 

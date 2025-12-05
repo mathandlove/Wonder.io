@@ -8,19 +8,18 @@
  */
 
 .construction-paper-bg {
-  background-color: #a8d5a2; /* Fallback pastel green if image doesn't load */
+  background-color: #f5f5dc; /* Fallback beige if image doesn't load */
 }
 
-/* Construction paper background with lightening effect for pastel look */
+/* Comic background */
 .construction-paper-bg::before {
   content: '';
-  position: absolute;
+  position: fixed;
   inset: 0;
-  background-image: url('/VisualAssets/constructionPaper.png');
+  background-image: url('/VisualAssets/comicBackground.png');
   background-size: cover;
   background-repeat: no-repeat;
   background-position: center;
-  filter: brightness(1.8) saturate(0.5);
   z-index: 0;
   pointer-events: none;
 }
