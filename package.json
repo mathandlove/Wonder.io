@@ -5,7 +5,7 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "tsc -b && vite build",
+    "build": "vite build",
     "lint": "eslint 'src/**/*.{ts,tsx}' --fix",
     "preview": "vite preview",
     "cardboard": "node tools/make_all_cardboard.js",

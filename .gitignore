@@ -29,3 +29,4 @@ dist-ssr
 
 # Debug audio recordings
 backend/debug-audio/
+.vercel
