@@ -58,13 +58,15 @@ export const CharacterPanel: React.FC<CharacterPanelProps> = ({
     // Compute phase with priority
     let phase: Phase = 'idle';
 
-    // Priority 1: Entrance animations (character changed)
-    // In the node-based system, every navigation is effectively a new scene
-    if (isNewCharacter) {
-      phase = 'entering';
-    } else if (isJiggling) {
-      // Priority 2: Jiggling dance animation (celebration for correct answers)
+    // Priority 1: Jiggling dance animation (celebration for correct answers)
+    // Must be highest priority - success-dance scenes need jiggle even if character changes
+    // (e.g., transitioning from clue-image scene which has no characters)
+    if (isJiggling) {
       phase = 'jiggling';
+    } else if (isNewCharacter) {
+      // Priority 2: Entrance animations (character changed)
+      // In the node-based system, every navigation is effectively a new scene
+      phase = 'entering';
     } else if (isSpeaking) {
       // Priority 3: Speaking animations (only when NOT entering or jiggling)
       phase = 'speaking';

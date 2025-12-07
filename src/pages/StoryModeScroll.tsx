@@ -193,7 +193,7 @@ const StoryContent: React.FC = () => {
               </div>
 
             {/* Debug display - inside ScrollControl to access SceneOrchestrator context */}
-            <StepScrollDebug />
+            {import.meta.env.DEV && <StepScrollDebug />}
           </ScrollControl>
 
           {/* UI Overlays */}

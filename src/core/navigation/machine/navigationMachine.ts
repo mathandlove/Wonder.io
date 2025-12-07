@@ -238,18 +238,19 @@ export const navigationMachine = setup({
 
     setUnlockAnswerButton: assign({
       unlockAnswerButton: true,
+      unlockedConversationId: () => {
+        // Track which conversation was unlocked
+        const currentNode = getCurrentNode();
+        const scene = currentNode?.scene;
+        return (scene as { conversationId?: string })?.conversationId;
+      },
     }),
 
     // Check requiredAsk metadata and unlock answer button if requiredAsk is false
-    // IMPORTANT: This should NOT reset an already-unlocked button back to locked
+    // This action is called when entering a dialogueInput scene
+    // It checks if we're in the same conversation (preserve unlock) or a new one (reset)
     checkRequiredAskAndUnlock: assign({
       unlockAnswerButton: ({ context }) => {
-        // If already unlocked (user has asked a question), keep it unlocked
-        if (context.unlockAnswerButton) {
-          debug.log('🔓 Answer button already unlocked, keeping it unlocked');
-          return true;
-        }
-
         // If debug mode is on, always unlock
         if (DEBUG_AUTO_UNLOCK_ANSWER_BUTTON) return true;
 
@@ -265,7 +266,14 @@ export const navigationMachine = setup({
           return true;
         }
 
-        // Otherwise keep it locked (default behavior)
+        // If user already unlocked in THIS conversation, keep it unlocked
+        if (context.unlockAnswerButton && context.unlockedConversationId === conversationId) {
+          debug.log('🔓 Same conversation, keeping answer button unlocked');
+          return true;
+        }
+
+        // New conversation with requiredAsk=true → start locked
+        debug.log('🔒 New conversation with requiredAsk=true → answer button locked');
         return false;
       },
     }),
@@ -707,6 +715,7 @@ export const navigationMachine = setup({
     feedbackReceived: false,
     successDanceNodeId: undefined,
     unlockAnswerButton: DEBUG_AUTO_UNLOCK_ANSWER_BUTTON, // Debug: auto-unlock for testing
+    unlockedConversationId: undefined, // Track which conversation was unlocked
   },
   on: {
     // Note: Global event handlers go here if needed

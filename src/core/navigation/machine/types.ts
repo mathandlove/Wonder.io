@@ -430,6 +430,8 @@ export type NavigationContext = {
   successDanceNodeId?: string;
   /** Flag to unlock answer button (set to true after user asks a question or via debug mode) */
   unlockAnswerButton: boolean;
+  /** Track which conversation the answer button was unlocked for */
+  unlockedConversationId?: string;
   /** Character image for fail-dance scenes (e.g., "angrybutterbuns.png") */
   wrongCharacter?: string;
 };

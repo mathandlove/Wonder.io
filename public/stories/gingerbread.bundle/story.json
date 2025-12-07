@@ -292,7 +292,7 @@
       "right-character": "none",
       "useClues": false,
       "monologue": true,
-      "requiredAsk": true,
+      "requiredAsk": false,
       "CharacterDescription": "leoChase",
       "question": "What was the child covered in?",
       "successAnswer": "The child is covered in cookie or the child is a cookie.",
@@ -369,7 +369,7 @@
       "monologue": true,
       "requiredAsk": false,
       "question": "How did the cookie get across the water?",
-      "successAnswer": "Franky helped the thief ferry across the river.",
+      "successAnswer": "Franky the fox took him.",
       "wrongAnswers": [
         "He swam across by himself."
       ],
@@ -403,7 +403,7 @@
       "monologue": false,
       "requiredAsk": true,
       "question": "What did Franky do with the thief?",
-      "successAnswer": "He ate them!",
+      "successAnswer": "He/You/Franky/the fox ate the cookie/him!",
       "wrongAnswers": [],
       "hint": "Why is Franky acting guilty?",
       "flow": [
@@ -421,7 +421,7 @@
         },
         {
           "side": "left",
-          "text": "And the cookie thief's shoes are floating right next to your ferry."
+          "text": "And the cookie thief's shoes are floating in the river."
         },
         {
           "side": "right",
@@ -490,7 +490,7 @@
       "monologue": false,
       "requiredAsk": false,
       "question": "What did the thief do with the stolen cookie?",
-      "successAnswer": "The cookie was the thief/boy/alive.",
+      "successAnswer": "The cookie was the thief/boy/alive. OR There was no thief. OR the cookie ran away.",
       "wrongAnswers": [
         "Fox"
       ],
