@@ -265,7 +265,6 @@ export function SpeechBubbleOrchestrator() {
         justifyContent: 'center', // Centers bubble vertically in safe area
         alignItems: 'stretch', // Stretch horizontally so bubble can align left/right/center
         pointerEvents: 'none',
-        backgroundColor: 'rgba(0, 255, 0, 0.2)', // DEBUG: Green overlay to visualize safe area
       }}>
         {/* Previous bubble - slides out in opposite direction */}
         {bubbles.previous && bubbles.previous.nodeId !== bubbles.current.nodeId && (
