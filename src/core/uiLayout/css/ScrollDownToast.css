@@ -1,7 +1,9 @@
 /* ===================================
    SCROLL DOWN TOAST
-   Styled to match the hint-toast component
+   Uses global toast variables for consistency
    =================================== */
+
+@import '../../toast/toast-styles.css';
 
 .scroll-down-toast {
   position: fixed;
@@ -12,7 +14,7 @@
   pointer-events: none;
 
   /* Fade in animation */
-  animation: scrollToastFadeIn 0.4s ease-out;
+  animation: scrollToastFadeIn var(--toast-animation-duration) ease-out;
 }
 
 @keyframes scrollToastFadeIn {
@@ -25,25 +27,18 @@
 }
 
 .scroll-down-content {
-  /* Layout - align items center for vertical centering (matching hint-toast) */
+  /* Layout - align items center for vertical centering */
   display: flex;
   align-items: center;
   gap: 12px;
-  padding: 18px 30px;
+  padding: var(--toast-padding);
 
-  /* Semi-transparent dark background with blur for professional look */
-  background-color: rgba(20, 15, 12, 0.325);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
-
-  /* Subtle border for definition */
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  border-radius: 16px;
-
-  /* Soft shadow for depth */
-  box-shadow:
-    0 4px 20px rgba(0, 0, 0, 0.3),
-    inset 0 1px 0 rgba(255, 255, 255, 0.08);
+  /* Use global toast styling */
+  background-color: var(--toast-bg-color);
+  backdrop-filter: blur(var(--toast-bg-blur));
+  -webkit-backdrop-filter: blur(var(--toast-bg-blur));
+  border-radius: var(--toast-border-radius);
+  box-shadow: var(--toast-shadow);
 }
 
 /* Finger icon container - provides scrolling animation space */
@@ -55,12 +50,12 @@
   flex-shrink: 0;
 }
 
-/* Animated finger icon - styled like hint-toast-icon */
+/* Animated finger icon */
 .scroll-finger-icon {
   width: 28px;
   height: 28px;
-  color: #ffffff;
-  /* White icon matching hint-toast-icon filter */
+  color: var(--toast-text-color);
+  /* White icon */
   filter: brightness(0) invert(1);
 
   /* Scrolling animation - moves up and down */
@@ -78,15 +73,14 @@
   }
 }
 
-/* Toast text - styled like hint-toast-text */
+/* Toast text - uses global text styling */
 .scroll-down-text {
-  color: #ffffff;
-  font-family: "Inter", Helvetica, sans-serif;
-  font-size: 18px;
-  font-weight: 500;
-  line-height: 28px;
-  /* Match icon height for vertical alignment */
-  letter-spacing: 0.01em;
+  color: var(--toast-text-color);
+  font-family: var(--toast-font-family);
+  font-size: var(--toast-font-size);
+  font-weight: var(--toast-font-weight);
+  line-height: var(--toast-line-height);
+  letter-spacing: var(--toast-letter-spacing);
 }
 
 /* Position above caption on caption phase pages */

@@ -10,7 +10,12 @@ import { RecordingProvider } from '@core/recording/RecordingOrchestrator'
 import { startNavigationService } from '@core/navigation/machine/navigationInterpreter'
 import { start as startQueue, setExecutor } from '@core/navigation/queue/navigationQueue'
 import { executeCommand } from '@core/navigation/commands/commandExecutor'
+import { resetAllToasts } from '@core/toast'
 import './global.css'
+
+// DEBUG: Reset all first-time toasts at session start so they show every time
+// Remove this line when ready for production
+resetAllToasts();
 
 // Initialize the navigation system
 // 1. Set up the command queue with the executor

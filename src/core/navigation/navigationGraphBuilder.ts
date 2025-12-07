@@ -177,8 +177,8 @@ function createNode(
   } else if (scene.type === 'image') {
     initialPhase = 'image_only';
   } else if (scene.type === 'clue-image') {
-    // DEBUG: Default clue-image scenes to 'complete' to skip clue finding
-    initialPhase = 'complete';
+    // Clue-image scenes start in 'active' phase (finding clues)
+    initialPhase = 'active';
   } else if (scene.type === 'character' || scene.type === 'character-flow') {
     initialPhase = 'basic';
   } else if (scene.type === 'fail-dance') {

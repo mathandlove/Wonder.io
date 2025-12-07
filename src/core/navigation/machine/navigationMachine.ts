@@ -50,6 +50,13 @@ const DEBUG_ALLOW_SCROLL_DURING_RECORDING = true;
  */
 const DEBUG_ALLOW_SCROLL_DURING_QUEST = true;
 
+/**
+ * DEBUG FLAG: Allow scroll navigation during clue-image scenes
+ * Set to true to allow scrolling past clue scenes without finding all clues
+ * Useful for testing/debugging story flow without clicking all hotspots
+ */
+const DEBUG_ALLOW_SCROLL_DURING_IMAGECLUE = true;
+
 // Log when debug modes are enabled
 if (DEBUG_AUTO_UNLOCK_ANSWER_BUTTON) {
   console.log('🐛 [DEBUG MODE] Answer button auto-unlock is ENABLED - answer button will be unlocked immediately');
@@ -59,6 +66,9 @@ if (DEBUG_ALLOW_SCROLL_DURING_RECORDING) {
 }
 if (DEBUG_ALLOW_SCROLL_DURING_QUEST) {
   console.log('🐛 [DEBUG MODE] Scroll during quest is ENABLED - can scroll past quest scenes');
+}
+if (DEBUG_ALLOW_SCROLL_DURING_IMAGECLUE) {
+  console.log('🐛 [DEBUG MODE] Scroll during image clue is ENABLED - can scroll past clue scenes');
 }
 
 /**
@@ -544,9 +554,20 @@ export const navigationMachine = setup({
           return;
         }
 
-        // Navigate forward to the new recording scene
-        debug.log('Navigating to recording scene');
-        useNavigationStore.getState().advance('forward');
+        // Navigate directly to the new recording scene by setting currentId
+        // NOTE: We can't use advance('forward') here because it tries advancePhase(1) first,
+        // which would cycle through phases (basic → quest-showing) instead of moving to the new node.
+        // This happens because updateNodePhase now syncs phaseIndex, so resetting to 'basic'
+        // sets phaseIndex=0, making advancePhase(1) succeed instead of returning false.
+        debug.log('Navigating directly to recording scene:', newNodeId);
+        const store = useNavigationStore.getState();
+        useNavigationStore.setState({
+          currentId: newNodeId,
+          graph: {
+            ...store.graph,
+            currentId: newNodeId,
+          }
+        });
 
         // Transition new scene to input-recording phase
         debug.log('Transitioning to input-recording phase');
@@ -918,13 +939,29 @@ export const navigationMachine = setup({
         clueScene: {
           entry: () => debug.log('🔍 Entered clueScene state'),
           on: {
-            // Block scroll navigation - user must use Continue button
-            SCROLL_DOWN_STEP: {
-              actions: () => debug.log('⛔ SCROLL_DOWN blocked in clue scene - use Continue button'),
-            },
-            SCROLL_UP_STEP: {
-              actions: () => debug.log('⛔ SCROLL_UP blocked in clue scene'),
-            },
+            // Block scroll navigation - user must use Continue button (unless debug mode)
+            SCROLL_DOWN_STEP: DEBUG_ALLOW_SCROLL_DURING_IMAGECLUE
+              ? {
+                  actions: [
+                    () => debug.log('🐛 SCROLL_DOWN during clue scene - DEBUG MODE allowed'),
+                    'goNext',
+                  ],
+                  target: '#navigation.scene.route',
+                }
+              : {
+                  actions: () => debug.log('⛔ SCROLL_DOWN blocked in clue scene - use Continue button'),
+                },
+            SCROLL_UP_STEP: DEBUG_ALLOW_SCROLL_DURING_IMAGECLUE
+              ? {
+                  actions: [
+                    () => debug.log('🐛 SCROLL_UP during clue scene - DEBUG MODE allowed'),
+                    'goPrev',
+                  ],
+                  target: '#navigation.scene.route',
+                }
+              : {
+                  actions: () => debug.log('⛔ SCROLL_UP blocked in clue scene'),
+                },
             // Allow CONTINUE event to navigate forward
             CONTINUE: {
               actions: [
@@ -1756,10 +1793,19 @@ export const navigationMachine = setup({
                   // Update answer-right node to basic phase (cleanup for potential retry)
                   useNavigationStore.getState().updateNodePhase(answerRightNodeId, 'basic');
 
-                  // Navigate to success-dance scene
-                  useNavigationStore.getState().advance('forward');
+                  // Navigate directly to success-dance scene by setting currentId
+                  // NOTE: Can't use advance('forward') because it tries advancePhase(1) first,
+                  // which would cycle through phases instead of moving to the new node.
+                  const store = useNavigationStore.getState();
+                  useNavigationStore.setState({
+                    currentId: successDanceNodeId,
+                    graph: {
+                      ...store.graph,
+                      currentId: successDanceNodeId,
+                    }
+                  });
 
-                  debug.log('📍 Navigated to success-dance scene:', successDanceNodeId);
+                  debug.log('📍 Navigated directly to success-dance scene:', successDanceNodeId);
                 }
               ]
             },

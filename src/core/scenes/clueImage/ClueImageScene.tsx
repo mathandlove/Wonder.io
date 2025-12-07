@@ -28,6 +28,7 @@ import { calculateImageBounds, pointsToPixels } from '@shared/utils/coordinateUt
 import { HotspotSparkles } from './HotspotSparkles';
 import { useClueStore } from '@core/data/ClueStore';
 import { useSceneVisibility } from '@core/scroll/useSceneVisibility';
+import { hasShown, markShown } from '@core/toast';
 import './ClueImageScene.css';
 
 /**
@@ -240,6 +241,8 @@ export default function ClueImageScene({ scene }: SceneProps<ClueImageSceneType>
   const [imageBounds, setImageBounds] = useState({ width: 0, height: 0, left: 0, top: 0 });
   // Track sparkle delay - resets to 10 seconds at scene start and after each clue click
   const [sparkleDelayKey, setSparkleDelayKey] = useState(0); // Increment to force re-render with fresh delay
+  // Toast state for first-time guidance
+  const [showDiscoveryToast, setShowDiscoveryToast] = useState(false);
 
   const imgRef = useRef<HTMLImageElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
@@ -413,11 +416,33 @@ export default function ClueImageScene({ scene }: SceneProps<ClueImageSceneType>
     navigationBus.emit({ type: 'CONTINUE' });
   };
 
+  // Show discovery toast when scene becomes visible (first time only)
+  useEffect(() => {
+    console.log('[ClueImageScene Toast] isVisible:', isVisible, '| wasPreviouslyCompleted:', wasPreviouslyCompleted, '| hasShown:', hasShown('clue-image:discovery'));
 
+    if (isVisible && !wasPreviouslyCompleted && !hasShown('clue-image:discovery')) {
+      console.log('[ClueImageScene Toast] Showing toast in 800ms');
+      const showTimer = setTimeout(() => {
+        markShown('clue-image:discovery');
+        setShowDiscoveryToast(true);
+        console.log('[ClueImageScene Toast] Toast shown!');
+      }, 800);
+
+      const hideTimer = setTimeout(() => {
+        setShowDiscoveryToast(false);
+        console.log('[ClueImageScene Toast] Toast hidden');
+      }, 800 + 5000); // delay + duration
+
+      return () => {
+        clearTimeout(showTimer);
+        clearTimeout(hideTimer);
+      };
+    }
+  }, [isVisible, wasPreviouslyCompleted]);
 
   if (isLoading) {
     return (
-      <div className="clue-image-scene clue-image-scene--loading">
+      <div ref={containerRef} className="clue-image-scene clue-image-scene--loading">
         <p>Loading clues...</p>
       </div>
     );
@@ -425,7 +450,7 @@ export default function ClueImageScene({ scene }: SceneProps<ClueImageSceneType>
 
   if (error || !hotspotData) {
     return (
-      <div className="clue-image-scene clue-image-scene--error">
+      <div ref={containerRef} className="clue-image-scene clue-image-scene--error">
         <p>Error loading clues: {error}</p>
       </div>
     );
@@ -569,7 +594,7 @@ export default function ClueImageScene({ scene }: SceneProps<ClueImageSceneType>
           bottom: 0,
           left: '50%',
           transform: 'translateX(-50%)',
-          zIndex: 50,
+          zIndex: 150, // Above dialog bubble (z-index: 100) so Continue button is always clickable
           pointerEvents: 'auto',
         }}
         onClick={(e) => e.stopPropagation()}
@@ -581,7 +606,15 @@ export default function ClueImageScene({ scene }: SceneProps<ClueImageSceneType>
         />
       </div>
 
-
+      {/* First-time toast: "Click on the clues hidden in the picture." */}
+      {showDiscoveryToast && (
+        <div
+          className="discovery-toast"
+          onClick={() => setShowDiscoveryToast(false)}
+        >
+          Click on the 4 clues hidden in the picture.
+        </div>
+      )}
     </div>
   );
 }

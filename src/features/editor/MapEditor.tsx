@@ -8,7 +8,7 @@
  */
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import type { Point, MapPath } from '@shared/types/hotspot';
-import { pointsToPercent, pointsToPixels, screenToImageCoords } from '@shared/utils/coordinateUtils';
+import { pointsToPercent, pointsToPixels, screenToImageCoords, findLongestVisibleSegmentMidpoint } from '@shared/utils/coordinateUtils';
 import './MapEditor.css';
 
 // ============================================================================
@@ -25,6 +25,8 @@ interface MapEditorProps {
   storyId: string;
   onClose?: () => void;
 }
+
+type MapEditorTool = 'draw' | 'hide' | null;
 
 const BACKEND_URL = 'http://localhost:3001';
 
@@ -77,11 +79,17 @@ const Icons = {
 // Main MapEditor Component
 // ============================================================================
 
+// Eraser radius in pixels for the hide-path tool
+const ERASER_RADIUS = 15;
+
 const MapEditor: React.FC<MapEditorProps> = ({
   isActive,
   storyId,
   onClose,
 }) => {
+  // Internal tool state
+  const [activeTool, setActiveTool] = useState<MapEditorTool>('draw');
+
   // Data state
   const [maps, setMaps] = useState<MapInfo[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -97,6 +105,10 @@ const MapEditor: React.FC<MapEditorProps> = ({
   const [isDrawing, setIsDrawing] = useState(false);
   const [drawingPoints, setDrawingPoints] = useState<Point[]>([]);
   const [currentPoint, setCurrentPoint] = useState<Point | null>(null);
+
+  // Erasing state
+  const [isErasing, setIsErasing] = useState(false);
+  const [eraserPosition, setEraserPosition] = useState<Point | null>(null);
 
   // Image bounds for coordinate conversion
   const [imageBounds, setImageBounds] = useState({ width: 0, height: 0, left: 0, top: 0 });
@@ -286,6 +298,75 @@ const MapEditor: React.FC<MapEditorProps> = ({
   };
 
   // ============================================================================
+  // Erasing handlers (hide-path tool)
+  // ============================================================================
+
+  const handleEraserMouseDown = (e: React.MouseEvent) => {
+    if (activeTool !== 'hide' || !imageContainerRef.current || imageBounds.width === 0) return;
+    e.preventDefault();
+    setIsErasing(true);
+    handleEraserMove(e);
+  };
+
+  const handleEraserMove = (e: React.MouseEvent) => {
+    if (!imageContainerRef.current || imageBounds.width === 0) return;
+
+    const container = imageContainerRef.current;
+    const containerRect = container.getBoundingClientRect();
+
+    const imagePoint = screenToImageCoords(e.clientX, e.clientY, {
+      left: containerRect.left + imageBounds.left,
+      top: containerRect.top + imageBounds.top,
+      width: imageBounds.width,
+      height: imageBounds.height
+    });
+
+    setEraserPosition(imagePoint);
+
+    // If erasing, apply eraser to nearby path points
+    if (isErasing) {
+      applyEraser(imagePoint);
+    }
+  };
+
+  const handleEraserMouseUp = () => {
+    setIsErasing(false);
+  };
+
+  const applyEraser = (eraserPoint: Point) => {
+    // Convert eraser position to percentage coordinates
+    const eraserPercentX = (eraserPoint.x / imageBounds.width) * 100;
+    const eraserPercentY = (eraserPoint.y / imageBounds.height) * 100;
+    const eraserRadiusPercentX = (ERASER_RADIUS / imageBounds.width) * 100;
+    const eraserRadiusPercentY = (ERASER_RADIUS / imageBounds.height) * 100;
+
+    setPaths(prevPaths => prevPaths.map(path => {
+      // Initialize opacities array if not present
+      const opacities = path.pointOpacities
+        ? [...path.pointOpacities]
+        : path.points.map(() => 1);
+
+      // Check each point and set opacity to 0 if within eraser radius
+      let modified = false;
+      path.points.forEach((point, index) => {
+        const dx = (point.x - eraserPercentX) / eraserRadiusPercentX;
+        const dy = (point.y - eraserPercentY) / eraserRadiusPercentY;
+        const distance = Math.sqrt(dx * dx + dy * dy);
+
+        if (distance <= 1 && opacities[index] > 0) {
+          opacities[index] = 0;
+          modified = true;
+        }
+      });
+
+      if (modified) {
+        return { ...path, pointOpacities: opacities };
+      }
+      return path;
+    }));
+  };
+
+  // ============================================================================
   // Path management
   // ============================================================================
 
@@ -405,12 +486,34 @@ const MapEditor: React.FC<MapEditorProps> = ({
         <div className="map-editor-content">
           {selectedMap ? (
             <>
-              {/* Header with Drawing Hint */}
+              {/* Header with Drawing Hint and Tool Selection */}
               <div className="map-editor-image-header">
                 <h2>{selectedMap.name}</h2>
+                <div className="map-editor-tool-buttons">
+                  <button
+                    className={`map-editor-tool-btn ${activeTool === 'draw' ? 'active' : ''}`}
+                    onClick={() => setActiveTool('draw')}
+                    title="Draw paths between locations"
+                  >
+                    <span className="icon">{Icons.path}</span>
+                    <span>Draw Path</span>
+                  </button>
+                  <button
+                    className={`map-editor-tool-btn ${activeTool === 'hide' ? 'active' : ''}`}
+                    onClick={() => setActiveTool('hide')}
+                    title="Hide parts of paths behind objects"
+                  >
+                    <span className="icon">🧽</span>
+                    <span>Hide Path</span>
+                  </button>
+                </div>
                 <div className="map-editor-drawing-hint">
-                  <span className="icon">{Icons.path}</span>
-                  <span>Click and drag to draw a path</span>
+                  <span className="icon">{activeTool === 'hide' ? '🧽' : Icons.path}</span>
+                  <span>
+                    {activeTool === 'hide'
+                      ? 'Click and drag to hide parts of paths'
+                      : 'Click and drag to draw a path'}
+                  </span>
                 </div>
               </div>
 
@@ -419,12 +522,14 @@ const MapEditor: React.FC<MapEditorProps> = ({
                 {/* Map Preview */}
                 <div
                   ref={imageContainerRef}
-                  className="map-editor-preview"
-                  onMouseDown={handleImageMouseDown}
-                  onMouseMove={handleImageMouseMove}
-                  onMouseUp={handleImageMouseUp}
+                  className={`map-editor-preview ${activeTool === 'hide' ? 'eraser-mode' : ''}`}
+                  onMouseDown={activeTool === 'hide' ? handleEraserMouseDown : handleImageMouseDown}
+                  onMouseMove={activeTool === 'hide' ? handleEraserMove : handleImageMouseMove}
+                  onMouseUp={activeTool === 'hide' ? handleEraserMouseUp : handleImageMouseUp}
                   onMouseLeave={() => {
                     if (isDrawing) handleImageMouseUp();
+                    if (isErasing) handleEraserMouseUp();
+                    setEraserPosition(null);
                   }}
                 >
                   <img
@@ -452,8 +557,47 @@ const MapEditor: React.FC<MapEditorProps> = ({
                         if (pixelPoints.length < 2) return null;
 
                         const isSelected = selectedPathId === mapPath.id;
-                        const midIndex = Math.floor(pixelPoints.length / 2);
+                        const opacities = mapPath.pointOpacities;
+
+                        // Find the midpoint of the longest visible segment for label placement
+                        const midIndex = findLongestVisibleSegmentMidpoint(mapPath.points, opacities);
                         const midpoint = pixelPoints[midIndex];
+
+                        // Create path segments with different opacities
+                        const pathSegments: { d: string; opacity: number }[] = [];
+                        let currentSegmentPoints: Point[] = [];
+                        let currentOpacity = opacities?.[0] ?? 1;
+
+                        for (let i = 0; i < pixelPoints.length; i++) {
+                          const pointOpacity = opacities?.[i] ?? 1;
+
+                          if (i === 0) {
+                            currentSegmentPoints = [pixelPoints[i]];
+                            currentOpacity = pointOpacity;
+                          } else if (pointOpacity === currentOpacity) {
+                            currentSegmentPoints.push(pixelPoints[i]);
+                          } else {
+                            // Opacity changed - save current segment and start new one
+                            if (currentSegmentPoints.length >= 1) {
+                              // Add the current point to close the gap
+                              currentSegmentPoints.push(pixelPoints[i]);
+                              pathSegments.push({
+                                d: createPathD(currentSegmentPoints),
+                                opacity: currentOpacity
+                              });
+                            }
+                            currentSegmentPoints = [pixelPoints[i]];
+                            currentOpacity = pointOpacity;
+                          }
+                        }
+
+                        // Add final segment
+                        if (currentSegmentPoints.length >= 2) {
+                          pathSegments.push({
+                            d: createPathD(currentSegmentPoints),
+                            opacity: currentOpacity
+                          });
+                        }
 
                         return (
                           <g
@@ -464,32 +608,42 @@ const MapEditor: React.FC<MapEditorProps> = ({
                             }}
                             style={{ cursor: 'pointer' }}
                           >
-                            <path
-                              d={createPathD(pixelPoints)}
-                              fill="none"
-                              stroke={isSelected ? '#5ba3a0' : '#87CEEB'}
-                              strokeWidth={isSelected ? 8 : 6}
-                              strokeDasharray="12,8"
-                              strokeLinecap="round"
-                              strokeLinejoin="round"
-                            />
-                            <circle
-                              cx={midpoint.x}
-                              cy={midpoint.y}
-                              r={isSelected ? 18 : 16}
-                              fill={isSelected ? '#5ba3a0' : '#87CEEB'}
-                            />
-                            <text
-                              x={midpoint.x}
-                              y={midpoint.y}
-                              textAnchor="middle"
-                              dominantBaseline="central"
-                              fill="#ffffff"
-                              fontSize={isSelected ? 16 : 14}
-                              fontWeight="bold"
-                            >
-                              {mapPath.orderNumber}
-                            </text>
+                            {/* Render each segment with its opacity */}
+                            {pathSegments.map((segment, segIdx) => (
+                              <path
+                                key={segIdx}
+                                d={segment.d}
+                                fill="none"
+                                stroke={isSelected ? '#5ba3a0' : '#87CEEB'}
+                                strokeWidth={isSelected ? 8 : 6}
+                                strokeDasharray="12,8"
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                opacity={segment.opacity}
+                              />
+                            ))}
+                            {/* Number label - only show if midpoint is visible */}
+                            {(opacities?.[midIndex] ?? 1) > 0 && (
+                              <>
+                                <circle
+                                  cx={midpoint.x}
+                                  cy={midpoint.y}
+                                  r={isSelected ? 18 : 16}
+                                  fill={isSelected ? '#5ba3a0' : '#87CEEB'}
+                                />
+                                <text
+                                  x={midpoint.x}
+                                  y={midpoint.y}
+                                  textAnchor="middle"
+                                  dominantBaseline="central"
+                                  fill="#ffffff"
+                                  fontSize={isSelected ? 16 : 14}
+                                  fontWeight="bold"
+                                >
+                                  {mapPath.orderNumber}
+                                </text>
+                              </>
+                            )}
                           </g>
                         );
                       })}
@@ -504,6 +658,20 @@ const MapEditor: React.FC<MapEditorProps> = ({
                           strokeDasharray="8,4"
                           strokeLinecap="round"
                           strokeLinejoin="round"
+                        />
+                      )}
+
+                      {/* Eraser cursor indicator */}
+                      {activeTool === 'hide' && eraserPosition && (
+                        <circle
+                          cx={eraserPosition.x}
+                          cy={eraserPosition.y}
+                          r={ERASER_RADIUS}
+                          fill="rgba(255, 100, 100, 0.3)"
+                          stroke="#ff6464"
+                          strokeWidth="2"
+                          strokeDasharray="4,4"
+                          style={{ pointerEvents: 'none' }}
                         />
                       )}
                     </svg>

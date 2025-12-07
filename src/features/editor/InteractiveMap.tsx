@@ -8,7 +8,7 @@ import React, { useState, useRef, useEffect } from 'react';
 import LassoSelection from './LassoSelection';
 import PathDrawing from './PathDrawing';
 import type { Hotspot, HotspotState, MapPath } from '@shared/types/hotspot';
-import { calculateImageBounds, pointsToPixels } from '@shared/utils/coordinateUtils';
+import { calculateImageBounds, pointsToPixels, findLongestVisibleSegmentMidpoint } from '@shared/utils/coordinateUtils';
 
 interface InteractiveMapProps {
   mapImage: string;
@@ -317,15 +317,61 @@ const InteractiveMap: React.FC<InteractiveMapProps> = ({
 
               if (pixelPoints.length < 2) return null;
 
-              // Create path string
-              let pathD = `M ${pixelPoints[0].x} ${pixelPoints[0].y}`;
+              const opacities = mapPath.pointOpacities;
+
+              // Helper to create path data
+              const createPathD = (points: { x: number; y: number }[]) => {
+                if (points.length < 2) return '';
+                let d = `M ${points[0].x} ${points[0].y}`;
+                for (let i = 1; i < points.length; i++) {
+                  d += ` L ${points[i].x} ${points[i].y}`;
+                }
+                return d;
+              };
+
+              // Create path string for full path (used for hover detection)
+              let fullPathD = `M ${pixelPoints[0].x} ${pixelPoints[0].y}`;
               for (let i = 1; i < pixelPoints.length; i++) {
-                pathD += ` L ${pixelPoints[i].x} ${pixelPoints[i].y}`;
+                fullPathD += ` L ${pixelPoints[i].x} ${pixelPoints[i].y}`;
               }
 
-              // Calculate midpoint for label
-              const midIndex = Math.floor(pixelPoints.length / 2);
+              // Create path segments with different opacities
+              const pathSegments: { d: string; opacity: number }[] = [];
+              let currentSegmentPoints: { x: number; y: number }[] = [];
+              let currentOpacity = opacities?.[0] ?? 1;
+
+              for (let i = 0; i < pixelPoints.length; i++) {
+                const pointOpacity = opacities?.[i] ?? 1;
+
+                if (i === 0) {
+                  currentSegmentPoints = [pixelPoints[i]];
+                  currentOpacity = pointOpacity;
+                } else if (pointOpacity === currentOpacity) {
+                  currentSegmentPoints.push(pixelPoints[i]);
+                } else {
+                  if (currentSegmentPoints.length >= 1) {
+                    currentSegmentPoints.push(pixelPoints[i]);
+                    pathSegments.push({
+                      d: createPathD(currentSegmentPoints),
+                      opacity: currentOpacity
+                    });
+                  }
+                  currentSegmentPoints = [pixelPoints[i]];
+                  currentOpacity = pointOpacity;
+                }
+              }
+
+              if (currentSegmentPoints.length >= 2) {
+                pathSegments.push({
+                  d: createPathD(currentSegmentPoints),
+                  opacity: currentOpacity
+                });
+              }
+
+              // Calculate midpoint for label using longest visible segment
+              const midIndex = findLongestVisibleSegmentMidpoint(mapPath.points, opacities);
               const midpoint = pixelPoints[midIndex];
+              const midpointVisible = (opacities?.[midIndex] ?? 1) > 0;
 
               const isHovered = hoveredPath === mapPath.id;
               const pathColor = isHovered ? '#3b82f6' : '#000000';
@@ -337,20 +383,24 @@ const InteractiveMap: React.FC<InteractiveMapProps> = ({
                   onMouseEnter={() => onPathHover?.(mapPath.id)}
                   onMouseLeave={() => onPathHover?.(null)}
                 >
-                  {/* Path stroke - thick dotted line */}
-                  <path
-                    d={pathD}
-                    fill="none"
-                    stroke={pathColor}
-                    strokeWidth={isHovered ? 8 : 6}
-                    strokeDasharray="12,8"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                  />
+                  {/* Path stroke segments with opacity */}
+                  {pathSegments.map((segment, segIdx) => (
+                    <path
+                      key={segIdx}
+                      d={segment.d}
+                      fill="none"
+                      stroke={pathColor}
+                      strokeWidth={isHovered ? 8 : 6}
+                      strokeDasharray="12,8"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      opacity={segment.opacity}
+                    />
+                  ))}
                   {/* Invisible wider path for easier hover detection */}
                   {activeTool === 'manage-paths' && (
                     <path
-                      d={pathD}
+                      d={fullPathD}
                       fill="none"
                       stroke="transparent"
                       strokeWidth="20"
@@ -358,26 +408,29 @@ const InteractiveMap: React.FC<InteractiveMapProps> = ({
                       strokeLinejoin="round"
                     />
                   )}
-                  {/* Number label background */}
-                  <circle
-                    cx={midpoint.x}
-                    cy={midpoint.y}
-                    r={isHovered ? 18 : 16}
-                    fill={pathColor}
-                  />
-                  {/* Number label */}
-                  <text
-                    x={midpoint.x}
-                    y={midpoint.y}
-                    textAnchor="middle"
-                    dominantBaseline="central"
-                    fill="#ffffff"
-                    fontSize={isHovered ? 16 : 14}
-                    fontWeight="bold"
-                    fontFamily="sans-serif"
-                  >
-                    {mapPath.orderNumber}
-                  </text>
+                  {/* Number label - only show if midpoint is visible */}
+                  {midpointVisible && (
+                    <>
+                      <circle
+                        cx={midpoint.x}
+                        cy={midpoint.y}
+                        r={isHovered ? 18 : 16}
+                        fill={pathColor}
+                      />
+                      <text
+                        x={midpoint.x}
+                        y={midpoint.y}
+                        textAnchor="middle"
+                        dominantBaseline="central"
+                        fill="#ffffff"
+                        fontSize={isHovered ? 16 : 14}
+                        fontWeight="bold"
+                        fontFamily="sans-serif"
+                      >
+                        {mapPath.orderNumber}
+                      </text>
+                    </>
+                  )}
                 </g>
               );
             })}

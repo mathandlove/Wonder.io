@@ -38,6 +38,7 @@ export interface MapPath {
   orderNumber: number; // 1, 2, 3, etc. for labeling
   createdAt: string;
   mapId?: string;
+  pointOpacities?: number[]; // Optional opacity per point (0-1), defaults to 1. Length should match points array.
 }
 
 export type HotspotState = 'none' | 'colored' | 'glimmer';

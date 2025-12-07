@@ -4,12 +4,31 @@
   "versions": [
     {
       "version": 1,
-      "filename": "v1.jpg",
-      "timestamp": 1764738299907,
-      "prompt": "Uploaded image",
+      "filename": "v1-1765075523393.jpeg",
+      "timestamp": 1765075523393,
+      "prompt": "Color the baking pan grey and the frosting tube white. \nColor the bowl of hair with yellow hair. Color the potion green. \nColor the mud on the ground brown, the same color as the crumbs on the tray",
       "charactersReferenced": [],
-      "isModification": false
+      "isModification": true,
+      "baseVersion": 0
+    },
+    {
+      "version": 2,
+      "filename": "v2-1765075523394.jpeg",
+      "timestamp": 1765075523394,
+      "prompt": "Color the baking pan grey and the frosting tube white. \nColor the bowl of hair with yellow hair. Color the potion green. \nColor the mud on the ground brown, the same color as the crumbs on the tray",
+      "charactersReferenced": [],
+      "isModification": true,
+      "baseVersion": 0
+    },
+    {
+      "version": 3,
+      "filename": "v3-1765075523395.jpeg",
+      "timestamp": 1765075523395,
+      "prompt": "Color the baking pan grey and the frosting tube white. \nColor the bowl of hair with yellow hair. Color the potion green. \nColor the mud on the ground brown, the same color as the crumbs on the tray",
+      "charactersReferenced": [],
+      "isModification": true,
+      "baseVersion": 0
     }
   ],
-  "currentVersion": 1
+  "currentVersion": 2
 }

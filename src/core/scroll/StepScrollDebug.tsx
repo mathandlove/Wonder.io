@@ -12,6 +12,7 @@
 import { useEffect, useState } from 'react';
 import { useNavigationStore, selectNavigationGraph, selectCurrentNode } from '@core/navigation/navigationStore';
 import { getServiceInstance } from '@core/navigation/machine/navigationInterpreter';
+import * as navigationBus from '@core/navigation/events/navigationBus';
 import type { Scene } from '@core/types/scene';
 import { getConversationMetadata } from '@core/ai/AIOrchestrator';
 
@@ -235,6 +236,46 @@ export function StepScrollDebug() {
         <div style={{ fontSize: '9px', color: '#666', fontStyle: 'italic', cursor: 'default', userSelect: 'text' }}>
           Press \ to hide
         </div>
+      </div>
+
+      {/* Navigation Controls */}
+      <div style={{ marginBottom: '10px', display: 'flex', gap: '8px', justifyContent: 'center' }}>
+        <button
+          onClick={(e) => {
+            e.stopPropagation();
+            navigationBus.emit({ type: 'SCROLL_UP_STEP', source: 'debug' });
+          }}
+          style={{
+            padding: '6px 16px',
+            background: '#0ff',
+            color: '#000',
+            border: 'none',
+            borderRadius: '4px',
+            cursor: 'pointer',
+            fontWeight: 'bold',
+            fontSize: '12px',
+          }}
+        >
+          ◀ Prev
+        </button>
+        <button
+          onClick={(e) => {
+            e.stopPropagation();
+            navigationBus.emit({ type: 'SCROLL_DOWN_STEP', source: 'debug' });
+          }}
+          style={{
+            padding: '6px 16px',
+            background: '#0f0',
+            color: '#000',
+            border: 'none',
+            borderRadius: '4px',
+            cursor: 'pointer',
+            fontWeight: 'bold',
+            fontSize: '12px',
+          }}
+        >
+          Next ▶
+        </button>
       </div>
 
       <div style={{ display: 'grid', gap: '5px' }}>

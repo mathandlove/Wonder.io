@@ -265,6 +265,43 @@
   margin: 0;
 }
 
+/* Tool Buttons */
+.map-editor-tool-buttons {
+  display: flex;
+  gap: 8px;
+}
+
+.map-editor-tool-btn {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 14px;
+  background: var(--ai-bg-light, #c5d5d8);
+  border: 2px solid transparent;
+  border-radius: 8px;
+  color: var(--ai-text-muted, #5a6a6c);
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.map-editor-tool-btn:hover {
+  background: var(--ai-white, #ffffff);
+  border-color: var(--ai-teal, #5ba3a0);
+  color: var(--ai-text, #2d3a3c);
+}
+
+.map-editor-tool-btn.active {
+  background: var(--ai-teal, #5ba3a0);
+  border-color: var(--ai-teal, #5ba3a0);
+  color: white;
+}
+
+.map-editor-tool-btn .icon {
+  font-size: 16px;
+}
+
 /* Drawing Hint */
 .map-editor-drawing-hint {
   display: flex;
@@ -300,6 +337,10 @@
   cursor: crosshair;
   overflow: hidden;
   min-height: 0;
+}
+
+.map-editor-preview.eraser-mode {
+  cursor: none; /* Hide cursor, we show custom eraser indicator via SVG */
 }
 
 .map-editor-preview img {

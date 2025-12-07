@@ -1,3 +1,6 @@
+/* Import global toast styles */
+@import '../../toast/toast-styles.css';
+
 /* ===================================
    RECORD PANEL - EXACT FIGMA STRUCTURE
    =================================== */
@@ -1547,3 +1550,71 @@
   /* Match icon height for vertical alignment */
   letter-spacing: 0.01em;
 }
+
+/* ===================================
+   BUTTON TOAST - Anchored instructional toasts
+   =================================== */
+
+/* Wrappers for button + toast positioning */
+.ask-button-wrapper,
+.hint-button-wrapper,
+.answer-button-wrapper,
+.clue-selection-wrapper {
+  position: relative;
+}
+
+/* Toast bubble anchored above button - uses global toast variables */
+.button-toast {
+  position: absolute;
+  bottom: 100%;
+  left: 50%;
+  transform: translateX(-50%);
+  margin-bottom: 16px;
+
+  /* Fixed width slightly wider than button (192px) */
+  width: 210px;
+
+  /* Use global toast styling */
+  background-color: var(--toast-bg-color);
+  backdrop-filter: blur(var(--toast-bg-blur));
+  -webkit-backdrop-filter: blur(var(--toast-bg-blur));
+  border-radius: var(--toast-border-radius);
+  box-shadow: var(--toast-shadow);
+
+  /* Text styling from global */
+  color: var(--toast-text-color);
+  font-family: var(--toast-font-family);
+  font-size: var(--toast-font-size);
+  font-weight: var(--toast-font-weight);
+  line-height: var(--toast-line-height);
+  letter-spacing: var(--toast-letter-spacing);
+  text-align: center;
+
+  /* Padding from global */
+  padding: var(--toast-padding);
+
+  /* No animation - appears instantly */
+  animation: none;
+  transition: none !important;
+  cursor: pointer;
+  z-index: 100;
+}
+
+/* Arrow - uses global toast arrow variables */
+.button-toast__arrow {
+  position: absolute;
+  bottom: calc(-1 * var(--toast-arrow-size));
+  left: calc(50% - var(--toast-arrow-size));
+  width: 0;
+  height: 0;
+  border-left: var(--toast-arrow-size) solid transparent;
+  border-right: var(--toast-arrow-size) solid transparent;
+  border-top: var(--toast-arrow-size) solid var(--toast-arrow-color);
+}
+
+/* Toast above clue selection grid - allow text to wrap for longer messages */
+.button-toast--above-grid {
+  white-space: normal;
+  max-width: 320px;
+}
+

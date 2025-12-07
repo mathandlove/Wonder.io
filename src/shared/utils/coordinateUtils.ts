@@ -150,3 +150,74 @@ export function screenToImageCoords(
     y: screenY - imageBounds.top
   };
 }
+
+/**
+ * Finds the midpoint of the longest continuous visible segment in a path
+ * A visible segment is a sequence of consecutive points with opacity > 0
+ * @param points - Array of path points
+ * @param opacities - Array of opacity values per point (0-1), defaults to all visible
+ * @returns The point index that represents the center of the longest visible segment
+ */
+export function findLongestVisibleSegmentMidpoint(
+  points: Point[],
+  opacities?: number[]
+): number {
+  if (points.length === 0) return 0;
+  if (points.length === 1) return 0;
+
+  // If no opacities, treat all as visible - return middle
+  if (!opacities || opacities.length === 0) {
+    return Math.floor(points.length / 2);
+  }
+
+  // Ensure opacities array matches points length
+  const normalizedOpacities = opacities.length === points.length
+    ? opacities
+    : points.map((_, i) => opacities[i] ?? 1);
+
+  // Find all visible segments (continuous runs of opacity > 0)
+  const segments: { start: number; end: number; length: number }[] = [];
+  let segmentStart: number | null = null;
+
+  for (let i = 0; i < normalizedOpacities.length; i++) {
+    const isVisible = normalizedOpacities[i] > 0;
+
+    if (isVisible && segmentStart === null) {
+      // Start of a new visible segment
+      segmentStart = i;
+    } else if (!isVisible && segmentStart !== null) {
+      // End of current visible segment
+      segments.push({
+        start: segmentStart,
+        end: i - 1,
+        length: i - segmentStart
+      });
+      segmentStart = null;
+    }
+  }
+
+  // Handle segment that extends to the end
+  if (segmentStart !== null) {
+    segments.push({
+      start: segmentStart,
+      end: normalizedOpacities.length - 1,
+      length: normalizedOpacities.length - segmentStart
+    });
+  }
+
+  // If no visible segments, fall back to center
+  if (segments.length === 0) {
+    return Math.floor(points.length / 2);
+  }
+
+  // Find the longest segment
+  let longestSegment = segments[0];
+  for (const segment of segments) {
+    if (segment.length > longestSegment.length) {
+      longestSegment = segment;
+    }
+  }
+
+  // Return the midpoint of the longest segment
+  return Math.floor((longestSegment.start + longestSegment.end) / 2);
+}

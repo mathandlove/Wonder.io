@@ -32,8 +32,13 @@ import { DialogueProvider } from '@core/dialogue/DialogueContext';
 import { ChatDialogueProvider } from '@features/chat/context/ChatDialogueContext';
 import { ClueStoreProvider } from '@core/data/ClueStore';
 import { RecordingProvider } from '@core/recording/RecordingOrchestrator';
+import { resetAllToasts } from '@core/toast';
 import type { Scene } from '@core/types/scene';
 import './global.css';
+
+// DEBUG: Reset all first-time toasts at session start so they show every time
+// Remove this line when ready for production
+resetAllToasts();
 
 // ============================================================================
 // Types for postMessage communication

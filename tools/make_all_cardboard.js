@@ -41,6 +41,7 @@ const colors = {
 };
 
 function log(message, color = 'reset') {
+  console.log(`${colors[color]}${message}${colors.reset}`);
 }
 
 /**
@@ -87,6 +88,7 @@ async function findCharacterFolders() {
 
   const searchPaths = [
     'stories/*.bundle/images/characters',
+    'stories/*.bundle/images/character',
     'stories/*.bundle/characters'
   ];
 

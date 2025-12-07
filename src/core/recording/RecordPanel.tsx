@@ -18,6 +18,12 @@ import { getServiceInstance } from '@core/navigation/machine/navigationInterpret
 import { useAudioLevel } from './RecordingOrchestrator';
 import * as navigationBus from '@core/navigation/events/navigationBus';
 import type { CharacterScene } from '@core/types/scene';
+import {
+  hasShown,
+  markShown,
+  getToastConfig,
+  type ToastKey
+} from '@core/toast';
 import './css/RecordPanel.css';
 
 interface RecordPanelProps {
@@ -35,6 +41,16 @@ export const RecordPanel: React.FC<RecordPanelProps> = ({
   const { toast, hideToast } = useToast();
   const containerRef = React.useRef<HTMLDivElement>(null);
 
+  // Refs for toast positioning
+  const askButtonRef = React.useRef<HTMLButtonElement>(null);
+  const hintButtonRef = React.useRef<HTMLButtonElement>(null);
+  const answerButtonRef = React.useRef<HTMLDivElement>(null);
+
+  // Track previous state for toast triggers
+  const prevDialogueStateRef = React.useRef<string>('');
+  const hasBeenToPostAIRef = React.useRef(false); // Track if user has seen post-ai phase
+  const justCameFromWrongAnswerRef = React.useRef(false);
+
   // Get real-time audio level for visualization (updates at 60fps)
   const audioLevel = useAudioLevel();
 
@@ -45,6 +61,9 @@ export const RecordPanel: React.FC<RecordPanelProps> = ({
   const currentNode = useNavigationStore(selectCurrentNode);
   const scene = currentNode?.scene;
   const dialogueState = currentNode?.phase || 'basic'; // Phase IS the dialogue state
+
+  // DEBUG: Log on every render to see what phase we're getting
+  console.log('[RecordPanel] RENDER - dialogueState:', dialogueState, '| scene type:', scene?.type);
 
   // Get unlockAnswerButton flag from machine context
   const [unlockAnswerButton, setUnlockAnswerButton] = React.useState(false);
@@ -124,28 +143,28 @@ export const RecordPanel: React.FC<RecordPanelProps> = ({
   // Hidden state (basic or input-basic) should use quest-offer visual styling
   const useQuestOfferStyling = isQuestOffer || isBasic || isInputBasic;
 
-  const handleHintClick = () => {
-    if (disabled) return;
-    // Toggle hint visibility (local state)
-    setShowHint(prev => !prev);
-  };
-
   const handleAskClick = () => {
     if (disabled) return;
-    // Emit ASK_BUTTON_CLICKED event to machine
+    setActiveToast(null); // Dismiss any active toast
     navigationBus.emit({ type: 'ASK_BUTTON_CLICKED' });
   };
 
   const handleAcceptQuest = () => {
     if (disabled) return;
-    // Emit navigation request when quest is accepted
+    setActiveToast(null); // Dismiss any active toast
     navigationBus.emit({ type: 'REQUEST_NAV_NEXT' });
   };
 
   const handleAnswerClick = () => {
     if (disabled) return;
-    // Emit ANSWER_BUTTON_CLICKED event to machine
+    setActiveToast(null); // Dismiss any active toast
     navigationBus.emit({ type: 'ANSWER_BUTTON_CLICKED' });
+  };
+
+  const handleHintClick = () => {
+    if (disabled) return;
+    setActiveToast(null); // Dismiss any active toast
+    setShowHint(prev => !prev);
   };
 
   // Apply 'recording' class only when actively recording (triggers slide-down animation)
@@ -167,6 +186,9 @@ export const RecordPanel: React.FC<RecordPanelProps> = ({
   // Track green glow state for answer-right
   const [showGreenGlow, setShowGreenGlow] = React.useState(false);
 
+  // State for first-time toasts
+  const [activeToast, setActiveToast] = React.useState<ToastKey | null>(null);
+
   // Reset red glow when leaving answer-wrong/fail-dance states
   React.useEffect(() => {
     if (!isAnswerWrong && !isFailDance) {
@@ -180,6 +202,107 @@ export const RecordPanel: React.FC<RecordPanelProps> = ({
       setShowGreenGlow(false);
     }
   }, [isAnswerRight, isSuccessDance]);
+
+  // First-time toast logic: Determine which toast to show based on phase transitions
+  // The Ask/Hint/Answer buttons are visible when NOT in quest-offer styling and NOT in clue selection
+  const isButtonsVisible = !useQuestOfferStyling && !isAskClue && !isAnswerClue &&
+    !isAnswerWaiting && !isAnswerRight && !isAnswerWrong && !isSuccessDance && !isFailDance;
+
+  // Ref to track pending toast timeout
+  const toastTimeoutRef = React.useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  React.useEffect(() => {
+    const prevState = prevDialogueStateRef.current;
+
+    // DEBUG: Log phase transitions
+    console.log('[RecordPanel Toast] Phase:', dialogueState, '| isButtonsVisible:', isButtonsVisible, '| prevState:', prevState);
+
+    // Track if we just came from answer-wrong (for hint toast)
+    if (prevState === 'answer-wrong' || prevState === 'fail-dance') {
+      justCameFromWrongAnswerRef.current = true;
+    }
+
+    // Track if user has been through ai-waiting (AI has responded) - set when LEAVING ai-waiting
+    if (prevState === 'ai-waiting') {
+      hasBeenToPostAIRef.current = true;
+    }
+
+    // Clear any pending toast timeout
+    if (toastTimeoutRef.current) {
+      clearTimeout(toastTimeoutRef.current);
+      toastTimeoutRef.current = null;
+    }
+
+    // Determine which toast to show
+    let toastToShow: ToastKey | null = null;
+    let needsDelay = false; // Whether to delay showing the toast (for container transition)
+
+    // Recording states take priority (check these first)
+    // 1. Entering recording state for a question: "Ask a question out loud..."
+    if (isAskRecording && !hasShown('input:ask-recording')) {
+      toastToShow = 'input:ask-recording';
+      markShown('input:ask-recording'); // Mark as shown since we use inline toast
+    }
+    // 2. Entering recording state for an answer: "Tell the answer then click stop."
+    else if (isAnswerRecording && !hasShown('answer:recording')) {
+      toastToShow = 'answer:recording';
+      markShown('answer:recording'); // Mark as shown since we use inline toast
+    }
+    // 3. Clue selection phases
+    else if (isAskClue && !hasShown('clue-selection:ask')) {
+      toastToShow = 'clue-selection:ask';
+    }
+    else if (isAnswerClue && !hasShown('clue-selection:answer')) {
+      toastToShow = 'clue-selection:answer';
+    }
+    // 4. Normal input state toasts (when buttons are visible and not recording)
+    else if (isButtonsVisible) {
+      console.log('[RecordPanel Toast] Buttons visible, hasShown input:first?', hasShown('input:first'));
+      if (!hasShown('input:first')) {
+        toastToShow = 'input:first';
+        markShown('input:first'); // Mark as shown since we use inline toast
+        // Delay showing if container was previously hidden (transitioning in)
+        needsDelay = prevState === '' || prevState === 'basic' || prevState === 'input-basic' || prevState === 'quest-showing';
+      }
+      // After getting wrong answer and returning to input: Show hint toast
+      else if (justCameFromWrongAnswerRef.current && !hasShown('input:hint')) {
+        toastToShow = 'input:hint';
+        markShown('input:hint'); // Mark as shown since we use inline toast
+        justCameFromWrongAnswerRef.current = false; // Reset flag
+      }
+      // After user has been to post-ai phase and returned to input: Show post-ai toast with 2 second delay
+      else if (hasBeenToPostAIRef.current && !hasShown('input:post-ai')) {
+        // Schedule toast after 2 second delay
+        toastTimeoutRef.current = setTimeout(() => {
+          setActiveToast('input:post-ai');
+          markShown('input:post-ai');
+        }, 2000);
+        // Don't set toastToShow here since we're handling it in the timeout
+        prevDialogueStateRef.current = dialogueState;
+        return; // Early return to skip the normal setActiveToast logic
+      }
+    }
+
+    console.log('[RecordPanel Toast] Setting activeToast to:', toastToShow, 'needsDelay:', needsDelay);
+
+    if (toastToShow && needsDelay) {
+      // Delay toast to wait for container transition (0.6s transition + small buffer)
+      toastTimeoutRef.current = setTimeout(() => {
+        setActiveToast(toastToShow);
+      }, 700);
+    } else {
+      setActiveToast(toastToShow);
+    }
+
+    prevDialogueStateRef.current = dialogueState;
+
+    // Cleanup timeout on unmount or re-run
+    return () => {
+      if (toastTimeoutRef.current) {
+        clearTimeout(toastTimeoutRef.current);
+      }
+    };
+  }, [dialogueState, isButtonsVisible, isAskClue, isAnswerClue, isAskRecording, isAnswerRecording, unlockAnswerButton]);
 
   // Determine which positioning class to apply based on state
   const getContainerClass = () => {
@@ -243,8 +366,13 @@ export const RecordPanel: React.FC<RecordPanelProps> = ({
         <div className={`whiteframe ${useQuestOfferStyling ? 'quest-offer' : ''}`}>
           <div className="quest">
             <p className={`quest-find-out-what ${useQuestOfferStyling ? 'quest-offer' : ''}`}>
-              {isAskClue || isAnswerClue ? (
-                <span className="quest-label" style={{ color: '#b2652a' }}>Which clue do you want to ask about?</span>
+              {isAskClue ? (
+                <span className="quest-label" style={{ color: '#b2652a' }}>What clue do you want to ask a question about?</span>
+              ) : isAnswerClue ? (
+                <>
+                  <span className="quest-label">Quest:</span>
+                  <span className="quest-description"> {questText}</span>
+                </>
               ) : useQuestOfferStyling ? (
                 <>
                   <span className="quest-label">Quest:</span>
@@ -291,23 +419,36 @@ export const RecordPanel: React.FC<RecordPanelProps> = ({
           <div className="frame-wrapper">
             {isAskClue || isAnswerClue ? (
               /* Ask/Answer Clue State: Show clue selection panel */
-              <ClueSelectionPanel
-                clues={clues}
-                onClueSelect={(label) => {
-                  console.log('[RecordPanel] Clue selected:', label);
-                  // Find the clue description for this label
-                  const selectedClue = clues.find(c => c.hotspotName === label);
-                  const clueDescription = selectedClue?.description || '';
-                  console.log('[RecordPanel] Clue description:', clueDescription);
+              <div className="clue-selection-wrapper">
+                <ClueSelectionPanel
+                  clues={clues}
+                  onClueSelect={(label) => {
+                    console.log('[RecordPanel] Clue selected:', label);
+                    // Find the clue description for this label
+                    const selectedClue = clues.find(c => c.hotspotName === label);
+                    const clueDescription = selectedClue?.description || '';
+                    console.log('[RecordPanel] Clue description:', clueDescription);
 
-                  // Emit CLUE_SELECTED event to navigation machine with description
-                  navigationBus.emit({
-                    type: 'CLUE_SELECTED',
-                    clueLabel: label,
-                    clueDescription: clueDescription
-                  });
-                }}
-              />
+                    // Emit CLUE_SELECTED event to navigation machine with description
+                    navigationBus.emit({
+                      type: 'CLUE_SELECTED',
+                      clueLabel: label,
+                      clueDescription: clueDescription
+                    });
+                  }}
+                />
+                {/* Toast anchored above clue selection */}
+                {(activeToast === 'clue-selection:ask' || activeToast === 'clue-selection:answer') && (() => {
+                  const config = getToastConfig(activeToast);
+                  const message = Array.isArray(config) ? config[0]?.message : config?.message;
+                  return (
+                    <div className="button-toast button-toast--above-grid" onClick={() => setActiveToast(null)}>
+                      {message}
+                      <div className="button-toast__arrow" />
+                    </div>
+                  );
+                })()}
+              </div>
             ) : useQuestOfferStyling ? (
               /* Quest Offer: Single Accept button centered */
               <div className="button-wrapper">
@@ -320,43 +461,84 @@ export const RecordPanel: React.FC<RecordPanelProps> = ({
               <div className="div">
                 <div className="div-2">
                   {/* Ask Button - transforms to Stop when recording */}
-                  <button
-                    className={`button ${isAskRecording ? 'recording-active' : ''} ${askButtonDisabled ? 'disabled' : ''}`}
-                    onClick={isAskRecording ? onRecordStop : handleAskClick}
-                    disabled={askButtonDisabled}
-                    title={isAskRecording ? "Stop recording" : "Ask a question"}
-                  >
-                    <img className="button-icon" src="/VisualAssets/recordIcon.svg" alt="" />
-                    {isAskRecording ? (
-                      <>
-                        <div className="stop-square" />
-                        <div className="button-text">Stop</div>
-                      </>
-                    ) : (
-                      <div className="button-text">Ask</div>
-                    )}
-                  </button>
+                  <div className="ask-button-wrapper">
+                    <button
+                      ref={askButtonRef}
+                      className={`button ${isAskRecording ? 'recording-active' : ''} ${askButtonDisabled ? 'disabled' : ''}`}
+                      onClick={isAskRecording ? onRecordStop : handleAskClick}
+                      disabled={askButtonDisabled}
+                      title={isAskRecording ? "Stop recording" : "Ask a question"}
+                    >
+                      <img className="button-icon" src="/VisualAssets/recordIcon.svg" alt="" />
+                      {isAskRecording ? (
+                        <>
+                          <div className="stop-square" />
+                          <div className="button-text">Stop</div>
+                        </>
+                      ) : (
+                        <div className="button-text">Ask</div>
+                      )}
+                    </button>
+                    {/* Toast anchored above Ask/Stop button */}
+                    {(activeToast === 'input:first' || activeToast === 'input:ask-recording') && (() => {
+                      const config = getToastConfig(activeToast);
+                      const message = Array.isArray(config) ? config[0]?.message : config?.message;
+                      return (
+                        <div className="button-toast" onClick={() => setActiveToast(null)}>
+                          {message}
+                          <div className="button-toast__arrow" />
+                        </div>
+                      );
+                    })()}
+                  </div>
 
                   {/* Hint Button - cardboard button with lightbulb, pressed when hint showing */}
-                  <button
-                    className={`hint-btn ${showHint ? 'active' : ''} ${hintButtonDisabled ? 'disabled' : ''}`}
-                    onClick={handleHintClick}
-                    disabled={hintButtonDisabled}
-                    title="Get a hint"
-                  >
-                    <img className="img" alt="" src="/VisualAssets/lightbulb.svg" />
-                  </button>
+                  <div className="hint-button-wrapper">
+                    <button
+                      ref={hintButtonRef}
+                      className={`hint-btn ${showHint ? 'active' : ''} ${hintButtonDisabled ? 'disabled' : ''}`}
+                      onClick={handleHintClick}
+                      disabled={hintButtonDisabled}
+                      title="Get a hint"
+                    >
+                      <img className="img" alt="" src="/VisualAssets/lightbulb.svg" />
+                    </button>
+                    {/* Toast anchored above Hint button */}
+                    {activeToast === 'input:hint' && (() => {
+                      const config = getToastConfig('input:hint');
+                      const message = Array.isArray(config) ? config[0]?.message : config?.message;
+                      return (
+                        <div className="button-toast" onClick={() => setActiveToast(null)}>
+                          {message}
+                          <div className="button-toast__arrow" />
+                        </div>
+                      );
+                    })()}
+                  </div>
                 </div>
 
                 {/* Answer Button - locked until first transcript received or quest complete, transforms when recording answer */}
-                <NextButton
-                  locked={!unlockAnswerButton && questState !== 'complete'}
-                  onClick={handleAnswerClick}
-                  onRecordStop={onRecordStop}
-                  label="Answer"
-                  disabled={answerButtonDisabled}
-                  isRecording={isAnswerRecording}
-                />
+                <div className="answer-button-wrapper" ref={answerButtonRef}>
+                  <NextButton
+                    locked={!unlockAnswerButton && questState !== 'complete'}
+                    onClick={handleAnswerClick}
+                    onRecordStop={onRecordStop}
+                    label="Answer"
+                    disabled={answerButtonDisabled}
+                    isRecording={isAnswerRecording}
+                  />
+                  {/* Toast anchored above Answer button */}
+                  {(activeToast === 'input:post-ai' || activeToast === 'answer:recording') && (() => {
+                    const config = getToastConfig(activeToast);
+                    const message = Array.isArray(config) ? config[0]?.message : config?.message;
+                    return (
+                      <div className="button-toast" onClick={() => setActiveToast(null)}>
+                        {message}
+                        <div className="button-toast__arrow" />
+                      </div>
+                    );
+                  })()}
+                </div>
               </div>
             )}
           </div>

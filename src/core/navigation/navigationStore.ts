@@ -446,6 +446,7 @@ export const useNavigationStore = create<NavigationState>()(
       // =============================================================================
       // Action: updateNodePhase
       // Update the phase field of a specific node
+      // Also updates phaseIndex to match, keeping phase and phaseIndex in sync
       // =============================================================================
       updateNodePhase: (nodeId: NodeId, phase: Phase) => {
         set(
@@ -456,11 +457,23 @@ export const useNavigationStore = create<NavigationState>()(
               return state;
             }
 
+            // Calculate phaseIndex from the new phase to keep them in sync
+            const phaseIndex = node.phaseSteps.indexOf(phase);
+            if (phaseIndex === -1) {
+              console.warn('[navigationStore] updateNodePhase: phase not found in phaseSteps:', {
+                phase,
+                phaseSteps: node.phaseSteps,
+                nodeId
+              });
+            }
+
             const newById = {
               ...state.graph.byId,
               [nodeId]: {
                 ...node,
                 phase,
+                // Update phaseIndex to match the new phase (keep current index if phase not found)
+                phaseIndex: phaseIndex !== -1 ? phaseIndex : node.phaseIndex,
               },
             };
 

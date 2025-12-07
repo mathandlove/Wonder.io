@@ -185,7 +185,187 @@
       "prompt": "Uploaded image",
       "charactersReferenced": [],
       "isModification": false
+    },
+    {
+      "version": 24,
+      "filename": "v24-1765074898199.png",
+      "timestamp": 1765074898199,
+      "prompt": "Inside a baker's medieval bakery. It's Christmas there are muffins, cookies, and cakes. We can see a large empty tray. The tray must be empty! A tube of frosting lays on the table.. A bowl of hair. And a half empty potion bottle sit on a shelf. On the ground is a trail of crumbs leading out the door. Keep the drawing simple and clean.",
+      "charactersReferenced": [],
+      "isModification": false
+    },
+    {
+      "version": 25,
+      "filename": "v25-1765074898200.png",
+      "timestamp": 1765074898200,
+      "prompt": "Inside a baker's medieval bakery. It's Christmas there are muffins, cookies, and cakes. We can see a large empty tray. The tray must be empty! A tube of frosting lays on the table.. A bowl of hair. And a half empty potion bottle sit on a shelf. On the ground is a trail of crumbs leading out the door. Keep the drawing simple and clean.",
+      "charactersReferenced": [],
+      "isModification": false
+    },
+    {
+      "version": 26,
+      "filename": "v26-1765074898201.png",
+      "timestamp": 1765074898201,
+      "prompt": "Inside a baker's medieval bakery. It's Christmas there are muffins, cookies, and cakes. We can see a large empty tray. The tray must be empty! A tube of frosting lays on the table.. A bowl of hair. And a half empty potion bottle sit on a shelf. On the ground is a trail of crumbs leading out the door. Keep the drawing simple and clean.",
+      "charactersReferenced": [],
+      "isModification": false
+    },
+    {
+      "version": 27,
+      "filename": "v27-1765074898202.png",
+      "timestamp": 1765074898202,
+      "prompt": "Inside a baker's medieval bakery. It's Christmas there are muffins, cookies, and cakes. We can see a large empty tray. The tray must be empty! A tube of frosting lays on the table.. A bowl of hair. And a half empty potion bottle sit on a shelf. On the ground is a trail of crumbs leading out the door. Keep the drawing simple and clean.",
+      "charactersReferenced": [],
+      "isModification": false
+    },
+    {
+      "version": 28,
+      "filename": "v28-1765074981347.png",
+      "timestamp": 1765074981347,
+      "prompt": "Inside a baker's medieval bakery. It's Christmas there are muffins, cookies, and cakes. We can see a large empty tray with a few crumbs. The tray must be empty! A tube of frosting lays on the table.. A bowl of hair. And a half empty potion bottle sit on a shelf. On the ground is a trail of crumbs leading out an open door. Keep the drawing simple and clean.",
+      "charactersReferenced": [],
+      "isModification": false
+    },
+    {
+      "version": 29,
+      "filename": "v29-1765074981348.png",
+      "timestamp": 1765074981348,
+      "prompt": "Inside a baker's medieval bakery. It's Christmas there are muffins, cookies, and cakes. We can see a large empty tray with a few crumbs. The tray must be empty! A tube of frosting lays on the table.. A bowl of hair. And a half empty potion bottle sit on a shelf. On the ground is a trail of crumbs leading out an open door. Keep the drawing simple and clean.",
+      "charactersReferenced": [],
+      "isModification": false
+    },
+    {
+      "version": 30,
+      "filename": "v30-1765074981349.png",
+      "timestamp": 1765074981349,
+      "prompt": "Inside a baker's medieval bakery. It's Christmas there are muffins, cookies, and cakes. We can see a large empty tray with a few crumbs. The tray must be empty! A tube of frosting lays on the table.. A bowl of hair. And a half empty potion bottle sit on a shelf. On the ground is a trail of crumbs leading out an open door. Keep the drawing simple and clean.",
+      "charactersReferenced": [],
+      "isModification": false
+    },
+    {
+      "version": 31,
+      "filename": "v31-1765074981350.png",
+      "timestamp": 1765074981350,
+      "prompt": "Inside a baker's medieval bakery. It's Christmas there are muffins, cookies, and cakes. We can see a large empty tray with a few crumbs. The tray must be empty! A tube of frosting lays on the table.. A bowl of hair. And a half empty potion bottle sit on a shelf. On the ground is a trail of crumbs leading out an open door. Keep the drawing simple and clean.",
+      "charactersReferenced": [],
+      "isModification": false
+    },
+    {
+      "version": 32,
+      "filename": "v32-1765075104415.jpeg",
+      "timestamp": 1765075104415,
+      "prompt": "replace the baker with the buttberbuns. But make sure it stays black and white. Add some holly decorations for christmas. ",
+      "charactersReferenced": [
+        "butterbuns"
+      ],
+      "isModification": true
+    },
+    {
+      "version": 33,
+      "filename": "v33-1765075104416.jpeg",
+      "timestamp": 1765075104416,
+      "prompt": "replace the baker with the buttberbuns. But make sure it stays black and white. Add some holly decorations for christmas. ",
+      "charactersReferenced": [
+        "butterbuns"
+      ],
+      "isModification": true
+    },
+    {
+      "version": 34,
+      "filename": "v34-1765075104417.jpeg",
+      "timestamp": 1765075104417,
+      "prompt": "replace the baker with the buttberbuns. But make sure it stays black and white. Add some holly decorations for christmas. ",
+      "charactersReferenced": [
+        "butterbuns"
+      ],
+      "isModification": true
+    },
+    {
+      "version": 35,
+      "filename": "v35-1765075104418.jpeg",
+      "timestamp": 1765075104418,
+      "prompt": "replace the baker with the buttberbuns. But make sure it stays black and white. Add some holly decorations for christmas. ",
+      "charactersReferenced": [
+        "butterbuns"
+      ],
+      "isModification": true
+    },
+    {
+      "version": 36,
+      "filename": "v36-1765075163937.jpeg",
+      "timestamp": 1765075163937,
+      "prompt": "remove the baker and add some holly for decoration. The cookie crumbs should look like splotches of mud instead of full cookies",
+      "charactersReferenced": [
+        "butterbuns"
+      ],
+      "isModification": true,
+      "baseVersion": 30
+    },
+    {
+      "version": 37,
+      "filename": "v37-1765075163938.jpeg",
+      "timestamp": 1765075163938,
+      "prompt": "remove the baker and add some holly for decoration. The cookie crumbs should look like splotches of mud instead of full cookies",
+      "charactersReferenced": [
+        "butterbuns"
+      ],
+      "isModification": true,
+      "baseVersion": 30
+    },
+    {
+      "version": 38,
+      "filename": "v38-1765075163939.jpeg",
+      "timestamp": 1765075163939,
+      "prompt": "remove the baker and add some holly for decoration. The cookie crumbs should look like splotches of mud instead of full cookies",
+      "charactersReferenced": [
+        "butterbuns"
+      ],
+      "isModification": true,
+      "baseVersion": 30
+    },
+    {
+      "version": 39,
+      "filename": "v39-1765075163940.jpeg",
+      "timestamp": 1765075163940,
+      "prompt": "remove the baker and add some holly for decoration. The cookie crumbs should look like splotches of mud instead of full cookies",
+      "charactersReferenced": [
+        "butterbuns"
+      ],
+      "isModification": true,
+      "baseVersion": 30
+    },
+    {
+      "version": 40,
+      "filename": "v40-1765075400237.jpeg",
+      "timestamp": 1765075400237,
+      "prompt": "make everything on the other side of the door pure white. Reduce the number of baked goods on the shelf so there is only a single row",
+      "charactersReferenced": [],
+      "isModification": true
+    },
+    {
+      "version": 41,
+      "filename": "v41-1765075400238.jpeg",
+      "timestamp": 1765075400238,
+      "prompt": "make everything on the other side of the door pure white. Reduce the number of baked goods on the shelf so there is only a single row",
+      "charactersReferenced": [],
+      "isModification": true
+    },
+    {
+      "version": 42,
+      "filename": "v42-1765075400239.jpeg",
+      "timestamp": 1765075400239,
+      "prompt": "make everything on the other side of the door pure white. Reduce the number of baked goods on the shelf so there is only a single row",
+      "charactersReferenced": [],
+      "isModification": true
+    },
+    {
+      "version": 43,
+      "filename": "v43-1765075400240.jpeg",
+      "timestamp": 1765075400240,
+      "prompt": "make everything on the other side of the door pure white. Reduce the number of baked goods on the shelf so there is only a single row",
+      "charactersReferenced": [],
+      "isModification": true
     }
   ],
-  "currentVersion": 23
+  "currentVersion": 29
 }

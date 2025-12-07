@@ -9,6 +9,7 @@
  */
 
 @import '@shared/styles/constructionPaperBackground.css';
+@import '@core/toast/toast-styles.css';
 
 .clue-image-scene {
   position: relative;
@@ -430,4 +431,40 @@
   .dialog-bubble__text {
     font-size: 13px;
   }
+}
+
+/* ===================================
+   DISCOVERY TOAST - Centered instructional toast
+   =================================== */
+.discovery-toast {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  z-index: 200;
+  max-width: 320px;
+
+  /* Use global toast styling */
+  background-color: var(--toast-bg-color);
+  backdrop-filter: blur(var(--toast-bg-blur));
+  -webkit-backdrop-filter: blur(var(--toast-bg-blur));
+  border-radius: var(--toast-border-radius);
+  box-shadow: var(--toast-shadow);
+
+  /* Text styling from global */
+  color: var(--toast-text-color);
+  font-family: var(--toast-font-family);
+  font-size: var(--toast-font-size);
+  font-weight: var(--toast-font-weight);
+  line-height: var(--toast-line-height);
+  letter-spacing: var(--toast-letter-spacing);
+  text-align: center;
+
+  /* Padding from global */
+  padding: var(--toast-padding);
+
+  /* No animation - appears instantly */
+  animation: none;
+  transition: none;
+  cursor: pointer;
 }

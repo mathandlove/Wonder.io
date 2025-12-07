@@ -15,7 +15,7 @@ import React, { useState, useEffect, useRef, useCallback, useMemo } from 'react'
 import type { SceneProps } from '@features/scenes/registry';
 import type { MapScene as MapSceneType } from '@core/types/scene';
 import { resolveStoryImage } from '@core/data/imageResolver';
-import { calculateImageBounds, pointsToPixels } from '@shared/utils/coordinateUtils';
+import { calculateImageBounds, pointsToPixels, findLongestVisibleSegmentMidpoint } from '@shared/utils/coordinateUtils';
 import * as navigationBus from '@core/navigation/events/navigationBus';
 import { useNavigationStore, selectNavigationGraph } from '@core/navigation/navigationStore';
 import './MapScene.css';
@@ -29,6 +29,7 @@ interface MapPath {
   orderNumber: number;
   createdAt: string;
   mapId?: string;
+  pointOpacities?: number[]; // Optional opacity per point (0-1), defaults to 1
 }
 
 /**
@@ -73,10 +74,11 @@ interface PathLineProps {
   imageBounds: { width: number; height: number; left: number; top: number };
   isHighlighted: boolean;
   shouldAnimate: boolean;
+  hideUntilAnimated?: boolean; // Hide path completely until animation reveals it
   onAnimationComplete?: () => void;
 }
 
-function PathLine({ path, imageBounds, isHighlighted, shouldAnimate, onAnimationComplete }: PathLineProps) {
+function PathLine({ path, imageBounds, isHighlighted, shouldAnimate, hideUntilAnimated = false, onAnimationComplete }: PathLineProps) {
   const pathRef = useRef<SVGPathElement>(null);
   const [pathLength, setPathLength] = useState(0);
   const [animationStarted, setAnimationStarted] = useState(false);
@@ -130,20 +132,75 @@ function PathLine({ path, imageBounds, isHighlighted, shouldAnimate, onAnimation
   }
 
   const pixelPoints = pointsToPixels(path.points, imageBounds.width, imageBounds.height);
+  const opacities = path.pointOpacities;
 
-  const pathData = pixelPoints.map((point, index) =>
+  // Create helper function for path data
+  const createPathD = (points: { x: number; y: number }[]) => {
+    if (points.length < 2) return '';
+    let d = `M ${points[0].x} ${points[0].y}`;
+    for (let i = 1; i < points.length; i++) {
+      d += ` L ${points[i].x} ${points[i].y}`;
+    }
+    return d;
+  };
+
+  // Full path data for measurement and animation mask
+  const fullPathData = pixelPoints.map((point, index) =>
     `${index === 0 ? 'M' : 'L'} ${point.x} ${point.y}`
   ).join(' ');
 
-  const midIndex = Math.floor(pixelPoints.length / 2);
-  const midpoint = pixelPoints[midIndex];
+  // Create path segments with different opacities
+  const pathSegments: { d: string; opacity: number }[] = [];
+  let currentSegmentPoints: { x: number; y: number }[] = [];
+  let currentOpacity = opacities?.[0] ?? 1;
 
-  const pathOpacity = isHighlighted ? 1 : 0.35;
+  for (let i = 0; i < pixelPoints.length; i++) {
+    const pointOpacity = opacities?.[i] ?? 1;
+
+    if (i === 0) {
+      currentSegmentPoints = [pixelPoints[i]];
+      currentOpacity = pointOpacity;
+    } else if (pointOpacity === currentOpacity) {
+      currentSegmentPoints.push(pixelPoints[i]);
+    } else {
+      // Opacity changed - save current segment and start new one
+      if (currentSegmentPoints.length >= 1) {
+        // Add the current point to close the gap
+        currentSegmentPoints.push(pixelPoints[i]);
+        pathSegments.push({
+          d: createPathD(currentSegmentPoints),
+          opacity: currentOpacity
+        });
+      }
+      currentSegmentPoints = [pixelPoints[i]];
+      currentOpacity = pointOpacity;
+    }
+  }
+
+  // Add final segment
+  if (currentSegmentPoints.length >= 2) {
+    pathSegments.push({
+      d: createPathD(currentSegmentPoints),
+      opacity: currentOpacity
+    });
+  }
+
+  // Find midpoint in longest visible segment for label
+  const midIndex = findLongestVisibleSegmentMidpoint(path.points, opacities);
+  const midpoint = pixelPoints[midIndex];
+  const midpointVisible = (opacities?.[midIndex] ?? 1) > 0;
+
+  const baseOpacity = isHighlighted ? 1 : 0.35;
 
   const isAnimating = shouldAnimate && animationStarted;
   const isWaitingToAnimate = shouldAnimate && !animationStarted;
   const displayLabel = isAnimating ? showLabel : !isWaitingToAnimate;
-  const shouldHide = shouldAnimate && pathLength === 0;
+  // Hide completely when:
+  // 1. hideUntilAnimated is true and animation hasn't started yet (not in view)
+  // 2. waiting to animate (shouldAnimate true but animation hasn't started - during 600ms delay)
+  // 3. shouldAnimate but pathLength not yet measured
+  // Note: Once animation starts (isAnimating), the mask handles progressive reveal
+  const shouldHide = (hideUntilAnimated && !shouldAnimate) || isWaitingToAnimate || (shouldAnimate && pathLength === 0);
   const revealLength = isWaitingToAnimate ? 0 : (isAnimating ? pathLength * animationProgress : pathLength);
 
   const maskId = `path-mask-${path.id}`;
@@ -165,7 +222,7 @@ function PathLine({ path, imageBounds, isHighlighted, shouldAnimate, onAnimation
       <defs>
         <mask id={maskId}>
           <path
-            d={pathData}
+            d={fullPathData}
             fill="none"
             stroke="white"
             strokeWidth="20"
@@ -176,20 +233,32 @@ function PathLine({ path, imageBounds, isHighlighted, shouldAnimate, onAnimation
           />
         </mask>
       </defs>
-      <g opacity={shouldHide ? 0 : pathOpacity}>
+      <g opacity={shouldHide ? 0 : 1}>
         <g mask={isAnimating || isWaitingToAnimate ? `url(#${maskId})` : undefined}>
+          {/* Hidden path for measurement */}
           <path
             ref={pathRef}
-            d={pathData}
+            d={fullPathData}
             fill="none"
-            stroke="#87CEEB"
+            stroke="transparent"
             strokeWidth="8"
-            strokeDasharray="14,10"
-            strokeLinecap="round"
-            strokeLinejoin="round"
           />
+          {/* Render each segment with its opacity */}
+          {pathSegments.map((segment, segIdx) => (
+            <path
+              key={segIdx}
+              d={segment.d}
+              fill="none"
+              stroke="#87CEEB"
+              strokeWidth="8"
+              strokeDasharray="14,10"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              opacity={segment.opacity * baseOpacity}
+            />
+          ))}
         </g>
-        {displayLabel && (
+        {displayLabel && midpointVisible && (
           <>
             <circle
               cx={midpoint.x}
@@ -220,26 +289,34 @@ function PathLine({ path, imageBounds, isHighlighted, shouldAnimate, onAnimation
 
 export default function MapScene({ scene, sceneIndex }: SceneProps<MapSceneType>) {
   const [mapData, setMapData] = useState<MapData | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  // Initialize error immediately if scene.image is missing
+  const [isLoading, setIsLoading] = useState(!scene.image ? false : true);
+  const [error, setError] = useState<string | null>(!scene.image ? 'Map scene is missing image property' : null);
   const [imageBounds, setImageBounds] = useState({ width: 0, height: 0, left: 0, top: 0 });
   const [isInView, setIsInView] = useState(false);
 
   const imgRef = useRef<HTMLImageElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
 
-  // Intersection Observer to detect when map scrolls into view
+  // Intersection Observer to detect when map becomes visible
+  // Animation always starts 600ms after the map becomes visible (whether initially or by scrolling)
   useEffect(() => {
     if (isLoading) return;
 
     const container = containerRef.current;
     if (!container) return;
 
+    let animationDelayTimeout: NodeJS.Timeout | null = null;
+
     const observer = new IntersectionObserver(
       (entries) => {
         const entry = entries[0];
+
         if (entry.isIntersecting) {
-          setIsInView(true);
+          // Map is visible - wait 600ms before starting animation
+          animationDelayTimeout = setTimeout(() => {
+            setIsInView(true);
+          }, 600);
           observer.disconnect();
         }
       },
@@ -247,7 +324,12 @@ export default function MapScene({ scene, sceneIndex }: SceneProps<MapSceneType>
     );
 
     observer.observe(container);
-    return () => observer.disconnect();
+    return () => {
+      if (animationDelayTimeout) {
+        clearTimeout(animationDelayTimeout);
+      }
+      observer.disconnect();
+    };
   }, [isLoading]);
 
   // Get navigation graph to access all scenes
@@ -319,6 +401,13 @@ export default function MapScene({ scene, sceneIndex }: SceneProps<MapSceneType>
   // Load path data for the map
   useEffect(() => {
     async function loadData() {
+      // Check if scene.image exists before trying to use it
+      if (!scene.image) {
+        setError('Map scene is missing image property');
+        setIsLoading(false);
+        return;
+      }
+
       try {
         setIsLoading(true);
         const mapName = scene.image.replace(/\.(jpg|jpeg|png|webp)$/i, '');
@@ -403,6 +492,8 @@ export default function MapScene({ scene, sceneIndex }: SceneProps<MapSceneType>
       {visiblePaths.map((path) => {
         const isHighlighted = path.orderNumber === highlightedPathOrder;
         const shouldAnimate = isHighlighted && highlightedPathOrder > 0 && isInView;
+        // Hide highlighted paths until they animate (when map scrolls into view)
+        const hideUntilAnimated = isHighlighted && highlightedPathOrder > 0;
         return (
           <PathLine
             key={path.id}
@@ -410,6 +501,7 @@ export default function MapScene({ scene, sceneIndex }: SceneProps<MapSceneType>
             imageBounds={imageBounds}
             isHighlighted={isHighlighted}
             shouldAnimate={shouldAnimate}
+            hideUntilAnimated={hideUntilAnimated}
           />
         );
       })}
