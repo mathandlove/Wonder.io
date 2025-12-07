@@ -1,4 +1,4 @@
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useRef, useCallback } from 'react';
 import './CardboardBubble.css';
 import { WaitingBubble } from './WaitingBubble';
 
@@ -21,6 +21,54 @@ export const CardboardBubble: React.FC<CardboardBubbleProps> = ({
   isPlaceholder = false
 }) => {
   const bubbleRef = useRef<HTMLDivElement>(null);
+  const innerRef = useRef<HTMLDivElement>(null);
+
+  // Stop scroll events from propagating to navigation system when scrolling inside the bubble
+  const handleWheel = useCallback((e: WheelEvent) => {
+    const inner = innerRef.current;
+    if (!inner) return;
+
+    const { scrollTop, scrollHeight, clientHeight } = inner;
+    const isScrollable = scrollHeight > clientHeight;
+
+    if (isScrollable) {
+      const atTop = scrollTop === 0;
+      const atBottom = scrollTop + clientHeight >= scrollHeight - 1;
+
+      // Only stop propagation if we can scroll in the wheel direction
+      const scrollingDown = e.deltaY > 0;
+      const scrollingUp = e.deltaY < 0;
+
+      if ((scrollingDown && !atBottom) || (scrollingUp && !atTop)) {
+        e.stopPropagation();
+      }
+    }
+  }, []);
+
+  // Handle touch events for mobile scrolling
+  const handleTouchMove = useCallback((e: TouchEvent) => {
+    const inner = innerRef.current;
+    if (!inner) return;
+
+    const isScrollable = inner.scrollHeight > inner.clientHeight;
+    if (isScrollable) {
+      e.stopPropagation();
+    }
+  }, []);
+
+  // Attach scroll isolation event listeners
+  useEffect(() => {
+    const inner = innerRef.current;
+    if (!inner) return;
+
+    inner.addEventListener('wheel', handleWheel, { passive: false });
+    inner.addEventListener('touchmove', handleTouchMove, { passive: false });
+
+    return () => {
+      inner.removeEventListener('wheel', handleWheel);
+      inner.removeEventListener('touchmove', handleTouchMove);
+    };
+  }, [handleWheel, handleTouchMove]);
 
   // Optional viewport detection for callbacks
   useEffect(() => {
@@ -81,7 +129,7 @@ export const CardboardBubble: React.FC<CardboardBubbleProps> = ({
                 <div className={`white-triangle-${side}`}></div>
               </div>
             )}
-            <div className="cardboard-bubble-inner">
+            <div ref={innerRef} className="cardboard-bubble-inner">
               <p className={`cardboard-bubble-text ${isPlaceholder ? 'placeholder' : ''}`}>
                 {children}
               </p>

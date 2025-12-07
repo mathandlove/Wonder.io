@@ -11,6 +11,7 @@
   width: fit-content;
   height: fit-content;
   min-height: 80px; /* Reduced minimum height */
+  max-height: calc(100vh - 350px); /* Limit height to safe area minus padding */
   overflow: visible;
   padding: 15px;
   background-image: url('/VisualAssets/cardboard.png');
@@ -32,18 +33,18 @@
 
 /* Left side positioning */
 .cardboard-bubble-left {
-  align-self: flex-start;
   margin-left: 30px; /* Account for speech tail */
   margin-right: 10px;
-  max-width: 75%; /* Prevent bubble from extending too far toward opposite character */
+  /* Allow bubble to expand to full width when content is long */
+  max-width: calc(100% - 40px); /* Full width minus margins */
 }
 
 /* Right side positioning */
 .cardboard-bubble-right {
-  align-self: flex-end;
   margin-left: 10px;
   margin-right: 40px; /* Add right margin for proper spacing */
-  max-width: 75%; /* Prevent bubble from extending too far toward opposite character */
+  /* Allow bubble to expand to full width when content is long */
+  max-width: calc(100% - 50px); /* Full width minus margins */
 }
 
 /* Inner white/cream text box */
@@ -55,6 +56,8 @@
   box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
   position: relative;
   text-align: left; /* Changed from center to left */
+  max-height: calc(100vh - 400px); /* Limit inner height */
+  overflow-y: auto; /* Allow scrolling if content exceeds max-height */
 }
 
 /* Speaker label */
@@ -224,24 +227,29 @@
   }
 }
 
-/* Responsive adjustments */
-@media (max-width: 768px) {
-  .cardboard-bubble {
-    max-width: 85%; /* Slightly smaller on mobile */
-  }
-
-  .cardboard-bubble-text {
-    font-size: 18px;
-  }
+/* Mobile - compact bubble (height <= 450px)
+   Uses data-mobile attribute set by useIsMobile hook */
+html[data-mobile="true"] .cardboard-bubble {
+  max-height: calc(100vh - 150px); /* Smaller safe area on mobile */
 }
 
-/* Mobile landscape - compact bubble text */
-@media (max-width: 900px) and (orientation: landscape) {
-  .cardboard-bubble-text {
-    font-size: 17px;
-  }
+/* Mobile left/right positioning - allow full width expansion */
+html[data-mobile="true"] .cardboard-bubble-left {
+  max-width: calc(100% - 40px);
+}
 
-  .cardboard-bubble-speaker {
-    font-size: 14px;
-  }
+html[data-mobile="true"] .cardboard-bubble-right {
+  max-width: calc(100% - 50px);
+}
+
+html[data-mobile="true"] .cardboard-bubble-inner {
+  max-height: calc(100vh - 200px); /* Smaller inner height on mobile */
+}
+
+html[data-mobile="true"] .cardboard-bubble-text {
+  font-size: 17px;
+}
+
+html[data-mobile="true"] .cardboard-bubble-speaker {
+  font-size: 14px;
 }

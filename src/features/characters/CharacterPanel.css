@@ -68,11 +68,14 @@
 .story-character-content {
   position: relative;
   width: 22vw;
-  max-width: 200px;
+  /* No max-width - let characters fill the panel width */
   height: 400px;
   padding: 0;
   margin: 0;
-  margin-top: calc(60vh - 200px); /* Center the 400px tall character at 60vh */
+  /* Align character's 25% height (100px from top) with safe area midpoint */
+  /* Safe area: 0 to (100vh - 300px), midpoint = (100vh - 300px) / 2 */
+  /* Character 25% point should be at that midpoint, so top = midpoint - 100px */
+  margin-top: max(0px, calc((100vh - 300px) / 2 - 100px));
   container-type: inline-size; /* enable container queries */
 }
 
@@ -439,4 +442,11 @@
   100% {
     transform: translateY(0) translateX(0) rotate(0deg) scale(1);
   }
+}
+
+/* Mobile - adjust character centering for smaller recordPanelHeight (100px vs 300px)
+   Uses data-mobile attribute set by useIsMobile hook */
+html[data-mobile="true"] .story-character-content {
+  /* Align character's 25% height (100px from top) with mobile safe area midpoint */
+  margin-top: max(0px, calc((100vh - 100px) / 2 - 100px));
 }

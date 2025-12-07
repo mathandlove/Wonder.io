@@ -105,43 +105,43 @@
 }
 
 /* ===================================
-   MOBILE LANDSCAPE - COMPACT TOAST
-   Half size for mobile screens
+   MOBILE - COMPACT TOAST
+   Half size for mobile screens (height <= 450px)
+   Uses data-mobile attribute set by useIsMobile hook
    =================================== */
 
-@media (max-width: 900px) and (orientation: landscape) {
-  .scroll-down-toast {
-    bottom: 16px;
-  }
+html[data-mobile="true"] .scroll-down-toast {
+  bottom: 16px;
+}
 
-  .scroll-down-content {
-    gap: 6px;
-    padding: 6px 12px;
-    border-radius: 12px;
-  }
+html[data-mobile="true"] .scroll-down-content {
+  gap: 6px;
+  padding: 6px 12px;
+  border-radius: 12px;
+}
 
-  .scroll-finger-container {
-    width: 14px;
-    height: 14px;
-  }
+html[data-mobile="true"] .scroll-finger-container {
+  width: 14px;
+  height: 14px;
+}
 
-  .scroll-finger-icon {
-    width: 14px;
-    height: 14px;
-  }
+html[data-mobile="true"] .scroll-finger-icon {
+  width: 14px;
+  height: 14px;
+  animation: fingerScrollMobile 1.5s ease-in-out infinite;
+}
 
-  .scroll-down-text {
-    font-size: 11px;
-  }
+html[data-mobile="true"] .scroll-down-text {
+  font-size: 11px;
+}
 
-  @keyframes fingerScroll {
-    0%, 100% {
-      transform: translateY(0);
-      opacity: 1;
-    }
-    50% {
-      transform: translateY(3px);
-      opacity: 0.7;
-    }
+@keyframes fingerScrollMobile {
+  0%, 100% {
+    transform: translateY(0);
+    opacity: 1;
+  }
+  50% {
+    transform: translateY(3px);
+    opacity: 0.7;
   }
 }

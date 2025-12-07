@@ -3,8 +3,12 @@
  *
  * Shows a full-screen overlay prompting users to rotate their device
  * to landscape mode when in portrait orientation on mobile.
+ *
+ * Also initializes the useIsMobile hook to set the data-mobile attribute
+ * on the document for CSS to use.
  */
 import React, { useState, useEffect } from 'react';
+import { useIsMobile, MOBILE_HEIGHT_THRESHOLD } from '@core/uiLayout/useIsMobile';
 import './OrientationGate.css';
 
 interface OrientationGateProps {
@@ -14,11 +18,16 @@ interface OrientationGateProps {
 export const OrientationGate: React.FC<OrientationGateProps> = ({ children }) => {
   const [showBlocker, setShowBlocker] = useState(false);
 
+  // Initialize mobile detection (sets data-mobile attribute on <html>)
+  useIsMobile();
+
   useEffect(() => {
     const checkOrientation = () => {
       const isPortrait = window.matchMedia('(orientation: portrait)').matches;
-      const isMobile = window.innerWidth < 768;
-      setShowBlocker(isPortrait && isMobile);
+      // Use height threshold for consistency - in portrait, height > width
+      // so we check if width (which becomes height in portrait) is mobile-sized
+      const isMobileDevice = window.innerHeight <= MOBILE_HEIGHT_THRESHOLD || window.innerWidth < 768;
+      setShowBlocker(isPortrait && isMobileDevice);
     };
 
     // Check on mount

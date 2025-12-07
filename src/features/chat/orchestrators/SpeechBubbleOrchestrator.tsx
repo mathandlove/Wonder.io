@@ -8,6 +8,7 @@ import { CardboardBubble } from '@features/chat/components/CardboardBubble';
 import { useNavigationStore, selectNavigationGraph, selectCurrentNodeId, selectLastFrozenNode } from '@core/navigation/navigationStore';
 import { AudioVisualizer } from '@core/recording/AudioVisualizer';
 import { useAudioLevel } from '@core/recording/RecordingOrchestrator';
+import { useIsMobile } from '@core/uiLayout/useIsMobile';
 import type { CharacterScene } from '@core/types/scene';
 import type { Node } from '@core/navigation/navigationGraphTypes';
 
@@ -25,6 +26,9 @@ interface BubbleState {
 export function SpeechBubbleOrchestrator() {
   // Get real-time audio level for visualization
   const audioLevel = useAudioLevel();
+
+  // Mobile detection for positioning
+  const isMobile = useIsMobile();
 
   // OPTIMIZED: Subscribe only to graph structure, currentId, and lastFrozenNode
   const navigationGraph = useNavigationStore(selectNavigationGraph);
@@ -184,21 +188,26 @@ export function SpeechBubbleOrchestrator() {
                          side === 'right' ? 'flex-end' :
                          'center';
 
-    const bubbleStyle = {
-      position: 'absolute' as const,
-      top: '50vh',
-      left: 'var(--panel-left-width)', // Start after left panel
-      right: 'var(--panel-right-width)', // End before right panel
-      width: 'auto', // Let it fill available space between panels
-      transform: 'translateY(-50%)',
+    // Bubble wrapper - positioned within the safe area, uses flexbox for horizontal alignment
+    // Parent flex column with justifyContent: 'center' handles vertical centering
+    // Slide-out bubbles use absolute positioning so they don't affect current bubble's centering
+    const bubbleStyle: React.CSSProperties = {
       display: 'flex',
-      justifyContent,
-      alignItems: 'center',
+      justifyContent, // Horizontal alignment: flex-start (left), flex-end (right), center
+      width: '100%',
       animation: animationStyle ? `${animationStyle} 0.6s ease-out ${animationDelay} both` : 'none',
       // Note: 'both' = backwards + forwards
       // - 'backwards' applies the "from" keyframe state during the delay (keeps bubble off-screen)
       // - 'forwards' keeps the "to" keyframe state after animation completes (keeps bubble on-screen)
-      pointerEvents: 'auto' as const,
+      pointerEvents: 'auto',
+      // Slide-out (previous) bubbles: absolute position so they don't affect current bubble centering
+      // Slide-in (current) bubbles: relative position to participate in flex centering
+      ...(isSlideIn ? {} : {
+        position: 'absolute' as const,
+        top: '50%',
+        left: 0,
+        transform: 'translateY(-50%)', // Start centered, animation will move it
+      }),
     };
 
     return (
@@ -229,6 +238,10 @@ export function SpeechBubbleOrchestrator() {
     return null;
   }
 
+  // RecordPanel height estimate + extra padding for safe area
+  // This creates a safe area above the RecordPanel for speech bubbles
+  const recordPanelHeight = isMobile ? 100 : 300;
+
   return (
     <div className="speech-bubble-layer" style={{
       position: 'fixed',
@@ -237,67 +250,84 @@ export function SpeechBubbleOrchestrator() {
       width: '100vw',
       height: '100vh',
       zIndex: 100,
-      pointerEvents: 'none'
+      pointerEvents: 'none',
+      overflowX: 'hidden'
     }}>
-      {/* Previous bubble - slides out in opposite direction */}
-      {bubbles.previous && bubbles.previous.nodeId !== bubbles.current.nodeId && (
-        renderBubble(
-          bubbles.previous,
-          `prev-${bubbles.previous.nodeId}`,
-          bubbles.direction === 'forward'
-            ? 'slideOutToTop'      // Forward: old slides up
-            : 'slideOutToBottom',  // Backward: old slides down
-          false // isSlideIn = false (this is a slide-out, no delay)
-        )
-      )}
+      {/* Speech bubble safe area - from top to above RecordPanel */}
+      <div className="speech-bubble-area" style={{
+        position: 'absolute',
+        top: 0,
+        left: 'var(--panel-left-width)',
+        right: 'var(--panel-right-width)',
+        height: `calc(100vh - ${recordPanelHeight}px)`,
+        display: 'flex',
+        flexDirection: 'column',
+        justifyContent: 'center', // Centers bubble vertically in safe area
+        alignItems: 'stretch', // Stretch horizontally so bubble can align left/right/center
+        pointerEvents: 'none',
+        backgroundColor: 'rgba(0, 255, 0, 0.2)', // DEBUG: Green overlay to visualize safe area
+      }}>
+        {/* Previous bubble - slides out in opposite direction */}
+        {bubbles.previous && bubbles.previous.nodeId !== bubbles.current.nodeId && (
+          renderBubble(
+            bubbles.previous,
+            `prev-${bubbles.previous.nodeId}`,
+            bubbles.direction === 'forward'
+              ? 'slideOutToTop'      // Forward: old slides up
+              : 'slideOutToBottom',  // Backward: old slides down
+            false // isSlideIn = false (this is a slide-out, no delay)
+          )
+        )}
 
-      {/* Current bubble - slides in from opposite direction */}
-      {renderBubble(
-        bubbles.current,
-        `current-${bubbles.current.nodeId}`,
-        // Animate unless it's the same node (phase change within same scene)
-        !bubbles.previous || bubbles.previous.nodeId !== bubbles.current.nodeId
-          ? (bubbles.direction === 'forward' ? 'slideInFromBottom' : 'slideInFromTop')
-          : null,
-        true // isSlideIn = true (this is a slide-in, may have delay)
-      )}
+        {/* Current bubble - slides in from opposite direction */}
+        {renderBubble(
+          bubbles.current,
+          `current-${bubbles.current.nodeId}`,
+          // Animate unless it's the same node (phase change within same scene)
+          !bubbles.previous || bubbles.previous.nodeId !== bubbles.current.nodeId
+            ? (bubbles.direction === 'forward' ? 'slideInFromBottom' : 'slideInFromTop')
+            : null,
+          true // isSlideIn = true (this is a slide-in, may have delay)
+        )}
+      </div>
 
       <style>{`
+        /* Slide animations - bubble is centered in safe area via flexbox */
         /* Forward navigation: new slides up from bottom, old slides up to top */
         @keyframes slideInFromBottom {
           from {
-            transform: translateY(calc(-50% + 100vh));
+            transform: translateY(100vh);
           }
           to {
-            transform: translateY(-50%);
+            transform: translateY(0);
           }
         }
 
         @keyframes slideOutToTop {
           from {
-            transform: translateY(-50%);
+            transform: translateY(0);
           }
           to {
-            transform: translateY(calc(-50% - 100vh));
+            transform: translateY(-100vh);
           }
         }
 
         /* Backward navigation: new slides down from top, old slides down to bottom */
         @keyframes slideInFromTop {
           from {
-            transform: translateY(calc(-50% - 100vh));
+            transform: translateY(-100vh);
           }
           to {
-            transform: translateY(-50%);
+            transform: translateY(0);
           }
         }
 
         @keyframes slideOutToBottom {
           from {
-            transform: translateY(-50%);
+            transform: translateY(0);
           }
           to {
-            transform: translateY(calc(-50% + 100vh));
+            transform: translateY(100vh);
           }
         }
       `}</style>
