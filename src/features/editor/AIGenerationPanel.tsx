@@ -8,6 +8,7 @@
  */
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import './AIGenerationPanel.css';
+import { API_URL } from '../../config';
 
 // ============================================================================
 // Types
@@ -83,7 +84,7 @@ interface FullStoryData {
   scenes: StoryScene[];
 }
 
-const BACKEND_URL = 'http://localhost:3001';
+const BACKEND_URL = API_URL;
 
 // ============================================================================
 // Icons

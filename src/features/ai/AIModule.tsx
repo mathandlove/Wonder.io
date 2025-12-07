@@ -6,6 +6,7 @@
 
 import React, { useCallback, type ReactNode } from 'react';
 import { AIModuleContext, type AIModuleContextType } from './AIModuleContext';
+import { API_ENDPOINTS } from '../../config';
 
 // ============================================================================
 // Types
@@ -69,7 +70,7 @@ export const AIModuleProvider: React.FC<AIModuleProviderProps> = ({
       };
 
       // Call backend API
-      const response = await fetch('http://localhost:3001/api/ai/chat', {
+      const response = await fetch(API_ENDPOINTS.AI_CHAT, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json'

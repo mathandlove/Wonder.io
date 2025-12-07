@@ -11,6 +11,7 @@
  */
 
 import { createDebugger } from '../../utils/createDebug';
+import { API_ENDPOINTS } from '../../config';
 
 const debug = createDebugger('ai:service');
 
@@ -63,7 +64,7 @@ export async function callAI(input: AIServiceInput): Promise<AIServiceResponse> 
     // });
 
     // Call backend API
-    const response = await fetch('http://localhost:3001/api/ai/chat', {
+    const response = await fetch(API_ENDPOINTS.AI_CHAT, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json'
@@ -179,7 +180,7 @@ Student answer: "${input.userAnswer}"`;
     debug.event('📤', 'Calling validation API...');
 
     // Call backend API
-    const response = await fetch('http://localhost:3001/api/ai/validate', {
+    const response = await fetch(API_ENDPOINTS.AI_VALIDATE, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json'

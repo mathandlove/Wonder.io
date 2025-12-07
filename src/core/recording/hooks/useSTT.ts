@@ -7,6 +7,7 @@
 
 import { useState, useRef, useCallback, useEffect } from 'react';
 import { createDebugger } from '../../../utils/createDebug';
+import { API_ENDPOINTS } from '../../../config';
 
 const debug = createDebugger('recording:transcripts');
 
@@ -44,7 +45,7 @@ export type UseSTT = {
 // ──────────────────────────────────────────────────────────────────────────────
 
 const CONFIG = {
-  WS_URL: 'ws://localhost:3001/api/stt/socket',
+  WS_URL: API_ENDPOINTS.STT_SOCKET,
   SAMPLE_RATE: 16000, // 16kHz audio for STT
   SILENCE_THRESHOLD: 0.005, // Lower threshold for soft-spoken children (was 0.01)
   SILENCE_DURATION_MS: 20000, // Auto-stop after 20s of silence
