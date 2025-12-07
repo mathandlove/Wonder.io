@@ -34,28 +34,28 @@ const debug = createDebugger('navigation:machine');
  * Set to true to bypass the requirement of asking a question before answering
  * Useful for testing the answer flow directly
  */
-const DEBUG_AUTO_UNLOCK_ANSWER_BUTTON = true;
+const DEBUG_AUTO_UNLOCK_ANSWER_BUTTON = false;
 
 /**
  * DEBUG FLAG: Allow scroll navigation during recording
  * Set to true to allow scrolling past the record panel during recording states
  * Useful for testing/debugging without going through the full recording flow
  */
-const DEBUG_ALLOW_SCROLL_DURING_RECORDING = true;
+const DEBUG_ALLOW_SCROLL_DURING_RECORDING = false;
 
 /**
  * DEBUG FLAG: Allow scroll navigation during quest display
  * Set to true to allow scrolling past quest scenes without accepting them
  * Useful for testing/debugging story flow without interacting with quest UI
  */
-const DEBUG_ALLOW_SCROLL_DURING_QUEST = true;
+const DEBUG_ALLOW_SCROLL_DURING_QUEST = false;
 
 /**
  * DEBUG FLAG: Allow scroll navigation during clue-image scenes
  * Set to true to allow scrolling past clue scenes without finding all clues
  * Useful for testing/debugging story flow without clicking all hotspots
  */
-const DEBUG_ALLOW_SCROLL_DURING_IMAGECLUE = true;
+const DEBUG_ALLOW_SCROLL_DURING_IMAGECLUE = false;
 
 // Log when debug modes are enabled
 if (DEBUG_AUTO_UNLOCK_ANSWER_BUTTON) {
