@@ -14,6 +14,7 @@ import StorySimulator from './StorySimulator';
 import ImagePickerModal from './ImagePickerModal';
 import type { ImageCategory } from './ImagePickerModal';
 import './StoryReviewEditor.css';
+import { API_URL } from '../../config';
 
 // ============================================================================
 // Types
@@ -39,7 +40,7 @@ interface StoryReviewEditorProps {
   onClose?: () => void;
 }
 
-const BACKEND_URL = 'http://localhost:3001';
+const BACKEND_URL = API_URL;
 
 // ============================================================================
 // Icons

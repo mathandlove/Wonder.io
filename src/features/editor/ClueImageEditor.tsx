@@ -11,6 +11,7 @@ import React, { useState, useEffect, useCallback, useRef } from 'react';
 import type { Hotspot, Point } from '@shared/types/hotspot';
 import { pointsToPercent, pointsToPixels, screenToImageCoords } from '@shared/utils/coordinateUtils';
 import './ClueImageEditor.css';
+import { API_URL } from '../../config';
 
 // ============================================================================
 // Types
@@ -36,7 +37,7 @@ interface ClueImageEditorProps {
   onClose?: () => void;
 }
 
-const BACKEND_URL = 'http://localhost:3001';
+const BACKEND_URL = API_URL;
 
 // ============================================================================
 // Icons

@@ -6,6 +6,7 @@
  */
 import React, { useState, useEffect } from 'react';
 import './ImagePickerModal.css';
+import { API_URL } from '../../config';
 
 export type ImageCategory = 'backgrounds' | 'characters' | 'story' | 'clues' | 'maps';
 
@@ -25,7 +26,7 @@ interface ImageItem {
   fullPath: string;
 }
 
-const BACKEND_URL = 'http://localhost:3001';
+const BACKEND_URL = API_URL;
 
 // Icons
 const Icons = {

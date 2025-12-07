@@ -9,6 +9,7 @@
  * Uses Google Gemini API (Nano Banana) for AI image generation.
  */
 import React, { useState, useEffect } from 'react';
+import { API_URL } from '../../config';
 
 interface ImageItem {
   id: string;
@@ -43,7 +44,7 @@ interface ImageGeneratorPanelProps {
   onImageUpdated?: (sceneIndex: number, newImagePath: string) => void;
 }
 
-const BACKEND_URL = 'http://localhost:3001';
+const BACKEND_URL = API_URL;
 
 const ImageGeneratorPanel: React.FC<ImageGeneratorPanelProps> = ({
   isActive,

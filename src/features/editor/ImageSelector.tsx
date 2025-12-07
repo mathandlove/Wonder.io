@@ -6,6 +6,7 @@
  */
 import React, { useState, useEffect } from 'react';
 import './ImageSelector.css';
+import { API_URL } from '../../config';
 
 interface ImageInfo {
   path: string;
@@ -46,7 +47,7 @@ const ImageSelector: React.FC<ImageSelectorProps> = ({ onImageSelect, currentIma
     const loadImages = async () => {
       setIsLoading(true);
       try {
-        const response = await fetch(`http://localhost:3001/api/bundle/images?bundle=gingerbread.bundle`);
+        const response = await fetch(`${API_URL}/api/bundle/images?bundle=gingerbread.bundle`);
         if (!response.ok) {
           throw new Error(`Failed to load images: ${response.status}`);
         }

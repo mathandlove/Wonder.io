@@ -2,6 +2,8 @@ import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
 import path from 'path'
 
+const isProduction = process.env.NODE_ENV === 'production'
+
 // https://vite.dev/config/
 export default defineConfig({
   plugins: [react()],
@@ -17,11 +19,17 @@ export default defineConfig({
   },
   build: {
     rollupOptions: {
-      input: {
-        main: path.resolve(__dirname, 'index.html'),
-        editor: path.resolve(__dirname, 'editor.html'),
-        simulator: path.resolve(__dirname, 'simulator.html'),
-      },
+      input: isProduction
+        ? {
+            // Production: only main app
+            main: path.resolve(__dirname, 'index.html'),
+          }
+        : {
+            // Development: include editor and simulator
+            main: path.resolve(__dirname, 'index.html'),
+            editor: path.resolve(__dirname, 'editor.html'),
+            simulator: path.resolve(__dirname, 'simulator.html'),
+          },
     },
   },
 })

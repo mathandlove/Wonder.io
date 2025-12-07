@@ -10,6 +10,7 @@ import React, { useState, useEffect, useCallback, useRef } from 'react';
 import type { Point, MapPath } from '@shared/types/hotspot';
 import { pointsToPercent, pointsToPixels, screenToImageCoords, findLongestVisibleSegmentMidpoint } from '@shared/utils/coordinateUtils';
 import './MapEditor.css';
+import { API_URL } from '../../config';
 
 // ============================================================================
 // Types
@@ -28,7 +29,7 @@ interface MapEditorProps {
 
 type MapEditorTool = 'draw' | 'hide' | null;
 
-const BACKEND_URL = 'http://localhost:3001';
+const BACKEND_URL = API_URL;
 
 // ============================================================================
 // Icons

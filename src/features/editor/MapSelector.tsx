@@ -7,6 +7,7 @@
  */
 import React, { useState, useEffect } from 'react';
 import './MapSelector.css';
+import { API_URL } from '../../config';
 
 interface MapInfo {
   path: string;           // Path to map (e.g., /stories/gingerbread.bundle/images/maps/cityMap.png)
