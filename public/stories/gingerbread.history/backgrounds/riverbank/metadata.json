@@ -1,0 +1,283 @@
+{
+  "imageId": "riverbank",
+  "category": "backgrounds",
+  "versions": [
+    {
+      "version": 1,
+      "filename": "v1-1764699210506.png",
+      "timestamp": 1764699210506,
+      "prompt": "A peaceful riverbank with gentle flowing water. Tall reeds grow along the shore, a wooden dock extends into the water with a small ferry boat tied to it. Willow trees drape over the scene.",
+      "charactersReferenced": [],
+      "isModification": false
+    },
+    {
+      "version": 2,
+      "filename": "v2-1764711012826.jpeg",
+      "timestamp": 1764711012826,
+      "prompt": "A large river surrounded by snow covered trees. There is no ice on the river. There are bushes and catails.",
+      "charactersReferenced": [],
+      "isModification": false
+    },
+    {
+      "version": 3,
+      "filename": "v3-1764715107733.jpeg",
+      "timestamp": 1764715107733,
+      "prompt": "add some christmas lights to a few of the trees.",
+      "charactersReferenced": [],
+      "isModification": true
+    },
+    {
+      "version": 4,
+      "filename": "v4-1764715107734.jpeg",
+      "timestamp": 1764715107734,
+      "prompt": "add some christmas lights to a few of the trees.",
+      "charactersReferenced": [],
+      "isModification": true
+    },
+    {
+      "version": 5,
+      "filename": "v5-1764715107735.jpeg",
+      "timestamp": 1764715107735,
+      "prompt": "add some christmas lights to a few of the trees.",
+      "charactersReferenced": [],
+      "isModification": true
+    },
+    {
+      "version": 6,
+      "filename": "v6-1764715107736.jpeg",
+      "timestamp": 1764715107736,
+      "prompt": "add some christmas lights to a few of the trees.",
+      "charactersReferenced": [],
+      "isModification": true
+    },
+    {
+      "version": 7,
+      "filename": "v7-1764715107737.jpeg",
+      "timestamp": 1764715107737,
+      "prompt": "add some christmas lights to a few of the trees.",
+      "charactersReferenced": [],
+      "isModification": true
+    },
+    {
+      "version": 8,
+      "filename": "v8-1764715107738.jpeg",
+      "timestamp": 1764715107738,
+      "prompt": "add some christmas lights to a few of the trees.",
+      "charactersReferenced": [],
+      "isModification": true
+    },
+    {
+      "version": 9,
+      "filename": "v9-1764715107739.jpeg",
+      "timestamp": 1764715107739,
+      "prompt": "add some christmas lights to a few of the trees.",
+      "charactersReferenced": [],
+      "isModification": true
+    },
+    {
+      "version": 10,
+      "filename": "v10-1764715107740.jpeg",
+      "timestamp": 1764715107740,
+      "prompt": "add some christmas lights to a few of the trees.",
+      "charactersReferenced": [],
+      "isModification": true
+    },
+    {
+      "version": 11,
+      "filename": "v11-1764715107741.jpeg",
+      "timestamp": 1764715107741,
+      "prompt": "add some christmas lights to a few of the trees.",
+      "charactersReferenced": [],
+      "isModification": true
+    },
+    {
+      "version": 12,
+      "filename": "v12-1764715107742.jpeg",
+      "timestamp": 1764715107742,
+      "prompt": "add some christmas lights to a few of the trees.",
+      "charactersReferenced": [],
+      "isModification": true
+    },
+    {
+      "version": 13,
+      "filename": "v13-1764715167848.jpeg",
+      "timestamp": 1764715167848,
+      "prompt": "add some christmas lights to some of the trees in teh same paper style",
+      "charactersReferenced": [],
+      "isModification": true,
+      "baseVersion": 12
+    },
+    {
+      "version": 14,
+      "filename": "v14-1764715167849.jpeg",
+      "timestamp": 1764715167849,
+      "prompt": "add some christmas lights to some of the trees in teh same paper style",
+      "charactersReferenced": [],
+      "isModification": true,
+      "baseVersion": 12
+    },
+    {
+      "version": 15,
+      "filename": "v15-1764715167850.jpeg",
+      "timestamp": 1764715167850,
+      "prompt": "add some christmas lights to some of the trees in teh same paper style",
+      "charactersReferenced": [],
+      "isModification": true,
+      "baseVersion": 12
+    },
+    {
+      "version": 16,
+      "filename": "v16-1764715167851.jpeg",
+      "timestamp": 1764715167851,
+      "prompt": "add some christmas lights to some of the trees in teh same paper style",
+      "charactersReferenced": [],
+      "isModification": true,
+      "baseVersion": 12
+    },
+    {
+      "version": 17,
+      "filename": "v17-1764715167852.jpeg",
+      "timestamp": 1764715167852,
+      "prompt": "add some christmas lights to some of the trees in teh same paper style",
+      "charactersReferenced": [],
+      "isModification": true,
+      "baseVersion": 12
+    },
+    {
+      "version": 18,
+      "filename": "v18-1764715167853.jpeg",
+      "timestamp": 1764715167853,
+      "prompt": "add some christmas lights to some of the trees in teh same paper style",
+      "charactersReferenced": [],
+      "isModification": true,
+      "baseVersion": 12
+    },
+    {
+      "version": 19,
+      "filename": "v19-1764715167854.jpeg",
+      "timestamp": 1764715167854,
+      "prompt": "add some christmas lights to some of the trees in teh same paper style",
+      "charactersReferenced": [],
+      "isModification": true,
+      "baseVersion": 12
+    },
+    {
+      "version": 20,
+      "filename": "v20-1764715167855.jpeg",
+      "timestamp": 1764715167855,
+      "prompt": "add some christmas lights to some of the trees in teh same paper style",
+      "charactersReferenced": [],
+      "isModification": true,
+      "baseVersion": 12
+    },
+    {
+      "version": 21,
+      "filename": "v21-1764715167856.jpeg",
+      "timestamp": 1764715167856,
+      "prompt": "add some christmas lights to some of the trees in teh same paper style",
+      "charactersReferenced": [],
+      "isModification": true,
+      "baseVersion": 12
+    },
+    {
+      "version": 22,
+      "filename": "v22-1764715167857.jpeg",
+      "timestamp": 1764715167857,
+      "prompt": "add some christmas lights to some of the trees in teh same paper style",
+      "charactersReferenced": [],
+      "isModification": true,
+      "baseVersion": 12
+    },
+    {
+      "version": 23,
+      "filename": "v23-1764715213589.jpeg",
+      "timestamp": 1764715213589,
+      "prompt": "add christmas lights to some of the trees in a simple paper style",
+      "charactersReferenced": [],
+      "isModification": true,
+      "baseVersion": 2
+    },
+    {
+      "version": 24,
+      "filename": "v24-1764715213590.jpeg",
+      "timestamp": 1764715213590,
+      "prompt": "add christmas lights to some of the trees in a simple paper style",
+      "charactersReferenced": [],
+      "isModification": true,
+      "baseVersion": 2
+    },
+    {
+      "version": 25,
+      "filename": "v25-1764715213591.jpeg",
+      "timestamp": 1764715213591,
+      "prompt": "add christmas lights to some of the trees in a simple paper style",
+      "charactersReferenced": [],
+      "isModification": true,
+      "baseVersion": 2
+    },
+    {
+      "version": 26,
+      "filename": "v26-1764715213592.jpeg",
+      "timestamp": 1764715213592,
+      "prompt": "add christmas lights to some of the trees in a simple paper style",
+      "charactersReferenced": [],
+      "isModification": true,
+      "baseVersion": 2
+    },
+    {
+      "version": 27,
+      "filename": "v27-1764715213593.jpeg",
+      "timestamp": 1764715213593,
+      "prompt": "add christmas lights to some of the trees in a simple paper style",
+      "charactersReferenced": [],
+      "isModification": true,
+      "baseVersion": 2
+    },
+    {
+      "version": 28,
+      "filename": "v28-1764715213594.jpeg",
+      "timestamp": 1764715213594,
+      "prompt": "add christmas lights to some of the trees in a simple paper style",
+      "charactersReferenced": [],
+      "isModification": true,
+      "baseVersion": 2
+    },
+    {
+      "version": 29,
+      "filename": "v29-1764715213595.jpeg",
+      "timestamp": 1764715213595,
+      "prompt": "add christmas lights to some of the trees in a simple paper style",
+      "charactersReferenced": [],
+      "isModification": true,
+      "baseVersion": 2
+    },
+    {
+      "version": 30,
+      "filename": "v30-1764715213596.jpeg",
+      "timestamp": 1764715213596,
+      "prompt": "add christmas lights to some of the trees in a simple paper style",
+      "charactersReferenced": [],
+      "isModification": true,
+      "baseVersion": 2
+    },
+    {
+      "version": 31,
+      "filename": "v31-1764715213597.jpeg",
+      "timestamp": 1764715213597,
+      "prompt": "add christmas lights to some of the trees in a simple paper style",
+      "charactersReferenced": [],
+      "isModification": true,
+      "baseVersion": 2
+    },
+    {
+      "version": 32,
+      "filename": "v32-1764715213598.jpeg",
+      "timestamp": 1764715213598,
+      "prompt": "add christmas lights to some of the trees in a simple paper style",
+      "charactersReferenced": [],
+      "isModification": true,
+      "baseVersion": 2
+    }
+  ],
+  "currentVersion": 28
+}

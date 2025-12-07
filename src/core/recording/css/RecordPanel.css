@@ -1,0 +1,1620 @@
+/* Import global toast styles */
+@import '../../toast/toast-styles.css';
+
+/* ===================================
+   RECORD PANEL - EXACT FIGMA STRUCTURE
+   =================================== */
+
+/* Record Panel Container - wrapper for positioning */
+.record-panel-container,
+.chat-composer-container {
+  position: fixed;
+  top: 50%;
+  /* Default: centered anchor point */
+  left: 50%;
+  transform: translate(-50%, -50%);
+  /* Default: centered positioning */
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0;
+  z-index: 1100;
+  background: transparent;
+  pointer-events: none;
+  /* Smooth transitions for transform, top, and bottom (handles all position changes) */
+  transition: transform 0.6s cubic-bezier(0.25, 1, 0.5, 1),
+    top 0.6s cubic-bezier(0.25, 1, 0.5, 1),
+    bottom 0.6s cubic-bezier(0.25, 1, 0.5, 1);
+}
+
+/* Hidden state - completely below screen, top of panel at bottom of viewport */
+.record-panel-container.hidden {
+  top: auto;
+  /* Use bottom positioning for consistency */
+  bottom: -100vh;
+  /* Position completely below screen */
+  transform: translateX(-50%);
+  /* Only center horizontally */
+  justify-content: flex-end;
+}
+
+/* Rest state - bottom anchored with 32px hidden below screen */
+.record-panel-container.bottom-anchored {
+  top: auto;
+  /* Remove top positioning */
+  bottom: -32px;
+  /* 32px hidden below screen */
+  transform: translateX(-50%);
+  /* Only center horizontally */
+  justify-content: flex-end;
+}
+
+/* Quest Offer State - centered on screen */
+.record-panel-container.quest-offer-centered {
+  top: 50%;
+  /* Explicitly set top positioning for centered states */
+  bottom: auto;
+  /* Clear bottom positioning */
+  transform: translate(-50%, -50%);
+  /* Perfectly centered */
+  justify-content: center;
+}
+
+/* Answer Right State - centered on screen with green glow */
+.record-panel-container.answer-right-centered {
+  top: 50%;
+  /* Explicitly set top positioning for centered states */
+  bottom: auto;
+  /* Clear bottom positioning */
+  left: 50%;
+  transform: translate(-50%, -50%);
+  /* Perfectly centered */
+  justify-content: center;
+}
+
+/* Answer Wrong State - centered on screen with red glow */
+.record-panel-container.answer-wrong-centered {
+  top: 50%;
+  /* Explicitly set top positioning for centered states */
+  bottom: auto;
+  /* Clear bottom positioning */
+  transform: translate(-50%, -50%);
+  /* Perfectly centered */
+  justify-content: center;
+}
+
+/* Success Dance - answer-right styling that animates down after delay */
+/* When both answer-right-centered and hidden are present, hidden positioning wins */
+/* Keep transform the same, only animate top/bottom to avoid transform snap */
+.record-panel-container.answer-right-centered.hidden {
+  top: 150vh !important;
+  /* Move far below screen (100vh + extra for panel height and transform offset) */
+  bottom: auto !important;
+  /* Keep bottom as auto */
+  left: 50%;
+  transform: translate(-50%, -50%) !important;
+  /* Keep same transform for smooth animation */
+  justify-content: flex-end;
+  /* Re-declare transition to ensure it applies */
+  transition: transform 0.6s cubic-bezier(0.25, 1, 0.5, 1),
+    top 0.6s cubic-bezier(0.25, 1, 0.5, 1),
+    bottom 0.6s cubic-bezier(0.25, 1, 0.5, 1);
+}
+
+.record-panel-container>*,
+.chat-composer-container>* {
+  pointer-events: auto;
+  /* Allow touch scrolling to pass through */
+  touch-action: pan-y pan-x;
+}
+
+/* ===================================
+   MAIN FRAME
+   =================================== */
+
+.frame {
+  align-items: flex-start;
+  background-image: url(/VisualAssets/cardboard.png);
+  background-position: center;
+  background-size: 360px 540px;
+  /* 30% of original 1200×1800px (1200×0.3=360, 1800×0.3=540) */
+  background-repeat: repeat;
+  /* Tile the texture instead of stretching */
+  border-color: #49301d;
+  border-left-style: solid;
+  border-left-width: 7px;
+  border-radius: 32px;
+  border-right-style: solid;
+  border-right-width: 7px;
+  border-top-style: solid;
+  border-top-width: 7px;
+  border-bottom-style: solid;
+  border-bottom-width: 7px;
+  display: inline-flex;
+  flex-direction: column;
+  padding: 10px;
+  /* Equal padding on all sides for rounded frame */
+  position: relative;
+  max-width: 90vw;
+  /* Never wider than 90% of viewport width */
+  min-width: 560px;
+  /* Minimum width to fit all buttons: 192+15+59+40+192+40+20+2 = 560px */
+  box-sizing: border-box;
+  /* Include borders in width calculation */
+}
+
+/* Quest Offer State - glowing yellow effect */
+.record-panel-container.quest-offer-centered .frame {
+  animation: breathingGlow 10s ease-in-out 0.2s infinite !important;
+  /* 200ms delay after color transition */
+  position: relative;
+  /* Ensure pseudo-element positioning works */
+  transition: filter 1.5s ease-in-out;
+  /* Smooth transition when glow changes */
+}
+
+/* Inward glow overlay using ::before pseudo-element */
+.record-panel-container.quest-offer-centered .frame::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  /* Cover entire frame */
+  border-radius: 32px;
+  /* Match frame's border-radius */
+  pointer-events: none;
+  /* Don't block clicks */
+  animation: breathingGlowInset 10s ease-in-out 0.2s infinite;
+  /* 200ms delay after color transition */
+  z-index: 1;
+  /* Above background, below content */
+}
+
+/* Breathing glow animation - outward golden aura */
+@keyframes breathingGlow {
+
+  0%,
+  100% {
+    filter:
+      drop-shadow(0 0 25px rgba(255, 190, 60, 0.5)) drop-shadow(0 0 15px rgba(255, 200, 80, 0.6)) drop-shadow(0 0 10px rgba(255, 215, 100, 0.7)) drop-shadow(0 0 5px rgba(255, 230, 120, 0.3)) hue-rotate(-5deg) brightness(1.03) saturate(1.1);
+  }
+
+  50% {
+    filter:
+      drop-shadow(0 0 40px rgba(255, 190, 60, 0.7)) drop-shadow(0 0 25px rgba(255, 200, 80, 0.8)) drop-shadow(0 0 15px rgba(255, 215, 100, 0.9)) drop-shadow(0 0 8px rgba(255, 230, 120, 0.6)) hue-rotate(-3deg) brightness(1.06) saturate(1.15);
+  }
+}
+
+/* Breathing inset glow animation - subtle inward golden depth */
+@keyframes breathingGlowInset {
+
+  0%,
+  100% {
+    box-shadow:
+      inset 0 0 40px rgba(255, 190, 60, 0.25),
+      inset 0 0 25px rgba(255, 200, 80, 0.3),
+      inset 0 0 15px rgba(255, 215, 100, 0.35),
+      inset 0 0 8px rgba(255, 230, 120, 0.25);
+  }
+
+  50% {
+    box-shadow:
+      inset 0 0 60px rgba(255, 190, 60, 0.4),
+      inset 0 0 40px rgba(255, 200, 80, 0.5),
+      inset 0 0 25px rgba(255, 215, 100, 0.6),
+      inset 0 0 12px rgba(255, 230, 120, 0.5);
+  }
+}
+
+/* ===================================
+   ANSWER-RIGHT STATE - GREEN GLOW
+   =================================== */
+
+/* Answer Right State - starts with yellow glow, transitions to green at halfway point */
+.record-panel-container.answer-right-centered .frame {
+  position: relative;
+  transition: filter 1.5s ease-in-out;
+  /* Initial golden glow (matches end of answer-waiting) */
+  filter:
+    drop-shadow(0 0 25px rgba(255, 190, 60, 0.5)) drop-shadow(0 0 15px rgba(255, 200, 80, 0.6)) drop-shadow(0 0 10px rgba(255, 215, 100, 0.7)) drop-shadow(0 0 5px rgba(255, 230, 120, 0.3)) hue-rotate(-5deg) brightness(1.03) saturate(1.1);
+  animation: breathingGlowGold 10s ease-in-out 0.2s infinite !important;
+}
+
+.record-panel-container.answer-right-centered .frame::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: 32px;
+  pointer-events: none;
+  z-index: 1;
+  /* Initial golden inset glow */
+  box-shadow:
+    inset 0 0 40px rgba(255, 190, 60, 0.25),
+    inset 0 0 25px rgba(255, 200, 80, 0.3),
+    inset 0 0 15px rgba(255, 215, 100, 0.35),
+    inset 0 0 8px rgba(255, 230, 120, 0.25);
+  animation: breathingGlowInsetGold 10s ease-in-out 0.2s infinite;
+}
+
+/* When green glow is triggered (at halfway point), switch to green animations */
+.record-panel-container.answer-right-centered.show-green .frame {
+  animation: breathingGlowGreen 10s ease-in-out 0.2s infinite !important;
+}
+
+.record-panel-container.answer-right-centered.show-green .frame::before {
+  animation: breathingGlowInsetGreen 10s ease-in-out 0.2s infinite;
+}
+
+/* Breathing glow animation - outward green success aura */
+@keyframes breathingGlowGreen {
+
+  0%,
+  100% {
+    filter:
+      drop-shadow(0 0 25px rgba(60, 255, 100, 0.35)) drop-shadow(0 0 15px rgba(80, 255, 120, 0.4)) drop-shadow(0 0 10px rgba(100, 255, 140, 0.45)) drop-shadow(0 0 5px rgba(120, 255, 160, 0.2)) hue-rotate(5deg) brightness(1.02) saturate(1.05);
+  }
+
+  50% {
+    filter:
+      drop-shadow(0 0 40px rgba(60, 255, 100, 0.5)) drop-shadow(0 0 25px rgba(80, 255, 120, 0.55)) drop-shadow(0 0 15px rgba(100, 255, 140, 0.6)) drop-shadow(0 0 8px rgba(120, 255, 160, 0.4)) hue-rotate(3deg) brightness(1.04) saturate(1.1);
+  }
+}
+
+/* Breathing inset glow animation - subtle inward green depth */
+@keyframes breathingGlowInsetGreen {
+
+  0%,
+  100% {
+    box-shadow:
+      inset 0 0 40px rgba(60, 255, 100, 0.15),
+      inset 0 0 25px rgba(80, 255, 120, 0.2),
+      inset 0 0 15px rgba(100, 255, 140, 0.22),
+      inset 0 0 8px rgba(120, 255, 160, 0.15);
+  }
+
+  50% {
+    box-shadow:
+      inset 0 0 60px rgba(60, 255, 100, 0.25),
+      inset 0 0 40px rgba(80, 255, 120, 0.3),
+      inset 0 0 25px rgba(100, 255, 140, 0.35),
+      inset 0 0 12px rgba(120, 255, 160, 0.3);
+  }
+}
+
+/* ===================================
+   ANSWER-WRONG STATE - RED GLOW
+   =================================== */
+
+/* Answer Wrong State - starts with yellow glow, transitions to red at halfway point */
+.record-panel-container.answer-wrong-centered .frame {
+  position: relative;
+  transition: filter 1.5s ease-in-out;
+  /* Initial golden glow (matches end of answer-waiting) */
+  filter:
+    drop-shadow(0 0 25px rgba(255, 190, 60, 0.5)) drop-shadow(0 0 15px rgba(255, 200, 80, 0.6)) drop-shadow(0 0 10px rgba(255, 215, 100, 0.7)) drop-shadow(0 0 5px rgba(255, 230, 120, 0.3)) hue-rotate(-5deg) brightness(1.03) saturate(1.1);
+  animation: breathingGlowGold 10s ease-in-out 0.2s infinite !important;
+}
+
+.record-panel-container.answer-wrong-centered .frame::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: 32px;
+  pointer-events: none;
+  z-index: 1;
+  /* Initial golden inset glow */
+  box-shadow:
+    inset 0 0 40px rgba(255, 190, 60, 0.25),
+    inset 0 0 25px rgba(255, 200, 80, 0.3),
+    inset 0 0 15px rgba(255, 215, 100, 0.35),
+    inset 0 0 8px rgba(255, 230, 120, 0.25);
+  animation: breathingGlowInsetGold 10s ease-in-out 0.2s infinite;
+}
+
+/* When red glow is triggered (at halfway point), switch to red animations */
+.record-panel-container.answer-wrong-centered.show-red .frame {
+  animation: breathingGlowRed 10s ease-in-out 0.2s infinite !important;
+}
+
+.record-panel-container.answer-wrong-centered.show-red .frame::before {
+  animation: breathingGlowInsetRed 10s ease-in-out 0.2s infinite;
+}
+
+/* Fail-dance state - red glow but off-screen */
+/* Keep transform the same, only animate top to avoid transform snap */
+.record-panel-container.answer-wrong-centered.show-red.hidden {
+  top: 150vh !important;
+  /* Move far below screen (100vh + extra for panel height and transform offset) */
+  bottom: auto !important;
+  /* Keep bottom as auto */
+  left: 50%;
+  transform: translate(-50%, -50%) !important;
+  /* Keep same transform for smooth animation */
+  justify-content: flex-end;
+  /* Re-declare transition to ensure it applies */
+  transition: transform 0.6s cubic-bezier(0.25, 1, 0.5, 1),
+    top 0.6s cubic-bezier(0.25, 1, 0.5, 1),
+    bottom 0.6s cubic-bezier(0.25, 1, 0.5, 1);
+}
+
+/* Breathing glow animation - golden (for first half of video) */
+@keyframes breathingGlowGold {
+
+  0%,
+  100% {
+    filter:
+      drop-shadow(0 0 25px rgba(255, 190, 60, 0.5)) drop-shadow(0 0 15px rgba(255, 200, 80, 0.6)) drop-shadow(0 0 10px rgba(255, 215, 100, 0.7)) drop-shadow(0 0 5px rgba(255, 230, 120, 0.3)) hue-rotate(-5deg) brightness(1.03) saturate(1.1);
+  }
+
+  50% {
+    filter:
+      drop-shadow(0 0 40px rgba(255, 190, 60, 0.7)) drop-shadow(0 0 25px rgba(255, 200, 80, 0.8)) drop-shadow(0 0 15px rgba(255, 215, 100, 0.9)) drop-shadow(0 0 8px rgba(255, 230, 120, 0.6)) hue-rotate(-3deg) brightness(1.06) saturate(1.15);
+  }
+}
+
+/* Breathing inset glow animation - golden (for first half of video) */
+@keyframes breathingGlowInsetGold {
+
+  0%,
+  100% {
+    box-shadow:
+      inset 0 0 40px rgba(255, 190, 60, 0.25),
+      inset 0 0 25px rgba(255, 200, 80, 0.3),
+      inset 0 0 15px rgba(255, 215, 100, 0.35),
+      inset 0 0 8px rgba(255, 230, 120, 0.25);
+  }
+
+  50% {
+    box-shadow:
+      inset 0 0 60px rgba(255, 190, 60, 0.4),
+      inset 0 0 40px rgba(255, 200, 80, 0.5),
+      inset 0 0 25px rgba(255, 215, 100, 0.6),
+      inset 0 0 12px rgba(255, 230, 120, 0.5);
+  }
+}
+
+/* Breathing glow animation - outward red error aura */
+@keyframes breathingGlowRed {
+
+  0%,
+  100% {
+    filter:
+      drop-shadow(0 0 25px rgba(255, 60, 60, 0.35)) drop-shadow(0 0 15px rgba(255, 80, 80, 0.4)) drop-shadow(0 0 10px rgba(255, 100, 100, 0.45)) drop-shadow(0 0 5px rgba(255, 120, 120, 0.2)) hue-rotate(-5deg) brightness(1.02) saturate(1.05);
+  }
+
+  50% {
+    filter:
+      drop-shadow(0 0 40px rgba(255, 60, 60, 0.5)) drop-shadow(0 0 25px rgba(255, 80, 80, 0.55)) drop-shadow(0 0 15px rgba(255, 100, 100, 0.6)) drop-shadow(0 0 8px rgba(255, 120, 120, 0.4)) hue-rotate(-3deg) brightness(1.04) saturate(1.1);
+  }
+}
+
+/* Breathing inset glow animation - subtle inward red depth */
+@keyframes breathingGlowInsetRed {
+
+  0%,
+  100% {
+    box-shadow:
+      inset 0 0 40px rgba(255, 60, 60, 0.15),
+      inset 0 0 25px rgba(255, 80, 80, 0.2),
+      inset 0 0 15px rgba(255, 100, 100, 0.22),
+      inset 0 0 8px rgba(255, 120, 120, 0.15);
+  }
+
+  50% {
+    box-shadow:
+      inset 0 0 60px rgba(255, 60, 60, 0.25),
+      inset 0 0 40px rgba(255, 80, 80, 0.3),
+      inset 0 0 25px rgba(255, 100, 100, 0.35),
+      inset 0 0 12px rgba(255, 120, 120, 0.3);
+  }
+}
+
+/* ===================================
+   BUTTON ICON & TEXT LAYOUT
+   =================================== */
+
+/* Microphone icon on left side of buttons */
+.button-icon {
+  height: 30px;
+  width: 30px;
+  object-fit: contain;
+  filter: brightness(0) invert(1);
+  /* Make microphone white */
+  margin-right: 8px;
+  z-index: 2;
+}
+
+/* Button text */
+.button-text {
+  color: #ffffff;
+  font-family: "Inter", Helvetica, sans-serif;
+  font-size: 32px;
+  font-weight: 700;
+  letter-spacing: 0;
+  line-height: normal;
+  text-align: center;
+  white-space: nowrap;
+  z-index: 2;
+}
+
+/* Stop square indicator (shows when recording) */
+.stop-square {
+  width: 25px;
+  height: 25px;
+  background-color: #ffffff;
+  /* Pure white */
+  border-radius: 4px;
+  margin-right: 8px;
+  z-index: 2;
+  /* Add subtle shadow for crisp definition against red background */
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.4);
+}
+
+/* ===================================
+   QUEST SECTION (WHITE FRAME)
+   =================================== */
+
+.frame .whiteframe {
+  align-items: center;
+  background: linear-gradient(0deg,
+      rgba(73, 48, 29, 0.2) 0%,
+      rgba(73, 48, 29, 0.2) 100%),
+    linear-gradient(0deg,
+      rgba(255, 255, 255, 1) 0%,
+      rgba(255, 255, 255, 1) 100%);
+  border-color: #49301d;
+  border-left-style: solid;
+  border-left-width: 1px;
+  border-radius: 16px 16px 0px 0px;
+  /* Rounded top corners only - bottom meets button rail */
+  border-right-style: solid;
+  border-right-width: 1px;
+  border-top-style: solid;
+  border-top-width: 1px;
+  border-bottom-style: solid;
+  border-bottom-width: 1px;
+  box-shadow: inset 0px -1px 8px -3px #000000;
+  /* Bottom-only shadow: negative spread clips sides, vertical offset down */
+  display: flex;
+  flex: 0 0 auto;
+  flex-direction: column;
+  gap: 34px;
+  justify-content: center;
+  padding: 0px 20px;
+  position: relative;
+  width: 100%;
+  /* Expand to fill frame width instead of fixed 620px */
+  min-width: 540px;
+  /* Match button rail minimum width (560px - 20px padding) */
+  box-sizing: border-box;
+  /* Include padding and borders in width calculation */
+}
+
+.frame .quest {
+  align-items: flex-start;
+  /* Align to start instead of center */
+  display: flex;
+  /* Changed from inline-flex */
+  flex: 0 0 auto;
+  gap: 0;
+  /* Remove internal gap */
+  justify-content: flex-start;
+  /* Align to start instead of center */
+  padding: 21px 20px;
+  /* Symmetric padding: 21px top/bottom, 20px left/right */
+  position: relative;
+  width: 100%;
+  /* Full width of parent */
+}
+
+/* ===================================
+   QUEST HEADING SYSTEM
+   =================================== */
+
+/* Base quest text container */
+.frame .quest-find-out-what {
+  color: transparent;
+  /* Transparent base, colors set on spans */
+  font-family: "Inter", Helvetica, sans-serif;
+  font-size: 24px;
+  /* Base size for normal state */
+  font-weight: 400;
+  letter-spacing: 0;
+  line-height: normal;
+  margin: 0;
+  padding: 0;
+  position: relative;
+  width: 100%;
+  max-width: 100%;
+  word-wrap: break-word;
+}
+
+/* Quest Label - "Quest:" heading */
+.frame .quest-label {
+  color: #b2652a;
+  /* Orange */
+  font-family: "Inter", Helvetica, sans-serif;
+  font-size: 24px;
+  /* Inherits from parent, can be overridden */
+  font-weight: 700;
+  /* Bold */
+  letter-spacing: 0;
+}
+
+/* Quest Description - the actual quest text */
+.frame .quest-description {
+  color: #5c5c5c;
+  /* Gray */
+  font-family: "Inter", Helvetica, sans-serif;
+  font-size: 24px;
+  /* Inherits from parent, can be overridden */
+  font-weight: 400;
+  /* Regular */
+  letter-spacing: 0;
+}
+
+/* Legacy class support (span) - maps to quest-label */
+.frame .span {
+  color: #b2652a;
+  font-weight: 700;
+}
+
+/* Legacy class support (text-wrapper-2) - maps to quest-description */
+.frame .text-wrapper-2 {
+  color: #5c5c5c;
+  font-family: "Inter", Helvetica, sans-serif;
+  font-weight: 400;
+}
+
+/* ===================================
+   QUEST OFFER STATE MODIFIERS
+   =================================== */
+
+/* Quest Offer: Larger, centered layout */
+.frame .quest-find-out-what.quest-offer {
+  font-size: 36px;
+  /* Larger base size */
+  text-align: center;
+}
+
+/* Quest Label in offer state - larger */
+.frame .quest-find-out-what.quest-offer .quest-label {
+  font-size: 36px;
+}
+
+/* Quest Description in offer state - larger */
+.frame .quest-find-out-what.quest-offer .quest-description {
+  font-size: 32px;
+}
+
+/* Legacy support for quest-offer */
+.frame .quest-find-out-what.quest-offer .text-wrapper-2 {
+  font-size: 24px;
+}
+
+.frame .quest-find-out-what.quest-offer .text-wrapper-3 {
+  color: #5c5c5c;
+  font-family: "Inter", Helvetica, sans-serif;
+  font-size: 32px;
+  font-weight: 400;
+}
+
+/* ===================================
+   ANSWER DISPLAY FRAME (MIDDLE WHITE BOX)
+   =================================== */
+
+.frame .whiteframe.answer-frame {
+  align-items: center;
+  background: #ffffff !important;
+  /* Plain white background - override grey tint from .whiteframe */
+  border-color: #49301d;
+  border-left-style: solid;
+  border-left-width: 1px;
+  border-radius: 0px;
+  /* No rounded corners - middle box */
+  border-right-style: solid;
+  border-right-width: 1px;
+  border-top-style: solid;
+  border-top-width: 1px;
+  border-bottom-style: solid;
+  border-bottom-width: 1px;
+  box-shadow: inset 0px -1px 8px -3px #000000;
+  /* Bottom-only shadow */
+  display: flex;
+  flex: 0 0 auto;
+  flex-direction: column;
+  gap: 34px;
+  justify-content: center;
+  padding: 0px 20px;
+  position: relative;
+  width: 100%;
+  min-width: 540px;
+  box-sizing: border-box;
+}
+
+/* Answer frame's quest container - stack label and input box vertically */
+.frame .whiteframe.answer-frame .quest {
+  flex-direction: column;
+  /* Stack children vertically instead of horizontally */
+  align-items: flex-start;
+  /* Align items to the left */
+}
+
+/* Answer frame in feedback states - rounded bottom corners when button rail is hidden */
+.frame .whiteframe.answer-frame.answer-feedback-state {
+  border-radius: 0px 0px 16px 16px;
+  /* Rounded bottom corners to match where button rail would be */
+}
+
+/* ===================================
+   BUTTON RAIL (FRAME WRAPPER)
+   =================================== */
+
+.frame .frame-wrapper {
+  align-items: center;
+  background-color: #ffffff;
+  border-bottom-style: solid;
+  border-bottom-width: 1px;
+  border-color: #49301d;
+  border-left-style: solid;
+  border-left-width: 1px;
+  border-right-style: solid;
+  border-right-width: 1px;
+  border-radius: 0px 0px 16px 16px;
+  /* Rounded bottom corners only */
+  display: flex;
+  flex: 0 0 auto;
+  flex-direction: column;
+  gap: 34px;
+  padding: 18px 20px 32px 20px;
+  /* Button padding: 18px top, 32px bottom */
+  position: relative;
+  width: 100%;
+  /* Expand to fill frame width instead of fixed 620px */
+  min-width: 540px;
+  /* Minimum to fit buttons: 192+15+59+40+192+40 = 538px, rounded to 540px */
+  box-sizing: border-box;
+  /* Include padding and borders in width calculation */
+}
+
+.frame .div {
+  align-items: center;
+  align-self: stretch;
+  display: flex;
+  height: 55px;
+  /* Reduced from 75px to match button height */
+  justify-content: space-between;
+  position: relative;
+  width: 100%;
+  gap: 60px;
+  /* Minimum 60px spacing between Ask/Hint group and Answer button */
+}
+
+.frame .div-2 {
+  align-items: center;
+  display: inline-flex;
+  flex: 0 0 auto;
+  gap: 15px;
+  justify-content: center;
+  position: relative;
+}
+
+/* Quest Offer: Button wrapper for centered Accept button */
+.frame .button-wrapper {
+  align-items: center;
+  align-self: stretch;
+  display: flex;
+  gap: 44px;
+  height: 75px;
+  justify-content: space-around;
+  position: relative;
+  width: 100%;
+}
+
+/* Answer Input Box - styled to look like a text input field */
+.frame .answer-input-box {
+  /* Background with subtle gradient for depth */
+  background: linear-gradient(180deg,
+      #fafafa 0%,
+      #ffffff 100%);
+
+  /* Multi-layer border for realistic input appearance */
+  border: 1px solid #d4d4d4;
+  /* Light grey outer border */
+  box-shadow:
+    inset 0px 1px 3px rgba(0, 0, 0, 0.12),
+    /* Inner shadow for recessed look */
+    0px 1px 0px rgba(255, 255, 255, 0.8),
+    /* Bottom highlight for 3D effect */
+    0px 0px 0px 1px rgba(73, 48, 29, 0.1);
+  /* Subtle brown tint border */
+
+  border-radius: 6px;
+  padding: 12px 16px;
+  min-height: 48px;
+  display: flex;
+  align-items: center;
+  margin-top: 8px;
+  /* Space between "Answer:" label and input box */
+
+  /* Text styling */
+  font-family: "Inter", Helvetica, sans-serif;
+  font-size: 18px;
+  font-weight: 400;
+  color: #3d3d3d;
+  /* Darker text for better readability */
+  line-height: 1.5;
+  word-wrap: break-word;
+  box-sizing: border-box;
+  width: 100%;
+  /* Span full width of parent container */
+
+  /* Smooth transitions for any state changes */
+  transition: all 0.2s ease-in-out;
+
+  /* Cursor style to indicate it's a text field (even if read-only) */
+  cursor: text;
+}
+
+/* Placeholder text styling - grey color to indicate it's not real content yet */
+.frame .answer-input-box .answer-placeholder {
+  color: #9ca3af;
+  /* Medium grey - clearly different from real text */
+  font-style: italic;
+  /* Italic to further distinguish from real content */
+  font-weight: 400;
+}
+
+/* Optional hover state for input box (subtle interaction feedback) */
+.frame .answer-input-box:hover {
+  border-color: #b8b8b8;
+  /* Slightly darker border on hover */
+  box-shadow:
+    inset 0px 1px 3px rgba(0, 0, 0, 0.15),
+    /* Slightly stronger inner shadow */
+    0px 1px 0px rgba(255, 255, 255, 0.9),
+    /* Brighter bottom highlight */
+    0px 0px 0px 1px rgba(73, 48, 29, 0.15);
+  /* Slightly stronger brown tint */
+}
+
+/* Answer feedback states (waiting, right, wrong): Add subtle pulsing glow to indicate processing/result */
+.frame .quest.answer-waiting .answer-input-box,
+.frame .quest.answer-right .answer-input-box,
+.frame .quest.answer-wrong .answer-input-box {
+  animation: inputPulse 2s ease-in-out infinite;
+  border-color: #b2652a;
+  /* Orange border to match quest theme */
+}
+
+@keyframes inputPulse {
+
+  0%,
+  100% {
+    box-shadow:
+      inset 0px 1px 3px rgba(0, 0, 0, 0.12),
+      0px 1px 0px rgba(255, 255, 255, 0.8),
+      0px 0px 0px 1px rgba(178, 101, 42, 0.3),
+      0px 0px 8px rgba(178, 101, 42, 0.2);
+    /* Subtle orange glow */
+  }
+
+  50% {
+    box-shadow:
+      inset 0px 1px 3px rgba(0, 0, 0, 0.12),
+      0px 1px 0px rgba(255, 255, 255, 0.8),
+      0px 0px 0px 1px rgba(178, 101, 42, 0.5),
+      0px 0px 12px rgba(178, 101, 42, 0.4);
+    /* Stronger orange glow */
+  }
+}
+
+/* Legacy breathing animation for quest container (kept for backward compatibility) */
+.frame .quest.answer-waiting {
+  animation: subtleBreathing 2s ease-in-out infinite;
+}
+
+@keyframes subtleBreathing {
+
+  0%,
+  100% {
+    opacity: 1;
+  }
+
+  50% {
+    opacity: 0.85;
+  }
+}
+
+/* ===================================
+   SHARED BUTTON STYLES (ASK, HINT, ANSWER)
+   =================================== */
+
+/* Base button idle state - cardboard texture only */
+.frame .button,
+.frame .hint-btn,
+.next-btn {
+  all: unset;
+  align-items: center;
+  background-image: url(/VisualAssets/cardboard.png);
+  background-position: center;
+  background-size: 360px 540px;
+  /* 30% of original 1200×1800px (1200×0.3=360, 1800×0.3=540) */
+  background-repeat: repeat;
+  /* Tile the texture instead of stretching */
+  border: 3px solid;
+  border-color: #49301d;
+  border-radius: 16px;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: row;
+  /* Horizontal layout for icon + text */
+  gap: 0;
+  /* No gap, margins handled on elements */
+  height: 55px;
+  /* Reduced from 75px by 20px */
+  justify-content: center;
+  padding: 8px 20px;
+  /* Reduced padding to fit icon + text */
+  position: relative;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+/* Ask button specific width */
+.frame .button {
+  width: 192px;
+}
+
+/* Ask button green overlay - all non-recording states */
+.frame .button::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: rgba(87, 127, 87, 0.5);
+  border-radius: 12px;
+  pointer-events: none;
+  z-index: 1;
+}
+
+/* Accept button purple overlay - same as Answer button */
+.frame .button.accept-btn::before {
+  background: rgba(54, 7, 88, 0.5);
+}
+
+/* Hint button specific width - tight */
+.frame .hint-btn {
+  width: 59px;
+  padding: 8px 0;
+  /* Remove horizontal padding so icon fits */
+}
+
+/* Answer button specific width */
+.next-btn {
+  width: 192px;
+}
+
+/* Answer button purple overlay - all non-recording states */
+.next-btn::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: rgba(54, 7, 88, 0.5);
+  border-radius: 12px;
+  pointer-events: none;
+  z-index: 1;
+}
+
+/* Hover state - Ask button darkens the green */
+.frame .button:hover::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(0deg,
+      rgba(0, 0, 0, 0.15) 0%,
+      rgba(0, 0, 0, 0.15) 100%);
+  /* Darken effect on hover */
+  border-radius: 16px;
+  pointer-events: none;
+  z-index: 2;
+  /* Above green overlay */
+}
+
+/* Hover state - Answer button darkens the purple */
+.next-btn:hover::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(0deg,
+      rgba(0, 0, 0, 0.15) 0%,
+      rgba(0, 0, 0, 0.15) 100%);
+  /* Darken effect on hover */
+  border-radius: 16px;
+  pointer-events: none;
+  z-index: 2;
+  /* Above purple overlay */
+}
+
+/* Hover state - Hint button keeps red tint */
+.frame .hint-btn:hover::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(0deg,
+      rgba(216, 25, 25, 0.17) 0%,
+      rgba(216, 25, 25, 0.17) 100%);
+  /* Red overlay for hint button */
+  border-radius: 16px;
+  pointer-events: none;
+  z-index: 1;
+}
+
+/* Active/Pressed state - inset shadow for all buttons */
+.frame .button:active,
+.frame .hint-btn:active,
+.next-btn:active {
+  box-shadow: inset 8px 8px 4px rgba(0, 0, 0, 0.25);
+}
+
+/* Active state - Ask button darkens more */
+.frame .button:active::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(0deg,
+      rgba(0, 0, 0, 0.25) 0%,
+      rgba(0, 0, 0, 0.25) 100%) !important;
+  /* Darker overlay on press */
+  border-radius: 16px;
+  pointer-events: none;
+  z-index: 2;
+}
+
+/* Active state - Answer button darkens more */
+.next-btn:active::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(0deg,
+      rgba(0, 0, 0, 0.25) 0%,
+      rgba(0, 0, 0, 0.25) 100%) !important;
+  /* Darker overlay on press */
+  border-radius: 16px;
+  pointer-events: none;
+  z-index: 2;
+}
+
+/* Active state - Hint button keeps red tint */
+.frame .hint-btn:active::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(0deg,
+      rgba(216, 25, 25, 0.17) 0%,
+      rgba(216, 25, 25, 0.17) 100%) !important;
+  /* Red overlay on press */
+  border-radius: 16px;
+  pointer-events: none;
+  z-index: 1;
+}
+
+/* Hint button toggled on - darker background matching hint toast */
+.frame .hint-btn.active {
+  background-color: #2a1f1a;
+  /* Dark brown matching hint toast */
+  background-image: url(/VisualAssets/cardboard.png);
+  background-blend-mode: overlay;
+  box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.3);
+  /* Subtle inset shadow for pressed look */
+}
+
+/* ===================================
+   BUTTON STATE CLASSES
+   =================================== */
+
+/* Recording Active state - Ask button (red) */
+.frame .button.recording-active {
+  /* Solid red base color - completely replaces cardboard */
+  background-color: #d81919 !important;
+  /* Layered texture from top to bottom: visible noise texture over dark semi-transparent overlay */
+  background-image:
+    url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.4' numOctaves='3' /%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.6' /%3E%3C/svg%3E"),
+    linear-gradient(0deg, rgba(0, 0, 0, 0.3) 0%, rgba(0, 0, 0, 0.2) 100%) !important;
+  background-blend-mode: overlay, normal !important;
+  background-size: 150px 150px, cover !important;
+  /* Noise tiles at fixed size, gradient covers */
+  background-position: center, center !important;
+  background-repeat: repeat, no-repeat !important;
+  /* Noise repeats for texture, gradient doesn't */
+  /* Brown border matching other buttons */
+  border-color: #49301d !important;
+  border-width: 3px !important;
+  /* Inset shadow like old circle */
+  box-shadow: inset 0px 0px 15px 0px #ff7c7c !important;
+  /* Pulse animation */
+  animation: recordingPulseRed 1.2s ease-in-out infinite;
+}
+
+/* Recording Active state - Answer button (dark purple) */
+.next-btn.recording-active {
+  /* Solid dark purple base color - completely replaces cardboard */
+  background-color: #6b3a8f !important;
+  /* Layered texture from top to bottom: visible noise texture over dark semi-transparent overlay */
+  background-image:
+    url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.4' numOctaves='3' /%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.6' /%3E%3C/svg%3E"),
+    linear-gradient(0deg, rgba(0, 0, 0, 0.3) 0%, rgba(0, 0, 0, 0.2) 100%) !important;
+  background-blend-mode: overlay, normal !important;
+  background-size: 150px 150px, cover !important;
+  /* Noise tiles at fixed size, gradient covers */
+  background-position: center, center !important;
+  background-repeat: repeat, no-repeat !important;
+  /* Noise repeats for texture, gradient doesn't */
+  /* Dark border matching other buttons */
+  border-color: #49301d !important;
+  border-width: 3px !important;
+  /* Inset shadow with purple glow */
+  box-shadow: inset 0px 0px 15px 0px rgba(180, 120, 255, 0.5) !important;
+  /* Pulse animation - purple variant */
+  animation: recordingPulsePurple 1.2s ease-in-out infinite;
+}
+
+/* Hide microphone icon when recording */
+.frame .button.recording-active .button-icon,
+.next-btn.recording-active .button-icon {
+  display: none;
+}
+
+/* Hide green overlay when Ask button is recording (recording state has its own red background) */
+.frame .button.recording-active::before {
+  display: none;
+}
+
+/* Hide purple overlay when Answer button is recording (recording state has its own purple background) */
+.next-btn.recording-active::before {
+  display: none;
+}
+
+/* Disable hover/active overlays when recording - they create unwanted color shifts */
+.frame .button.recording-active:hover::after,
+.frame .button.recording-active:active::after,
+.next-btn.recording-active:hover::after,
+.next-btn.recording-active:active::after {
+  display: none !important;
+}
+
+/* Recording pulse animation - Red (Ask button) */
+@keyframes recordingPulseRed {
+
+  0%,
+  100% {
+    background-color: #d81919;
+    box-shadow: inset 0px 0px 15px 0px rgba(255, 124, 124, 0.8);
+    filter: brightness(1);
+  }
+
+  50% {
+    background-color: #ff4444;
+    /* Bright vibrant red */
+    box-shadow: inset 0px 0px 20px 0px rgba(255, 124, 124, 1);
+    /* Stronger glow for intense pulse */
+    filter: brightness(1.3);
+    /* Extra brightness boost */
+  }
+}
+
+/* Recording pulse animation - Purple (Answer button) */
+@keyframes recordingPulsePurple {
+
+  0%,
+  100% {
+    background-color: #6b3a8f;
+    box-shadow: inset 0px 0px 15px 0px rgba(180, 120, 255, 0.5);
+    filter: brightness(1);
+  }
+
+  50% {
+    background-color: #caa3e5;
+    /* Brighter vibrant purple */
+    box-shadow: inset 0px 0px 20px 0px rgba(180, 120, 255, 0.8);
+    /* Stronger glow for intense pulse */
+    filter: brightness(1.5);
+    /* Extra brightness boost */
+  }
+}
+
+/* Disabled state - all buttons are dimmed and non-interactive */
+.frame .button.disabled,
+.frame .hint-btn.disabled,
+.next-btn.disabled {
+  opacity: 0.4;
+  cursor: not-allowed !important;
+  pointer-events: none;
+}
+
+/* Disabled buttons don't get hover effects */
+.frame .button.disabled:hover::after,
+.frame .hint-btn.disabled:hover::after,
+.next-btn.disabled:hover::after {
+  display: none;
+}
+
+/* Disabled buttons don't get active effects */
+.frame .button.disabled:active,
+.frame .hint-btn.disabled:active,
+.next-btn.disabled:active {
+  box-shadow: none;
+}
+
+.frame .button.disabled:active::after,
+.frame .hint-btn.disabled:active::after,
+.next-btn.disabled:active::after {
+  display: none;
+}
+
+.frame .answer {
+  align-self: stretch;
+  color: #ffffff;
+  flex: 1;
+  font-family: "Inter", Helvetica, sans-serif;
+  font-size: 32px;
+  font-weight: 700;
+  letter-spacing: 0;
+  line-height: normal;
+  margin-top: -3px;
+  position: relative;
+  text-align: center;
+  z-index: 2;
+}
+
+/* ===================================
+   HINT BUTTON - ICON STYLING
+   =================================== */
+
+/* Hint button uses shared styles above, this is just for the icon */
+.frame .img {
+  height: 30px;
+  width: 30px;
+  object-fit: contain;
+  position: relative;
+  filter: brightness(0) invert(1);
+  /* Makes the icon white */
+  z-index: 2;
+  /* Above any overlays */
+  /* Compensate for lightbulb SVG's bottom-heavy viewBox (content extends to y=97.5 in 0-100 viewBox) */
+  /* Shift up by 2px to visually align with Ask button text baseline */
+  transform: translateY(-2px);
+}
+
+/* ===================================
+   ANSWER BUTTON (NextButton wrapper)
+   =================================== */
+
+/* Answer button uses shared styles defined above with .next-btn */
+
+.frame .text-wrapper-3 {
+  color: #ffffff;
+  font-family: "Inter", Helvetica, sans-serif;
+  font-size: 32px;
+  font-weight: 700;
+  letter-spacing: 0;
+  line-height: normal;
+  margin-left: -2.5px;
+  margin-right: -2.5px;
+  margin-top: -3px;
+  position: relative;
+  text-align: center;
+  width: fit-content;
+}
+
+/* ===================================
+   NEXTBUTTON INTEGRATION
+   =================================== */
+
+/* NextButton uses shared button styles defined above */
+
+/* Locked state - disable interactions but keep cardboard visible */
+.next-btn.locked {
+  cursor: not-allowed;
+  opacity: 0.5;
+  /* Dim when locked */
+}
+
+/* Locked state doesn't get hover/active effects */
+.next-btn.locked:hover::after {
+  display: none;
+  /* No hover overlay when locked */
+}
+
+.next-btn.locked:active {
+  box-shadow: none;
+}
+
+.next-btn.locked:active::after {
+  display: none;
+  /* No red overlay when locked */
+}
+
+.next-label-text {
+  color: #ffffff;
+  font-family: "Inter", Helvetica, sans-serif;
+  font-size: 32px;
+  font-weight: 700;
+  letter-spacing: 0;
+  line-height: normal;
+  margin-left: -2.5px;
+  margin-right: -2.5px;
+  margin-top: -3px;
+  position: relative;
+  text-align: center;
+  width: fit-content;
+  z-index: 2;
+  /* Above purple overlay (z-index: 1) */
+}
+
+.next-label-background {
+  font-family: "Inter", Helvetica, sans-serif;
+  font-size: 32px;
+  font-weight: 700;
+  color: rgba(255, 255, 255, 0.3);
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  position: absolute;
+  z-index: 2;
+  /* Above purple overlay */
+}
+
+.lock-image-overlay {
+  width: 34px;
+  height: 34px;
+  object-fit: contain;
+  position: absolute;
+  z-index: 3;
+  /* Above overlay and text */
+}
+
+.next-btn .arrow {
+  font-size: 20px;
+  font-weight: bold;
+  color: white;
+  position: relative;
+  z-index: 2;
+  /* Above purple overlay */
+}
+
+/* ===================================
+   TOAST NOTIFICATIONS
+   =================================== */
+
+.toast {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background: rgba(0, 0, 0, 0.9);
+  color: white;
+  padding: 12px 24px;
+  border-radius: 8px;
+  font-family: "Inter", Helvetica, sans-serif;
+  font-size: 16px;
+  z-index: 2000;
+  animation: toastFadeIn 0.3s ease-out;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+}
+
+@keyframes toastFadeIn {
+  from {
+    opacity: 0;
+    transform: translate(-50%, -50%) scale(0.9);
+  }
+
+  to {
+    opacity: 1;
+    transform: translate(-50%, -50%) scale(1);
+  }
+}
+
+/* ===================================
+   ANSWER SEAL STAMP (CORRECT STATE)
+   =================================== */
+
+/* Answer Stamp Container - unified container for hand and seal to scale together */
+.answer-stamp-container {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  height: 100%;
+  /* Master size control - adjust this single value to scale everything */
+  width: 100%;
+  /* Full width of viewport */
+  pointer-events: none;
+  z-index: 1102;
+}
+
+/* Answer Seal Stamp - positioned within container, scales with container */
+.answer-seal-stamp {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  height: 100%;
+  width: auto;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  /* No transition - seal appears immediately, not animated */
+  pointer-events: none;
+}
+
+.answer-seal-stamp.stamp-visible {
+  opacity: 1;
+}
+
+/* Force hide seal for answer-waiting state */
+.answer-seal-stamp.seal-hidden {
+  opacity: 0 !important;
+}
+
+.answer-seal-image {
+  height: 100%;
+  width: auto;
+  object-fit: contain;
+  filter: drop-shadow(2px 4px 8px rgba(0, 0, 0, 0.3));
+}
+
+/* Hand stamp video - positioned within container, scales with container */
+.answer-hand-stamp-video {
+  position: absolute;
+  top: -282%;
+  /* Offset upward so hand enters from above */
+  left: -17%;
+  /* Offset slightly left for natural hand angle */
+  width: 350%;
+  /* Slightly larger than container for hand to come from off-screen */
+  max-width: none;
+  /* Override Tailwind base layer max-width: 100% */
+  height: auto;
+  object-fit: contain;
+  opacity: 1;
+  pointer-events: none;
+  z-index: 10;
+  /* Ensure video is above the seal */
+}
+
+/* ===================================
+   ACCESSIBILITY
+   =================================== */
+
+.visually-hidden {
+  position: absolute;
+  left: -9999px;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+}
+
+/* ===================================
+   SMOOTH STATE TRANSITIONS
+   =================================== */
+
+/* Frame transitions for padding, size, and filter changes */
+.frame {
+  transition: padding 0.5s cubic-bezier(0.25, 1, 0.5, 1),
+    filter 1.5s ease-in-out,
+    transform 0.5s cubic-bezier(0.25, 1, 0.5, 1);
+}
+
+/* Quest box transitions */
+.frame .whiteframe {
+  transition: padding 0.4s ease-in-out,
+    gap 0.4s ease-in-out,
+    transform 0.4s cubic-bezier(0.25, 1, 0.5, 1);
+}
+
+/* Quest text transitions */
+.frame .quest {
+  transition: padding 0.4s ease-in-out,
+    transform 0.4s cubic-bezier(0.25, 1, 0.5, 1);
+}
+
+.frame .quest-find-out-what {
+  transition: font-size 0.4s ease-in-out,
+    text-align 0.4s ease-in-out,
+    transform 0.4s cubic-bezier(0.25, 1, 0.5, 1);
+}
+
+/* Button rail transitions */
+.frame .frame-wrapper {
+  transition: padding 0.4s ease-in-out,
+    gap 0.4s ease-in-out,
+    opacity 0.3s ease-out,
+    transform 0.4s cubic-bezier(0.25, 1, 0.5, 1);
+}
+
+/* Button transitions (Ask, Hint, Answer) */
+.frame .button,
+.frame .hint-btn,
+.next-btn {
+  transition: opacity 0.3s ease-out,
+    transform 0.3s cubic-bezier(0.25, 1, 0.5, 1),
+    background 0.3s ease-in-out,
+    box-shadow 0.15s ease;
+}
+
+/* Answer text transitions */
+.frame .answer-text-display {
+  transition: opacity 0.4s ease-in-out,
+    padding 0.4s ease-in-out,
+    transform 0.4s cubic-bezier(0.25, 1, 0.5, 1);
+}
+
+
+/* Glow pseudo-element transitions */
+.record-panel-container .frame::before {
+  transition: box-shadow 1.5s ease-in-out,
+    opacity 1.2s ease-in-out;
+}
+
+/* ===================================
+   ANIMATIONS
+   =================================== */
+
+.chat-composer-container.exit-bottom {
+  animation: chatExitBottom 0.6s cubic-bezier(0.4, 0, 0.6, 1) forwards;
+}
+
+@keyframes chatExitBottom {
+  from {
+    bottom: 40px;
+    opacity: 1;
+  }
+
+  to {
+    bottom: -200px;
+    opacity: 0;
+  }
+}
+
+/* ===================================
+   HINT TOAST
+   =================================== */
+
+/* Hint toast - dark background with paper texture, slides up from under panel */
+.hint-toast {
+  position: absolute;
+  top: 0;
+  /* Align with top of frame */
+  left: 50%;
+  transform: translateX(-50%) translateY(0);
+  /* Hidden: at same position as frame top */
+  width: 88%;
+  /* Slightly wider for breathing room */
+  max-width: 540px;
+  min-width: 320px;
+
+  /* Dark background with paper texture */
+  background-color: #2a1f1a;
+  background-image: url(/VisualAssets/cardboard.png);
+  background-position: center;
+  background-size: 360px 540px;
+  background-repeat: repeat;
+  background-blend-mode: overlay;
+
+  /* Border darker than background */
+  border: 3px solid #1a1210;
+  border-radius: 16px;
+
+  /* Layout - align items center for vertical centering */
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 18px 30px;
+  /* More padding for storybook comfy feel */
+
+  /* Shadow for depth */
+  box-shadow:
+    0 4px 12px rgba(0, 0, 0, 0.4),
+    inset 0 1px 0 rgba(255, 255, 255, 0.05);
+
+  /* Hidden by default - under the panel via DOM order (rendered before .frame) */
+  pointer-events: none;
+  transition: transform 0.3s cubic-bezier(0.25, 1, 0.5, 1);
+  /* No z-index needed - DOM order puts it behind .frame */
+}
+
+/* Visible state - slides up above the panel */
+.hint-toast.visible {
+  transform: translateX(-50%) translateY(calc(-100% - 12px));
+  /* Slide up above panel with gap */
+  pointer-events: auto;
+}
+
+/* Lightbulb icon - white */
+.hint-toast-icon {
+  width: 28px;
+  height: 28px;
+  object-fit: contain;
+  filter: brightness(0) invert(1);
+  /* White */
+  flex-shrink: 0;
+}
+
+/* Hint text - pure white, vertically centered with icon */
+.hint-toast-text {
+  color: #ffffff;
+  font-family: "Inter", Helvetica, sans-serif;
+  font-size: 18px;
+  font-weight: 500;
+  line-height: 28px;
+  /* Match icon height for vertical alignment */
+  letter-spacing: 0.01em;
+}
+
+/* ===================================
+   BUTTON TOAST - Anchored instructional toasts
+   =================================== */
+
+/* Wrappers for button + toast positioning */
+.ask-button-wrapper,
+.hint-button-wrapper,
+.answer-button-wrapper,
+.clue-selection-wrapper {
+  position: relative;
+}
+
+/* Toast bubble anchored above button - uses global toast variables */
+.button-toast {
+  position: absolute;
+  bottom: 100%;
+  left: 50%;
+  transform: translateX(-50%);
+  margin-bottom: 16px;
+
+  /* Fixed width slightly wider than button (192px) */
+  width: 210px;
+
+  /* Use global toast styling */
+  background-color: var(--toast-bg-color);
+  backdrop-filter: blur(var(--toast-bg-blur));
+  -webkit-backdrop-filter: blur(var(--toast-bg-blur));
+  border-radius: var(--toast-border-radius);
+  box-shadow: var(--toast-shadow);
+
+  /* Text styling from global */
+  color: var(--toast-text-color);
+  font-family: var(--toast-font-family);
+  font-size: var(--toast-font-size);
+  font-weight: var(--toast-font-weight);
+  line-height: var(--toast-line-height);
+  letter-spacing: var(--toast-letter-spacing);
+  text-align: center;
+
+  /* Padding from global */
+  padding: var(--toast-padding);
+
+  /* No animation - appears instantly */
+  animation: none;
+  transition: none !important;
+  cursor: pointer;
+  z-index: 100;
+}
+
+/* Arrow - uses global toast arrow variables */
+.button-toast__arrow {
+  position: absolute;
+  bottom: calc(-1 * var(--toast-arrow-size));
+  left: calc(50% - var(--toast-arrow-size));
+  width: 0;
+  height: 0;
+  border-left: var(--toast-arrow-size) solid transparent;
+  border-right: var(--toast-arrow-size) solid transparent;
+  border-top: var(--toast-arrow-size) solid var(--toast-arrow-color);
+}
+
+/* Toast above clue selection grid - allow text to wrap for longer messages */
+.button-toast--above-grid {
+  white-space: normal;
+  max-width: 320px;
+}
+

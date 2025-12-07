@@ -1,0 +1,47 @@
+{
+  "imageId": "frankypeeks",
+  "category": "storyImages",
+  "versions": [
+    {
+      "version": 1,
+      "filename": "v1.jpg",
+      "timestamp": 1764806762854,
+      "prompt": "Uploaded image",
+      "charactersReferenced": [],
+      "isModification": false
+    },
+    {
+      "version": 2,
+      "filename": "v2-1764910867367.jpeg",
+      "timestamp": 1764910867367,
+      "prompt": "please generate this at a higher resolution",
+      "charactersReferenced": [],
+      "isModification": true
+    },
+    {
+      "version": 3,
+      "filename": "v3-1764910867368.jpeg",
+      "timestamp": 1764910867368,
+      "prompt": "please generate this at a higher resolution",
+      "charactersReferenced": [],
+      "isModification": true
+    },
+    {
+      "version": 4,
+      "filename": "v4-1764910867369.jpeg",
+      "timestamp": 1764910867369,
+      "prompt": "please generate this at a higher resolution",
+      "charactersReferenced": [],
+      "isModification": true
+    },
+    {
+      "version": 5,
+      "filename": "v5-1764910867370.jpeg",
+      "timestamp": 1764910867370,
+      "prompt": "please generate this at a higher resolution",
+      "charactersReferenced": [],
+      "isModification": true
+    }
+  ],
+  "currentVersion": 5
+}

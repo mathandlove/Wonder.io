@@ -1,0 +1,31 @@
+{
+  "imageId": "bakery",
+  "category": "backgrounds",
+  "versions": [
+    {
+      "version": 1,
+      "filename": "v1-1764711428790.jpeg",
+      "timestamp": 1764711428790,
+      "prompt": "A medieval bakery, it is Christmas. Cookies and muffins are on display",
+      "charactersReferenced": [],
+      "isModification": false
+    },
+    {
+      "version": 2,
+      "filename": "v2-1764711486354.jpeg",
+      "timestamp": 1764711486354,
+      "prompt": "A medieval bakery, it is Christmas. Cookies and muffins are on display. Have cone folded christmas trees",
+      "charactersReferenced": [],
+      "isModification": false
+    },
+    {
+      "version": 3,
+      "filename": "v3-1764711514356.jpeg",
+      "timestamp": 1764711514356,
+      "prompt": "A medieval bakery, it is Christmas. Cookies and muffins are on display. ",
+      "charactersReferenced": [],
+      "isModification": false
+    }
+  ],
+  "currentVersion": 3
+}

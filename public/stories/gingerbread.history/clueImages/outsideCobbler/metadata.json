@@ -1,0 +1,47 @@
+{
+  "imageId": "outsideCobbler",
+  "category": "clueImages",
+  "versions": [
+    {
+      "version": 1,
+      "filename": "v1.jpg",
+      "timestamp": 1764737149835,
+      "prompt": "Uploaded image",
+      "charactersReferenced": [],
+      "isModification": false
+    },
+    {
+      "version": 2,
+      "filename": "v2-1764799005975.jpeg",
+      "timestamp": 1764799005975,
+      "prompt": "add a folded note next to the foot prints",
+      "charactersReferenced": [],
+      "isModification": true
+    },
+    {
+      "version": 3,
+      "filename": "v3-1764799005976.jpeg",
+      "timestamp": 1764799005976,
+      "prompt": "add a folded note next to the foot prints",
+      "charactersReferenced": [],
+      "isModification": true
+    },
+    {
+      "version": 4,
+      "filename": "v4-1764799005977.jpeg",
+      "timestamp": 1764799005977,
+      "prompt": "add a folded note next to the foot prints",
+      "charactersReferenced": [],
+      "isModification": true
+    },
+    {
+      "version": 5,
+      "filename": "v5-1764799005978.jpeg",
+      "timestamp": 1764799005978,
+      "prompt": "add a folded note next to the foot prints",
+      "charactersReferenced": [],
+      "isModification": true
+    }
+  ],
+  "currentVersion": 4
+}

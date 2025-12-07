@@ -1,0 +1,29 @@
+{
+  "parser": "@typescript-eslint/parser",
+  "parserOptions": {
+    "ecmaVersion": 2020,
+    "sourceType": "module",
+    "ecmaFeatures": { "jsx": true }
+  },
+  "plugins": ["@typescript-eslint", "unused-imports", "import", "react"],
+  "extends": [
+    "eslint:recommended",
+    "plugin:react/recommended",
+    "plugin:@typescript-eslint/recommended"
+  ],
+  "rules": {
+    "@typescript-eslint/no-unused-vars": [
+      "error",
+      { "argsIgnorePattern": "^_", "varsIgnorePattern": "^_" }
+    ],
+    "unused-imports/no-unused-imports": "error",
+    "import/no-unused-modules": [
+      "error",
+      { "unusedExports": true, "missingExports": true }
+    ],
+    "react/react-in-jsx-scope": "off"
+  },
+  "settings": {
+    "react": { "version": "detect" }
+  }
+}

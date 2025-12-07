@@ -1,7 +1,36 @@
 import express from 'express';
 import cors from 'cors';
+import multer from 'multer';
+import 'dotenv/config';
+import { WebSocketServer } from 'ws';
+import { IncomingMessage } from 'http';
+
 import { SelectionStore } from './store';
 import { Point } from './types';
+import { handleWhisperProxy } from './whisper-proxy-single'; // Using single-send approach
+import { handleAIChat } from './ai-conversation';
+import { handleAIValidation } from './ai-validation';
+import { handleLoadBundleHotspots, handleSaveBundleHotspots, handleListBundleImages, handleGenerateThumbnails, handleListBundleMaps, handleSaveStory, handleLoadMapPaths, handleSaveMapPaths } from './bundle-hotspots';
+import {
+  handleImageGeneration,
+  handleGetStoryImages,
+  handleUpdateSceneImage,
+  handleGetHistory,
+  handleGetQueue,
+  handleRenameImage,
+  handleUseVersion,
+  handleWipeHistory,
+  handleWipeAllHistory,
+  handleUpdateDescription,
+  handleImageUpload,
+  handleFixImageReferences
+} from './image-generation';
+
+// Configure multer for memory storage
+const upload = multer({ storage: multer.memoryStorage() });
+
+const key = process.env.OPENAI_API_KEY;
+if (!key) throw new Error('Missing OPENAI_API_KEY');
 
 const app = express();
 const port = process.env.PORT || 3001;
@@ -31,10 +60,13 @@ app.post('/api/selections', async (req, res) => {
     }
 
     // Validate points structure
-    const isValidPoints = points.every((p: any) => 
-      typeof p === 'object' && 
-      typeof p.x === 'number' && 
-      typeof p.y === 'number'
+    const isValidPoints = points.every((p: unknown) =>
+      typeof p === 'object' &&
+      p !== null &&
+      'x' in p &&
+      'y' in p &&
+      typeof (p as Point).x === 'number' &&
+      typeof (p as Point).y === 'number'
     );
 
     if (!isValidPoints) {
@@ -148,12 +180,62 @@ app.delete('/api/hotspots/:id', async (req, res) => {
   }
 });
 
+// AI Chat route
+app.post('/api/ai/chat', handleAIChat);
+
+// AI Validation route
+app.post('/api/ai/validate', handleAIValidation);
+
+// Bundle-based hotspot routes (for editor)
+app.get('/api/bundle/hotspots', handleLoadBundleHotspots);
+app.post('/api/bundle/hotspots', handleSaveBundleHotspots);
+app.get('/api/bundle/images', handleListBundleImages);
+app.get('/api/bundle/maps', handleListBundleMaps);
+app.get('/api/bundle/map-paths', handleLoadMapPaths);
+app.post('/api/bundle/map-paths', handleSaveMapPaths);
+app.post('/api/bundle/hotspots/generate-thumbnails', handleGenerateThumbnails);
+app.post('/api/bundle/story', handleSaveStory);
+
+// Image generation routes (Gemini API)
+app.post('/api/images/generate', handleImageGeneration);
+app.get('/api/images/story', handleGetStoryImages);
+app.post('/api/images/update-scene', handleUpdateSceneImage);
+
+// Image history and queue routes
+app.get('/api/images/history', handleGetHistory);
+app.get('/api/images/queue', handleGetQueue);
+app.post('/api/images/rename', handleRenameImage);
+app.post('/api/images/use-version', handleUseVersion);
+app.post('/api/images/wipe-history', handleWipeHistory);
+app.post('/api/images/wipe-all-history', handleWipeAllHistory);
+app.post('/api/images/update-description', handleUpdateDescription);
+app.post('/api/images/upload', upload.single('file'), handleImageUpload);
+app.post('/api/images/fix-references', handleFixImageReferences);
+
 // Health check
 app.get('/api/health', (req, res) => {
   res.json({ status: 'OK', timestamp: new Date().toISOString() });
 });
 
-app.listen(port, () => {
-  console.log(`🚀 Backend server running on port ${port}`);
-  console.log(`📊 API endpoints available at http://localhost:${port}/api`);
+// Create HTTP server for WebSocket upgrade
+const server = app.listen(port, () => {
+  console.log(`🚀 Server running on http://localhost:${port}`);
+  console.log(`🔌 WebSocket endpoint: ws://localhost:${port}/api/stt/socket`);
+  console.log(`🔑 OpenAI API Key: ${key ? '✅ Loaded' : '❌ Missing'}`);
+});
+
+// Create WebSocket server
+const wss = new WebSocketServer({ noServer: true });
+
+// Handle WebSocket upgrade
+server.on('upgrade', (request: IncomingMessage, socket, head) => {
+  const pathname = new URL(request.url || '', `http://${request.headers.host}`).pathname;
+
+  if (pathname === '/api/stt/socket') {
+    wss.handleUpgrade(request, socket, head, (ws) => {
+      handleWhisperProxy(ws, request);
+    });
+  } else {
+    socket.destroy();
+  }
 });

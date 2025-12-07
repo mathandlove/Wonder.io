@@ -1,0 +1,98 @@
+/* Chat Layer - controls overall visibility */
+.chat-layer {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  z-index: 999;
+  transition: opacity 0.2s ease-out, transform 0.2s ease-out;
+  pointer-events: none; /* Let clicks pass through the layer itself */
+}
+
+.chat-layer.hidden {
+  opacity: 0;
+  pointer-events: none;
+  transform: translateY(20px);
+}
+
+.chat-layer.visible {
+  opacity: 1;
+  pointer-events: none; /* Layer itself non-interactive, children will have pointer-events: auto */
+  transform: translateY(0);
+}
+
+.chat-layer.visible * {
+  pointer-events: auto; /* Enable interactions for all children */
+}
+
+/* Chat Container - anchored bottom rail UI layer */
+.chat-composer-container {
+  position: fixed;
+  bottom: 10px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  z-index: 1100; /* Above quest hand stamp video (1001) and quest layer (300) */
+   /* Top, horizontal, bottom padding */
+  background: linear-gradient(180deg, rgba(0,0,0,0) 0%, rgba(0,0,0,0.03) 40%, rgba(0,0,0,0.08) 100%);
+  backdrop-filter: blur(2px);
+  border-top: 1px solid rgba(139, 69, 19, 0.1);
+}
+
+/* Turn Cue Banner - sits above bottom rail with breathing room */
+.turn-cue-banner {
+  position: fixed;
+  left: 50%;
+  transform: translateX(-50%);
+  bottom: calc(100px + 32px); /* sits above bottom rail + breathing room */
+  max-width: min(680px, 92vw);
+  padding: 12px 16px;
+  border-radius: 14px;
+  background: rgba(15, 15, 15, 0.92) !important; /* black banner */
+  color: #fff !important;
+  font-size: 16px;
+  line-height: 1.2;
+  box-shadow: 0 6px 18px rgba(0,0,0,0.35);
+  z-index: 1001; /* above composer, below toasts */
+  animation: turnCueBannerEnter 220ms ease-out;
+  border: 2px solid rgba(255,255,255,0.08) !important;
+  transition: opacity 0.3s ease-out;
+}
+
+.turn-cue-banner.fade-out {
+  opacity: 0;
+}
+
+.turn-cue-strong {
+  font-weight: 700;
+}
+
+@keyframes turnCueBannerEnter {
+  from { opacity: 0; transform: translate(-50%, 8px); }
+  to   { opacity: 1; transform: translate(-50%, 0); }
+}
+
+/* Banner nudge animation - continuous vertical bounce */
+.turn-cue-banner[data-nudged="true"] {
+  animation: bannerBounce 2s ease-in-out infinite !important;
+  transition: none !important; /* Disable transition during animation */
+}
+
+@keyframes bannerBounce {
+  0% {
+    transform: translateX(-50%) translateY(0);
+  }
+  25% {
+    transform: translateX(-50%) translateY(-8px);
+  }
+  50% {
+    transform: translateX(-50%) translateY(0);
+  }
+  100% {
+    transform: translateX(-50%) translateY(0);
+  }
+}

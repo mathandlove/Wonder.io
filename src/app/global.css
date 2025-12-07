@@ -1,0 +1,39 @@
+/* Tailwind CSS v4 import */
+@import "tailwindcss";
+
+/* Tell Tailwind v4 where to scan for class names */
+@source "../../index.html";
+@source "../../editor.html";
+@source "../**/*.{js,ts,jsx,tsx}";
+@source "../tailwind-safelist.html";
+
+/* Global CSS reset to remove browser defaults */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+/* Prevent images from being selectable (blue highlight) */
+img {
+  user-select: none;
+  -webkit-user-select: none;
+  -webkit-user-drag: none;
+  -webkit-touch-callout: none;
+  pointer-events: none;
+}
+
+body {
+  margin: 0;
+  padding: 0;
+  overflow: hidden;
+  width: 100vw;
+  height: 100vh;
+}
+
+#root, #editor-root {
+  margin: 0;
+  padding: 0;
+  width: 100vw;
+  height: 100vh;
+}

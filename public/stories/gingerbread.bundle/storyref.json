@@ -1,0 +1,284 @@
+{
+  "_comment": "THIS IS A REFERENCE EXAMPLE ONLY - DO NOT EDIT. Edit story.json instead.",
+  "title": "The Runaway Cookie",
+  "storyId": "001-runaway-cookie",
+  "backgroundDescriptions": {
+    "bakery": "A cozy medieval bakery thatokies on has festive christmas treats out front.",
+    "insideBakery": "A cozy bakery interior with candies, cakes, bread, and co display."
+    "cobbler": "A quaint cobbler's shop with shoes displayed in the window and a workbench inside.",
+  },
+  "scenes": [
+        {
+      "type": "title",
+      "lvl1": "The",
+      "lvl2": "Runaway Cookie",
+      "author": "Elliott Hedman",
+      "illustrator": "Silvia Pardo",
+      "background": "bakery.png"
+    },
+    {
+      "type": "image",
+      "image": "dragonFeet",
+      "text": "My name is Leo, and I'm a monster hunter."
+    },
+    {
+      "type": "image",
+      "image": "dragonFight",
+      "text": "I keep my city safe, even when things get a little scary."
+    },
+    {
+      "type": "image",
+      "image": "cheers",
+      "text": "It's worth it, because I'm protecting all my friends."
+    },
+    {
+      "type": "text",
+      "text": "This morning, I was on my way to the Drury Lane Bakery to buy my favorite muffin when ... ",
+      "background": "bakery"
+    },
+        {
+      "type": "text",
+      "text": "the bakery door suddenly burst open and Ms. Butterbuns tumbled out.",
+      "background": "bakery"
+    },
+       {
+      "type": "character-flow",
+      "background": "park.png",
+      "left-character": "leo",
+      "right-character": "none",
+      "CharacterDescription": "chaseScene",
+      "useClues": false,
+      "monologue": true,
+      "requiredAsk": false,
+      "question": "What was the child covered in?",
+      "successAnswer": "The child is covered in cookie or the child is a cookie.",
+      "wrongAnswers": ["mud"],
+      "hint": "Ask what does the taste remind you of?",
+
+      "flow": [
+        {
+          "side": "left",
+          "text": "I run as fast as I can, chasing the cookie thief."
+        },
+   
+                        {
+          "type": "input"
+        },
+                                                          {
+          "side": "left",
+          "text": "That's where the cookie went! The child covered himself!"
+        },
+                        {
+          "side": "left",
+          "text": "As I get closer, I can see the thief is indeed covered in a thick brown mud."
+        },
+                                {
+          "side": "left",
+          "text": "At one point I get so close I can almost grab him!"
+        },
+                                        {
+          "side": "left",
+          "text": "But I slip and fall right on my face!"
+        },
+                                                {
+          "side": "left",
+          "text": "He runs off again, and now my hand is covered in this brown mud."
+        },
+                                                        {
+          "side": "left",
+          "text": "I lick the brown substance, and it doesn't taste like mud at all. It tastes like cinnamon and white frosting."
+        },
+                                                          {
+          "side": "left",
+          "text": "That child isn't covered in mud at all. He's covered in..."
+        },
+        
+                              {
+      "type": "quest"
+    }
+      ]},
+
+         {
+      "type": "title",
+      "lvl1": "The",
+      "lvl2": "Runaway Cookie",
+      "author": "Elliott Hedman",
+      "illustrator": "Silvia Pardo",
+      "background": "bakery.png"
+    },
+        {
+      "type": "image",
+      "image": "story/cheers.png",
+      "text": "My name is Leo, and I’m a monster hunter."
+    },
+        {
+      "type": "image",
+      "image": "story/dragonFight.png",
+      "text": "I keep my city safe, even when things get a little scary."
+    },
+        {
+      "type": "image",
+      "image": "story/cheers.png",
+      "text": "It’s worth it, because I’m protecting all my friends."
+    },
+    {
+      "type": "text",
+      "text": "Today, I was visiting the Drury Lane Bakery, to buy my favorite muffin.",
+      "background": "bakery.png"
+    },
+    {
+      "type": "text",
+      "text": "When I heard a loud cry for help from Betsy the baker.",
+      "background": "bakery.png"
+    },
+
+
+     {
+      "type": "clue-image",
+      "image": "insideBakery",
+      "clueDescriptions": [
+        {
+          "hotspotName": "Hair",
+          "description": "A bowl of human hair",
+          "image": "hair",
+          "dialog": "A bowl of hair. Why would a baker have a bowl of human hair?"
+        },
+        {
+          "hotspotName": "Crumbs",
+          "description": "Cookie crumbs on the ground",
+          "image": "crumbs",
+          "dialog": "That's not dirt on the ground. I take a finger and lick it. Yes it tastes quite sugary with a strong cinnamon flavor."
+        },
+        {
+          "hotspotName": "Potion",
+          "description": "A witch's potion bottle, half empty",
+          "image": "potion",
+          "dialog": "This looks like a witch's potion. And it's half empty. What was Ms. Butterbuns doing with a potion?"
+        },
+        {
+          "hotspotName": "Frosting",
+          "description": "White frosting and cookie-making supplies",
+          "image": "frosting",
+          "dialog": "It looks like Ms. Butterbuns was making cookies with white frosting."
+        }
+      ]
+    },
+    {
+      "type": "character-flow",
+      "background": "bakery.png",
+      "left-character": "leo",
+      "right-character": "NOCHARACTER",
+      "CharacterDescription": "chaseScene",
+      "useClues": true,
+      "monologue": true,
+      
+      "question": "What is the child covered",
+      "successAnswer": "Cookie.",
+      "wrongAnswers": ["Context: bowl of hair", "Context: potion","Context: frosting."],
+      "hint": "Ask about that brown trail and where it leads.",
+      "flow": [
+        {
+          "side": "left",
+          "text": "Here is some long text. I shouldn't make dialog this long. And yet here we are. No kid will read this. Or will they? I hope not."
+        },
+  
+
+                        {
+          "type": "input"
+        }
+      ]
+      },
+
+
+             {"type": "map",
+      "image": "cityMap.jpg",
+      "location": "Bakery"
+    },
+        {"type": "map",
+      "image": "cityMap.jpg",
+      "location": "Cobbler"
+    },
+            {"type": "map",
+      "image": "cityMap.jpg",
+      "location": "Market"
+    },
+
+
+    {
+      "type": "text",
+      "background": "cobbler.png",
+      "text": "Leo saved the day! The cookies are safe once again."
+    },
+    {
+      "type": "image",
+      "image": "story/dragonFight.png",
+      "description":"Butterbuns scoops the gingerbread up into her arms and gives him a hug.",
+      "text":"She scooped him into her arms."
+    },
+
+      
+    
+        {
+      "type": "image",
+      "image": "story/dragonFeet.png",
+      "text": "I protect my city by searching for clues. I protect my city by searching for clues. I protect my city by searching for clues. "
+    },
+        {
+      "type": "image",
+      "image": "story/dragonFeet.png",
+      "text": "I protect my city by searching for clues."
+    },
+        {
+      "type": "image",
+      "image": "story/dragonFeet.png",
+      "text": "I protect my city by searching for clues."
+    },
+    {
+      "type": "clue-image",
+      "image": "brokenInCobbler",
+      "clueDescriptions": [
+        {
+          "hotspotName": "brokenwindow",
+          "description": "A broken window with cookie crumbs on it",
+          "image": "brokenwindow",
+          "dialog": "Looking closer, I see the window is covered in more cookie crumbs. Why would a thief throw a stolen cookie into a window?"
+        },
+        {
+          "hotspotName": "crumbtrail",
+          "description": "A trail of cookie crumbs leading to the shoe shop",
+          "image": "crumbtrail",
+          "dialog": "The trail leads all the way to the shoe shop. The thief must be inside."
+        },
+        {
+          "hotspotName": "door",
+          "description": "A locked door",
+          "image": "door",
+          "dialog": "The door is locked. How did the thief get inside?"
+        },
+        {
+          "hotspotName": "pedestal",
+          "description": "A pedestal with cookie crumbs on it that used to hold baby shoes",
+          "image": "pedestal",
+          "dialog": "It looks like there used to be something on this pedestal. And it's covered in cookie crumbs now."
+        }
+      ]
+    }
+  ],
+  "examplesX": [
+    {
+      "quest": "key",
+      "text": "Ask Ms. Baker what happened"
+    },
+
+    {
+      "side": "right",
+      "text": "Help!"
+    },
+
+    {
+      "side": "right",
+      "text": "Somebody please help me!",
+      "right-character": "franky"
+    }
+  ]
+}

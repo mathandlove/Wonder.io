@@ -1,0 +1,442 @@
+/* ============================================
+   🐛 DEBUG MODE - Uncomment to slow animations
+   ============================================ */
+/*
+.story-character-cardboard,
+.story-character-image,
+.story-wooden-dowel {
+  animation-duration: 10s !important;
+  animation-delay: 0s !important;
+  transition-duration: 10s !important;
+}
+*/
+
+/* 🐛 DEBUG MODE 2 - Make invisible elements visible */
+/*
+.story-character-cardboard {
+  outline: 3px solid red !important;
+}
+.story-character-image {
+  outline: 3px solid blue !important;
+}
+.story-wooden-dowel {
+  background-color: rgba(255, 0, 0, 0.3) !important;
+  opacity: 1 !important;
+  visibility: visible !important;
+}
+*/
+
+/* Character panel wrapper styles */
+.character-panel {
+  position: fixed;
+  top: 0;
+  bottom: 0;
+  z-index: 20;
+  pointer-events: none;
+}
+
+.character-panel--left {
+  left: 0;
+}
+
+.character-panel--right {
+  right: 0;
+}
+
+/* Character panel styles */
+.story-character-panel {
+  position: absolute;
+  top: 0;
+  width: 100%;
+  height: 100vh;
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  pointer-events: none;
+}
+
+/* Left panel: push characters to the right edge */
+.story-character-panel.story-character-left {
+  justify-content: flex-end;
+}
+
+/* Right panel: push characters to the left edge */
+.story-character-panel.story-character-right {
+  justify-content: flex-start;
+}
+
+.story-character-content {
+  position: relative;
+  width: 22vw;
+  max-width: 200px;
+  height: 400px;
+  padding: 0;
+  margin: 0;
+  margin-top: calc(60vh - 200px); /* Center the 400px tall character at 60vh */
+  container-type: inline-size; /* enable container queries */
+}
+
+.story-character-cardboard {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  transform-style: preserve-3d;
+  /* Unified pivot point for all animations - simulates long dowel pole */
+  transform-origin: center 150vh;
+}
+
+.story-character-image {
+  width: 100%;
+  height: auto;
+  display: block;
+  transform: rotate(-5deg);
+  /* Removed transition - using data-attribute driven animations instead */
+  position: relative;
+  z-index: 2;
+  filter: drop-shadow(0 24px 48px rgba(0,0,0,0.5)) drop-shadow(0 12px 24px rgba(0,0,0,0.4));
+}
+
+.story-wooden-dowel {
+  position: absolute;
+  top: 70px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 20px;
+  height: calc(150vh + 50px);
+  background-image: url('/VisualAssets/pole.webp');
+  background-size: 20px 100%;
+  background-repeat: repeat-y;
+  z-index: 1;
+  /* Default to hidden - only visible through animations or when in idle phase */
+  opacity: 0;
+  visibility: hidden;
+  filter: drop-shadow(0 24px 48px rgba(0,0,0,0.5)) drop-shadow(0 12px 24px rgba(0,0,0,0.4));
+}
+
+/* Speaking animations - driven by data-phase attribute */
+.story-character-cardboard[data-phase="speaking"] {
+  animation: character-shake 1s ease-in-out 1;
+}
+
+@keyframes character-shake {
+  0%, 33.33%, 66.67%, 100% {
+    transform: rotate(0deg);
+  }
+  16.67%, 83.33% {
+    transform: rotate(-5deg);
+  }
+  50% {
+    transform: rotate(5deg);
+  }
+}
+
+/* Jiggle dance animation - 3 back-and-forth jiggles for celebration */
+.story-character-cardboard[data-phase="jiggling"][data-side="left"] {
+  animation: character-jiggle-left 1.5s ease-in-out 1;
+}
+
+.story-character-cardboard[data-phase="jiggling"][data-side="right"] {
+  animation: character-jiggle-right 1.5s ease-in-out 1;
+}
+
+@keyframes character-jiggle-left {
+  0% {
+    transform: rotate(0deg);
+  }
+  /* First jiggle */
+  8.33% {
+    transform: rotate(8deg);
+  }
+  16.67% {
+    transform: rotate(-8deg);
+  }
+  /* Second jiggle */
+  25% {
+    transform: rotate(8deg);
+  }
+  33.33% {
+    transform: rotate(-8deg);
+  }
+  /* Third jiggle */
+  41.67% {
+    transform: rotate(8deg);
+  }
+  50% {
+    transform: rotate(-8deg);
+  }
+  /* Settle back */
+  58.33% {
+    transform: rotate(4deg);
+  }
+  66.67% {
+    transform: rotate(-4deg);
+  }
+  75% {
+    transform: rotate(2deg);
+  }
+  83.33% {
+    transform: rotate(-2deg);
+  }
+  91.67% {
+    transform: rotate(1deg);
+  }
+  100% {
+    transform: rotate(0deg);
+  }
+}
+
+@keyframes character-jiggle-right {
+  0% {
+    transform: rotate(0deg);
+  }
+  /* First jiggle */
+  8.33% {
+    transform: rotate(-8deg);
+  }
+  16.67% {
+    transform: rotate(8deg);
+  }
+  /* Second jiggle */
+  25% {
+    transform: rotate(-8deg);
+  }
+  33.33% {
+    transform: rotate(8deg);
+  }
+  /* Third jiggle */
+  41.67% {
+    transform: rotate(-8deg);
+  }
+  50% {
+    transform: rotate(8deg);
+  }
+  /* Settle back */
+  58.33% {
+    transform: rotate(-4deg);
+  }
+  66.67% {
+    transform: rotate(4deg);
+  }
+  75% {
+    transform: rotate(-2deg);
+  }
+  83.33% {
+    transform: rotate(2deg);
+  }
+  91.67% {
+    transform: rotate(-1deg);
+  }
+  100% {
+    transform: rotate(0deg);
+  }
+}
+
+/* Character entrance animations - driven by data-phase, data-side, and data-variant */
+/* Variant 1 - default */
+.story-character-cardboard[data-phase="entering"][data-side="left"][data-variant="1"] {
+  animation: character-entrance-settle-left 1600ms ease-in-out forwards;
+}
+
+.story-character-cardboard[data-phase="entering"][data-side="right"][data-variant="1"] {
+  animation: character-entrance-settle-right 1600ms ease-in-out forwards;
+}
+
+/* Variant 2 - identical animation with different name to force browser restart */
+.story-character-cardboard[data-phase="entering"][data-side="left"][data-variant="2"] {
+  animation: character-entrance-settle-left-2 1600ms ease-in-out forwards;
+}
+
+.story-character-cardboard[data-phase="entering"][data-side="right"][data-variant="2"] {
+  animation: character-entrance-settle-right-2 1600ms ease-in-out forwards;
+}
+
+/* Idle state - resting transform */
+.story-character-cardboard[data-phase="idle"] {
+  transform: translateX(0) translateY(0) rotate(0deg) scale(1);
+  /* Inherits transform-origin: center 150vh from .story-character-cardboard */
+}
+
+/* Character image visibility during animation phases */
+.story-character-first-half {
+  position: absolute;
+  opacity: 1;
+  visibility: visible;
+  animation: first-half-visibility 1600ms ease-in-out forwards;
+}
+
+.story-character-second-half {
+  position: absolute;
+  opacity: 0;
+  visibility: hidden;
+  animation: second-half-visibility 1600ms ease-in-out forwards;
+}
+
+@keyframes first-half-visibility {
+  0%, 29% { opacity: 1; visibility: visible; }
+  30%, 100% { opacity: 0; visibility: hidden; }
+}
+
+@keyframes second-half-visibility {
+  0%, 29% { opacity: 0; visibility: hidden; }
+  30%, 100% { opacity: 1; visibility: visible; }
+}
+
+/* Complex entrance animations with exit-switch-enter sequence */
+@keyframes character-entrance-settle-left {
+  /* Exit phase - character moves out */
+  0% {
+    transform: translateY(0) translateX(0) rotate(0deg) scale(1);
+    opacity: 1;
+  }
+  20% {
+    transform: translateY(20vh) translateX(-40vw) rotate(-15deg) scale(0.9);
+    opacity: 0;
+  }
+
+  /* Hidden phase - character switches */
+  30% {
+    transform: translateY(20vh) translateX(-40vw) rotate(-15deg) scale(0.9);
+    opacity: 0;
+  }
+
+  /* Enter phase - character swings in */
+  50% {
+    transform: translateY(20vh) translateX(-40vw) rotate(-15deg) scale(0.9);
+    opacity: 1;
+  }
+  65% {
+    transform: translateY(0) translateX(0) rotate(0deg) scale(1);
+  }
+  75% {
+    transform: translateY(0) translateX(0) rotate(12deg) scale(1);
+  }
+  82% {
+    transform: translateY(0) translateX(0) rotate(-10deg) scale(1);
+  }
+  88% {
+    transform: translateY(0) translateX(0) rotate(4deg) scale(1);
+  }
+  94% {
+    transform: translateY(0) translateX(0) rotate(-2deg) scale(1);
+  }
+  100% {
+    transform: translateY(0) translateX(0) rotate(0deg) scale(1);
+  }
+}
+
+@keyframes character-entrance-settle-right {
+  /* Exit phase - character moves out */
+  0% {
+    transform: translateY(0) translateX(0) rotate(0deg) scale(1);
+    opacity: 1;
+  }
+  20% {
+    transform: translateY(20vh) translateX(40vw) rotate(15deg) scale(0.9);
+    opacity: 0;
+  }
+
+  /* Hidden phase - character switches */
+  30% {
+    transform: translateY(20vh) translateX(40vw) rotate(15deg) scale(0.9);
+    opacity: 0;
+  }
+
+  /* Enter phase - character swings in */
+  50% {
+    transform: translateY(20vh) translateX(40vw) rotate(15deg) scale(0.9);
+    opacity: 1;
+  }
+  65% {
+    transform: translateY(0) translateX(0) rotate(0deg) scale(1);
+  }
+  75% {
+    transform: translateY(0) translateX(0) rotate(-12deg) scale(1);
+  }
+  82% {
+    transform: translateY(0) translateX(0) rotate(10deg) scale(1);
+  }
+  88% {
+    transform: translateY(0) translateX(0) rotate(-4deg) scale(1);
+  }
+  94% {
+    transform: translateY(0) translateX(0) rotate(2deg) scale(1);
+  }
+  100% {
+    transform: translateY(0) translateX(0) rotate(0deg) scale(1);
+  }
+}
+
+/* Duplicate animations with -2 suffix - identical to force browser restart */
+@keyframes character-entrance-settle-left-2 {
+  0% {
+    transform: translateY(0) translateX(0) rotate(0deg) scale(1);
+    opacity: 1;
+  }
+  20% {
+    transform: translateY(20vh) translateX(-40vw) rotate(-15deg) scale(0.9);
+    opacity: 0;
+  }
+  30% {
+    transform: translateY(20vh) translateX(-40vw) rotate(-15deg) scale(0.9);
+    opacity: 0;
+  }
+  50% {
+    transform: translateY(20vh) translateX(-40vw) rotate(-15deg) scale(0.9);
+    opacity: 1;
+  }
+  65% {
+    transform: translateY(0) translateX(0) rotate(0deg) scale(1);
+  }
+  75% {
+    transform: translateY(0) translateX(0) rotate(12deg) scale(1);
+  }
+  82% {
+    transform: translateY(0) translateX(0) rotate(-10deg) scale(1);
+  }
+  88% {
+    transform: translateY(0) translateX(0) rotate(4deg) scale(1);
+  }
+  94% {
+    transform: translateY(0) translateX(0) rotate(-2deg) scale(1);
+  }
+  100% {
+    transform: translateY(0) translateX(0) rotate(0deg) scale(1);
+  }
+}
+
+@keyframes character-entrance-settle-right-2 {
+  0% {
+    transform: translateY(0) translateX(0) rotate(0deg) scale(1);
+    opacity: 1;
+  }
+  20% {
+    transform: translateY(20vh) translateX(40vw) rotate(15deg) scale(0.9);
+    opacity: 0;
+  }
+  30% {
+    transform: translateY(20vh) translateX(40vw) rotate(15deg) scale(0.9);
+    opacity: 0;
+  }
+  50% {
+    transform: translateY(20vh) translateX(40vw) rotate(15deg) scale(0.9);
+    opacity: 1;
+  }
+  65% {
+    transform: translateY(0) translateX(0) rotate(0deg) scale(1);
+  }
+  75% {
+    transform: translateY(0) translateX(0) rotate(-12deg) scale(1);
+  }
+  82% {
+    transform: translateY(0) translateX(0) rotate(10deg) scale(1);
+  }
+  88% {
+    transform: translateY(0) translateX(0) rotate(-4deg) scale(1);
+  }
+  94% {
+    transform: translateY(0) translateX(0) rotate(2deg) scale(1);
+  }
+  100% {
+    transform: translateY(0) translateX(0) rotate(0deg) scale(1);
+  }
+}

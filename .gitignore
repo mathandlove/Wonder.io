@@ -26,3 +26,6 @@ dist-ssr
 # Environment files
 .env
 .env.local
+
+# Debug audio recordings
+backend/debug-audio/

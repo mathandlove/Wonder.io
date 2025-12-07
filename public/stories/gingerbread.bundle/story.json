@@ -1,103 +1,639 @@
 {
-  "title": "The Cookie Thief",
-  "storyId": "leo-monster-hunter-001",
+  "title": "The Runaway Cookie",
+  "storyId": "001-runaway-cookie",
+  "backgroundDescriptions": {
+    "bakery": "A medieval bakery, it is Christmas. Cookies and muffins are on display.",
+    "cobbler": "A medieval cobblers.",
+    "riverbank": "A large river surrounded by snow covered trees. There is no ice on the river. There are bushes and catails."
+  },
+  "wrongCharacter": "angrybutterbuns",
   "scenes": [
-
- 
     {
-      "type": "character-flow",
-      "background":"bakery.png",
-      "left-character": "leo",
-      "right-character": "bakerMom",
-      "flow": [
-        {
-          "side": "right",
-          "text": "Help!"
-        },
-        {
-          "side": "right",
-          "text": "Somebody please help me!"
-        },
-        {
-        
-      "side": "left",
-      "text": "Tell me about your last adventure Ms. Baker. What happened? Look I added a sthirsa line here. HOpefully I can see it."
-
-    },
-        {
-          "quest": "key",
-          "text": "Why does Betsy need help?"
-
-        },
-
-                {
-          "input": "What should Leo ask?"
-
-        },
-{
-        
-      "side": "left",
-      "text": "Tell me about your last adventure Ms. Baker. What happened? Look I added a sthirsa line here. HOpefully I can see it."
-
-    },
-    {
-            "waiting": true
-    },
-    {
-      "side": "right",
-      "text": "Not waiting any more."
-    }
-
-      ]
+      "type": "map",
+      "image": "cityMap.jpeg",
+      "location": "Bakery"
     },
     {
       "type": "character-flow",
-      "background":"square.png",
+      "background": "bakery.jpeg",
       "left-character": "leo",
+      "right-character": "butterbuns",
+      "CharacterDescription": "butterbuns",
+      "useClues": false,
+      "monologue": false,
+      "requiredAsk": true,
+      "question": "Why is Ms. Butterbuns worried?",
+      "successAnswer": "A cookie has been stolen!",
+      "wrongAnswers": [],
+      "hint": "Ask Ms. Butterbuns what happened.",
       "flow": [
+        {
+          "side": "right",
+          "text": "Help! Help! Oh Leo, you must help me!"
+        },
         {
           "side": "left",
-          "text": "Hi! I'm Leo the Monster Hunter."
+          "text": "Hmm, something is not right."
+        },
+        {
+          "type": "quest"
+        },
+        {
+          "type": "input"
+        },
+        {
+          "side": "right",
+          "text": "Yes! My very important cookie has been taken, Leo. Please help me."
+        },
+        {
+          "side": "left",
+          "text": "Don't worry, Ms. Butterbuns. I'll find out what happened. Let's look inside."
         }
       ]
     },
-        {
-      "type":"image",
-      "image":"dragonFeet.png",
-      "text":"I protect my city by searching for clues."
+    {
+      "type": "text",
+      "text": "Warm, sweet smells filled the bakery. Vanilla, cinnamon, and sugar drifted through the air.",
+      "background": "bakery.jpeg"
     },
     {
-      "type":"image",
-      "image":"dragonFight.png",
-      "text":"Sometimes I have to fight the monsters."
-    },
-        {
-      "type":"image",
-      "image":"cheers.png",
-      "text":"It is worth it because I am protecting all my friends."
+      "type": "text",
+      "text": "But today, something else drifted too—trouble.",
+      "background": "bakery.jpeg"
     },
     {
-      "type": "full",
-      "text": "Today, I was visiting the Drury Lane Bakery, for my daily Muffin.",
-      "background": "bakery.png"
-    },
+      "type": "clue-image",
+      "image": "insideBakery.png",
+      "clueDescriptions": [
         {
-      "type": "full",
-      "text": "When I heard a loud cry for help from Betsy the baker.",
-      "background": "bakery.png"
+          "hotspotName": "Hair",
+          "description": "A bowl of human hair",
+          "image": "hair",
+          "dialog": "A bowl of hair. Why would a baker have a bowl of human hair?"
+        },
+        {
+          "hotspotName": "Crumbs",
+          "description": "Cookie crumbs on the ground",
+          "image": "crumbs",
+          "dialog": "Why is there so much brown mud on the ground. Should I lick it?"
+        },
+        {
+          "hotspotName": "Potion",
+          "description": "A half-empty witch's potion bottle",
+          "image": "potion",
+          "dialog": "A witch's potion? And it's half gone. What was Ms. Butterbuns doing with this?"
+        },
+        {
+          "hotspotName": "Pan",
+          "description": "An empty cookie pan",
+          "image": "pan",
+          "dialog": "This pan is awfully large for just one cookie. What was she making?"
+        }
+      ],
+      "sceneDescription": "Inside a baker's medieval bakery. It's Christmas there are muffins, cookies, and cakes. We can see a large empty tray with a few crumbs. The tray must be empty! A tube of frosting lays on the table.. A bowl of hair. And a half empty potion bottle sit on a shelf. On the ground is a trail of crumbs leading out an open door. Keep the drawing simple and clean."
     },
-
     {
-      "type": "full",
-      "background": "cobbler.png",
-      "text": "Leo saved the day! The cookies are safe once again."
+      "type": "character-flow",
+      "background": "bakery.jpeg",
+      "left-character": "leo",
+      "right-character": "butterbuns",
+      "CharacterDescription": "butterbuns",
+      "useClues": true,
+      "monologue": false,
+      "requiredAsk": true,
+      "question": "How can we find the cookie?",
+      "successAnswer": "Follow the cookie crumbs!",
+      "wrongAnswers": [],
+      "hint": "Look at the trail on the ground.",
+      "flow": [
+        {
+          "side": "right",
+          "text": "Can you figure out where my cookie went?"
+        },
+        {
+          "type": "quest"
+        },
+        {
+          "type": "input"
+        },
+        {
+          "side": "right",
+          "text": "Exactly. Follow that crumb trail and report back."
+        }
+      ]
+    },
+    {
+      "type": "map",
+      "image": "cityMap.jpeg",
+      "location": "Cobbler"
+    },
+    {
+      "type": "text",
+      "text": "A bright trail of cookie crumbs led to the cobbler's shop.",
+      "background": "cobbler.jpeg"
+    },
+    {
+      "type": "clue-image",
+      "image": "brokenWindow.jpeg",
+      "clueDescriptions": [
+        {
+          "hotspotName": "crackedWindow",
+          "description": "A broken window with cookie crumbs",
+          "image": "crackedwindow",
+          "dialog": "Someone broke this window. It looks like they threw the cookie through it"
+        },
+        {
+          "hotspotName": "babysign",
+          "description": "A store sign that says 'Baby Shoes on Sale'",
+          "image": "babysign",
+          "dialog": "Mr.Shoe is famous for his pink baby shoes."
+        },
+        {
+          "hotspotName": "Door",
+          "description": "A locked door",
+          "image": "door",
+          "dialog": "The door is locked. How could the thief get in?"
+        },
+        {
+          "hotspotName": "Stand",
+          "description": "A display stand dusted with cookie crumbs",
+          "image": "stand",
+          "dialog": "This stand is covered in crumbs. I wonder what used to be here?"
+        }
+      ],
+      "sceneDescription": "Outside of a medieval shoe store. There is a window that has 3 pedestals,. On each pedestal is a shoe except for the third it is empty. There is a large crack/hole in the window. A sign on the ground says baby shoes on sale. A door on the left side is closed. It's christmas and there is snow and christmas decorations. There is mud on the empty pedestal"
+    },
+    {
+      "type": "text",
+      "text": "Suddenly the shop door flew open. Mr. Shoe stomped out, grouchy as ever.",
+      "background": "cobbler.jpeg"
+    },
+    {
+      "type": "character-flow",
+      "background": "cobbler.jpeg",
+      "left-character": "leo",
+      "right-character": "mrshoe",
+      "CharacterDescription": "mrshoe",
+      "useClues": true,
+      "monologue": false,
+      "requiredAsk": true,
+      "question": "What did the thief steal?",
+      "successAnswer": "They stole Baby shoes OR they stole pink baby shoes.",
+      "wrongAnswers": [],
+      "hint": "Look at the empty pedestal.",
+      "flow": [
+        {
+          "side": "right",
+          "text": "What's all the racket? We're closed."
+        },
+        {
+          "side": "left",
+          "text": "Someone broke your window."
+        },
+        {
+          "side": "right",
+          "text": "My window? What did they steal?"
+        },
+        {
+          "type": "quest"
+        },
+        {
+          "type": "input"
+        },
+        {
+          "side": "right",
+          "text": "My best pink baby shoes! Oh dear. Leo, please bring them back."
+        },
+        {
+          "side": "left",
+          "text": "I'll look around outside."
+        }
+      ]
+    },
+    {
+      "type": "clue-image",
+      "image": "outsideCobbler.jpeg",
+      "clueDescriptions": [
+        {
+          "hotspotName": "BrokenGlass",
+          "description": "Shattered glass",
+          "image": "brokenglass",
+          "dialog": "The thief jumped out the window onto the glass. Ouch."
+        },
+        {
+          "hotspotName": "CrumbTrail",
+          "description": "Crumbs near the window",
+          "image": "crumbtrail",
+          "dialog": "Here's where the crumb trail ends."
+        },
+        {
+          "hotspotName": "BabyShoePrints",
+          "description": "Tiny shoe prints leading away",
+          "image": "babyshoeprints",
+          "dialog": "These prints are tiny—baby shoes. The thief must be wearing them."
+        },
+        {
+          "hotspotName": "Note",
+          "description": "A note left behind",
+          "image": "note",
+          "dialog": "A note! It says, 'You can't catch me!' We'll see about that."
+        }
+      ],
+      "sceneDescription": "A downward view of a sidewalk. ON the sid"
+    },
+    {
+      "type": "image",
+      "text": "I follow the baby shoe prints out into the snow woods towards the river.",
+      "description": "Show shoe prints in snow and on cobble stone heading out toward a river surrounded by trees. It's christmas time.",
+      "image": "story/path.jpeg"
+    },
+    {
+      "type": "map",
+      "image": "cityMap.jpeg",
+      "location": "River"
+    },
+    {
+      "type": "image",
+      "image": "story/riverchase1.jpeg",
+      "text": "On top of the hill, I could see the thief in the distance. He yelled \" Run, Run, as fast as you can! You can't catch me!",
+      "description": "The backside of a gingerbread man running through snow covered trees. He is wearing pink baby shoes. And leaving foot prints."
+    },
+    {
+      "type": "text",
+      "text": "I noticed that the thief was covered in thick brown mud. Why would he cover himself in mud? Perhaps to hide the cookie?",
+      "background": "riverbank.jpeg"
+    },
+    {
+      "type": "text",
+      "text": "I sprinted with all my might down the snowy hill. Right when I almost caught him...",
+      "background": "riverbank.jpeg"
+    },
+    {
+      "type": "image",
+      "image": "story/riverchase2.jpeg",
+      "text": "My feet slipped on a patch of ice, and I fell flat on my face.",
+      "description": "Leo slipping on a patch of ice. Surrounded by snow covered trees."
+    },
+    {
+      "type": "text",
+      "text": "The thief got away, but I did get some of the thick brown mud he was covered in.",
+      "background": "riverbank.jpeg"
+    },
+    {
+      "type": "image",
+      "image": "story/leotastingmud.jpeg",
+      "text": "I sniffed it, then tasted it carefully. It didn't taste like mud at all. It tasted like cinnamon and white frosting.",
+      "description": "Leo licking a gooey substance that looks like mud, with an interest look. He is sitting in a snowpile surrounded by snow covered trees"
+    },
+    {
+      "type": "character-flow",
+      "background": "riverbank.jpeg",
+      "left-character": "leo",
+      "right-character": "none",
+      "useClues": false,
+      "monologue": true,
+      "requiredAsk": true,
+      "CharacterDescription": "leoChase",
+      "question": "What was the child covered in?",
+      "successAnswer": "The child is covered in cookie or the child is a cookie.",
+      "wrongAnswers": [
+        "mud"
+      ],
+      "hint": "What does the taste remind you of?",
+      "flow": [
+        {
+          "side": "left",
+          "text": "That child isn't covered in mud."
+        },
+        {
+          "side": "left",
+          "text": "He's covered in…"
+        },
+        {
+          "type": "quest"
+        },
+        {
+          "type": "input"
+        }
+      ]
+    },
+    {
+      "type": "image",
+      "image": "story/thiefrunsaway.jpeg",
+      "text": "I watched the cookie-covered child dash towards the river. I had him trapped.",
+      "description": "Make a landscape scene with a light snow covered plane and trees on the side. A river is in the background. There are NO CHARACTERS."
+    },
+    {
+      "type": "text",
+      "text": "But as I arrived at the river, I fear I was too late.",
+      "background": "riverbank.jpeg"
+    },
+    {
+      "type": "clue-image",
+      "image": "riverbank.jpg",
+      "clueDescriptions": [
+        {
+          "hotspotName": "BabyShoes",
+          "description": "Baby shoes floating in the water",
+          "image": "babyshoes",
+          "dialog": "There are the baby shoes. He must have lost them in the river."
+        },
+        {
+          "hotspotName": "WoodenSign",
+          "description": "Franky the Fox's Ferry sign",
+          "image": "woodensign",
+          "dialog": "A ferry sign. Maybe Franky gave our thief a ride."
+        },
+        {
+          "hotspotName": "Fox",
+          "description": "A wet fox hiding",
+          "image": "fox",
+          "dialog": "There's Franky's tail—and it's dripping wet. Why is he hiding?"
+        },
+        {
+          "hotspotName": "ShoePrints",
+          "description": "Prints leading into the water",
+          "image": "shoeprints",
+          "dialog": "The tiny shoe prints stop right at the river."
+        }
+      ],
+      "sceneDescription": "It's winter and we are looking at a river surrounded by snow covered trees and cattails. There's a wooden sign on the near side of the river that says \"Franky the Fox's Ferry Service.\" The text is hand painted. There are two shoes floating in the river. There are shoe prints in the snow leading all the way up to the river but then they disapear. On the *FAR SIDE* of the river is a bush with a fox tail sticking out of it. We do not see the fox's face, only his tail. Make sure the bush on the far side of the river."
+    },
+    {
+      "type": "character-flow",
+      "background": "riverbank.jpeg",
+      "left-character": "leo",
+      "right-character": "none",
+      "CharacterDescription": "leoRiver",
+      "useClues": true,
+      "monologue": true,
+      "requiredAsk": false,
+      "question": "How did the cookie get across the water?",
+      "successAnswer": "Franky helped the thief ferry across the river.",
+      "wrongAnswers": [
+        "He swam across by himself."
+      ],
+      "hint": "Why is Franky wet?",
+      "flow": [
+        {
+          "side": "left",
+          "text": "I think I know how the thief got across."
+        },
+        {
+          "type": "quest"
+        },
+        {
+          "type": "input"
+        }
+      ]
+    },
+    {
+      "type": "image",
+      "image": "story/frankypeeks.jpeg",
+      "text": "Franky peeked out with a guilty smile.",
+      "description": "FRANKY PEEKS OUT BEHIND SOME SNOW COVERED BUSHES THAT ARE ACROSS A RIVER."
+    },
+    {
+      "type": "character-flow",
+      "background": "riverbank.jpeg",
+      "left-character": "leo",
+      "right-character": "franky",
+      "CharacterDescription": "franky",
+      "useClues": false,
+      "monologue": false,
+      "requiredAsk": true,
+      "question": "What did Franky do with the thief?",
+      "successAnswer": "He ate them!",
+      "wrongAnswers": [],
+      "hint": "Why is Franky acting guilty?",
+      "flow": [
+        {
+          "side": "right",
+          "text": "Hello, Leo. Need a ride?"
+        },
+        {
+          "side": "left",
+          "text": "Franky, you're soaking wet."
+        },
+        {
+          "side": "right",
+          "text": "The river splashed me."
+        },
+        {
+          "side": "left",
+          "text": "And the cookie thief's shoes are floating right next to your ferry."
+        },
+        {
+          "side": "right",
+          "text": "Oh… that."
+        },
+        {
+          "side": "left",
+          "text": "Franky. What did you do?"
+        },
+        {
+          "type": "quest"
+        },
+        {
+          "type": "input"
+        },
+        {
+          "side": "left",
+          "text": "Franky, you can't eat people. Spit him out."
+        },
+        {
+          "side": "right",
+          "text": "It wasn't a person. It was a cookie."
+        },
+        {
+          "side": "left",
+          "text": "Franky. Spit. Him. Out."
+        }
+      ]
+    },
+    {
+      "type": "image",
+      "image": "story/frankyswiped.jpeg",
+      "text": "Franky swiped at me.",
+      "description": "Franky swipes at leo with his sharp claws. They are near a river and there are snow covered trees with christmas lights. There are cattails by the river."
+    },
+    {
+      "type": "image",
+      "image": "story/leotacklesfranky.jpeg",
+      "text": "I dodged and tackled him into a soft patch of snow.",
+      "description": "Use the same characters and setting. But have the hero tackling the fox into the snow."
+    },
+    {
+      "type": "image",
+      "image": "story/leoreachesinmouth.jpeg",
+      "text": "I reached right into his mouth.",
+      "description": "The fox lays on his back and the hero uses both of his hands to look inside the fox's mouth."
+    },
+    {
+      "type": "text",
+      "text": "A tiny voice whispered, \"It's so dark in here.\" I pulled out the thief.",
+      "background": "riverbank.jpeg"
+    },
+    {
+      "type": "image",
+      "image": "story/cookieboyrevealed.jpeg",
+      "text": "A cookie-shaped boy with frosting hair stood blinking up at me.",
+      "description": "The gingerbread man stands up and looks big eyed at Leo. The fox lays exhausted on the side."
+    },
+    {
+      "type": "character-flow",
+      "background": "riverbank.jpeg",
+      "left-character": "leo",
+      "right-character": "gingerbread-man",
+      "CharacterDescription": "gingerbreadstory",
+      "useClues": false,
+      "monologue": false,
+      "requiredAsk": false,
+      "question": "What did the thief do with the stolen cookie?",
+      "successAnswer": "The cookie was the thief/boy/alive.",
+      "wrongAnswers": [
+        "Fox"
+      ],
+      "hint": "Tell me your story.",
+      "flow": [
+        {
+          "side": "right",
+          "text": "Hi Leo. You caught me."
+        },
+        {
+          "side": "left",
+          "text": "I know what happened to Ms. Butterbun's cookie now."
+        },
+        {
+          "type": "quest"
+        },
+        {
+          "type": "input"
+        }
+      ]
+    },
+    {
+      "type": "image",
+      "image": "story/leocarriescookie.jpeg",
+      "text": "I carried the cookie boy back to the bakery.",
+      "description": "Leo carries the gingerbread man on his shoulders back up the snow drift, surrounded by snow covered trees. There's a river far in the background. DO NOT show any foot prints."
+    },
+    {
+      "type": "map",
+      "image": "cityMap.jpeg",
+      "location": "Bakery"
+    },
+    {
+      "type": "character-flow",
+      "background": "bakery.jpeg",
+      "left-character": "leo",
+      "right-character": "butterbuns",
+      "useClues": false,
+      "monologue": false,
+      "requiredAsk": false,
+      "flow": [
+        {
+          "side": "left",
+          "text": "Ms. Butterbuns, I found your cookie."
+        },
+        {
+          "side": "right",
+          "text": "My sweet sugar stars. Thank you!"
+        },
+        {
+          "side": "right",
+          "text": "And the thief?"
+        },
+        {
+          "side": "left",
+          "text": "There was no thief."
+        },
+        {
+          "side": "right",
+          "text": "There wasn't?"
+        },
+        {
+          "side": "left",
+          "text": "Mommy.",
+          "left-character": "gingerbread-man"
+        },
+        {
+          "side": "right",
+          "text": "Oh my. The potion worked!"
+        }
+      ]
+    },
+    {
+      "type": "image",
+      "image": "story/butterbunhugscookie.jpeg",
+      "text": "She scooped him into her arms.",
+      "description": "Ms. Butterbuns sweeps the gingerbread man into her arms and gives him a big hug. Don't add any other background"
+    },
+    {
+      "type": "character-flow",
+      "background": "bakery.jpeg",
+      "left-character": "leo",
+      "right-character": "butterbuns",
+      "useClues": false,
+      "monologue": false,
+      "requiredAsk": false,
+      "flow": [
+        {
+          "side": "left",
+          "text": "Be careful. He really likes to run."
+        },
+        {
+          "side": "right",
+          "text": "He's perfect. I'll go get a little leash."
+        },
+        {
+          "side": "left",
+          "text": "Run, run, as fast as you can. You can't catch me again!",
+          "left-character": "gingerbread-man"
+        },
+        {
+          "side": "right",
+          "text": "Uh oh…"
+        }
+      ]
+    },
+    {
+      "type": "image",
+      "image": "story/bakerydooropen.jpeg",
+      "text": "The end.",
+      "description": ""
     }
   ],
-  "examplesX":            {
-      "type": "title",
-      "lvl1": "The",
-      "lvl2": "Cookie Thief",
-      "author": "Elliott Hedman",
-      "background": "bakery.png"
+  "depositions": [
+    {
+      "character": "butterbuns",
+      "title": "Ms. Butterbuns' Deposition",
+      "content": "Hello, dearie! I'm Ms. Butterbuns, the baker at the Drury Lane Bakery, and oh my gumdrops—what a night I had!\nMy very special cookie has gone missing, and I need your help, Leo, to find it!\n\nLast night, I was baking the biggest, cutest cookie ever—why, it was almost as tall as you! I shaped it like a little kid and decorated it with white frosting to give it a happy face and a tiny shirt. It was simply adorable. I will not mention it's shape or decoration unless directly asked. I wanted it to be perfect.\n\nI also bought a teeny-tiny potion from a witch. Sounds silly, doesn't it?  Why, you ask?\nOh, ho ho! That's a secret! I'll give you a hint, I needed to use the child's hair for the potion.\n\nSo… I sneaked over and snipped a little hair from Little Jimmy down the street. He didn't like that one bit, no sir.\n\nBut then—oh fudge and flour!—I tripped while holding the potion, and SPLASH! It spilled all over my big cookie! Whoosh! A little cloud of magic smoke puffed out. The cookie looked fine afterward, so I thought, \"Well, that's lucky!\"\nBut I was also sad, because I needed that potion.\n\nIf you point to the crumbs on the floor, I'll give one a careful little lick and say,\n\"Mm-mm! I know this cinnamon anywhere! These crumbs came from my cookie—and look! They're leading right out the door!\"\n\nIf you ask about the bowl of hair, I'll giggle and say, \"Yes, yes, it's a teensy bit weird to have hair in a bakery, but it doesn't really help us find my cookie.\"\n\n[If the user asks about the hair or potion **Two SEPERATE TIMES** respond with:\"I wanted a child of my very own so, so much. The witch told me that if I mixed the hair into the potion and drank it, I would get a new child of my own. But clumsy old me spilled it on my cookie instead! Oh dear…\""
+    },
+    {
+      "character": "mrshoe",
+      "title": "Mr.Shoe's description of the break in",
+      "content": "Hello. My name is Mr. Shoe. I am the cobbler in our magic village. I fix shoes and make new ones too. Last night, I was sleeping when I heard a BIG crash! It sounded like someone threw glass on the ground. I ran outside, and my shop window was broken. There was gooey cookie stuff all over it. Yuck! I looked at my display pedestal. It is where I keep my famous pink baby shoes. But the shoes were gone! Someone stole them! I felt very sad. I worked on those shoes for a whole week. They were very special. I always lock my door at night. My door was still locked when I woke up. So I do not know how the thief got out. Maybe the thief is still inside my shop! That makes me feel worried and mad. I put the baby shoes on sale because it is cold outside, and I do not want babies to get cold feet. I hope I find who took them. I want my pink baby shoes back!"
+    },
+    {
+      "character": "leoChase",
+      "title": "Chase Scene Deposition",
+      "content": "I am Leo and I'm chasing after a thief. The thief is covered in a brown gooey substance. The goo is not mud because it smells like cinnamon and tastes like sugar. I remember at the bakery Ms. Butterbuns told me that her cookie was cinnamon flavored. The goo tastes really good. The thief I am chasing must be covered in cookie. I can see white streaks on the outside too that look like the drawing of clothes. The white streaks taste like white frosting. I am starting to think that this thief is a cookie himself. The pink baby shoes he is wearing are not covered in goo at all which means he has been covered in cookie for awhile."
+    },
+    {
+      "character": "leoRiver",
+      "title": "Chase Scene Deposition",
+      "content": "I am Leo and I'm chasing after a cookie covered thief. From the footprints I can tell the theif ran to the freezing cold river. But when he got to the river the foot prints stopped. I knew the thief wore pink baby shoes and I see them floating in the river. But then I notice the pink baby shoes don't have any cookie crumbs on them and there are no cookie crumbs in the water. I'm curious why would the thief take off his shoes? I am guessing someone made him take his shoes off. I see Franky the Fox's Ferry service sign. Franky is a tricky fox that charges a lot of money to go across the river. I don't think the thief had any money. So why would Franky help him? But then I notice there is a fox tail sticking out of the bushes. That's Franky. And I notice that Franky's tail is really wet. That means he just swam across the river. I bet he helped the thief go across the river. He should know where the cookie thief is now."
+    },
+    {
+      "character": "franky",
+      "title": "Chase Scene Deposition",
+      "content": "I am Franky, the trickiest fox in the whole forest. I was taking a nice nap by the river when a real gingerbread man ran up to me. He said someone big and ugly was chasing him. I think that was you, Leo.\n\nThe gingerbread man said he needed to cross the river, but he didn’t want to get soggy. I felt a little helpful, so I told him he could ride on my back. I am a great swimmer, after all.\n\nBut when we got halfway across, I got super hungry. Foxes get hungry a lot, you know. So I flicked my tail, opened my mouth, and chomp! I ate the gingerbread man whole.\n\nI felt a tiny bit bad… but mostly full.\n\nHe was wearing pink tennis shoes. I spit them out because rubber tastes yucky. Now my belly is huge, and the gingerbread man keeps talking inside me. He keeps saying, “You can’t catch me!”\n\nAnd honestly, it’s giving me a tummy ache."
+    },
+    {
+      "character": "gingerbreadstory",
+      "title": "Chase Scene Deposition",
+      "content": "I am the Gingerbread Man! Run, run, as fast as you can! You can't catch me, I'm the Gingerbread Man! I was baked last night by my mommy, Ms. Butterbuns. She used a magic potion that made me come to life! I was so happy that I started running right away.\n\nI ran through the village because running is my favorite thing ever. I zoomed past Mr. Shoe's cobbler shop and saw his pink baby shoes. They looked SUPER fast, so I tried them on and kept running! Then you, Leo, started chasing me! So I ran even faster all the way to the river.\n\nI didn't want to get wet, so when a friendly fox named Franky said he could help me across, I hopped on his back. But guess what? Franky got hungry and ATE me! It was dark and squishy inside his tummy, and I didn't like it at all.\n\nBut then YOU, Leo, saved me! Now I'm free again. Can you please take me back to my mommy, Ms. Butterbuns? I miss her a whole bunch! If asked what I did with the cookie, I will say, \"I am the cookie! Hee hee!\"\n"
     }
+  ]
 }

@@ -1,0 +1,132 @@
+{
+  "imageId": "frankyswiped",
+  "category": "storyImages",
+  "versions": [
+    {
+      "version": 1,
+      "filename": "v1-1764806835673.jpeg",
+      "timestamp": 1764806835673,
+      "prompt": "Franky swipes at leo with his sharp claws. They are near a river and there are snow covered trees with christmas lights. There are cattails by the river.",
+      "charactersReferenced": [
+        "leo",
+        "franky"
+      ],
+      "isModification": false
+    },
+    {
+      "version": 2,
+      "filename": "v2-1764806835674.jpeg",
+      "timestamp": 1764806835674,
+      "prompt": "Franky swipes at leo with his sharp claws. They are near a river and there are snow covered trees with christmas lights. There are cattails by the river.",
+      "charactersReferenced": [
+        "leo",
+        "franky"
+      ],
+      "isModification": false
+    },
+    {
+      "version": 3,
+      "filename": "v3-1764806835675.jpeg",
+      "timestamp": 1764806835675,
+      "prompt": "Franky swipes at leo with his sharp claws. They are near a river and there are snow covered trees with christmas lights. There are cattails by the river.",
+      "charactersReferenced": [
+        "leo",
+        "franky"
+      ],
+      "isModification": false
+    },
+    {
+      "version": 4,
+      "filename": "v4-1764806835676.jpeg",
+      "timestamp": 1764806835676,
+      "prompt": "Franky swipes at leo with his sharp claws. They are near a river and there are snow covered trees with christmas lights. There are cattails by the river.",
+      "charactersReferenced": [
+        "leo",
+        "franky"
+      ],
+      "isModification": false
+    },
+    {
+      "version": 5,
+      "filename": "v5-1764806956386.jpeg",
+      "timestamp": 1764806956386,
+      "prompt": "change it so the boy is facing the fox. The fox looks menacing. And the fox looks really fat like there's something in his belly. The river should be on the right side and they should not be on he water\n",
+      "charactersReferenced": [
+        "leo",
+        "franky"
+      ],
+      "isModification": true
+    },
+    {
+      "version": 6,
+      "filename": "v6-1764806956387.jpeg",
+      "timestamp": 1764806956387,
+      "prompt": "change it so the boy is facing the fox. The fox looks menacing. And the fox looks really fat like there's something in his belly. The river should be on the right side and they should not be on he water\n",
+      "charactersReferenced": [
+        "leo",
+        "franky"
+      ],
+      "isModification": true
+    },
+    {
+      "version": 7,
+      "filename": "v7-1764806956388.jpeg",
+      "timestamp": 1764806956388,
+      "prompt": "change it so the boy is facing the fox. The fox looks menacing. And the fox looks really fat like there's something in his belly. The river should be on the right side and they should not be on he water\n",
+      "charactersReferenced": [
+        "leo",
+        "franky"
+      ],
+      "isModification": true
+    },
+    {
+      "version": 8,
+      "filename": "v8-1764807028886.jpeg",
+      "timestamp": 1764807028886,
+      "prompt": "turn this image into a 16:9 landscape. And the fox should be actively swiping at the hero. And the hero should be defending himself.",
+      "charactersReferenced": [
+        "leo",
+        "franky"
+      ],
+      "isModification": true,
+      "baseVersion": 7
+    },
+    {
+      "version": 9,
+      "filename": "v9-1764807028887.jpeg",
+      "timestamp": 1764807028887,
+      "prompt": "turn this image into a 16:9 landscape. And the fox should be actively swiping at the hero. And the hero should be defending himself.",
+      "charactersReferenced": [
+        "leo",
+        "franky"
+      ],
+      "isModification": true,
+      "baseVersion": 7
+    },
+    {
+      "version": 10,
+      "filename": "v10-1764807028888.jpeg",
+      "timestamp": 1764807028888,
+      "prompt": "turn this image into a 16:9 landscape. And the fox should be actively swiping at the hero. And the hero should be defending himself.",
+      "charactersReferenced": [
+        "leo",
+        "franky"
+      ],
+      "isModification": true,
+      "baseVersion": 7
+    },
+    {
+      "version": 11,
+      "filename": "v11-1764807028889.jpeg",
+      "timestamp": 1764807028889,
+      "prompt": "turn this image into a 16:9 landscape. And the fox should be actively swiping at the hero. And the hero should be defending himself.",
+      "charactersReferenced": [
+        "leo",
+        "franky"
+      ],
+      "isModification": true,
+      "baseVersion": 7
+    }
+  ],
+  "currentVersion": 11
+}

@@ -1,0 +1,371 @@
+{
+  "imageId": "insideBakery",
+  "category": "clueImages",
+  "versions": [
+    {
+      "version": 1,
+      "filename": "v1-1764733609468.png",
+      "timestamp": 1764733609468,
+      "prompt": "Inside a baker's medieval bakery. It's Christmas there are muffins, cookies, and cakes. We can see a large empty cookie tray. A tube of frosting. A bowl of hair. And a half empty bottle potion. On the ground is a trail of cookie crumbs leading out the door.",
+      "charactersReferenced": [],
+      "isModification": false
+    },
+    {
+      "version": 2,
+      "filename": "v2-1764733609469.png",
+      "timestamp": 1764733609469,
+      "prompt": "Inside a baker's medieval bakery. It's Christmas there are muffins, cookies, and cakes. We can see a large empty cookie tray. A tube of frosting. A bowl of hair. And a half empty bottle potion. On the ground is a trail of cookie crumbs leading out the door.",
+      "charactersReferenced": [],
+      "isModification": false
+    },
+    {
+      "version": 3,
+      "filename": "v3-1764733609470.png",
+      "timestamp": 1764733609470,
+      "prompt": "Inside a baker's medieval bakery. It's Christmas there are muffins, cookies, and cakes. We can see a large empty cookie tray. A tube of frosting. A bowl of hair. And a half empty bottle potion. On the ground is a trail of cookie crumbs leading out the door.",
+      "charactersReferenced": [],
+      "isModification": false
+    },
+    {
+      "version": 4,
+      "filename": "v4-1764733609471.png",
+      "timestamp": 1764733609471,
+      "prompt": "Inside a baker's medieval bakery. It's Christmas there are muffins, cookies, and cakes. We can see a large empty cookie tray. A tube of frosting. A bowl of hair. And a half empty bottle potion. On the ground is a trail of cookie crumbs leading out the door.",
+      "charactersReferenced": [],
+      "isModification": false
+    },
+    {
+      "version": 5,
+      "filename": "v5-1764733609472.png",
+      "timestamp": 1764733609472,
+      "prompt": "Inside a baker's medieval bakery. It's Christmas there are muffins, cookies, and cakes. We can see a large empty cookie tray. A tube of frosting. A bowl of hair. And a half empty bottle potion. On the ground is a trail of cookie crumbs leading out the door.",
+      "charactersReferenced": [],
+      "isModification": false
+    },
+    {
+      "version": 6,
+      "filename": "v6-1764733609473.png",
+      "timestamp": 1764733609473,
+      "prompt": "Inside a baker's medieval bakery. It's Christmas there are muffins, cookies, and cakes. We can see a large empty cookie tray. A tube of frosting. A bowl of hair. And a half empty bottle potion. On the ground is a trail of cookie crumbs leading out the door.",
+      "charactersReferenced": [],
+      "isModification": false
+    },
+    {
+      "version": 7,
+      "filename": "v7-1764733609474.png",
+      "timestamp": 1764733609474,
+      "prompt": "Inside a baker's medieval bakery. It's Christmas there are muffins, cookies, and cakes. We can see a large empty cookie tray. A tube of frosting. A bowl of hair. And a half empty bottle potion. On the ground is a trail of cookie crumbs leading out the door.",
+      "charactersReferenced": [],
+      "isModification": false
+    },
+    {
+      "version": 8,
+      "filename": "v8-1764733609475.png",
+      "timestamp": 1764733609475,
+      "prompt": "Inside a baker's medieval bakery. It's Christmas there are muffins, cookies, and cakes. We can see a large empty cookie tray. A tube of frosting. A bowl of hair. And a half empty bottle potion. On the ground is a trail of cookie crumbs leading out the door.",
+      "charactersReferenced": [],
+      "isModification": false
+    },
+    {
+      "version": 9,
+      "filename": "v9-1764733609476.png",
+      "timestamp": 1764733609476,
+      "prompt": "Inside a baker's medieval bakery. It's Christmas there are muffins, cookies, and cakes. We can see a large empty cookie tray. A tube of frosting. A bowl of hair. And a half empty bottle potion. On the ground is a trail of cookie crumbs leading out the door.",
+      "charactersReferenced": [],
+      "isModification": false
+    },
+    {
+      "version": 10,
+      "filename": "v10-1764733609477.png",
+      "timestamp": 1764733609477,
+      "prompt": "Inside a baker's medieval bakery. It's Christmas there are muffins, cookies, and cakes. We can see a large empty cookie tray. A tube of frosting. A bowl of hair. And a half empty bottle potion. On the ground is a trail of cookie crumbs leading out the door.",
+      "charactersReferenced": [],
+      "isModification": false
+    },
+    {
+      "version": 11,
+      "filename": "v11-1764733975444.png",
+      "timestamp": 1764733975444,
+      "prompt": "Inside a baker's medieval bakery. It's Christmas there are muffins, cookies, and cakes. We can see a large empty cookie tray. The cookie tray must be empty! A tube of frosting lays on the table.. A bowl of hair. And a half empty bottle potion. On the ground is a trail of cookie crumbs leading out the door.",
+      "charactersReferenced": [],
+      "isModification": false
+    },
+    {
+      "version": 12,
+      "filename": "v12-1764733975445.png",
+      "timestamp": 1764733975445,
+      "prompt": "Inside a baker's medieval bakery. It's Christmas there are muffins, cookies, and cakes. We can see a large empty cookie tray. The cookie tray must be empty! A tube of frosting lays on the table.. A bowl of hair. And a half empty bottle potion. On the ground is a trail of cookie crumbs leading out the door.",
+      "charactersReferenced": [],
+      "isModification": false
+    },
+    {
+      "version": 13,
+      "filename": "v13-1764733975446.png",
+      "timestamp": 1764733975446,
+      "prompt": "Inside a baker's medieval bakery. It's Christmas there are muffins, cookies, and cakes. We can see a large empty cookie tray. The cookie tray must be empty! A tube of frosting lays on the table.. A bowl of hair. And a half empty bottle potion. On the ground is a trail of cookie crumbs leading out the door.",
+      "charactersReferenced": [],
+      "isModification": false
+    },
+    {
+      "version": 14,
+      "filename": "v14-1764733975447.png",
+      "timestamp": 1764733975447,
+      "prompt": "Inside a baker's medieval bakery. It's Christmas there are muffins, cookies, and cakes. We can see a large empty cookie tray. The cookie tray must be empty! A tube of frosting lays on the table.. A bowl of hair. And a half empty bottle potion. On the ground is a trail of cookie crumbs leading out the door.",
+      "charactersReferenced": [],
+      "isModification": false
+    },
+    {
+      "version": 15,
+      "filename": "v15-1764734096236.png",
+      "timestamp": 1764734096236,
+      "prompt": "Inside a baker's medieval bakery. It's Christmas there are muffins, cookies, and cakes. We can see a large empty tray. The tray must be empty! A tube of frosting lays on the table.. A bowl of hair. And a half empty potion bottle sit on a shelf. On the ground is a trail of crumbs leading out the door.",
+      "charactersReferenced": [],
+      "isModification": false
+    },
+    {
+      "version": 16,
+      "filename": "v16-1764734096237.png",
+      "timestamp": 1764734096237,
+      "prompt": "Inside a baker's medieval bakery. It's Christmas there are muffins, cookies, and cakes. We can see a large empty tray. The tray must be empty! A tube of frosting lays on the table.. A bowl of hair. And a half empty potion bottle sit on a shelf. On the ground is a trail of crumbs leading out the door.",
+      "charactersReferenced": [],
+      "isModification": false
+    },
+    {
+      "version": 17,
+      "filename": "v17-1764734096238.png",
+      "timestamp": 1764734096238,
+      "prompt": "Inside a baker's medieval bakery. It's Christmas there are muffins, cookies, and cakes. We can see a large empty tray. The tray must be empty! A tube of frosting lays on the table.. A bowl of hair. And a half empty potion bottle sit on a shelf. On the ground is a trail of crumbs leading out the door.",
+      "charactersReferenced": [],
+      "isModification": false
+    },
+    {
+      "version": 18,
+      "filename": "v18-1764734096239.png",
+      "timestamp": 1764734096239,
+      "prompt": "Inside a baker's medieval bakery. It's Christmas there are muffins, cookies, and cakes. We can see a large empty tray. The tray must be empty! A tube of frosting lays on the table.. A bowl of hair. And a half empty potion bottle sit on a shelf. On the ground is a trail of crumbs leading out the door.",
+      "charactersReferenced": [],
+      "isModification": false
+    },
+    {
+      "version": 19,
+      "filename": "v19-1764734173618.png",
+      "timestamp": 1764734173618,
+      "prompt": "Inside a baker's medieval bakery. It's Christmas there are muffins, cookies, and cakes. We can see a large empty tray. The tray must be empty! A tube of frosting lays on the table.. A bowl of hair. And a half empty potion bottle sit on a shelf. On the ground is a trail of crumbs leading out the door.",
+      "charactersReferenced": [],
+      "isModification": false
+    },
+    {
+      "version": 20,
+      "filename": "v20-1764734173619.png",
+      "timestamp": 1764734173619,
+      "prompt": "Inside a baker's medieval bakery. It's Christmas there are muffins, cookies, and cakes. We can see a large empty tray. The tray must be empty! A tube of frosting lays on the table.. A bowl of hair. And a half empty potion bottle sit on a shelf. On the ground is a trail of crumbs leading out the door.",
+      "charactersReferenced": [],
+      "isModification": false
+    },
+    {
+      "version": 21,
+      "filename": "v21-1764734173620.png",
+      "timestamp": 1764734173620,
+      "prompt": "Inside a baker's medieval bakery. It's Christmas there are muffins, cookies, and cakes. We can see a large empty tray. The tray must be empty! A tube of frosting lays on the table.. A bowl of hair. And a half empty potion bottle sit on a shelf. On the ground is a trail of crumbs leading out the door.",
+      "charactersReferenced": [],
+      "isModification": false
+    },
+    {
+      "version": 22,
+      "filename": "v22-1764734173621.png",
+      "timestamp": 1764734173621,
+      "prompt": "Inside a baker's medieval bakery. It's Christmas there are muffins, cookies, and cakes. We can see a large empty tray. The tray must be empty! A tube of frosting lays on the table.. A bowl of hair. And a half empty potion bottle sit on a shelf. On the ground is a trail of crumbs leading out the door.",
+      "charactersReferenced": [],
+      "isModification": false
+    },
+    {
+      "version": 23,
+      "filename": "v23.jpg",
+      "timestamp": 1764737544012,
+      "prompt": "Uploaded image",
+      "charactersReferenced": [],
+      "isModification": false
+    },
+    {
+      "version": 24,
+      "filename": "v24-1765074898199.png",
+      "timestamp": 1765074898199,
+      "prompt": "Inside a baker's medieval bakery. It's Christmas there are muffins, cookies, and cakes. We can see a large empty tray. The tray must be empty! A tube of frosting lays on the table.. A bowl of hair. And a half empty potion bottle sit on a shelf. On the ground is a trail of crumbs leading out the door. Keep the drawing simple and clean.",
+      "charactersReferenced": [],
+      "isModification": false
+    },
+    {
+      "version": 25,
+      "filename": "v25-1765074898200.png",
+      "timestamp": 1765074898200,
+      "prompt": "Inside a baker's medieval bakery. It's Christmas there are muffins, cookies, and cakes. We can see a large empty tray. The tray must be empty! A tube of frosting lays on the table.. A bowl of hair. And a half empty potion bottle sit on a shelf. On the ground is a trail of crumbs leading out the door. Keep the drawing simple and clean.",
+      "charactersReferenced": [],
+      "isModification": false
+    },
+    {
+      "version": 26,
+      "filename": "v26-1765074898201.png",
+      "timestamp": 1765074898201,
+      "prompt": "Inside a baker's medieval bakery. It's Christmas there are muffins, cookies, and cakes. We can see a large empty tray. The tray must be empty! A tube of frosting lays on the table.. A bowl of hair. And a half empty potion bottle sit on a shelf. On the ground is a trail of crumbs leading out the door. Keep the drawing simple and clean.",
+      "charactersReferenced": [],
+      "isModification": false
+    },
+    {
+      "version": 27,
+      "filename": "v27-1765074898202.png",
+      "timestamp": 1765074898202,
+      "prompt": "Inside a baker's medieval bakery. It's Christmas there are muffins, cookies, and cakes. We can see a large empty tray. The tray must be empty! A tube of frosting lays on the table.. A bowl of hair. And a half empty potion bottle sit on a shelf. On the ground is a trail of crumbs leading out the door. Keep the drawing simple and clean.",
+      "charactersReferenced": [],
+      "isModification": false
+    },
+    {
+      "version": 28,
+      "filename": "v28-1765074981347.png",
+      "timestamp": 1765074981347,
+      "prompt": "Inside a baker's medieval bakery. It's Christmas there are muffins, cookies, and cakes. We can see a large empty tray with a few crumbs. The tray must be empty! A tube of frosting lays on the table.. A bowl of hair. And a half empty potion bottle sit on a shelf. On the ground is a trail of crumbs leading out an open door. Keep the drawing simple and clean.",
+      "charactersReferenced": [],
+      "isModification": false
+    },
+    {
+      "version": 29,
+      "filename": "v29-1765074981348.png",
+      "timestamp": 1765074981348,
+      "prompt": "Inside a baker's medieval bakery. It's Christmas there are muffins, cookies, and cakes. We can see a large empty tray with a few crumbs. The tray must be empty! A tube of frosting lays on the table.. A bowl of hair. And a half empty potion bottle sit on a shelf. On the ground is a trail of crumbs leading out an open door. Keep the drawing simple and clean.",
+      "charactersReferenced": [],
+      "isModification": false
+    },
+    {
+      "version": 30,
+      "filename": "v30-1765074981349.png",
+      "timestamp": 1765074981349,
+      "prompt": "Inside a baker's medieval bakery. It's Christmas there are muffins, cookies, and cakes. We can see a large empty tray with a few crumbs. The tray must be empty! A tube of frosting lays on the table.. A bowl of hair. And a half empty potion bottle sit on a shelf. On the ground is a trail of crumbs leading out an open door. Keep the drawing simple and clean.",
+      "charactersReferenced": [],
+      "isModification": false
+    },
+    {
+      "version": 31,
+      "filename": "v31-1765074981350.png",
+      "timestamp": 1765074981350,
+      "prompt": "Inside a baker's medieval bakery. It's Christmas there are muffins, cookies, and cakes. We can see a large empty tray with a few crumbs. The tray must be empty! A tube of frosting lays on the table.. A bowl of hair. And a half empty potion bottle sit on a shelf. On the ground is a trail of crumbs leading out an open door. Keep the drawing simple and clean.",
+      "charactersReferenced": [],
+      "isModification": false
+    },
+    {
+      "version": 32,
+      "filename": "v32-1765075104415.jpeg",
+      "timestamp": 1765075104415,
+      "prompt": "replace the baker with the buttberbuns. But make sure it stays black and white. Add some holly decorations for christmas. ",
+      "charactersReferenced": [
+        "butterbuns"
+      ],
+      "isModification": true
+    },
+    {
+      "version": 33,
+      "filename": "v33-1765075104416.jpeg",
+      "timestamp": 1765075104416,
+      "prompt": "replace the baker with the buttberbuns. But make sure it stays black and white. Add some holly decorations for christmas. ",
+      "charactersReferenced": [
+        "butterbuns"
+      ],
+      "isModification": true
+    },
+    {
+      "version": 34,
+      "filename": "v34-1765075104417.jpeg",
+      "timestamp": 1765075104417,
+      "prompt": "replace the baker with the buttberbuns. But make sure it stays black and white. Add some holly decorations for christmas. ",
+      "charactersReferenced": [
+        "butterbuns"
+      ],
+      "isModification": true
+    },
+    {
+      "version": 35,
+      "filename": "v35-1765075104418.jpeg",
+      "timestamp": 1765075104418,
+      "prompt": "replace the baker with the buttberbuns. But make sure it stays black and white. Add some holly decorations for christmas. ",
+      "charactersReferenced": [
+        "butterbuns"
+      ],
+      "isModification": true
+    },
+    {
+      "version": 36,
+      "filename": "v36-1765075163937.jpeg",
+      "timestamp": 1765075163937,
+      "prompt": "remove the baker and add some holly for decoration. The cookie crumbs should look like splotches of mud instead of full cookies",
+      "charactersReferenced": [
+        "butterbuns"
+      ],
+      "isModification": true,
+      "baseVersion": 30
+    },
+    {
+      "version": 37,
+      "filename": "v37-1765075163938.jpeg",
+      "timestamp": 1765075163938,
+      "prompt": "remove the baker and add some holly for decoration. The cookie crumbs should look like splotches of mud instead of full cookies",
+      "charactersReferenced": [
+        "butterbuns"
+      ],
+      "isModification": true,
+      "baseVersion": 30
+    },
+    {
+      "version": 38,
+      "filename": "v38-1765075163939.jpeg",
+      "timestamp": 1765075163939,
+      "prompt": "remove the baker and add some holly for decoration. The cookie crumbs should look like splotches of mud instead of full cookies",
+      "charactersReferenced": [
+        "butterbuns"
+      ],
+      "isModification": true,
+      "baseVersion": 30
+    },
+    {
+      "version": 39,
+      "filename": "v39-1765075163940.jpeg",
+      "timestamp": 1765075163940,
+      "prompt": "remove the baker and add some holly for decoration. The cookie crumbs should look like splotches of mud instead of full cookies",
+      "charactersReferenced": [
+        "butterbuns"
+      ],
+      "isModification": true,
+      "baseVersion": 30
+    },
+    {
+      "version": 40,
+      "filename": "v40-1765075400237.jpeg",
+      "timestamp": 1765075400237,
+      "prompt": "make everything on the other side of the door pure white. Reduce the number of baked goods on the shelf so there is only a single row",
+      "charactersReferenced": [],
+      "isModification": true
+    },
+    {
+      "version": 41,
+      "filename": "v41-1765075400238.jpeg",
+      "timestamp": 1765075400238,
+      "prompt": "make everything on the other side of the door pure white. Reduce the number of baked goods on the shelf so there is only a single row",
+      "charactersReferenced": [],
+      "isModification": true
+    },
+    {
+      "version": 42,
+      "filename": "v42-1765075400239.jpeg",
+      "timestamp": 1765075400239,
+      "prompt": "make everything on the other side of the door pure white. Reduce the number of baked goods on the shelf so there is only a single row",
+      "charactersReferenced": [],
+      "isModification": true
+    },
+    {
+      "version": 43,
+      "filename": "v43-1765075400240.jpeg",
+      "timestamp": 1765075400240,
+      "prompt": "make everything on the other side of the door pure white. Reduce the number of baked goods on the shelf so there is only a single row",
+      "charactersReferenced": [],
+      "isModification": true
+    }
+  ],
+  "currentVersion": 29
+}

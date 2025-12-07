@@ -148,7 +148,6 @@ async function makeStickerBorder(input, output, strokePx = 21, softness = 0.8, s
   softness = Math.max(0.1, Math.min(5.0, +softness || 0.8)); // Allow higher softness
   shadow = shadow !== false && shadow !== 'false' && shadow !== '0';
   
-  console.log(`🔖 Creating sticker border: ${strokePx}px stroke, ${softness} softness${shadow ? ', with shadow' : ''}${vectorSmooth ? ', vector smoothed' : ''}`);
 
   // Step 1: Load image and get RGBA data
   const image = sharp(input).rotate();
@@ -158,10 +157,8 @@ async function makeStickerBorder(input, output, strokePx = 21, softness = 0.8, s
     .toBuffer({ resolveWithObject: true });
   
   const { width: W, height: H } = info;
-  console.log(`   📏 Original size: ${W}x${H}`);
   
   // Step 1.5: Normalize off-white (cream, yellowish) to pure white
-  console.log(`   🎨 Normalizing off-whites to pure white...`);
   const rgba = Buffer.from(data); // Create a copy to modify
   for (let i = 0; i < rgba.length; i += 4) {
     const r = rgba[i], g = rgba[i+1], b = rgba[i+2];
@@ -180,7 +177,6 @@ async function makeStickerBorder(input, output, strokePx = 21, softness = 0.8, s
   const newW = W + padding * 2;
   const newH = H + padding * 2;
   
-  console.log(`   📐 Expanded size: ${newW}x${newH} (padding: ${padding}px on each side)`);
   
   // Step 3: Create expanded transparent canvas
   const expandedData = Buffer.alloc(newW * newH * 4);
@@ -203,10 +199,8 @@ async function makeStickerBorder(input, output, strokePx = 21, softness = 0.8, s
   let borderResult;
   
   if (vectorSmooth) {
-    console.log(`   🎯 Creating vector-smoothed ${strokePx}px border...`);
     borderResult = await createVectorSmoothBorder(expandedData, newW, newH, strokePx, bevelPx);
   } else {
-    console.log(`   🔍 Creating raster-smoothed ${strokePx}px border...`);
     borderResult = await createRasterSmoothBorder(expandedData, newW, newH, strokePx, softness, bevelPx);
   }
   
@@ -214,7 +208,6 @@ async function makeStickerBorder(input, output, strokePx = 21, softness = 0.8, s
   
   // Step 5: Apply bevel shading if enabled
   if (bevelPx > 0) {
-    console.log(`   ✨ Adding ${bevelPx}px bevel shading (intensity: ${bevelIntensity}, ${bevelInner ? 'inner' : 'outer'})...`);
     const alphaSrc = extractAlpha(expandedData, newW, newH);
     const targetMask = bevelInner ? innerMask : outerMask;
     const bevelLayer = await buildBevelLayer({
@@ -234,7 +227,6 @@ async function makeStickerBorder(input, output, strokePx = 21, softness = 0.8, s
   }
   
   // Step 6: Save as lossless WebP
-  console.log(`   💾 Saving as lossless WebP...`);
   await sharp(borderData, {
     raw: {
       width: newW,
@@ -249,7 +241,6 @@ async function makeStickerBorder(input, output, strokePx = 21, softness = 0.8, s
   })
   .toFile(output);
 
-  console.log(`✔ Sticker border complete: ${input} -> ${output}`);
 }
 
 /**
@@ -312,7 +303,6 @@ async function findCharacterFolders() {
  * Create clean white border without black artifacts
  */
 async function createVectorSmoothBorder(expandedData, newW, newH, strokePx, bevelPx = 0) {
-  console.log(`   🎯 Creating clean white border without dark edges...`);
   
   const borderData = Buffer.alloc(newW * newH * 4);
   borderData.fill(0); // Start transparent
@@ -551,12 +541,10 @@ async function createRasterSmoothBorder(expandedData, newW, newH, strokePx, soft
  * Process all character cutout images
  */
 async function processAllCharacters(strokePx = 21, softness = 0.8, shadow = true, vectorSmooth = false, simplifyPx = 0, trimSpikesPx = 0, solidBorder = false, bevelPx = 0, lightDir = 45, bevelIntensity = 0.35, bevelInner = true) {
-  console.log('🔖 Processing all character images with sticker borders...\n');
   
   const characterFolders = await findCharacterFolders();
   
   if (characterFolders.length === 0) {
-    console.log('⚠️  No character folders found');
     return;
   }
   
@@ -566,7 +554,6 @@ async function processAllCharacters(strokePx = 21, softness = 0.8, shadow = true
   
   for (const folder of characterFolders) {
     const relativePath = path.relative(process.cwd(), folder);
-    console.log(`📁 Processing: ${relativePath}`);
     
     let folderProcessed = 0;
     let folderSkipped = 0;
@@ -585,7 +572,6 @@ async function processAllCharacters(strokePx = 21, softness = 0.8, shadow = true
         // Skip if sticker already exists
         try {
           await fs.access(outputPath);
-          console.log(`  ⏩ Skipped: ${file} (sticker exists)`);
           folderSkipped++;
           totalSkipped++;
           continue;
@@ -593,37 +579,27 @@ async function processAllCharacters(strokePx = 21, softness = 0.8, shadow = true
           // File doesn't exist, proceed
         }
         
-        console.log(`  ⚙️  Processing: ${file}...`);
         
         try {
           await makeStickerBorder(inputPath, outputPath, strokePx, softness, shadow, vectorSmooth, simplifyPx, trimSpikesPx, solidBorder, bevelPx, lightDir, bevelIntensity, bevelInner);
-          console.log(`  ✅ Generated: ${baseName}.sticker.webp`);
           folderProcessed++;
           totalProcessed++;
         } catch (error) {
-          console.log(`  ❌ Error: ${file} - ${error.message}`);
           totalErrors++;
         }
       }
       
       if (folderProcessed > 0 || folderSkipped > 0) {
-        console.log(`  📊 Subtotal: ${folderProcessed} processed, ${folderSkipped} skipped\n`);
       } else {
-        console.log(`  📭 No cutout images found\n`);
       }
     } catch (error) {
-      console.log(`  ❌ Could not read folder: ${error.message}\n`);
       totalErrors++;
     }
   }
   
   // Final summary
-  console.log('═'.repeat(50));
-  console.log('✨ Sticker Border Complete!');
-  console.log(`📊 Total: ${totalProcessed} generated, ${totalSkipped} skipped, ${totalErrors} errors`);
   
   if (totalErrors > 0) {
-    console.log(`⚠️  ${totalErrors} images failed to process`);
   }
 }
 

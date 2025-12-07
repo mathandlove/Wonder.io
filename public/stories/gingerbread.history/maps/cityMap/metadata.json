@@ -1,0 +1,71 @@
+{
+  "imageId": "cityMap",
+  "category": "maps",
+  "versions": [
+    {
+      "version": 1,
+      "filename": "v1-1764818445874.jpeg",
+      "timestamp": 1764818445874,
+      "prompt": "A map of a medieval village. There is a bakery next to a cobbler store. Over some snowy hills there is the river. Show paper cone trees covered in snow and a few other buildings. It should feel christmasy.\n",
+      "charactersReferenced": [],
+      "isModification": false
+    },
+    {
+      "version": 2,
+      "filename": "v2-1764818445875.jpeg",
+      "timestamp": 1764818445875,
+      "prompt": "A map of a medieval village. There is a bakery next to a cobbler store. Over some snowy hills there is the river. Show paper cone trees covered in snow and a few other buildings. It should feel christmasy.\n",
+      "charactersReferenced": [],
+      "isModification": false
+    },
+    {
+      "version": 3,
+      "filename": "v3-1764818445876.jpeg",
+      "timestamp": 1764818445876,
+      "prompt": "A map of a medieval village. There is a bakery next to a cobbler store. Over some snowy hills there is the river. Show paper cone trees covered in snow and a few other buildings. It should feel christmasy.\n",
+      "charactersReferenced": [],
+      "isModification": false
+    },
+    {
+      "version": 4,
+      "filename": "v4-1764818445877.jpeg",
+      "timestamp": 1764818445877,
+      "prompt": "A map of a medieval village. There is a bakery next to a cobbler store. Over some snowy hills there is the river. Show paper cone trees covered in snow and a few other buildings. It should feel christmasy.\n",
+      "charactersReferenced": [],
+      "isModification": false
+    },
+    {
+      "version": 5,
+      "filename": "v5-1764818526889.jpeg",
+      "timestamp": 1764818526889,
+      "prompt": "A map of a medieval village. There is a bakery next to a cobbler store. Over some snowy hills there is the river. The river should feel off in the distance. Show paper cone trees covered in snow and a few other buildings. It should feel christmasy.\n",
+      "charactersReferenced": [],
+      "isModification": false
+    },
+    {
+      "version": 6,
+      "filename": "v6-1764818526890.jpeg",
+      "timestamp": 1764818526890,
+      "prompt": "A map of a medieval village. There is a bakery next to a cobbler store. Over some snowy hills there is the river. The river should feel off in the distance. Show paper cone trees covered in snow and a few other buildings. It should feel christmasy.\n",
+      "charactersReferenced": [],
+      "isModification": false
+    },
+    {
+      "version": 7,
+      "filename": "v7-1764818526891.jpeg",
+      "timestamp": 1764818526891,
+      "prompt": "A map of a medieval village. There is a bakery next to a cobbler store. Over some snowy hills there is the river. The river should feel off in the distance. Show paper cone trees covered in snow and a few other buildings. It should feel christmasy.\n",
+      "charactersReferenced": [],
+      "isModification": false
+    },
+    {
+      "version": 8,
+      "filename": "v8-1764818526892.jpeg",
+      "timestamp": 1764818526892,
+      "prompt": "A map of a medieval village. There is a bakery next to a cobbler store. Over some snowy hills there is the river. The river should feel off in the distance. Show paper cone trees covered in snow and a few other buildings. It should feel christmasy.\n",
+      "charactersReferenced": [],
+      "isModification": false
+    }
+  ],
+  "currentVersion": 6
+}

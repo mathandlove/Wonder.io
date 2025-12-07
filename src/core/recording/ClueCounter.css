@@ -1,0 +1,380 @@
+/**
+ * ClueCounter Styles - Matching Figma Design
+ *
+ * Structure:
+ * .clues-panel - Outer cardboard panel with border and background
+ *   .whiteframe - White inner frame containing all content
+ *     .clues - Header text showing "Clues" and count
+ *     .clue-image-holder - Grid of clue thumbnails
+ *       .frame - Individual clue frame (4 total)
+ *     .button - Continue button
+ */
+
+/* ===================================
+   CLUES PANEL - Outer Container
+   =================================== */
+
+.clues-panel {
+  align-items: center;
+  background-image: url(/VisualAssets/cardboard.png);
+  background-position: 50% 50%;
+  background-size: 360px 540px; /* 30% of original 1200×1800px */
+  background-repeat: repeat;
+  border-color: #49301d;
+  border-left-style: solid;
+  border-left-width: 7px;
+  border-radius: 32px 32px 0px 0px;
+  border-right-style: solid;
+  border-right-width: 7px;
+  border-top-style: solid;
+  border-top-width: 7px;
+  border-bottom: none; /* No bottom border - flush with screen */
+  display: inline-flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  overflow: hidden;
+  padding: 16px 16px 0px; /* No bottom padding - flush with screen */
+  position: relative;
+  margin-bottom: 0; /* Ensure no margin pushes it up */
+}
+
+/* ===================================
+   WHITEFRAME - Inner White Container
+   =================================== */
+
+.clues-panel .whiteframe {
+  align-items: center;
+  background-color: #ffffff;
+  border-bottom: none; /* No bottom border - flush with screen */
+  border-color: #49301d;
+  border-left-style: solid;
+  border-left-width: 1px;
+  border-radius: 16px 16px 0px 0px;
+  border-right-style: solid;
+  border-right-width: 1px;
+  display: flex;
+  flex-direction: row; /* Horizontal layout */
+  flex: 0 0 auto;
+  justify-content: space-between;
+  align-items: center; /* Center items vertically */
+  overflow: hidden;
+  padding: 8px 24px 8px 24px; /* Keep consistent padding all around */
+  position: relative;
+  width: fit-content; /* Hug contents instead of fixed width */
+  gap: 16px; /* Gap between sections */
+  margin-bottom: 0; /* No bottom margin */
+}
+
+/* ===================================
+   CLUES - Header Text
+   =================================== */
+
+.clues-panel .clues {
+  color: #b2652a;
+  font-family: "Inter-Bold", Helvetica, Arial, sans-serif;
+  letter-spacing: 0;
+  line-height: normal;
+  position: relative;
+  text-align: center;
+  width: fit-content;
+}
+
+/* Title "Clues" - bold and larger */
+.clues-panel .clues__title {
+  font-size: 24px;
+  font-weight: 700;
+  display: block;
+}
+
+/* Count "4/4" - smaller and secondary */
+.clues-panel .clues__count {
+  font-size: 16px;
+  font-weight: 400;
+  opacity: 0.8;
+  display: block;
+}
+
+/* ===================================
+   CLUE IMAGE HOLDER - Thumbnail Grid
+   =================================== */
+
+.clues-panel .clue-image-holder {
+  align-items: center;
+  display: inline-flex;
+  flex: 0 0 auto;
+  gap: 28px;
+  padding: 10px 0px;
+  position: relative;
+}
+
+/* ===================================
+   FRAME - Individual Clue Thumbnail
+   =================================== */
+
+.clues-panel .frame {
+  background: transparent; /* No background - just show the image */
+  height: 60px;
+  width: 60px;
+  min-width: 60px; /* Prevent shrinking */
+  min-height: 60px; /* Prevent shrinking */
+  max-width: 60px; /* Prevent growing */
+  max-height: 60px; /* Prevent growing */
+  position: relative;
+  overflow: visible; /* Allow scale to go beyond bounds */
+  display: block;
+  transition: transform 0.2s ease;
+  border: none; /* No border - let image fill frame */
+  border-radius: 0; /* Square corners - no rounding */
+  flex-shrink: 0; /* Don't allow flex to shrink these */
+  cursor: pointer;
+}
+
+.clues-panel .frame:hover {
+  transform: scale(1.2);
+  z-index: 10; /* Bring hovered thumbnail above others */
+}
+
+/* Question mark image for undiscovered clues */
+.clues-panel .frame__question-mark {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  object-position: center;
+  border: none;
+  border-radius: 0;
+  display: block;
+  position: absolute;
+  top: 0;
+  left: 0;
+}
+
+/* Clue image for discovered clues */
+.clues-panel .frame__image {
+  /* Images are positioned via inline styles to fill the frame */
+  position: absolute;
+  top: 0;
+  left: 0;
+  border: none;
+  border-radius: 0;
+  display: block;
+}
+
+/* Found state - no additional styling needed */
+.clues-panel .frame--found {
+  /* Removed box-shadow */
+}
+
+/* Reveal animation */
+.clues-panel .frame--animate {
+  animation: clue-pop 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+@keyframes clue-pop {
+  0% {
+    transform: scale(0.5);
+    opacity: 0;
+  }
+  50% {
+    transform: scale(1.15);
+  }
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+/* ===================================
+   BUTTON - Continue Button (matches RecordPanel next-btn)
+   =================================== */
+
+.clues-panel .button {
+  all: unset;
+  align-items: center;
+  background-image: url(/VisualAssets/cardboard.png);
+  background-position: center;
+  background-size: 360px 540px; /* 30% of original 1200×1800px */
+  background-repeat: repeat; /* Tile the texture instead of stretching */
+  border: 3px solid;
+  border-color: #49301d;
+  border-radius: 16px;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: row;
+  gap: 0;
+  height: 55px;
+  justify-content: center;
+  padding: 8px 20px;
+  position: relative;
+  width: 192px;
+  cursor: not-allowed;
+  transition: all 0.15s ease;
+  flex-shrink: 0; /* Don't shrink the button */
+}
+
+/* Grey overlay for locked state */
+.clues-panel .button::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: rgba(128, 128, 128, 0.7); /* Stronger grey for locked state */
+  border-radius: 12px;
+  pointer-events: none;
+  z-index: 1;
+}
+
+/* Enabled state - when all clues are found */
+.clues-panel .button--enabled {
+  cursor: pointer;
+}
+
+/* Bright green overlay when enabled */
+.clues-panel .button--enabled::before {
+  background: rgba(34, 197, 94, 0.6); /* Bright, vibrant green */
+}
+
+/* Hover effect - darken the green overlay */
+.clues-panel .button--enabled:hover::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    0deg,
+    rgba(0, 0, 0, 0.15) 0%,
+    rgba(0, 0, 0, 0.15) 100%
+  );
+  border-radius: 16px;
+  pointer-events: none;
+  z-index: 2; /* Above green overlay */
+}
+
+/* Active/pressed state - inset shadow */
+.clues-panel .button--enabled:active {
+  box-shadow: inset 8px 8px 4px rgba(0, 0, 0, 0.25);
+}
+
+/* Active state - darken more */
+.clues-panel .button--enabled:active::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    0deg,
+    rgba(0, 0, 0, 0.25) 0%,
+    rgba(0, 0, 0, 0.25) 100%
+  ) !important;
+  border-radius: 16px;
+  pointer-events: none;
+  z-index: 2;
+}
+
+/* Button text - same size for both locked and enabled states */
+.clues-panel .answer {
+  color: #ffffff;
+  font-family: "Inter", Helvetica, Arial, sans-serif;
+  font-size: 32px;
+  font-weight: 700;
+  letter-spacing: 0;
+  line-height: normal;
+  margin-left: -2.50px;
+  margin-right: -2.50px;
+  margin-top: -3px;
+  position: relative;
+  text-align: center;
+  width: fit-content;
+  z-index: 2; /* Above green overlay */
+  opacity: 0.4; /* 40% opacity for locked state */
+}
+
+/* Full opacity text when enabled */
+.clues-panel .button--enabled .answer {
+  opacity: 1;
+}
+
+/* Lock icon overlay for disabled state */
+.clues-panel .lock-image-overlay {
+  width: 34px; /* 24px + 10px (5px on each side) */
+  height: 34px; /* 24px + 10px (5px on each side) */
+  object-fit: contain;
+  position: absolute;
+  z-index: 3;
+}
+
+/* ===================================
+   RESPONSIVE ADJUSTMENTS
+   =================================== */
+
+@media (max-width: 768px) {
+  .clues-panel .whiteframe {
+    width: 90vw;
+    max-width: 600px;
+    padding: 8px 16px;
+    gap: 12px;
+  }
+
+  .clues-panel .clues {
+    font-size: 16px;
+  }
+
+  .clues-panel .clue-image-holder {
+    gap: 16px;
+  }
+
+  .clues-panel .frame {
+    width: 50px;
+    height: 50px;
+  }
+
+  .clues-panel .frame__question-mark,
+  .clues-panel .frame__image {
+    width: 50px;
+    height: 50px;
+  }
+
+  .clues-panel .button {
+    width: 180px;
+    height: 65px;
+    padding: 14px 32px;
+  }
+
+  .clues-panel .answer {
+    font-size: 28px;
+  }
+}
+
+@media (max-width: 480px) {
+  .clues-panel .whiteframe {
+    width: 95vw;
+    padding: 6px 12px;
+    gap: 8px;
+    flex-direction: column; /* Stack vertically on very small screens */
+  }
+
+  .clues-panel .clues {
+    font-size: 14px;
+  }
+
+  .clues-panel .clue-image-holder {
+    gap: 12px;
+  }
+
+  .clues-panel .frame {
+    width: 45px;
+    height: 45px;
+  }
+
+  .clues-panel .frame__question-mark,
+  .clues-panel .frame__image {
+    width: 45px;
+    height: 45px;
+  }
+
+  .clues-panel .button {
+    width: 160px;
+    height: 60px;
+    padding: 12px 28px;
+  }
+
+  .clues-panel .answer {
+    font-size: 24px;
+  }
+}

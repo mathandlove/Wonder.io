@@ -243,7 +243,7 @@ async function cutoutBorderOnly(input, output, tolerance = 220, feather = 2, pre
     .toFile(output);
 
   const componentInfo = largestComponent ? ` (kept largest: ${largestComponent.size} pixels of ${components.length} components)` : '';
-  console.log(`✔ Border-only cutout: ${input} -> ${output} (tol=${tolerance}, feather=${feather}, blur=${preblur})${componentInfo}`);
+
 }
 
 /**
@@ -306,12 +306,11 @@ async function findCharacterFolders() {
  * Process all images in character folders
  */
 async function processAllCharacters(tolerance = 220, feather = 2, preblur = 0.6) {
-  console.log('🎭 Processing all character images with border cutout...\n');
+
   
   const characterFolders = await findCharacterFolders();
   
   if (characterFolders.length === 0) {
-    console.log('⚠️  No character folders found');
     return;
   }
   
@@ -321,7 +320,7 @@ async function processAllCharacters(tolerance = 220, feather = 2, preblur = 0.6)
   
   for (const folder of characterFolders) {
     const relativePath = path.relative(process.cwd(), folder);
-    console.log(`📁 Processing: ${relativePath}`);
+
     
     let folderProcessed = 0;
     let folderSkipped = 0;
@@ -339,7 +338,6 @@ async function processAllCharacters(tolerance = 220, feather = 2, preblur = 0.6)
         // Skip if cutout already exists
         try {
           await fs.access(outputPath);
-          console.log(`  ⏩ Skipped: ${file} (cutout exists)`);
           folderSkipped++;
           totalSkipped++;
           continue;
@@ -347,37 +345,29 @@ async function processAllCharacters(tolerance = 220, feather = 2, preblur = 0.6)
           // File doesn't exist, proceed
         }
         
-        console.log(`  ⚙️  Processing: ${file}...`);
+
         
         try {
           await cutoutBorderOnly(inputPath, outputPath, tolerance, feather, preblur);
-          console.log(`  ✅ Generated: ${path.basename(outputPath)}`);
+
           folderProcessed++;
           totalProcessed++;
         } catch (error) {
-          console.log(`  ❌ Error: ${file} - ${error.message}`);
           totalErrors++;
         }
       }
       
       if (folderProcessed > 0 || folderSkipped > 0) {
-        console.log(`  📊 Subtotal: ${folderProcessed} processed, ${folderSkipped} skipped\n`);
       } else {
-        console.log(`  📭 No images found\n`);
       }
     } catch (error) {
-      console.log(`  ❌ Could not read folder: ${error.message}\n`);
       totalErrors++;
     }
   }
   
   // Final summary
-  console.log('═'.repeat(50));
-  console.log('✨ Character Cutout Complete!');
-  console.log(`📊 Total: ${totalProcessed} generated, ${totalSkipped} skipped, ${totalErrors} errors`);
   
   if (totalErrors > 0) {
-    console.log(`⚠️  ${totalErrors} images failed to process`);
   }
 }
 

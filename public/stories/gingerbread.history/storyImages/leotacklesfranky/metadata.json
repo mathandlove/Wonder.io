@@ -1,0 +1,39 @@
+{
+  "imageId": "leotacklesfranky",
+  "category": "storyImages",
+  "versions": [
+    {
+      "version": 1,
+      "filename": "v1-1764807130660.jpeg",
+      "timestamp": 1764807130660,
+      "prompt": "Use the same characters and setting. But have the hero tackling the fox into the snow.",
+      "charactersReferenced": [],
+      "isModification": false
+    },
+    {
+      "version": 2,
+      "filename": "v2-1764807130661.jpeg",
+      "timestamp": 1764807130661,
+      "prompt": "Use the same characters and setting. But have the hero tackling the fox into the snow.",
+      "charactersReferenced": [],
+      "isModification": false
+    },
+    {
+      "version": 3,
+      "filename": "v3-1764807130662.jpeg",
+      "timestamp": 1764807130662,
+      "prompt": "Use the same characters and setting. But have the hero tackling the fox into the snow.",
+      "charactersReferenced": [],
+      "isModification": false
+    },
+    {
+      "version": 4,
+      "filename": "v4-1764807130663.jpeg",
+      "timestamp": 1764807130663,
+      "prompt": "Use the same characters and setting. But have the hero tackling the fox into the snow.",
+      "charactersReferenced": [],
+      "isModification": false
+    }
+  ],
+  "currentVersion": 1
+}

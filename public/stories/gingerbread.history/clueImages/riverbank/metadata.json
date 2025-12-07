@@ -1,0 +1,79 @@
+{
+  "imageId": "riverbank",
+  "category": "clueImages",
+  "versions": [
+    {
+      "version": 1,
+      "filename": "v1-1764735514269.png",
+      "timestamp": 1764735514269,
+      "prompt": "It's winter and we are looking at a river surrounded by snow covered trees and cattails. There's a wooden sign on the near side of the river that says \"Franky the Fox's Ferry Service.\" The text is hand painted. There is a pair of  shoes floating in the river. There are shoe prints in the snow leading all the way up to the river but then they disapear. On the *FAR SIDE* of the river is a bush with a fox tail sticking out of it.",
+      "charactersReferenced": [],
+      "isModification": false
+    },
+    {
+      "version": 2,
+      "filename": "v2-1764735514270.png",
+      "timestamp": 1764735514270,
+      "prompt": "It's winter and we are looking at a river surrounded by snow covered trees and cattails. There's a wooden sign on the near side of the river that says \"Franky the Fox's Ferry Service.\" The text is hand painted. There is a pair of  shoes floating in the river. There are shoe prints in the snow leading all the way up to the river but then they disapear. On the *FAR SIDE* of the river is a bush with a fox tail sticking out of it.",
+      "charactersReferenced": [],
+      "isModification": false
+    },
+    {
+      "version": 3,
+      "filename": "v3-1764735514271.png",
+      "timestamp": 1764735514271,
+      "prompt": "It's winter and we are looking at a river surrounded by snow covered trees and cattails. There's a wooden sign on the near side of the river that says \"Franky the Fox's Ferry Service.\" The text is hand painted. There is a pair of  shoes floating in the river. There are shoe prints in the snow leading all the way up to the river but then they disapear. On the *FAR SIDE* of the river is a bush with a fox tail sticking out of it.",
+      "charactersReferenced": [],
+      "isModification": false
+    },
+    {
+      "version": 4,
+      "filename": "v4-1764735514272.png",
+      "timestamp": 1764735514272,
+      "prompt": "It's winter and we are looking at a river surrounded by snow covered trees and cattails. There's a wooden sign on the near side of the river that says \"Franky the Fox's Ferry Service.\" The text is hand painted. There is a pair of  shoes floating in the river. There are shoe prints in the snow leading all the way up to the river but then they disapear. On the *FAR SIDE* of the river is a bush with a fox tail sticking out of it.",
+      "charactersReferenced": [],
+      "isModification": false
+    },
+    {
+      "version": 5,
+      "filename": "v5-1764735622004.png",
+      "timestamp": 1764735622004,
+      "prompt": "It's winter and we are looking at a river surrounded by snow covered trees and cattails. There's a wooden sign on the near side of the river that says \"Franky the Fox's Ferry Service.\" The text is hand painted. There are two shoes floating in the river. There are shoe prints in the snow leading all the way up to the river but then they disapear. On the *FAR SIDE* of the river is a bush with a fox tail sticking out of it. We do not see the fox's face, only his tail. Make sure the bush on the far side of the river.",
+      "charactersReferenced": [],
+      "isModification": false
+    },
+    {
+      "version": 6,
+      "filename": "v6-1764735622005.png",
+      "timestamp": 1764735622005,
+      "prompt": "It's winter and we are looking at a river surrounded by snow covered trees and cattails. There's a wooden sign on the near side of the river that says \"Franky the Fox's Ferry Service.\" The text is hand painted. There are two shoes floating in the river. There are shoe prints in the snow leading all the way up to the river but then they disapear. On the *FAR SIDE* of the river is a bush with a fox tail sticking out of it. We do not see the fox's face, only his tail. Make sure the bush on the far side of the river.",
+      "charactersReferenced": [],
+      "isModification": false
+    },
+    {
+      "version": 7,
+      "filename": "v7-1764735622006.png",
+      "timestamp": 1764735622006,
+      "prompt": "It's winter and we are looking at a river surrounded by snow covered trees and cattails. There's a wooden sign on the near side of the river that says \"Franky the Fox's Ferry Service.\" The text is hand painted. There are two shoes floating in the river. There are shoe prints in the snow leading all the way up to the river but then they disapear. On the *FAR SIDE* of the river is a bush with a fox tail sticking out of it. We do not see the fox's face, only his tail. Make sure the bush on the far side of the river.",
+      "charactersReferenced": [],
+      "isModification": false
+    },
+    {
+      "version": 8,
+      "filename": "v8-1764735622007.png",
+      "timestamp": 1764735622007,
+      "prompt": "It's winter and we are looking at a river surrounded by snow covered trees and cattails. There's a wooden sign on the near side of the river that says \"Franky the Fox's Ferry Service.\" The text is hand painted. There are two shoes floating in the river. There are shoe prints in the snow leading all the way up to the river but then they disapear. On the *FAR SIDE* of the river is a bush with a fox tail sticking out of it. We do not see the fox's face, only his tail. Make sure the bush on the far side of the river.",
+      "charactersReferenced": [],
+      "isModification": false
+    },
+    {
+      "version": 9,
+      "filename": "v9.jpg",
+      "timestamp": 1764735945290,
+      "prompt": "Uploaded image",
+      "charactersReferenced": [],
+      "isModification": false
+    }
+  ],
+  "currentVersion": 9
+}

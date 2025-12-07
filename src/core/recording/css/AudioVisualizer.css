@@ -1,0 +1,39 @@
+/**
+ * AudioVisualizer Styles
+ *
+ * Wave-based audio level visualization with 5 animated dots
+ * Shows "Listening..." text before sound is detected
+ */
+
+.audio-visualizer {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-height: 48px;
+  padding: 0 4px; /* Reduced from 8px to 4px (half the padding) */
+  min-width: 120px; /* Ensure canvas has space */
+}
+
+.audio-visualizer-canvas {
+  display: block;
+  /* Canvas size is set via inline style for responsiveness */
+}
+
+.audio-visualizer-listening {
+  color: #999;
+  font-style: italic;
+  font-size: 16px;
+  animation: pulse 1.5s ease-in-out infinite;
+}
+
+@keyframes pulse {
+  0%, 100% {
+    opacity: 0.6;
+  }
+  50% {
+    opacity: 1;
+  }
+}
+
+/* Old dot styles removed - now using canvas for rendering */

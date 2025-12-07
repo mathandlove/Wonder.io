@@ -1,0 +1,15 @@
+{
+  "imageId": "leo",
+  "category": "characters",
+  "versions": [
+    {
+      "version": 1,
+      "filename": "v1-1764714289176.jpeg",
+      "timestamp": 1764714289176,
+      "prompt": "remove the sword and the ground lines",
+      "charactersReferenced": [],
+      "isModification": true
+    }
+  ],
+  "currentVersion": 1
+}

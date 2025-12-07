@@ -1,0 +1,235 @@
+/**
+ * Navigation Helper Functions
+ *
+ * Convenience functions for common navigation operations.
+ * These functions provide a cleaner API over direct store access.
+ *
+ * Usage:
+ * - Import these helpers for one-time reads or actions
+ * - For reactive state, use selectors with useNavigationStore(selector)
+ */
+
+import type { Scene } from '@core/types/scene';
+import type { Node, NodeId, FrozenNodeSnapshot, Phase } from '@core/navigation/navigationGraphTypes';
+import { getNodeById } from '@core/navigation/navigationGraphBuilder';
+import { useNavigationStore } from '@core/navigation/navigationStore';
+
+
+
+/**
+ * Get the current node ID
+ */
+export function getCurrentNodeId(): NodeId | null {
+  return useNavigationStore.getState().currentId;
+}
+
+/**
+ * Get the current node with full navigation metadata
+ */
+export function getCurrentNode(): Node | null {
+  const state = useNavigationStore.getState();
+  const currentNodeId = state.currentId;
+  if (!currentNodeId) return null;
+
+  return getNodeById(state.graph, currentNodeId);
+}
+
+/**
+ * Get the current scene
+ */
+export function getCurrentScene(): Scene | null {
+  const node = getCurrentNode();
+  return node?.scene || null;
+}
+
+/**
+ * Get the current scene ID
+ */
+export function getCurrentSceneId(): string | null {
+  const node = getCurrentNode();
+  return node?.sceneId || null;
+}
+
+/**
+ * Create a frozen snapshot of a node (pure data, no navigation metadata)
+ */
+export function createFrozenSnapshot(nodeId: NodeId): FrozenNodeSnapshot | null {
+  const state = useNavigationStore.getState();
+  const node = getNodeById(state.graph, nodeId);
+  if (!node) return null;
+
+  return {
+    nodeId: node.id,
+    sceneId: node.sceneId,
+    stateKey: node.stateKey,
+    sceneState: node.sceneState,
+    scene: node.scene,
+  };
+}
+
+/**
+ * Get the current background ID from the current scene
+ */
+export function getCurrentBackgroundId(): string | null {
+  const currentScene = getCurrentScene();
+  if (!currentScene) return null;
+
+  if ('background' in currentScene && currentScene.background && currentScene.background.trim() !== '') {
+    return currentScene.background;
+  }
+
+  return null;
+}
+
+// =============================================================================
+// Action helpers - these call store actions directly
+// =============================================================================
+
+/**
+ * Set scenes (rebuilds navigation graph)
+ */
+export function setScenes(scenes: Scene[]): void {
+  useNavigationStore.getState().setScenes(scenes);
+}
+
+/**
+ * Insert scene nodes after a specific node
+ */
+export function insertSceneNodes(afterNodeId: NodeId | null, scene: Scene): NodeId | null {
+  return useNavigationStore.getState().insertSceneNodes(afterNodeId, scene);
+}
+
+/**
+ * Insert a single node after a specific node
+ *
+ * This is a low-level function for inserting pre-constructed nodes into the graph.
+ * The node should be created using helper functions like `cloneNodeWithStateChange`.
+ *
+ * @param afterNodeId - ID of the node to insert after (null to insert at beginning)
+ * @param node - The node to insert (without prev/next pointers, which will be set automatically)
+ * @returns The ID of the inserted node
+ *
+ * @example
+ * ```typescript
+ * // Clone and insert a node with modified state
+ * const answerRightNodeId = getCurrentNodeId();
+ * const basicNode = cloneNodeWithStateChange(answerRightNodeId, {
+ *   type: 'dialogue',
+ *   state: 'basic'
+ * });
+ *
+ * if (basicNode) {
+ *   insertNode(answerRightNodeId, basicNode);
+ * }
+ * ```
+ */
+export function insertNode(afterNodeId: NodeId | null, node: Omit<Node, 'prevId' | 'nextId'>): NodeId {
+  return useNavigationStore.getState().insertNode(afterNodeId, node);
+}
+
+/**
+ * Replace an existing node with a new node
+ *
+ * This function replaces a node in the graph while preserving all pointer connections.
+ * The old node is removed and the new node takes its exact place in the navigation sequence.
+ * This is useful for transitioning a scene to a different state without changing position.
+ *
+ * @param oldNodeId - ID of the node to replace
+ * @param newNode - The new node to insert in its place (without prev/next pointers)
+ * @returns The ID of the new node, or null if the old node wasn't found
+ *
+ * @example
+ * ```typescript
+ * // Replace answer-right node with a basic node
+ * const answerRightNodeId = getCurrentNodeId();
+ * const basicNode = cloneNodeWithStateChange(answerRightNodeId, {
+ *   type: 'dialogue',
+ *   state: 'basic'
+ * });
+ *
+ * if (basicNode) {
+ *   replaceNode(answerRightNodeId, basicNode);
+ * }
+ * ```
+ */
+export function replaceNode(oldNodeId: NodeId, newNode: Omit<Node, 'prevId' | 'nextId'>): NodeId | null {
+  return useNavigationStore.getState().replaceNode(oldNodeId, newNode);
+}
+
+
+/**
+ * Update scene properties immutably (for current node)
+ * Example: updateCurrentSceneProperties({ questionText: 'Hello?', answerText: 'World!' })
+ */
+export function updateCurrentSceneProperties(updates: Partial<Scene>): void {
+  useNavigationStore.getState().updateCurrentSceneProperties(updates);
+}
+
+/**
+ * Update scene text by recording ID
+ */
+export function updateSceneTextByRecordingId(recordingId: string, newText: string): void {
+  useNavigationStore.getState().updateSceneTextByRecordingId(recordingId, newText);
+}
+
+/**
+ * Delete a node
+ */
+export function deleteNode(nodeId: NodeId): void {
+  useNavigationStore.getState().deleteNode(nodeId);
+}
+
+/**
+ * Initialize navigationStore with loaded story data
+ * Called by navigationMachine after story is loaded
+ *
+ * @param fullStory - Array of scenes from story JSON
+ * @param options - Optional configuration
+ * @param options.firstNodeId - ID of the first node to navigate to
+ * @param options.startingIndex - Index (0-based) of the slide to start on
+ */
+export function initializeStoreWithStory(
+  fullStory: Scene[],
+  options?: { firstNodeId?: string; startingIndex?: number }
+): void {
+
+  // Load scenes into store
+  setScenes(fullStory);
+
+  // Navigate to first node (or use store's default)
+  const store = useNavigationStore.getState();
+
+  // Determine target node: explicit nodeId > startingIndex > first node
+  let targetNodeId: string | null = null;
+
+  if (options?.firstNodeId) {
+    targetNodeId = options.firstNodeId;
+  } else if (options?.startingIndex !== undefined && options.startingIndex > 0) {
+    // Use starting index if provided and valid
+    const index = Math.min(options.startingIndex, store.graph.order.length - 1);
+    targetNodeId = store.graph.order[index] || store.graph.order[0];
+    console.log(`🐛 [DEBUG] Starting at slide index ${index} (node: ${targetNodeId})`);
+  } else {
+    targetNodeId = store.graph.order[0];
+  }
+
+  if (targetNodeId) {
+    // Set initial position directly - no frozen node needed for very first load
+    useNavigationStore.setState({
+      currentId: targetNodeId,
+      lastFrozenNode: null, // No previous node on initial load
+      graph: {
+        ...store.graph,
+        currentId: targetNodeId,
+      }
+    });
+  }
+}
+
+/**
+ * Advance navigation (respects locks)
+ */
+export function advanceNavigation(direction: 'forward' | 'backward'): void {
+  useNavigationStore.getState().advance(direction);
+}
+

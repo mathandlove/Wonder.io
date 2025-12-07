@@ -1,10 +1,9 @@
 import sharp from 'sharp';
 
 async function analyze() {
-  const originalFile = 'public/assets.core/maps/cityMap.png';
-  const outlineFile = 'public/assets.core/maps/cityMap.outline.webp';
+  const originalFile = 'public/stories/gingerbread.bundle/images/mapsColored/cityMapColored.jpg';
+  const outlineFile = 'public/stories/gingerbread.bundle/images/mapsColored/cityMapColored.outline.webp';
   
-  console.log('Analyzing original vs outline...\n');
   
   // Get original image data
   const { data: origData, info: origInfo } = await sharp(originalFile)
@@ -25,7 +24,6 @@ async function analyze() {
     { x: 300, y: 300, label: 'Offset position' }
   ];
   
-  console.log('Pixel comparison (Original → Outline):\n');
   
   for (const point of samplePoints) {
     const idx = (point.y * origInfo.width + point.x) * 4;
@@ -41,10 +39,6 @@ async function analyze() {
     const outB = outData[idx + 2];
     const outA = outData[idx + 3];
     
-    console.log(`${point.label} (${point.x}, ${point.y}):`);
-    console.log(`  Original: RGB(${origR}, ${origG}, ${origB}) A=${origA} Lum=${origLum}`);
-    console.log(`  Outline:  RGB(${outR}, ${outG}, ${outB}) A=${outA}`);
-    console.log('');
   }
   
   // Count non-transparent pixels in outline
@@ -60,10 +54,6 @@ async function analyze() {
   }
   
   const total = outInfo.width * outInfo.height;
-  console.log('Outline pixel statistics:');
-  console.log(`  Transparent (A=0): ${transparentCount} (${(transparentCount/total*100).toFixed(1)}%)`);
-  console.log(`  Opaque (A=255): ${opaqueCount} (${(opaqueCount/total*100).toFixed(1)}%)`);
-  console.log(`  Semi-transparent: ${semiTransparentCount} (${(semiTransparentCount/total*100).toFixed(1)}%)`);
 }
 
 analyze().catch(console.error);

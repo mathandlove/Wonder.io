@@ -1,0 +1,223 @@
+{
+  "imageId": "brokenWindow",
+  "category": "clueImages",
+  "versions": [
+    {
+      "version": 1,
+      "filename": "v1-1764734567774.png",
+      "timestamp": 1764734567774,
+      "prompt": "Outside of a medieval shoe store. There is a window that has multiple pedestal for shoes, one of the shoes is missing. There is a large crack/hole in the window. A sign on the ground says baby shoes on sale. A door on the left side is closed. It's christmas and there is snow and christmas decorations.",
+      "charactersReferenced": [],
+      "isModification": false
+    },
+    {
+      "version": 2,
+      "filename": "v2-1764734567775.png",
+      "timestamp": 1764734567775,
+      "prompt": "Outside of a medieval shoe store. There is a window that has multiple pedestal for shoes, one of the shoes is missing. There is a large crack/hole in the window. A sign on the ground says baby shoes on sale. A door on the left side is closed. It's christmas and there is snow and christmas decorations.",
+      "charactersReferenced": [],
+      "isModification": false
+    },
+    {
+      "version": 3,
+      "filename": "v3-1764734567776.png",
+      "timestamp": 1764734567776,
+      "prompt": "Outside of a medieval shoe store. There is a window that has multiple pedestal for shoes, one of the shoes is missing. There is a large crack/hole in the window. A sign on the ground says baby shoes on sale. A door on the left side is closed. It's christmas and there is snow and christmas decorations.",
+      "charactersReferenced": [],
+      "isModification": false
+    },
+    {
+      "version": 4,
+      "filename": "v4-1764734567777.png",
+      "timestamp": 1764734567777,
+      "prompt": "Outside of a medieval shoe store. There is a window that has multiple pedestal for shoes, one of the shoes is missing. There is a large crack/hole in the window. A sign on the ground says baby shoes on sale. A door on the left side is closed. It's christmas and there is snow and christmas decorations.",
+      "charactersReferenced": [],
+      "isModification": false
+    },
+    {
+      "version": 5,
+      "filename": "v5-1764734692049.png",
+      "timestamp": 1764734692049,
+      "prompt": "Outside of a medieval shoe store. There is a window that has 3 pedestals,. On each pedestal is a shoe except for the third it is empty. There is a large crack/hole in the window. A sign on the ground says baby shoes on sale. A door on the left side is closed. It's christmas and there is snow and christmas decorations. There is mud on the empty pedestal",
+      "charactersReferenced": [],
+      "isModification": false
+    },
+    {
+      "version": 6,
+      "filename": "v6-1764734692050.png",
+      "timestamp": 1764734692050,
+      "prompt": "Outside of a medieval shoe store. There is a window that has 3 pedestals,. On each pedestal is a shoe except for the third it is empty. There is a large crack/hole in the window. A sign on the ground says baby shoes on sale. A door on the left side is closed. It's christmas and there is snow and christmas decorations. There is mud on the empty pedestal",
+      "charactersReferenced": [],
+      "isModification": false
+    },
+    {
+      "version": 7,
+      "filename": "v7-1764734692051.png",
+      "timestamp": 1764734692051,
+      "prompt": "Outside of a medieval shoe store. There is a window that has 3 pedestals,. On each pedestal is a shoe except for the third it is empty. There is a large crack/hole in the window. A sign on the ground says baby shoes on sale. A door on the left side is closed. It's christmas and there is snow and christmas decorations. There is mud on the empty pedestal",
+      "charactersReferenced": [],
+      "isModification": false
+    },
+    {
+      "version": 8,
+      "filename": "v8-1764734692052.png",
+      "timestamp": 1764734692052,
+      "prompt": "Outside of a medieval shoe store. There is a window that has 3 pedestals,. On each pedestal is a shoe except for the third it is empty. There is a large crack/hole in the window. A sign on the ground says baby shoes on sale. A door on the left side is closed. It's christmas and there is snow and christmas decorations. There is mud on the empty pedestal",
+      "charactersReferenced": [],
+      "isModification": false
+    },
+    {
+      "version": 9,
+      "filename": "v9.jpg",
+      "timestamp": 1764736060716,
+      "prompt": "Uploaded image",
+      "charactersReferenced": [],
+      "isModification": false
+    },
+    {
+      "version": 10,
+      "filename": "v10.jpg",
+      "timestamp": 1764736251053,
+      "prompt": "Uploaded image",
+      "charactersReferenced": [],
+      "isModification": false
+    },
+    {
+      "version": 11,
+      "filename": "v11-1764815875676.jpeg",
+      "timestamp": 1764815875676,
+      "prompt": "show a trail of mud crumbs going from the bottom of the page through the snow and ending at the display window",
+      "charactersReferenced": [],
+      "isModification": true
+    },
+    {
+      "version": 12,
+      "filename": "v12-1764815875677.jpeg",
+      "timestamp": 1764815875677,
+      "prompt": "show a trail of mud crumbs going from the bottom of the page through the snow and ending at the display window",
+      "charactersReferenced": [],
+      "isModification": true
+    },
+    {
+      "version": 13,
+      "filename": "v13-1764815875678.jpeg",
+      "timestamp": 1764815875678,
+      "prompt": "show a trail of mud crumbs going from the bottom of the page through the snow and ending at the display window",
+      "charactersReferenced": [],
+      "isModification": true
+    },
+    {
+      "version": 14,
+      "filename": "v14-1764815875679.jpeg",
+      "timestamp": 1764815875679,
+      "prompt": "show a trail of mud crumbs going from the bottom of the page through the snow and ending at the display window",
+      "charactersReferenced": [],
+      "isModification": true
+    },
+    {
+      "version": 15,
+      "filename": "v15-1764815951920.jpeg",
+      "timestamp": 1764815951920,
+      "prompt": "Add small black dots of mud leading from the bottom of the picture to the store window.",
+      "charactersReferenced": [],
+      "isModification": true
+    },
+    {
+      "version": 16,
+      "filename": "v16-1764815951921.jpeg",
+      "timestamp": 1764815951921,
+      "prompt": "Add small black dots of mud leading from the bottom of the picture to the store window.",
+      "charactersReferenced": [],
+      "isModification": true
+    },
+    {
+      "version": 17,
+      "filename": "v17-1764815951922.jpeg",
+      "timestamp": 1764815951922,
+      "prompt": "Add small black dots of mud leading from the bottom of the picture to the store window.",
+      "charactersReferenced": [],
+      "isModification": true
+    },
+    {
+      "version": 18,
+      "filename": "v18-1764815951923.jpeg",
+      "timestamp": 1764815951923,
+      "prompt": "Add small black dots of mud leading from the bottom of the picture to the store window.",
+      "charactersReferenced": [],
+      "isModification": true
+    },
+    {
+      "version": 19,
+      "filename": "v19-1764816008228.jpeg",
+      "timestamp": 1764816008228,
+      "prompt": "Add small black mud drops coming from the bottom of the picture over to the store window",
+      "charactersReferenced": [],
+      "isModification": true,
+      "baseVersion": 10
+    },
+    {
+      "version": 20,
+      "filename": "v20-1764816008229.jpeg",
+      "timestamp": 1764816008229,
+      "prompt": "Add small black mud drops coming from the bottom of the picture over to the store window",
+      "charactersReferenced": [],
+      "isModification": true,
+      "baseVersion": 10
+    },
+    {
+      "version": 21,
+      "filename": "v21-1764816008230.jpeg",
+      "timestamp": 1764816008230,
+      "prompt": "Add small black mud drops coming from the bottom of the picture over to the store window",
+      "charactersReferenced": [],
+      "isModification": true,
+      "baseVersion": 10
+    },
+    {
+      "version": 22,
+      "filename": "v22-1764816008231.jpeg",
+      "timestamp": 1764816008231,
+      "prompt": "Add small black mud drops coming from the bottom of the picture over to the store window",
+      "charactersReferenced": [],
+      "isModification": true,
+      "baseVersion": 10
+    },
+    {
+      "version": 23,
+      "filename": "v23-1764816077429.jpeg",
+      "timestamp": 1764816077429,
+      "prompt": "remove the mud that is on the floor that is inside the window under the platform. Keep all the other mud.",
+      "charactersReferenced": [],
+      "isModification": true,
+      "baseVersion": 20
+    },
+    {
+      "version": 24,
+      "filename": "v24-1764816077430.jpeg",
+      "timestamp": 1764816077430,
+      "prompt": "remove the mud that is on the floor that is inside the window under the platform. Keep all the other mud.",
+      "charactersReferenced": [],
+      "isModification": true,
+      "baseVersion": 20
+    },
+    {
+      "version": 25,
+      "filename": "v25-1764816077431.jpeg",
+      "timestamp": 1764816077431,
+      "prompt": "remove the mud that is on the floor that is inside the window under the platform. Keep all the other mud.",
+      "charactersReferenced": [],
+      "isModification": true,
+      "baseVersion": 20
+    },
+    {
+      "version": 26,
+      "filename": "v26-1764816077432.jpeg",
+      "timestamp": 1764816077432,
+      "prompt": "remove the mud that is on the floor that is inside the window under the platform. Keep all the other mud.",
+      "charactersReferenced": [],
+      "isModification": true,
+      "baseVersion": 20
+    }
+  ],
+  "currentVersion": 26
+}

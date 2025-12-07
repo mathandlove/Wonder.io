@@ -1,0 +1,105 @@
+/* ===================================
+   SCROLL DOWN TOAST
+   Uses global toast variables for consistency
+   =================================== */
+
+@import '../../toast/toast-styles.css';
+
+.scroll-down-toast {
+  position: fixed;
+  bottom: 32px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 1150; /* Above RecordPanel (1100) and hand stamp video (1102) */
+  pointer-events: none;
+
+  /* Fade in animation */
+  animation: scrollToastFadeIn var(--toast-animation-duration) ease-out;
+}
+
+@keyframes scrollToastFadeIn {
+  from {
+    transform: translateX(-50%) translateY(20px);
+  }
+  to {
+    transform: translateX(-50%) translateY(0);
+  }
+}
+
+.scroll-down-content {
+  /* Layout - align items center for vertical centering */
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: var(--toast-padding);
+
+  /* Use global toast styling */
+  background-color: var(--toast-bg-color);
+  backdrop-filter: blur(var(--toast-bg-blur));
+  -webkit-backdrop-filter: blur(var(--toast-bg-blur));
+  border-radius: var(--toast-border-radius);
+  box-shadow: var(--toast-shadow);
+}
+
+/* Finger icon container - provides scrolling animation space */
+.scroll-finger-container {
+  width: 28px;
+  height: 28px;
+  position: relative;
+  overflow: visible;
+  flex-shrink: 0;
+}
+
+/* Animated finger icon */
+.scroll-finger-icon {
+  width: 28px;
+  height: 28px;
+  color: var(--toast-text-color);
+  /* White icon */
+  filter: brightness(0) invert(1);
+
+  /* Scrolling animation - moves up and down */
+  animation: fingerScroll 1.5s ease-in-out infinite;
+}
+
+@keyframes fingerScroll {
+  0%, 100% {
+    transform: translateY(0);
+    opacity: 1;
+  }
+  50% {
+    transform: translateY(6px);
+    opacity: 0.7;
+  }
+}
+
+/* Toast text - uses global text styling */
+.scroll-down-text {
+  color: var(--toast-text-color);
+  font-family: var(--toast-font-family);
+  font-size: var(--toast-font-size);
+  font-weight: var(--toast-font-weight);
+  line-height: var(--toast-line-height);
+  letter-spacing: var(--toast-letter-spacing);
+}
+
+/* Position above caption on caption phase pages */
+.scroll-down-toast--above-caption {
+  bottom: calc(50px + 80px + 32px); /* Caption is 50px from bottom + approx caption height + margin */
+}
+
+/* Animate out on scroll */
+.scroll-down-toast--animate-out {
+  animation: scrollToastFadeOut 0.3s ease-out forwards;
+}
+
+@keyframes scrollToastFadeOut {
+  from {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
+  }
+  to {
+    opacity: 0;
+    transform: translateX(-50%) translateY(20px);
+  }
+}

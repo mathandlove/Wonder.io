@@ -19,9 +19,9 @@ export class SelectionStore {
     try {
       if (fs.existsSync(DATA_FILE)) {
         const data = fs.readFileSync(DATA_FILE, 'utf8');
-        const selections = JSON.parse(data);
+        const selections = JSON.parse(data) as Array<Omit<Selection, 'createdAt'> & { createdAt: string }>;
         // Convert date strings back to Date objects
-        return selections.map((s: any) => ({
+        return selections.map((s) => ({
           ...s,
           createdAt: new Date(s.createdAt)
         }));
@@ -82,8 +82,8 @@ export class SelectionStore {
     try {
       if (fs.existsSync(HOTSPOTS_FILE)) {
         const data = fs.readFileSync(HOTSPOTS_FILE, 'utf8');
-        const hotspots = JSON.parse(data);
-        return hotspots.map((h: any) => ({
+        const hotspots = JSON.parse(data) as Array<Omit<Hotspot, 'createdAt'> & { createdAt: string }>;
+        return hotspots.map((h) => ({
           ...h,
           createdAt: new Date(h.createdAt)
         }));

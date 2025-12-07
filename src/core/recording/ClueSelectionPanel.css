@@ -1,0 +1,123 @@
+/**
+ * ClueSelectionPanel Styles
+ *
+ * Structure:
+ * .clue-selection-content - Container for header and thumbnails
+ *   .selection-header - Header text "Select a Clue to Ask About"
+ *   .selection-clue-holder - Grid of clue thumbnails
+ *     .selection-frame - Individual clue frame (4 total)
+ */
+
+/* ===================================
+   CLUE SELECTION CONTENT - Container
+   =================================== */
+
+.clue-selection-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+}
+
+/* ===================================
+   CLUE HOLDER - Thumbnail Grid
+   =================================== */
+
+.selection-clue-holder {
+  align-items: center;
+  display: inline-flex;
+  flex: 0 0 auto;
+  gap: 28px;
+  padding: 5px 0px;
+  position: relative;
+}
+
+/* ===================================
+   FRAME - Individual Clue Thumbnail
+   =================================== */
+
+.selection-frame {
+  background: transparent;
+  /* No background - just show the image */
+  height: 60px;
+  width: 120px;
+  min-width: 120px;
+  /* Prevent shrinking */
+  min-height: 60px;
+  /* Prevent shrinking */
+  max-width: 120px;
+  /* Prevent growing */
+  max-height: 60px;
+  /* Prevent growing */
+  position: relative;
+  overflow: visible;
+  /* Allow scale to go beyond bounds */
+  display: block;
+  transition: transform 0.2s ease;
+  border: none;
+  /* No border - let image fill frame */
+  border-radius: 0;
+  /* Square corners - no rounding */
+  flex-shrink: 0;
+  /* Don't allow flex to shrink these */
+  cursor: pointer;
+}
+
+.selection-frame:hover {
+  transform: scale(1.2);
+  z-index: 10;
+  /* Bring hovered thumbnail above others */
+}
+
+/* Clue image */
+.selection-frame__image {
+  position: absolute;
+  top: 0;
+  left: 0;
+  border: none;
+  border-radius: 0;
+  display: block;
+}
+
+/* ===================================
+   RESPONSIVE ADJUSTMENTS
+   =================================== */
+
+@media (max-width: 768px) {
+  .selection-header__text {
+    font-size: 18px;
+  }
+
+  .selection-clue-holder {
+    gap: 16px;
+  }
+
+  .selection-frame {
+    width: 100px;
+    height: 50px;
+    min-width: 100px;
+    min-height: 50px;
+    max-width: 100px;
+    max-height: 50px;
+  }
+}
+
+@media (max-width: 480px) {
+  .selection-header__text {
+    font-size: 16px;
+  }
+
+  .selection-clue-holder {
+    gap: 12px;
+  }
+
+  .selection-frame {
+    width: 90px;
+    height: 45px;
+    min-width: 90px;
+    min-height: 45px;
+    max-width: 90px;
+    max-height: 45px;
+  }
+}

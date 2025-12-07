@@ -16,10 +16,8 @@ const execAsync = promisify(exec);
 
 async function runTool(toolPath, args) {
   const command = `node ${toolPath} ${args.join(' ')}`;
-  console.log(`Running: ${command}`);
   try {
     const { stdout, stderr } = await execAsync(command);
-    if (stdout) console.log(stdout.trim());
     if (stderr) console.error(stderr.trim());
   } catch (error) {
     console.error(`Error running ${toolPath}:`, error.message);
@@ -28,7 +26,6 @@ async function runTool(toolPath, args) {
 }
 
 async function processSticker(inputPath, outputPath) {
-  console.log(`\n=== Processing ${inputPath} -> ${outputPath} ===`);
   
   // Step 1: Create cardboard background
   const tempCardboard = inputPath.replace('.webp', '-temp-cardboard.webp');
@@ -45,7 +42,6 @@ async function processSticker(inputPath, outputPath) {
     console.warn(`Warning: Could not remove temp file ${tempCardboard}`);
   }
   
-  console.log(`✅ Completed: ${outputPath}`);
 }
 
 async function main() {
@@ -59,7 +55,6 @@ async function main() {
   }
   
   if (args[0] === '--all') {
-    console.log('🔍 Finding all stickers that need 3D cardboard processing...');
     
     // Find all .sticker.webp files recursively
     function findStickerFiles(dir) {
@@ -91,11 +86,9 @@ async function main() {
         await processSticker(stickerFile, cardboard3dFile);
         processed++;
       } else {
-        console.log(`⏭️  Skipping ${stickerFile} (cardboard-3d already exists)`);
       }
     }
     
-    console.log(`\n✅ Processing complete! Processed ${processed} stickers.`);
     
   } else if (args.length === 2) {
     // Single file processing

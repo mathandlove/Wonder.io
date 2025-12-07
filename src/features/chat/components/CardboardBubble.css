@@ -1,0 +1,236 @@
+/* Container for bubble positioning */
+.cardboard-bubble-container {
+  width: 100%; /* Take full available width for proper flexbox alignment */
+  max-width: none; /* Remove width constraint - parent handles this */
+}
+
+/* Cardboard Bubble Base Styles */
+.cardboard-bubble {
+  position: relative;
+  z-index: 1;
+  width: fit-content;
+  height: fit-content;
+  min-height: 80px; /* Reduced minimum height */
+  overflow: visible;
+  padding: 15px;
+  background-image: url('/VisualAssets/cardboard.png');
+  background-size: cover;
+  background-repeat: no-repeat;
+  background-position: center;
+  background-color: #d4b896; /* Fallback color if image doesn't load */
+  border-radius: 25px;
+  border: 1px solid #FFFFFF;
+  box-shadow: 0 32px 72px rgba(0, 0, 0, 0.45), 0 16px 40px rgba(0, 0, 0, 0.35);
+  transform-origin: center center;
+  box-sizing: border-box; /* Include padding in width calculation */
+}
+
+/* Center positioning (default for character scenes) */
+.cardboard-bubble-center {
+  margin: 0 auto;
+}
+
+/* Left side positioning */
+.cardboard-bubble-left {
+  align-self: flex-start;
+  margin-left: 30px; /* Account for speech tail */
+  margin-right: 10px;
+  max-width: 75%; /* Prevent bubble from extending too far toward opposite character */
+}
+
+/* Right side positioning */
+.cardboard-bubble-right {
+  align-self: flex-end;
+  margin-left: 10px;
+  margin-right: 40px; /* Add right margin for proper spacing */
+  max-width: 75%; /* Prevent bubble from extending too far toward opposite character */
+}
+
+/* Inner white/cream text box */
+.cardboard-bubble-inner {
+  background: #FFFFFF;
+  padding: 16px 32px; /* Reduced vertical padding from 24px to 16px for visualizer */
+  margin: 0;
+  border-radius: 15px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+  position: relative;
+  text-align: left; /* Changed from center to left */
+}
+
+/* Speaker label */
+.cardboard-bubble-speaker {
+  margin: 0;
+  margin-bottom: 0.75rem;
+  color: #333;
+  font-family: 'Nunito', sans-serif;
+  font-size: 18px;
+  font-weight: bold;
+}
+
+/* Text content */
+.cardboard-bubble-text {
+  margin: 0;
+  font-size: 22px;
+  font-family: 'Nunito', sans-serif;
+  color: #333;
+  line-height: 1.5;
+  text-align: left;
+  white-space: normal; /* Allow natural text wrapping */
+}
+
+/* Placeholder text styling - italic gray for "Listening..." */
+.cardboard-bubble-text.placeholder {
+  color: #9ca3af; /* Medium grey - same as RecordPanel placeholder */
+  font-style: italic; /* Italic to indicate it's not real content yet */
+  font-weight: 400;
+}
+
+/* Speech tail - Left side */
+.cardboard-bubble-tail-left {
+  position: absolute;
+  left: -20px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 0;
+  height: 0;
+  z-index: -1;
+}
+
+/* Speech tail - Right side */
+.cardboard-bubble-tail-right {
+  position: absolute;
+  right: -20px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 0;
+  height: 0;
+  z-index: -1;
+}
+
+/* Cardboard triangle - Left side */
+.cardboard-triangle-left {
+  position: absolute;
+  left: -8px;
+  top: -15px;
+  width: 28px;
+  height: 30px;
+  background-image: url('/VisualAssets/cardboard.png');
+  background-size: 300px 300px;
+  background-repeat: no-repeat;
+  background-position: center;
+  clip-path: polygon(100% 0, 100% 100%, 0 50%);
+  z-index: 2;
+}
+
+/* Cardboard triangle - Right side */
+.cardboard-triangle-right {
+  position: absolute;
+  right: -8px;
+  top: -15px;
+  width: 28px;
+  height: 30px;
+  background-image: url('/VisualAssets/cardboard.png');
+  background-size: 300px 300px;
+  background-repeat: no-repeat;
+  background-position: center;
+  clip-path: polygon(0 0, 0 100%, 100% 50%);
+  z-index: 2;
+}
+
+/* White triangle - Left side */
+.white-triangle-left {
+  position: absolute;
+  left: -9px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 0;
+  height: 0;
+  border-style: solid;
+  border-width: 17px 28px 17px 0;
+  border-color: transparent #FFFFFF transparent transparent;
+  z-index: 1;
+}
+
+/* White triangle - Right side */
+.white-triangle-right {
+  position: absolute;
+  right: -9px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 0;
+  height: 0;
+  border-style: solid;
+  border-width: 17px 0 17px 28px;
+  border-color: transparent transparent transparent #FFFFFF;
+  z-index: 1;
+}
+
+/* Default animation for immediate bubbles */
+.cardboard-bubble:not(.cardboard-bubble-delayed) {
+  animation: bubble-pop-in 0.25s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards;
+}
+
+/* Delayed bubble starts below viewport but visible */
+.cardboard-bubble.cardboard-bubble-delayed {
+  opacity: 1;
+  transform: translateY(100vh);
+  animation: none; /* Override default animation */
+}
+
+/* Delayed bubble slides up when ready */
+.cardboard-bubble.cardboard-bubble-delayed.cardboard-bubble-show {
+  opacity: 1;
+  transform: translateY(0);
+  animation: bubble-slide-up-from-bottom 0.5s ease-out forwards;
+}
+
+/* Delayed bubble slides up when exiting */
+.cardboard-bubble.cardboard-bubble-delayed.cardboard-bubble-exit {
+  opacity: 1;
+  transform: translateY(-100vh);
+  animation: bubble-slide-up-to-top 0.5s ease-in forwards;
+}
+
+@keyframes bubble-pop-in {
+  0% {
+    opacity: 0;
+    transform: scale(0.8);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@keyframes bubble-slide-up-from-bottom {
+  0% {
+    opacity: 1;
+    transform: translateY(100vh);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes bubble-slide-up-to-top {
+  0% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(-100vh);
+  }
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .cardboard-bubble {
+    max-width: 85%; /* Slightly smaller on mobile */
+  }
+
+  .cardboard-bubble-text {
+    font-size: 18px;
+  }
+}

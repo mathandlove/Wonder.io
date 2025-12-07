@@ -1,0 +1,59 @@
+/**
+ * MapScene Styles
+ * Styles for the map scene that displays a location highlight on a grayscale map
+ */
+
+@import '@shared/styles/constructionPaperBackground.css';
+
+.map-scene {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Note: Add .construction-paper-bg class to component for background */
+
+.map-scene--loading,
+.map-scene--error {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #fff;
+  font-family: 'Comic Sans MS', 'Chalkboard SE', sans-serif;
+  font-size: 1.5rem;
+}
+
+/* Animation for path number label appearing */
+.map-path-label-appear {
+  animation: labelAppear 0.4s ease-out forwards;
+  transform-box: fill-box;
+  transform-origin: center center;
+}
+
+@keyframes labelAppear {
+  from {
+    opacity: 0;
+    transform: scale(0.5);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+/* Animation for hotspot location reveal */
+.map-hotspot-reveal {
+  animation: hotspotReveal 0.6s ease-out forwards;
+}
+
+@keyframes hotspotReveal {
+  from {
+    opacity: 0;
+    filter: brightness(2);
+  }
+  to {
+    opacity: 1;
+    filter: brightness(1);
+  }
+}

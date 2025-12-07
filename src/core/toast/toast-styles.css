@@ -1,0 +1,159 @@
+/**
+ * Global Toast Styles
+ *
+ * Unified frosted glass toast styling used across all toast components.
+ * Change variables here to update all toasts at once.
+ */
+
+/* ===================================
+   CSS VARIABLES - Edit these to change all toasts
+   =================================== */
+:root {
+  /* Toast background */
+  --toast-bg-color: rgba(20, 15, 12, 0.25);
+  --toast-bg-blur: 12px;
+
+  /* Toast border & radius */
+  --toast-border-radius: 16px;
+
+  /* Toast shadow */
+  --toast-shadow: 0 4px 20px rgba(0, 0, 0, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.08);
+
+  /* Toast text */
+  --toast-text-color: #ffffff;
+  --toast-font-family: "Inter", Helvetica, sans-serif;
+  --toast-font-size: 18px;
+  --toast-font-weight: 500;
+  --toast-line-height: 28px;
+  --toast-letter-spacing: 0.01em;
+
+  /* Toast padding */
+  --toast-padding: 30px;
+
+  /* Toast arrow */
+  --toast-arrow-size: 10px;
+  --toast-arrow-color: rgba(20, 15, 12, 0.25);
+
+  /* Animation */
+  --toast-animation-duration: 0.4s;
+}
+
+/* ===================================
+   BASE TOAST STYLES
+   =================================== */
+.toast-bubble {
+  /* Semi-transparent dark background with blur */
+  background-color: var(--toast-bg-color);
+  backdrop-filter: blur(var(--toast-bg-blur));
+  -webkit-backdrop-filter: blur(var(--toast-bg-blur));
+
+  /* Border & radius */
+  border-radius: var(--toast-border-radius);
+
+  /* Shadow */
+  box-shadow: var(--toast-shadow);
+
+  /* Text styling */
+  color: var(--toast-text-color);
+  font-family: var(--toast-font-family);
+  font-size: var(--toast-font-size);
+  font-weight: var(--toast-font-weight);
+  line-height: var(--toast-line-height);
+  letter-spacing: var(--toast-letter-spacing);
+  text-align: center;
+
+  /* Padding */
+  padding: var(--toast-padding);
+
+  /* Interaction */
+  cursor: pointer;
+}
+
+/* ===================================
+   TOAST ARROW (pointing down)
+   =================================== */
+.toast-arrow {
+  position: absolute;
+  bottom: calc(-1 * var(--toast-arrow-size));
+  left: calc(50% - var(--toast-arrow-size));
+  width: 0;
+  height: 0;
+  border-left: var(--toast-arrow-size) solid transparent;
+  border-right: var(--toast-arrow-size) solid transparent;
+  border-top: var(--toast-arrow-size) solid var(--toast-arrow-color);
+}
+
+/* Arrow pointing up (toast below target) */
+.toast-arrow--up {
+  top: calc(-1 * var(--toast-arrow-size));
+  bottom: auto;
+  border-top: none;
+  border-bottom: var(--toast-arrow-size) solid var(--toast-arrow-color);
+}
+
+/* Arrow pointing left (toast right of target) */
+.toast-arrow--left {
+  left: calc(-1 * var(--toast-arrow-size));
+  top: calc(50% - var(--toast-arrow-size));
+  bottom: auto;
+  border-top: var(--toast-arrow-size) solid transparent;
+  border-bottom: var(--toast-arrow-size) solid transparent;
+  border-left: none;
+  border-right: var(--toast-arrow-size) solid var(--toast-arrow-color);
+}
+
+/* Arrow pointing right (toast left of target) */
+.toast-arrow--right {
+  right: calc(-1 * var(--toast-arrow-size));
+  left: auto;
+  top: calc(50% - var(--toast-arrow-size));
+  bottom: auto;
+  border-top: var(--toast-arrow-size) solid transparent;
+  border-bottom: var(--toast-arrow-size) solid transparent;
+  border-right: none;
+  border-left: var(--toast-arrow-size) solid var(--toast-arrow-color);
+}
+
+/* ===================================
+   TOAST ANIMATIONS
+   =================================== */
+@keyframes toastFadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes toastFadeInCenter {
+  from {
+    opacity: 0;
+    transform: translate(-50%, -50%) scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: translate(-50%, -50%) scale(1);
+  }
+}
+
+@keyframes toastFadeOut {
+  from {
+    opacity: 1;
+    transform: translateY(0);
+  }
+  to {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+}
+
+.toast-animate-in {
+  animation: toastFadeIn var(--toast-animation-duration) ease-out;
+}
+
+.toast-animate-out {
+  animation: toastFadeOut 0.3s ease-out forwards;
+}

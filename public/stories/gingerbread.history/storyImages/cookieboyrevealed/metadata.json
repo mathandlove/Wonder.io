@@ -1,0 +1,55 @@
+{
+  "imageId": "cookieboyrevealed",
+  "category": "storyImages",
+  "versions": [
+    {
+      "version": 1,
+      "filename": "v1-1764817144111.jpeg",
+      "timestamp": 1764817144111,
+      "prompt": "The gingerbread man stands up and looks big eyed at Leo. The fox lays exhausted on the side.",
+      "charactersReferenced": [
+        "gingerbread-man",
+        "leo",
+        "franky"
+      ],
+      "isModification": false
+    },
+    {
+      "version": 2,
+      "filename": "v2-1764817144112.jpeg",
+      "timestamp": 1764817144112,
+      "prompt": "The gingerbread man stands up and looks big eyed at Leo. The fox lays exhausted on the side.",
+      "charactersReferenced": [
+        "gingerbread-man",
+        "leo",
+        "franky"
+      ],
+      "isModification": false
+    },
+    {
+      "version": 3,
+      "filename": "v3-1764817144113.jpeg",
+      "timestamp": 1764817144113,
+      "prompt": "The gingerbread man stands up and looks big eyed at Leo. The fox lays exhausted on the side.",
+      "charactersReferenced": [
+        "gingerbread-man",
+        "leo",
+        "franky"
+      ],
+      "isModification": false
+    },
+    {
+      "version": 4,
+      "filename": "v4-1764817144114.jpeg",
+      "timestamp": 1764817144114,
+      "prompt": "The gingerbread man stands up and looks big eyed at Leo. The fox lays exhausted on the side.",
+      "charactersReferenced": [
+        "gingerbread-man",
+        "leo",
+        "franky"
+      ],
+      "isModification": false
+    }
+  ],
+  "currentVersion": 3
+}

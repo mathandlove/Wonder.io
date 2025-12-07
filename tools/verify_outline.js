@@ -1,14 +1,13 @@
 import sharp from 'sharp';
 
-const outlineFile = 'public/assets.core/maps/cityMap.outline.webp';
+const outlineFile = 'public/stories/gingerbread.bundle/images/mapsColored/cityMapColored.outline.webp';
 
 async function verify() {
-  console.log('Verifying generated outline...\n');
   
   try {
     // Get metadata of generated file
     const metadata = await sharp(outlineFile).metadata();
-    console.log('Generated outline metadata:', {
+    console.log('Metadata:', {
       width: metadata.width,
       height: metadata.height,
       channels: metadata.channels,
@@ -16,34 +15,33 @@ async function verify() {
       hasAlpha: metadata.hasAlpha,
       density: metadata.density
     });
-    
+
     // Try to read and get stats
     const stats = await sharp(outlineFile).stats();
-    console.log('\nImage statistics:', {
+    console.log('Stats:', {
       channels: stats.channels.length,
       isOpaque: stats.isOpaque
     });
-    
+
     // Extract a small sample of pixels to verify
     const { data, info } = await sharp(outlineFile)
       .raw()
       .toBuffer({ resolveWithObject: true });
-    
-    console.log('\nRaw data info:', {
+
+    console.log('Buffer info:', {
       width: info.width,
       height: info.height,
       channels: info.channels,
       bufferSize: data.length
     });
-    
+
     // Check first few pixels
-    console.log('\nFirst 3 pixels (RGBA):');
+    console.log('First 3 pixels (RGBA):');
     for (let i = 0; i < 3; i++) {
       const idx = i * 4;
-      console.log(`Pixel ${i}: R=${data[idx]}, G=${data[idx+1]}, B=${data[idx+2]}, A=${data[idx+3]}`);
+      console.log(`  Pixel ${i}:`, { r: data[idx], g: data[idx + 1], b: data[idx + 2], a: data[idx + 3] });
     }
-    
-    console.log('\n✅ Outline file appears to be valid');
+
   } catch (error) {
     console.error('❌ Error verifying outline:', error.message);
   }

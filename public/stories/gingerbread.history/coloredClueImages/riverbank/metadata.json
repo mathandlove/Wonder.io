@@ -1,0 +1,15 @@
+{
+  "imageId": "riverbank",
+  "category": "coloredClueImages",
+  "versions": [
+    {
+      "version": 1,
+      "filename": "v1.jpg",
+      "timestamp": 1764738821973,
+      "prompt": "Uploaded image",
+      "charactersReferenced": [],
+      "isModification": false
+    }
+  ],
+  "currentVersion": 1
+}

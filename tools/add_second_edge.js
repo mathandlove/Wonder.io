@@ -120,7 +120,6 @@ async function main() {
     .webp({ lossless: true, quality: 100, alphaQuality: 100 })
     .toFile(output);
 
-  console.log(`✔ Second edge added: ${output} (edgePx=${edgePx}, offsetPx=${offsetPx}, color=${color})`);
 }
 
 main().catch((err) => {

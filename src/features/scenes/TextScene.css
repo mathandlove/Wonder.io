@@ -1,0 +1,155 @@
+.text-scene-container {
+  min-height: 100vh;
+  /* Remove white background to let BackgroundOrchestrator show through */
+  display: flex;
+  flex-direction: column;
+  justify-content: center; /* Centers content vertically at 50% */
+  align-items: center; /* Centers content horizontally */
+  padding: 2rem;
+  cursor: pointer;
+  position: relative;
+}
+
+.text-scene-content {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 3rem;
+  max-width: 1200px;
+  width: 100%;
+}
+
+.character-image-container {
+  flex-shrink: 0;
+  filter: drop-shadow(0 10px 20px rgba(0, 0, 0, 0.3));
+  position: relative;
+}
+
+.wooden-dowel {
+  position: absolute;
+  top: calc(100% - 50px);
+  left: 50%;
+  transform: translateX(-50%);
+  width: 20px;
+  height: calc(150vh + 50px);
+  background-image: url('/VisualAssets/pole.webp');
+  background-size: 20px 100%;
+  background-repeat: repeat-y;
+  z-index: 1;
+}
+
+.character-image {
+  width: 300px;
+  height: auto;
+  display: block;
+  transform: rotate(-5deg);
+  transition: transform 0.3s ease;
+  position: relative;
+  z-index: 2;
+}
+
+.character-image:hover {
+  transform: rotate(-3deg) scale(1.05);
+}
+
+/* Bounce arrival animation */
+.bounce-arrival {
+  animation: swing-bounce 0.8s ease-out forwards;
+}
+
+@keyframes swing-bounce {
+  0% {
+    transform: translate(0%, 0%) rotate(-9deg);
+  }
+  50% {
+    transform: translate(5%, -5%) rotate(-14deg);
+  }
+  70% {
+    transform: translate(-3%, 2%) rotate(-4deg);
+  }
+  85% {
+    transform: translate(1%, -1%) rotate(-11deg);
+  }
+  100% {
+    transform: translate(0%, 0%) rotate(-9deg);
+  }
+}
+
+.text-bubble {
+  position: relative;
+  width: fit-content;
+  max-width: 600px;
+  padding: 15px;
+  background-image: url('/VisualAssets/cardboard.png');
+  background-size: cover;
+  background-repeat: no-repeat;
+  background-position: center;
+  background-color: #d4b896; /* Fallback color if image doesn't load */
+  border-radius: 25px;
+  border: 1px solid #FFFFFF; /* White outline matching speech bubbles */
+  box-shadow: 0 32px 72px rgba(0, 0, 0, 0.45), 0 16px 40px rgba(0, 0, 0, 0.35); /* Match speech bubble shadow */
+  margin: 0 auto; /* Center the bubble */
+}
+
+.text-bubble-inner {
+  background: #FFFFFF; /* White background matching speech bubbles */
+  padding: 24px 32px;
+  margin: 0;
+  border-radius: 15px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+  position: relative;
+}
+
+
+/* No speech tail for text scenes - removed ::before pseudo-element */
+
+.scene-text {
+  margin: 0;
+  font-size: 22px;
+  font-family: 'Nunito', sans-serif;
+  color: #333;
+  line-height: 1.5;
+  text-align: center;
+}
+
+.continue-hint {
+  position: absolute;
+  bottom: 2rem;
+  left: 50%;
+  transform: translateX(-50%);
+  color: #8b7355;
+  font-size: 1rem;
+  opacity: 0.7;
+  animation: fade-pulse 2s ease-in-out infinite;
+}
+
+@keyframes fade-pulse {
+  0%, 100% {
+    opacity: 0.4;
+  }
+  50% {
+    opacity: 0.8;
+  }
+}
+
+/* Responsive design */
+@media (max-width: 768px) {
+  .text-scene-content {
+    flex-direction: column;
+    gap: 2rem;
+  }
+
+  .character-image {
+    width: 200px;
+  }
+
+  .text-bubble {
+    margin-left: 0;
+    padding: 1.5rem;
+  }
+
+
+  .scene-text {
+    font-size: 18px;
+  }
+}

@@ -22,8 +22,7 @@ const __dirname = path.dirname(__filename);
 // Configuration
 const CONFIG = {
   bundlePatterns: [
-    'stories/*.bundle',  // Story bundles
-    'assets.*'          // Asset packs like assets.core
+    'stories/*.bundle'  // Story bundles
   ],
   targetDirs: ['maps', 'clues', 'images/maps', 'images/clues'],  // Possible locations within bundles
   extensions: ['.png', '.jpg', '.jpeg'],
@@ -49,7 +48,6 @@ const colors = {
  * Log with color and formatting
  */
 function log(message, color = 'reset') {
-  console.log(`${colors[color]}${message}${colors.reset}`);
 }
 
 /**
