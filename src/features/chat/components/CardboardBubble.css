@@ -125,7 +125,7 @@
 /* Cardboard triangle - Right side */
 .cardboard-triangle-right {
   position: absolute;
-  right: -8px;
+  right: -7px;
   top: -15px;
   width: 28px;
   height: 30px;
@@ -232,5 +232,16 @@
 
   .cardboard-bubble-text {
     font-size: 18px;
+  }
+}
+
+/* Mobile landscape - compact bubble text */
+@media (max-width: 900px) and (orientation: landscape) {
+  .cardboard-bubble-text {
+    font-size: 17px;
+  }
+
+  .cardboard-bubble-speaker {
+    font-size: 14px;
   }
 }

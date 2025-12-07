@@ -1,0 +1,87 @@
+/* ===================================
+   ORIENTATION GATE - Portrait Blocker
+   Cardboard storybook aesthetic
+   =================================== */
+
+.orientation-blocker {
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  /* Cardboard texture background */
+  background-image: url(/VisualAssets/cardboard.png);
+  background-position: center;
+  background-size: 360px 540px;
+  background-repeat: repeat;
+  background-color: #c4a574;
+}
+
+.orientation-blocker__content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 24px;
+  padding: 32px;
+  max-width: 280px;
+  text-align: center;
+
+  /* Inner card styling */
+  background: rgba(255, 255, 255, 0.9);
+  border-radius: 20px;
+  border: 5px solid #49301d;
+  box-shadow:
+    0 8px 32px rgba(0, 0, 0, 0.2),
+    inset 0 2px 4px rgba(255, 255, 255, 0.5);
+}
+
+.orientation-blocker__icon {
+  width: 100px;
+  height: 100px;
+  color: #49301d;
+}
+
+.orientation-blocker__phone {
+  width: 100%;
+  height: 100%;
+  animation: rotatePhone 3s ease-in-out infinite;
+  transform-origin: center center;
+}
+
+.orientation-blocker__arrow {
+  animation: pulseArrow 3s ease-in-out infinite;
+}
+
+.orientation-blocker__text {
+  font-family: 'Patrick Hand', cursive, system-ui, sans-serif;
+  font-size: 20px;
+  font-weight: 600;
+  color: #49301d;
+  margin: 0;
+  line-height: 1.4;
+}
+
+/* Phone rotation animation */
+@keyframes rotatePhone {
+  0%, 15% {
+    transform: rotate(0deg);
+  }
+  35%, 65% {
+    transform: rotate(-90deg);
+  }
+  85%, 100% {
+    transform: rotate(0deg);
+  }
+}
+
+/* Arrow pulse animation */
+@keyframes pulseArrow {
+  0%, 15%, 85%, 100% {
+    opacity: 1;
+  }
+  35%, 65% {
+    opacity: 0.3;
+  }
+}

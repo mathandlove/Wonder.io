@@ -121,3 +121,37 @@
     max-height: 45px;
   }
 }
+
+/* ===================================
+   MOBILE LANDSCAPE - COMPACT CLUES
+   Target: phones in landscape mode (≤900px width)
+   =================================== */
+
+@media (max-width: 900px) and (orientation: landscape) {
+  .clue-selection-content {
+    padding: 4px 0;
+  }
+
+  .selection-header__text {
+    font-size: 12px;
+    margin-bottom: 4px;
+  }
+
+  .selection-clue-holder {
+    gap: 10px;
+    padding: 2px 0;
+  }
+
+  .selection-frame {
+    width: 70px;
+    height: 35px;
+    min-width: 70px;
+    min-height: 35px;
+    max-width: 70px;
+    max-height: 35px;
+  }
+
+  .selection-frame:hover {
+    transform: scale(1.15);
+  }
+}

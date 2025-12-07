@@ -55,19 +55,44 @@ function DialogBubble({ text, hotspot, onDismiss, imageBounds }: DialogBubblePro
   // Prioritize horizontal positioning for left/right hotspots to prevent overlap
   let position: 'top' | 'bottom' | 'left' | 'right' = 'bottom';
 
+  // Calculate actual pixel position of hotspot to check viewport bounds
+  const hotspotYPixels = imageBounds.top + (center.y / 100) * imageBounds.height;
+  const bubbleHeight = 150; // Approximate bubble height in pixels (increased for safety)
+  const bubbleWidth = 320; // Approximate bubble width in pixels
+  const hotspotXPixels = imageBounds.left + (center.x / 100) * imageBounds.width;
+
+  // For left/right positioned bubbles, check if the bubble center would go off top of viewport
+  // The bubble is vertically centered on the hotspot, so check if top half would overflow
+  const wouldOverflowTop = hotspotYPixels - (bubbleHeight / 2) < 0;
+
   // Check horizontal position first - this takes priority
   if (center.x > 60) {
     // Hotspot on right side - show bubble to the left
-    position = 'left';
+    // But check if bubble would go off left edge OR top edge
+    if (hotspotXPixels - bubbleWidth - 40 < 0 || wouldOverflowTop) {
+      position = 'bottom'; // Fall back to bottom if would overflow
+    } else {
+      position = 'left';
+    }
   } else if (center.x < 40) {
     // Hotspot on left side - show bubble to the right
-    position = 'right';
+    // But check if bubble would go off right edge OR top edge
+    if (hotspotXPixels + bubbleWidth + 40 > window.innerWidth || wouldOverflowTop) {
+      position = 'bottom'; // Fall back to bottom if would overflow
+    } else {
+      position = 'right';
+    }
   } else if (center.y < 30) {
     // Hotspot in top 30% (and center horizontally) - show bubble below
     position = 'bottom';
   } else if (center.y > 50) {
     // Hotspot in bottom 50% (and center horizontally) - show bubble above
-    position = 'top';
+    // But check if bubble would go off top of viewport
+    if (hotspotYPixels - bubbleHeight - 40 < 0) {
+      position = 'bottom'; // Fall back to bottom if top would overflow
+    } else {
+      position = 'top';
+    }
   }
   // Otherwise default to bottom for center hotspots
 

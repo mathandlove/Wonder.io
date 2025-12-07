@@ -433,6 +433,13 @@
   }
 }
 
+/* Mobile landscape - compact bubble text (matches CardboardBubble) */
+@media (max-width: 900px) and (orientation: landscape) {
+  .dialog-bubble__text {
+    font-size: 17px;
+  }
+}
+
 /* ===================================
    DISCOVERY TOAST - Centered instructional toast
    =================================== */

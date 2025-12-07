@@ -312,6 +312,7 @@ export const RecordPanel: React.FC<RecordPanelProps> = ({
     if (isAnswerWrong) return showRedGlow ? 'answer-wrong-centered show-red' : 'answer-wrong-centered';
     if (isAnswerWaiting) return 'quest-offer-centered'; // Golden glow for waiting
     if (isQuestOffer) return 'quest-offer-centered'; // Golden glow for quest
+    // Note: isAnswerProcessing falls through to 'bottom-anchored' - stays in place like recording
 
     // Fail-dance state - same red glow as answer-wrong but off-screen
     if (isFailDance) return 'answer-wrong-centered show-red hidden';

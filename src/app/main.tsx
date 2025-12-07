@@ -10,6 +10,7 @@ import { RecordingProvider } from '@core/recording/RecordingOrchestrator'
 import { startNavigationService } from '@core/navigation/machine/navigationInterpreter'
 import { start as startQueue, setExecutor } from '@core/navigation/queue/navigationQueue'
 import { executeCommand } from '@core/navigation/commands/commandExecutor'
+import { OrientationGate } from '../components/OrientationGate'
 import './global.css'
 
 // Initialize the navigation system
@@ -25,14 +26,16 @@ startNavigationService();
 
 ReactDOM.createRoot(document.getElementById('root')!).render(
   // <React.StrictMode>
-  <DialogueProvider>
-    <RecordingProvider>
-      <ClueStoreProvider>
-        <ChatDialogueProvider>
-          <StoryModeScroll />
-        </ChatDialogueProvider>
-      </ClueStoreProvider>
-    </RecordingProvider>
-  </DialogueProvider>
+  <OrientationGate>
+    <DialogueProvider>
+      <RecordingProvider>
+        <ClueStoreProvider>
+          <ChatDialogueProvider>
+            <StoryModeScroll />
+          </ChatDialogueProvider>
+        </ClueStoreProvider>
+      </RecordingProvider>
+    </DialogueProvider>
+  </OrientationGate>
   // </React.StrictMode>,
 )

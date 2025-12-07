@@ -1618,3 +1618,192 @@
   max-width: 320px;
 }
 
+/* ===================================
+   MOBILE LANDSCAPE - COMPACT PANEL
+   Target: phones in landscape mode (≤900px width)
+   =================================== */
+
+@media (max-width: 900px) and (orientation: landscape) {
+
+  /* Raise the panel so less is hidden off-screen */
+  .record-panel-container.bottom-anchored {
+    bottom: -20px;
+  }
+
+  /* Main frame - compact sizing for mobile (wider for regular states) */
+  .frame {
+    width: 480px;
+    min-width: 480px;
+    max-width: 480px;
+    padding: 6px 6px 5px 6px;
+    border-width: 4px;
+    border-radius: 20px;
+  }
+
+  /* Quest offer state - narrower frame */
+  .record-panel-container.quest-offer-centered .frame {
+    width: 400px;
+    min-width: 400px;
+    max-width: 400px;
+  }
+
+  /* Answer feedback states (answer-right, answer-wrong) - narrower frame */
+  .record-panel-container.answer-right-centered .frame,
+  .record-panel-container.answer-wrong-centered .frame {
+    width: 400px;
+    min-width: 400px;
+    max-width: 400px;
+  }
+
+  /* Quest section (top white box) - compact */
+  .frame .whiteframe {
+    padding: 6px 10px;
+    border-radius: 12px 12px 0 0;
+    min-width: auto !important;
+    width: 100%;
+  }
+
+  /* Quest text container */
+  .frame .quest {
+    padding: 2px 4px;
+  }
+
+  /* Quest text sizing */
+  .frame .quest-find-out-what {
+    font-size: 14px;
+  }
+
+  .frame .quest-label {
+    font-size: 14px;
+  }
+
+  .frame .quest-description {
+    font-size: 12px;
+  }
+
+  /* Quest offer state - still larger but scaled down */
+  .frame .quest-find-out-what.quest-offer {
+    font-size: 18px;
+  }
+
+  .frame .quest-find-out-what.quest-offer .quest-label {
+    font-size: 18px;
+  }
+
+  .frame .quest-find-out-what.quest-offer .quest-description {
+    font-size: 16px;
+  }
+
+  /* Answer frame (middle white box) - compact */
+  .frame .whiteframe.answer-frame {
+    padding: 6px 10px;
+    min-width: auto;
+  }
+
+  .frame .answer-input-box {
+    padding: 6px 10px;
+    min-height: 32px;
+    font-size: 12px;
+    margin-top: 4px;
+  }
+
+  /* Button rail (bottom section) - compact */
+  .frame .frame-wrapper {
+    min-width: auto;
+    padding: 8px 10px 16px 10px;
+    gap: 16px;
+    border-radius: 0 0 12px 12px;
+  }
+
+  /* Button row container */
+  .frame .div {
+    height: 40px;
+    gap: 12px;
+  }
+
+  /* Button group (Ask + Hint) */
+  .frame .div-2 {
+    gap: 12px;
+  }
+
+  /* All buttons - compact sizing */
+  .frame .button,
+  .frame .hint-btn,
+  .next-btn {
+    height: 40px;
+    border-radius: 12px;
+    border-width: 2px;
+    padding: 4px 12px;
+  }
+
+  /* Ask button - fit content */
+  .frame .button {
+    width: auto;
+    min-width: 60px;
+    padding: 4px 16px;
+  }
+
+  /* Hint button - compact square */
+  .frame .hint-btn {
+    width: 40px;
+    padding: 4px 0;
+  }
+
+  /* Answer button - fit content */
+  .next-btn {
+    width: auto;
+    min-width: 110px;
+    padding: 4px 16px;
+  }
+
+  /* Button text - smaller */
+  .button-text,
+  .next-label-text,
+  .frame .answer {
+    font-size: 20px;
+  }
+
+  .next-btn .next-label-background {
+    font-size: 14px;
+  }
+
+  .next-btn .lock-image-overlay {
+    width: 30px;
+    height: 30px;
+  }
+
+  /* Button icons - smaller */
+  .frame .button svg,
+  .frame .hint-btn svg,
+  .next-btn svg {
+    width: 18px;
+    height: 18px;
+  }
+
+  /* Accept button wrapper in quest offer state */
+  .frame .button-wrapper {
+    height: 50px;
+    gap: 20px;
+  }
+
+  /* Accept button - bigger for mobile and centered text */
+  .frame .button.accept-btn {
+    height: 48px;
+    min-width: 110px;
+    padding: 8px 24px;
+  }
+
+  .frame .button.accept-btn .answer {
+    margin-top: 0;
+  }
+
+
+  /* Toast positioning adjustments for smaller buttons */
+  .button-toast {
+    width: 160px;
+    font-size: 12px;
+    padding: 6px 10px;
+    margin-bottom: 10px;
+  }
+}
+
