@@ -48,17 +48,7 @@ export default function ImageScene({ scene, nodeId }: SceneProps<ImageSceneType>
   const shouldShowCaption = nodePhase === 'caption';
 
   return (
-    <div
-      className="construction-paper-bg"
-      style={{
-        position: 'relative',
-        width: '100vw',
-        height: '100vh',
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center'
-      }}
-    >
+    <div className="image-scene-container construction-paper-bg">
       <img
         src={resolveStoryImage(scene.image)}
         alt={scene.caption || "Story image"}

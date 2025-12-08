@@ -145,13 +145,12 @@
 }
 
 /* Quest Offer State - glowing yellow effect */
+/* OPTIMIZED: Replaced expensive drop-shadow filters with box-shadow for better mobile performance */
 .record-panel-container.quest-offer-centered .frame {
   animation: breathingGlow 10s ease-in-out 0.2s infinite !important;
   /* 200ms delay after color transition */
   position: relative;
   /* Ensure pseudo-element positioning works */
-  transition: filter 1.5s ease-in-out;
-  /* Smooth transition when glow changes */
 }
 
 /* Inward glow overlay using ::before pseudo-element */
@@ -171,38 +170,40 @@
 }
 
 /* Breathing glow animation - outward golden aura */
+/* OPTIMIZED: Using box-shadow instead of drop-shadow filters (much better GPU performance) */
 @keyframes breathingGlow {
 
   0%,
   100% {
-    filter:
-      drop-shadow(0 0 25px rgba(255, 190, 60, 0.5)) drop-shadow(0 0 15px rgba(255, 200, 80, 0.6)) drop-shadow(0 0 10px rgba(255, 215, 100, 0.7)) drop-shadow(0 0 5px rgba(255, 230, 120, 0.3)) hue-rotate(-5deg) brightness(1.03) saturate(1.1);
+    box-shadow:
+      0 0 20px rgba(255, 190, 60, 0.5),
+      0 0 40px rgba(255, 200, 80, 0.4),
+      0 0 60px rgba(255, 215, 100, 0.3);
   }
 
   50% {
-    filter:
-      drop-shadow(0 0 40px rgba(255, 190, 60, 0.7)) drop-shadow(0 0 25px rgba(255, 200, 80, 0.8)) drop-shadow(0 0 15px rgba(255, 215, 100, 0.9)) drop-shadow(0 0 8px rgba(255, 230, 120, 0.6)) hue-rotate(-3deg) brightness(1.06) saturate(1.15);
+    box-shadow:
+      0 0 30px rgba(255, 190, 60, 0.7),
+      0 0 60px rgba(255, 200, 80, 0.5),
+      0 0 90px rgba(255, 215, 100, 0.4);
   }
 }
 
 /* Breathing inset glow animation - subtle inward golden depth */
+/* OPTIMIZED: Reduced number of shadows from 4 to 2 */
 @keyframes breathingGlowInset {
 
   0%,
   100% {
     box-shadow:
-      inset 0 0 40px rgba(255, 190, 60, 0.25),
-      inset 0 0 25px rgba(255, 200, 80, 0.3),
-      inset 0 0 15px rgba(255, 215, 100, 0.35),
-      inset 0 0 8px rgba(255, 230, 120, 0.25);
+      inset 0 0 30px rgba(255, 190, 60, 0.3),
+      inset 0 0 15px rgba(255, 215, 100, 0.35);
   }
 
   50% {
     box-shadow:
-      inset 0 0 60px rgba(255, 190, 60, 0.4),
-      inset 0 0 40px rgba(255, 200, 80, 0.5),
-      inset 0 0 25px rgba(255, 215, 100, 0.6),
-      inset 0 0 12px rgba(255, 230, 120, 0.5);
+      inset 0 0 50px rgba(255, 190, 60, 0.45),
+      inset 0 0 25px rgba(255, 215, 100, 0.5);
   }
 }
 
@@ -211,12 +212,9 @@
    =================================== */
 
 /* Answer Right State - starts with yellow glow, transitions to green at halfway point */
+/* OPTIMIZED: Removed expensive filter effects */
 .record-panel-container.answer-right-centered .frame {
   position: relative;
-  transition: filter 1.5s ease-in-out;
-  /* Initial golden glow (matches end of answer-waiting) */
-  filter:
-    drop-shadow(0 0 25px rgba(255, 190, 60, 0.5)) drop-shadow(0 0 15px rgba(255, 200, 80, 0.6)) drop-shadow(0 0 10px rgba(255, 215, 100, 0.7)) drop-shadow(0 0 5px rgba(255, 230, 120, 0.3)) hue-rotate(-5deg) brightness(1.03) saturate(1.1);
   animation: breathingGlowGold 10s ease-in-out 0.2s infinite !important;
 }
 
@@ -229,12 +227,10 @@
   pointer-events: none;
   z-index: 100;
   /* Above content so glow isn't clipped */
-  /* Initial golden inset glow */
+  /* Initial golden inset glow - OPTIMIZED: reduced shadows */
   box-shadow:
-    inset 0 0 40px rgba(255, 190, 60, 0.25),
-    inset 0 0 25px rgba(255, 200, 80, 0.3),
-    inset 0 0 15px rgba(255, 215, 100, 0.35),
-    inset 0 0 8px rgba(255, 230, 120, 0.25);
+    inset 0 0 30px rgba(255, 190, 60, 0.3),
+    inset 0 0 15px rgba(255, 215, 100, 0.35);
   animation: breathingGlowInsetGold 10s ease-in-out 0.2s infinite;
 }
 
@@ -248,38 +244,40 @@
 }
 
 /* Breathing glow animation - outward green success aura */
+/* OPTIMIZED: Using box-shadow instead of drop-shadow filters */
 @keyframes breathingGlowGreen {
 
   0%,
   100% {
-    filter:
-      drop-shadow(0 0 25px rgba(60, 255, 100, 0.35)) drop-shadow(0 0 15px rgba(80, 255, 120, 0.4)) drop-shadow(0 0 10px rgba(100, 255, 140, 0.45)) drop-shadow(0 0 5px rgba(120, 255, 160, 0.2)) hue-rotate(5deg) brightness(1.02) saturate(1.05);
+    box-shadow:
+      0 0 20px rgba(60, 255, 100, 0.4),
+      0 0 40px rgba(80, 255, 120, 0.3),
+      0 0 60px rgba(100, 255, 140, 0.2);
   }
 
   50% {
-    filter:
-      drop-shadow(0 0 40px rgba(60, 255, 100, 0.5)) drop-shadow(0 0 25px rgba(80, 255, 120, 0.55)) drop-shadow(0 0 15px rgba(100, 255, 140, 0.6)) drop-shadow(0 0 8px rgba(120, 255, 160, 0.4)) hue-rotate(3deg) brightness(1.04) saturate(1.1);
+    box-shadow:
+      0 0 30px rgba(60, 255, 100, 0.6),
+      0 0 60px rgba(80, 255, 120, 0.45),
+      0 0 90px rgba(100, 255, 140, 0.3);
   }
 }
 
 /* Breathing inset glow animation - subtle inward green depth */
+/* OPTIMIZED: Reduced from 4 shadows to 2 */
 @keyframes breathingGlowInsetGreen {
 
   0%,
   100% {
     box-shadow:
-      inset 0 0 40px rgba(60, 255, 100, 0.15),
-      inset 0 0 25px rgba(80, 255, 120, 0.2),
-      inset 0 0 15px rgba(100, 255, 140, 0.22),
-      inset 0 0 8px rgba(120, 255, 160, 0.15);
+      inset 0 0 30px rgba(60, 255, 100, 0.2),
+      inset 0 0 15px rgba(100, 255, 140, 0.25);
   }
 
   50% {
     box-shadow:
-      inset 0 0 60px rgba(60, 255, 100, 0.25),
-      inset 0 0 40px rgba(80, 255, 120, 0.3),
-      inset 0 0 25px rgba(100, 255, 140, 0.35),
-      inset 0 0 12px rgba(120, 255, 160, 0.3);
+      inset 0 0 50px rgba(60, 255, 100, 0.3),
+      inset 0 0 25px rgba(100, 255, 140, 0.35);
   }
 }
 
@@ -288,12 +286,9 @@
    =================================== */
 
 /* Answer Wrong State - starts with yellow glow, transitions to red at halfway point */
+/* OPTIMIZED: Removed expensive filter effects */
 .record-panel-container.answer-wrong-centered .frame {
   position: relative;
-  transition: filter 1.5s ease-in-out;
-  /* Initial golden glow (matches end of answer-waiting) */
-  filter:
-    drop-shadow(0 0 25px rgba(255, 190, 60, 0.5)) drop-shadow(0 0 15px rgba(255, 200, 80, 0.6)) drop-shadow(0 0 10px rgba(255, 215, 100, 0.7)) drop-shadow(0 0 5px rgba(255, 230, 120, 0.3)) hue-rotate(-5deg) brightness(1.03) saturate(1.1);
   animation: breathingGlowGold 10s ease-in-out 0.2s infinite !important;
 }
 
@@ -306,12 +301,10 @@
   pointer-events: none;
   z-index: 100;
   /* Above content so glow isn't clipped */
-  /* Initial golden inset glow */
+  /* Initial golden inset glow - OPTIMIZED: reduced shadows */
   box-shadow:
-    inset 0 0 40px rgba(255, 190, 60, 0.25),
-    inset 0 0 25px rgba(255, 200, 80, 0.3),
-    inset 0 0 15px rgba(255, 215, 100, 0.35),
-    inset 0 0 8px rgba(255, 230, 120, 0.25);
+    inset 0 0 30px rgba(255, 190, 60, 0.3),
+    inset 0 0 15px rgba(255, 215, 100, 0.35);
   animation: breathingGlowInsetGold 10s ease-in-out 0.2s infinite;
 }
 
@@ -342,74 +335,78 @@
 }
 
 /* Breathing glow animation - golden (for first half of video) */
+/* OPTIMIZED: Using box-shadow instead of drop-shadow filters */
 @keyframes breathingGlowGold {
 
   0%,
   100% {
-    filter:
-      drop-shadow(0 0 25px rgba(255, 190, 60, 0.5)) drop-shadow(0 0 15px rgba(255, 200, 80, 0.6)) drop-shadow(0 0 10px rgba(255, 215, 100, 0.7)) drop-shadow(0 0 5px rgba(255, 230, 120, 0.3)) hue-rotate(-5deg) brightness(1.03) saturate(1.1);
+    box-shadow:
+      0 0 20px rgba(255, 190, 60, 0.5),
+      0 0 40px rgba(255, 200, 80, 0.4),
+      0 0 60px rgba(255, 215, 100, 0.3);
   }
 
   50% {
-    filter:
-      drop-shadow(0 0 40px rgba(255, 190, 60, 0.7)) drop-shadow(0 0 25px rgba(255, 200, 80, 0.8)) drop-shadow(0 0 15px rgba(255, 215, 100, 0.9)) drop-shadow(0 0 8px rgba(255, 230, 120, 0.6)) hue-rotate(-3deg) brightness(1.06) saturate(1.15);
+    box-shadow:
+      0 0 30px rgba(255, 190, 60, 0.7),
+      0 0 60px rgba(255, 200, 80, 0.5),
+      0 0 90px rgba(255, 215, 100, 0.4);
   }
 }
 
 /* Breathing inset glow animation - golden (for first half of video) */
+/* OPTIMIZED: Reduced from 4 shadows to 2 */
 @keyframes breathingGlowInsetGold {
 
   0%,
   100% {
     box-shadow:
-      inset 0 0 40px rgba(255, 190, 60, 0.25),
-      inset 0 0 25px rgba(255, 200, 80, 0.3),
-      inset 0 0 15px rgba(255, 215, 100, 0.35),
-      inset 0 0 8px rgba(255, 230, 120, 0.25);
+      inset 0 0 30px rgba(255, 190, 60, 0.3),
+      inset 0 0 15px rgba(255, 215, 100, 0.35);
   }
 
   50% {
     box-shadow:
-      inset 0 0 60px rgba(255, 190, 60, 0.4),
-      inset 0 0 40px rgba(255, 200, 80, 0.5),
-      inset 0 0 25px rgba(255, 215, 100, 0.6),
-      inset 0 0 12px rgba(255, 230, 120, 0.5);
+      inset 0 0 50px rgba(255, 190, 60, 0.45),
+      inset 0 0 25px rgba(255, 215, 100, 0.5);
   }
 }
 
 /* Breathing glow animation - outward red error aura */
+/* OPTIMIZED: Using box-shadow instead of drop-shadow filters */
 @keyframes breathingGlowRed {
 
   0%,
   100% {
-    filter:
-      drop-shadow(0 0 25px rgba(255, 60, 60, 0.35)) drop-shadow(0 0 15px rgba(255, 80, 80, 0.4)) drop-shadow(0 0 10px rgba(255, 100, 100, 0.45)) drop-shadow(0 0 5px rgba(255, 120, 120, 0.2)) hue-rotate(-5deg) brightness(1.02) saturate(1.05);
+    box-shadow:
+      0 0 20px rgba(255, 60, 60, 0.4),
+      0 0 40px rgba(255, 80, 80, 0.3),
+      0 0 60px rgba(255, 100, 100, 0.2);
   }
 
   50% {
-    filter:
-      drop-shadow(0 0 40px rgba(255, 60, 60, 0.5)) drop-shadow(0 0 25px rgba(255, 80, 80, 0.55)) drop-shadow(0 0 15px rgba(255, 100, 100, 0.6)) drop-shadow(0 0 8px rgba(255, 120, 120, 0.4)) hue-rotate(-3deg) brightness(1.04) saturate(1.1);
+    box-shadow:
+      0 0 30px rgba(255, 60, 60, 0.6),
+      0 0 60px rgba(255, 80, 80, 0.45),
+      0 0 90px rgba(255, 100, 100, 0.3);
   }
 }
 
 /* Breathing inset glow animation - subtle inward red depth */
+/* OPTIMIZED: Reduced from 4 shadows to 2 */
 @keyframes breathingGlowInsetRed {
 
   0%,
   100% {
     box-shadow:
-      inset 0 0 40px rgba(255, 60, 60, 0.15),
-      inset 0 0 25px rgba(255, 80, 80, 0.2),
-      inset 0 0 15px rgba(255, 100, 100, 0.22),
-      inset 0 0 8px rgba(255, 120, 120, 0.15);
+      inset 0 0 30px rgba(255, 60, 60, 0.2),
+      inset 0 0 15px rgba(255, 100, 100, 0.25);
   }
 
   50% {
     box-shadow:
-      inset 0 0 60px rgba(255, 60, 60, 0.25),
-      inset 0 0 40px rgba(255, 80, 80, 0.3),
-      inset 0 0 25px rgba(255, 100, 100, 0.35),
-      inset 0 0 12px rgba(255, 120, 120, 0.3);
+      inset 0 0 50px rgba(255, 60, 60, 0.3),
+      inset 0 0 25px rgba(255, 100, 100, 0.35);
   }
 }
 
@@ -1186,42 +1183,39 @@
 }
 
 /* Recording pulse animation - Red (Ask button) */
+/* OPTIMIZED: Removed filter:brightness() - very expensive on mobile GPU */
+/* Using brighter background-color values instead for the same visual effect */
 @keyframes recordingPulseRed {
 
   0%,
   100% {
     background-color: #d81919;
     box-shadow: inset 0px 0px 15px 0px rgba(255, 124, 124, 0.8);
-    filter: brightness(1);
   }
 
   50% {
-    background-color: #ff4444;
-    /* Bright vibrant red */
+    background-color: #ff5555;
+    /* Bright vibrant red (slightly brighter to compensate for removed brightness filter) */
     box-shadow: inset 0px 0px 20px 0px rgba(255, 124, 124, 1);
     /* Stronger glow for intense pulse */
-    filter: brightness(1.3);
-    /* Extra brightness boost */
   }
 }
 
 /* Recording pulse animation - Purple (Answer button) */
+/* OPTIMIZED: Removed filter:brightness() - very expensive on mobile GPU */
 @keyframes recordingPulsePurple {
 
   0%,
   100% {
     background-color: #6b3a8f;
     box-shadow: inset 0px 0px 15px 0px rgba(180, 120, 255, 0.5);
-    filter: brightness(1);
   }
 
   50% {
-    background-color: #caa3e5;
-    /* Brighter vibrant purple */
+    background-color: #d4b0ed;
+    /* Brighter vibrant purple (slightly brighter to compensate for removed brightness filter) */
     box-shadow: inset 0px 0px 20px 0px rgba(180, 120, 255, 0.8);
     /* Stronger glow for intense pulse */
-    filter: brightness(1.5);
-    /* Extra brightness boost */
   }
 }
 
@@ -2153,4 +2147,94 @@ html[data-mobile="true"] .no-audio-title {
 
 html[data-mobile="true"] .no-audio-subtitle {
   font-size: 16px;
+}
+
+/* ===================================
+   MOBILE PERFORMANCE OPTIMIZATIONS
+   =================================== */
+/* Reduce/disable heavy animations on mobile devices for better performance */
+
+/* Disable breathing glow animations on mobile - use static glow instead */
+html[data-mobile="true"] .record-panel-container.quest-offer-centered .frame {
+  animation: none !important;
+  box-shadow:
+    0 0 25px rgba(255, 190, 60, 0.6),
+    0 0 50px rgba(255, 200, 80, 0.4);
+}
+
+html[data-mobile="true"] .record-panel-container.quest-offer-centered .frame::before {
+  animation: none !important;
+  box-shadow:
+    inset 0 0 30px rgba(255, 190, 60, 0.35);
+}
+
+/* Static gold glow for answer states on mobile */
+html[data-mobile="true"] .record-panel-container.answer-right-centered .frame,
+html[data-mobile="true"] .record-panel-container.answer-wrong-centered .frame {
+  animation: none !important;
+  box-shadow:
+    0 0 25px rgba(255, 190, 60, 0.6),
+    0 0 50px rgba(255, 200, 80, 0.4);
+}
+
+html[data-mobile="true"] .record-panel-container.answer-right-centered .frame::before,
+html[data-mobile="true"] .record-panel-container.answer-wrong-centered .frame::before {
+  animation: none !important;
+  box-shadow:
+    inset 0 0 30px rgba(255, 190, 60, 0.35);
+}
+
+/* Static green glow for correct answer on mobile */
+html[data-mobile="true"] .record-panel-container.answer-right-centered.show-green .frame {
+  animation: none !important;
+  box-shadow:
+    0 0 25px rgba(60, 255, 100, 0.5),
+    0 0 50px rgba(80, 255, 120, 0.35);
+}
+
+html[data-mobile="true"] .record-panel-container.answer-right-centered.show-green .frame::before {
+  animation: none !important;
+  box-shadow:
+    inset 0 0 30px rgba(60, 255, 100, 0.25);
+}
+
+/* Static red glow for wrong answer on mobile */
+html[data-mobile="true"] .record-panel-container.answer-wrong-centered.show-red .frame {
+  animation: none !important;
+  box-shadow:
+    0 0 25px rgba(255, 60, 60, 0.5),
+    0 0 50px rgba(255, 80, 80, 0.35);
+}
+
+html[data-mobile="true"] .record-panel-container.answer-wrong-centered.show-red .frame::before {
+  animation: none !important;
+  box-shadow:
+    inset 0 0 30px rgba(255, 60, 60, 0.25);
+}
+
+/* Disable recording button pulse animations on mobile - use static style */
+html[data-mobile="true"] .frame .button.recording-active {
+  animation: none !important;
+  background-color: #e83030 !important;
+  box-shadow: inset 0px 0px 18px 0px rgba(255, 124, 124, 0.9) !important;
+}
+
+html[data-mobile="true"] .next-btn.recording-active {
+  animation: none !important;
+  background-color: #a06cc0 !important;
+  box-shadow: inset 0px 0px 18px 0px rgba(180, 120, 255, 0.65) !important;
+}
+
+/* Also respect prefers-reduced-motion for accessibility */
+@media (prefers-reduced-motion: reduce) {
+  .record-panel-container.quest-offer-centered .frame,
+  .record-panel-container.quest-offer-centered .frame::before,
+  .record-panel-container.answer-right-centered .frame,
+  .record-panel-container.answer-right-centered .frame::before,
+  .record-panel-container.answer-wrong-centered .frame,
+  .record-panel-container.answer-wrong-centered .frame::before,
+  .frame .button.recording-active,
+  .next-btn.recording-active {
+    animation: none !important;
+  }
 }

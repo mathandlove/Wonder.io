@@ -186,8 +186,9 @@ export function ScrollControl({
   }, [currentIndex]);
 
   // Merge default styles with user styles
+  // Note: height uses 100svh for iOS Safari (small viewport - visible area when toolbar shown)
   const containerStyle: React.CSSProperties = {
-    height: '100vh', // Use dynamic viewport height to include safe areas on iOS
+    height: '100svh', // Small viewport height - iOS Safari fix for centering
     overflowY: 'auto',
     scrollSnapType: 'y mandatory',
     overscrollBehavior: 'contain',

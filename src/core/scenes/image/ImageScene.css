@@ -2,6 +2,16 @@
 
 /* Note: Add .construction-paper-bg class to component for background */
 
+/* Container for full-viewport image display */
+.image-scene-container {
+  position: relative;
+  width: 100vw;
+  height: 100svh; /* Small viewport height - iOS Safari fix for nav bar */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
 /* Base caption styling - floating frosted glass container */
 .caption {
   position: absolute;

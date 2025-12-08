@@ -1,5 +1,6 @@
 .title-scene-container {
   min-height: 100vh;
+  min-height: 100svh; /* Small viewport height - iOS Safari fix for centering */
   display: flex;
   flex-direction: column;
   align-items: center;

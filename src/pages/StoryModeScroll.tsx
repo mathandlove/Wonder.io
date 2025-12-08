@@ -175,7 +175,7 @@ const StoryContent: React.FC = () => {
                       className="scene story-scene-container"
                       data-section-index={i}
                       style={{
-                        minHeight: '100dvh',
+                        minHeight: '100svh',
                         scrollSnapAlign: 'start',
                         scrollSnapStop: 'always',
                         outline: 'none',

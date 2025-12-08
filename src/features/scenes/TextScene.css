@@ -1,5 +1,6 @@
 .text-scene-container {
   min-height: 100vh;
+  min-height: 100svh; /* Small viewport height - iOS Safari fix for centering */
   /* Remove white background to let BackgroundOrchestrator show through */
   display: flex;
   flex-direction: column;

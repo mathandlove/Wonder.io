@@ -7,4 +7,7 @@
 .scroll-control {
   -ms-overflow-style: none;  /* IE and Edge */
   scrollbar-width: none;  /* Firefox */
+  /* Fallback height for browsers that don't support svh */
+  height: 100vh;
+  height: 100svh; /* Small viewport height - iOS Safari fix */
 }
