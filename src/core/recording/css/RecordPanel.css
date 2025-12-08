@@ -2112,35 +2112,45 @@ html[data-mobile="true"] .transcript-label {
    NO AUDIO RECORDED STATE
    =================================== */
 
-/* Container for no audio recorded content */
-.no-audio-recorded-content {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 16px;
-  padding: 16px 24px;
-  pointer-events: auto;
+/* No audio recorded frame - rounded corners on top only */
+.frame .whiteframe.no-audio-frame {
+  border-radius: 16px 16px 0 0;
 }
 
-/* Error message text */
-.no-audio-message {
-  font-family: 'Roboto', sans-serif;
-  font-size: 16px;
-  font-weight: 500;
+/* No audio title - same size as quest label in quest-offer state */
+.no-audio-title {
   color: #b44;
-  text-align: center;
-  margin: 0;
-  line-height: 1.4;
+  font-family: "Inter", Helvetica, sans-serif;
+  font-size: 36px;
+  font-weight: 700;
+  letter-spacing: 0;
 }
 
-/* Retry button - styled similar to accept/send button */
-.retry-recording-btn {
+/* No audio subtitle - same size as quest description in quest-offer state */
+.no-audio-subtitle {
+  color: #5c5c5c;
+  font-family: "Inter", Helvetica, sans-serif;
+  font-size: 32px;
+  font-weight: 400;
+  letter-spacing: 0;
+}
+
+/* Continue button - styled similar to accept button */
+.continue-btn {
   min-width: 140px;
   pointer-events: auto;
 }
 
-/* Retry button with orange/warm tint */
-.retry-recording-btn::before {
+/* Continue button with orange/warm tint */
+.continue-btn::before {
   background: rgba(180, 120, 60, 0.6);
+}
+
+/* Mobile styles for no audio recorded */
+html[data-mobile="true"] .no-audio-title {
+  font-size: 18px;
+}
+
+html[data-mobile="true"] .no-audio-subtitle {
+  font-size: 16px;
 }

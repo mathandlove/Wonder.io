@@ -91,6 +91,14 @@
   text-align: left; /* Changed from center to left */
   max-height: calc(100vh - 400px); /* Limit inner height */
   overflow-y: auto; /* Allow scrolling if content exceeds max-height */
+  /* Hide scrollbar while maintaining scroll functionality */
+  scrollbar-width: none; /* Firefox */
+  -ms-overflow-style: none; /* IE and Edge */
+}
+
+/* Hide scrollbar for Chrome, Safari, Opera */
+.cardboard-bubble-inner::-webkit-scrollbar {
+  display: none;
 }
 
 /* Speaker label */

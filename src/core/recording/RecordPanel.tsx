@@ -401,32 +401,47 @@ export const RecordPanel: React.FC<RecordPanelProps> = ({
 
       {/* Main Frame - matching Figma exactly */}
       <div className="frame">
-        {/* Quest Section - white card with shadow */}
-        <div className={`whiteframe ${useQuestOfferStyling ? 'quest-offer' : ''}`}>
-          <div className="quest">
-            <p className={`quest-find-out-what ${useQuestOfferStyling ? 'quest-offer' : ''}`}>
-              {isAskClue ? (
-                <span className="quest-label" style={{ color: '#b2652a' }}>What clue do you want to ask a question about?</span>
-              ) : isAnswerClue ? (
-                <>
-                  <span className="quest-label">Quest:</span>
-                  <span className="quest-description"> {questText}</span>
-                </>
-              ) : useQuestOfferStyling ? (
-                <>
-                  <span className="quest-label">Quest:</span>
-                  <br />
-                  <span className="quest-description">{questText}</span>
-                </>
-              ) : (
-                <>
-                  <span className="quest-label">Quest:</span>
-                  <span className="quest-description"> {questText}</span>
-                </>
-              )}
-            </p>
+        {/* Quest Section - white card with shadow (hidden when no audio recorded) */}
+        {!isNoAudioRecorded && (
+          <div className={`whiteframe ${useQuestOfferStyling ? 'quest-offer' : ''}`}>
+            <div className="quest">
+              <p className={`quest-find-out-what ${useQuestOfferStyling ? 'quest-offer' : ''}`}>
+                {isAskClue ? (
+                  <span className="quest-label" style={{ color: '#b2652a' }}>What clue do you want to ask a question about?</span>
+                ) : isAnswerClue ? (
+                  <>
+                    <span className="quest-label">Quest:</span>
+                    <span className="quest-description"> {questText}</span>
+                  </>
+                ) : useQuestOfferStyling ? (
+                  <>
+                    <span className="quest-label">Quest:</span>
+                    <br />
+                    <span className="quest-description">{questText}</span>
+                  </>
+                ) : (
+                  <>
+                    <span className="quest-label">Quest:</span>
+                    <span className="quest-description"> {questText}</span>
+                  </>
+                )}
+              </p>
+            </div>
           </div>
-        </div>
+        )}
+
+        {/* No Audio Recorded Message - shown instead of quest when no audio detected */}
+        {isNoAudioRecorded && (
+          <div className="whiteframe no-audio-frame">
+            <div className="quest">
+              <p className="quest-find-out-what quest-offer">
+                <span className="no-audio-title">No audio recorded.</span>
+                <br />
+                <span className="no-audio-subtitle">Please make sure you allowed voice recording.</span>
+              </p>
+            </div>
+          </div>
+        )}
 
 
 
@@ -584,17 +599,14 @@ export const RecordPanel: React.FC<RecordPanelProps> = ({
                 </button>
               </div>
             ) : isNoAudioRecorded ? (
-              /* No Audio Recorded State: Error message and Retry button */
-              <div className="div no-audio-recorded-content">
-                <p className="no-audio-message">
-                  No audio recorded. Please make sure you allowed voice recording.
-                </p>
+              /* No Audio Recorded State: Continue button on ribbon */
+              <div className="button-wrapper">
                 <button
-                  className="button retry-recording-btn"
+                  className="button continue-btn"
                   onClick={handleRetryRecording}
-                  title="Try again"
+                  title="Continue"
                 >
-                  <div className="button-text">Try Again</div>
+                  <div className="button-text">Continue</div>
                 </button>
               </div>
             ) : (

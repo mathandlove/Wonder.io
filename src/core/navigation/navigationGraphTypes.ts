@@ -63,6 +63,7 @@ export type Phase =
   | 'input-processing'
   | 'recording-submit'  // User reviewing transcript before submitting to AI
   | 'no-audio-recorded' // No audio was recorded (empty/silent recording)
+  | 'waiting-for-finalize'  // Waiting for ask recording to finalize
   | 'ai-waiting'
   | 'record-answer'
   | 'waiting-for-answer-finalize'
