@@ -29,6 +29,7 @@ import { HotspotSparkles } from './HotspotSparkles';
 import { useClueStore } from '@core/data/ClueStore';
 import { useSceneVisibility } from '@core/scroll/useSceneVisibility';
 import { hasShown, markShown } from '@core/toast';
+import { useIsMobile } from '@core/uiLayout/useIsMobile';
 import './ClueImageScene.css';
 
 /**
@@ -257,6 +258,8 @@ export default function ClueImageScene({ scene }: SceneProps<ClueImageSceneType>
   const [sparkleDelayKey, setSparkleDelayKey] = useState(0); // Increment to force re-render with fresh delay
   // Toast state for first-time guidance
   const [showDiscoveryToast, setShowDiscoveryToast] = useState(false);
+  // Toast state for "scroll down to continue" on mobile after all clues found
+  const [showScrollDownToast, setShowScrollDownToast] = useState(false);
 
   const imgRef = useRef<HTMLImageElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
@@ -268,13 +271,16 @@ export default function ClueImageScene({ scene }: SceneProps<ClueImageSceneType>
   // Get ClueStore to save clues when all are found
   const { setClues } = useClueStore();
 
+  // Detect mobile for left-side clue panel layout
+  const isMobile = useIsMobile();
+
   // Check if scene was previously completed (for backward navigation)
   const wasPreviouslyCompleted = scene.phase === 'complete';
 
   // Determine if all clues are found
   const isComplete = wasPreviouslyCompleted || (hotspotData && foundClues.length === hotspotData.hotspots.length);
 
-  // Height of the clue panel + 10px gap above it
+  // Height of the clue panel + 10px gap above it (desktop only)
   const CLUE_PANEL_CLEARANCE = 100;
 
   // Update dimensions helper function
@@ -295,17 +301,18 @@ export default function ClueImageScene({ scene }: SceneProps<ClueImageSceneType>
         height: containerRef.current.offsetHeight
       };
 
-      // Calculate bounds with clearance for the clue panel at the bottom
+      // On mobile, panel is on left side and overlays the image - no clearance needed
+      // On desktop, panel is at bottom - subtract clearance from height
       const bounds = calculateImageBounds(
         container.width,
-        container.height - CLUE_PANEL_CLEARANCE,
+        isMobile ? container.height : container.height - CLUE_PANEL_CLEARANCE,
         natural.width,
         natural.height
       );
 
       setImageBounds(bounds);
     }
-  }, []);
+  }, [isMobile]);
 
   // Calculate image bounds on window resize
   useEffect(() => {
@@ -416,10 +423,22 @@ export default function ClueImageScene({ scene }: SceneProps<ClueImageSceneType>
   };
 
   const handleDismissDialog = () => {
+    // Check if all clues are found and we're on mobile - show scroll down toast
+    if (isMobile && isComplete && activeDialog) {
+      setShowScrollDownToast(true);
+      // Auto-hide after 5 seconds
+      setTimeout(() => setShowScrollDownToast(false), 5000);
+    }
     setActiveDialog(null);
   };
 
   const handleBackgroundClick = () => {
+    // Check if all clues are found and we're on mobile - show scroll down toast
+    if (isMobile && isComplete && activeDialog) {
+      setShowScrollDownToast(true);
+      // Auto-hide after 5 seconds
+      setTimeout(() => setShowScrollDownToast(false), 5000);
+    }
     // Dismiss dialog when clicking the background
     setActiveDialog(null);
   };
@@ -502,7 +521,7 @@ export default function ClueImageScene({ scene }: SceneProps<ClueImageSceneType>
       style={{
         position: 'relative',
         width: '100vw',
-        height: '100vh',
+        height: '100svh', // Small viewport height - iOS Safari fix
         overflow: 'hidden',
       }}
     >
@@ -602,7 +621,7 @@ export default function ClueImageScene({ scene }: SceneProps<ClueImageSceneType>
 
       {/* Clue Counter Panel */}
       <div
-        className="clue-counter-container"
+        className={`clue-counter-container ${isMobile ? 'clue-counter-container--mobile-left' : ''}`}
         style={{
           position: 'absolute',
           bottom: 0,
@@ -627,6 +646,35 @@ export default function ClueImageScene({ scene }: SceneProps<ClueImageSceneType>
           onClick={() => setShowDiscoveryToast(false)}
         >
           Click on the 4 clues hidden in the picture.
+        </div>
+      )}
+
+      {/* Scroll down toast for mobile after all clues found */}
+      {showScrollDownToast && (
+        <div
+          className="scroll-down-toast"
+          onClick={() => setShowScrollDownToast(false)}
+        >
+          <div className="scroll-down-content">
+            <div className="scroll-finger-container">
+              <svg
+                className="scroll-finger-icon"
+                viewBox="0 0 24 24"
+                fill="none"
+                xmlns="http://www.w3.org/2000/svg"
+              >
+                <path
+                  d="M12 2C10.9 2 10 2.9 10 4V12.5L8.35 10.85C7.76 10.26 6.81 10.26 6.22 10.85C5.63 11.44 5.63 12.39 6.22 12.98L10.58 17.34C11.36 18.12 12.64 18.12 13.42 17.34L17.78 12.98C18.37 12.39 18.37 11.44 17.78 10.85C17.19 10.26 16.24 10.26 15.65 10.85L14 12.5V4C14 2.9 13.1 2 12 2Z"
+                  fill="currentColor"
+                />
+                <path
+                  d="M12 20C12 20.55 12.45 21 13 21H11C11.55 21 12 20.55 12 20Z"
+                  fill="currentColor"
+                />
+              </svg>
+            </div>
+            <span className="scroll-down-text">Scroll Down to Continue</span>
+          </div>
         </div>
       )}
     </div>

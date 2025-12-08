@@ -1,0 +1,260 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="viewport-fit=cover, width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <title>Unsafe Area Drawing Test</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    html, body {
+      width: 100%;
+      height: 100%;
+      background: #222;
+      overflow: hidden;
+    }
+
+    /* Full-screen canvas to test drawing everywhere */
+    #canvas {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+    }
+
+    /* Info overlay */
+    .info {
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      background: rgba(0,0,0,0.8);
+      color: white;
+      padding: 20px;
+      border-radius: 12px;
+      font-family: -apple-system, sans-serif;
+      font-size: 14px;
+      text-align: center;
+      z-index: 10;
+    }
+    .info p { margin: 5px 0; }
+    .info .label { opacity: 0.6; }
+  </style>
+</head>
+<body>
+  <canvas id="canvas"></canvas>
+
+  <div class="info">
+    <p><span class="label">Browser:</span> <span id="browser">-</span></p>
+    <p><span class="label">Viewport:</span> <span id="viewport">-</span></p>
+    <p><span class="label">Screen:</span> <span id="screen">-</span></p>
+    <p><span class="label">Safe Insets (T/R/B/L):</span></p>
+    <p id="safe-areas">-</p>
+    <p style="margin-top: 15px; font-size: 12px; opacity: 0.7;">
+      Red circles = absolute top<br>
+      Cyan stars = safe area top<br>
+      Try Safari → Add to Home Screen
+    </p>
+  </div>
+
+  <script>
+    const canvas = document.getElementById('canvas');
+    const ctx = canvas.getContext('2d');
+
+    // Get safe area insets
+    function getSafeAreaInsets() {
+      const div = document.createElement('div');
+      div.style.cssText = `
+        position: fixed;
+        top: env(safe-area-inset-top, 0px);
+        right: env(safe-area-inset-right, 0px);
+        bottom: env(safe-area-inset-bottom, 0px);
+        left: env(safe-area-inset-left, 0px);
+        visibility: hidden;
+        pointer-events: none;
+      `;
+      document.body.appendChild(div);
+      const style = getComputedStyle(div);
+      const insets = {
+        top: parseFloat(style.top) || 0,
+        right: parseFloat(style.right) || 0,
+        bottom: parseFloat(style.bottom) || 0,
+        left: parseFloat(style.left) || 0
+      };
+      document.body.removeChild(div);
+      return insets;
+    }
+
+    function drawStar(cx, cy, spikes, outerR, innerR, color) {
+      ctx.beginPath();
+      ctx.fillStyle = color;
+      for (let i = 0; i < spikes * 2; i++) {
+        const r = i % 2 === 0 ? outerR : innerR;
+        const angle = (Math.PI / spikes) * i - Math.PI / 2;
+        const x = cx + Math.cos(angle) * r;
+        const y = cy + Math.sin(angle) * r;
+        if (i === 0) ctx.moveTo(x, y);
+        else ctx.lineTo(x, y);
+      }
+      ctx.closePath();
+      ctx.fill();
+    }
+
+    function draw() {
+      const dpr = window.devicePixelRatio || 1;
+      const w = window.innerWidth;
+      const h = window.innerHeight;
+
+      canvas.width = w * dpr;
+      canvas.height = h * dpr;
+      canvas.style.width = w + 'px';
+      canvas.style.height = h + 'px';
+      ctx.scale(dpr, dpr);
+
+      const insets = getSafeAreaInsets();
+
+      // Detect browser
+      const ua = navigator.userAgent;
+      let browser = 'Unknown';
+      const isStandalone = window.navigator.standalone === true;
+      if (isStandalone) {
+        browser = 'Home Screen App';
+      } else if (/CriOS/.test(ua)) {
+        browser = 'Chrome iOS';
+      } else if (/FxiOS/.test(ua)) {
+        browser = 'Firefox iOS';
+      } else if (/Safari/.test(ua) && !/Chrome/.test(ua)) {
+        browser = 'Safari';
+      }
+
+      // Update info
+      document.getElementById('browser').textContent = browser;
+      document.getElementById('viewport').textContent = `${w} x ${h}`;
+      document.getElementById('screen').textContent = `${screen.width} x ${screen.height}`;
+      document.getElementById('safe-areas').textContent =
+        `${insets.top}px / ${insets.right}px / ${insets.bottom}px / ${insets.left}px`;
+
+      // Clear
+      ctx.fillStyle = '#1a1a2e';
+      ctx.fillRect(0, 0, w, h);
+
+      // Draw diagonal stripes across ENTIRE screen (including unsafe)
+      ctx.strokeStyle = '#333';
+      ctx.lineWidth = 2;
+      for (let i = -h; i < w + h; i += 30) {
+        ctx.beginPath();
+        ctx.moveTo(i, 0);
+        ctx.lineTo(i + h, h);
+        ctx.stroke();
+      }
+
+      // ALWAYS draw circles at the very top (where nav bar would be)
+      // These should appear even if insets.top is 0
+      ctx.fillStyle = '#ff0000';
+      for (let x = 15; x < w; x += 30) {
+        // Row at y=10 (absolute top)
+        ctx.beginPath();
+        ctx.arc(x, 10, 8, 0, Math.PI * 2);
+        ctx.fill();
+        // Row at y=30
+        ctx.beginPath();
+        ctx.arc(x + 15, 30, 8, 0, Math.PI * 2);
+        ctx.fill();
+      }
+
+      // Draw a line of stars right at the TOP of the safe area
+      ctx.fillStyle = '#00ffff';
+      const safeTop = insets.top || 0;
+      for (let x = 20; x < w; x += 40) {
+        drawStar(x, safeTop + 15, 5, 10, 4, '#00ffff');
+      }
+      // Label for safe area top
+      ctx.fillStyle = '#00ffff';
+      ctx.font = '12px -apple-system, sans-serif';
+      ctx.fillText(`← Safe area top (${safeTop}px)`, 10, safeTop + 35);
+
+      // Draw circles in the unsafe areas
+      const circleSize = 15;
+
+      // LEFT unsafe area (notch side in landscape-left)
+      if (insets.left > 0) {
+        ctx.fillStyle = '#ff6b6b';
+        for (let y = circleSize; y < h; y += circleSize * 2.5) {
+          ctx.beginPath();
+          ctx.arc(insets.left / 2, y, circleSize / 2, 0, Math.PI * 2);
+          ctx.fill();
+        }
+        // Draw stars
+        for (let y = circleSize * 2; y < h; y += circleSize * 5) {
+          drawStar(insets.left / 2, y, 5, 12, 5, '#ffcc00');
+        }
+      }
+
+      // RIGHT unsafe area (home indicator side)
+      if (insets.right > 0) {
+        ctx.fillStyle = '#4ecdc4';
+        for (let y = circleSize; y < h; y += circleSize * 2.5) {
+          ctx.beginPath();
+          ctx.arc(w - insets.right / 2, y, circleSize / 2, 0, Math.PI * 2);
+          ctx.fill();
+        }
+        // Draw stars
+        for (let y = circleSize * 2; y < h; y += circleSize * 5) {
+          drawStar(w - insets.right / 2, y, 5, 12, 5, '#ff69b4');
+        }
+      }
+
+      // TOP unsafe area (Dynamic Island in portrait)
+      if (insets.top > 0) {
+        ctx.fillStyle = '#ffe66d';
+        for (let x = circleSize; x < w; x += circleSize * 2.5) {
+          ctx.beginPath();
+          ctx.arc(x, insets.top / 2, circleSize / 2, 0, Math.PI * 2);
+          ctx.fill();
+        }
+      }
+
+      // BOTTOM unsafe area
+      if (insets.bottom > 0) {
+        ctx.fillStyle = '#a29bfe';
+        for (let x = circleSize; x < w; x += circleSize * 2.5) {
+          ctx.beginPath();
+          ctx.arc(x, h - insets.bottom / 2, circleSize / 2, 0, Math.PI * 2);
+          ctx.fill();
+        }
+      }
+
+      // Draw border around safe area
+      ctx.strokeStyle = '#00ff88';
+      ctx.lineWidth = 3;
+      ctx.setLineDash([10, 5]);
+      ctx.strokeRect(
+        insets.left,
+        insets.top,
+        w - insets.left - insets.right,
+        h - insets.top - insets.bottom
+      );
+      ctx.setLineDash([]);
+
+      // Draw corner markers at absolute screen corners
+      ctx.fillStyle = 'white';
+      const cornerSize = 10;
+      ctx.fillRect(0, 0, cornerSize, cornerSize);
+      ctx.fillRect(w - cornerSize, 0, cornerSize, cornerSize);
+      ctx.fillRect(0, h - cornerSize, cornerSize, cornerSize);
+      ctx.fillRect(w - cornerSize, h - cornerSize, cornerSize, cornerSize);
+    }
+
+    draw();
+    window.addEventListener('resize', draw);
+    window.addEventListener('orientationchange', () => setTimeout(draw, 100));
+  </script>
+</body>
+</html>

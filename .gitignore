@@ -27,6 +27,9 @@ dist-ssr
 .env
 .env.local
 
+# Local SSL certs for mobile testing
+.cert/
+
 # Debug audio recordings
 backend/debug-audio/
 .vercel

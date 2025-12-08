@@ -10,11 +10,13 @@
 
 @import '@shared/styles/constructionPaperBackground.css';
 @import '@core/toast/toast-styles.css';
+@import '@core/uiLayout/css/ScrollDownToast.css';
 
 .clue-image-scene {
   position: relative;
   width: 100vw;
   height: 100vh;
+  height: 100svh; /* Small viewport height - iOS Safari fix */
   display: block; /* Changed from flex to block to prevent layout shifts */
   overflow: hidden;
 }

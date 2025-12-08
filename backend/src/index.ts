@@ -4,6 +4,9 @@ import multer from 'multer';
 import 'dotenv/config';
 import { WebSocketServer } from 'ws';
 import { IncomingMessage } from 'http';
+import https from 'https';
+import fs from 'fs';
+import path from 'path';
 
 import { SelectionStore } from './store';
 import { Point } from './types';
@@ -217,12 +220,27 @@ app.get('/api/health', (req, res) => {
   res.json({ status: 'OK', timestamp: new Date().toISOString() });
 });
 
-// Create HTTP server for WebSocket upgrade
-const server = app.listen(port, () => {
-  console.log(`🚀 Server running on http://localhost:${port}`);
-  console.log(`🔌 WebSocket endpoint: ws://localhost:${port}/api/stt/socket`);
-  console.log(`🔑 OpenAI API Key: ${key ? '✅ Loaded' : '❌ Missing'}`);
-});
+// Check for SSL certs (shared with frontend for mobile testing)
+const certDir = path.resolve(__dirname, '../../.cert');
+const keyPath = path.join(certDir, 'key.pem');
+const certPath = path.join(certDir, 'cert.pem');
+const hasSSL = fs.existsSync(keyPath) && fs.existsSync(certPath);
+
+// Create HTTP or HTTPS server for WebSocket upgrade
+const server = hasSSL
+  ? https.createServer({
+      key: fs.readFileSync(keyPath),
+      cert: fs.readFileSync(certPath),
+    }, app).listen(port, () => {
+      console.log(`🚀 Server running on https://localhost:${port} (HTTPS enabled for mobile)`);
+      console.log(`🔌 WebSocket endpoint: wss://localhost:${port}/api/stt/socket`);
+      console.log(`🔑 OpenAI API Key: ${key ? '✅ Loaded' : '❌ Missing'}`);
+    })
+  : app.listen(port, () => {
+      console.log(`🚀 Server running on http://localhost:${port}`);
+      console.log(`🔌 WebSocket endpoint: ws://localhost:${port}/api/stt/socket`);
+      console.log(`🔑 OpenAI API Key: ${key ? '✅ Loaded' : '❌ Missing'}`);
+    });
 
 // Create WebSocket server
 const wss = new WebSocketServer({ noServer: true });
