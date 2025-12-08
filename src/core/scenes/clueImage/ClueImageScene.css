@@ -175,7 +175,7 @@
 .dialog-bubble {
   position: absolute;
   /* Transform is set by position-specific classes (dialog-bubble--bottom, etc.) */
-  width: fit-content;
+  width: 320px;
   height: fit-content;
   min-height: 80px;
   overflow: visible;
@@ -187,11 +187,9 @@
   background-color: #d4b896; /* Fallback color if image doesn't load */
   border-radius: 25px;
   box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
-  z-index: 100;
+  z-index: 200; /* Above clue panel (z-index: 150) */
   cursor: pointer;
   box-sizing: border-box;
-  max-width: 320px;
-  min-width: 200px;
 }
 
 /* Position-specific animations */
@@ -438,6 +436,11 @@
   .dialog-bubble__text {
     font-size: 17px;
   }
+}
+
+/* Mobile - match CardboardBubble font size */
+html[data-mobile="true"] .dialog-bubble__text {
+  font-size: 17px;
 }
 
 /* ===================================

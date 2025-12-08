@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useCallback } from 'react';
+import React, { useEffect, useRef, useCallback, useLayoutEffect, useState } from 'react';
 import './CardboardBubble.css';
 import { WaitingBubble } from './WaitingBubble';
 
@@ -22,6 +22,47 @@ export const CardboardBubble: React.FC<CardboardBubbleProps> = ({
 }) => {
   const bubbleRef = useRef<HTMLDivElement>(null);
   const innerRef = useRef<HTMLDivElement>(null);
+  const textRef = useRef<HTMLParagraphElement>(null);
+  const [compactLevel, setCompactLevel] = useState<'none' | 'compact' | 'very-compact'>('none');
+
+  // Check content height and apply appropriate compact width
+  // very-compact (70%): 1-2 lines, compact (90%): 3-4 lines, none: 5+ lines
+  useLayoutEffect(() => {
+    const textEl = textRef.current;
+    const bubble = bubbleRef.current?.querySelector('.cardboard-bubble') as HTMLElement;
+    if (!textEl || !bubble) return;
+
+    // Line height is 1.5, font-size is 22px, so ~33px per line
+    const lineHeight = 33;
+    const maxVeryShortHeight = lineHeight * 2; // 2 lines = ~66px
+    const maxShortHeight = lineHeight * 4; // 4 lines = ~132px
+
+    // First, try very-compact (70% width)
+    bubble.classList.remove('cardboard-bubble-compact', 'cardboard-bubble-very-compact');
+    bubble.classList.add('cardboard-bubble-very-compact');
+    void textEl.offsetHeight;
+
+    let contentHeight = textEl.scrollHeight;
+    if (contentHeight <= maxVeryShortHeight) {
+      setCompactLevel('very-compact');
+      return;
+    }
+
+    // Try compact (90% width)
+    bubble.classList.remove('cardboard-bubble-very-compact');
+    bubble.classList.add('cardboard-bubble-compact');
+    void textEl.offsetHeight;
+
+    contentHeight = textEl.scrollHeight;
+    if (contentHeight <= maxShortHeight) {
+      setCompactLevel('compact');
+      return;
+    }
+
+    // Text is too long - use full width
+    bubble.classList.remove('cardboard-bubble-compact');
+    setCompactLevel('none');
+  }, [children]);
 
   // Stop scroll events from propagating to navigation system when scrolling inside the bubble
   const handleWheel = useCallback((e: WheelEvent) => {
@@ -101,8 +142,10 @@ export const CardboardBubble: React.FC<CardboardBubbleProps> = ({
 
   const showTail = side === 'left' || side === 'right';
 
-  // Simple class name - no complex animation logic needed
-  const finalClassName = `cardboard-bubble ${bubbleClass}`.trim();
+  // Add compact class based on content size
+  const compactClass = compactLevel === 'very-compact' ? ' cardboard-bubble-very-compact' :
+                       compactLevel === 'compact' ? ' cardboard-bubble-compact' : '';
+  const finalClassName = `cardboard-bubble ${bubbleClass}${compactClass}`.trim();
 
   // Container style for proper alignment
   const containerStyle = {
@@ -130,7 +173,7 @@ export const CardboardBubble: React.FC<CardboardBubbleProps> = ({
               </div>
             )}
             <div ref={innerRef} className="cardboard-bubble-inner">
-              <p className={`cardboard-bubble-text ${isPlaceholder ? 'placeholder' : ''}`}>
+              <p ref={textRef} className={`cardboard-bubble-text ${isPlaceholder ? 'placeholder' : ''}`}>
                 {children}
               </p>
             </div>

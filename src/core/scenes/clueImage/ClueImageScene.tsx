@@ -96,20 +96,9 @@ function DialogBubble({ text, hotspot, onDismiss, imageBounds }: DialogBubblePro
   }
   // Otherwise default to bottom for center hotspots
 
-  // For left-positioned bubbles (bubble to left of hotspot), point to the left edge of the hotspot
-  // For right-positioned bubbles (bubble to right of hotspot), point to the right edge of the hotspot
-  // For top/bottom, use the horizontal center
-  const bubbleXPercent = position === 'left'
-    ? hotspot.x  // Left edge of hotspot (bubble appears to the left, pointing right)
-    : position === 'right'
-      ? hotspot.x + hotspot.width  // Right edge of hotspot (bubble appears to the right, pointing left)
-      : center.x;  // Center for top/bottom
-
-  // Always use the vertical center of the hotspot for the pointer target
-  // Calculate from actual polygon bounds, clamped to visible area (0-100%)
-  const minY = Math.max(0, Math.min(...hotspot.points.map(p => p.y)));
-  const maxY = Math.min(100, Math.max(...hotspot.points.map(p => p.y)));
-  const bubbleYPercent = (minY + maxY) / 2;
+  // Always point to the center of the hotspot for all positions
+  const bubbleXPercent = center.x;
+  const bubbleYPercent = center.y;
 
   // Convert percentage positions to pixel positions relative to the image
   const bubbleX = imageBounds.left + (bubbleXPercent / 100) * imageBounds.width;

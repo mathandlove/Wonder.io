@@ -300,81 +300,61 @@
 }
 
 /* ===================================
-   RESPONSIVE ADJUSTMENTS
+   MOBILE STYLES
    =================================== */
 
-@media (max-width: 768px) {
-  .clues-panel .whiteframe {
-    width: 90vw;
-    max-width: 600px;
-    padding: 8px 16px;
-    gap: 12px;
-  }
-
-  .clues-panel .clues {
-    font-size: 16px;
-  }
-
-  .clues-panel .clue-image-holder {
-    gap: 16px;
-  }
-
-  .clues-panel .frame {
-    width: 50px;
-    height: 50px;
-  }
-
-  .clues-panel .frame__question-mark,
-  .clues-panel .frame__image {
-    width: 50px;
-    height: 50px;
-  }
-
-  .clues-panel .button {
-    width: 180px;
-    height: 65px;
-    padding: 14px 32px;
-  }
-
-  .clues-panel .answer {
-    font-size: 28px;
-  }
+html[data-mobile="true"] .clues-panel .whiteframe {
+  padding: 5px 24px;
+  gap: 10px;
 }
 
-@media (max-width: 480px) {
-  .clues-panel .whiteframe {
-    width: 95vw;
-    padding: 6px 12px;
-    gap: 8px;
-    flex-direction: column; /* Stack vertically on very small screens */
-  }
-
-  .clues-panel .clues {
-    font-size: 14px;
-  }
-
-  .clues-panel .clue-image-holder {
-    gap: 12px;
-  }
-
-  .clues-panel .frame {
-    width: 45px;
-    height: 45px;
-  }
-
-  .clues-panel .frame__question-mark,
-  .clues-panel .frame__image {
-    width: 45px;
-    height: 45px;
-  }
-
-  .clues-panel .button {
-    width: 160px;
-    height: 60px;
-    padding: 12px 28px;
-  }
-
-  .clues-panel .answer {
-    font-size: 24px;
-  }
+/* Hide the "Clues 4/4" header on mobile */
+html[data-mobile="true"] .clues-panel .clues {
+  display: none;
 }
+
+/* Clue thumbnails - 45px x 45px with 10px gap */
+html[data-mobile="true"] .clues-panel .clue-image-holder {
+  gap: 10px;
+}
+
+html[data-mobile="true"] .clues-panel .frame {
+  width: 45px;
+  height: 45px;
+  min-width: 45px;
+  min-height: 45px;
+  max-width: 45px;
+  max-height: 45px;
+}
+
+html[data-mobile="true"] .clues-panel .frame__question-mark,
+html[data-mobile="true"] .clues-panel .frame__image {
+  width: 45px;
+  height: 45px;
+}
+
+/* Continue button - match Answer button mobile style */
+html[data-mobile="true"] .clues-panel .button {
+  height: 40px;
+  width: auto;
+  min-width: 110px;
+  padding: 4px 16px;
+  border-radius: 12px;
+  border-width: 2px;
+}
+
+html[data-mobile="true"] .clues-panel .button::before {
+  border-radius: 10px;
+}
+
+html[data-mobile="true"] .clues-panel .answer {
+  font-size: 20px;
+  margin-top: 0;
+}
+
+html[data-mobile="true"] .clues-panel .lock-image-overlay {
+  width: 30px;
+  height: 30px;
+}
+
+

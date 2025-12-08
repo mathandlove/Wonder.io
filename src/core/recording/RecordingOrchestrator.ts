@@ -38,6 +38,10 @@ export type RecordingCallbacks = {
   onError?: (error: string) => void;
   /** Called when recording auto-stops due to silence */
   onAutoStop?: () => void;
+  /** Called when mic is confirmed active and recording */
+  onRecordingActive?: () => void;
+  /** Called when recording had no real audio (mic blocked, silent, etc.) */
+  onNoAudioDetected?: () => void;
 };
 
 /** Recording orchestrator interface */
@@ -63,6 +67,7 @@ export type RecordingControl = {
   start: () => Promise<void>;
   stop: () => void;
   getAudioLevel: () => number;
+  getStatus: () => RecordingState;
 };
 
 // ──────────────────────────────────────────────────────────────────────────────
@@ -92,6 +97,10 @@ class RecordingControlRegistry {
   getControl(): RecordingControl | null {
     return this.control;
   }
+
+  getStatus(): RecordingState {
+    return this.control?.getStatus() ?? 'idle';
+  }
 }
 
 export const recordingRegistry = new RecordingControlRegistry();
@@ -100,11 +109,54 @@ export const recordingRegistry = new RecordingControlRegistry();
 // API for Navigation Machine
 // ──────────────────────────────────────────────────────────────────────────────
 
+// Track if we've already requested permission this session
+let permissionRequested = false;
+
+/**
+ * Request microphone permission without starting recording.
+ * This prompts the user for permission upfront so they don't get prompted
+ * when they actually want to record.
+ *
+ * On iOS (including Chrome on iOS), permissions may still be requested
+ * per-session due to platform restrictions, but this helps in most cases.
+ */
+async function requestMicrophonePermission(): Promise<boolean> {
+  if (permissionRequested) {
+    debug.log('🎤 Permission already requested this session, skipping');
+    return true;
+  }
+
+  try {
+    debug.log('🎤 Requesting microphone permission upfront...');
+
+    // Request minimal audio access - this triggers the permission prompt
+    const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+
+    // Immediately stop the tracks - we just wanted the permission
+    stream.getTracks().forEach(track => track.stop());
+
+    permissionRequested = true;
+    debug.log('✅ Microphone permission granted');
+    return true;
+  } catch (err) {
+    debug.error('❌ Microphone permission denied or failed:', err);
+    // Don't set permissionRequested to true so we can retry
+    return false;
+  }
+}
+
 /**
  * API for navigation machine to control recording.
  * Uses the registry to find the active recording control.
  */
 export const RecordingOrchestratorAPI = {
+  /**
+   * Request microphone permission without starting recording.
+   * Call this early (e.g., after first user interaction) to avoid
+   * permission prompts when the user wants to record.
+   */
+  requestPermission: requestMicrophonePermission,
+
   startRecording: async () => {
     const control = recordingRegistry.getControl();
     if (control) {
@@ -159,6 +211,35 @@ export function useAudioLevel(): number {
   return audioLevel;
 }
 
+/**
+ * Hook to access current recording status
+ * Returns 'idle' | 'recording' | 'processing' | 'error'
+ * Use this to disable stop button until recording has actually started
+ */
+export function useRecordingStatus(): RecordingState {
+  const [status, setStatus] = useState<RecordingState>('idle');
+
+  useEffect(() => {
+    let rafId: number;
+
+    const updateStatus = () => {
+      const currentStatus = recordingRegistry.getStatus();
+      setStatus(currentStatus);
+      rafId = requestAnimationFrame(updateStatus);
+    };
+
+    rafId = requestAnimationFrame(updateStatus);
+
+    return () => {
+      if (rafId) {
+        cancelAnimationFrame(rafId);
+      }
+    };
+  }, []);
+
+  return status;
+}
+
 // ──────────────────────────────────────────────────────────────────────────────
 // Hook Implementation
 // ──────────────────────────────────────────────────────────────────────────────
@@ -192,6 +273,8 @@ export function useRecordingOrchestrator(callbacks?: RecordingCallbacks): Record
   const sttCallbacks: UseSTTCallbacks = {
     onFinal: callbacks?.onTranscript,
     onError: callbacks?.onError,
+    onRecordingActive: callbacks?.onRecordingActive,
+    onNoAudioDetected: callbacks?.onNoAudioDetected,
   };
 
   // Use the low-level STT hook
@@ -206,6 +289,7 @@ export function useRecordingOrchestrator(callbacks?: RecordingCallbacks): Record
       start: stt.start,
       stop: stt.stop,
       getAudioLevel: () => stt.audioLevel,
+      getStatus: () => state,
     };
 
     recordingRegistry.register(control);
@@ -213,7 +297,7 @@ export function useRecordingOrchestrator(callbacks?: RecordingCallbacks): Record
     return () => {
       recordingRegistry.unregister();
     };
-  }, [stt.start, stt.stop, stt.audioLevel]);
+  }, [stt.start, stt.stop, stt.audioLevel, state]);
 
   return {
     start: stt.start,
@@ -253,11 +337,28 @@ export function RecordingProvider({
 }) {
   // Initialize recording orchestrator with transcript handler
   useRecordingOrchestrator({
+    onRecordingActive: () => {
+      debug.log('🎙️ Recording active - emitting RECORDING_ACTIVE');
+      navigationBus.emit({ type: 'RECORDING_ACTIVE' });
+    },
+    onNoAudioDetected: () => {
+      // Called when peak audio level was below threshold during recording
+      // This means mic was blocked, silent, or not capturing real audio
+      debug.log('⚠️ No audio detected (low peak level) - emitting NO_AUDIO_RECORDED');
+      navigationBus.emit({
+        type: 'NO_AUDIO_RECORDED',
+        recordingType: 'question' // Default to question, machine will handle based on current state
+      });
+    },
     onTranscript: (text: string) => {
-      debug.log('📝 Transcript received:', text.substring(0, 50));
+      debug.log('📝 Transcript received:', {
+        text: text?.substring(0, 50),
+        length: text?.length,
+      });
 
       // Emit RECORDING_TRANSCRIBED event to navigation bus
       // Navigation machine will use its current context to determine recordingId
+      // Note: onNoAudioDetected is called instead if no real audio was captured
       navigationBus.emit({
         type: 'RECORDING_TRANSCRIBED',
         transcript: text,

@@ -403,7 +403,7 @@
       "monologue": false,
       "requiredAsk": true,
       "question": "What did Franky do with the thief?",
-      "successAnswer": "He/You/Franky/the fox ate the cookie/him!",
+      "successAnswer": "He/You/Franky/the fox ate the cookie/him/thief!",
       "wrongAnswers": [],
       "hint": "Why is Franky acting guilty?",
       "flow": [

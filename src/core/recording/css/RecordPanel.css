@@ -1722,7 +1722,7 @@ html[data-mobile="true"] .record-panel-container.bottom-anchored {
 }
 
 /* Main frame - compact sizing for mobile (wider for regular states) */
-html[data-mobile="true"] .frame {
+html[data-mobile="true"] .record-panel-container .frame {
   width: 480px;
   min-width: 480px;
   max-width: 480px;
@@ -2106,4 +2106,41 @@ html[data-mobile="true"] .transcript-text {
 
 html[data-mobile="true"] .transcript-label {
   font-size: 14px;
+}
+
+/* ===================================
+   NO AUDIO RECORDED STATE
+   =================================== */
+
+/* Container for no audio recorded content */
+.no-audio-recorded-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  padding: 16px 24px;
+  pointer-events: auto;
+}
+
+/* Error message text */
+.no-audio-message {
+  font-family: 'Roboto', sans-serif;
+  font-size: 16px;
+  font-weight: 500;
+  color: #b44;
+  text-align: center;
+  margin: 0;
+  line-height: 1.4;
+}
+
+/* Retry button - styled similar to accept/send button */
+.retry-recording-btn {
+  min-width: 140px;
+  pointer-events: auto;
+}
+
+/* Retry button with orange/warm tint */
+.retry-recording-btn::before {
+  background: rgba(180, 120, 60, 0.6);
 }

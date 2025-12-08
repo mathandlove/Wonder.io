@@ -33,42 +33,48 @@ const debug = createDebugger('navigation:machine');
  * DEBUG FLAG: Auto-unlock answer button
  * Set to true to bypass the requirement of asking a question before answering
  * Useful for testing the answer flow directly
+ * NOTE: Always forced to false in production builds
  */
-const DEBUG_AUTO_UNLOCK_ANSWER_BUTTON = true;
+const DEBUG_AUTO_UNLOCK_ANSWER_BUTTON = import.meta.env.PROD ? false : true;
 
 /**
  * DEBUG FLAG: Allow scroll navigation during recording
  * Set to true to allow scrolling past the record panel during recording states
  * Useful for testing/debugging without going through the full recording flow
+ * NOTE: Always forced to false in production builds
  */
-const DEBUG_ALLOW_SCROLL_DURING_RECORDING = true;
+const DEBUG_ALLOW_SCROLL_DURING_RECORDING = import.meta.env.PROD ? false : true;
 
 /**
  * DEBUG FLAG: Allow scroll navigation during quest display
  * Set to true to allow scrolling past quest scenes without accepting them
  * Useful for testing/debugging story flow without interacting with quest UI
+ * NOTE: Always forced to false in production builds
  */
-const DEBUG_ALLOW_SCROLL_DURING_QUEST = true;
+const DEBUG_ALLOW_SCROLL_DURING_QUEST = import.meta.env.PROD ? false : true;
 
 /**
  * DEBUG FLAG: Allow scroll navigation during clue-image scenes
  * Set to true to allow scrolling past clue scenes without finding all clues
  * Useful for testing/debugging story flow without clicking all hotspots
+ * NOTE: Always forced to false in production builds
  */
-const DEBUG_ALLOW_SCROLL_DURING_IMAGECLUE = true;
+const DEBUG_ALLOW_SCROLL_DURING_IMAGECLUE = import.meta.env.PROD ? false : true;
 
-// Log when debug modes are enabled
-if (DEBUG_AUTO_UNLOCK_ANSWER_BUTTON) {
-  console.log('🐛 [DEBUG MODE] Answer button auto-unlock is ENABLED - answer button will be unlocked immediately');
-}
-if (DEBUG_ALLOW_SCROLL_DURING_RECORDING) {
-  console.log('🐛 [DEBUG MODE] Scroll during recording is ENABLED - can scroll past record panel');
-}
-if (DEBUG_ALLOW_SCROLL_DURING_QUEST) {
-  console.log('🐛 [DEBUG MODE] Scroll during quest is ENABLED - can scroll past quest scenes');
-}
-if (DEBUG_ALLOW_SCROLL_DURING_IMAGECLUE) {
-  console.log('🐛 [DEBUG MODE] Scroll during image clue is ENABLED - can scroll past clue scenes');
+// Log when debug modes are enabled (only in development)
+if (import.meta.env.DEV) {
+  if (DEBUG_AUTO_UNLOCK_ANSWER_BUTTON) {
+    console.log('🐛 [DEBUG MODE] Answer button auto-unlock is ENABLED - answer button will be unlocked immediately');
+  }
+  if (DEBUG_ALLOW_SCROLL_DURING_RECORDING) {
+    console.log('🐛 [DEBUG MODE] Scroll during recording is ENABLED - can scroll past record panel');
+  }
+  if (DEBUG_ALLOW_SCROLL_DURING_QUEST) {
+    console.log('🐛 [DEBUG MODE] Scroll during quest is ENABLED - can scroll past quest scenes');
+  }
+  if (DEBUG_ALLOW_SCROLL_DURING_IMAGECLUE) {
+    console.log('🐛 [DEBUG MODE] Scroll during image clue is ENABLED - can scroll past clue scenes');
+  }
 }
 
 /**
@@ -294,6 +300,25 @@ export const navigationMachine = setup({
     goPrev: () => {
       useNavigationStore.getState().advance('backward');
     },
+
+    /**
+     * Request microphone permission after first navigation.
+     * This prompts the user early so they don't get prompted when they want to record.
+     * Only runs once per session (tracked in context).
+     */
+    requestMicPermission: assign({
+      micPermissionRequested: ({ context }) => {
+        if (!context.micPermissionRequested) {
+          debug.log('🎤 Requesting microphone permission after first navigation...');
+          // Fire and forget - we don't wait for the result
+          RecordingOrchestratorAPI.requestPermission().catch(() => {
+            // Permission denied or error - that's ok, we'll prompt again when recording
+          });
+          return true;
+        }
+        return context.micPermissionRequested;
+      },
+    }),
 
     // =============================================================================
     // Story Initialization - Delegate to helper
@@ -581,9 +606,8 @@ export const navigationMachine = setup({
         debug.log('Transitioning to input-recording phase');
         useNavigationStore.getState().updateNodePhase(newNodeId, 'input-recording');
 
-        // Start recording
-        debug.log('🎙️ Starting recording via RecordingOrchestratorAPI');
-        await RecordingOrchestratorAPI.startRecording();
+        // NOTE: Recording was already started in askPendingRecording state
+        // This action just creates the scene after mic is confirmed active
 
         debug.log('✅ Recording scene created and activated');
       } catch (error) {
@@ -658,6 +682,11 @@ export const navigationMachine = setup({
       const currentPhase = useNavigationStore.getState().getCurrentPhase();
       return currentPhase === 'answer-submit';
     },
+    // Check if current node is in no-audio-recorded phase (no audio was captured)
+    isNoAudioRecorded: () => {
+      const currentPhase = useNavigationStore.getState().getCurrentPhase();
+      return currentPhase === 'no-audio-recorded';
+    },
     // Check if both fail video and feedback are ready (for answer-wrong transition)
     bothFailConditionsMet: ({ context }) => {
       return context.failVideoComplete === true && context.feedbackReceived === true;
@@ -726,6 +755,7 @@ export const navigationMachine = setup({
     successDanceNodeId: undefined,
     unlockAnswerButton: DEBUG_AUTO_UNLOCK_ANSWER_BUTTON, // Debug: auto-unlock for testing
     unlockedConversationId: undefined, // Track which conversation was unlocked
+    micPermissionRequested: false, // Track if we've requested mic permission after first navigation
   },
   on: {
     // Note: Global event handlers go here if needed
@@ -841,10 +871,13 @@ export const navigationMachine = setup({
          * Immediate routing state - checks phase and branches to correct child
          */
         route: {
-          entry: () => {
-            const phase = useNavigationStore.getState().getCurrentPhase();
-            debug.log('🔀 Routing... current phase:', phase);
-          },
+          entry: [
+            () => {
+              const phase = useNavigationStore.getState().getCurrentPhase();
+              debug.log('🔀 Routing... current phase:', phase);
+            },
+            'requestMicPermission', // Request mic permission after first navigation (runs once)
+          ],
           on: {
             SCROLL_DOWN_STEP: {},
             SCROLL_UP_STEP: {},
@@ -869,7 +902,7 @@ export const navigationMachine = setup({
             },
             {
               guard: 'isRecordAnswer',
-              target: 'answerRecording',
+              target: 'answerPendingRecording',
             },
             {
               guard: 'isAnswerProcessing',
@@ -1134,7 +1167,7 @@ export const navigationMachine = setup({
               {
                 // If useClues is false, start recording directly
                 actions: () => debug.log('🎯 ASK_BUTTON_CLICKED with useClues=false → starting recording'),
-                target: 'askRecording',
+                target: 'askPendingRecording',
               }
             ],
             // ANSWER_BUTTON_CLICKED - User clicked Answer button
@@ -1163,7 +1196,7 @@ export const navigationMachine = setup({
               {
                 // If useClues is false, start recording directly
                 actions: () => debug.log('🎯 ANSWER_BUTTON_CLICKED with useClues=false → starting answer recording'),
-                target: 'answerRecording',
+                target: 'answerPendingRecording',
               }
             ],
             // RECORDING_STARTED event comes from RecordPanelOrchestrator AFTER it completes the complex flow
@@ -1171,7 +1204,7 @@ export const navigationMachine = setup({
             // Machine just transitions state to track that we're recording
             RECORDING_STARTED: {
               actions: () => debug.log('🎙️  Ask recording started by orchestrator'),
-              target: 'askRecording',
+              target: 'askPendingRecording',
             },
             // Handle recording failure
             RECORDING_FAILED: {
@@ -1234,8 +1267,8 @@ export const navigationMachine = setup({
                   }
                 },
               ],
-              // Transition to askRecording state which will invoke RecordUtterance service
-              target: 'askRecording',
+              // Transition to askPendingRecording which will start mic, then askRecording on RECORDING_ACTIVE
+              target: 'askPendingRecording',
             },
             RECORDING_FAILED: {
               actions: ({ event }) => debug.error('❌ Recording failed:', event.error),
@@ -1295,8 +1328,8 @@ export const navigationMachine = setup({
                   }
                 },
               ],
-              // Transition to answerRecording state which will start recording
-              target: 'answerRecording',
+              // Transition to answerPendingRecording which will start mic, then answerRecording on RECORDING_ACTIVE
+              target: 'answerPendingRecording',
             },
             RECORDING_FAILED: {
               actions: ({ event }) => debug.error('❌ Recording failed:', event.error),
@@ -1305,13 +1338,50 @@ export const navigationMachine = setup({
         },
 
         /**
+         * ASK PENDING RECORDING state
+         * Microphone is being initialized, waiting for it to actually start
+         * Don't create scene yet - wait for RECORDING_ACTIVE
+         */
+        askPendingRecording: {
+          entry: [
+            () => debug.log('⏳ Entered askPendingRecording - starting mic...'),
+            async () => {
+              // Start recording - will emit RECORDING_ACTIVE when mic actually starts
+              debug.log('🎙️ Starting recording via RecordingOrchestratorAPI');
+              await RecordingOrchestratorAPI.startRecording();
+            }
+          ],
+          on: {
+            // Block all navigation while pending
+            SCROLL_DOWN_STEP: {
+              actions: () => debug.log('⛔ SCROLL blocked during pending recording'),
+            },
+            SCROLL_UP_STEP: {
+              actions: () => debug.log('⛔ SCROLL blocked during pending recording'),
+            },
+            // When mic actually starts recording, create scene and enter askRecording
+            RECORDING_ACTIVE: {
+              actions: () => debug.log('✅ RECORDING_ACTIVE received - mic is live'),
+              target: 'askRecording',
+            },
+            // Handle recording errors during startup
+            RECORDING_FAILED: {
+              actions: ({ event }) => {
+                debug.error('❌ Recording failed to start:', event.error);
+              },
+              target: 'dialogueInput',
+            },
+          },
+        },
+
+        /**
          * ASK RECORDING state
          * User is actively recording their question
-         * Machine manages Recording API lifecycle
+         * Creates recording scene on entry (mic is confirmed active)
          */
         askRecording: {
           entry: [
-            () => debug.log('🎙️  Entered askRecording state'),
+            () => debug.log('🎙️  Entered askRecording state - mic is active'),
             'createRecordingScene'
           ],
           on: {
@@ -1373,6 +1443,7 @@ export const navigationMachine = setup({
          * ASK PROCESSING state
          * Recording is being transcribed by backend
          * Waits for RECORDING_TRANSCRIBED event with transcript
+         * Has a 10 second timeout to handle cases where recording never started
          */
         askProcessing: {
           entry: [
@@ -1382,6 +1453,22 @@ export const navigationMachine = setup({
               if (nodeId) useNavigationStore.getState().updateNodePhase(nodeId, 'input-processing');
             },
           ],
+          after: {
+            // Timeout after 10 seconds if no transcript received
+            // This handles quick start/stop where recording never actually started
+            10000: {
+              actions: [
+                () => {
+                  debug.log('⚠️ askProcessing timeout - no transcript received after 10s');
+                  const nodeId = getCurrentNodeId();
+                  if (nodeId) {
+                    useNavigationStore.getState().updateNodePhase(nodeId, 'no-audio-recorded');
+                  }
+                }
+              ],
+              target: 'noAudioRecorded',
+            },
+          },
           on: {
             // Block navigation while processing (unless debug mode)
             SCROLL_DOWN_STEP: DEBUG_ALLOW_SCROLL_DURING_RECORDING
@@ -1416,6 +1503,19 @@ export const navigationMachine = setup({
                 }
               ],
               target: 'recordingSubmit',
+            },
+            // When no audio was recorded (empty/silent), show error message
+            NO_AUDIO_RECORDED: {
+              actions: [
+                () => {
+                  debug.log('⚠️ NO_AUDIO_RECORDED → showing error message');
+                  const nodeId = getCurrentNodeId();
+                  if (nodeId) {
+                    useNavigationStore.getState().updateNodePhase(nodeId, 'no-audio-recorded');
+                  }
+                }
+              ],
+              target: 'noAudioRecorded',
             },
           },
         },
@@ -1477,6 +1577,51 @@ export const navigationMachine = setup({
               actions: [
                 () => {
                   debug.log('❌ CANCEL_RECORDING → deleting node and going back');
+                  const nodeId = getCurrentNodeId();
+                  if (nodeId) {
+                    // First navigate backward to previous node
+                    useNavigationStore.getState().advance('backward');
+                    // Then delete the node we were on
+                    useNavigationStore.getState().deleteNode(nodeId);
+                    // Set the previous node (now current) to input-showInput phase so user can re-record
+                    const newCurrentNodeId = getCurrentNodeId();
+                    if (newCurrentNodeId) {
+                      useNavigationStore.getState().updateNodePhase(newCurrentNodeId, 'input-showInput');
+                    }
+                  }
+                }
+              ],
+              target: 'dialogueInput',
+            },
+          },
+        },
+
+        /**
+         * NO AUDIO RECORDED state
+         * No audio was captured during recording (empty/silent recording)
+         * Shows error message asking user to allow microphone access
+         */
+        noAudioRecorded: {
+          entry: [
+            () => debug.log('🔇 Entered noAudioRecorded - no audio was captured'),
+            () => {
+              const nodeId = getCurrentNodeId();
+              if (nodeId) useNavigationStore.getState().updateNodePhase(nodeId, 'no-audio-recorded');
+            },
+          ],
+          on: {
+            // Block scroll while showing error
+            SCROLL_DOWN_STEP: {
+              actions: () => debug.log('⛔ SCROLL blocked during no-audio-recorded'),
+            },
+            SCROLL_UP_STEP: {
+              actions: () => debug.log('⛔ SCROLL blocked during no-audio-recorded'),
+            },
+            // User clicks retry - go back to input state
+            RETRY_RECORDING: {
+              actions: [
+                () => {
+                  debug.log('🔄 RETRY_RECORDING → going back to input');
                   const nodeId = getCurrentNodeId();
                   if (nodeId) {
                     // First navigate backward to previous node
@@ -1585,24 +1730,57 @@ export const navigationMachine = setup({
         },
 
         /**
+         * ANSWER PENDING RECORDING state
+         * Microphone is being initialized for answer recording
+         * Don't update phase yet - wait for RECORDING_ACTIVE
+         */
+        answerPendingRecording: {
+          entry: [
+            () => debug.log('⏳ Entered answerPendingRecording - starting mic...'),
+            async () => {
+              // Start recording - will emit RECORDING_ACTIVE when mic actually starts
+              debug.log('🎙️ Starting answer recording via RecordingOrchestratorAPI');
+              await RecordingOrchestratorAPI.startRecording();
+            }
+          ],
+          on: {
+            // Block all navigation while pending
+            SCROLL_DOWN_STEP: {
+              actions: () => debug.log('⛔ SCROLL blocked during pending answer recording'),
+            },
+            SCROLL_UP_STEP: {
+              actions: () => debug.log('⛔ SCROLL blocked during pending answer recording'),
+            },
+            // When mic actually starts recording, enter answerRecording
+            RECORDING_ACTIVE: {
+              actions: () => debug.log('✅ RECORDING_ACTIVE received - mic is live for answer'),
+              target: 'answerRecording',
+            },
+            // Handle recording errors during startup
+            RECORDING_FAILED: {
+              actions: ({ event }) => {
+                debug.error('❌ Answer recording failed to start:', event.error);
+              },
+              target: 'questShowing', // Go back to quest showing on error
+            },
+          },
+        },
+
+        /**
          * ANSWER RECORDING state
          * User is actively recording their answer to a quest
-         * Machine manages Recording API lifecycle
+         * Mic is already confirmed active from answerPendingRecording
          */
         answerRecording: {
           entry: [
-            () => debug.log('🎙️  Entered answerRecording state'),
-            async () => {
-              // Update phase to record-answer
+            () => debug.log('🎙️  Entered answerRecording state - mic is active'),
+            () => {
+              // Update phase to record-answer (recording already started)
               const nodeId = getCurrentNodeId();
               if (nodeId) {
                 debug.log('📝 Updating phase to record-answer');
                 useNavigationStore.getState().updateNodePhase(nodeId, 'record-answer');
               }
-
-              // Start recording
-              debug.log('🎙️ Starting answer recording via RecordingOrchestratorAPI');
-              await RecordingOrchestratorAPI.startRecording();
             }
           ],
           on: {
@@ -1703,6 +1881,19 @@ export const navigationMachine = setup({
                 }
               ],
               target: 'answerSubmit',
+            },
+            // When no audio was recorded (empty/silent), show error message
+            NO_AUDIO_RECORDED: {
+              actions: [
+                () => {
+                  debug.log('⚠️ NO_AUDIO_RECORDED (answer) → showing error message');
+                  const nodeId = getCurrentNodeId();
+                  if (nodeId) {
+                    useNavigationStore.getState().updateNodePhase(nodeId, 'no-audio-recorded');
+                  }
+                }
+              ],
+              target: 'noAudioRecorded',
             },
           },
         },

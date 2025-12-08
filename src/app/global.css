@@ -47,3 +47,27 @@ body {
   min-height: 100vh;
   min-height: 100svh;
 }
+
+/* Hide scrollbar globally for main scroll container (section navigation) */
+.scroll-control::-webkit-scrollbar {
+  display: none;
+}
+
+/* Keep scrollbars visible for speech bubble overflow content */
+.cardboard-bubble-inner::-webkit-scrollbar {
+  display: block;
+  width: 6px;
+}
+
+.cardboard-bubble-inner::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.cardboard-bubble-inner::-webkit-scrollbar-thumb {
+  background: rgba(0, 0, 0, 0.2);
+  border-radius: 3px;
+}
+
+.cardboard-bubble-inner::-webkit-scrollbar-thumb:hover {
+  background: rgba(0, 0, 0, 0.3);
+}

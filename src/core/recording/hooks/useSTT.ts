@@ -28,6 +28,8 @@ export type UseSTTCallbacks = {
   onFinalized?: () => void; // Called when transcription is complete (after finalize)
   onAutoStop?: () => void; // Called when auto-stop timeout fires (silence detection)
   onError?: (error: string) => void;
+  onRecordingActive?: () => void; // Called when mic is confirmed active and recording
+  onNoAudioDetected?: () => void; // Called when recording had no real audio (peak level below threshold)
 };
 
 export type UseSTT = {
@@ -50,7 +52,14 @@ const CONFIG = {
   SILENCE_THRESHOLD: 0.005, // Lower threshold for soft-spoken children (was 0.01)
   SILENCE_DURATION_MS: 20000, // Auto-stop after 20s of silence
   BUFFER_SIZE: 4096, // AudioWorklet buffer size
+  // Minimum peak RMS level to consider audio was actually recorded
+  // If peak never exceeds this, we assume no real audio was captured (mic blocked, silent, etc.)
+  MIN_PEAK_RMS_THRESHOLD: 0.01, // Very low - just needs to show SOME audio activity
 } as const;
+
+// Detect iOS (all browsers on iOS use WebKit)
+const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) ||
+  (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
 
 // ──────────────────────────────────────────────────────────────────────────────
 // Hook Implementation
@@ -106,6 +115,10 @@ export function useSTT(callbacks?: UseSTTCallbacks): UseSTT {
 
   // Timer to delay buffer flush after 'ready' (to catch early speech)
   const flushDelayTimerRef = useRef<NodeJS.Timeout | null>(null);
+
+  // Track peak audio level during recording session
+  // Used to detect if any real audio was captured (vs silence/blocked mic)
+  const peakAudioLevelRef = useRef<number>(0);
 
   // Safety timeout to ensure cleanup happens even if 'close' event never arrives
   const cleanupSafetyTimerRef = useRef<NodeJS.Timeout | null>(null);
@@ -224,6 +237,7 @@ export function useSTT(callbacks?: UseSTTCallbacks): UseSTT {
     }
 
     isStartingRef.current = true;
+    peakAudioLevelRef.current = 0; // Reset peak audio level for new recording session
     debug.log('🎬 [useSTT] Starting recording session...');
 
     // CRITICAL: Clean up any existing resources before starting new recording
@@ -293,8 +307,26 @@ export function useSTT(callbacks?: UseSTTCallbacks): UseSTT {
               debug.log('✅ [useSTT] Received final transcription from backend:', {
                 text: message.text,
                 length: message.text.length,
-                timestamp: new Date().toISOString()
+                timestamp: new Date().toISOString(),
+                peakAudioLevel: peakAudioLevelRef.current,
+                minThreshold: CONFIG.MIN_PEAK_RMS_THRESHOLD
               });
+
+              // Check if any real audio was captured during recording
+              // If peak audio level never exceeded threshold, consider it "no audio"
+              if (peakAudioLevelRef.current < CONFIG.MIN_PEAK_RMS_THRESHOLD) {
+                debug.log('⚠️ [useSTT] No real audio detected - peak level too low:', {
+                  peakLevel: peakAudioLevelRef.current,
+                  threshold: CONFIG.MIN_PEAK_RMS_THRESHOLD
+                });
+                // Don't set transcript - invoke no audio callback instead
+                setPartial('');
+                if (callbacksRef.current?.onNoAudioDetected) {
+                  callbacksRef.current.onNoAudioDetected();
+                }
+                break;
+              }
+
               // This is the complete, finalized transcript from the entire recording
               setTranscript(message.text);
               setPartial(''); // Clear any partial text
@@ -402,15 +434,20 @@ export function useSTT(callbacks?: UseSTTCallbacks): UseSTT {
       // CRITICAL: Request DEFAULT microphone by NOT specifying deviceId
       // Browser will automatically use system default audio input
       // This prevents selecting wrong microphone (like AirPods when built-in mic is default)
-      const stream = await navigator.mediaDevices.getUserMedia({
-        audio: {
-          deviceId: 'default',      // Explicitly request default device
-          noiseSuppression: false,  // Turn OFF - we do our own normalization
-          echoCancellation: false,  // Turn OFF - might cause issues
-          autoGainControl: false,   // Turn OFF - we do our own normalization
-          sampleRate: CONFIG.SAMPLE_RATE,
-        },
-      });
+      // NOTE: iOS/Safari requires simpler constraints - complex constraints can cause permission issues
+      debug.log('🎤 [useSTT] Platform detection:', { isIOS });
+      const audioConstraints = isIOS
+        ? { audio: true } // iOS: use simplest constraints to avoid permission issues
+        : {
+            audio: {
+              deviceId: 'default',      // Explicitly request default device
+              noiseSuppression: false,  // Turn OFF - we do our own normalization
+              echoCancellation: false,  // Turn OFF - might cause issues
+              autoGainControl: false,   // Turn OFF - we do our own normalization
+              sampleRate: CONFIG.SAMPLE_RATE,
+            },
+          };
+      const stream = await navigator.mediaDevices.getUserMedia(audioConstraints);
       mediaStreamRef.current = stream;
       const tracks = stream.getTracks();
 
@@ -556,20 +593,27 @@ export function useSTT(callbacks?: UseSTTCallbacks): UseSTT {
               });
             }
 
+            // If we were expecting a flush, handle it regardless of WebSocket state
+            // This is critical for quick start/stop where WebSocket may not be ready yet
+            if (expectingFlushRef.current) {
+              expectingFlushRef.current = false;
+
+              // Try to send the final chunk if WebSocket is ready
+              if (ws.readyState === WebSocket.OPEN && isSttReadyRef.current) {
+                ws.send(audioBuffer);
+              }
+
+              // Execute the callback that was set up when we sent the flush command
+              if (onFlushCompleteRef.current) {
+                onFlushCompleteRef.current();
+                onFlushCompleteRef.current = null;
+              }
+              break;
+            }
+
             if (ws.readyState === WebSocket.OPEN && isSttReadyRef.current) {
               // STT backend is ready - send directly
               ws.send(audioBuffer);
-
-              // If we were expecting a flush, we just received it - execute the post-flush callback
-              if (expectingFlushRef.current) {
-                expectingFlushRef.current = false;
-
-                // Execute the callback that was set up when we sent the flush command
-                if (onFlushCompleteRef.current) {
-                  onFlushCompleteRef.current();
-                  onFlushCompleteRef.current = null;
-                }
-              }
 
               // Reset flag after first direct send
               if (audioBufferRef.current.length === 0 && bufferWasFlushedRef.current) {
@@ -644,9 +688,16 @@ export function useSTT(callbacks?: UseSTTCallbacks): UseSTT {
               break;
             }
 
+            // Track peak audio level (raw RMS, not scaled)
+            // This is used to detect if any real audio was captured
+            const rawLevel = event.data.level;
+            if (rawLevel > peakAudioLevelRef.current) {
+              peakAudioLevelRef.current = rawLevel;
+            }
+
             // Update audio level for visualization
             // Scale RMS (typically 0-0.1) to 0-1 range for better visualization
-            const scaledLevel = Math.min(event.data.level * 10, 1);
+            const scaledLevel = Math.min(rawLevel * 10, 1);
             setAudioLevel(scaledLevel);
             break;
           }
@@ -666,6 +717,12 @@ export function useSTT(callbacks?: UseSTTCallbacks): UseSTT {
       // Recording started successfully
       isStartingRef.current = false;
       debug.log('✅ [useSTT] Recording session started successfully');
+
+      // Notify that recording is now active (mic is live)
+      if (callbacksRef.current?.onRecordingActive) {
+        debug.log('📢 [useSTT] Emitting onRecordingActive callback');
+        callbacksRef.current.onRecordingActive();
+      }
 
     } catch (err) {
       debug.error('[START] ❌ ERROR during start:', err);
@@ -754,9 +811,37 @@ export function useSTT(callbacks?: UseSTTCallbacks): UseSTT {
           // Note: Don't null the ref yet - cleanup will do that safely
         } 
         // NOW wait for WebSocket buffer to drain before sending finalize
+        let checkAttempts = 0;
+        const maxCheckAttempts = 100; // 100 * 10ms = 1 second max wait
+
         const checkBufferAndFinalize = () => {
           const ws = wsRef.current;
-          if (!ws || ws.readyState !== WebSocket.OPEN) {
+          checkAttempts++;
+
+          // If WebSocket is not available or closed, trigger NO_AUDIO_RECORDED since we can't complete
+          if (!ws || ws.readyState === WebSocket.CLOSED || ws.readyState === WebSocket.CLOSING) {
+            debug.log('⚠️ [useSTT] WebSocket not available for finalize - emitting empty transcript');
+            // Trigger the final callback with empty transcript to handle gracefully
+            if (callbacksRef.current?.onFinal) {
+              callbacksRef.current.onFinal('');
+            }
+            cleanup();
+            setStatus('idle');
+            return;
+          }
+
+          // If still connecting, wait (but with a limit)
+          if (ws.readyState === WebSocket.CONNECTING) {
+            if (checkAttempts < maxCheckAttempts) {
+              setTimeout(checkBufferAndFinalize, 10);
+            } else {
+              debug.log('⚠️ [useSTT] WebSocket never connected - emitting empty transcript');
+              if (callbacksRef.current?.onFinal) {
+                callbacksRef.current.onFinal('');
+              }
+              cleanup();
+              setStatus('idle');
+            }
             return;
           }
 
@@ -767,9 +852,13 @@ export function useSTT(callbacks?: UseSTTCallbacks): UseSTT {
             // Buffer is empty - all audio chunks have been sent to the server
             // NOW it's safe to send finalize
             ws.send(JSON.stringify({ type: 'finalize' }));
-          } else {
+          } else if (checkAttempts < maxCheckAttempts) {
             // Buffer still has data - wait a bit longer
             setTimeout(checkBufferAndFinalize, 10);
+          } else {
+            // Timeout waiting for buffer to drain - send finalize anyway
+            debug.log('⚠️ [useSTT] Buffer drain timeout - sending finalize anyway');
+            ws.send(JSON.stringify({ type: 'finalize' }));
           }
         };
 
@@ -779,6 +868,18 @@ export function useSTT(callbacks?: UseSTTCallbacks): UseSTT {
 
       // Now send the flush command - the callback will execute when the chunk arrives
       workletNodeRef.current.port.postMessage({ type: 'flush' });
+
+      // CRITICAL: Add a flush timeout in case the worklet never responds
+      // This can happen if stop() is called very quickly after start() before the worklet is fully initialized
+      setTimeout(() => {
+        if (expectingFlushRef.current && onFlushCompleteRef.current) {
+          debug.log('⚠️ [useSTT] Flush timeout - worklet did not respond, forcing completion');
+          expectingFlushRef.current = false;
+          const callback = onFlushCompleteRef.current;
+          onFlushCompleteRef.current = null;
+          callback();
+        }
+      }, 500); // 500ms should be more than enough for worklet to respond
     } else {
       // No worklet (already disconnected somehow), just send finalize
       if (wsRef.current && wsRef.current.readyState === WebSocket.OPEN) {

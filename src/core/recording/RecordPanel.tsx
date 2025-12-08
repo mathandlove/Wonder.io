@@ -15,7 +15,7 @@ import { useClueStore } from '@core/data/ClueStore';
 import { useNavigationStore, selectCurrentNode } from '@core/navigation/navigationStore';
 import { getConversationMetadata } from '@core/ai/AIOrchestrator';
 import { getServiceInstance } from '@core/navigation/machine/navigationInterpreter';
-import { useAudioLevel } from './RecordingOrchestrator';
+import { useAudioLevel, useRecordingStatus } from './RecordingOrchestrator';
 import * as navigationBus from '@core/navigation/events/navigationBus';
 import type { CharacterScene } from '@core/types/scene';
 import {
@@ -53,6 +53,11 @@ export const RecordPanel: React.FC<RecordPanelProps> = ({
 
   // Get real-time audio level for visualization (updates at 60fps)
   const audioLevel = useAudioLevel();
+
+  // Get actual recording status from the STT system (not navigation state)
+  // This tells us if the mic is ACTUALLY recording, not just if we're in recording state
+  const actualRecordingStatus = useRecordingStatus();
+  const isActuallyRecording = actualRecordingStatus === 'recording';
 
   // Get clues from ClueStore for clue selection
   const { clues } = useClueStore();
@@ -140,6 +145,7 @@ export const RecordPanel: React.FC<RecordPanelProps> = ({
   const isSuccessDance = dialogueState === 'success-dance';
   // Check both phase and scene type for fail-dance
   const isFailDance = dialogueState === 'fail-dance' || scene?.type === 'fail-dance';
+  const isNoAudioRecorded = dialogueState === 'no-audio-recorded';
   const isWaiting = dialogueState === 'ai-waiting' || isWaitingForFinalize || isWaitingForAnswerFinalize || isAnswerWaiting || isProcessing || isAnswerProcessing;
 
   // Hidden state (basic or input-basic) should use quest-offer visual styling
@@ -167,6 +173,11 @@ export const RecordPanel: React.FC<RecordPanelProps> = ({
     if (disabled) return;
     setActiveToast(null); // Dismiss any active toast
     setShowHint(prev => !prev);
+  };
+
+  const handleRetryRecording = () => {
+    setActiveToast(null); // Dismiss any active toast
+    navigationBus.emit({ type: 'RETRY_RECORDING' });
   };
 
   // Apply 'recording' class only when actively recording (triggers slide-down animation)
@@ -343,6 +354,9 @@ export const RecordPanel: React.FC<RecordPanelProps> = ({
 
     // Answer submit state - bottom anchored for review
     if (isAnswerSubmit) return 'bottom-anchored';
+
+    // No audio recorded state - centered for error message
+    if (isNoAudioRecorded) return 'bottom-anchored';
 
     // Rest position - bottom anchored for interactive states
     return 'bottom-anchored';
@@ -569,6 +583,20 @@ export const RecordPanel: React.FC<RecordPanelProps> = ({
                   <div className="button-text">Send</div>
                 </button>
               </div>
+            ) : isNoAudioRecorded ? (
+              /* No Audio Recorded State: Error message and Retry button */
+              <div className="div no-audio-recorded-content">
+                <p className="no-audio-message">
+                  No audio recorded. Please make sure you allowed voice recording.
+                </p>
+                <button
+                  className="button retry-recording-btn"
+                  onClick={handleRetryRecording}
+                  title="Try again"
+                >
+                  <div className="button-text">Try Again</div>
+                </button>
+              </div>
             ) : (
               /* Normal State: Ask, Hint, Answer buttons */
               <div className="div">
@@ -577,10 +605,10 @@ export const RecordPanel: React.FC<RecordPanelProps> = ({
                   <div className="ask-button-wrapper">
                     <button
                       ref={askButtonRef}
-                      className={`button ${isAskRecording ? 'recording-active' : ''} ${askButtonDisabled ? 'disabled' : ''}`}
-                      onClick={isAskRecording ? onRecordStop : handleAskClick}
-                      disabled={askButtonDisabled}
-                      title={isAskRecording ? "Stop recording" : "Ask a question"}
+                      className={`button ${isAskRecording ? 'recording-active' : ''} ${askButtonDisabled ? 'disabled' : ''} ${isAskRecording && !isActuallyRecording ? 'disabled' : ''}`}
+                      onClick={isAskRecording ? (isActuallyRecording ? onRecordStop : undefined) : handleAskClick}
+                      disabled={askButtonDisabled || (isAskRecording && !isActuallyRecording)}
+                      title={isAskRecording ? (isActuallyRecording ? "Stop recording" : "Starting...") : "Ask a question"}
                     >
                       <img className="button-icon" src="/VisualAssets/recordIcon.svg" alt="" />
                       {isAskRecording ? (
@@ -639,6 +667,7 @@ export const RecordPanel: React.FC<RecordPanelProps> = ({
                     label="Answer"
                     disabled={answerButtonDisabled}
                     isRecording={isAnswerRecording}
+                    isActuallyRecording={isActuallyRecording}
                   />
                   {/* Toast anchored above Answer button */}
                   {(activeToast === 'input:post-ai' || activeToast === 'answer:recording') && (() => {

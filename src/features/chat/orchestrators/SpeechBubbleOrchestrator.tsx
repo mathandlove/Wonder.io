@@ -254,7 +254,9 @@ export function SpeechBubbleOrchestrator() {
 
   // RecordPanel height estimate + extra padding for safe area
   // This creates a safe area above the RecordPanel for speech bubbles
-  const recordPanelHeight = isMobile ? 100 : 300;
+  // Desktop: Panel is ~150px visible (32px hidden below screen in bottom-anchored state)
+  // Add some padding to prevent bubble from touching the panel
+  const recordPanelHeight = isMobile ? 100 : 180;
 
   return (
     <div className="speech-bubble-layer" style={{

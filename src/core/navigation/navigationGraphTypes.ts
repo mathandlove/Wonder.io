@@ -62,6 +62,7 @@ export type Phase =
   | 'input-recording'
   | 'input-processing'
   | 'recording-submit'  // User reviewing transcript before submitting to AI
+  | 'no-audio-recorded' // No audio was recorded (empty/silent recording)
   | 'ai-waiting'
   | 'record-answer'
   | 'waiting-for-answer-finalize'
@@ -110,6 +111,7 @@ export const PHASES = {
   INPUT_RECORDING: 'input-recording' as const,
   INPUT_PROCESSING: 'input-processing' as const,
   RECORDING_SUBMIT: 'recording-submit' as const,
+  NO_AUDIO_RECORDED: 'no-audio-recorded' as const,
   AI_WAITING: 'ai-waiting' as const,
   RECORD_ANSWER: 'record-answer' as const,
   WAITING_FOR_ANSWER_FINALIZE: 'waiting-for-answer-finalize' as const,

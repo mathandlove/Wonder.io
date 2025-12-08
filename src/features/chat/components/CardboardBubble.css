@@ -33,24 +33,57 @@
 
 /* Left side positioning */
 .cardboard-bubble-left {
-  margin-left: 30px; /* Account for speech tail */
-  margin-right: 10px;
-  /* Allow bubble to expand to full width when content is long */
-  max-width: calc(100% - 40px); /* Full width minus margins */
+  margin-left: 15px;
+  margin-right: 0;
+  /* Allow bubble to expand beyond container when content is long */
+  max-width: calc(120% - 15px);
 }
 
 /* Right side positioning */
 .cardboard-bubble-right {
-  margin-left: 10px;
-  margin-right: 40px; /* Add right margin for proper spacing */
-  /* Allow bubble to expand to full width when content is long */
-  max-width: calc(100% - 50px); /* Full width minus margins */
+  margin-left: 0;
+  margin-right: 15px;
+  /* Allow bubble to expand beyond container when content is long */
+  max-width: calc(110% - 15px);
+}
+
+/* Compact bubble - shrink to 90% width when content is short (3-4 lines) */
+.cardboard-bubble-compact.cardboard-bubble-left {
+  max-width: calc(90% - 15px);
+}
+
+.cardboard-bubble-compact.cardboard-bubble-right {
+  max-width: calc(90% - 15px);
+}
+
+.cardboard-bubble-compact.cardboard-bubble-center {
+  max-width: 90%;
+}
+
+/* Very compact bubble - shrink to 70% width when content is very short (1-2 lines) */
+.cardboard-bubble-very-compact.cardboard-bubble-left {
+  max-width: calc(70% - 15px);
+}
+
+.cardboard-bubble-very-compact.cardboard-bubble-right {
+  max-width: calc(70% - 15px);
+}
+
+.cardboard-bubble-very-compact.cardboard-bubble-center {
+  max-width: 70%;
+}
+
+/* Compact bubbles get more horizontal padding on inner box */
+.cardboard-bubble-compact .cardboard-bubble-inner,
+.cardboard-bubble-very-compact .cardboard-bubble-inner {
+  padding-left: 20px;
+  padding-right: 20px;
 }
 
 /* Inner white/cream text box */
 .cardboard-bubble-inner {
   background: #FFFFFF;
-  padding: 16px 32px; /* Reduced vertical padding from 24px to 16px for visualizer */
+  padding: 16px 10px; /* Reduced horizontal padding to 10px */
   margin: 0;
   border-radius: 15px;
   box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
@@ -233,13 +266,39 @@ html[data-mobile="true"] .cardboard-bubble {
   max-height: calc(100vh - 150px); /* Smaller safe area on mobile */
 }
 
-/* Mobile left/right positioning - allow full width expansion */
+/* Mobile left/right positioning - allow expansion beyond container */
 html[data-mobile="true"] .cardboard-bubble-left {
-  max-width: calc(100% - 40px);
+  max-width: calc(120% - 15px);
 }
 
 html[data-mobile="true"] .cardboard-bubble-right {
-  max-width: calc(100% - 50px);
+  max-width: calc(110% - 15px);
+}
+
+/* Mobile compact bubbles */
+html[data-mobile="true"] .cardboard-bubble-compact.cardboard-bubble-left {
+  max-width: calc(90% - 15px);
+}
+
+html[data-mobile="true"] .cardboard-bubble-compact.cardboard-bubble-right {
+  max-width: calc(90% - 15px);
+}
+
+html[data-mobile="true"] .cardboard-bubble-compact.cardboard-bubble-center {
+  max-width: 90%;
+}
+
+/* Mobile very compact bubbles */
+html[data-mobile="true"] .cardboard-bubble-very-compact.cardboard-bubble-left {
+  max-width: calc(70% - 15px);
+}
+
+html[data-mobile="true"] .cardboard-bubble-very-compact.cardboard-bubble-right {
+  max-width: calc(70% - 15px);
+}
+
+html[data-mobile="true"] .cardboard-bubble-very-compact.cardboard-bubble-center {
+  max-width: 70%;
 }
 
 html[data-mobile="true"] .cardboard-bubble-inner {

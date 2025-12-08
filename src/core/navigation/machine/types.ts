@@ -349,6 +349,15 @@ export type StartRecordingEvent = {
 };
 
 /**
+ * RECORDING_ACTIVE
+ * Emitted when: Microphone has actually started recording (STT status becomes 'recording')
+ * Purpose: Signal that recording is truly active, safe to create scene and allow stop
+ */
+export type RecordingActiveEvent = {
+  type: 'RECORDING_ACTIVE';
+};
+
+/**
  * SUBMIT_RECORDING
  * Emitted when: User confirms their question transcript in recording-submit phase
  * Purpose: Proceed to AI processing
@@ -382,6 +391,26 @@ export type SubmitAnswerEvent = {
  */
 export type CancelAnswerEvent = {
   type: 'CANCEL_ANSWER';
+};
+
+/**
+ * NO_AUDIO_RECORDED
+ * Emitted when: Recording completed but no audio was captured (empty/silent recording)
+ * Payload: Recording type (question or answer)
+ * Purpose: Show error message asking user to allow microphone access
+ */
+export type NoAudioRecordedEvent = {
+  type: 'NO_AUDIO_RECORDED';
+  recordingType: 'question' | 'answer';
+};
+
+/**
+ * RETRY_RECORDING
+ * Emitted when: User clicks retry after no audio recorded
+ * Purpose: Go back to input state to try recording again
+ */
+export type RetryRecordingEvent = {
+  type: 'RETRY_RECORDING';
 };
 
 /**
@@ -420,10 +449,13 @@ export type NavigationEvent =
   | AllCluesFoundEvent
   | ClueSelectedEvent
   | StartRecordingEvent
+  | RecordingActiveEvent
   | SubmitRecordingEvent
   | CancelRecordingEvent
   | SubmitAnswerEvent
   | CancelAnswerEvent
+  | NoAudioRecordedEvent
+  | RetryRecordingEvent
 
 // Note: SCENE_PHASE_CHANGED removed - phase lives in child machine state,
 // not as a parent event. Phase is persisted via meta when needed.
@@ -474,6 +506,8 @@ export type NavigationContext = {
   unlockedConversationId?: string;
   /** Character image for fail-dance scenes (e.g., "angrybutterbuns.png") */
   wrongCharacter?: string;
+  /** Track if we've requested microphone permission after first navigation */
+  micPermissionRequested?: boolean;
 };
 
 // Note: Phase is NOT tracked in parent context - it lives in:
