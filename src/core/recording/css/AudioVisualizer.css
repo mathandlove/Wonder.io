@@ -8,11 +8,16 @@
 .audio-visualizer {
   display: inline-flex;
   align-items: center;
-  justify-content: center;
+  justify-content: flex-start;
   gap: 8px;
-  min-height: 48px;
-  padding: 0 4px; /* Reduced from 8px to 4px (half the padding) */
-  min-width: 120px; /* Ensure canvas has space */
+  width: 100%;
+  height: 33px; /* Match text line height: 22px * 1.5 = 33px */
+  padding: 0;
+}
+
+/* Mobile: Match smaller text line height */
+html[data-mobile="true"] .audio-visualizer {
+  height: 24px; /* Match text line height: 16px * 1.5 = 24px */
 }
 
 .audio-visualizer-canvas {
@@ -23,7 +28,8 @@
 .audio-visualizer-listening {
   color: #999;
   font-style: italic;
-  font-size: 16px;
+  font-size: inherit;
+  /* Inherit font-size from parent (answer-input-box) for consistency */
   animation: pulse 1.5s ease-in-out infinite;
 }
 
@@ -34,6 +40,11 @@
   50% {
     opacity: 1;
   }
+}
+
+/* Mobile: Match answer-input-box font size */
+html[data-mobile="true"] .audio-visualizer-listening {
+  font-size: 16px;
 }
 
 /* Old dot styles removed - now using canvas for rendering */

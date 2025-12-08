@@ -61,10 +61,12 @@ export type Phase =
   | 'input-showInput'
   | 'input-recording'
   | 'input-processing'
+  | 'recording-submit'  // User reviewing transcript before submitting to AI
   | 'ai-waiting'
   | 'record-answer'
   | 'waiting-for-answer-finalize'
   | 'answer-processing'
+  | 'answer-submit'  // User reviewing answer transcript before submitting for validation
   | 'answer-waiting'
   | 'answer-right'
   | 'answer-wrong'
@@ -107,6 +109,7 @@ export const PHASES = {
   INPUT_SHOW_INPUT: 'input-showInput' as const,
   INPUT_RECORDING: 'input-recording' as const,
   INPUT_PROCESSING: 'input-processing' as const,
+  RECORDING_SUBMIT: 'recording-submit' as const,
   AI_WAITING: 'ai-waiting' as const,
   RECORD_ANSWER: 'record-answer' as const,
   WAITING_FOR_ANSWER_FINALIZE: 'waiting-for-answer-finalize' as const,

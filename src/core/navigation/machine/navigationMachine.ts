@@ -34,28 +34,28 @@ const debug = createDebugger('navigation:machine');
  * Set to true to bypass the requirement of asking a question before answering
  * Useful for testing the answer flow directly
  */
-const DEBUG_AUTO_UNLOCK_ANSWER_BUTTON = false;
+const DEBUG_AUTO_UNLOCK_ANSWER_BUTTON = true;
 
 /**
  * DEBUG FLAG: Allow scroll navigation during recording
  * Set to true to allow scrolling past the record panel during recording states
  * Useful for testing/debugging without going through the full recording flow
  */
-const DEBUG_ALLOW_SCROLL_DURING_RECORDING = false;
+const DEBUG_ALLOW_SCROLL_DURING_RECORDING = true;
 
 /**
  * DEBUG FLAG: Allow scroll navigation during quest display
  * Set to true to allow scrolling past quest scenes without accepting them
  * Useful for testing/debugging story flow without interacting with quest UI
  */
-const DEBUG_ALLOW_SCROLL_DURING_QUEST = false;
+const DEBUG_ALLOW_SCROLL_DURING_QUEST = true;
 
 /**
  * DEBUG FLAG: Allow scroll navigation during clue-image scenes
  * Set to true to allow scrolling past clue scenes without finding all clues
  * Useful for testing/debugging story flow without clicking all hotspots
  */
-const DEBUG_ALLOW_SCROLL_DURING_IMAGECLUE = false;
+const DEBUG_ALLOW_SCROLL_DURING_IMAGECLUE = true;
 
 // Log when debug modes are enabled
 if (DEBUG_AUTO_UNLOCK_ANSWER_BUTTON) {
@@ -648,6 +648,16 @@ export const navigationMachine = setup({
       const currentPhase = useNavigationStore.getState().getCurrentPhase();
       return currentPhase === 'answer-wrong';
     },
+    // Check if current node is in recording-submit phase (reviewing transcript before submission)
+    isRecordingSubmit: () => {
+      const currentPhase = useNavigationStore.getState().getCurrentPhase();
+      return currentPhase === 'recording-submit';
+    },
+    // Check if current node is in answer-submit phase (reviewing answer transcript before validation)
+    isAnswerSubmit: () => {
+      const currentPhase = useNavigationStore.getState().getCurrentPhase();
+      return currentPhase === 'answer-submit';
+    },
     // Check if both fail video and feedback are ready (for answer-wrong transition)
     bothFailConditionsMet: ({ context }) => {
       return context.failVideoComplete === true && context.feedbackReceived === true;
@@ -876,6 +886,14 @@ export const navigationMachine = setup({
             {
               guard: 'isAnswerWrong',
               target: 'answerWrong',
+            },
+            {
+              guard: 'isRecordingSubmit',
+              target: 'recordingSubmit',
+            },
+            {
+              guard: 'isAnswerSubmit',
+              target: 'answerSubmit',
             },
             {
               guard: 'isClueSceneComplete',
@@ -1384,14 +1402,96 @@ export const navigationMachine = setup({
                   target: '#navigation.scene.route',
                 }
               : {},
-            // When transcript is ready, store it and move to AI waiting
+            // When transcript is ready, store it and move to recording-submit for user review
             RECORDING_TRANSCRIBED: {
               actions: [
                 'storeTranscriptInScene',
                 'setUnlockAnswerButton',
-                () => debug.log('✅ Transcript stored → waiting for AI')
+                () => {
+                  debug.log('✅ Transcript stored → recording-submit for user review');
+                  const nodeId = getCurrentNodeId();
+                  if (nodeId) {
+                    useNavigationStore.getState().updateNodePhase(nodeId, 'recording-submit');
+                  }
+                }
+              ],
+              target: 'recordingSubmit',
+            },
+          },
+        },
+
+        /**
+         * RECORDING SUBMIT state
+         * User is reviewing their transcript before submitting to AI
+         * Shows transcript with Send (submit) and X (cancel) buttons
+         * Applies to both regular input recordings AND clue-based recordings
+         */
+        recordingSubmit: {
+          entry: [
+            () => debug.log('📝 Entered recordingSubmit - user reviewing transcript'),
+            () => {
+              const nodeId = getCurrentNodeId();
+              if (nodeId) useNavigationStore.getState().updateNodePhase(nodeId, 'recording-submit');
+            },
+          ],
+          on: {
+            // Block scroll down while reviewing (unless debug mode)
+            SCROLL_DOWN_STEP: DEBUG_ALLOW_SCROLL_DURING_RECORDING
+              ? {
+                  actions: [
+                    () => debug.log('⬇️ [DEBUG] SCROLL_DOWN during recording-submit → navigating forward'),
+                    'goNext',
+                  ],
+                  target: '#navigation.scene.route',
+                }
+              : {
+                  actions: () => debug.log('⛔ SCROLL blocked during recording-submit review'),
+                },
+            // Block scroll up while reviewing (unless debug mode)
+            SCROLL_UP_STEP: DEBUG_ALLOW_SCROLL_DURING_RECORDING
+              ? {
+                  actions: [
+                    () => debug.log('⬆️ [DEBUG] SCROLL_UP during recording-submit → navigating backward'),
+                    'goPrev',
+                  ],
+                  target: '#navigation.scene.route',
+                }
+              : {
+                  actions: () => debug.log('⛔ SCROLL blocked during recording-submit review'),
+                },
+            // User confirms transcript - proceed to AI
+            SUBMIT_RECORDING: {
+              actions: [
+                () => {
+                  debug.log('✅ SUBMIT_RECORDING → proceeding to AI');
+                  const nodeId = getCurrentNodeId();
+                  if (nodeId) {
+                    useNavigationStore.getState().updateNodePhase(nodeId, 'ai-waiting');
+                  }
+                }
               ],
               target: 'askWaitingForAI',
+            },
+            // User cancels - delete current node and go back to previous scene
+            CANCEL_RECORDING: {
+              actions: [
+                () => {
+                  debug.log('❌ CANCEL_RECORDING → deleting node and going back');
+                  const nodeId = getCurrentNodeId();
+                  if (nodeId) {
+                    // First navigate backward to previous node
+                    useNavigationStore.getState().advance('backward');
+                    // Then delete the node we were on
+                    useNavigationStore.getState().deleteNode(nodeId);
+                    // Set the previous node (now current) to input-showInput phase so user can re-record
+                    const newCurrentNodeId = getCurrentNodeId();
+                    if (newCurrentNodeId) {
+                      useNavigationStore.getState().updateNodePhase(newCurrentNodeId, 'input-showInput');
+                    }
+                  }
+                }
+              ],
+              target: 'dialogueInput',
             },
           },
         },
@@ -1590,13 +1690,91 @@ export const navigationMachine = setup({
                   target: '#navigation.scene.route',
                 }
               : {},
-            // When transcript is ready, store it and move to validation
+            // When transcript is ready, store it and move to answer-submit for user review
             RECORDING_TRANSCRIBED: {
               actions: [
                 'storeAnswerInScene',
-                () => debug.log('✅ Answer transcript stored → validating')
+                () => {
+                  debug.log('✅ Answer transcript stored → answer-submit for user review');
+                  const nodeId = getCurrentNodeId();
+                  if (nodeId) {
+                    useNavigationStore.getState().updateNodePhase(nodeId, 'answer-submit');
+                  }
+                }
+              ],
+              target: 'answerSubmit',
+            },
+          },
+        },
+
+        /**
+         * ANSWER SUBMIT state
+         * User is reviewing their answer transcript before submitting for validation
+         * Shows transcript with Send (submit) and X (cancel) buttons
+         */
+        answerSubmit: {
+          entry: [
+            () => debug.log('📝 Entered answerSubmit - user reviewing answer transcript'),
+            () => {
+              const nodeId = getCurrentNodeId();
+              if (nodeId) useNavigationStore.getState().updateNodePhase(nodeId, 'answer-submit');
+            },
+          ],
+          on: {
+            // Block scroll down while reviewing (unless debug mode)
+            SCROLL_DOWN_STEP: DEBUG_ALLOW_SCROLL_DURING_RECORDING
+              ? {
+                  actions: [
+                    () => debug.log('⬇️ [DEBUG] SCROLL_DOWN during answer-submit → navigating forward'),
+                    'goNext',
+                  ],
+                  target: '#navigation.scene.route',
+                }
+              : {
+                  actions: () => debug.log('⛔ SCROLL blocked during answer-submit review'),
+                },
+            // Block scroll up while reviewing (unless debug mode)
+            SCROLL_UP_STEP: DEBUG_ALLOW_SCROLL_DURING_RECORDING
+              ? {
+                  actions: [
+                    () => debug.log('⬆️ [DEBUG] SCROLL_UP during answer-submit → navigating backward'),
+                    'goPrev',
+                  ],
+                  target: '#navigation.scene.route',
+                }
+              : {
+                  actions: () => debug.log('⛔ SCROLL blocked during answer-submit review'),
+                },
+            // User confirms answer transcript - proceed to validation
+            SUBMIT_ANSWER: {
+              actions: [
+                () => {
+                  debug.log('✅ SUBMIT_ANSWER → proceeding to validation');
+                  const nodeId = getCurrentNodeId();
+                  if (nodeId) {
+                    useNavigationStore.getState().updateNodePhase(nodeId, 'answer-waiting');
+                  }
+                }
               ],
               target: 'answerValidating',
+            },
+            // User cancels - stay on current node, reset phase to input
+            CANCEL_ANSWER: {
+              actions: [
+                () => {
+                  debug.log('❌ CANCEL_ANSWER → resetting to input phase');
+                  const nodeId = getCurrentNodeId();
+                  if (nodeId) {
+                    // Clear the answer transcript from scene
+                    useNavigationStore.getState().updateCurrentSceneProperties({
+                      answerText: ''
+                    });
+                    // Reset phase to input for re-recording
+                    useNavigationStore.getState().updateNodePhase(nodeId, 'input');
+                  }
+                }
+              ],
+              target: 'dialogueInput',
             },
           },
         },

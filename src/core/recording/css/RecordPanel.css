@@ -23,20 +23,20 @@
   background: transparent;
   pointer-events: none;
   /* Smooth transitions for transform, top, and bottom (handles all position changes) */
-  transition: transform 0.6s cubic-bezier(0.25, 1, 0.5, 1),
-    top 0.6s cubic-bezier(0.25, 1, 0.5, 1),
-    bottom 0.6s cubic-bezier(0.25, 1, 0.5, 1);
+  transition: transform 1.2s cubic-bezier(0.25, 1, 0.5, 1),
+    top 1.2s cubic-bezier(0.25, 1, 0.5, 1),
+    bottom 1.2s cubic-bezier(0.25, 1, 0.5, 1);
 }
 
-/* Hidden state - completely below screen, top of panel at bottom of viewport */
+/* Hidden state - completely below screen */
 .record-panel-container.hidden {
-  top: auto;
-  /* Use bottom positioning for consistency */
-  bottom: -100vh;
-  /* Position completely below screen */
-  transform: translateX(-50%);
-  /* Only center horizontally */
-  justify-content: flex-end;
+  top: 150vh;
+  /* Move far below screen for smooth animation to center */
+  bottom: auto;
+  /* Clear bottom positioning */
+  transform: translate(-50%, -50%);
+  /* Keep same transform as centered states for smooth animation */
+  justify-content: center;
 }
 
 /* Rest state - bottom anchored with 32px hidden below screen */
@@ -97,9 +97,9 @@
   /* Keep same transform for smooth animation */
   justify-content: flex-end;
   /* Re-declare transition to ensure it applies */
-  transition: transform 0.6s cubic-bezier(0.25, 1, 0.5, 1),
-    top 0.6s cubic-bezier(0.25, 1, 0.5, 1),
-    bottom 0.6s cubic-bezier(0.25, 1, 0.5, 1);
+  transition: transform 1.2s cubic-bezier(0.25, 1, 0.5, 1),
+    top 1.2s cubic-bezier(0.25, 1, 0.5, 1),
+    bottom 1.2s cubic-bezier(0.25, 1, 0.5, 1);
 }
 
 .record-panel-container>*,
@@ -160,14 +160,14 @@
   position: absolute;
   inset: 0;
   /* Cover entire frame */
-  border-radius: 32px;
-  /* Match frame's border-radius */
+  border-radius: 25px;
+  /* Inner radius = outer 32px - border 7px */
   pointer-events: none;
   /* Don't block clicks */
   animation: breathingGlowInset 10s ease-in-out 0.2s infinite;
   /* 200ms delay after color transition */
-  z-index: 1;
-  /* Above background, below content */
+  z-index: 100;
+  /* Above content so glow isn't clipped */
 }
 
 /* Breathing glow animation - outward golden aura */
@@ -224,9 +224,11 @@
   content: '';
   position: absolute;
   inset: 0;
-  border-radius: 32px;
+  border-radius: 16px;
+  /* Inner radius = outer 32px - border 7px */
   pointer-events: none;
-  z-index: 1;
+  z-index: 100;
+  /* Above content so glow isn't clipped */
   /* Initial golden inset glow */
   box-shadow:
     inset 0 0 40px rgba(255, 190, 60, 0.25),
@@ -299,9 +301,11 @@
   content: '';
   position: absolute;
   inset: 0;
-  border-radius: 32px;
+  border-radius: 16px;
+  /* Match frame's outer border-radius since inset:0 positions at border edge */
   pointer-events: none;
-  z-index: 1;
+  z-index: 100;
+  /* Above content so glow isn't clipped */
   /* Initial golden inset glow */
   box-shadow:
     inset 0 0 40px rgba(255, 190, 60, 0.25),
@@ -332,9 +336,9 @@
   /* Keep same transform for smooth animation */
   justify-content: flex-end;
   /* Re-declare transition to ensure it applies */
-  transition: transform 0.6s cubic-bezier(0.25, 1, 0.5, 1),
-    top 0.6s cubic-bezier(0.25, 1, 0.5, 1),
-    bottom 0.6s cubic-bezier(0.25, 1, 0.5, 1);
+  transition: transform 1.2s cubic-bezier(0.25, 1, 0.5, 1),
+    top 1.2s cubic-bezier(0.25, 1, 0.5, 1),
+    bottom 1.2s cubic-bezier(0.25, 1, 0.5, 1);
 }
 
 /* Breathing glow animation - golden (for first half of video) */
@@ -465,7 +469,7 @@
   border-color: #49301d;
   border-left-style: solid;
   border-left-width: 1px;
-  border-radius: 16px 16px 0px 0px;
+  border-radius: 22px 22px 0px 0px;
   /* Rounded top corners only - bottom meets button rail */
   border-right-style: solid;
   border-right-width: 1px;
@@ -600,6 +604,47 @@
 }
 
 /* ===================================
+   QUESTION DISPLAY FRAME (MIDDLE WHITE BOX FOR ASK RECORDING)
+   =================================== */
+
+.frame .whiteframe.question-frame {
+  align-items: center;
+  background: #ffffff !important;
+  /* Plain white background - override grey tint from .whiteframe */
+  border-color: #49301d;
+  border-left-style: solid;
+  border-left-width: 1px;
+  border-radius: 0px;
+  /* No rounded corners - middle box */
+  border-right-style: solid;
+  border-right-width: 1px;
+  border-top-style: solid;
+  border-top-width: 1px;
+  border-bottom: none;
+  /* No bottom border - seamless transition to button rail */
+  box-shadow: none;
+  /* No shadow - clean transition to button rail */
+  display: flex;
+  flex: 0 0 auto;
+  flex-direction: column;
+  gap: 34px;
+  justify-content: center;
+  padding: 0px 20px;
+  position: relative;
+  width: 100%;
+  min-width: 540px;
+  box-sizing: border-box;
+}
+
+/* Question frame's quest container - stack label and input box vertically */
+.frame .whiteframe.question-frame .quest {
+  flex-direction: column;
+  /* Stack children vertically instead of horizontally */
+  align-items: flex-start;
+  /* Align items to the left */
+}
+
+/* ===================================
    ANSWER DISPLAY FRAME (MIDDLE WHITE BOX)
    =================================== */
 
@@ -616,10 +661,10 @@
   border-right-width: 1px;
   border-top-style: solid;
   border-top-width: 1px;
-  border-bottom-style: solid;
-  border-bottom-width: 1px;
-  box-shadow: inset 0px -1px 8px -3px #000000;
-  /* Bottom-only shadow */
+  border-bottom: none;
+  /* No bottom border - seamless transition to button rail */
+  box-shadow: none;
+  /* No shadow - clean transition to button rail */
   display: flex;
   flex: 0 0 auto;
   flex-direction: column;
@@ -642,8 +687,10 @@
 
 /* Answer frame in feedback states - rounded bottom corners when button rail is hidden */
 .frame .whiteframe.answer-frame.answer-feedback-state {
-  border-radius: 0px 0px 16px 16px;
-  /* Rounded bottom corners to match where button rail would be */
+  border-radius: 0px 0px 14px 14px !important;
+  /* Only bottom corners rounded since no button rail is shown */
+  border-bottom: 1px solid #49301d !important;
+  /* Add bottom border back since no button rail */
 }
 
 /* ===================================
@@ -660,7 +707,7 @@
   border-left-width: 1px;
   border-right-style: solid;
   border-right-width: 1px;
-  border-radius: 0px 0px 16px 16px;
+  border-radius: 0px 0px 22px 22px;
   /* Rounded bottom corners only */
   display: flex;
   flex: 0 0 auto;
@@ -739,7 +786,7 @@
 
   /* Text styling */
   font-family: "Inter", Helvetica, sans-serif;
-  font-size: 18px;
+  font-size: 22px;
   font-weight: 400;
   color: #3d3d3d;
   /* Darker text for better readability */
@@ -763,6 +810,62 @@
   font-style: italic;
   /* Italic to further distinguish from real content */
   font-weight: 400;
+  font-size: inherit;
+  /* Inherit font-size from parent (answer-input-box) for consistency with AudioVisualizer */
+}
+
+/* Question Input Box - identical styling to answer-input-box */
+.frame .question-input-box {
+  /* Background with subtle gradient for depth */
+  background: linear-gradient(180deg,
+      #fafafa 0%,
+      #ffffff 100%);
+
+  /* Multi-layer border for realistic input appearance */
+  border: 1px solid #d4d4d4;
+  box-shadow:
+    inset 0px 1px 3px rgba(0, 0, 0, 0.12),
+    0px 1px 0px rgba(255, 255, 255, 0.8),
+    0px 0px 0px 1px rgba(73, 48, 29, 0.1);
+
+  border-radius: 6px;
+  padding: 12px 16px;
+  min-height: 48px;
+  display: flex;
+  align-items: center;
+  margin-top: 8px;
+
+  /* Text styling */
+  font-family: "Inter", Helvetica, sans-serif;
+  font-size: 22px;
+  font-weight: 400;
+  color: #3d3d3d;
+  line-height: 1.5;
+  word-wrap: break-word;
+  box-sizing: border-box;
+  width: 100%;
+
+  /* Smooth transitions for any state changes */
+  transition: all 0.2s ease-in-out;
+
+  cursor: text;
+}
+
+/* Question placeholder text styling */
+.frame .question-input-box .question-placeholder {
+  color: #9ca3af;
+  font-style: italic;
+  font-weight: 400;
+  font-size: inherit;
+}
+
+/* Optional hover state for question input box */
+.frame .question-input-box:hover {
+  border-color: #b8b8b8;
+  box-shadow:
+    inset 0px 1px 3px rgba(0, 0, 0, 0.15),
+    0px 1px 0px rgba(255, 255, 255, 0.9),
+    0px 0px 0px 1px rgba(73, 48, 29, 0.15);
 }
 
 /* Optional hover state for input box (subtle interaction feedback) */
@@ -872,7 +975,7 @@
   position: absolute;
   inset: 0;
   background: rgba(87, 127, 87, 0.5);
-  border-radius: 12px;
+  border-radius: 13px;
   pointer-events: none;
   z-index: 1;
 }
@@ -900,7 +1003,7 @@
   position: absolute;
   inset: 0;
   background: rgba(54, 7, 88, 0.5);
-  border-radius: 12px;
+  border-radius: 13px;
   pointer-events: none;
   z-index: 1;
 }
@@ -914,7 +1017,7 @@
       rgba(0, 0, 0, 0.15) 0%,
       rgba(0, 0, 0, 0.15) 100%);
   /* Darken effect on hover */
-  border-radius: 16px;
+  border-radius: 13px;
   pointer-events: none;
   z-index: 2;
   /* Above green overlay */
@@ -929,7 +1032,7 @@
       rgba(0, 0, 0, 0.15) 0%,
       rgba(0, 0, 0, 0.15) 100%);
   /* Darken effect on hover */
-  border-radius: 16px;
+  border-radius: 13px;
   pointer-events: none;
   z-index: 2;
   /* Above purple overlay */
@@ -944,7 +1047,7 @@
       rgba(216, 25, 25, 0.17) 0%,
       rgba(216, 25, 25, 0.17) 100%);
   /* Red overlay for hint button */
-  border-radius: 16px;
+  border-radius: 13px;
   pointer-events: none;
   z-index: 1;
 }
@@ -965,7 +1068,7 @@
       rgba(0, 0, 0, 0.25) 0%,
       rgba(0, 0, 0, 0.25) 100%) !important;
   /* Darker overlay on press */
-  border-radius: 16px;
+  border-radius: 13px;
   pointer-events: none;
   z-index: 2;
 }
@@ -979,7 +1082,7 @@
       rgba(0, 0, 0, 0.25) 0%,
       rgba(0, 0, 0, 0.25) 100%) !important;
   /* Darker overlay on press */
-  border-radius: 16px;
+  border-radius: 13px;
   pointer-events: none;
   z-index: 2;
 }
@@ -993,7 +1096,7 @@
       rgba(216, 25, 25, 0.17) 0%,
       rgba(216, 25, 25, 0.17) 100%) !important;
   /* Red overlay on press */
-  border-radius: 16px;
+  border-radius: 13px;
   pointer-events: none;
   z-index: 1;
 }
@@ -1320,15 +1423,15 @@
 /* Answer Stamp Container - unified container for hand and seal to scale together */
 .answer-stamp-container {
   position: fixed;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
+  top: 0;
+  left: 0;
   height: 100%;
-  /* Master size control - adjust this single value to scale everything */
   width: 100%;
-  /* Full width of viewport */
   pointer-events: none;
   z-index: 1102;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 /* Answer Seal Stamp - positioned within container, scales with container */
@@ -1351,10 +1454,17 @@
   opacity: 1;
 }
 
-/* Force hide seal for answer-waiting state */
-.answer-seal-stamp.seal-hidden {
-  opacity: 0 !important;
+.answer-seal-stamp.stamp-visible .answer-seal-image {
+  animation: stampWobble 1.2s ease-in-out infinite;
 }
+
+@keyframes stampWobble {
+  0%, 100% { transform: rotate(0deg); }
+  25% { transform: rotate(-15deg); }
+  50% { transform: rotate(0deg); }
+  75% { transform: rotate(15deg); }
+}
+
 
 .answer-seal-image {
   height: 100%;
@@ -1363,24 +1473,6 @@
   filter: drop-shadow(2px 4px 8px rgba(0, 0, 0, 0.3));
 }
 
-/* Hand stamp video - positioned within container, scales with container */
-.answer-hand-stamp-video {
-  position: absolute;
-  top: -282%;
-  /* Offset upward so hand enters from above */
-  left: -17%;
-  /* Offset slightly left for natural hand angle */
-  width: 350%;
-  /* Slightly larger than container for hand to come from off-screen */
-  max-width: none;
-  /* Override Tailwind base layer max-width: 100% */
-  height: auto;
-  object-fit: contain;
-  opacity: 1;
-  pointer-events: none;
-  z-index: 10;
-  /* Ensure video is above the seal */
-}
 
 /* ===================================
    ACCESSIBILITY
@@ -1657,7 +1749,7 @@ html[data-mobile="true"] .record-panel-container.answer-wrong-centered .frame {
 /* Quest section (top white box) - compact */
 html[data-mobile="true"] .frame .whiteframe {
   padding: 6px 10px;
-  border-radius: 12px 12px 0 0;
+  border-radius: 14px 14px 0 0;
   min-width: auto !important;
   width: 100%;
 }
@@ -1693,16 +1785,31 @@ html[data-mobile="true"] .frame .quest-find-out-what.quest-offer .quest-descript
   font-size: 16px;
 }
 
-/* Answer frame (middle white box) - compact */
+/* Question frame (middle white box for ask recording) - compact, no rounded top corners */
+html[data-mobile="true"] .frame .whiteframe.question-frame {
+  padding: 6px 10px;
+  min-width: auto;
+  border-radius: 0px;
+}
+
+html[data-mobile="true"] .frame .question-input-box {
+  padding: 6px 10px;
+  min-height: 32px;
+  font-size: 16px;
+  margin-top: 4px;
+}
+
+/* Answer frame (middle white box) - compact, no rounded top corners */
 html[data-mobile="true"] .frame .whiteframe.answer-frame {
   padding: 6px 10px;
   min-width: auto;
+  border-radius: 0px;
 }
 
 html[data-mobile="true"] .frame .answer-input-box {
   padding: 6px 10px;
   min-height: 32px;
-  font-size: 12px;
+  font-size: 16px;
   margin-top: 4px;
 }
 
@@ -1711,7 +1818,7 @@ html[data-mobile="true"] .frame .frame-wrapper {
   min-width: auto;
   padding: 8px 10px 16px 10px;
   gap: 16px;
-  border-radius: 0 0 12px 12px;
+  border-radius: 0 0 14px 14px;
 }
 
 /* Button row container */
@@ -1733,6 +1840,21 @@ html[data-mobile="true"] .next-btn {
   border-radius: 12px;
   border-width: 2px;
   padding: 4px 12px;
+}
+
+/* Button overlays for mobile - match button border-radius minus border width */
+html[data-mobile="true"] .frame .button::before,
+html[data-mobile="true"] .next-btn::before {
+  border-radius: 10px;
+}
+
+html[data-mobile="true"] .frame .button:hover::after,
+html[data-mobile="true"] .frame .button:active::after,
+html[data-mobile="true"] .frame .hint-btn:hover::after,
+html[data-mobile="true"] .frame .hint-btn:active::after,
+html[data-mobile="true"] .next-btn:hover::after,
+html[data-mobile="true"] .next-btn:active::after {
+  border-radius: 10px;
 }
 
 /* Ask button - fit content */
@@ -1804,3 +1926,184 @@ html[data-mobile="true"] .button-toast {
   margin-bottom: 10px;
 }
 
+/* ===================================
+   RECORDING SUBMIT STATE
+   Review transcript before sending to AI
+   =================================== */
+
+/* Container for recording submit content */
+.recording-submit-content {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  width: 100%;
+  padding: 0;
+}
+
+/* Transcript review section - no borders */
+.transcript-review {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 11px 20px; /* Reduced vertical padding by ~30% */
+  background-color: #ffffff;
+  border: none;
+  border-radius: 22px 22px 0 0;
+}
+
+/* Subtle divider between transcript and buttons */
+.recording-submit-divider {
+  height: 1px;
+  background-color: rgba(0, 0, 0, 0.08);
+  margin: 0 20px;
+}
+
+.transcript-text {
+  background: linear-gradient(180deg, #fafafa 0%, #ffffff 100%);
+  border: 1px solid #d4d4d4;
+  box-shadow:
+    inset 0px 1px 3px rgba(0, 0, 0, 0.12),
+    0px 1px 0px rgba(255, 255, 255, 0.8);
+  border-radius: 8px;
+  padding: 12px 16px;
+  min-height: 48px;
+  font-family: "Inter", Helvetica, sans-serif;
+  font-size: 18px;
+  font-weight: 400;
+  color: #3d3d3d;
+  line-height: 1.5;
+  word-wrap: break-word;
+}
+
+/* Recording submit buttons container - no borders */
+.recording-submit-buttons {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  gap: 16px;
+  padding: 12px 20px 5px 20px; /* 5px bottom padding for viewport edge */
+  background-color: #ffffff;
+  border: none;
+  border-radius: 0 0 22px 22px;
+}
+
+/* Answer submit buttons in button rail - flex layout for Cancel and Send */
+.frame .div.answer-submit-buttons {
+  justify-content: flex-end;
+  gap: 16px;
+}
+
+/* Cancel (X) button - same width as Send button */
+.cancel-recording-btn {
+  width: 192px !important; /* Same width as send button */
+  height: 55px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-image: url(/VisualAssets/cardboard.png);
+  background-position: center;
+  background-size: 360px 540px;
+  background-repeat: repeat;
+  border: 3px solid #49301d;
+  border-radius: 16px;
+  cursor: pointer;
+  position: relative;
+  transition: all 0.15s ease;
+  pointer-events: auto;
+  box-sizing: border-box;
+}
+
+/* Red tint overlay for cancel button - override .button green overlay */
+.button.cancel-recording-btn::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: rgba(216, 25, 25, 0.4) !important;
+  border-radius: 13px;
+  pointer-events: none;
+  z-index: 1;
+}
+
+.button.cancel-recording-btn:hover::before {
+  background: rgba(216, 25, 25, 0.5) !important;
+}
+
+.cancel-recording-btn:active {
+  box-shadow: inset 8px 8px 4px rgba(0, 0, 0, 0.25);
+}
+
+.cancel-x {
+  color: #ffffff;
+  font-family: "Inter", Helvetica, sans-serif;
+  font-size: 28px;
+  font-weight: 700;
+  z-index: 2;
+  text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.3);
+}
+
+/* Send button - green like Ask button */
+.send-recording-btn {
+  flex: 1;
+  max-width: 192px;
+  pointer-events: auto;
+}
+
+/* Send button green overlay (inherits base .button styles) */
+.send-recording-btn::before {
+  background: rgba(87, 127, 87, 0.6);
+}
+
+/* Send icon (paper airplane) styling */
+.send-icon {
+  width: 24px;
+  height: 24px;
+  color: #ffffff;
+  filter: none;
+  margin-right: 8px;
+}
+
+/* Recording submit wrapper - remove border from frame-wrapper */
+.recording-submit-wrapper {
+  border: none !important;
+}
+
+/* Recording submit header - "Your question:" label, no borders */
+.whiteframe.recording-submit-header {
+  border: none !important;
+  box-shadow: none !important;
+}
+
+/* Mobile adjustments for recording submit */
+html[data-mobile="true"] .recording-submit-buttons {
+  padding: 8px 16px 5px 16px; /* 5px bottom padding for viewport edge */
+  gap: 12px;
+}
+
+html[data-mobile="true"] .cancel-recording-btn {
+  width: 120px !important; /* Same width as send button on mobile */
+  height: 40px;
+  border-radius: 12px;
+  border-width: 2px;
+}
+
+html[data-mobile="true"] .transcript-review {
+  padding: 8px 16px; /* Reduced vertical padding */
+}
+
+html[data-mobile="true"] .recording-submit-divider {
+  margin: 0 16px;
+}
+
+html[data-mobile="true"] .cancel-x {
+  font-size: 22px;
+}
+
+html[data-mobile="true"] .transcript-text {
+  font-size: 14px;
+  padding: 10px 12px;
+  min-height: 40px;
+}
+
+html[data-mobile="true"] .transcript-label {
+  font-size: 14px;
+}

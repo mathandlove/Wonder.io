@@ -136,17 +136,27 @@ export function SpeechBubbleOrchestrator() {
     // Show AudioVisualizer placeholder when in input-recording phase
     const isRecording = phase === 'input-recording';
     const isProcessing = phase === 'input-processing';
+    const isRecordingSubmit = phase === 'recording-submit';
+    const isAnswerSubmit = phase === 'answer-submit';
+    const isAnswerWaiting = phase === 'answer-waiting';
+    const isAnswerRight = phase === 'answer-right';
+    const isAnswerWrong = phase === 'answer-wrong';
+    const isSuccessDance = phase === 'success-dance';
+    const isFailDance = phase === 'fail-dance';
 
     // During recording, show transcript from scene or AudioVisualizer
     // During processing, ALWAYS show AudioVisualizer with "Processing..." (ignore any text)
+    // During recording-submit, show the transcript for user review
     const hasTranscript = characterScene.questionText && characterScene.questionText.trim();
     const hasFeedback = (characterScene as any).feedbackText && (characterScene as any).feedbackText.trim();
 
-    // Priority: feedback > processing > recording > normal text
+    // Priority: feedback > processing > recording-submit > recording > normal text
     const bubbleContent = hasFeedback
       ? (characterScene as any).feedbackText // Show AI feedback if available
       : isProcessing
       ? null // Always null during processing - will show AudioVisualizer with "Processing..."
+      : isRecordingSubmit
+      ? (hasTranscript ? characterScene.questionText : null) // During review: show transcript
       : isRecording
       ? (hasTranscript ? characterScene.questionText : null) // During recording: show transcript or AudioVisualizer
       : characterScene.text; // Normal phase: show scene text
@@ -154,7 +164,11 @@ export function SpeechBubbleOrchestrator() {
     // Show waiting bubble based solely on phase
     const shouldShowWaitingBubble = phase === 'ai-waiting';
 
-    // Skip rendering if no content (unless recording/processing - show AudioVisualizer)
+    // Hide bubble completely during ask recording states (now shown in RecordPanel input box instead)
+    // Also hide during recording-submit, answer-submit, answer feedback, and dance animations
+    if (isRecording || isProcessing || isRecordingSubmit || isAnswerSubmit || isAnswerWaiting || isAnswerRight || isAnswerWrong || isSuccessDance || isFailDance) return null;
+
+    // Skip rendering if no content (unless recording/processing - show AudioVisualizer or transcript)
     if (!bubbleContent && !(isRecording && !hasTranscript) && !isProcessing) return null;
 
     // Check for character entrance animation (only matters for slide-in)

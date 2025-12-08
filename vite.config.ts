@@ -7,6 +7,9 @@ const isProduction = process.env.NODE_ENV === 'production'
 // https://vite.dev/config/
 export default defineConfig({
   plugins: [react()],
+  server: {
+    host: true, // Expose on network for mobile testing
+  },
   resolve: {
     alias: {
       '@app': path.resolve(__dirname, './src/app'),

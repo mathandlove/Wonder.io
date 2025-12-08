@@ -89,6 +89,10 @@ export const AudioVisualizer: React.FC<AudioVisualizerProps> = ({
     const centerY = height / 2;
     const spacing = width / dotCount; // Spread evenly across full width
 
+    // Use the prop amplitude, but cap it to fit within canvas if needed
+    const maxFit = (height / 2) - dotRadius - 2; // Max that fits in canvas
+    const effectiveMaxAmplitude = Math.min(maxAmplitudePx, maxFit); // Use smaller of prop vs fit
+
     const animate = (currentTime: number) => {
       const now = currentTime / 1000; // Convert to seconds
 
@@ -106,9 +110,11 @@ export const AudioVisualizer: React.FC<AudioVisualizerProps> = ({
             waveStartTimeRef.current = now;
           }
 
-          // Set target amplitude to current audio level
-          const normalizedRms = Math.max(0, Math.min(1, (rmsRef.current - 0.02) / 0.18));
-          targetAmplitudeRef.current = normalizedRms * maxAmplitudePx;
+          // Set target amplitude - very sensitive: whisper = 80%, loud = 100%
+          // Use aggressive curve: any sound above threshold quickly jumps to ~80%
+          const rawNorm = Math.max(0, Math.min(1, (rmsRef.current - 0.02) / 0.18));
+          const boostedNorm = 0.8 + (rawNorm * 0.2); // Map 0-1 to 0.8-1.0
+          targetAmplitudeRef.current = boostedNorm * effectiveMaxAmplitude;
 
         }
       } else {
@@ -124,9 +130,10 @@ export const AudioVisualizer: React.FC<AudioVisualizerProps> = ({
         } else {
           belowReleaseTimeRef.current = 0;
 
-          // Continuously update target amplitude based on current audio level
-          const normalizedRms = Math.max(0, Math.min(1, (rmsRef.current - 0.02) / 0.18));
-          targetAmplitudeRef.current = normalizedRms * maxAmplitudePx;
+          // Continuously update target amplitude - very sensitive: whisper = 80%, loud = 100%
+          const rawNorm = Math.max(0, Math.min(1, (rmsRef.current - 0.02) / 0.18));
+          const boostedNorm = 0.8 + (rawNorm * 0.2); // Map 0-1 to 0.8-1.0
+          targetAmplitudeRef.current = boostedNorm * effectiveMaxAmplitude;
         }
       }
 
@@ -161,10 +168,10 @@ export const AudioVisualizer: React.FC<AudioVisualizerProps> = ({
           // Formula: yOffset = -cos(t) * amplitude - (maxAmplitude - amplitude)
           // This shifts baseline down so at amplitude=0, dot sits at -maxAmplitude
           const waveValue = -Math.cos(omega * t_i); // -1 to +1
-          yOffset = waveValue * amplitudePx + (maxAmplitudePx - amplitudePx);
+          yOffset = waveValue * amplitudePx + (effectiveMaxAmplitude - amplitudePx);
         } else {
           // Wave hasn't reached this dot yet - start at bottom
-          yOffset = maxAmplitudePx;
+          yOffset = effectiveMaxAmplitude;
         }
 
         const y = centerY + yOffset;
@@ -203,7 +210,7 @@ export const AudioVisualizer: React.FC<AudioVisualizerProps> = ({
         <canvas
           ref={canvasRef}
           className="audio-visualizer-canvas"
-          style={{ width: '100%', height: '48px' }}
+          style={{ width: `${dotCount * 12}px`, height: '100%' }}
         />
       )}
     </span>

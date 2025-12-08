@@ -23,17 +23,27 @@ img {
   pointer-events: none;
 }
 
+html {
+  /* Fallback color - actual background is set via React in main.tsx */
+  background: #000000;
+}
+
 body {
   margin: 0;
   padding: 0;
   overflow: hidden;
-  width: 100vw;
-  height: 100vh;
+  /* Transparent so html background shows through */
+  background: transparent;
+  /* Use min-height instead of fixed height to allow expansion */
+  min-height: 100vh;
+  min-height: 100svh; /* Small viewport height - iOS specific */
 }
 
 #root, #editor-root {
   margin: 0;
   padding: 0;
-  width: 100vw;
-  height: 100vh;
+  /* Transparent so html background shows through */
+  background: transparent;
+  min-height: 100vh;
+  min-height: 100svh;
 }

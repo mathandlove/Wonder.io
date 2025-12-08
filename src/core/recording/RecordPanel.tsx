@@ -128,6 +128,8 @@ export const RecordPanel: React.FC<RecordPanelProps> = ({
   const isAnswerClue = dialogueState === 'answerClue';
   const isAskRecording = dialogueState === 'input-recording';
   const isProcessing = dialogueState === 'input-processing';
+  const isRecordingSubmit = dialogueState === 'recording-submit';
+  const isAnswerSubmit = dialogueState === 'answer-submit';
   const isAnswerRecording = dialogueState === 'record-answer';
   const isAnswerProcessing = dialogueState === 'answer-processing';
   const isAnswerWaiting = dialogueState === 'answer-waiting';
@@ -178,13 +180,20 @@ export const RecordPanel: React.FC<RecordPanelProps> = ({
   const hintButtonDisabled = isRecording || isWaiting || isAnswerWaiting || disabled;
   const answerButtonDisabled = isAskRecording || isWaiting || isAnswerWaiting || disabled;
 
-  // Show answer text for answer recording and all answer-related states (including success-dance and fail-dance)
-  const showAnswerText = isAnswerRecording || isAnswerProcessing || isWaitingForAnswerFinalize || isAnswerWaiting || isAnswerRight || isAnswerWrong || isSuccessDance || isFailDance;
+  // Show answer text for answer recording and all answer-related states (including success-dance, fail-dance, and answer-submit)
+  const showAnswerText = isAnswerRecording || isAnswerProcessing || isWaitingForAnswerFinalize || isAnswerWaiting || isAnswerRight || isAnswerWrong || isSuccessDance || isFailDance || isAnswerSubmit;
+
+  // Show question text for ask recording states (mirrors answer recording display)
+  // Include recording-submit so the question shows in the input box style during review
+  const showQuestionText = isAskRecording || isProcessing || isWaitingForFinalize || isRecordingSubmit;
+  const questionText = (scene as CharacterScene)?.questionText || '';
 
   // Track red glow state for answer-wrong and fail-dance
   const [showRedGlow, setShowRedGlow] = React.useState(false);
   // Track green glow state for answer-right
   const [showGreenGlow, setShowGreenGlow] = React.useState(false);
+  // Track delay before revealing stamp (panel stays hidden during delay)
+  const [delayingReveal, setDelayingReveal] = React.useState(false);
 
   // State for first-time toasts
   const [activeToast, setActiveToast] = React.useState<ToastKey | null>(null);
@@ -202,6 +211,12 @@ export const RecordPanel: React.FC<RecordPanelProps> = ({
       setShowGreenGlow(false);
     }
   }, [isAnswerRight, isSuccessDance]);
+
+  // No delay - panel pops up immediately when entering answer-right/answer-wrong
+  React.useEffect(() => {
+    // Always set delayingReveal to false - no delay before showing stamp
+    setDelayingReveal(false);
+  }, [isAnswerRight, isAnswerWrong]);
 
   // First-time toast logic: Determine which toast to show based on phase transitions
   // The Ask/Hint/Answer buttons are visible when NOT in quest-offer styling and NOT in clue selection
@@ -306,11 +321,14 @@ export const RecordPanel: React.FC<RecordPanelProps> = ({
 
   // Determine which positioning class to apply based on state
   const getContainerClass = () => {
+    // During reveal delay, keep panel hidden
+    if (delayingReveal) return 'hidden';
+
     // Centered states (important moments)
     if (isAnswerRight) return showGreenGlow ? 'answer-right-centered show-green' : 'answer-right-centered';
     if (isSuccessDance) return 'answer-right-centered show-green hidden';
     if (isAnswerWrong) return showRedGlow ? 'answer-wrong-centered show-red' : 'answer-wrong-centered';
-    if (isAnswerWaiting) return 'quest-offer-centered'; // Golden glow for waiting
+    if (isAnswerWaiting) return 'hidden'; // Panel lowered while waiting for AI response
     if (isQuestOffer) return 'quest-offer-centered'; // Golden glow for quest
     // Note: isAnswerProcessing falls through to 'bottom-anchored' - stays in place like recording
 
@@ -319,6 +337,12 @@ export const RecordPanel: React.FC<RecordPanelProps> = ({
 
     // Hidden state (completely off-screen) - includes basic and input-basic
     if (isBasic || isInputBasic) return 'hidden';
+
+    // Recording submit state - bottom anchored for review
+    if (isRecordingSubmit) return 'bottom-anchored';
+
+    // Answer submit state - bottom anchored for review
+    if (isAnswerSubmit) return 'bottom-anchored';
 
     // Rest position - bottom anchored for interactive states
     return 'bottom-anchored';
@@ -390,6 +414,32 @@ export const RecordPanel: React.FC<RecordPanelProps> = ({
           </div>
         </div>
 
+
+
+        {/* Question Display Frame - shown during ask recording states (mirrors answer-frame styling) */}
+        {showQuestionText && (
+          <div className="whiteframe question-frame">
+            <div className="quest">
+              <p className="quest-find-out-what">
+                <span className="quest-label">Your question:</span>
+              </p>
+              <div className="question-input-box">
+                {(isAskRecording || isWaitingForFinalize) ? (
+                  questionText ? (
+                    <span className="question-placeholder">{questionText}</span>
+                  ) : (
+                    <AudioVisualizer audioLevel={audioLevel} className="question-variant" mode="listening" />
+                  )
+                ) : isProcessing ? (
+                  <AudioVisualizer audioLevel={audioLevel} className="question-variant" mode="processing" />
+                ) : isRecordingSubmit ? (
+                  <span className="question-placeholder">{questionText}</span>
+                ) : null}
+              </div>
+            </div>
+          </div>
+        )}
+
         {/* Answer Display Frame - middle white box (only visible during answer states) */}
         {showAnswerText && (
           <div className={`whiteframe answer-frame ${(isAnswerWaiting || isAnswerRight || isAnswerWrong || isSuccessDance) ? 'answer-feedback-state' : ''}`}>
@@ -406,6 +456,8 @@ export const RecordPanel: React.FC<RecordPanelProps> = ({
                   )
                 ) : isAnswerProcessing ? (
                   <AudioVisualizer audioLevel={audioLevel} className="answer-variant" mode="processing" />
+                ) : isAnswerSubmit ? (
+                  <span className="answer-placeholder">{answerText}</span>
                 ) : (
                   <span className="quest-description">{answerText || 'Someone stole your cookies.'}</span>
                 )}
@@ -415,7 +467,7 @@ export const RecordPanel: React.FC<RecordPanelProps> = ({
         )}
 
         {/* Button Rail - white background with buttons */}
-        {/* Hide button rail for answer feedback states (answer-waiting, answer-right, answer-wrong, success-dance, fail-dance) */}
+        {/* Hide button rail for answer feedback states only */}
         {!isAnswerWaiting && !isAnswerRight && !isAnswerWrong && !isSuccessDance && !isFailDance && (
           <div className="frame-wrapper">
             {isAskClue || isAnswerClue ? (
@@ -455,6 +507,66 @@ export const RecordPanel: React.FC<RecordPanelProps> = ({
               <div className="button-wrapper">
                 <button className="button accept-btn" onClick={handleAcceptQuest} disabled={disabled}>
                   <div className="answer">Accept</div>
+                </button>
+              </div>
+            ) : isRecordingSubmit ? (
+              /* Recording Submit State: Cancel and Send buttons (same style as answer-submit) */
+              <div className="div answer-submit-buttons">
+                {/* Cancel (X) button - red tint */}
+                <button
+                  className="button cancel-recording-btn"
+                  onClick={() => {
+                    setActiveToast(null);
+                    navigationBus.emit({ type: 'CANCEL_RECORDING' });
+                  }}
+                  title="Cancel and re-record"
+                >
+                  <span className="cancel-x">✕</span>
+                </button>
+
+                {/* Send button - green with paper airplane icon */}
+                <button
+                  className="button send-recording-btn"
+                  onClick={() => {
+                    setActiveToast(null);
+                    navigationBus.emit({ type: 'SUBMIT_RECORDING' });
+                  }}
+                  title="Send to AI"
+                >
+                  <svg className="button-icon send-icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M22 2L11 13M22 2L15 22L11 13M22 2L2 9L11 13" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                  </svg>
+                  <div className="button-text">Send</div>
+                </button>
+              </div>
+            ) : isAnswerSubmit ? (
+              /* Answer Submit State: Cancel and Send buttons */
+              <div className="div answer-submit-buttons">
+                {/* Cancel (X) button - red tint */}
+                <button
+                  className="button cancel-recording-btn"
+                  onClick={() => {
+                    setActiveToast(null);
+                    navigationBus.emit({ type: 'CANCEL_ANSWER' });
+                  }}
+                  title="Cancel and re-record"
+                >
+                  <span className="cancel-x">✕</span>
+                </button>
+
+                {/* Send button - green with paper airplane icon */}
+                <button
+                  className="button send-recording-btn"
+                  onClick={() => {
+                    setActiveToast(null);
+                    navigationBus.emit({ type: 'SUBMIT_ANSWER' });
+                  }}
+                  title="Submit answer"
+                >
+                  <svg className="button-icon send-icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M22 2L11 13M22 2L15 22L11 13M22 2L2 9L11 13" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                  </svg>
+                  <div className="button-text">Send</div>
                 </button>
               </div>
             ) : (
@@ -544,6 +656,7 @@ export const RecordPanel: React.FC<RecordPanelProps> = ({
             )}
           </div>
         )}
+
       </div>
 
       {/* Accessibility hint for locked state */}
@@ -589,118 +702,78 @@ const VideoFeedback: React.FC<VideoFeedbackProps> = ({
   onRedGlowStart,
   onGreenGlowStart
 }) => {
-  const videoRef = React.useRef<HTMLVideoElement>(null);
   const [showStamp, setShowStamp] = React.useState(false);
-  const [videoComplete, setVideoComplete] = React.useState(false);
-  const [showRedGlow, setShowRedGlow] = React.useState(false);
 
-  const isAnswerWaiting = dialogueState === 'answer-waiting';
   const isAnswerRight = dialogueState === 'answer-right';
   const isAnswerWrong = dialogueState === 'answer-wrong';
   const isSuccessDance = dialogueState === 'success-dance';
   const isFailDance = dialogueState === 'fail-dance';
 
-  // Reset state when leaving answer feedback states
+  // Reset when leaving feedback states
   React.useEffect(() => {
-    if (!isAnswerWaiting && !isAnswerRight && !isAnswerWrong && !isFailDance) {
+    if (!isAnswerRight && !isAnswerWrong && !isFailDance && !isSuccessDance) {
       setShowStamp(false);
-      setVideoComplete(false);
-      setShowRedGlow(false);
     }
-  }, [isAnswerWaiting, isAnswerRight, isAnswerWrong, isFailDance]);
+  }, [isAnswerRight, isAnswerWrong, isFailDance, isSuccessDance]);
 
-  // Handle video playback
+  // Timeline: show stamp immediately -> jiggle for 4s -> VIDEO_COMPLETE/dance
+  // Note: Panel reveal delay (0.5s) is handled by delayingReveal in RecordPanel
   React.useEffect(() => {
-    if (isAnswerWaiting) {
-      // Wait 500ms before starting video in answer-waiting state
-      const timer = setTimeout(() => {
-        if (videoRef.current) {
-          videoRef.current.playbackRate = 0.7;
-          videoRef.current.play();
-        }
-      }, 500);
-      return () => clearTimeout(timer);
-    } else if ((isAnswerRight || isAnswerWrong) && !videoComplete) {
-      // Play immediately for right/wrong states
-      if (videoRef.current) {
-        videoRef.current.playbackRate = 0.7;
-        videoRef.current.play();
-      }
-    } else if (isFailDance || isSuccessDance) {
-      // For fail-dance and success-dance, show stamp immediately without video
+    if (isAnswerRight || isAnswerWrong) {
+      // Show stamp immediately (panel will be hidden for 0.5s by delayingReveal)
       setShowStamp(true);
-      setVideoComplete(true);
+
+      // Trigger glow when stamp appears
+      if (isAnswerRight) {
+        onGreenGlowStart?.();
+      } else {
+        onRedGlowStart?.();
+      }
+
+      // Wait 3 seconds then emit VIDEO_COMPLETE
+      if (isAnswerWrong) {
+        const timer = setTimeout(() => {
+          navigationBus.emit({
+            type: 'VIDEO_COMPLETE',
+            nodeId: '',
+            videoType: 'answer-wrong'
+          });
+          onAnswerWrongVideoComplete?.();
+        }, 3000);
+        return () => clearTimeout(timer);
+      }
+
+      if (isAnswerRight) {
+        const timer = setTimeout(() => {
+          onAnswerRightVideoComplete?.();
+        }, 3000);
+        return () => clearTimeout(timer);
+      }
     }
-  }, [isAnswerWaiting, isAnswerRight, isAnswerWrong, isFailDance, isSuccessDance, videoComplete]);
+
+    // For success-dance and fail-dance, show stamp immediately (already revealed)
+    if (isSuccessDance || isFailDance) {
+      setShowStamp(true);
+      if (isSuccessDance) {
+        onGreenGlowStart?.();
+      } else {
+        onRedGlowStart?.();
+      }
+    }
+  }, [isAnswerRight, isAnswerWrong, isSuccessDance, isFailDance]);
+
+  const isWrongState = isAnswerWrong || isFailDance;
+  const stampClass = `answer-seal-stamp ${showStamp ? 'stamp-visible' : ''} ${isWrongState ? 'stamp-wrong' : 'stamp-right'}`;
 
   return (
     <div className="answer-stamp-container">
-      <div className={`answer-seal-stamp ${showStamp ? 'stamp-visible' : ''} ${isAnswerWaiting ? 'seal-hidden' : ''}`}>
+      <div className={stampClass}>
         <img
-          src={(isAnswerWrong || isFailDance) ? '/VisualAssets/angrySeal.png' : '/VisualAssets/happySeal.png'}
+          src={isWrongState ? '/VisualAssets/angrySeal.png' : '/VisualAssets/happySeal.png'}
           alt="Answer Seal"
           className="answer-seal-image"
         />
       </div>
-      <video
-        ref={videoRef}
-        className="answer-hand-stamp-video"
-        src="/VisualAssets/hand-stamp.webm"
-        muted
-        playsInline
-        onTimeUpdate={(e) => {
-          const video = e.target as HTMLVideoElement;
-          // At halfway point
-          if (video.currentTime >= video.duration / 2) {
-            // Show seal for right/wrong states
-            if (!showStamp && (isAnswerRight || isAnswerWrong)) {
-              setShowStamp(true);
-              setVideoComplete(true);
-            }
-            // Switch to red glow at halfway point for answer-wrong
-            if (isAnswerWrong && !showRedGlow) {
-              setShowRedGlow(true);
-              onRedGlowStart?.();
-            }
-            // Switch to green glow at halfway point for answer-right
-            if (isAnswerRight && !showRedGlow) {
-              setShowRedGlow(true);
-              onGreenGlowStart?.();
-            }
-            // Pause only for answer-waiting state
-            if (isAnswerWaiting && !video.paused) {
-              video.pause();
-            }
-          }
-        }}
-        onEnded={(e) => {
-          // Mark video as complete
-          setVideoComplete(true);
-          // Hide video after it ends
-          (e.target as HTMLVideoElement).style.display = 'none';
-
-          // For answer-wrong: Wait 1 second to show red glow, then emit VIDEO_COMPLETE event
-          if (isAnswerWrong) {
-            setTimeout(() => {
-              navigationBus.emit({
-                type: 'VIDEO_COMPLETE',
-                nodeId: '', // Machine will determine the node
-                videoType: 'answer-wrong'
-              });
-            }, 1000);
-
-            // Call legacy callback if provided
-            if (onAnswerWrongVideoComplete) {
-              onAnswerWrongVideoComplete();
-            }
-          }
-
-          // For answer-right: Call legacy callback
-          if (isAnswerRight && onAnswerRightVideoComplete) {
-            onAnswerRightVideoComplete();
-          }
-        }}
-      />
     </div>
   );
 };

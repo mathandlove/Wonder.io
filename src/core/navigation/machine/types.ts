@@ -349,6 +349,42 @@ export type StartRecordingEvent = {
 };
 
 /**
+ * SUBMIT_RECORDING
+ * Emitted when: User confirms their question transcript in recording-submit phase
+ * Purpose: Proceed to AI processing
+ */
+export type SubmitRecordingEvent = {
+  type: 'SUBMIT_RECORDING';
+};
+
+/**
+ * CANCEL_RECORDING
+ * Emitted when: User cancels their question transcript in recording-submit phase
+ * Purpose: Delete current node and go back to re-record
+ */
+export type CancelRecordingEvent = {
+  type: 'CANCEL_RECORDING';
+};
+
+/**
+ * SUBMIT_ANSWER
+ * Emitted when: User confirms their answer transcript in answer-submit phase
+ * Purpose: Proceed to answer validation
+ */
+export type SubmitAnswerEvent = {
+  type: 'SUBMIT_ANSWER';
+};
+
+/**
+ * CANCEL_ANSWER
+ * Emitted when: User cancels their answer transcript in answer-submit phase
+ * Purpose: Go back to quest-showing to re-record
+ */
+export type CancelAnswerEvent = {
+  type: 'CANCEL_ANSWER';
+};
+
+/**
  * Union of all domain events the machine can receive
  */
 export type NavigationEvent =
@@ -384,6 +420,10 @@ export type NavigationEvent =
   | AllCluesFoundEvent
   | ClueSelectedEvent
   | StartRecordingEvent
+  | SubmitRecordingEvent
+  | CancelRecordingEvent
+  | SubmitAnswerEvent
+  | CancelAnswerEvent
 
 // Note: SCENE_PHASE_CHANGED removed - phase lives in child machine state,
 // not as a parent event. Phase is persisted via meta when needed.

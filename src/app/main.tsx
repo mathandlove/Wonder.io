@@ -12,6 +12,7 @@ import { start as startQueue, setExecutor } from '@core/navigation/queue/navigat
 import { executeCommand } from '@core/navigation/commands/commandExecutor'
 import { OrientationGate } from '../components/OrientationGate'
 import './global.css'
+import comicBg from '../VisualAssets/comicBackground.png'
 
 // Initialize the navigation system
 // 1. Set up the command queue with the executor
@@ -23,6 +24,9 @@ startQueue();
 // 3. Start the navigation state machine service
 // This initializes the XState machine and enables the Stately inspector in development
 startNavigationService();
+
+// Set background on html element for unsafe zones (best effort on iOS)
+document.documentElement.style.background = `#000000 url(${comicBg}) center/cover`;
 
 ReactDOM.createRoot(document.getElementById('root')!).render(
   // <React.StrictMode>

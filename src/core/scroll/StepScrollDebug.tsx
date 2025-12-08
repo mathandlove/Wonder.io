@@ -41,7 +41,7 @@ export function StepScrollDebug() {
     if (saved !== null) {
       return saved === 'true';
     }
-    return true; // Default to visible
+    return false; // Default to hidden
   };
 
   const [isVisible, setIsVisible] = useState(getInitialVisibility);
@@ -238,17 +238,18 @@ export function StepScrollDebug() {
         </div>
       </div>
 
-      {/* Navigation Controls */}
-      <div style={{ marginBottom: '10px', display: 'flex', gap: '8px', justifyContent: 'center' }}>
+      {/* Hide Button */}
+      <div style={{ marginBottom: '10px', display: 'flex', justifyContent: 'center' }}>
         <button
           onClick={(e) => {
             e.stopPropagation();
-            navigationBus.emit({ type: 'SCROLL_UP_STEP', source: 'debug' });
+            setIsVisible(false);
+            localStorage.setItem('debugPanel:visible', 'false');
           }}
           style={{
             padding: '6px 16px',
-            background: '#0ff',
-            color: '#000',
+            background: '#666',
+            color: '#fff',
             border: 'none',
             borderRadius: '4px',
             cursor: 'pointer',
@@ -256,25 +257,7 @@ export function StepScrollDebug() {
             fontSize: '12px',
           }}
         >
-          ◀ Prev
-        </button>
-        <button
-          onClick={(e) => {
-            e.stopPropagation();
-            navigationBus.emit({ type: 'SCROLL_DOWN_STEP', source: 'debug' });
-          }}
-          style={{
-            padding: '6px 16px',
-            background: '#0f0',
-            color: '#000',
-            border: 'none',
-            borderRadius: '4px',
-            cursor: 'pointer',
-            fontWeight: 'bold',
-            fontSize: '12px',
-          }}
-        >
-          Next ▶
+          Hide Panel
         </button>
       </div>
 

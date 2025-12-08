@@ -187,7 +187,7 @@ export function ScrollControl({
 
   // Merge default styles with user styles
   const containerStyle: React.CSSProperties = {
-    height: '100vh',
+    height: '100vh', // Use dynamic viewport height to include safe areas on iOS
     overflowY: 'auto',
     scrollSnapType: 'y mandatory',
     overscrollBehavior: 'contain',

@@ -95,7 +95,7 @@ export default function FailDanceScene({ scene }: SceneProps<FailDanceSceneType>
           top: '30vh',
           right: '-35vw',
           width: '22vw',
-          height: '400px',
+          height: '500px',
           transformOrigin: 'left bottom',
           zIndex: 100 // Above normal character panels
         }}
