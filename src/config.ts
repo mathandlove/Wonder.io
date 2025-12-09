@@ -12,6 +12,7 @@ export const API_ENDPOINTS = {
   AI_CHAT: `${API_URL}/api/ai/chat`,
   AI_VALIDATE: `${API_URL}/api/ai/validate`,
   AI_PROMPT_TEST: `${API_URL}/api/ai/prompt-test`,
+  AI_FEEDBACK: `${API_URL}/api/ai/feedback`,
   STT_SOCKET: `${WS_URL}/api/stt/socket`,
   BUNDLE_HOTSPOTS: `${API_URL}/api/bundle/hotspots`,
   BUNDLE_IMAGES: `${API_URL}/api/bundle/images`,

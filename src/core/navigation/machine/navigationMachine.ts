@@ -380,9 +380,9 @@ export const navigationMachine = setup({
 
       debug.log('📝 Storing answer in scene:', transcript.substring(0, 50));
 
-      // Store the original transcript for display
+      // Store the raw transcript - clue prefix is added only when sending to AI
       useNavigationStore.getState().updateCurrentSceneProperties({
-        answerText: transcript // For display in UI
+        answerText: transcript
       });
 
       debug.log('✅ Answer stored successfully');
@@ -2324,7 +2324,7 @@ export const navigationMachine = setup({
             input: () => {
               // Extract answer data from current scene
               const scene = getCurrentNode()?.scene;
-              const answerText = (scene as { answerText?: string })?.answerText || '';
+              const rawAnswerText = (scene as { answerText?: string })?.answerText || '';
               const conversationId = (scene as { conversationId?: string })?.conversationId;
 
               // Get conversation metadata (contains character description as context)
@@ -2336,26 +2336,21 @@ export const navigationMachine = setup({
               // fall back to scene.questionText (user's transcribed speech)
               const questionText = metadata?.questText || (scene as { questionText?: string })?.questionText || '';
 
-              // Build context from character description and selected clue
-              const contextParts: string[] = [];
-
-              // Add character description (deposition) as context
-              if (metadata?.characterDescription) {
-                contextParts.push(metadata.characterDescription);
-              }
-
-              // Check if user has a selected clue - add to context
+              // Check if user has a selected clue - prefix answer with "Pointing at CLUE, ANSWER"
+              // Note: Don't clear the clue here - feedback generation also needs it
               const selectedClue = conversationId ? getSelectedClue(conversationId) : undefined;
+              let answerText = rawAnswerText;
               if (selectedClue) {
-                contextParts.push(`Point to: ${selectedClue.description}`);
-                debug.log('🔍 Adding selected clue to context for validation:', {
-                  clueLabel: selectedClue.label
+                answerText = `Pointing at ${selectedClue.label}, ${rawAnswerText}`;
+                debug.log('🔍 Prefixing answer with clue context for AI:', {
+                  clueLabel: selectedClue.label,
+                  originalAnswer: rawAnswerText.substring(0, 50),
+                  prefixedAnswer: answerText.substring(0, 80)
                 });
-                // Clear the selected clue after using it
-                clearSelectedClue(conversationId!);
               }
 
-              const context = contextParts.join('\n\n');
+              // Use character description as context
+              const context = metadata?.characterDescription || '';
 
               debug.log('📥 Preparing validation input:', {
                 answerText: answerText.substring(0, 50),
@@ -2391,32 +2386,38 @@ export const navigationMachine = setup({
                 // This gives us maximum time (animation duration + setup) for AI to respond
                 target: 'answerWrong',
                 actions: [
-                  ({ event }) => {
+                  () => {
                     debug.log('❌ Answer INCORRECT → starting feedback generation');
 
-                    // Get reasoning from validation result
-                    const reasoning = event.output.reasoning;
-                    debug.log('📝 Validation reasoning:', reasoning);
-
-                    // Get current scene data to extract answer/question information
+                    // Get current scene data to extract answer information
                     const scene = getCurrentNode()?.scene;
                     const questionNodeId = getCurrentNodeId(); // This is the question node (where validation happens)
-                    const answerText = (scene as { answerText?: string })?.answerText || '';
-                    const questionText = (scene as { questionText?: string })?.questionText;
+                    const rawAnswerText = (scene as { answerText?: string })?.answerText || '';
                     const conversationId = (scene as { conversationId?: string })?.conversationId;
-                    const metadata = getConversationMetadata(conversationId);
-                    const successAnswer = metadata?.successAnswer || '';
+
+                    // Check if user had a selected clue - prefix answer with "Pointing at CLUE, ANSWER"
+                    const selectedClue = conversationId ? getSelectedClue(conversationId) : undefined;
+                    let answerText = rawAnswerText;
+                    if (selectedClue) {
+                      answerText = `Pointing at ${selectedClue.label}, ${rawAnswerText}`;
+                      debug.log('🔍 Prefixing answer with clue context for feedback:', {
+                        clueLabel: selectedClue.label,
+                        originalAnswer: rawAnswerText.substring(0, 50),
+                        prefixedAnswer: answerText.substring(0, 80)
+                      });
+                      // Clear the selected clue after using it for feedback
+                      clearSelectedClue(conversationId!);
+                    }
 
                     // Fire-and-forget: Start feedback generation NOW (don't wait for it)
                     // By the time fail-dance animation completes (~4.7s), feedback will likely be ready
-                    // Include reasoning from validation so feedback can explain why the answer was wrong
-                    startFeedbackGeneration({
-                      studentAnswer: answerText,
-                      correctAnswer: successAnswer,
-                      questionText,
-                      conversationId,
-                      reasoning
-                    });
+                    // Deposition and question are retrieved from metadata inside startFeedbackGeneration
+                    if (conversationId) {
+                      startFeedbackGeneration({
+                        studentAnswer: answerText,
+                        conversationId
+                      });
+                    }
 
                     debug.log('🚀 Feedback generation started in background');
 

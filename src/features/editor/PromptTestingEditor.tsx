@@ -53,7 +53,7 @@ interface StoryData {
 interface MetaflowInfo {
   index: number;
   scene: CharacterFlowScene;
-  characterDescription: string;
+  deposition: string;
   characterName: string;
   question: string;
   successAnswer: string;
@@ -261,6 +261,14 @@ const PromptTestingEditor: React.FC<PromptTestingEditorProps> = ({
   // Clipboard state
   const [copiedField, setCopiedField] = useState<string | null>(null);
 
+  // Prompt mode state
+  const [promptMode, setPromptMode] = useState<PromptMode>('validation');
+
+  // Wrong Response prompt state
+  const [wrongResponsePrompt, setWrongResponsePrompt] = useState<string>('');
+  const [wrongResponseResponse, setWrongResponseResponse] = useState<string | null>(null);
+  const [isGeneratingFeedback, setIsGeneratingFeedback] = useState(false);
+
   // ============================================================================
   // Data Loading
   // ============================================================================
@@ -285,7 +293,7 @@ const PromptTestingEditor: React.FC<PromptTestingEditorProps> = ({
               extractedMetaflows.push({
                 index,
                 scene: scene as CharacterFlowScene,
-                characterDescription: charDesc,
+                deposition: charDesc,
                 characterName: scene.CharacterDescription,
                 question: scene.question || '',
                 successAnswer: scene.successAnswer || '',
@@ -302,7 +310,7 @@ const PromptTestingEditor: React.FC<PromptTestingEditorProps> = ({
         // Auto-select first metaflow
         if (extractedMetaflows.length > 0) {
           setSelectedMetaflowIndex(0);
-          setEditedPrompt(extractedMetaflows[0].characterDescription);
+          setEditedPrompt(extractedMetaflows[0].deposition);
           setEditedExpectedAnswer(extractedMetaflows[0].successAnswer);
           setEditedPenalizedAnswers(extractedMetaflows[0].incorrectAnswer?.join('\n') || '');
         }
@@ -323,7 +331,7 @@ const PromptTestingEditor: React.FC<PromptTestingEditorProps> = ({
   const handleMetaflowSelect = useCallback((index: number) => {
     setSelectedMetaflowIndex(index);
     const metaflow = metaflows[index];
-    setEditedPrompt(metaflow.characterDescription);
+    setEditedPrompt(metaflow.deposition);
     setHasPromptChanges(false);
     setConversationHistory([]);
     setUserQuestion('');
@@ -343,14 +351,14 @@ const PromptTestingEditor: React.FC<PromptTestingEditorProps> = ({
   const handlePromptChange = useCallback((value: string) => {
     setEditedPrompt(value);
     if (selectedMetaflowIndex !== null) {
-      const original = metaflows[selectedMetaflowIndex].characterDescription;
+      const original = metaflows[selectedMetaflowIndex].deposition;
       setHasPromptChanges(value !== original);
     }
   }, [metaflows, selectedMetaflowIndex]);
 
   const handleResetPrompt = useCallback(() => {
     if (selectedMetaflowIndex !== null) {
-      setEditedPrompt(metaflows[selectedMetaflowIndex].characterDescription);
+      setEditedPrompt(metaflows[selectedMetaflowIndex].deposition);
       setHasPromptChanges(false);
     }
   }, [metaflows, selectedMetaflowIndex]);
@@ -453,12 +461,35 @@ or
 {"result": "FAIL", "reasoning": "brief explanation"}`;
   }, []);
 
-  // Initialize prompt only on first load (when prompt is empty)
+  // Generate the wrong response prompt - matches AI_INSTRUCTIONS in AIOrchestrator.startFeedbackGeneration
+  // This is the editable AI instructions portion only - DEPOSITION, QUESTION, INCORRECT_ANSWER are added automatically
+  const getWrongResponsePrompt = useCallback(() => {
+    return `You are generating a single in-character sentence in response to a child's incorrect statement.
+
+Produce exactly one sentence, spoken in character, that:
+1. Clearly but politely says that the student's statement is not true within the world of the DEPOSITION.
+2. Uses only ideas, tone, personality, and facts found in the DEPOSITION, plus the INCORRECT_ANSWER.
+3. Does NOT mention, hint at, or allude to what is actually true in the story.
+4. Does NOT help, guide, encourage, or invite the student to try again.
+5. Does NOT mention questions, guesses, right/wrong answers, or anything meta.
+6. May include small, harmless world-building details consistent with the deposition as long as they do not add new story-relevant clues.
+7. Must not introduce anything new that changes the plot.
+8. Contains no quotation marks.
+9. Ends immediately after one sentence.
+10. You must NEVER mention, reference, or describe the item or solution that would directly answer the child's QUESTION, even if it appears in the DEPOSITION.
+
+Write only one sentence, in-character, that directly responds to the INCORRECT_ANSWER by denying it in a natural, flavorful way without revealing or hinting at the true situation.`;
+  }, []);
+
+  // Initialize prompts only on first load
   useEffect(() => {
     if (!validationPrompt) {
       setValidationPrompt(generateDefaultPrompt());
     }
-  }, [generateDefaultPrompt, validationPrompt]);
+    if (!wrongResponsePrompt) {
+      setWrongResponsePrompt(getWrongResponsePrompt());
+    }
+  }, [generateDefaultPrompt, getWrongResponsePrompt, validationPrompt, wrongResponsePrompt]);
 
   // Update user answer without changing the prompt
   // User can manually edit the prompt if needed
@@ -496,7 +527,7 @@ The following answers should always result in FAIL:`;
       // Add the INPUT section with Context
       fullPrompt += `\n\n-------------------------------------------
 INPUT
-Context: "${metaflow.characterDescription || ''}"
+Context: "${metaflow.deposition || ''}"
 Question: "${metaflow.question || ''}"
 Expected Answer: "${editedExpectedAnswer}"
 Student Answer: "${userAnswer || ''}"`;
@@ -547,7 +578,7 @@ The following answers should always result in FAIL:`;
     // Add the INPUT section with Context
     fullPrompt += `\n\n-------------------------------------------
 INPUT
-Context: "${metaflow?.characterDescription || ''}"
+Context: "${metaflow?.deposition || ''}"
 Question: "${metaflow?.question || ''}"
 Expected Answer: "${editedExpectedAnswer}"
 Student Answer: "${userAnswer || ''}"`;
@@ -555,8 +586,52 @@ Student Answer: "${userAnswer || ''}"`;
     return fullPrompt;
   }, [validationPrompt, selectedMetaflowIndex, metaflows, editedExpectedAnswer, userAnswer, editedPenalizedAnswers]);
 
-  // Calculate cost estimate
-  const costEstimate = calculateCost(buildFullPrompt(), 50); // Expect ~50 tokens for PASS/FAIL + reasoning
+  // Calculate cost estimate based on current mode
+  const costEstimate = calculateCost(
+    promptMode === 'validation' ? buildFullPrompt() : wrongResponsePrompt,
+    promptMode === 'validation' ? 50 : 100 // Wrong response needs more output tokens
+  );
+
+  // Handle wrong response testing - generates feedback directly (no validation step)
+  const handleTestWrongResponse = useCallback(async () => {
+    if (isGeneratingFeedback) return;
+    if (selectedMetaflowIndex === null) return;
+
+    const metaflow = metaflows[selectedMetaflowIndex];
+
+    setIsGeneratingFeedback(true);
+    setAiError(null);
+    setWrongResponseResponse(null);
+
+    try {
+      // Call the clean API - backend builds the prompt
+      const feedbackRes = await fetch(API_ENDPOINTS.AI_FEEDBACK, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          deposition: metaflow.deposition || '',
+          question: metaflow.question || '',
+          incorrectAnswer: userAnswer || ''
+        })
+      });
+
+      if (!feedbackRes.ok) {
+        throw new Error(`Feedback generation failed: ${feedbackRes.status}`);
+      }
+
+      const feedbackData = await feedbackRes.json();
+      setWrongResponseResponse(feedbackData.feedback || 'No response');
+    } catch (err) {
+      setAiError(err instanceof Error ? err.message : 'Failed to generate feedback');
+    } finally {
+      setIsGeneratingFeedback(false);
+    }
+  }, [isGeneratingFeedback, selectedMetaflowIndex, metaflows, userAnswer]);
+
+  // Reset wrong response prompt
+  const handleResetWrongResponsePrompt = useCallback(() => {
+    setWrongResponsePrompt(getWrongResponsePrompt());
+  }, [getWrongResponsePrompt]);
 
   // Save changes to story.json
   const handleSaveChanges = useCallback(async () => {
@@ -685,6 +760,22 @@ Student Answer: "${userAnswer || ''}"`;
         </div>
       </div>
 
+      {/* Prompt Mode Ribbon */}
+      <div className="prompt-testing-ribbon">
+        <button
+          className={`prompt-testing-ribbon-tab ${promptMode === 'validation' ? 'active' : ''}`}
+          onClick={() => setPromptMode('validation')}
+        >
+          Validation Prompt
+        </button>
+        <button
+          className={`prompt-testing-ribbon-tab ${promptMode === 'wrong-response' ? 'active' : ''}`}
+          onClick={() => setPromptMode('wrong-response')}
+        >
+          Wrong Response Prompt
+        </button>
+      </div>
+
       {/* Main Content */}
       <div className="prompt-testing-main">
         {/* Left Sidebar: Metaflow List */}
@@ -704,7 +795,7 @@ Student Answer: "${userAnswer || ''}"`;
           </div>
         </div>
 
-        {/* Center: Answer Validation Testing */}
+        {/* Center: Prompt Testing Content */}
         <div className="prompt-testing-center">
           {selectedMetaflow ? (
             <div className="prompt-testing-content">
@@ -713,81 +804,119 @@ Student Answer: "${userAnswer || ''}"`;
                 {/* Left Column: Configuration */}
                 <div className="prompt-testing-column">
                   <div className="prompt-testing-section">
-                    <h3 className="prompt-testing-section-title">Scene Configuration</h3>
+                    <h3 className="prompt-testing-section-title">
+                      {promptMode === 'validation' ? 'Scene Configuration' : 'Character Context'}
+                    </h3>
 
-                    {/* Question (read-only) */}
+                    {/* Deposition - read-only */}
                     <div className="prompt-testing-field">
-                      <label>Question</label>
+                      <label>
+                        {promptMode === 'validation'
+                          ? <>Context <span className="prompt-testing-hint">(character deposition - auto-included in prompt)</span></>
+                          : <>DEPOSITION <span className="prompt-testing-hint">(auto-included in prompt)</span></>
+                        }
+                      </label>
+                      <div className="prompt-testing-context">
+                        {selectedMetaflow.deposition || 'No context available'}
+                      </div>
+                    </div>
+
+                    {/* Question (read-only) - shown in both modes */}
+                    <div className="prompt-testing-field">
+                      <label>
+                        {promptMode === 'validation'
+                          ? 'Question'
+                          : <>QUESTION <span className="prompt-testing-hint">(auto-included in prompt)</span></>
+                        }
+                      </label>
                       <div className="prompt-testing-readonly">
                         {selectedMetaflow.question}
                       </div>
                     </div>
 
-                    {/* Context (character deposition) - read-only, collapsible */}
-                    <div className="prompt-testing-field">
-                      <label>
-                        Context <span className="prompt-testing-hint">(character deposition - auto-included in prompt)</span>
-                      </label>
-                      <div className="prompt-testing-context">
-                        {selectedMetaflow.characterDescription || 'No context available'}
+                    {/* Expected Answer - only for validation mode */}
+                    {promptMode === 'validation' && (
+                      <div className="prompt-testing-field">
+                        <label>Expected Answer</label>
+                        <textarea
+                          value={editedExpectedAnswer}
+                          onChange={(e) => setEditedExpectedAnswer(e.target.value)}
+                          placeholder="Enter the correct answer..."
+                          rows={2}
+                        />
                       </div>
-                    </div>
+                    )}
 
-                    {/* Expected Answer */}
-                    <div className="prompt-testing-field">
-                      <label>Expected Answer</label>
-                      <textarea
-                        value={editedExpectedAnswer}
-                        onChange={(e) => setEditedExpectedAnswer(e.target.value)}
-                        placeholder="Enter the correct answer..."
-                        rows={2}
-                      />
-                    </div>
+                    {/* FAIL Answers - only for validation mode */}
+                    {promptMode === 'validation' && (
+                      <div className="prompt-testing-field">
+                        <label>FAIL Answers <span className="prompt-testing-hint">(one per line - these always result in FAIL)</span></label>
+                        <textarea
+                          value={editedPenalizedAnswers}
+                          onChange={(e) => setEditedPenalizedAnswers(e.target.value)}
+                          placeholder="Enter answers that should always fail..."
+                          rows={3}
+                        />
+                      </div>
+                    )}
 
-                    {/* FAIL Answers */}
-                    <div className="prompt-testing-field">
-                      <label>FAIL Answers <span className="prompt-testing-hint">(one per line - these always result in FAIL)</span></label>
-                      <textarea
-                        value={editedPenalizedAnswers}
-                        onChange={(e) => setEditedPenalizedAnswers(e.target.value)}
-                        placeholder="Enter answers that should always fail..."
-                        rows={3}
-                      />
-                    </div>
-
-                    {/* Save Button */}
-                    <button
-                      className={`prompt-testing-save-btn ${saveStatus}`}
-                      onClick={handleSaveChanges}
-                      disabled={isSaving}
-                    >
-                      {isSaving ? Icons.spinner : saveStatus === 'saved' ? Icons.check : null}
-                      <span>
-                        {isSaving ? 'Saving...' : saveStatus === 'saved' ? 'Saved!' : saveStatus === 'error' ? 'Error' : 'Save Changes'}
-                      </span>
-                    </button>
-                  </div>
-
-                  {/* Validation Prompt Section */}
-                  <div className="prompt-testing-section">
-                    <div className="prompt-testing-section-header">
-                      <h3 className="prompt-testing-section-title">Validation Prompt</h3>
+                    {/* Save Button - only for validation mode */}
+                    {promptMode === 'validation' && (
                       <button
-                        className="prompt-testing-text-btn"
-                        onClick={handleResetValidationPrompt}
+                        className={`prompt-testing-save-btn ${saveStatus}`}
+                        onClick={handleSaveChanges}
+                        disabled={isSaving}
                       >
-                        Reset
+                        {isSaving ? Icons.spinner : saveStatus === 'saved' ? Icons.check : null}
+                        <span>
+                          {isSaving ? 'Saving...' : saveStatus === 'saved' ? 'Saved!' : saveStatus === 'error' ? 'Error' : 'Save Changes'}
+                        </span>
                       </button>
-                    </div>
-                    <textarea
-                      className="prompt-testing-prompt-textarea"
-                      value={validationPrompt}
-                      onChange={(e) => setValidationPrompt(e.target.value)}
-                      placeholder="Validation prompt..."
-                      rows={8}
-                      disabled={isValidating}
-                    />
+                    )}
                   </div>
+
+                  {/* Prompt Section - changes based on mode */}
+                  {promptMode === 'validation' ? (
+                    <div className="prompt-testing-section">
+                      <div className="prompt-testing-section-header">
+                        <h3 className="prompt-testing-section-title">Validation Prompt</h3>
+                        <button
+                          className="prompt-testing-text-btn"
+                          onClick={handleResetValidationPrompt}
+                        >
+                          Reset
+                        </button>
+                      </div>
+                      <textarea
+                        className="prompt-testing-prompt-textarea"
+                        value={validationPrompt}
+                        onChange={(e) => setValidationPrompt(e.target.value)}
+                        placeholder="Validation prompt..."
+                        rows={8}
+                        disabled={isValidating}
+                      />
+                    </div>
+                  ) : (
+                    <div className="prompt-testing-section">
+                      <div className="prompt-testing-section-header">
+                        <h3 className="prompt-testing-section-title">AI_INSTRUCTIONS</h3>
+                        <button
+                          className="prompt-testing-text-btn"
+                          onClick={handleResetWrongResponsePrompt}
+                        >
+                          Reset
+                        </button>
+                      </div>
+                      <textarea
+                        className="prompt-testing-prompt-textarea"
+                        value={wrongResponsePrompt}
+                        onChange={(e) => setWrongResponsePrompt(e.target.value)}
+                        placeholder="AI instructions for generating feedback..."
+                        rows={8}
+                        disabled={isGeneratingFeedback}
+                      />
+                    </div>
+                  )}
                 </div>
 
                 {/* Right Column: Testing */}
@@ -796,24 +925,40 @@ Student Answer: "${userAnswer || ''}"`;
                     <h3 className="prompt-testing-section-title">Test Answer</h3>
 
                     <div className="prompt-testing-field">
-                      <label>Student Answer</label>
+                      <label>
+                        {promptMode === 'validation'
+                          ? 'Student Answer'
+                          : <>INCORRECT_ANSWER <span className="prompt-testing-hint">(auto-included in prompt)</span></>
+                        }
+                      </label>
                       <textarea
                         value={userAnswer}
                         onChange={(e) => handleUserAnswerChange(e.target.value)}
-                        placeholder="Type a student answer to test..."
+                        placeholder={promptMode === 'validation' ? 'Type a student answer to test...' : 'Type an incorrect answer to test...'}
                         rows={3}
-                        disabled={isValidating}
+                        disabled={isValidating || isGeneratingFeedback}
                       />
                     </div>
 
-                    <button
-                      className="prompt-testing-validate-btn"
-                      onClick={handleValidateAnswer}
-                      disabled={!validationPrompt.trim() || !userAnswer.trim() || isValidating}
-                    >
-                      {isValidating ? Icons.spinner : Icons.send}
-                      <span>{isValidating ? 'Validating...' : 'Run Validation'}</span>
-                    </button>
+                    {promptMode === 'validation' ? (
+                      <button
+                        className="prompt-testing-validate-btn"
+                        onClick={handleValidateAnswer}
+                        disabled={!validationPrompt.trim() || !userAnswer.trim() || isValidating}
+                      >
+                        {isValidating ? Icons.spinner : Icons.send}
+                        <span>{isValidating ? 'Validating...' : 'Run Validation'}</span>
+                      </button>
+                    ) : (
+                      <button
+                        className="prompt-testing-validate-btn wrong-response"
+                        onClick={handleTestWrongResponse}
+                        disabled={!wrongResponsePrompt.trim() || !userAnswer.trim() || isGeneratingFeedback}
+                      >
+                        {isGeneratingFeedback ? Icons.spinner : Icons.send}
+                        <span>{isGeneratingFeedback ? 'Generating Feedback...' : 'Test Wrong Response'}</span>
+                      </button>
+                    )}
 
                     {/* Cost Calculator */}
                     <div className="prompt-testing-cost-calculator">
@@ -841,19 +986,36 @@ Student Answer: "${userAnswer || ''}"`;
                     </div>
                   </div>
 
-                  {/* AI Response */}
-                  <div className="prompt-testing-section">
-                    <h3 className="prompt-testing-section-title">AI Response</h3>
-                    {validationResponse ? (
-                      <div className="prompt-testing-response">
-                        {validationResponse}
+                  {/* AI Response - changes based on mode */}
+                  {promptMode === 'validation' ? (
+                    <div className="prompt-testing-section">
+                      <h3 className="prompt-testing-section-title">AI Response</h3>
+                      {validationResponse ? (
+                        <div className="prompt-testing-response">
+                          {validationResponse}
+                        </div>
+                      ) : (
+                        <div className="prompt-testing-response-empty">
+                          Run validation to see the AI response
+                        </div>
+                      )}
+                    </div>
+                  ) : (
+                    <>
+                      <div className="prompt-testing-section">
+                        <h3 className="prompt-testing-section-title">Feedback Response</h3>
+                        {wrongResponseResponse ? (
+                          <div className="prompt-testing-response feedback">
+                            {wrongResponseResponse}
+                          </div>
+                        ) : (
+                          <div className="prompt-testing-response-empty">
+                            Test a wrong answer to see the feedback response
+                          </div>
+                        )}
                       </div>
-                    ) : (
-                      <div className="prompt-testing-response-empty">
-                        Run validation to see the AI response
-                      </div>
-                    )}
-                  </div>
+                    </>
+                  )}
 
                   {aiError && (
                     <div className="prompt-testing-error-message">

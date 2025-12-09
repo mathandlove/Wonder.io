@@ -12,7 +12,7 @@ import { SelectionStore } from './store';
 import { Point } from './types';
 import { handleWhisperProxy } from './whisper-proxy-single'; // Using single-send approach
 import { handleAIChat } from './ai-conversation';
-import { handleAIValidation, handlePromptTest } from './ai-validation';
+import { handleAIValidation, handlePromptTest, handleAIFeedback } from './ai-validation';
 import { handleLoadBundleHotspots, handleSaveBundleHotspots, handleListBundleImages, handleGenerateThumbnails, handleListBundleMaps, handleSaveStory, handleLoadMapPaths, handleSaveMapPaths } from './bundle-hotspots';
 import {
   handleImageGeneration,
@@ -191,6 +191,9 @@ app.post('/api/ai/validate', handleAIValidation);
 
 // AI Prompt Test route (returns raw AI response for testing)
 app.post('/api/ai/prompt-test', handlePromptTest);
+
+// AI Feedback route (generates in-character response for wrong answers)
+app.post('/api/ai/feedback', handleAIFeedback);
 
 // Bundle-based hotspot routes (for editor)
 app.get('/api/bundle/hotspots', handleLoadBundleHotspots);

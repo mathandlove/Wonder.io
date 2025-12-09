@@ -106,6 +106,87 @@ export async function callAI(input: AIServiceInput): Promise<AIServiceResponse> 
 }
 
 /**
+ * Character Feedback Input
+ */
+export interface CharacterFeedbackInput {
+  deposition: string;
+  question: string;
+  incorrectAnswer: string;
+}
+
+/**
+ * Character Feedback Response
+ */
+export interface CharacterFeedbackResponse {
+  feedback: string;
+  success: boolean;
+  error?: string;
+}
+
+/**
+ * Get in-character feedback for an incorrect answer
+ * Backend builds the prompt - frontend just passes the data
+ *
+ * @param deposition - Character deposition/description
+ * @param question - The question that was asked
+ * @param incorrectAnswer - User's incorrect answer
+ * @returns Promise<CharacterFeedbackResponse> - Feedback or error
+ */
+export async function getAICharacterFeedback(
+  deposition: string,
+  question: string,
+  incorrectAnswer: string
+): Promise<CharacterFeedbackResponse> {
+  try {
+    if (!deposition?.trim()) {
+      throw new Error('Deposition is required');
+    }
+
+    if (!incorrectAnswer?.trim()) {
+      throw new Error('Incorrect answer is required');
+    }
+
+    debug.event('📤', 'Requesting character feedback...');
+
+    const response = await fetch(API_ENDPOINTS.AI_FEEDBACK, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({ deposition, question, incorrectAnswer })
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => ({ error: 'Unknown error' }));
+      throw new Error(errorData.error || `HTTP ${response.status}: ${response.statusText}`);
+    }
+
+    const data = await response.json();
+
+    if (!data.feedback || !data.feedback.trim()) {
+      throw new Error('Received empty feedback from AI');
+    }
+
+    debug.event('📨', 'Character feedback received');
+
+    return {
+      feedback: data.feedback,
+      success: true
+    };
+
+  } catch (error) {
+    const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred';
+    console.error('[AIService] ❌ Character Feedback Error:', errorMessage);
+
+    return {
+      feedback: '',
+      success: false,
+      error: errorMessage
+    };
+  }
+}
+
+/**
  * Answer Validation Input
  */
 export interface AnswerValidationInput {
@@ -122,7 +203,6 @@ export interface AnswerValidationInput {
 export interface AnswerValidationResponse {
   isCorrect: boolean;
   success: boolean;
-  reasoning?: string;  // Explanation from AI (returned on FAIL)
   error?: string;
 }
 
@@ -148,8 +228,7 @@ export async function validateAnswer(input: AnswerValidationInput): Promise<Answ
       debug.log('Empty user answer - returning false');
       return {
         isCorrect: false,
-        success: true,
-        reasoning: 'No answer provided'
+        success: true
       };
     }
 
@@ -186,19 +265,16 @@ export async function validateAnswer(input: AnswerValidationInput): Promise<Answ
 
     // Parse PASS/FAIL response
     const isCorrect = data.isCorrect;
-    const reasoning = data.reasoning || '';
 
     debug.event('📊', 'Validation result:', {
       isCorrect,
-      reasoning,
       userAnswer: input.userAnswer,
       correctAnswer: input.correctAnswer
     });
 
     return {
       isCorrect,
-      success: true,
-      reasoning: isCorrect ? undefined : reasoning  // Only return reasoning on FAIL
+      success: true
     };
 
   } catch (error) {

@@ -159,6 +159,8 @@ export function SpeechBubbleOrchestrator() {
     const isAnswerWrong = phase === 'answer-wrong';
     const isSuccessDance = phase === 'success-dance';
     const isFailDance = phase === 'fail-dance';
+    const isInput = phase === 'input'; // Input phase uses RecordPanel, not speech bubbles
+    const isRecordAnswer = phase === 'record-answer'; // Answer recording uses RecordPanel
 
     // During recording, show transcript from scene or AudioVisualizer
     // During processing, ALWAYS show AudioVisualizer with "Processing..." (ignore any text)
@@ -180,9 +182,9 @@ export function SpeechBubbleOrchestrator() {
     // Show waiting bubble based solely on phase
     const shouldShowWaitingBubble = phase === 'ai-waiting';
 
-    // Hide bubble completely during ask recording states (now shown in RecordPanel input box instead)
-    // Also hide during recording-submit, answer-submit, answer feedback, and dance animations
-    if (isRecording || isProcessing || isRecordingSubmit || isAnswerSubmit || isAnswerWaiting || isAnswerRight || isAnswerWrong || isSuccessDance || isFailDance) return null;
+    // Hide bubble completely during recording/input states (now shown in RecordPanel instead)
+    // Also hide during answer feedback and dance animations
+    if (isInput || isRecording || isProcessing || isRecordingSubmit || isRecordAnswer || isAnswerSubmit || isAnswerWaiting || isAnswerRight || isAnswerWrong || isSuccessDance || isFailDance) return null;
 
     // Skip rendering if no content (unless recording/processing - show AudioVisualizer or transcript)
     if (!bubbleContent && !(isRecording && !hasTranscript) && !isProcessing) return null;

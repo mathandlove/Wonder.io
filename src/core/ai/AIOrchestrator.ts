@@ -11,9 +11,37 @@
  * - XState machine (via callAIService actor)
  * - ChatFlowOrchestrator (for manual AI calls)
  * - Any component that needs AI responses
+ *
+ * ============================================================================
+ * AI CALLS OVERVIEW
+ * ============================================================================
+ *
+ * 1. CHAT (callAIService)
+ *    - Purpose: Generate character responses to user questions
+ *    - Backend: POST /api/ai/chat
+ *    - Input: User question, character deposition, conversation history
+ *    - Output: In-character response text
+ *    - Used by: Character conversation flow (when user asks questions)
+ *
+ * 2. VALIDATION (validateAnswerService)
+ *    - Purpose: Check if user's answer matches the expected answer
+ *    - Backend: POST /api/ai/validate
+ *    - Input: Student answer, expected answer, context, fail answers
+ *    - Output: { isCorrect: boolean } - PASS or FAIL
+ *    - Used by: Answer validation in quest flow (did they solve the mystery?)
+ *
+ * 3. FEEDBACK (startFeedbackGeneration / waitForFeedback)
+ *    - Purpose: Generate in-character response when user gives wrong answer
+ *    - Backend: POST /api/ai/feedback
+ *    - Input: { deposition, question, incorrectAnswer }
+ *    - Output: { feedback: string } - One-sentence in-character response
+ *    - Pattern: Fire-and-forget (start when wrong, await after animation)
+ *    - Used by: Wrong answer flow (character responds to incorrect guess)
+ *
+ * ============================================================================
  */
 
-import { callAI, validateAnswer, type ConversationMessage } from '@features/ai/aiService';
+import { callAI, validateAnswer, getAICharacterFeedback, type ConversationMessage } from '@features/ai/aiService';
 import type { ConversationMetadataMap } from '@core/data/loadStory';
 import { getCurrentNode, insertSceneNodes, advanceNavigation, deleteNode } from '@core/navigation/navigationHelpers';
 import { createAIResponseScene as createAIResponseSceneFactory, createInputScene } from '@core/navigation/sceneFactoryFunctions';
@@ -468,7 +496,6 @@ export interface AnswerValidationInput {
  */
 export interface AnswerValidationOutput {
   isCorrect: boolean;
-  reasoning?: string;  // Explanation from AI (returned on FAIL)
 }
 
 /**
@@ -522,14 +549,12 @@ export async function validateAnswerService(input: AnswerValidationInput): Promi
 
   debug.event('✅', 'AI validation complete:', {
     isCorrect: validationResult.isCorrect,
-    reasoning: validationResult.reasoning,
     userAnswer: input.answerText,
     correctAnswer: input.successAnswer
   });
 
   return {
-    isCorrect: validationResult.isCorrect,
-    reasoning: validationResult.reasoning  // Pass through reasoning from AI
+    isCorrect: validationResult.isCorrect
   };
 }
 
@@ -538,10 +563,7 @@ export async function validateAnswerService(input: AnswerValidationInput): Promi
  */
 export interface FeedbackGenerationInput {
   studentAnswer: string;
-  correctAnswer: string;
-  questionText?: string;
-  conversationId?: string;
-  reasoning?: string;  // AI's reasoning for why the answer was wrong
+  conversationId: string;
 }
 
 /**
@@ -552,13 +574,11 @@ export interface FeedbackGenerationInput {
  *
  * Pattern: Start early (when validation fails), await later (when animation ends)
  *
- * @param input - Student's answer, correct answer, and context
+ * @param input - Student's incorrect answer and conversationId (to look up deposition/question from metadata)
  */
 export function startFeedbackGeneration(input: FeedbackGenerationInput): void {
   debug.event('🚀', 'Starting feedback generation (fire-and-forget):', {
     studentAnswer: input.studentAnswer.substring(0, 50),
-    correctAnswer: input.correctAnswer,
-    reasoning: input.reasoning?.substring(0, 50),
     conversationId: input.conversationId
   });
 
@@ -571,69 +591,34 @@ export function startFeedbackGeneration(input: FeedbackGenerationInput): void {
   pendingFeedbackGeneration = (async () => {
     const startTime = Date.now();
     try {
-      // Get character description and conversation history
+      // Get character description
       const metadata = getConversationMetadata(input.conversationId);
-      const conversationHistory = getConversationHistory(input.conversationId || '');
 
       if (!metadata?.characterDescription) {
         debug.log('No character description, cannot generate feedback');
         return null;
       }
 
-      // Build AI prompt for feedback using reasoning from validation
-      const feedbackPrompt = `A student answered this question wrong.
-
-Question: "${input.questionText || 'a question'}"
-Student's answer: "${input.studentAnswer}"
-${input.reasoning ? `Why it's wrong: ${input.reasoning}` : ''}
-
-CHARACTER DEPOSITION:
-${metadata.characterDescription}
-
-Your job:
-- Respond as the character.
-- Politely but clearly say that their guess is not true.
-- Explain why it is not true in the real world context.
-- DO NOT mention, hint at, or allude to the correct answer or any real problem.
-- DO NOT say or imply what you actually are worried about.
-- DO NOT encourage them, correct them, or ask them to try again.
-- DO NOT mention "question," "guess," "correct," or anything meta.
-- Speak directly, like you're talking to them in the moment.
-- Do NOT include quotation marks around your reply.
-
-Hard constraints:
-1. Your reply MUST be exactly ONE sentence.
-2. After that one sentence, you MUST stop.
-3. You are allowed to reference ONLY what they said and what is in the context.
-4. You are NOT allowed to introduce any new situation.
-
-Previous conversation for context:
-${conversationHistory.slice(-5).map(msg => `${msg.role}: ${msg.content}`).join('\n')}
-
-Output:
-Write only that one in-character sentence with no quotes.
-`;
-
       debug.event('📤', 'Calling AI for feedback generation');
 
-      // Call AI service for feedback - use a minimal character description since it's already in the prompt
-      const response = await callAI({
-        questionText: feedbackPrompt,
-        characterDescription: 'You are a helpful assistant responding in character.',
-        conversationHistory: [] // Don't pass history again since it's in the prompt
-      });
+      // Call the clean API - backend builds the prompt
+      const response = await getAICharacterFeedback(
+        metadata.characterDescription,
+        metadata.questText || '',
+        input.studentAnswer
+      );
 
-      if (response.success && response.text) {
+      if (response.success && response.feedback) {
         const elapsed = Date.now() - startTime;
         debug.event('✅', 'Feedback generated successfully (took ' + elapsed + 'ms):',
-          response.text.substring(0, 100) + '...');
+          response.feedback.substring(0, 100) + '...');
 
         // Add feedback to conversation history
         if (input.conversationId) {
-          addAssistantMessage(input.conversationId, response.text);
+          addAssistantMessage(input.conversationId, response.feedback);
         }
 
-        return response.text;
+        return response.feedback;
       }
 
       debug.log('⚠️ AI feedback call succeeded but no text returned');
