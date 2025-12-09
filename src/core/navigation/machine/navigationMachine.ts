@@ -43,7 +43,7 @@ const DEBUG_AUTO_UNLOCK_ANSWER_BUTTON = import.meta.env.PROD ? false : false;
  * Useful for testing/debugging without going through the full recording flow
  * NOTE: Always forced to false in production builds
  */
-const DEBUG_ALLOW_SCROLL_DURING_RECORDING = import.meta.env.PROD ? false : false;
+const DEBUG_ALLOW_SCROLL_DURING_RECORDING = import.meta.env.PROD ? false : true;
 
 /**
  * DEBUG FLAG: Allow scroll navigation during quest display
@@ -51,7 +51,7 @@ const DEBUG_ALLOW_SCROLL_DURING_RECORDING = import.meta.env.PROD ? false : false
  * Useful for testing/debugging story flow without interacting with quest UI
  * NOTE: Always forced to false in production builds
  */
-const DEBUG_ALLOW_SCROLL_DURING_QUEST = import.meta.env.PROD ? false : false;
+const DEBUG_ALLOW_SCROLL_DURING_QUEST = import.meta.env.PROD ? false : true;
 
 /**
  * DEBUG FLAG: Allow scroll navigation during clue-image scenes
@@ -59,7 +59,7 @@ const DEBUG_ALLOW_SCROLL_DURING_QUEST = import.meta.env.PROD ? false : false;
  * Useful for testing/debugging story flow without clicking all hotspots
  * NOTE: Always forced to false in production builds
  */
-const DEBUG_ALLOW_SCROLL_DURING_IMAGECLUE = import.meta.env.PROD ? false : false;
+const DEBUG_ALLOW_SCROLL_DURING_IMAGECLUE = import.meta.env.PROD ? false : true;
 
 // Log when debug modes are enabled (only in development)
 if (import.meta.env.DEV) {

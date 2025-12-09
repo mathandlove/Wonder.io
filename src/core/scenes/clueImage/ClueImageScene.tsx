@@ -281,10 +281,7 @@ export default function ClueImageScene({ scene }: SceneProps<ClueImageSceneType>
   // (hotspotData may have more hotspots than the scene uses)
   const isComplete = wasPreviouslyCompleted || (foundClues.length === scene.clueDescriptions.length);
 
-  // Height of the clue panel + 10px gap above it (desktop only)
-  const CLUE_PANEL_CLEARANCE = 100;
-
-  // Update dimensions helper function
+  // Update dimensions - same pattern as MapScene
   const updateDimensions = useCallback(() => {
     if (imgRef.current && containerRef.current) {
       const natural = {
@@ -292,7 +289,6 @@ export default function ClueImageScene({ scene }: SceneProps<ClueImageSceneType>
         height: imgRef.current.naturalHeight
       };
 
-      // Skip if image hasn't loaded yet
       if (natural.width === 0 || natural.height === 0) {
         return;
       }
@@ -302,11 +298,10 @@ export default function ClueImageScene({ scene }: SceneProps<ClueImageSceneType>
         height: containerRef.current.offsetHeight
       };
 
-      // On mobile, panel is on left side and overlays the image - no clearance needed
-      // On desktop, panel is at bottom - subtract clearance from height
+      // On desktop, leave 100px clearance for the clue panel at bottom
       const bounds = calculateImageBounds(
         container.width,
-        isMobile ? container.height : container.height - CLUE_PANEL_CLEARANCE,
+        isMobile ? container.height : container.height - 100,
         natural.width,
         natural.height
       );
@@ -315,9 +310,10 @@ export default function ClueImageScene({ scene }: SceneProps<ClueImageSceneType>
     }
   }, [isMobile]);
 
-  // Calculate image bounds on window resize
   useEffect(() => {
     window.addEventListener('resize', updateDimensions);
+    // Call immediately to handle isMobile changes
+    updateDimensions();
     return () => window.removeEventListener('resize', updateDimensions);
   }, [updateDimensions]);
 
@@ -507,8 +503,8 @@ export default function ClueImageScene({ scene }: SceneProps<ClueImageSceneType>
       onClick={handleBackgroundClick}
       style={{
         position: 'relative',
-        width: '100vw',
-        height: '100svh', // Small viewport height - iOS Safari fix
+        width: '100svw',
+        height: '100svh',
         overflow: 'hidden',
       }}
     >
