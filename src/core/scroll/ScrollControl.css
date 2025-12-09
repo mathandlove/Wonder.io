@@ -10,6 +10,8 @@
   /* Fallback height for browsers that don't support svh */
   height: 100vh;
   height: 100svh; /* Small viewport height - iOS Safari fix */
+  /* Disable pinch-zoom - pan-y allows vertical scroll but NOT pinch-zoom */
+  touch-action: pan-y;
 }
 
 /*

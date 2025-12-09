@@ -359,6 +359,10 @@ export default function ClueImageScene({ scene }: SceneProps<ClueImageSceneType>
 
   const handleHotspotClick = (label: string) => {
     console.log('[ClueImageScene] Hotspot clicked:', label);
+
+    // Dismiss discovery toast on any hotspot click
+    setShowDiscoveryToast(false);
+
     const hotspot = hotspotData?.hotspots.find(h => h.label === label);
     if (!hotspot) {
       console.warn('[ClueImageScene] Hotspot not found in data:', label);

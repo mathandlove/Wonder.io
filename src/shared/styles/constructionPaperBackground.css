@@ -9,4 +9,5 @@
 
 .construction-paper-bg {
   background: #000000 url('/src/VisualAssets/comicBackground.png') center/cover;
+  touch-action: pan-x pan-y; /* Disable pinch-zoom on background */
 }

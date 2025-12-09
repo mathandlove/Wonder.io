@@ -8,6 +8,7 @@
   padding: 2rem;
   position: relative;
   overflow: hidden;
+  touch-action: pan-x pan-y; /* Disable pinch-zoom */
 }
 
 .cardboard-container {

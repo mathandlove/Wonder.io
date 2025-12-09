@@ -2,6 +2,7 @@
 .cardboard-bubble-container {
   width: 100%; /* Take full available width for proper flexbox alignment */
   max-width: none; /* Remove width constraint - parent handles this */
+  touch-action: pan-x pan-y; /* Disable pinch-zoom */
 }
 
 /* Cardboard Bubble Base Styles */

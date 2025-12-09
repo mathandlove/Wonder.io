@@ -97,7 +97,8 @@ export function BackgroundOrchestrator({ storyId, currentScene, navigationDirect
       width: '100vw',
       height: '100vh',
       zIndex: -10,
-      overflow: 'hidden'
+      overflow: 'hidden',
+      touchAction: 'pan-x pan-y', // Disable pinch-zoom on background
     }}>
       {/* Previous background - slides out in opposite direction */}
       {previousBackgroundImage && backgrounds.previous?.background !== backgrounds.current?.background && (

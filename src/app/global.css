@@ -26,6 +26,8 @@ img {
 html {
   /* Fallback color - actual background is set via React in main.tsx */
   background: #000000;
+  /* Disable pinch-zoom - pan-x pan-y allows panning but NOT pinch-zoom */
+  touch-action: pan-x pan-y;
 }
 
 body {
@@ -37,6 +39,8 @@ body {
   /* Use min-height instead of fixed height to allow expansion */
   min-height: 100vh;
   min-height: 100svh; /* Small viewport height - iOS specific */
+  /* Disable pinch-zoom - pan-x pan-y allows panning but NOT pinch-zoom */
+  touch-action: pan-x pan-y;
 }
 
 #root, #editor-root {
@@ -46,6 +50,13 @@ body {
   background: transparent;
   min-height: 100vh;
   min-height: 100svh;
+  touch-action: pan-x pan-y;
+}
+
+/* Disable pinch-zoom on all scene elements and their children */
+.scene,
+.scene * {
+  touch-action: pan-x pan-y;
 }
 
 /* Hide scrollbar globally for main scroll container (section navigation) */

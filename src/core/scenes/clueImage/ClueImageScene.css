@@ -19,6 +19,7 @@
   height: 100svh; /* Small viewport height - iOS Safari fix */
   display: block; /* Changed from flex to block to prevent layout shifts */
   overflow: hidden;
+  touch-action: pan-x pan-y; /* Disable pinch-zoom */
 }
 
 /* Note: Add .construction-paper-bg class to component for background */
