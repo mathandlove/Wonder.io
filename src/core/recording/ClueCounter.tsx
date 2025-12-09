@@ -55,29 +55,39 @@ function ClueThumbnail({ hotspot, isFound, coloredImageSrc, animateReveal }: Clu
     `hotspots/${imageName}/${hotspot.label.toLowerCase()}.png`
   );
 
+  // Pre-render BOTH images, toggle visibility via opacity
+  // This ensures the thumbnail is already decoded and ready on iOS
   return (
     <div
       className={`frame ${isFound ? 'frame--found' : ''} ${shouldAnimate ? 'frame--animate' : ''}`}
     >
-      {isFound ? (
-        <img
-          src={thumbnailSrc}
-          alt={hotspot.label}
-          className="frame__image"
-          style={{
-            width: '100%',
-            height: '100%',
-            objectFit: 'contain',
-          }}
-          onError={(e) => console.error(`[ClueThumbnail] Thumbnail failed to load for ${hotspot.label}:`, thumbnailSrc, e)}
-        />
-      ) : (
-        <img
-          src="/VisualAssets/questionMark.png"
-          alt="Undiscovered clue"
-          className="frame__question-mark"
-        />
-      )}
+      {/* Question mark - hidden when found */}
+      <img
+        src="/VisualAssets/questionMark.png"
+        alt="Undiscovered clue"
+        className="frame__question-mark"
+        style={{
+          opacity: isFound ? 0 : 1,
+          transition: 'opacity 0.15s ease-out',
+        }}
+      />
+      {/* Preloaded thumbnail - shown when found */}
+      <img
+        src={thumbnailSrc}
+        alt={hotspot.label}
+        className="frame__image"
+        style={{
+          position: 'absolute',
+          top: 0,
+          left: 0,
+          width: '100%',
+          height: '100%',
+          objectFit: 'contain',
+          opacity: isFound ? 1 : 0,
+          transition: 'opacity 0.15s ease-out',
+        }}
+        onError={(e) => console.error(`[ClueThumbnail] Thumbnail failed to load for ${hotspot.label}:`, thumbnailSrc, e)}
+      />
     </div>
   );
 }

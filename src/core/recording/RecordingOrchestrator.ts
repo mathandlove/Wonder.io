@@ -120,7 +120,7 @@ let permissionRequested = false;
  * On iOS (including Chrome on iOS), permissions may still be requested
  * per-session due to platform restrictions, but this helps in most cases.
  */
-async function requestMicrophonePermission(): Promise<boolean> {
+async function requestMicrophonePermission(emitErrorEvent = false): Promise<boolean> {
   if (permissionRequested) {
     debug.log('🎤 Permission already requested this session, skipping');
     return true;
@@ -141,6 +141,10 @@ async function requestMicrophonePermission(): Promise<boolean> {
   } catch (err) {
     debug.error('❌ Microphone permission denied or failed:', err);
     // Don't set permissionRequested to true so we can retry
+    // Emit event so navigation machine can show error state (only when user is trying to record)
+    if (emitErrorEvent) {
+      navigationBus.emit({ type: 'NO_MICROPHONE_DETECTED' });
+    }
     return false;
   }
 }
@@ -367,6 +371,10 @@ export function RecordingProvider({
     },
     onError: (error: string) => {
       debug.error('❌ Recording error:', error);
+      // Check if error is related to microphone permission/access
+      if (error.includes('NotAllowedError') || error.includes('permission') || error.includes('denied')) {
+        navigationBus.emit({ type: 'NO_MICROPHONE_DETECTED' });
+      }
     },
   });
 

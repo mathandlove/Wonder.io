@@ -194,38 +194,67 @@ function flattenScenes(rawScenes: RawScene[]): FlattenResult {
           currentPhaseSteps = [PHASES.BASIC];
           isFirstInFlow = false;
         }
-        // Quest marker - add quest-showing followed by appropriate next phase
+        // Quest marker - CREATE SEPARATE STANDALONE NODE (not phase)
+        // Quest nodes are displayed without speech bubbles on mobile
         else if (f.type === "quest" && !f.side) {
-          if (!currentDialogue) {
-            console.warn('[loadStory] Quest marker found without preceding dialogue at flow index', flowIndex, '- skipping');
-            return;
+          // Save current dialogue with its current phases (no quest phase added)
+          if (currentDialogue) {
+            out.push({
+              ...currentDialogue,
+              phaseSteps: currentPhaseSteps
+            } as Scene);
           }
 
-          // Look ahead to see what follows the quest
-          const nextFlowItem = scene.flow[flowIndex + 1];
+          // Create standalone quest node
+          out.push({
+            type: "character",
+            nodeType: "quest",
+            text: "", // Quest text comes from metadata via RecordPanel
+            speaker: currentRightCharacter ? "right" : "left",
+            background: ensureImageExtension(scene.background),
+            "left-character": currentLeftCharacter,
+            "right-character": currentRightCharacter,
+            flowSequence: true,
+            isFirstInFlow: false,
+            conversationId,
+            phaseSteps: [PHASES.QUEST_STANDALONE],
+            hidesSpeechBubble: true,
+          } as Scene);
 
-          // Add quest-showing phase
-          currentPhaseSteps.push(PHASES.QUEST_SHOWING);
-
-          // Determine what should follow quest-showing:
-          // - If next item is input marker → phases will be [basic, quest-showing, input]
-          // - If next item is dialogue or nothing → add basic again [basic, quest-showing, basic]
-          if (nextFlowItem?.type === "input" && !nextFlowItem.text) {
-            // Input follows quest - don't add basic yet, wait for input processing
-            // Phase sequence will be: basic → quest-showing → input
-          } else {
-            // Next is dialogue or end of flow - add basic so scroll back lands on basic
-            // Phase sequence will be: basic → quest-showing → basic
-            currentPhaseSteps.push(PHASES.BASIC);
-          }
+          // Reset state - quest consumed the previous dialogue
+          currentDialogue = null;
+          currentPhaseSteps = [PHASES.BASIC];
         }
-        // Input marker - add to current dialogue's phases
+        // Input marker - CREATE SEPARATE STANDALONE NODE (not phase)
+        // Input nodes are displayed without speech bubbles on mobile
         else if (f.type === "input" && !f.text) {
-          if (!currentDialogue) {
-            console.warn('[loadStory] Input marker found without preceding dialogue at flow index', flowIndex, '- skipping');
-            return;
+          // Save current dialogue with its current phases if exists
+          if (currentDialogue) {
+            out.push({
+              ...currentDialogue,
+              phaseSteps: currentPhaseSteps
+            } as Scene);
           }
-          currentPhaseSteps.push(PHASES.INPUT);
+
+          // Create standalone input node
+          out.push({
+            type: "character",
+            nodeType: "input",
+            text: "",
+            speaker: "left",
+            background: ensureImageExtension(scene.background),
+            "left-character": currentLeftCharacter,
+            "right-character": currentRightCharacter,
+            flowSequence: true,
+            isFirstInFlow: false,
+            conversationId,
+            phaseSteps: [PHASES.INPUT],
+            hidesSpeechBubble: true,
+          } as Scene);
+
+          // Reset state
+          currentDialogue = null;
+          currentPhaseSteps = [PHASES.BASIC];
         }
         // Unrecognized flow item - ignore
         else {

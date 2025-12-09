@@ -82,8 +82,8 @@ function PathLine({ path, imageBounds, isHighlighted, shouldAnimate, hideUntilAn
   const pathRef = useRef<SVGPathElement>(null);
   const [pathLength, setPathLength] = useState(0);
   const [animationStarted, setAnimationStarted] = useState(false);
+  const [animationComplete, setAnimationComplete] = useState(false);
   const [animationProgress, setAnimationProgress] = useState(0);
-  const [showLabel, setShowLabel] = useState(false);
 
   const ANIMATION_DURATION = 1500;
 
@@ -101,12 +101,14 @@ function PathLine({ path, imageBounds, isHighlighted, shouldAnimate, hideUntilAn
     return () => clearTimeout(timeoutId);
   }, [imageBounds, path.points]);
 
+  // Animate by incrementing progress
   useEffect(() => {
-    if (!shouldAnimate || pathLength === 0 || animationStarted) return;
+    if (!shouldAnimate || pathLength === 0 || animationStarted) {
+      return;
+    }
 
     setAnimationStarted(true);
     setAnimationProgress(0);
-    setShowLabel(false);
 
     const startTime = performance.now();
 
@@ -119,7 +121,7 @@ function PathLine({ path, imageBounds, isHighlighted, shouldAnimate, hideUntilAn
       if (progress < 1) {
         requestAnimationFrame(animate);
       } else {
-        setShowLabel(true);
+        setAnimationComplete(true);
         onAnimationComplete?.();
       }
     };
@@ -192,18 +194,81 @@ function PathLine({ path, imageBounds, isHighlighted, shouldAnimate, hideUntilAn
 
   const baseOpacity = isHighlighted ? 1 : 0.35;
 
-  const isAnimating = shouldAnimate && animationStarted;
+  const isAnimating = shouldAnimate && animationStarted && !animationComplete;
   const isWaitingToAnimate = shouldAnimate && !animationStarted;
-  const displayLabel = isAnimating ? showLabel : !isWaitingToAnimate;
-  // Hide completely when:
-  // 1. hideUntilAnimated is true and animation hasn't started yet (not in view)
-  // 2. waiting to animate (shouldAnimate true but animation hasn't started - during 600ms delay)
-  // 3. shouldAnimate but pathLength not yet measured
-  // Note: Once animation starts (isAnimating), the mask handles progressive reveal
+  const displayLabel = animationComplete ? true : (!shouldAnimate && !isWaitingToAnimate);
+  // Hide completely when waiting to animate or path not measured yet
   const shouldHide = (hideUntilAnimated && !shouldAnimate) || isWaitingToAnimate || (shouldAnimate && pathLength === 0);
-  const revealLength = isWaitingToAnimate ? 0 : (isAnimating ? pathLength * animationProgress : pathLength);
 
-  const maskId = `path-mask-${path.id}`;
+  // Build animated path segments incrementally, respecting point opacities
+  // Returns array of path segments (each is a continuous visible section)
+  const getAnimatedPathSegments = (): { d: string; opacity: number }[] => {
+    if (!pathRef.current || pathLength === 0 || animationProgress === 0) {
+      return [];
+    }
+
+    const targetLength = pathLength * animationProgress;
+    const numSamples = Math.max(2, Math.ceil(targetLength / 2)); // Sample every 2px
+
+    // Sample points along the animated portion
+    const sampledPoints: { x: number; y: number; opacity: number }[] = [];
+
+    for (let i = 0; i <= numSamples; i++) {
+      const length = (i / numSamples) * targetLength;
+      const point = pathRef.current.getPointAtLength(length);
+
+      // Find which original segment this point belongs to, to get its opacity
+      // Calculate approximate index in original points based on length ratio
+      const lengthRatio = length / pathLength;
+      const approxIndex = Math.min(
+        Math.floor(lengthRatio * (pixelPoints.length - 1)),
+        pixelPoints.length - 1
+      );
+      const pointOpacity = opacities?.[approxIndex] ?? 1;
+
+      sampledPoints.push({ x: point.x, y: point.y, opacity: pointOpacity });
+    }
+
+    // Group consecutive points with same opacity into segments
+    const segments: { d: string; opacity: number }[] = [];
+    let currentSegmentPoints: { x: number; y: number }[] = [];
+    let currentOpacity = sampledPoints[0]?.opacity ?? 1;
+
+    for (let i = 0; i < sampledPoints.length; i++) {
+      const { x, y, opacity } = sampledPoints[i];
+
+      if (i === 0) {
+        currentSegmentPoints = [{ x, y }];
+        currentOpacity = opacity;
+      } else if (opacity === currentOpacity) {
+        currentSegmentPoints.push({ x, y });
+      } else {
+        // Opacity changed - save current segment if visible and has enough points
+        if (currentSegmentPoints.length >= 2 && currentOpacity > 0) {
+          // Add current point to close the gap
+          currentSegmentPoints.push({ x, y });
+          const d = currentSegmentPoints.map((p, idx) =>
+            `${idx === 0 ? 'M' : 'L'} ${p.x} ${p.y}`
+          ).join(' ');
+          segments.push({ d, opacity: currentOpacity });
+        }
+        currentSegmentPoints = [{ x, y }];
+        currentOpacity = opacity;
+      }
+    }
+
+    // Add final segment if visible
+    if (currentSegmentPoints.length >= 2 && currentOpacity > 0) {
+      const d = currentSegmentPoints.map((p, idx) =>
+        `${idx === 0 ? 'M' : 'L'} ${p.x} ${p.y}`
+      ).join(' ');
+      segments.push({ d, opacity: currentOpacity });
+    }
+
+    return segments;
+  };
+
+  const animatedPathSegments = isAnimating ? getAnimatedPathSegments() : [];
 
   return (
     <svg
@@ -219,32 +284,19 @@ function PathLine({ path, imageBounds, isHighlighted, shouldAnimate, hideUntilAn
       }}
       viewBox={`0 0 ${imageBounds.width} ${imageBounds.height}`}
     >
-      <defs>
-        <mask id={maskId}>
-          <path
-            d={fullPathData}
-            fill="none"
-            stroke="white"
-            strokeWidth="20"
-            strokeDasharray={pathLength}
-            strokeDashoffset={pathLength - revealLength}
-            strokeLinecap="round"
-            strokeLinejoin="round"
-          />
-        </mask>
-      </defs>
+      {/* Hidden path for measurement */}
+      <path
+        ref={pathRef}
+        d={fullPathData}
+        fill="none"
+        stroke="transparent"
+        strokeWidth="8"
+      />
       <g opacity={shouldHide ? 0 : 1}>
-        <g mask={isAnimating || isWaitingToAnimate ? `url(#${maskId})` : undefined}>
-          {/* Hidden path for measurement */}
-          <path
-            ref={pathRef}
-            d={fullPathData}
-            fill="none"
-            stroke="transparent"
-            strokeWidth="8"
-          />
-          {/* Render each segment with its opacity */}
-          {pathSegments.map((segment, segIdx) => (
+        {/* Animated dashed path segments (respecting erased areas), or static segments after animation */}
+        {isAnimating ? (
+          /* Animated segments - only show visible parts (opacity > 0) */
+          animatedPathSegments.map((segment, segIdx) => (
             <path
               key={segIdx}
               d={segment.d}
@@ -256,8 +308,23 @@ function PathLine({ path, imageBounds, isHighlighted, shouldAnimate, hideUntilAn
               strokeLinejoin="round"
               opacity={segment.opacity * baseOpacity}
             />
-          ))}
-        </g>
+          ))
+        ) : (
+          /* Static dotted path segments with opacity */
+          pathSegments.map((segment, segIdx) => (
+            <path
+              key={segIdx}
+              d={segment.d}
+              fill="none"
+              stroke="#87CEEB"
+              strokeWidth="8"
+              strokeDasharray="14,10"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              opacity={segment.opacity * baseOpacity}
+            />
+          ))
+        )}
         {displayLabel && midpointVisible && (
           <>
             <circle
@@ -265,7 +332,7 @@ function PathLine({ path, imageBounds, isHighlighted, shouldAnimate, hideUntilAn
               cy={midpoint.y}
               r="18"
               fill="#87CEEB"
-              className={isAnimating ? "map-path-label-appear" : ""}
+              className={animationComplete && shouldAnimate ? "map-path-label-appear" : ""}
             />
             <text
               x={midpoint.x}
@@ -276,7 +343,7 @@ function PathLine({ path, imageBounds, isHighlighted, shouldAnimate, hideUntilAn
               fontSize="16"
               fontWeight="bold"
               fontFamily="sans-serif"
-              className={isAnimating ? "map-path-label-appear" : ""}
+              className={animationComplete && shouldAnimate ? "map-path-label-appear" : ""}
             >
               {path.orderNumber}
             </text>
@@ -298,20 +365,20 @@ export default function MapScene({ scene, sceneIndex }: SceneProps<MapSceneType>
   const imgRef = useRef<HTMLImageElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
 
-  // Intersection Observer to detect when map becomes visible
-  // Animation always starts 600ms after the map becomes visible (whether initially or by scrolling)
+  // Intersection Observer to detect when map scrolls into view
+  // Animation starts 600ms after the map becomes visible
   useEffect(() => {
     if (isLoading) return;
+    if (imageBounds.width === 0) return; // Wait for image to load
 
     const container = containerRef.current;
     if (!container) return;
 
-    let animationDelayTimeout: NodeJS.Timeout | null = null;
+    let animationDelayTimeout: ReturnType<typeof setTimeout> | null = null;
 
     const observer = new IntersectionObserver(
       (entries) => {
         const entry = entries[0];
-
         if (entry.isIntersecting) {
           // Map is visible - wait 600ms before starting animation
           animationDelayTimeout = setTimeout(() => {
@@ -320,7 +387,7 @@ export default function MapScene({ scene, sceneIndex }: SceneProps<MapSceneType>
           observer.disconnect();
         }
       },
-      { threshold: 0.3 }
+      { threshold: 0.1 }
     );
 
     observer.observe(container);
@@ -330,7 +397,7 @@ export default function MapScene({ scene, sceneIndex }: SceneProps<MapSceneType>
       }
       observer.disconnect();
     };
-  }, [isLoading]);
+  }, [isLoading, imageBounds.width]);
 
   // Get navigation graph to access all scenes
   const navigationGraph = useNavigationStore(selectNavigationGraph);
@@ -455,8 +522,8 @@ export default function MapScene({ scene, sceneIndex }: SceneProps<MapSceneType>
       onClick={handleContinue}
       style={{
         position: 'relative',
-        width: '100vw',
-        height: '100vh',
+        width: '100svw',
+        height: '100svh',
         overflow: 'hidden',
         cursor: 'pointer',
       }}

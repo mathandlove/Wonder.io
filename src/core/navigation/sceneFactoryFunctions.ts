@@ -69,14 +69,14 @@ export function createRecordingScene(
 }
 
 /**
- * Create an AI response scene - CharacterScene for NPC response with immediate input
+ * Create an AI response scene - CharacterScene for NPC response (basic dialogue)
  *
  * Flow:
  * 1. AI processes user's question from recording scene
- * 2. This scene is created with AI's response text and phase='input'
+ * 2. This scene is created with AI's response text and phase='basic'
  * 3. Added to navigation graph via insertSceneNodes()
- * 4. Scene immediately shows AI response with Ask button for follow-up questions
- * 5. User can immediately ask another question without scrolling
+ * 4. Scene shows AI response as basic dialogue (speech bubble only, no input UI)
+ * 5. A separate standalone input node is created after this scene for follow-up questions
  *
  * @param responseText - AI's response to display
  * @param conversationId - Conversation context ID for continuity
@@ -84,7 +84,7 @@ export function createRecordingScene(
  * @param leftCharacter - User's character
  * @param rightCharacter - NPC/AI character (speaker)
  * @param monologue - If true, speaker is "left" (user thinking to themselves)
- * @returns CharacterScene with phase='input' for immediate follow-up
+ * @returns CharacterScene with phase='basic' (input UI is on separate node)
  */
 export function createAIResponseScene(
   responseText: string,
@@ -115,8 +115,96 @@ export function createAIResponseScene(
     background: currentBackground,
     flowSequence: true, // Mark as part of flow to prevent background range changes
     isFirstInFlow: false, // Not the first in flow, so inherit background from previous scene
-    phase: "input", // Immediately show input UI for follow-up questions
-    phaseSteps: ["input"], // Only input phase available (no progression needed)
+    phase: "basic", // AI response shows as basic dialogue (no input UI)
+    phaseSteps: ["basic"], // Just basic phase - input is on a separate standalone node
+  };
+
+  return newScene;
+}
+
+/**
+ * Create an AI waiting scene - Shows user's question + waiting indicator
+ *
+ * This is a standalone node that:
+ * - Shows the user's question in a left speech bubble
+ * - Shows a waiting bubble (dots) on the right side
+ * - Does NOT show the RecordPanel (no Ask/Answer buttons)
+ *
+ * Uses existing `showWaitingBubble` feature in SpeechBubbleOrchestrator:
+ * When phase === 'ai-waiting', CardboardBubble renders WaitingBubble below the text.
+ *
+ * @param questionText - User's question to display in the left bubble
+ * @param conversationId - Conversation context ID for AI call
+ * @param currentBackground - Inherited background
+ * @param leftCharacter - User's character (speaker)
+ * @param rightCharacter - NPC character (shows waiting bubble)
+ * @returns CharacterScene with phase='ai-waiting' for waiting display
+ */
+export function createAIWaitingScene(
+  questionText: string,
+  conversationId: string | undefined,
+  currentBackground?: string,
+  leftCharacter?: string,
+  rightCharacter?: string
+): CharacterScene {
+  const sceneId = `ai-waiting-${Date.now()}-${Math.random().toString(36).substring(2, 9)}`;
+
+  const newScene: CharacterScene = {
+    type: "character",
+    sceneId,
+    nodeType: "ai-waiting",
+    text: questionText, // This shows in the left speech bubble
+    speaker: "left",    // User's question on left side
+    conversationId,
+    questionText,       // Preserve for AI call
+    "left-character": leftCharacter || "leo",
+    "right-character": rightCharacter || "bakerMom",
+    background: currentBackground,
+    flowSequence: true,
+    isFirstInFlow: false,
+    phase: "ai-waiting", // Triggers showWaitingBubble in SpeechBubbleOrchestrator
+    phaseSteps: ["ai-waiting"],
+  };
+
+  return newScene;
+}
+
+/**
+ * Create an input scene - Input node WITH speech bubbles
+ *
+ * This is an input node that:
+ * - Shows speech bubbles (characters visible)
+ * - Shows the RecordPanel with Ask/Hint/Answer buttons
+ * - Used after wrong answer feedback for retry
+ *
+ * @param conversationId - Conversation context ID
+ * @param currentBackground - Inherited background
+ * @param leftCharacter - User's character
+ * @param rightCharacter - NPC character
+ * @returns CharacterScene with phase='input'
+ */
+export function createInputScene(
+  conversationId: string | undefined,
+  currentBackground?: string,
+  leftCharacter?: string,
+  rightCharacter?: string
+): CharacterScene {
+  const sceneId = `input-${Date.now()}-${Math.random().toString(36).substring(2, 9)}`;
+
+  const newScene: CharacterScene = {
+    type: "character",
+    sceneId,
+    nodeType: "input",
+    text: "",
+    speaker: "left",
+    conversationId,
+    "left-character": leftCharacter || "leo",
+    "right-character": rightCharacter || "bakerMom",
+    background: currentBackground,
+    flowSequence: true,
+    isFirstInFlow: false,
+    phase: "input",
+    phaseSteps: ["input"],
   };
 
   return newScene;

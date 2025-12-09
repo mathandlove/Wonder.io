@@ -21,7 +21,7 @@ import { loadStoryService } from '@core/data/services/loadStoryService';
 import { callAIService, setConversationMetadata, createAndInsertAIResponseScene, validateAnswerService, getConversationMetadata, startFeedbackGeneration, getPendingFeedbackPromise, clearPendingFeedback, setSelectedClue, getSelectedClue, clearSelectedClue } from '@core/ai/AIOrchestrator';
 import { useNavigationStore } from '../navigationStore';
 import { getCurrentNodeId, getCurrentNode, initializeStoreWithStory, insertSceneNodes, deleteNode, updateCurrentSceneProperties } from '../navigationHelpers';
-import { createAIResponseScene as createAIResponseSceneFactory, createFailDanceScene } from '../sceneFactoryFunctions';
+import { createAIResponseScene as createAIResponseSceneFactory, createFailDanceScene, createInputScene } from '../sceneFactoryFunctions';
 import { RecordingOrchestratorAPI } from '@core/recording/RecordingOrchestrator';
 import { createDebugger } from '../../../utils/createDebug';
 import type { CharacterScene } from '@core/types/scene';
@@ -35,7 +35,7 @@ const debug = createDebugger('navigation:machine');
  * Useful for testing the answer flow directly
  * NOTE: Always forced to false in production builds
  */
-const DEBUG_AUTO_UNLOCK_ANSWER_BUTTON = import.meta.env.PROD ? false : true;
+const DEBUG_AUTO_UNLOCK_ANSWER_BUTTON = import.meta.env.PROD ? false : false;
 
 /**
  * DEBUG FLAG: Allow scroll navigation during recording
@@ -307,17 +307,8 @@ export const navigationMachine = setup({
      * Only runs once per session (tracked in context).
      */
     requestMicPermission: assign({
-      micPermissionRequested: ({ context }) => {
-        if (!context.micPermissionRequested) {
-          debug.log('🎤 Requesting microphone permission after first navigation...');
-          // Fire and forget - we don't wait for the result
-          RecordingOrchestratorAPI.requestPermission().catch(() => {
-            // Permission denied or error - that's ok, we'll prompt again when recording
-          });
-          return true;
-        }
-        return context.micPermissionRequested;
-      },
+      // Early mic permission check removed - permission will be requested when user clicks Ask/Answer
+      micPermissionRequested: ({ context }) => context.micPermissionRequested,
     }),
 
     // =============================================================================
@@ -488,7 +479,7 @@ export const navigationMachine = setup({
         return;
       }
 
-      // Extract character information from current scene
+      // Extract character information from current scene (input node)
       const scene = freshNode.scene;
       const characterScene = scene as CharacterScene;
       const answerText = characterScene.answerText || '';
@@ -508,19 +499,18 @@ export const navigationMachine = setup({
         context.wrongCharacter // Use wrongCharacter from story config
       );
 
-      // Insert fail-dance scene after current node
+      // Insert fail-dance scene after current input node
       insertSceneNodes(currentNodeId, failDanceScene);
       debug.log('✅ Fail-dance scene created and inserted in failDance state');
 
-      // Navigate to fail-dance scene first, THEN reset the question scene phase
-      // This order is important: if we reset phase before navigating, RecordPanel
-      // will briefly see 'basic' phase and snap to hidden state before fail-dance kicks in
+      // Navigate to fail-dance scene, then delete the input node
       setTimeout(() => {
         useNavigationStore.getState().advance('forward');
         debug.log('➡️  Navigated to fail-dance scene from failDance state');
 
-        // Reset question scene phase to basic AFTER navigating away (for potential retry)
-        useNavigationStore.getState().updateNodePhase(currentNodeId, 'basic');
+        // Delete the input node - it will be recreated after feedback
+        deleteNode(currentNodeId);
+        debug.log('🗑️  Deleted input node:', currentNodeId);
       }, 100);
     },
 
@@ -546,9 +536,6 @@ export const navigationMachine = setup({
 
     createRecordingScene: async () => {
       try {
-        // Generate unique recording ID
-        const recordingId = `rec-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
-
         // Get current scene context
         const currentNode = getCurrentNode();
         const currentNodeId = getCurrentNodeId();
@@ -558,6 +545,22 @@ export const navigationMachine = setup({
           debug.error('No current node ID - cannot insert recording scene');
           return;
         }
+
+        // Check if this is a standalone input node (no speech bubble)
+        // If so, stay on the node and just update the phase
+        const isStandaloneInputNode = (scene as { nodeType?: string })?.nodeType === 'input' ||
+                                       currentNode?.phase === 'input';
+
+        if (isStandaloneInputNode) {
+          debug.log('🎙️ Standalone input node - staying in place, updating phase to input-recording');
+          useNavigationStore.getState().updateNodePhase(currentNodeId, 'input-recording');
+          debug.log('✅ Standalone input node activated for recording');
+          return;
+        }
+
+        // Regular flow: Create new recording scene and navigate to it
+        // Generate unique recording ID
+        const recordingId = `rec-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
 
         // Update current node phase from input to basic
         useNavigationStore.getState().updateNodePhase(currentNodeId, 'basic');
@@ -637,6 +640,18 @@ export const navigationMachine = setup({
       const currentPhase = useNavigationStore.getState().getCurrentPhase();
       return currentPhase === 'quest-showing';
     },
+    // Check if current node is a standalone quest node (no speech bubble)
+    isStandaloneQuest: () => {
+      const currentNode = useNavigationStore.getState().getCurrentNode();
+      const scene = currentNode?.scene as { nodeType?: string } | undefined;
+      return scene?.nodeType === 'quest' || currentNode?.phase === 'quest-standalone';
+    },
+    // Check if current node is a standalone input node (no speech bubble)
+    isStandaloneInput: () => {
+      const currentNode = useNavigationStore.getState().getCurrentNode();
+      const scene = currentNode?.scene as { nodeType?: string } | undefined;
+      return scene?.nodeType === 'input' || currentNode?.phase === 'input';
+    },
     // Check if current node is recording an answer
     isRecordAnswer: () => {
       const currentPhase = useNavigationStore.getState().getCurrentPhase();
@@ -686,6 +701,11 @@ export const navigationMachine = setup({
     isNoAudioRecorded: () => {
       const currentPhase = useNavigationStore.getState().getCurrentPhase();
       return currentPhase === 'no-audio-recorded';
+    },
+    // Check if current node is in no-microphone phase (no microphone detected)
+    isNoMicrophone: () => {
+      const currentPhase = useNavigationStore.getState().getCurrentPhase();
+      return currentPhase === 'no-microphone';
     },
     // Check if both fail video and feedback are ready (for answer-wrong transition)
     bothFailConditionsMet: ({ context }) => {
@@ -883,6 +903,25 @@ export const navigationMachine = setup({
             SCROLL_UP_STEP: {},
           },
           always: [
+            // Clue selection phases - must check BEFORE standalone/input checks
+            // because standalone input nodes can have clue selection phases
+            {
+              guard: 'isAskClue',
+              target: 'askClue',
+            },
+            {
+              guard: 'isAnswerClue',
+              target: 'answerClue',
+            },
+            // Standalone nodes (no speech bubbles) - check after clue phases
+            {
+              guard: 'isStandaloneQuest',
+              target: 'standaloneQuest',
+            },
+            {
+              guard: 'isStandaloneInput',
+              target: 'standaloneInput',
+            },
             {
               guard: 'isInput',
               target: 'dialogueInput',
@@ -891,14 +930,6 @@ export const navigationMachine = setup({
             {
               guard: 'isQuestShowing',
               target: 'questShowing',
-            },
-            {
-              guard: 'isAskClue',
-              target: 'askClue',
-            },
-            {
-              guard: 'isAnswerClue',
-              target: 'answerClue',
             },
             {
               guard: 'isRecordAnswer',
@@ -948,6 +979,147 @@ export const navigationMachine = setup({
               target: 'unknown',
             },
           ],
+        },
+
+        /**
+         * STANDALONE QUEST state
+         * Quest node displayed WITHOUT speech bubbles (for mobile)
+         * When Accept is clicked: DELETE the quest node and navigate forward
+         */
+        standaloneQuest: {
+          entry: () => debug.log('🎯 Entered standaloneQuest state - standalone quest node'),
+          on: {
+            // Block scroll down - must click Accept
+            SCROLL_DOWN_STEP: DEBUG_ALLOW_SCROLL_DURING_QUEST
+              ? {
+                  actions: [
+                    () => debug.log('🐛 SCROLL_DOWN during standalone quest - DEBUG MODE allowed'),
+                    'goNext',
+                  ],
+                  target: '#navigation.scene.route',
+                }
+              : {
+                  actions: () => debug.log('⛔ SCROLL_DOWN blocked on standalone quest'),
+                },
+            // Allow scroll up to go back
+            SCROLL_UP_STEP: {
+              actions: ['goPrev'],
+              target: '#navigation.scene.route',
+            },
+            // Accept button clicked - DELETE quest node and navigate forward
+            REQUEST_NAV_NEXT: {
+              actions: [
+                () => {
+                  const currentNodeId = useNavigationStore.getState().currentId;
+                  if (currentNodeId) {
+                    debug.log('🗑️ Deleting standalone quest node:', currentNodeId);
+                    // First navigate forward
+                    useNavigationStore.getState().advance('forward');
+                    // Then delete the quest node using existing deleteNode function
+                    deleteNode(currentNodeId);
+                  }
+                }
+              ],
+              target: '#navigation.scene.route',
+            },
+          },
+        },
+
+        /**
+         * STANDALONE INPUT state
+         * Input node displayed WITHOUT speech bubbles (for mobile)
+         * Handles Ask/Answer button clicks, recording, etc.
+         * Same as dialogueInput but for standalone input nodes
+         */
+        standaloneInput: {
+          entry: [
+            () => debug.log('📝 Entered standaloneInput state - standalone input node'),
+            'checkRequiredAskAndUnlock', // Check if answer button should be unlocked
+          ],
+          on: {
+            // Allow navigation in input state
+            SCROLL_DOWN_STEP: {
+              actions: ['goNext'],
+              target: '#navigation.scene.route',
+            },
+            SCROLL_UP_STEP: {
+              actions: ['goPrev'],
+              target: '#navigation.scene.route',
+            },
+            // ASK_BUTTON_CLICKED - same handling as dialogueInput
+            ASK_BUTTON_CLICKED: [
+              {
+                // If useClues is true, transition to askClue phase (clue selection)
+                guard: () => {
+                  const node = useNavigationStore.getState().getCurrentNode();
+                  const scene = node?.scene as { conversationId?: string } | undefined;
+                  if (!scene?.conversationId) return false;
+                  const metadata = getConversationMetadata(scene.conversationId);
+                  return metadata?.useClues === true;
+                },
+                actions: [
+                  () => {
+                    debug.log('🔍 ASK_BUTTON_CLICKED with useClues=true → askClue phase');
+                    const nodeId = useNavigationStore.getState().currentId;
+                    if (nodeId) {
+                      useNavigationStore.getState().updateNodePhase(nodeId, 'askClue');
+                    }
+                  }
+                ],
+                target: 'askClue',
+              },
+              {
+                // If useClues is false, start recording directly
+                actions: () => debug.log('🎯 ASK_BUTTON_CLICKED on standaloneInput → starting recording'),
+                target: 'askPendingRecording',
+              }
+            ],
+            // ANSWER_BUTTON_CLICKED - same handling as dialogueInput
+            ANSWER_BUTTON_CLICKED: [
+              {
+                // If useClues is true, transition to answerClue phase
+                guard: () => {
+                  const node = useNavigationStore.getState().getCurrentNode();
+                  const scene = node?.scene as { conversationId?: string } | undefined;
+                  if (!scene?.conversationId) return false;
+                  const metadata = getConversationMetadata(scene.conversationId);
+                  return metadata?.useClues === true;
+                },
+                actions: [
+                  () => {
+                    debug.log('🔍 ANSWER_BUTTON_CLICKED with useClues=true → answerClue phase');
+                    const nodeId = useNavigationStore.getState().currentId;
+                    if (nodeId) {
+                      useNavigationStore.getState().updateNodePhase(nodeId, 'answerClue');
+                    }
+                  }
+                ],
+                target: 'answerClue',
+              },
+              {
+                // If useClues is false, start recording answer directly
+                actions: () => debug.log('🎯 ANSWER_BUTTON_CLICKED on standaloneInput → starting recording'),
+                target: 'answerPendingRecording',
+              }
+            ],
+            // Recording started by orchestrator
+            RECORDING_STARTED: {
+              actions: () => debug.log('🎙️  Recording started by orchestrator'),
+              target: 'askPendingRecording',
+            },
+            // Handle recording failure
+            RECORDING_FAILED: {
+              actions: ({ event }) => {
+                debug.error('❌ Recording failed to start:', event.error);
+              },
+              target: 'standaloneInput', // Stay in standalone input on error
+            },
+            // No microphone detected - show error message
+            NO_MICROPHONE_DETECTED: {
+              actions: () => debug.log('🎤 No microphone detected → showing error'),
+              target: 'noMicrophone',
+            },
+          },
         },
 
         /**
@@ -1211,6 +1383,11 @@ export const navigationMachine = setup({
               actions: ({ event }) => debug.error('❌ Recording failed:', event.error),
               // Stay in dialogueInput to allow retry
             },
+            // No microphone detected - show error message
+            NO_MICROPHONE_DETECTED: {
+              actions: () => debug.log('🎤 No microphone detected → showing error'),
+              target: 'noMicrophone',
+            },
           },
         },
 
@@ -1371,6 +1548,24 @@ export const navigationMachine = setup({
               },
               target: 'dialogueInput',
             },
+            // No microphone detected - show error message
+            NO_MICROPHONE_DETECTED: {
+              actions: () => debug.log('🎤 No microphone detected → showing error'),
+              target: 'noMicrophone',
+            },
+            // User cancels during mic startup - go back to input
+            CANCEL_RECORDING: {
+              actions: [
+                () => {
+                  debug.log('❌ CANCEL_RECORDING during pending → returning to input');
+                  const nodeId = getCurrentNodeId();
+                  if (nodeId) {
+                    useNavigationStore.getState().updateNodePhase(nodeId, 'input');
+                  }
+                }
+              ],
+              target: 'dialogueInput',
+            },
           },
         },
 
@@ -1434,6 +1629,22 @@ export const navigationMachine = setup({
               actions: ({ event }) => {
                 debug.error('❌ Recording error:', event.error);
               },
+              target: 'dialogueInput',
+            },
+            // User cancels during active recording - stop recording and go back to input
+            CANCEL_RECORDING: {
+              actions: [
+                () => {
+                  debug.log('❌ CANCEL_RECORDING during recording → stopping and returning to input');
+                  // Stop the recording (will discard since we're not waiting for transcript)
+                  RecordingOrchestratorAPI.stopRecordingAndTranscribe();
+                  const nodeId = getCurrentNodeId();
+                  if (nodeId) {
+                    // Reset phase back to input
+                    useNavigationStore.getState().updateNodePhase(nodeId, 'input');
+                  }
+                }
+              ],
               target: 'dialogueInput',
             },
           },
@@ -1562,32 +1773,67 @@ export const navigationMachine = setup({
             // User confirms transcript - proceed to AI
             SUBMIT_RECORDING: {
               actions: [
-                () => {
+                async () => {
                   debug.log('✅ SUBMIT_RECORDING → proceeding to AI');
-                  const nodeId = getCurrentNodeId();
-                  if (nodeId) {
-                    useNavigationStore.getState().updateNodePhase(nodeId, 'ai-waiting');
+                  const currentNodeId = getCurrentNodeId();
+                  const currentNode = getCurrentNode();
+                  const scene = currentNode?.scene;
+
+                  if (!currentNodeId) return;
+
+                  // Check if this is a standalone input node (no speech bubble)
+                  const isStandaloneInputNode = (scene as { nodeType?: string })?.nodeType === 'input';
+
+                  if (isStandaloneInputNode) {
+                    debug.log('📝 Standalone input - creating ai-waiting node');
+
+                    // Import factory function
+                    const { createAIWaitingScene } = await import('@core/navigation/sceneFactoryFunctions');
+
+                    // Extract scene properties
+                    const questionText = (scene as { questionText?: string })?.questionText || '';
+                    const conversationId = (scene as { conversationId?: string })?.conversationId;
+                    const currentBackground = scene && 'background' in scene ? (scene as { background?: string }).background : undefined;
+                    const leftCharacter = scene && 'left-character' in scene ? (scene as { 'left-character'?: string })['left-character'] : 'leo';
+                    const rightCharacter = scene && 'right-character' in scene ? (scene as { 'right-character'?: string })['right-character'] : 'bakerMom';
+
+                    // Create ai-waiting scene
+                    const aiWaitingScene = createAIWaitingScene(
+                      questionText,
+                      conversationId,
+                      currentBackground,
+                      leftCharacter,
+                      rightCharacter
+                    );
+
+                    // Insert ai-waiting node after current input node
+                    const aiWaitingNodeId = insertSceneNodes(currentNodeId, aiWaitingScene);
+
+                    if (aiWaitingNodeId) {
+                      // Navigate to ai-waiting node
+                      const store = useNavigationStore.getState();
+                      useNavigationStore.setState({
+                        currentId: aiWaitingNodeId,
+                        graph: { ...store.graph, currentId: aiWaitingNodeId }
+                      });
+                      debug.log('✅ Navigated to ai-waiting node:', aiWaitingNodeId);
+                    }
+                  } else {
+                    // Regular flow: just update the phase
+                    useNavigationStore.getState().updateNodePhase(currentNodeId, 'ai-waiting');
                   }
                 }
               ],
               target: 'askWaitingForAI',
             },
-            // User cancels - delete current node and go back to previous scene
+            // User cancels - reset phase to input
             CANCEL_RECORDING: {
               actions: [
                 () => {
-                  debug.log('❌ CANCEL_RECORDING → deleting node and going back');
+                  debug.log('❌ CANCEL_RECORDING → returning to input');
                   const nodeId = getCurrentNodeId();
                   if (nodeId) {
-                    // First navigate backward to previous node
-                    useNavigationStore.getState().advance('backward');
-                    // Then delete the node we were on
-                    useNavigationStore.getState().deleteNode(nodeId);
-                    // Set the previous node (now current) to input-showInput phase so user can re-record
-                    const newCurrentNodeId = getCurrentNodeId();
-                    if (newCurrentNodeId) {
-                      useNavigationStore.getState().updateNodePhase(newCurrentNodeId, 'input-showInput');
-                    }
+                    useNavigationStore.getState().updateNodePhase(nodeId, 'input');
                   }
                 }
               ],
@@ -1633,6 +1879,43 @@ export const navigationMachine = setup({
                     if (newCurrentNodeId) {
                       useNavigationStore.getState().updateNodePhase(newCurrentNodeId, 'input-showInput');
                     }
+                  }
+                }
+              ],
+              target: 'dialogueInput',
+            },
+          },
+        },
+
+        /**
+         * NO MICROPHONE state
+         * No microphone was detected
+         * Shows error message asking user to check their settings
+         */
+        noMicrophone: {
+          entry: [
+            () => debug.log('🎤 Entered noMicrophone - no microphone detected'),
+            () => {
+              const nodeId = getCurrentNodeId();
+              if (nodeId) useNavigationStore.getState().updateNodePhase(nodeId, 'no-microphone');
+            },
+          ],
+          on: {
+            // Block scroll while showing error
+            SCROLL_DOWN_STEP: {
+              actions: () => debug.log('⛔ SCROLL blocked during no-microphone'),
+            },
+            SCROLL_UP_STEP: {
+              actions: () => debug.log('⛔ SCROLL blocked during no-microphone'),
+            },
+            // User clicks retry - go back to input state
+            RETRY_RECORDING: {
+              actions: [
+                () => {
+                  debug.log('🔄 RETRY_RECORDING (no mic) → going back to input');
+                  const nodeId = getCurrentNodeId();
+                  if (nodeId) {
+                    useNavigationStore.getState().updateNodePhase(nodeId, 'input');
                   }
                 }
               ],
@@ -1763,6 +2046,24 @@ export const navigationMachine = setup({
               },
               target: 'questShowing', // Go back to quest showing on error
             },
+            // No microphone detected - show error message
+            NO_MICROPHONE_DETECTED: {
+              actions: () => debug.log('🎤 No microphone detected → showing error'),
+              target: 'noMicrophone',
+            },
+            // User cancels during mic startup - go back to input
+            CANCEL_ANSWER: {
+              actions: [
+                () => {
+                  debug.log('❌ CANCEL_ANSWER during pending recording → returning to input');
+                  const nodeId = getCurrentNodeId();
+                  if (nodeId) {
+                    useNavigationStore.getState().updateNodePhase(nodeId, 'input');
+                  }
+                }
+              ],
+              target: 'dialogueInput',
+            },
           },
         },
 
@@ -1831,6 +2132,26 @@ export const navigationMachine = setup({
                 debug.error('❌ Recording error:', event.error);
               },
               target: 'questShowing', // Go back to quest showing on error
+            },
+            // User cancels during active recording - stop recording and go back to input
+            CANCEL_ANSWER: {
+              actions: [
+                () => {
+                  debug.log('❌ CANCEL_ANSWER during recording → stopping and returning to input');
+                  // Stop the recording (will discard since we're not waiting for transcript)
+                  RecordingOrchestratorAPI.stopRecordingAndTranscribe();
+                  const nodeId = getCurrentNodeId();
+                  if (nodeId) {
+                    // Clear any answer text
+                    useNavigationStore.getState().updateCurrentSceneProperties({
+                      answerText: ''
+                    });
+                    // Reset phase back to input
+                    useNavigationStore.getState().updateNodePhase(nodeId, 'input');
+                  }
+                }
+              ],
+              target: 'dialogueInput',
             },
           },
         },
@@ -2168,17 +2489,30 @@ export const navigationMachine = setup({
 
                   const { answerRightNodeId, successDanceNodeId } = event.output;
 
-                  // Update answer-right node to basic phase (cleanup for potential retry)
-                  useNavigationStore.getState().updateNodePhase(answerRightNodeId, 'basic');
+                  // Check if the answer-right node is a standalone input node
+                  const store = useNavigationStore.getState();
+                  const answerRightNode = store.graph.byId[answerRightNodeId];
+                  const scene = answerRightNode?.scene;
+                  const isStandaloneInputNode = (scene as { nodeType?: string })?.nodeType === 'input';
+
+                  if (isStandaloneInputNode) {
+                    // STANDALONE INPUT: Delete the input node instead of resetting to basic
+                    debug.log('🗑️ Deleting standalone input node after correct answer:', answerRightNodeId);
+                    deleteNode(answerRightNodeId);
+                  } else {
+                    // REGULAR FLOW: Update answer-right node to basic phase (cleanup for potential retry)
+                    useNavigationStore.getState().updateNodePhase(answerRightNodeId, 'basic');
+                  }
 
                   // Navigate directly to success-dance scene by setting currentId
                   // NOTE: Can't use advance('forward') because it tries advancePhase(1) first,
                   // which would cycle through phases instead of moving to the new node.
-                  const store = useNavigationStore.getState();
+                  // IMPORTANT: Get fresh state after deleteNode to include rewiring changes
+                  const freshStore = useNavigationStore.getState();
                   useNavigationStore.setState({
                     currentId: successDanceNodeId,
                     graph: {
-                      ...store.graph,
+                      ...freshStore.graph,
                       currentId: successDanceNodeId,
                     }
                   });
@@ -2500,9 +2834,21 @@ export const navigationMachine = setup({
                   }
 
                   // Insert feedback scene after current fail-dance scene
-                  insertSceneNodes(currentNodeId, feedbackScene);
+                  const feedbackNodeId = insertSceneNodes(currentNodeId, feedbackScene);
 
-                  debug.log('✅ Feedback scene created');
+                  // Create input scene after feedback so user can retry
+                  if (feedbackNodeId) {
+                    const inputScene = createInputScene(
+                      conversationId,
+                      currentBackground,
+                      leftCharacter,
+                      rightCharacter
+                    );
+                    insertSceneNodes(feedbackNodeId, inputScene);
+                    debug.log('✅ Feedback scene + input scene created');
+                  } else {
+                    debug.log('✅ Feedback scene created (no input scene - missing feedbackNodeId)');
+                  }
                 },
                 'setFeedbackReceived',
               ],
@@ -2621,8 +2967,21 @@ export const navigationMachine = setup({
 
                   const currentNodeId = store.currentId;
                   if (currentNodeId) {
-                    insertSceneNodes(currentNodeId, feedbackScene);
-                    debug.log('✅ Feedback scene created in failDance state');
+                    const feedbackNodeId = insertSceneNodes(currentNodeId, feedbackScene);
+
+                    // Create input scene after feedback so user can retry
+                    if (feedbackNodeId) {
+                      const inputScene = createInputScene(
+                        conversationId,
+                        currentBackground,
+                        leftCharacter,
+                        rightCharacter
+                      );
+                      insertSceneNodes(feedbackNodeId, inputScene);
+                      debug.log('✅ Feedback scene + input scene created in failDance state');
+                    } else {
+                      debug.log('✅ Feedback scene created in failDance state (no input scene)');
+                    }
                   }
                 },
                 'setFeedbackReceived',
@@ -2684,8 +3043,21 @@ export const navigationMachine = setup({
 
                   const currentNodeId = store.currentId;
                   if (currentNodeId) {
-                    insertSceneNodes(currentNodeId, feedbackScene);
-                    debug.log('✅ Feedback scene created in feedbackWaiting');
+                    const feedbackNodeId = insertSceneNodes(currentNodeId, feedbackScene);
+
+                    // Create input scene after feedback so user can retry
+                    if (feedbackNodeId) {
+                      const inputScene = createInputScene(
+                        conversationId,
+                        currentBackground,
+                        leftCharacter,
+                        rightCharacter
+                      );
+                      insertSceneNodes(feedbackNodeId, inputScene);
+                      debug.log('✅ Feedback scene + input scene created in feedbackWaiting');
+                    } else {
+                      debug.log('✅ Feedback scene created in feedbackWaiting (no input scene)');
+                    }
                   }
                 },
                 'setFeedbackReceived',

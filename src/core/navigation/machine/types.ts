@@ -132,6 +132,15 @@ export type RecordingFailedEvent = {
 };
 
 /**
+ * NO_MICROPHONE_DETECTED
+ * Emitted when: Microphone permission denied or no microphone available
+ * Purpose: Show user-friendly error message
+ */
+export type NoMicrophoneDetectedEvent = {
+  type: 'NO_MICROPHONE_DETECTED';
+};
+
+/**
  * ASK_BUTTON_CLICKED
  * Emitted when: User clicks the Ask button in input phase
  * Purpose: Trigger recording start and phase transition
@@ -455,6 +464,7 @@ export type NavigationEvent =
   | SubmitAnswerEvent
   | CancelAnswerEvent
   | NoAudioRecordedEvent
+  | NoMicrophoneDetectedEvent
   | RetryRecordingEvent
 
 // Note: SCENE_PHASE_CHANGED removed - phase lives in child machine state,

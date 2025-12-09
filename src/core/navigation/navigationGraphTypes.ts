@@ -63,6 +63,7 @@ export type Phase =
   | 'input-processing'
   | 'recording-submit'  // User reviewing transcript before submitting to AI
   | 'no-audio-recorded' // No audio was recorded (empty/silent recording)
+  | 'no-microphone' // No microphone detected
   | 'waiting-for-finalize'  // Waiting for ask recording to finalize
   | 'ai-waiting'
   | 'record-answer'
@@ -78,6 +79,7 @@ export type Phase =
   // Quest phases
   | 'quest-showing'  // ⚠️ THE ONLY VALID QUEST PHASE - use this everywhere!
   | 'quest-accepted'
+  | 'quest-standalone' // Standalone quest node (no speech bubble)
   // Clue scene phases
   | 'active'    // Finding clues
   | 'complete'  // All clues found
@@ -86,7 +88,7 @@ export type Phase =
   | 'fail-dance'
   // Static/other
   | 'static'
-  | 'input'; // Legacy generic input phase
+  | 'input';
 
 
 /**
@@ -113,6 +115,7 @@ export const PHASES = {
   INPUT_PROCESSING: 'input-processing' as const,
   RECORDING_SUBMIT: 'recording-submit' as const,
   NO_AUDIO_RECORDED: 'no-audio-recorded' as const,
+  NO_MICROPHONE: 'no-microphone' as const,
   AI_WAITING: 'ai-waiting' as const,
   RECORD_ANSWER: 'record-answer' as const,
   WAITING_FOR_ANSWER_FINALIZE: 'waiting-for-answer-finalize' as const,
@@ -128,6 +131,7 @@ export const PHASES = {
   // Quest phases
   QUEST_SHOWING: 'quest-showing' as const,  // ⚠️ THE ONLY VALID QUEST PHASE
   QUEST_ACCEPTED: 'quest-accepted' as const,
+  QUEST_STANDALONE: 'quest-standalone' as const, // Standalone quest node (no speech bubble)
 
   // Clue scene phases
   ACTIVE: 'active' as const,

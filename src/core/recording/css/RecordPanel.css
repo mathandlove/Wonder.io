@@ -6,8 +6,8 @@
    =================================== */
 
 /* Record Panel Container - wrapper for positioning */
-/* IMPORTANT: All states use transform: translate(-50%, -50%) for consistent centering.
-   This allows CSS to smoothly animate 'top' between states without transform jumps. */
+/* States use different transforms: -50% for centered states, -100% for bottom-anchored.
+   Both top and transform are transitioned for smooth animations between states. */
 .record-panel-container,
 .chat-composer-container {
   position: fixed;
@@ -24,8 +24,8 @@
   z-index: 1100;
   background: transparent;
   pointer-events: none;
-  /* Smooth transitions for top only - transform is consistent across all states */
-  transition: top 1.2s cubic-bezier(0.25, 1, 0.5, 1);
+  /* Smooth transitions for top and transform between states */
+  transition: top 1.2s cubic-bezier(0.25, 1, 0.5, 1), transform 1.2s cubic-bezier(0.25, 1, 0.5, 1);
 }
 
 /* Hidden state - completely below screen */
@@ -39,18 +39,16 @@
   justify-content: center;
 }
 
-/* Rest state - bottom anchored with 32px hidden below screen */
-/* With transform: translate(-50%, -50%), the panel center is at 'top' position.
-   To have 32px hidden below viewport, panel center should be at: 100vh + 32px - (panel_height/2)
-   For a ~250px panel, that's approximately 100vh + 32px - 125px = 100vh - 93px
-   Using calc(100% + 16px) to position panel center below viewport by ~half panel minus 32px overhang */
+/* Rest state - bottom anchored flush with viewport bottom */
+/* Using 100vh positions the center at viewport bottom, then -50% transform pulls panel up by half its height,
+   resulting in the bottom edge of the panel aligning with the viewport bottom */
 .record-panel-container.bottom-anchored {
-  top: calc(100% + 16px);
-  /* Panel center below viewport bottom, showing most of panel with 32px hidden */
+  top: 100vh;
+  /* Position panel center at viewport bottom */
   bottom: auto;
   /* Clear bottom positioning - use top consistently for animations */
-  transform: translate(-50%, -50%);
-  /* Consistent transform for smooth animation */
+  transform: translate(-50%, -100%);
+  /* Shift up by full panel height so bottom edge aligns with viewport bottom */
   justify-content: flex-end;
 }
 
@@ -1913,9 +1911,9 @@ html[data-mobile="true"] .frame .button.accept-btn .answer {
 
 /* Toast positioning adjustments for smaller buttons */
 html[data-mobile="true"] .button-toast {
-  width: 160px;
-  font-size: 12px;
-  padding: 6px 10px;
+  width: 180px;
+  font-size: 14px;
+  padding: 12px 16px;
   margin-bottom: 10px;
 }
 

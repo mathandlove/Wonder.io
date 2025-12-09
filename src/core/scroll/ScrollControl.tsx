@@ -185,6 +185,61 @@ export function ScrollControl({
     node.focus({ preventScroll: true });
   }, [currentIndex]);
 
+  // Prevent native drag scrolling on mobile so navigation remains quantum
+  React.useEffect(() => {
+    if (typeof navigator === 'undefined') return;
+    const IS_MOBILE = /iPad|iPhone|iPod|Android/i.test(navigator.userAgent);
+    if (!IS_MOBILE) return;
+    const el = containerRef.current;
+    if (!el) return;
+
+    const onTouchMove = (e: TouchEvent) => {
+      e.preventDefault();
+    };
+
+    el.addEventListener('touchmove', onTouchMove, { passive: false });
+    return () => {
+      el.removeEventListener('touchmove', onTouchMove);
+    };
+  }, []);
+
+  // Lock document scroll on mobile while ScrollControl is mounted
+  React.useEffect(() => {
+    if (typeof navigator === 'undefined') return;
+    const IS_MOBILE = /iPad|iPhone|iPod|Android/i.test(navigator.userAgent);
+    if (!IS_MOBILE) return;
+    if (typeof document === 'undefined') return;
+
+    const html = document.documentElement;
+    const body = document.body;
+
+    const originalHtmlOverflow = html.style.overflow;
+    const originalBodyOverflow = body.style.overflow;
+    const originalBodyPosition = body.style.position;
+    const originalBodyWidth = body.style.width;
+    const originalBodyTop = body.style.top;
+    const scrollY = window.scrollY || window.pageYOffset || 0;
+
+    // Freeze the body to prevent page scrolling
+    body.style.position = 'fixed';
+    body.style.top = `-${scrollY}px`;
+    body.style.width = '100%';
+    body.style.overflow = 'hidden';
+    html.style.overflow = 'hidden';
+
+    return () => {
+      // Restore original styles and scroll position
+      html.style.overflow = originalHtmlOverflow;
+      body.style.overflow = originalBodyOverflow;
+      body.style.position = originalBodyPosition;
+      body.style.width = originalBodyWidth;
+      body.style.top = originalBodyTop;
+
+      // Restore scroll position
+      window.scrollTo(0, scrollY);
+    };
+  }, []);
+
   // Merge default styles with user styles
   // Note: height uses 100svh for iOS Safari (small viewport - visible area when toolbar shown)
   const containerStyle: React.CSSProperties = {

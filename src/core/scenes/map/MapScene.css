@@ -57,3 +57,17 @@
     filter: brightness(1);
   }
 }
+
+/* CSS animation for path mask reveal - works on iOS Safari */
+.map-path-mask-animate {
+  animation: pathReveal 1.5s cubic-bezier(0.33, 1, 0.68, 1) forwards;
+}
+
+@keyframes pathReveal {
+  from {
+    stroke-dashoffset: var(--path-length);
+  }
+  to {
+    stroke-dashoffset: 0;
+  }
+}

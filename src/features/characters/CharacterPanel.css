@@ -444,9 +444,8 @@
   }
 }
 
-/* Mobile - adjust character centering for smaller recordPanelHeight (100px vs 300px)
-   Uses data-mobile attribute set by useIsMobile hook */
+/* Mobile - position characters near top of screen */
 html[data-mobile="true"] .story-character-content {
-  /* Align character's 25% height (100px from top) with mobile safe area midpoint */
-  margin-top: max(0px, calc((100vh - 100px) / 2 - 100px));
+  height: 300px;
+  margin-top: 10px;
 }

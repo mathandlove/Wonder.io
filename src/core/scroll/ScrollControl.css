@@ -11,3 +11,20 @@
   height: 100vh;
   height: 100svh; /* Small viewport height - iOS Safari fix */
 }
+
+/*
+ * Prevent iOS long-press-drag gesture on images
+ * This gesture bypasses touch event handlers and causes native scroll,
+ * which desynchronizes the navigation machine from the actual scroll position.
+ */
+.scroll-control img,
+.scroll-control canvas,
+.scroll-control video {
+  -webkit-touch-callout: none; /* Disable iOS callout (save image, copy, etc.) */
+  -webkit-user-select: none;   /* Disable text/image selection */
+  user-select: none;
+  -webkit-user-drag: none;     /* Disable drag on webkit */
+  user-drag: none;
+  touch-action: none;          /* Disable all touch gestures on media elements */
+  pointer-events: none;        /* Let touch events pass through to parent */
+}

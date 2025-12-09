@@ -24,11 +24,11 @@
   --toast-font-family: "Inter", Helvetica, sans-serif;
   --toast-font-size: 18px;
   --toast-font-weight: 500;
-  --toast-line-height: 28px;
+  --toast-line-height: 1.3;
   --toast-letter-spacing: 0.01em;
 
   /* Toast padding */
-  --toast-padding: 30px;
+  --toast-padding: 18px 24px;
 
   /* Toast arrow */
   --toast-arrow-size: 10px;

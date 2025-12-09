@@ -726,10 +726,15 @@ export function useSTT(callbacks?: UseSTTCallbacks): UseSTT {
 
     } catch (err) {
       debug.error('[START] ❌ ERROR during start:', err);
-      setError(err instanceof Error ? err.message : 'Failed to start recording');
+      const errorMsg = err instanceof Error ? err.message : 'Failed to start recording';
+      setError(errorMsg);
       setStatus('error');
       isStartingRef.current = false; // Reset flag on error
       cleanup();
+      // Notify via callback so navigation can handle the error
+      if (callbacksRef.current?.onError) {
+        callbacksRef.current.onError(errorMsg);
+      }
     }
   }, [cleanup, flushBuffer, status]);
 

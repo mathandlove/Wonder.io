@@ -52,6 +52,22 @@ export function SpeechBubbleOrchestrator() {
 
     const scene = navItem.scene as CharacterScene;
 
+    // Skip standalone nodes - they don't show speech bubbles
+    // Quest and input nodes are displayed without speech bubbles on mobile
+    if (scene.nodeType === 'quest' || scene.nodeType === 'input') {
+      return null;
+    }
+
+    // Also check phase for standalone nodes
+    if (navItem.phase === 'quest-standalone' || navItem.phase === 'input-standalone') {
+      return null;
+    }
+
+    // Check explicit hidesSpeechBubble flag
+    if (scene.hidesSpeechBubble === true) {
+      return null;
+    }
+
     // Helper to extract character from a node (matching CharacterOrchestrator pattern)
     const getChar = (node: Node | null, side: 'left' | 'right') => {
       if (!node) return 'NOCHARACTER';
@@ -256,7 +272,28 @@ export function SpeechBubbleOrchestrator() {
   // This creates a safe area above the RecordPanel for speech bubbles
   // Desktop: Panel is ~150px visible (32px hidden below screen in bottom-anchored state)
   // Add some padding to prevent bubble from touching the panel
-  const recordPanelHeight = isMobile ? 100 : 180;
+  // When in ai-waiting phase, RecordPanel is hidden - use full height
+  const currentPhase = bubbles.current?.navItem?.phase;
+  const isRecordPanelHidden = currentPhase === 'ai-waiting' || currentPhase === 'basic';
+  const recordPanelHeight = isRecordPanelHidden ? 0 : (isMobile ? 100 : 180);
+
+  // Desktop with hidden RecordPanel OR in input/answer sequence: position bubble elevated
+  // This includes all phases in the input and answer flow
+  const inputSequencePhases = [
+    'ai-waiting', 'basic',           // AI response phases
+    'askClue', 'answerClue',         // Clue selection phases
+    'record-answer',                 // Recording answer
+    'answer-processing',             // Processing answer
+    'answer-submit',                 // Submitting answer
+    'answer-waiting',                // Waiting for answer validation
+    'answer-right', 'answer-wrong',  // Answer feedback phases
+  ];
+  const isInputSequencePhase = inputSequencePhases.includes(currentPhase || '');
+  // Desktop elevated positioning: ~50px below top of character cutouts
+  // Character top is at: (100vh - 300px) / 2 - 100px (from CharacterPanel.css)
+  // So bubble should be at: character top + 50px = (100vh - 300px) / 2 - 100px + 50px = (100vh - 300px) / 2 - 50px
+  // We achieve this by using flex-start alignment with paddingTop
+  const useDesktopCharacterAlignment = !isMobile && isInputSequencePhase;
 
   return (
     <div className="speech-bubble-layer" style={{
@@ -278,9 +315,17 @@ export function SpeechBubbleOrchestrator() {
         height: `calc(100vh - ${recordPanelHeight}px)`,
         display: 'flex',
         flexDirection: 'column',
-        justifyContent: 'center', // Centers bubble vertically in safe area
+        // Mobile: align to top with 20px padding
+        // Desktop with hidden RecordPanel: align to top with padding to position near character cutouts
+        // Normal mode: center in safe area
+        justifyContent: (isMobile || useDesktopCharacterAlignment) ? 'flex-start' : 'center',
         alignItems: 'stretch', // Stretch horizontally so bubble can align left/right/center
         pointerEvents: 'none',
+        // Mobile: 20px from top of screen
+        // Desktop character alignment: ~50px below top of character cutouts
+        // Character top margin-top = max(0px, calc((100vh - 300px) / 2 - 100px)) from CharacterPanel.css
+        // Bubble position = character top + 50px
+        paddingTop: isMobile ? '50px' : (useDesktopCharacterAlignment ? 'max(50px, calc((100vh - 300px) / 2 - 50px))' : undefined),
       }}>
         {/* Previous bubble - slides out in opposite direction */}
         {bubbles.previous && bubbles.previous.nodeId !== bubbles.current.nodeId && (

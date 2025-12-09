@@ -15,8 +15,8 @@
 
 import { callAI, validateAnswer, type ConversationMessage } from '@features/ai/aiService';
 import type { ConversationMetadataMap } from '@core/data/loadStory';
-import { getCurrentNode, insertSceneNodes, advanceNavigation } from '@core/navigation/navigationHelpers';
-import { createAIResponseScene as createAIResponseSceneFactory } from '@core/navigation/sceneFactoryFunctions';
+import { getCurrentNode, insertSceneNodes, advanceNavigation, deleteNode } from '@core/navigation/navigationHelpers';
+import { createAIResponseScene as createAIResponseSceneFactory, createInputScene } from '@core/navigation/sceneFactoryFunctions';
 import { useNavigationStore } from '@core/navigation/navigationStore';
 import { createDebugger } from '../../utils/createDebug';
 
@@ -319,11 +319,19 @@ export interface CreateAIResponseInput {
 }
 
 /**
- * Helper to create and insert AI response scene
+ * Helper to create and insert AI response scene + standalone input node
  * Automatically inherits scene context (background, characters) from current node
- * Returns the new scene ID for tracking
+ * Returns the AI response scene ID for tracking
  *
  * This is a SYNCHRONOUS function - all navigation operations complete immediately
+ *
+ * Flow:
+ * 1. Creates AI response scene with phase='basic' (dialogue only, no input UI)
+ * 2. Creates standalone input node after the AI response
+ * 3. Navigates to the AI response scene
+ *
+ * For ai-waiting nodes (from standalone input flow):
+ * - Additionally deletes the old input node and ai-waiting node
  */
 export function createAndInsertAIResponseScene(input: CreateAIResponseInput): string | null {
   try {
@@ -335,6 +343,9 @@ export function createAndInsertAIResponseScene(input: CreateAIResponseInput): st
       debug.error('No current node ID - cannot create AI response scene');
       return null;
     }
+
+    // Check if current node is an ai-waiting node (from standalone input flow)
+    const isAIWaitingNode = (scene as { nodeType?: string })?.nodeType === 'ai-waiting';
 
     // Extract scene properties to inherit (with fallbacks)
     const currentBackground = scene && 'background' in scene ? scene.background : undefined;
@@ -348,6 +359,7 @@ export function createAndInsertAIResponseScene(input: CreateAIResponseInput): st
     debug.event('🔍', 'Extracting scene properties:', {
       currentNodeId: input.currentNodeId,
       sceneType: scene?.type,
+      isAIWaitingNode,
       currentBackground,
       hasBackground: 'background' in (scene || {}),
       leftCharacter,
@@ -374,15 +386,65 @@ export function createAndInsertAIResponseScene(input: CreateAIResponseInput): st
     debug.log('Updated current scene phase: ai-waiting → basic');
 
     // STEP 2: Insert the AI response scene after current node (SYNCHRONOUS)
-    const newSceneId = insertSceneNodes(input.currentNodeId, aiResponseScene);
+    const aiResponseNodeId = insertSceneNodes(input.currentNodeId, aiResponseScene);
 
-    // STEP 3: Navigate forward to the new AI response scene (SYNCHRONOUS)
-    // The new scene already has phase: 'input' so input UI will show immediately
-    advanceNavigation('forward');
+    if (isAIWaitingNode && aiResponseNodeId) {
+      // STANDALONE INPUT FLOW: Create new input node and delete old input node (but keep ai-waiting as user's question)
+      debug.log('📝 AI-Waiting node detected - creating new input node');
 
-    debug.event('✅', 'AI response scene created and navigated (sync)');
+      // STEP 3a: Create new input node after AI response
+      const newInputScene = createInputScene(
+        input.conversationId,
+        currentBackground,
+        leftCharacter,
+        rightCharacter
+      );
+      insertSceneNodes(aiResponseNodeId, newInputScene);
+      debug.log('✅ Created new input node after AI response');
 
-    return newSceneId;
+      // STEP 3b: Navigate forward to the AI response scene
+      advanceNavigation('forward');
+
+      // STEP 3c: Find and delete the old input node (the one before ai-waiting)
+      // The old input node is the prevId of the ai-waiting node
+      // Note: ai-waiting node is kept - it becomes the user's question (phase already updated to 'basic')
+      const aiWaitingNodeId = input.currentNodeId;
+      const graph = useNavigationStore.getState().graph;
+      const aiWaitingNodeData = graph.byId[aiWaitingNodeId];
+      const oldInputNodeId = aiWaitingNodeData?.prevId;
+
+      if (oldInputNodeId) {
+        const oldInputNode = graph.byId[oldInputNodeId];
+        // Only delete if it's actually a standalone input node
+        if ((oldInputNode?.scene as { nodeType?: string })?.nodeType === 'input') {
+          debug.log('🗑️ Deleting old input node:', oldInputNodeId);
+          deleteNode(oldInputNodeId);
+        }
+      }
+
+      // Note: ai-waiting node is NOT deleted - it remains as the user's question with phase='basic'
+      debug.event('✅', 'Input flow complete - AI response + new input created, old input deleted, ai-waiting kept as question');
+    } else {
+      // REGULAR FLOW: Create standalone input node after AI response
+      debug.log('📝 Regular flow - creating standalone input node after AI response');
+
+      // Create new standalone input node after AI response
+      const newInputScene = createInputScene(
+        input.conversationId,
+        currentBackground,
+        leftCharacter,
+        rightCharacter
+      );
+      insertSceneNodes(aiResponseNodeId!, newInputScene);
+      debug.log('✅ Created standalone input node after AI response');
+
+      // Navigate forward to the AI response scene
+      advanceNavigation('forward');
+
+      debug.event('✅', 'AI response scene + standalone input created and navigated (sync)');
+    }
+
+    return aiResponseNodeId;
   } catch (error) {
     debug.error('Failed to create AI response scene:', error);
     return null;

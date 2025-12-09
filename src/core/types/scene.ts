@@ -22,6 +22,10 @@ export type CharacterScene = {
   feedbackText?: string; // AI-generated feedback for wrong answers
   selectedClue?: string; // Label of the selected clue (when useClues=true)
   selectedClueDescription?: string; // Description of the selected clue to pass to AI
+  // Standalone node type indicator for quest/input nodes (no speech bubbles)
+  nodeType?: 'default' | 'quest' | 'input' | 'ai-waiting';
+  hidesSpeechBubble?: boolean; // Explicit flag to hide speech bubbles for this scene
+  sceneId?: string; // Unique scene identifier for dynamically created scenes
   meta?: {
     panelLeft?: { character: string; previousCharacter?: string; nextCharacter?: string; newCharacter?: boolean; aboutToSwap?: boolean };
     panelRight?: { character: string; previousCharacter?: string; nextCharacter?: string; newCharacter?: boolean; aboutToSwap?: boolean };

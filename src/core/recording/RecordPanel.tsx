@@ -129,6 +129,9 @@ export const RecordPanel: React.FC<RecordPanelProps> = ({
   const isBasic = dialogueState === 'basic';
   const isInputBasic = dialogueState === 'input-basic';
   const isQuestOffer = dialogueState === 'quest-showing';
+  // Standalone phases for mobile (no speech bubbles)
+  const isStandaloneQuest = dialogueState === 'quest-standalone';
+  const isInput = dialogueState === 'input';
   const isAskClue = dialogueState === 'askClue';
   const isAnswerClue = dialogueState === 'answerClue';
   const isAskRecording = dialogueState === 'input-recording';
@@ -146,10 +149,12 @@ export const RecordPanel: React.FC<RecordPanelProps> = ({
   // Check both phase and scene type for fail-dance
   const isFailDance = dialogueState === 'fail-dance' || scene?.type === 'fail-dance';
   const isNoAudioRecorded = dialogueState === 'no-audio-recorded';
+  const isNoMicrophone = dialogueState === 'no-microphone';
   const isWaiting = dialogueState === 'ai-waiting' || isWaitingForFinalize || isWaitingForAnswerFinalize || isAnswerWaiting || isProcessing || isAnswerProcessing;
 
   // Hidden state (basic or input-basic) should use quest-offer visual styling
-  const useQuestOfferStyling = isQuestOffer || isBasic || isInputBasic;
+  // Standalone quest also uses quest-offer styling (centered Accept button)
+  const useQuestOfferStyling = isQuestOffer || isBasic || isInputBasic || isStandaloneQuest;
 
   const handleAskClick = () => {
     if (disabled) return;
@@ -277,9 +282,11 @@ export const RecordPanel: React.FC<RecordPanelProps> = ({
     // 3. Clue selection phases
     else if (isAskClue && !hasShown('clue-selection:ask')) {
       toastToShow = 'clue-selection:ask';
+      markShown('clue-selection:ask'); // Mark as shown to prevent re-showing on each clue click
     }
     else if (isAnswerClue && !hasShown('clue-selection:answer')) {
       toastToShow = 'clue-selection:answer';
+      markShown('clue-selection:answer'); // Mark as shown to prevent re-showing on each clue click
     }
     // 4. Normal input state toasts (when buttons are visible and not recording)
     else if (isButtonsVisible) {
@@ -340,8 +347,11 @@ export const RecordPanel: React.FC<RecordPanelProps> = ({
     if (isSuccessDance) return 'answer-right-centered show-green hidden';
     if (isAnswerWrong) return showRedGlow ? 'answer-wrong-centered show-red' : 'answer-wrong-centered';
     if (isAnswerWaiting) return 'hidden'; // Panel lowered while waiting for AI response
+    if (dialogueState === 'ai-waiting') return 'hidden'; // Hide panel while waiting for AI (Ask flow)
     if (isQuestOffer) return 'quest-offer-centered'; // Golden glow for quest
-    // Note: isAnswerProcessing falls through to 'bottom-anchored' - stays in place like recording
+
+    // Standalone phases for mobile (no speech bubbles, centered on screen)
+    if (isStandaloneQuest) return 'quest-offer-centered'; // Same styling as quest-offer
 
     // Fail-dance state - same red glow as answer-wrong but off-screen
     if (isFailDance) return 'answer-wrong-centered show-red hidden';
@@ -349,16 +359,21 @@ export const RecordPanel: React.FC<RecordPanelProps> = ({
     // Hidden state (completely off-screen) - includes basic and input-basic
     if (isBasic || isInputBasic) return 'hidden';
 
-    // Recording submit state - bottom anchored for review
-    if (isRecordingSubmit) return 'bottom-anchored';
+    // Input/answer sequence phases - all centered at midpoint
+    // This keeps the panel elevated during the entire input flow
+    if (isInput) return 'quest-offer-centered';        // Input phase (ready to record)
+    if (isAskClue) return 'quest-offer-centered';      // Clue selection
+    if (isAnswerClue) return 'quest-offer-centered';   // Recording answer about clue
+    if (isAskRecording) return 'quest-offer-centered'; // Recording question (input-recording)
+    if (isProcessing) return 'quest-offer-centered';   // Processing recording (input-processing)
+    if (isRecordingSubmit) return 'quest-offer-centered'; // Review recording
+    if (isAnswerRecording) return 'quest-offer-centered'; // Recording answer (record-answer)
+    if (isAnswerProcessing) return 'quest-offer-centered'; // Processing answer
+    if (isAnswerSubmit) return 'quest-offer-centered'; // Submit answer for review
+    if (isNoAudioRecorded) return 'quest-offer-centered'; // Error state - no audio
+    if (isNoMicrophone) return 'quest-offer-centered'; // Error state - no microphone
 
-    // Answer submit state - bottom anchored for review
-    if (isAnswerSubmit) return 'bottom-anchored';
-
-    // No audio recorded state - centered for error message
-    if (isNoAudioRecorded) return 'bottom-anchored';
-
-    // Rest position - bottom anchored for interactive states
+    // Rest position - bottom anchored for other interactive states
     return 'bottom-anchored';
   };
 
@@ -401,8 +416,8 @@ export const RecordPanel: React.FC<RecordPanelProps> = ({
 
       {/* Main Frame - matching Figma exactly */}
       <div className="frame">
-        {/* Quest Section - white card with shadow (hidden when no audio recorded) */}
-        {!isNoAudioRecorded && (
+        {/* Quest Section - white card with shadow (hidden when no audio recorded or no microphone) */}
+        {!isNoAudioRecorded && !isNoMicrophone && (
           <div className={`whiteframe ${useQuestOfferStyling ? 'quest-offer' : ''}`}>
             <div className="quest">
               <p className={`quest-find-out-what ${useQuestOfferStyling ? 'quest-offer' : ''}`}>
@@ -443,6 +458,19 @@ export const RecordPanel: React.FC<RecordPanelProps> = ({
           </div>
         )}
 
+        {/* No Microphone Message - shown instead of quest when no microphone detected */}
+        {isNoMicrophone && (
+          <div className="whiteframe no-audio-frame">
+            <div className="quest">
+              <p className="quest-find-out-what quest-offer">
+                <span className="no-audio-title">No microphone detected.</span>
+                <br />
+                <span className="no-audio-subtitle">Please change your settings.</span>
+              </p>
+            </div>
+          </div>
+        )}
+
 
 
         {/* Question Display Frame - shown during ask recording states (mirrors answer-frame styling) */}
@@ -453,15 +481,11 @@ export const RecordPanel: React.FC<RecordPanelProps> = ({
                 <span className="quest-label">Your question:</span>
               </p>
               <div className="question-input-box">
-                {(isAskRecording || isWaitingForFinalize) ? (
-                  questionText ? (
-                    <span className="question-placeholder">{questionText}</span>
-                  ) : (
-                    <AudioVisualizer audioLevel={audioLevel} className="question-variant" mode="listening" />
-                  )
+                {isAskRecording ? (
+                  <AudioVisualizer audioLevel={audioLevel} className="question-variant" mode="listening" />
                 ) : isProcessing ? (
                   <AudioVisualizer audioLevel={audioLevel} className="question-variant" mode="processing" />
-                ) : isRecordingSubmit ? (
+                ) : (isRecordingSubmit || isWaitingForFinalize) ? (
                   <span className="question-placeholder">{questionText}</span>
                 ) : null}
               </div>
@@ -477,15 +501,11 @@ export const RecordPanel: React.FC<RecordPanelProps> = ({
                 <span className="quest-label">Answer:</span>
               </p>
               <div className="answer-input-box">
-                {(isAnswerRecording || isWaitingForAnswerFinalize) ? (
-                  answerText ? (
-                    <span className="answer-placeholder">{answerText}</span>
-                  ) : (
-                    <AudioVisualizer audioLevel={audioLevel} className="answer-variant" mode="listening" />
-                  )
+                {isAnswerRecording ? (
+                  <AudioVisualizer audioLevel={audioLevel} className="answer-variant" mode="listening" />
                 ) : isAnswerProcessing ? (
                   <AudioVisualizer audioLevel={audioLevel} className="answer-variant" mode="processing" />
-                ) : isAnswerSubmit ? (
+                ) : (isAnswerSubmit || isWaitingForAnswerFinalize) ? (
                   <span className="answer-placeholder">{answerText}</span>
                 ) : (
                   <span className="quest-description">{answerText || 'Someone stole your cookies.'}</span>
@@ -598,8 +618,8 @@ export const RecordPanel: React.FC<RecordPanelProps> = ({
                   <div className="button-text">Send</div>
                 </button>
               </div>
-            ) : isNoAudioRecorded ? (
-              /* No Audio Recorded State: Continue button on ribbon */
+            ) : isNoAudioRecorded || isNoMicrophone ? (
+              /* No Audio Recorded / No Microphone State: Continue button on ribbon */
               <div className="button-wrapper">
                 <button
                   className="button continue-btn"

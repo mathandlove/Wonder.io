@@ -17,7 +17,6 @@ import type { ClueImageScene as ClueImageSceneType } from '@core/types/scene';
 import { resolveStoryImage } from '@core/data/imageResolver';
 import {
   loadHotspotData,
-  getHotspotByLabel,
   getHotspotCenter,
   type Hotspot,
   type HotspotData,
@@ -53,7 +52,7 @@ function DialogBubble({ text, hotspot, onDismiss, imageBounds }: DialogBubblePro
   const center = getHotspotCenter(hotspot);
 
   // Determine best position based on hotspot location to avoid going off-screen
-  // Prioritize horizontal positioning for left/right hotspots to prevent overlap
+  // Priority: bottom 25% forces top position, then horizontal for edge hotspots
   let position: 'top' | 'bottom' | 'left' | 'right' = 'bottom';
 
   // Calculate actual pixel position of hotspot to check viewport bounds
@@ -66,8 +65,12 @@ function DialogBubble({ text, hotspot, onDismiss, imageBounds }: DialogBubblePro
   // The bubble is vertically centered on the hotspot, so check if top half would overflow
   const wouldOverflowTop = hotspotYPixels - (bubbleHeight / 2) < 0;
 
-  // Check horizontal position first - this takes priority
-  if (center.x > 60) {
+  // FIRST PRIORITY: If hotspot is in bottom 25%, bubble MUST go above (north)
+  if (center.y > 75) {
+    position = 'top';
+  }
+  // Check horizontal position for left/right edge hotspots
+  else if (center.x > 60) {
     // Hotspot on right side - show bubble to the left
     // But check if bubble would go off left edge OR top edge
     if (hotspotXPixels - bubbleWidth - 40 < 0 || wouldOverflowTop) {
@@ -192,8 +195,8 @@ function HotspotOverlay({ hotspots, foundClues, onHotspotClick, imageBounds }: H
 /**
  * Colored Clue Reveal Component
  * Shows the colored version of found clues using CSS clip-path
- * Renders a separate overlay for each found clue since CSS clip-path
- * doesn't support multiple polygons
+ * Pre-renders all hotspots as hidden overlays, then reveals them via opacity
+ * This avoids image decode delay on iOS when clicking clues
  */
 interface ColoredClueRevealProps {
   coloredImageSrc: string;
@@ -203,19 +206,16 @@ interface ColoredClueRevealProps {
 }
 
 function ColoredClueReveal({ coloredImageSrc, foundClues, hotspots, imageBounds }: ColoredClueRevealProps) {
-  if (foundClues.length === 0 || imageBounds.width === 0) {
+  if (imageBounds.width === 0) {
     return null;
   }
 
-  // Render a separate colored overlay for each found clue
+  // Pre-render ALL hotspots as overlays, toggle visibility based on foundClues
+  // This ensures the colored image is already decoded and ready
   return (
     <>
-      {foundClues.map((label) => {
-        const hotspot = getHotspotByLabel(hotspots, label);
-        if (!hotspot) {
-          console.warn('[ColoredClueReveal] Hotspot not found for label:', label);
-          return null;
-        }
+      {hotspots.map((hotspot) => {
+        const isFound = foundClues.includes(hotspot.label);
 
         // Build clip-path for this specific hotspot
         const points = hotspot.points
@@ -223,13 +223,11 @@ function ColoredClueReveal({ coloredImageSrc, foundClues, hotspots, imageBounds 
           .join(', ');
         const clipPath = `polygon(${points})`;
 
-        console.log('[ColoredClueReveal] Rendering overlay for:', label, 'clipPath:', clipPath.substring(0, 100) + '...');
-
         return (
           <img
             key={`colored-${hotspot.id}`}
             src={coloredImageSrc}
-            alt={`Colored clue: ${label}`}
+            alt={`Colored clue: ${hotspot.label}`}
             style={{
               position: 'absolute',
               left: `${imageBounds.left}px`,
@@ -239,6 +237,8 @@ function ColoredClueReveal({ coloredImageSrc, foundClues, hotspots, imageBounds 
               pointerEvents: 'none',
               userSelect: 'none',
               clipPath: clipPath,
+              opacity: isFound ? 1 : 0,
+              transition: 'opacity 0.15s ease-out',
             }}
           />
         );
@@ -277,8 +277,9 @@ export default function ClueImageScene({ scene }: SceneProps<ClueImageSceneType>
   // Check if scene was previously completed (for backward navigation)
   const wasPreviouslyCompleted = scene.phase === 'complete';
 
-  // Determine if all clues are found
-  const isComplete = wasPreviouslyCompleted || (hotspotData && foundClues.length === hotspotData.hotspots.length);
+  // Determine if all clues are found - use scene.clueDescriptions.length as the source of truth
+  // (hotspotData may have more hotspots than the scene uses)
+  const isComplete = wasPreviouslyCompleted || (foundClues.length === scene.clueDescriptions.length);
 
   // Height of the clue panel + 10px gap above it (desktop only)
   const CLUE_PANEL_CLEARANCE = 100;
@@ -392,23 +393,11 @@ export default function ClueImageScene({ scene }: SceneProps<ClueImageSceneType>
         const newFound = [...prev, label];
         console.log('[ClueImageScene] Updated foundClues:', newFound);
 
-        // Check if this is the 4th (last) clue
-        if (hotspotData && newFound.length === hotspotData.hotspots.length) {
+        // Check if all clues are now found - use scene.clueDescriptions.length as source of truth
+        if (newFound.length === scene.clueDescriptions.length) {
           console.log('[ClueImageScene] 🎯 All clues found! Emitting ALL_CLUES_FOUND event');
-
-          // Save clues to ClueStore for use in subsequent character-flow scenes
-          // Strip file extension from scene.image to get just the map name (e.g., "insideBakery.jpg" -> "insideBakery")
-          const mapName = (scene.image || 'insideBakery').replace(/\.(png|jpg|jpeg|webp)$/i, '');
-          const clueData = scene.clueDescriptions.map(desc => ({
-            hotspotName: desc.hotspotName,
-            description: desc.description,
-            image: desc.image,
-            mapName: mapName
-          }));
-          console.log('[ClueImageScene] Saving clues to store:', clueData);
-          setClues(clueData);
-
           // Emit event to navigation machine to update phase
+          // Note: setClues is called in a useEffect to avoid setState during render
           navigationBus.emit({ type: 'ALL_CLUES_FOUND' });
         }
 
@@ -423,25 +412,22 @@ export default function ClueImageScene({ scene }: SceneProps<ClueImageSceneType>
   };
 
   const handleDismissDialog = () => {
-    // Check if all clues are found and we're on mobile - show scroll down toast
-    if (isMobile && isComplete && activeDialog) {
-      setShowScrollDownToast(true);
-      // Auto-hide after 5 seconds
-      setTimeout(() => setShowScrollDownToast(false), 5000);
-    }
     setActiveDialog(null);
   };
 
   const handleBackgroundClick = () => {
-    // Check if all clues are found and we're on mobile - show scroll down toast
-    if (isMobile && isComplete && activeDialog) {
-      setShowScrollDownToast(true);
-      // Auto-hide after 5 seconds
-      setTimeout(() => setShowScrollDownToast(false), 5000);
-    }
     // Dismiss dialog when clicking the background
     setActiveDialog(null);
   };
+
+  // Watch for when all clues are found AND dialog is dismissed - show scroll toast on mobile
+  useEffect(() => {
+    if (isMobile && isComplete && !activeDialog && !wasPreviouslyCompleted) {
+      setShowScrollDownToast(true);
+      const timer = setTimeout(() => setShowScrollDownToast(false), 5000);
+      return () => clearTimeout(timer);
+    }
+  }, [isMobile, isComplete, activeDialog, wasPreviouslyCompleted]);
 
   const handleContinue = () => {
     console.log('[ClueImageScene] Continue button clicked - advancing to next scene');
@@ -645,7 +631,7 @@ export default function ClueImageScene({ scene }: SceneProps<ClueImageSceneType>
           className="discovery-toast"
           onClick={() => setShowDiscoveryToast(false)}
         >
-          Click on the 4 clues hidden in the picture.
+          Click on the {scene.clueDescriptions.length} clues hidden in the picture.
         </div>
       )}
 
