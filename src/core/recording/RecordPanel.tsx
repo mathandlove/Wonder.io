@@ -12,7 +12,6 @@ import { Toast, useToast } from '../../features/chat/ui/Toast';
 import { AudioVisualizer } from './AudioVisualizer';
 import { ClueSelectionPanel } from './ClueSelectionPanel';
 import { useClueStore } from '@core/data/ClueStore';
-import { useSceneConversationMetadata } from '@core/data/FlowMetadataStore';
 import { useNavigationStore, selectCurrentNode } from '@core/navigation/navigationStore';
 import { getConversationMetadata } from '@core/ai/AIOrchestrator';
 import { getServiceInstance } from '@core/navigation/machine/navigationInterpreter';
@@ -68,12 +67,17 @@ export const RecordPanel: React.FC<RecordPanelProps> = ({
   const scene = currentNode?.scene;
 
   // Get conversation metadata to find clueReference
-  // Cast to CharacterScene type which has conversationId
-  const conversationMetadata = useSceneConversationMetadata(scene as CharacterScene | undefined);
+  // Use AIOrchestrator's getConversationMetadata (where the metadata is actually stored)
+  const characterScene = scene as CharacterScene | undefined;
+  const conversationMetadata = getConversationMetadata(characterScene?.conversationId);
   const clueReference = conversationMetadata?.clueReference;
 
+  // Debug: trace clueReference lookup
+  console.log('[RecordPanel] conversationId:', characterScene?.conversationId, 'metadata:', conversationMetadata, 'clueReference:', clueReference);
+
   // Look up clues by reference (deterministic based on story structure)
-  const clues = getCluesByReference(clueReference);
+  // Only look up clues when we have a valid reference to avoid warnings
+  const clues = clueReference ? getCluesByReference(clueReference) : [];
   const dialogueState = currentNode?.phase || 'basic'; // Phase IS the dialogue state
 
   // DEBUG: Log on every render to see what phase we're getting
@@ -106,14 +110,16 @@ export const RecordPanel: React.FC<RecordPanelProps> = ({
 
   // Debug: Log clues and phase changes
   React.useEffect(() => {
-    console.log('[RecordPanel] Phase changed to:', dialogueState, 'clues count:', clues.length);
-    if (dialogueState === 'askClue') {
-      console.log('[RecordPanel] In askClue state, clues:', clues);
-      if (clues.length === 0) {
-        console.warn('[RecordPanel] ⚠️ No clues in ClueStore! User may have navigated before clues were saved.');
+    console.log('[RecordPanel] Phase changed to:', dialogueState, 'clueReference:', clueReference, 'clues count:', clues.length);
+    if (dialogueState === 'askClue' || dialogueState === 'answerClue') {
+      console.log('[RecordPanel] In clue state, clues:', clues);
+      if (clues.length === 0 && clueReference) {
+        console.warn('[RecordPanel] ⚠️ No clues found for reference:', clueReference);
+      } else if (!clueReference) {
+        console.warn('[RecordPanel] ⚠️ No clueReference in metadata - scene may not have useClues:true or clue-image scene not encountered yet');
       }
     }
-  }, [dialogueState, clues]);
+  }, [dialogueState, clues, clueReference]);
 
   // Derive quest state from phase (quest complete when we have answerText and it's correct)
   const questState: 'active' | 'complete' | 'failed' = React.useMemo(() => {

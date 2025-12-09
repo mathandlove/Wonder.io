@@ -146,6 +146,8 @@ function flattenScenes(rawScenes: RawScene[]): FlattenResult {
 
       // Store metadata if found (read from flow level)
       if (conversationId && hasFlowMetadata) {
+        const clueRef = scene.useClues ? lastClueImageName ?? undefined : undefined;
+        console.log(`[loadStory] Setting metadata for ${conversationId}: useClues=${scene.useClues}, lastClueImageName=${lastClueImageName}, clueReference=${clueRef}`);
         flowMetadata[conversationId] = {
           characterDescription: scene.CharacterDescription,
           questText: scene.question,
@@ -153,7 +155,7 @@ function flattenScenes(rawScenes: RawScene[]): FlattenResult {
           incorrectAnswer: scene.incorrectAnswer,
           useClues: scene.useClues,
           // Auto-link to most recent clue-image scene if useClues is enabled
-          clueReference: scene.useClues ? lastClueImageName ?? undefined : undefined,
+          clueReference: clueRef,
           hint: scene.hint,
           requiredAsk: scene.requiredAsk,
           monologue: scene.monologue

@@ -348,7 +348,8 @@ export default function ClueImageScene({ scene }: SceneProps<ClueImageSceneType>
           mapName: mapName
         }));
         console.log('[ClueImageScene] Registering clues for map:', mapName, clueData);
-        registerClues(mapName, clueData);
+        // Use setTimeout to avoid setState during render cycle
+        setTimeout(() => registerClues(mapName, clueData), 0);
       } catch (err) {
         console.error('[ClueImageScene] Failed to load hotspot data:', err);
         setError(err instanceof Error ? err.message : 'Failed to load hotspot data');
@@ -397,8 +398,8 @@ export default function ClueImageScene({ scene }: SceneProps<ClueImageSceneType>
         if (newFound.length === scene.clueDescriptions.length) {
           console.log('[ClueImageScene] 🎯 All clues found! Emitting ALL_CLUES_FOUND event');
           // Emit event to navigation machine to update phase
-          // Note: setClues is called in a useEffect to avoid setState during render
-          navigationBus.emit({ type: 'ALL_CLUES_FOUND' });
+          // Use setTimeout to avoid "Cannot update component while rendering" warning
+          setTimeout(() => navigationBus.emit({ type: 'ALL_CLUES_FOUND' }), 0);
         }
 
         return newFound;

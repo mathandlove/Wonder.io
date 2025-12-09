@@ -274,7 +274,7 @@ export const debugUtils = {
  * - 'all' - Everything
  * - 'none' - Nothing (you'll use __debug commands manually)
  */
-const DEFAULT_DEBUG_MODE: 'xstate' | 'recommended' | 'all' | 'none' = 'all';
+const DEFAULT_DEBUG_MODE: 'xstate' | 'recommended' | 'all' | 'none' = 'none';
 
 /**
  * Expose debug utilities on window in development for easy DevTools access

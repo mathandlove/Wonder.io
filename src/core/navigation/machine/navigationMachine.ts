@@ -43,7 +43,7 @@ const DEBUG_AUTO_UNLOCK_ANSWER_BUTTON = import.meta.env.PROD ? false : false;
  * Useful for testing/debugging without going through the full recording flow
  * NOTE: Always forced to false in production builds
  */
-const DEBUG_ALLOW_SCROLL_DURING_RECORDING = import.meta.env.PROD ? false : true;
+const DEBUG_ALLOW_SCROLL_DURING_RECORDING = import.meta.env.PROD ? false : false;
 
 /**
  * DEBUG FLAG: Allow scroll navigation during quest display
@@ -51,7 +51,7 @@ const DEBUG_ALLOW_SCROLL_DURING_RECORDING = import.meta.env.PROD ? false : true;
  * Useful for testing/debugging story flow without interacting with quest UI
  * NOTE: Always forced to false in production builds
  */
-const DEBUG_ALLOW_SCROLL_DURING_QUEST = import.meta.env.PROD ? false : true;
+const DEBUG_ALLOW_SCROLL_DURING_QUEST = import.meta.env.PROD ? false : false;
 
 /**
  * DEBUG FLAG: Allow scroll navigation during clue-image scenes
@@ -59,7 +59,7 @@ const DEBUG_ALLOW_SCROLL_DURING_QUEST = import.meta.env.PROD ? false : true;
  * Useful for testing/debugging story flow without clicking all hotspots
  * NOTE: Always forced to false in production builds
  */
-const DEBUG_ALLOW_SCROLL_DURING_IMAGECLUE = import.meta.env.PROD ? false : true;
+const DEBUG_ALLOW_SCROLL_DURING_IMAGECLUE = import.meta.env.PROD ? false : false;
 
 // Log when debug modes are enabled (only in development)
 if (import.meta.env.DEV) {
@@ -989,7 +989,7 @@ export const navigationMachine = setup({
         standaloneQuest: {
           entry: () => debug.log('🎯 Entered standaloneQuest state - standalone quest node'),
           on: {
-            // Block scroll down - must click Accept
+            // Block scroll down - must click Accept (unless debug mode)
             SCROLL_DOWN_STEP: DEBUG_ALLOW_SCROLL_DURING_QUEST
               ? {
                   actions: [
@@ -1001,11 +1001,18 @@ export const navigationMachine = setup({
               : {
                   actions: () => debug.log('⛔ SCROLL_DOWN blocked on standalone quest'),
                 },
-            // Allow scroll up to go back
-            SCROLL_UP_STEP: {
-              actions: ['goPrev'],
-              target: '#navigation.scene.route',
-            },
+            // Block scroll up - must click Accept (unless debug mode)
+            SCROLL_UP_STEP: DEBUG_ALLOW_SCROLL_DURING_QUEST
+              ? {
+                  actions: [
+                    () => debug.log('🐛 SCROLL_UP during standalone quest - DEBUG MODE allowed'),
+                    'goPrev',
+                  ],
+                  target: '#navigation.scene.route',
+                }
+              : {
+                  actions: () => debug.log('⛔ SCROLL_UP blocked on standalone quest'),
+                },
             // Accept button clicked - DELETE quest node and navigate forward
             REQUEST_NAV_NEXT: {
               actions: [
@@ -1037,11 +1044,19 @@ export const navigationMachine = setup({
             'checkRequiredAskAndUnlock', // Check if answer button should be unlocked
           ],
           on: {
-            // Allow navigation in input state
-            SCROLL_DOWN_STEP: {
-              actions: ['goNext'],
-              target: '#navigation.scene.route',
-            },
+            // Block scroll down - must interact with Ask/Answer buttons (unless debug mode)
+            SCROLL_DOWN_STEP: DEBUG_ALLOW_SCROLL_DURING_RECORDING
+              ? {
+                  actions: [
+                    () => debug.log('🐛 SCROLL_DOWN during standalone input - DEBUG MODE allowed'),
+                    'goNext',
+                  ],
+                  target: '#navigation.scene.route',
+                }
+              : {
+                  actions: () => debug.log('⛔ SCROLL_DOWN blocked on standalone input'),
+                },
+            // Allow scroll up to go back
             SCROLL_UP_STEP: {
               actions: ['goPrev'],
               target: '#navigation.scene.route',
