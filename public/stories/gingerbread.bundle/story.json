@@ -9,6 +9,11 @@
   "wrongCharacter": "angrybutterbuns",
   "scenes": [
     {
+      "type": "title",
+      "image": "story/title.jpg",
+      "background": "bakery.jpeg"
+    },
+    {
       "type": "map",
       "image": "cityMap.jpeg",
       "location": "Bakery"

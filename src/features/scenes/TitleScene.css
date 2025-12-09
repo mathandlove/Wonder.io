@@ -1,6 +1,8 @@
+@import '@shared/styles/constructionPaperBackground.css';
+
 .title-scene-container {
   min-height: 100vh;
-  min-height: 100svh; /* Small viewport height - iOS Safari fix for centering */
+  min-height: 100svh;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -8,7 +10,6 @@
   padding: 2rem;
   position: relative;
   overflow: hidden;
-  touch-action: pan-x pan-y; /* Disable pinch-zoom */
 }
 
 .cardboard-container {
@@ -16,134 +17,13 @@
   display: flex;
   justify-content: center;
   align-items: center;
-  padding: 90px;
 }
 
-.cardboard-sign {
-  position: relative;
-  width: 600px;
-  height: 420px;
-  background-image: url('/VisualAssets/cardboardSign.png');
-  background-size: cover;
-  background-position: center;
-  background-repeat: no-repeat;
-  display: flex;
-  align-items: center;
-  justify-content: center;
+.title-image {
+  height: 65svh;
+  width: auto;
+  object-fit: contain;
   filter: drop-shadow(4px 8px 16px rgba(0, 0, 0, 0.5));
-}
-
-.red-overlay {
-  position: absolute;
-  width: 85%;
-  height: 60%;
-  top: 40px;
-  background: #DC5B3F;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  border-radius: 2px;
-  box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.3);
-  transform: rotate(3deg);
-}
-
-.red-overlay::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background-image: url('/VisualAssets/constructionTexture.jpg');
-  background-size: cover;
-  background-position: center;
-  mix-blend-mode: multiply;
-  opacity: 0.6;
-  border-radius: 2px;
-}
-
-.cardboard-title {
-  color: white;
-  text-align: center;
-  font-weight: bold;
-  text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.6);
-  line-height: 1.1;
-  font-family: 'Comic Sans MS', cursive, sans-serif;
-  letter-spacing: 1px;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  position: relative;
-  z-index: 5;
-  transform: rotate(-3deg);
-  margin: 0;
-}
-
-.title-line {
-  display: block;
-}
-
-.title-line-1 {
-  font-size: 2.25rem;
-  margin-bottom: 8px;
-}
-
-.title-line-2 {
-  font-size: 2.7rem;
-}
-
-.title-line-3 {
-  font-size: 2.7rem;
-  margin-top: 8px;
-}
-
-.credits-on-cardboard {
-  position: absolute;
-  bottom: 20px;
-  left: 38px;
-  transform: rotate(-2deg);
-}
-
-.author-line {
-  color: white;
-  font-size: 1.35rem;
-  font-weight: 600;
-  font-family: 'Comic Sans MS', cursive, sans-serif;
-  text-shadow: 1px 1px 2px rgba(255, 255, 255, 0.3);
-}
-
-.illustrator-line {
-  color: white;
-  font-size: 1.1rem;
-  font-weight: 500;
-  font-family: 'Comic Sans MS', cursive, sans-serif;
-  text-shadow: 1px 1px 2px rgba(255, 255, 255, 0.3);
-  margin-top: 3px;
-}
-
-.tape {
-  position: absolute;
-  background-image: url('/VisualAssets/tape.webp');
-  background-size: cover;
-  background-repeat: no-repeat;
-  z-index: 10;
-}
-
-.tape-top-left {
-  top: 45px;
-  left: 2px;
-  width: 158px;
-  height: 60px;
-  transform: rotate(-28deg);
-}
-
-.tape-bottom-right {
-  bottom: 70px;
-  right: 60px;
-  width: 75px;
-  height: 60px;
-  transform: rotate(173deg);
 }
 
 /* Wires holding up the sign */
@@ -157,13 +37,13 @@
 }
 
 .wire-left {
-  left: 285px;
+  left: 30%;
   transform: rotate(1deg);
   box-shadow: 1px 0 2px rgba(0, 0, 0, 0.3);
 }
 
 .wire-right {
-  right: 285px;
+  right: 30%;
   transform: rotate(-1deg);
   box-shadow: -1px 0 2px rgba(0, 0, 0, 0.3);
 }
@@ -211,40 +91,31 @@
   100% { transform: rotate(-1deg); }
 }
 
-/* Responsive adjustments */
-@media (max-width: 640px) {
-  .cardboard-sign {
-    width: 480px;
-    height: 408px;
+/* Responsive adjustments - mobile */
+@media (max-width: 768px) {
+  .title-scene-container {
+    justify-content: flex-start;
+    padding: 0;
   }
 
-  .title-line-1 {
-    font-size: 1.8rem;
+  .cardboard-container {
+    padding: 30px 5px 20px;
   }
 
-  .title-line-2 {
-    font-size: 2.2rem;
+  .title-image {
+    max-width: 85vw;
   }
 
-  .title-line-3 {
-    font-size: 2.2rem;
-  }
-
-  .tape-top-left {
-    width: 120px;
-    height: 45px;
-  }
-
-  .tape-bottom-right {
-    width: 60px;
-    height: 45px;
+  .wire {
+    height: 30px;
+    top: -30px;
   }
 
   .wire-left {
-    left: 225px;
+    left: 25%;
   }
 
   .wire-right {
-    right: 225px;
+    right: 25%;
   }
 }

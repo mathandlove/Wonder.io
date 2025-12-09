@@ -171,6 +171,7 @@ export type MapScene = {
 
 export type TitleScene = {
   type: "title";
+  image?: string; // Title image filename
   lvl1?: string; // First line of the title (e.g., "The")
   lvl2?: string; // Second line of the title (e.g., "Cookie Thief")
   author?: string; // Author name
