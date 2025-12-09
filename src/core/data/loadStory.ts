@@ -122,7 +122,15 @@ function flattenScenes(rawScenes: RawScene[]): FlattenResult {
   let sceneCounter = 0;
   let flowCounter = 0;
 
+  // Track the most recent clue-image scene for automatic clueReference linking
+  let lastClueImageName: string | null = null;
+
   rawScenes.forEach((scene) => {
+    // Track clue-image scenes for automatic clueReference
+    if (scene.type === 'clue-image' && scene.image) {
+      // Strip file extension to get just the map name (e.g., "insideBakery.jpg" -> "insideBakery")
+      lastClueImageName = scene.image.replace(/\.(png|jpg|jpeg|webp)$/i, '');
+    }
     if (scene.type === "character-flow" && scene.flow) {
       // Check if flow has input or quest markers
       const hasInputMarker = scene.flow.some(f => f.type === "input");
@@ -144,6 +152,8 @@ function flattenScenes(rawScenes: RawScene[]): FlattenResult {
           successAnswer: scene.successAnswer!,
           incorrectAnswer: scene.incorrectAnswer,
           useClues: scene.useClues,
+          // Auto-link to most recent clue-image scene if useClues is enabled
+          clueReference: scene.useClues ? lastClueImageName ?? undefined : undefined,
           hint: scene.hint,
           requiredAsk: scene.requiredAsk,
           monologue: scene.monologue

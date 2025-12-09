@@ -268,8 +268,8 @@ export default function ClueImageScene({ scene }: SceneProps<ClueImageSceneType>
   // The 10-second sparkle delay should only start after visibility
   const isVisible = useSceneVisibility(containerRef, { threshold: 0.5 });
 
-  // Get ClueStore to save clues when all are found
-  const { setClues } = useClueStore();
+  // Get ClueStore to register clues by map name
+  const { registerClues } = useClueStore();
 
   // Detect mobile for left-side clue panel layout
   const isMobile = useIsMobile();
@@ -337,7 +337,7 @@ export default function ClueImageScene({ scene }: SceneProps<ClueImageSceneType>
         setHotspotData(data);
         setIsLoading(false);
 
-        // Immediately save all clues to ClueStore for use in character-flow scenes
+        // Register all clues to ClueStore under the map name for use in character-flow scenes
         // This happens regardless of whether user clicks on them
         // Strip file extension from scene.image to get just the map name (e.g., "insideBakery.jpg" -> "insideBakery")
         const mapName = (scene.image || 'insideBakery').replace(/\.(png|jpg|jpeg|webp)$/i, '');
@@ -347,8 +347,8 @@ export default function ClueImageScene({ scene }: SceneProps<ClueImageSceneType>
           image: desc.image,
           mapName: mapName
         }));
-        console.log('[ClueImageScene] Auto-saving all clues to store on mount:', clueData);
-        setClues(clueData);
+        console.log('[ClueImageScene] Registering clues for map:', mapName, clueData);
+        registerClues(mapName, clueData);
       } catch (err) {
         console.error('[ClueImageScene] Failed to load hotspot data:', err);
         setError(err instanceof Error ? err.message : 'Failed to load hotspot data');
@@ -357,7 +357,7 @@ export default function ClueImageScene({ scene }: SceneProps<ClueImageSceneType>
     }
 
     loadData();
-  }, [scene.image, scene.clueDescriptions, setClues]);
+  }, [scene.image, scene.clueDescriptions, registerClues]);
 
 
   const handleHotspotClick = (label: string) => {

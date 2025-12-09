@@ -17,6 +17,7 @@ export interface ConversationMetadata {
   successAnswer: string; // Success phrase for both
   incorrectAnswer?: string[]; // Optional array of incorrect facts to penalize
   useClues?: boolean; // Whether to use clues from the most recent clue-image scene
+  clueReference?: string; // Map name of the referenced clue-image scene (e.g., "insideBakery")
   hint?: string; // Hint text to help the player
   requiredAsk?: boolean; // Whether the player must ask questions before answering
   monologue?: boolean; // Whether this is a monologue (single character speaking)

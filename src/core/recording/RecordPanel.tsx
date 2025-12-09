@@ -12,6 +12,7 @@ import { Toast, useToast } from '../../features/chat/ui/Toast';
 import { AudioVisualizer } from './AudioVisualizer';
 import { ClueSelectionPanel } from './ClueSelectionPanel';
 import { useClueStore } from '@core/data/ClueStore';
+import { useSceneConversationMetadata } from '@core/data/FlowMetadataStore';
 import { useNavigationStore, selectCurrentNode } from '@core/navigation/navigationStore';
 import { getConversationMetadata } from '@core/ai/AIOrchestrator';
 import { getServiceInstance } from '@core/navigation/machine/navigationInterpreter';
@@ -59,12 +60,20 @@ export const RecordPanel: React.FC<RecordPanelProps> = ({
   const actualRecordingStatus = useRecordingStatus();
   const isActuallyRecording = actualRecordingStatus === 'recording';
 
-  // Get clues from ClueStore for clue selection
-  const { clues } = useClueStore();
+  // Get clue registry for looking up clues by reference
+  const { getCluesByReference } = useClueStore();
 
   // Read state reactively from navigation store (triggers re-render on phase changes)
   const currentNode = useNavigationStore(selectCurrentNode);
   const scene = currentNode?.scene;
+
+  // Get conversation metadata to find clueReference
+  // Cast to CharacterScene type which has conversationId
+  const conversationMetadata = useSceneConversationMetadata(scene as CharacterScene | undefined);
+  const clueReference = conversationMetadata?.clueReference;
+
+  // Look up clues by reference (deterministic based on story structure)
+  const clues = getCluesByReference(clueReference);
   const dialogueState = currentNode?.phase || 'basic'; // Phase IS the dialogue state
 
   // DEBUG: Log on every render to see what phase we're getting

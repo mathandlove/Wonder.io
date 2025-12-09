@@ -79,9 +79,10 @@ async function generateHotspotThumbnail(sourceImagePath, hotspot, outputDir) {
     .png()
     .toBuffer();
 
-  // Then resize to 120x60 max dimension (2:1 aspect ratio for clue selection panel)
+  // Then resize to 240x120 max dimension (2:1 aspect ratio for clue selection panel)
+  // Using 2x resolution for sharper display on retina/high-DPI screens
   await sharp(maskedImage)
-    .resize(120, 60, {
+    .resize(240, 120, {
       fit: 'inside',
       withoutEnlargement: true
     })

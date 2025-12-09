@@ -1,8 +1,8 @@
 /**
- * ClueStore - Stores clues from the most recent clue-image scene
+ * ClueStore - Registry for clues from clue-image scenes
  *
- * Stores clue data that can be referenced by character-flow scenes.
- * Only stores the most recent set of clues (not accumulated).
+ * Stores clue data indexed by map name (e.g., "insideBakery").
+ * Character-flow scenes reference clues by their clueReference metadata.
  *
  * Used when character-flow has useClues: true metadata.
  */
@@ -16,7 +16,16 @@ export interface ClueData {
   mapName?: string; // Map/scene name for resolving thumbnail paths (e.g., "insideBakery")
 }
 
+// Registry maps clue-image map names to their clue data
+type ClueRegistry = Record<string, ClueData[]>;
+
 interface ClueStoreContextValue {
+  // New registry-based API
+  registerClues: (mapName: string, clues: ClueData[]) => void;
+  getCluesByReference: (mapName: string | undefined) => ClueData[];
+  clearRegistry: () => void;
+
+  // Legacy API for backward compatibility
   clues: ClueData[];
   setClues: (clues: ClueData[]) => void;
   getClues: () => ClueData[];
@@ -26,21 +35,61 @@ interface ClueStoreContextValue {
 const ClueStoreContext = createContext<ClueStoreContextValue | null>(null);
 
 export function ClueStoreProvider({ children }: { children: React.ReactNode }) {
-  const [clues, setCluesState] = useState<ClueData[]>([]);
+  const [registry, setRegistry] = useState<ClueRegistry>({});
 
-  const setClues = useCallback((newClues: ClueData[]) => {
-    setCluesState(newClues);
+  // Register clues under a specific map name
+  const registerClues = useCallback((mapName: string, clues: ClueData[]) => {
+    console.log(`[ClueStore] Registering ${clues.length} clues for "${mapName}"`);
+    setRegistry(prev => ({
+      ...prev,
+      [mapName]: clues
+    }));
   }, []);
+
+  // Get clues by reference (map name)
+  const getCluesByReference = useCallback((mapName: string | undefined): ClueData[] => {
+    if (!mapName) {
+      console.warn('[ClueStore] getCluesByReference called with undefined mapName');
+      return [];
+    }
+    const clues = registry[mapName];
+    if (!clues) {
+      console.warn(`[ClueStore] No clues found for reference "${mapName}"`);
+      return [];
+    }
+    return clues;
+  }, [registry]);
+
+  // Clear all registered clues
+  const clearRegistry = useCallback(() => {
+    setRegistry({});
+  }, []);
+
+  // === Legacy API for backward compatibility ===
+
+  // Get first registered clue set (for legacy code that doesn't use references)
+  const clues = Object.values(registry)[0] ?? [];
+
+  // Legacy setClues - registers under a default key or uses mapName from clues
+  const setClues = useCallback((newClues: ClueData[]) => {
+    const mapName = newClues[0]?.mapName ?? 'default';
+    registerClues(mapName, newClues);
+  }, [registerClues]);
 
   const getClues = useCallback((): ClueData[] => {
     return clues;
   }, [clues]);
 
   const clearClues = useCallback(() => {
-    setCluesState([]);
-  }, []);
+    clearRegistry();
+  }, [clearRegistry]);
 
   const value: ClueStoreContextValue = {
+    // New API
+    registerClues,
+    getCluesByReference,
+    clearRegistry,
+    // Legacy API
     clues,
     setClues,
     getClues,
