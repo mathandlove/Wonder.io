@@ -240,6 +240,50 @@ export function ScrollControl({
     };
   }, []);
 
+  // Disable pinch-to-zoom and double-tap zoom on mobile
+  React.useEffect(() => {
+    if (typeof navigator === 'undefined') return;
+    const IS_MOBILE = /iPad|iPhone|iPod|Android/i.test(navigator.userAgent);
+    if (!IS_MOBILE) return;
+    if (typeof document === 'undefined') return;
+
+    // Prevent pinch-to-zoom (multi-touch gesture)
+    const onTouchStart = (e: TouchEvent) => {
+      if (e.touches.length > 1) {
+        e.preventDefault();
+      }
+    };
+
+    // Prevent zoom during pinch gesture
+    const onTouchMove = (e: TouchEvent) => {
+      if (e.touches.length > 1) {
+        e.preventDefault();
+      }
+    };
+
+    // Prevent Safari gesture events (pinch zoom)
+    const onGestureStart = (e: Event) => {
+      e.preventDefault();
+    };
+
+    const onGestureChange = (e: Event) => {
+      e.preventDefault();
+    };
+
+    // Add listeners with passive: false to allow preventDefault
+    document.addEventListener('touchstart', onTouchStart, { passive: false });
+    document.addEventListener('touchmove', onTouchMove, { passive: false });
+    document.addEventListener('gesturestart', onGestureStart);
+    document.addEventListener('gesturechange', onGestureChange);
+
+    return () => {
+      document.removeEventListener('touchstart', onTouchStart);
+      document.removeEventListener('touchmove', onTouchMove);
+      document.removeEventListener('gesturestart', onGestureStart);
+      document.removeEventListener('gesturechange', onGestureChange);
+    };
+  }, []);
+
   // Merge default styles with user styles
   // Note: height uses 100svh for iOS Safari (small viewport - visible area when toolbar shown)
   const containerStyle: React.CSSProperties = {

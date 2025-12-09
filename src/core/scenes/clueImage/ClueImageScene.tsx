@@ -413,8 +413,9 @@ export default function ClueImageScene({ scene }: SceneProps<ClueImageSceneType>
   };
 
   const handleBackgroundClick = () => {
-    // Dismiss dialog when clicking the background
+    // Dismiss dialog and toast when clicking the background
     setActiveDialog(null);
+    setShowDiscoveryToast(false);
   };
 
   // Watch for when all clues are found AND dialog is dismissed - show scroll toast on mobile

@@ -796,12 +796,12 @@
   cursor: text;
 }
 
-/* Placeholder text styling - grey color to indicate it's not real content yet */
+/* Placeholder text styling - black for easy readability */
 .frame .answer-input-box .answer-placeholder {
-  color: #9ca3af;
-  /* Medium grey - clearly different from real text */
-  font-style: italic;
-  /* Italic to further distinguish from real content */
+  color: #3d3d3d;
+  /* Dark color matching regular text for readability */
+  font-style: normal;
+  /* Normal style for readability */
   font-weight: 400;
   font-size: inherit;
   /* Inherit font-size from parent (answer-input-box) for consistency with AudioVisualizer */
@@ -844,10 +844,10 @@
   cursor: text;
 }
 
-/* Question placeholder text styling */
+/* Question placeholder text styling - black for easy readability */
 .frame .question-input-box .question-placeholder {
-  color: #9ca3af;
-  font-style: italic;
+  color: #3d3d3d;
+  font-style: normal;
   font-weight: 400;
   font-size: inherit;
 }

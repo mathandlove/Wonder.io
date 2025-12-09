@@ -513,7 +513,7 @@ export const RecordPanel: React.FC<RecordPanelProps> = ({
           <div className={`whiteframe answer-frame ${(isAnswerWaiting || isAnswerRight || isAnswerWrong || isSuccessDance) ? 'answer-feedback-state' : ''}`}>
             <div className={`quest ${isAnswerWaiting ? 'answer-waiting' : ''} ${(isAnswerRight || isSuccessDance) ? 'answer-right' : ''} ${isAnswerWrong ? 'answer-wrong' : ''}`}>
               <p className="quest-find-out-what">
-                <span className="quest-label">Answer:</span>
+                <span className="quest-label">Your answer:</span>
               </p>
               <div className="answer-input-box">
                 {isAnswerRecording ? (
