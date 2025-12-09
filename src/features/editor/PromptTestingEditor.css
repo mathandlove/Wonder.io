@@ -1,0 +1,606 @@
+/**
+ * Prompt Testing Editor Styles
+ * Clean, minimal layout for testing AI validation prompts
+ */
+
+/* ============================================================================
+   Loading & Error States
+   ============================================================================ */
+
+.prompt-testing-loading,
+.prompt-testing-error {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100vh;
+  background: #f8fafc;
+}
+
+.prompt-testing-loading-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+  color: #4a9290;
+}
+
+.prompt-testing-loading-content svg {
+  width: 48px;
+  height: 48px;
+}
+
+.prompt-testing-error {
+  flex-direction: column;
+  gap: 16px;
+  color: #dc2626;
+}
+
+.prompt-testing-error button {
+  padding: 10px 20px;
+  background: #4a9290;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+/* Spinner */
+@keyframes prompt-testing-spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+.prompt-testing-spinner {
+  animation: prompt-testing-spin 1s linear infinite;
+}
+
+/* ============================================================================
+   Main Layout
+   ============================================================================ */
+
+.prompt-testing {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  background: #f8fafc;
+}
+
+/* Header */
+.prompt-testing-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 24px;
+  background: #4a9290;
+  color: white;
+  flex-shrink: 0;
+}
+
+.prompt-testing-header-left {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.prompt-testing-back-btn {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 12px;
+  background: rgba(255, 255, 255, 0.1);
+  border: none;
+  border-radius: 6px;
+  color: white;
+  font-size: 14px;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+
+.prompt-testing-back-btn:hover {
+  background: rgba(255, 255, 255, 0.2);
+}
+
+.prompt-testing-divider {
+  width: 1px;
+  height: 24px;
+  background: rgba(255, 255, 255, 0.3);
+}
+
+.prompt-testing-title {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.prompt-testing-title h1 {
+  font-size: 18px;
+  font-weight: 600;
+  margin: 0;
+}
+
+.prompt-testing-header-right {
+  display: flex;
+  align-items: center;
+}
+
+.prompt-testing-count {
+  padding: 6px 12px;
+  background: rgba(255, 255, 255, 0.15);
+  border-radius: 16px;
+  font-size: 13px;
+}
+
+/* Main Content Area */
+.prompt-testing-main {
+  display: flex;
+  flex: 1;
+  overflow: hidden;
+}
+
+/* ============================================================================
+   Left Sidebar - Metaflow List
+   ============================================================================ */
+
+.prompt-testing-sidebar {
+  width: 280px;
+  background: white;
+  border-right: 1px solid #e2e8f0;
+  display: flex;
+  flex-direction: column;
+  flex-shrink: 0;
+}
+
+.prompt-testing-sidebar-header {
+  padding: 16px 20px;
+  border-bottom: 1px solid #e2e8f0;
+}
+
+.prompt-testing-sidebar-header h3 {
+  margin: 0;
+  font-size: 13px;
+  font-weight: 600;
+  color: #64748b;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.prompt-testing-metaflow-list {
+  flex: 1;
+  overflow-y: auto;
+  padding: 12px;
+}
+
+.prompt-testing-metaflow-item {
+  padding: 12px 14px;
+  margin-bottom: 8px;
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+.prompt-testing-metaflow-item:hover {
+  border-color: #4a9290;
+  background: #f0fdfa;
+}
+
+.prompt-testing-metaflow-item.selected {
+  border-color: #4a9290;
+  background: #e6f4f4;
+  box-shadow: 0 0 0 2px rgba(74, 146, 144, 0.15);
+}
+
+.prompt-testing-metaflow-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 6px;
+}
+
+.prompt-testing-metaflow-index {
+  font-size: 11px;
+  font-weight: 600;
+  color: #94a3b8;
+}
+
+.prompt-testing-metaflow-character {
+  font-size: 13px;
+  font-weight: 600;
+  color: #334155;
+}
+
+.prompt-testing-metaflow-question {
+  font-size: 12px;
+  color: #64748b;
+  line-height: 1.4;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.prompt-testing-metaflow-characters {
+  display: none;
+}
+
+/* ============================================================================
+   Center Panel
+   ============================================================================ */
+
+.prompt-testing-center {
+  flex: 1;
+  overflow-y: auto;
+  background: #f8fafc;
+}
+
+.prompt-testing-content {
+  padding: 24px;
+  max-width: 1400px;
+  margin: 0 auto;
+}
+
+.prompt-testing-empty {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  color: #94a3b8;
+  font-size: 15px;
+}
+
+/* Two Column Layout */
+.prompt-testing-columns {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 24px;
+}
+
+.prompt-testing-column {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+/* ============================================================================
+   Sections
+   ============================================================================ */
+
+.prompt-testing-section {
+  background: white;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  padding: 20px;
+}
+
+.prompt-testing-section-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 12px;
+}
+
+.prompt-testing-section-title {
+  margin: 0 0 16px 0;
+  font-size: 14px;
+  font-weight: 600;
+  color: #334155;
+}
+
+.prompt-testing-section-header .prompt-testing-section-title {
+  margin-bottom: 0;
+}
+
+/* ============================================================================
+   Form Fields
+   ============================================================================ */
+
+.prompt-testing-field {
+  margin-bottom: 16px;
+}
+
+.prompt-testing-field:last-child {
+  margin-bottom: 0;
+}
+
+.prompt-testing-field label {
+  display: block;
+  font-size: 13px;
+  font-weight: 500;
+  color: #475569;
+  margin-bottom: 6px;
+}
+
+.prompt-testing-hint {
+  font-weight: 400;
+  color: #94a3b8;
+}
+
+.prompt-testing-field textarea,
+.prompt-testing-field input {
+  width: 100%;
+  padding: 10px 12px;
+  border: 1px solid #e2e8f0;
+  border-radius: 6px;
+  font-size: 14px;
+  font-family: inherit;
+  line-height: 1.5;
+  resize: vertical;
+  transition: border-color 0.15s, box-shadow 0.15s;
+  box-sizing: border-box;
+}
+
+.prompt-testing-field textarea:focus,
+.prompt-testing-field input:focus {
+  outline: none;
+  border-color: #4a9290;
+  box-shadow: 0 0 0 3px rgba(74, 146, 144, 0.1);
+}
+
+.prompt-testing-field textarea:disabled {
+  background: #f8fafc;
+  color: #94a3b8;
+}
+
+.prompt-testing-readonly {
+  padding: 10px 12px;
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 6px;
+  font-size: 14px;
+  color: #475569;
+  line-height: 1.5;
+}
+
+.prompt-testing-context {
+  padding: 10px 12px;
+  background: #fffbeb;
+  border: 1px solid #fde68a;
+  border-radius: 6px;
+  font-size: 13px;
+  color: #92400e;
+  line-height: 1.5;
+  max-height: 120px;
+  overflow-y: auto;
+  white-space: pre-wrap;
+  word-wrap: break-word;
+}
+
+/* ============================================================================
+   Buttons
+   ============================================================================ */
+
+.prompt-testing-save-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 16px;
+  background: #4a9290;
+  border: none;
+  border-radius: 6px;
+  color: white;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.15s;
+  margin-top: 8px;
+}
+
+.prompt-testing-save-btn:hover:not(:disabled) {
+  background: #3d7a78;
+}
+
+.prompt-testing-save-btn:disabled {
+  background: #94a3b8;
+  cursor: not-allowed;
+}
+
+.prompt-testing-save-btn.saved {
+  background: #10b981;
+}
+
+.prompt-testing-save-btn.error {
+  background: #ef4444;
+}
+
+.prompt-testing-text-btn {
+  padding: 6px 12px;
+  background: transparent;
+  border: 1px solid #e2e8f0;
+  border-radius: 6px;
+  font-size: 13px;
+  color: #64748b;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+.prompt-testing-text-btn:hover {
+  background: #f1f5f9;
+  color: #334155;
+}
+
+.prompt-testing-validate-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  width: 100%;
+  padding: 14px 24px;
+  background: #4a9290;
+  border: none;
+  border-radius: 8px;
+  color: white;
+  font-size: 15px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.15s;
+  margin-top: 8px;
+}
+
+.prompt-testing-validate-btn:hover:not(:disabled) {
+  background: #3d7a78;
+}
+
+.prompt-testing-validate-btn:disabled {
+  background: #cbd5e1;
+  cursor: not-allowed;
+}
+
+/* ============================================================================
+   Prompt Textarea
+   ============================================================================ */
+
+.prompt-testing-prompt-textarea {
+  width: 100%;
+  padding: 12px;
+  border: 1px solid #e2e8f0;
+  border-radius: 6px;
+  font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+  font-size: 13px;
+  line-height: 1.6;
+  resize: vertical;
+  min-height: 200px;
+  box-sizing: border-box;
+  transition: border-color 0.15s, box-shadow 0.15s;
+}
+
+.prompt-testing-prompt-textarea:focus {
+  outline: none;
+  border-color: #4a9290;
+  box-shadow: 0 0 0 3px rgba(74, 146, 144, 0.1);
+}
+
+.prompt-testing-prompt-textarea:disabled {
+  background: #f8fafc;
+  color: #94a3b8;
+}
+
+/* ============================================================================
+   Response
+   ============================================================================ */
+
+.prompt-testing-response {
+  padding: 16px;
+  background: #f0fdf4;
+  border: 1px solid #bbf7d0;
+  border-radius: 8px;
+  font-size: 16px;
+  line-height: 1.6;
+  color: #166534;
+  white-space: pre-wrap;
+  word-wrap: break-word;
+}
+
+.prompt-testing-response-empty {
+  padding: 32px 16px;
+  background: #f8fafc;
+  border: 1px dashed #e2e8f0;
+  border-radius: 8px;
+  text-align: center;
+  color: #94a3b8;
+  font-size: 14px;
+}
+
+.prompt-testing-error-message {
+  padding: 12px 16px;
+  background: #fef2f2;
+  border: 1px solid #fecaca;
+  border-radius: 8px;
+  color: #dc2626;
+  font-size: 14px;
+}
+
+/* ============================================================================
+   Cost Calculator
+   ============================================================================ */
+
+.prompt-testing-cost-calculator {
+  margin-top: 16px;
+  padding: 12px 14px;
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  font-size: 13px;
+}
+
+.prompt-testing-cost-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 10px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid #e2e8f0;
+}
+
+.prompt-testing-cost-label {
+  font-weight: 600;
+  color: #334155;
+}
+
+.prompt-testing-cost-model {
+  font-size: 11px;
+  padding: 2px 8px;
+  background: #e0f2fe;
+  color: #0369a1;
+  border-radius: 4px;
+  font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+}
+
+.prompt-testing-cost-breakdown {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.prompt-testing-cost-row {
+  display: grid;
+  grid-template-columns: 60px 1fr auto;
+  gap: 12px;
+  align-items: center;
+  color: #64748b;
+}
+
+.prompt-testing-cost-row span:first-child {
+  font-weight: 500;
+  color: #475569;
+}
+
+.prompt-testing-cost-row span:last-child {
+  font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+  text-align: right;
+}
+
+.prompt-testing-cost-total {
+  margin-top: 6px;
+  padding-top: 8px;
+  border-top: 1px solid #e2e8f0;
+  font-weight: 600;
+}
+
+.prompt-testing-cost-total span {
+  color: #334155 !important;
+}
+
+.prompt-testing-cost-total span:last-child {
+  color: #4a9290 !important;
+}
+
+/* ============================================================================
+   Responsive
+   ============================================================================ */
+
+@media (max-width: 1200px) {
+  .prompt-testing-columns {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 768px) {
+  .prompt-testing-sidebar {
+    width: 220px;
+  }
+
+  .prompt-testing-content {
+    padding: 16px;
+  }
+}

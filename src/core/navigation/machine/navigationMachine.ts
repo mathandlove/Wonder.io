@@ -35,7 +35,7 @@ const debug = createDebugger('navigation:machine');
  * Useful for testing the answer flow directly
  * NOTE: Always forced to false in production builds
  */
-const DEBUG_AUTO_UNLOCK_ANSWER_BUTTON = import.meta.env.PROD ? false : false;
+const DEBUG_AUTO_UNLOCK_ANSWER_BUTTON = import.meta.env.PROD ? false : true;
 
 /**
  * DEBUG FLAG: Allow scroll navigation during recording
@@ -103,7 +103,7 @@ export const navigationMachine = setup({
     }),
     // Answer validation actor - validates user's answer
     validateAnswer: fromPromise(async ({ input }: {
-      input: { answerText: string; questionText?: string; successAnswer: string; incorrectAnswer?: string[]; conversationId?: string }
+      input: { answerText: string; questionText?: string; successAnswer: string; incorrectAnswer?: string[]; conversationId?: string; context?: string }
     }) => {
       return await validateAnswerService(input);
     }),
@@ -2324,47 +2324,58 @@ export const navigationMachine = setup({
             input: () => {
               // Extract answer data from current scene
               const scene = getCurrentNode()?.scene;
-              const answerText = (scene as { answerText?: string })?.answerText;
-              const questionText = (scene as { questionText?: string })?.questionText;
+              const answerText = (scene as { answerText?: string })?.answerText || '';
               const conversationId = (scene as { conversationId?: string })?.conversationId;
 
-              // Check if user has a selected clue - if so, prepend it to the answer FOR VALIDATION ONLY
-              const selectedClue = conversationId ? getSelectedClue(conversationId) : undefined;
-              let answerTextForValidation = answerText || '';
-
-              if (selectedClue) {
-                answerTextForValidation = `Context: ${selectedClue.description}\n\nAnswer: ${answerText}`;
-                debug.log('🔍 Prepending selected clue context for validation:', {
-                  clueLabel: selectedClue.label,
-                  originalAnswerLength: answerText?.length || 0,
-                  validationTextLength: answerTextForValidation.length
-                });
-
-                // Clear the selected clue after using it
-                clearSelectedClue(conversationId!);
-              }
-
-              // Get success answer and incorrect answers from metadata
+              // Get conversation metadata (contains character description as context)
               const metadata = getConversationMetadata(conversationId);
               const successAnswer = metadata?.successAnswer || '';
               const incorrectAnswer = metadata?.incorrectAnswer;
 
-              debug.log('📥 Preparing validation input:', {
-                answerText: answerTextForValidation.substring(0, 50),
-                successAnswer,
-                incorrectAnswer,
-                conversationId,
-                hasAnswer: !!answerTextForValidation,
-                hasSuccessAnswer: !!successAnswer,
-                hasIncorrectAnswers: !!incorrectAnswer
-              });
+              // Get the question text - prefer questText from metadata (the actual question being asked),
+              // fall back to scene.questionText (user's transcribed speech)
+              const questionText = metadata?.questText || (scene as { questionText?: string })?.questionText || '';
 
-              return {
-                answerText: answerTextForValidation, // Send combined text with clue context to AI
+              // Build context from character description and selected clue
+              const contextParts: string[] = [];
+
+              // Add character description (deposition) as context
+              if (metadata?.characterDescription) {
+                contextParts.push(metadata.characterDescription);
+              }
+
+              // Check if user has a selected clue - add to context
+              const selectedClue = conversationId ? getSelectedClue(conversationId) : undefined;
+              if (selectedClue) {
+                contextParts.push(`Point to: ${selectedClue.description}`);
+                debug.log('🔍 Adding selected clue to context for validation:', {
+                  clueLabel: selectedClue.label
+                });
+                // Clear the selected clue after using it
+                clearSelectedClue(conversationId!);
+              }
+
+              const context = contextParts.join('\n\n');
+
+              debug.log('📥 Preparing validation input:', {
+                answerText: answerText.substring(0, 50),
                 questionText,
                 successAnswer,
                 incorrectAnswer,
-                conversationId
+                conversationId,
+                hasAnswer: !!answerText,
+                hasSuccessAnswer: !!successAnswer,
+                hasIncorrectAnswers: !!incorrectAnswer,
+                hasContext: !!context
+              });
+
+              return {
+                answerText,
+                questionText,
+                successAnswer,
+                incorrectAnswer,
+                conversationId,
+                context
               };
             },
             onDone: [
@@ -2380,8 +2391,12 @@ export const navigationMachine = setup({
                 // This gives us maximum time (animation duration + setup) for AI to respond
                 target: 'answerWrong',
                 actions: [
-                  () => {
+                  ({ event }) => {
                     debug.log('❌ Answer INCORRECT → starting feedback generation');
+
+                    // Get reasoning from validation result
+                    const reasoning = event.output.reasoning;
+                    debug.log('📝 Validation reasoning:', reasoning);
 
                     // Get current scene data to extract answer/question information
                     const scene = getCurrentNode()?.scene;
@@ -2394,11 +2409,13 @@ export const navigationMachine = setup({
 
                     // Fire-and-forget: Start feedback generation NOW (don't wait for it)
                     // By the time fail-dance animation completes (~4.7s), feedback will likely be ready
+                    // Include reasoning from validation so feedback can explain why the answer was wrong
                     startFeedbackGeneration({
                       studentAnswer: answerText,
                       correctAnswer: successAnswer,
                       questionText,
-                      conversationId
+                      conversationId,
+                      reasoning
                     });
 
                     debug.log('🚀 Feedback generation started in background');

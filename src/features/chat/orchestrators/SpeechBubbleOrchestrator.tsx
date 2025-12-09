@@ -325,7 +325,7 @@ export function SpeechBubbleOrchestrator() {
         // Desktop character alignment: ~50px below top of character cutouts
         // Character top margin-top = max(0px, calc((100vh - 300px) / 2 - 100px)) from CharacterPanel.css
         // Bubble position = character top + 50px
-        paddingTop: isMobile ? '50px' : (useDesktopCharacterAlignment ? 'max(50px, calc((100vh - 300px) / 2 - 50px))' : undefined),
+        paddingTop: isMobile ? '50px' : (useDesktopCharacterAlignment ? 'max(50px, calc((100vh - 300px) / 2 + 50px))' : undefined),
       }}>
         {/* Previous bubble - slides out in opposite direction */}
         {bubbles.previous && bubbles.previous.nodeId !== bubbles.current.nodeId && (

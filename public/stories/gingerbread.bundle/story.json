@@ -178,7 +178,7 @@
       "monologue": false,
       "requiredAsk": true,
       "question": "What did the thief steal?",
-      "successAnswer": "They stole Baby shoes OR they stole pink baby shoes.",
+      "successAnswer": "pink baby shoes",
       "wrongAnswers": [],
       "hint": "Look at the empty pedestal.",
       "flow": [
@@ -208,7 +208,8 @@
           "side": "left",
           "text": "I'll look around outside."
         }
-      ]
+      ],
+      "incorrectAnswer": []
     },
     {
       "type": "clue-image",
@@ -220,7 +221,6 @@
           "image": "brokenglass",
           "dialog": "The thief jumped out the window onto the glass. Ouch."
         },
-
         {
           "hotspotName": "BabyShoePrints",
           "description": "Tiny shoe prints leading away",
@@ -290,7 +290,7 @@
       "requiredAsk": false,
       "CharacterDescription": "leoChase",
       "question": "What was the child covered in?",
-      "successAnswer": "The child is covered in cookie or the child is a cookie.",
+      "successAnswer": "cookie or cinnamon or frosting",
       "wrongAnswers": [
         "mud"
       ],
@@ -310,6 +310,9 @@
         {
           "type": "input"
         }
+      ],
+      "incorrectAnswer": [
+        "mud"
       ]
     },
     {

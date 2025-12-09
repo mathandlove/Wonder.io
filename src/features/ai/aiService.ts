@@ -111,8 +111,9 @@ export async function callAI(input: AIServiceInput): Promise<AIServiceResponse> 
 export interface AnswerValidationInput {
   userAnswer: string;
   correctAnswer: string;
-  incorrectAnswer?: string[];
+  incorrectAnswer?: string[];  // FAIL answers - these always result in FAIL
   questionText?: string;
+  context?: string;  // Character deposition/context
 }
 
 /**
@@ -121,12 +122,14 @@ export interface AnswerValidationInput {
 export interface AnswerValidationResponse {
   isCorrect: boolean;
   success: boolean;
+  reasoning?: string;  // Explanation from AI (returned on FAIL)
   error?: string;
 }
 
 /**
  * Validate user's answer against the correct answer using AI
  * This uses AI to allow for flexible matching (typos, different phrasings, etc.)
+ * Returns PASS/FAIL with reasoning on failure.
  *
  * @param input - Validation request parameters
  * @returns Promise<AnswerValidationResponse> - Validation result or error
@@ -135,7 +138,8 @@ export async function validateAnswer(input: AnswerValidationInput): Promise<Answ
   debug.event('🎯', 'validateAnswer called:', {
     userAnswer: input.userAnswer,
     correctAnswer: input.correctAnswer,
-    questionText: input.questionText
+    questionText: input.questionText,
+    context: input.context?.substring(0, 50) + '...'
   });
 
   try {
@@ -144,7 +148,8 @@ export async function validateAnswer(input: AnswerValidationInput): Promise<Answ
       debug.log('Empty user answer - returning false');
       return {
         isCorrect: false,
-        success: true
+        success: true,
+        reasoning: 'No answer provided'
       };
     }
 
@@ -153,40 +158,20 @@ export async function validateAnswer(input: AnswerValidationInput): Promise<Answ
       throw new Error('Correct answer is required for validation');
     }
 
-    // Build a prompt that asks AI to rate semantic equivalence
-    let validationPrompt = `You are a friendly teacher helping to see if a child's answer means the same thing as the correct answer.
-Please give a score from 0 to 100 based on how much the meaning is the same.
+    debug.event('📤', 'Calling validation API with structured data...');
 
-100 = same idea, even if the words are different
-70–90 = same basic meaning, but some details are missing
-40–69 = somewhat related, but the main idea is unclear
-0–39 = mostly unrelated
-
-Be generous: if the child clearly understands the idea, it's okay if they don't say who or what exactly.
-
-Correct answer: "${input.correctAnswer}"
-Student answer: "${input.userAnswer}"`;
-
-    // Add incorrect answer penalty if provided
-    if (input.incorrectAnswer && input.incorrectAnswer.length > 0) {
-      validationPrompt += `\n\nSubtract 50 points if the answer states any of the following facts:`;
-      input.incorrectAnswer.forEach((incorrectFact) => {
-        validationPrompt += `\n- "${incorrectFact}"`;
-      });
-    }
-
-    validationPrompt += `\n\nReturn your response as a number.`;
-
-    debug.event('📤', 'Calling validation API...');
-
-    // Call backend API
+    // Call backend API with structured data - backend builds the prompt
     const response = await fetch(API_ENDPOINTS.AI_VALIDATE, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json'
       },
       body: JSON.stringify({
-        prompt: validationPrompt
+        context: input.context || '',
+        question: input.questionText || '',
+        expectedAnswer: input.correctAnswer,
+        studentAnswer: input.userAnswer,
+        failAnswers: input.incorrectAnswer || []
       })
     });
 
@@ -199,37 +184,21 @@ Student answer: "${input.userAnswer}"`;
 
     debug.event('📨', 'Received API response:', data);
 
-    if (!data.response || !data.response.trim()) {
-      debug.error('Empty response from AI validation');
-      throw new Error('Received empty response from AI validation');
-    }
+    // Parse PASS/FAIL response
+    const isCorrect = data.isCorrect;
+    const reasoning = data.reasoning || '';
 
-    // Parse AI response - expecting a number from 0 to 100
-    const aiResponse = data.response.trim();
-    const score = parseInt(aiResponse, 10);
-
-    debug.log('Parsed score:', score);
-
-    // Validate that we got a valid number
-    if (isNaN(score) || score < 0 || score > 100) {
-      debug.error('Invalid score from AI:', aiResponse);
-      throw new Error(`Invalid validation score: ${aiResponse}`);
-    }
-
-    // Consider correct if score is above 65
-    const isCorrect = score > 65;
-
-    debug.event('📊', 'Validation score:', {
-      score,
+    debug.event('📊', 'Validation result:', {
       isCorrect,
-      threshold: 65,
+      reasoning,
       userAnswer: input.userAnswer,
       correctAnswer: input.correctAnswer
     });
 
     return {
       isCorrect,
-      success: true
+      success: true,
+      reasoning: isCorrect ? undefined : reasoning  // Only return reasoning on FAIL
     };
 
   } catch (error) {

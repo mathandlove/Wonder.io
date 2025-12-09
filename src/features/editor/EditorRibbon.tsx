@@ -19,7 +19,7 @@ interface EditorRibbonProps {
   isMapMode?: boolean;
 }
 
-type TabId = 'clue-image' | 'map' | 'ai-generation' | 'story-review';
+type TabId = 'clue-image' | 'map' | 'ai-generation' | 'story-review' | 'prompt-testing';
 
 interface Tool {
   id: string;
@@ -133,6 +133,7 @@ const EditorRibbon: React.FC<EditorRibbonProps> = ({
     { id: 'map', label: 'Map' },
     { id: 'ai-generation', label: 'AI Generation' },
     { id: 'story-review', label: 'Story Review' },
+    { id: 'prompt-testing', label: 'Prompt Testing' },
   ];
 
   // Handle tab change - auto-activate tools when certain tabs are selected
@@ -147,6 +148,8 @@ const EditorRibbon: React.FC<EditorRibbonProps> = ({
       onToolSelect('story-review');
     } else if (tabId === 'map') {
       onToolSelect('map-editor');
+    } else if (tabId === 'prompt-testing') {
+      onToolSelect('prompt-testing');
     }
     setActiveTab(tabId);
   };
@@ -353,6 +356,39 @@ const EditorRibbon: React.FC<EditorRibbonProps> = ({
             {/* Info Text */}
             <div style={{ color: '#6b7280', fontSize: 13 }}>
               Navigate through scenes and edit JSON properties
+            </div>
+          </div>
+        );
+
+      case 'prompt-testing':
+        return (
+          <div style={{ display: 'flex', alignItems: 'center', gap: 20 }}>
+            {/* Open Prompt Testing Button */}
+            <button
+              onClick={() => onToolSelect('prompt-testing')}
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: 10,
+                padding: '14px 24px',
+                backgroundColor: '#4a9290',
+                color: 'white',
+                border: 'none',
+                borderRadius: 8,
+                fontSize: 14,
+                fontWeight: 600,
+                cursor: 'pointer',
+                boxShadow: '0 2px 8px rgba(74, 146, 144, 0.3)',
+                transition: 'all 0.15s ease'
+              }}
+            >
+              {Icons.sparkles}
+              <span>Open Prompt Testing</span>
+            </button>
+
+            {/* Info Text */}
+            <div style={{ color: '#6b7280', fontSize: 13 }}>
+              Test and refine AI prompts for metaflows
             </div>
           </div>
         );

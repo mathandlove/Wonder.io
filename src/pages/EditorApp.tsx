@@ -16,6 +16,7 @@ import AIGenerationPanel from '../features/editor/AIGenerationPanel';
 import ClueImageEditor from '../features/editor/ClueImageEditor';
 import StoryReviewEditor from '../features/editor/StoryReviewEditor';
 import MapEditor from '../features/editor/MapEditor';
+import PromptTestingEditor from '../features/editor/PromptTestingEditor';
 import type { Hotspot, MapPath } from '@shared/types/hotspot';
 
 const EditorApp: React.FC = () => {
@@ -326,6 +327,7 @@ const EditorApp: React.FC = () => {
   const isClueEditorMode = activeTool === 'clue-editor';
   const isStoryReviewMode = activeTool === 'story-review';
   const isMapEditorMode = activeTool === 'map-editor';
+  const isPromptTestingMode = activeTool === 'prompt-testing';
 
   // AI Generator takes over the full screen
   if (isAIGeneratorMode) {
@@ -374,6 +376,19 @@ const EditorApp: React.FC = () => {
     return (
       <div className="h-screen w-screen bg-gray-100 flex flex-col overflow-hidden">
         <MapEditor
+          isActive={true}
+          storyId="gingerbread"
+          onClose={() => setActiveTool(null)}
+        />
+      </div>
+    );
+  }
+
+  // Prompt Testing Editor takes over the full screen
+  if (isPromptTestingMode) {
+    return (
+      <div className="h-screen w-screen bg-gray-100 flex flex-col overflow-hidden">
+        <PromptTestingEditor
           isActive={true}
           storyId="gingerbread"
           onClose={() => setActiveTool(null)}

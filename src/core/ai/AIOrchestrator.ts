@@ -460,6 +460,7 @@ export interface AnswerValidationInput {
   successAnswer: string;
   incorrectAnswer?: string[];
   conversationId?: string;
+  context?: string;  // Character deposition/context for validation
 }
 
 /**
@@ -467,6 +468,7 @@ export interface AnswerValidationInput {
  */
 export interface AnswerValidationOutput {
   isCorrect: boolean;
+  reasoning?: string;  // Explanation from AI (returned on FAIL)
 }
 
 /**
@@ -503,7 +505,8 @@ export async function validateAnswerService(input: AnswerValidationInput): Promi
     userAnswer: input.answerText,
     correctAnswer: input.successAnswer,
     incorrectAnswer: input.incorrectAnswer,
-    questionText: input.questionText
+    questionText: input.questionText,
+    context: input.context
   });
 
   // Check if validation call succeeded
@@ -519,11 +522,15 @@ export async function validateAnswerService(input: AnswerValidationInput): Promi
 
   debug.event('✅', 'AI validation complete:', {
     isCorrect: validationResult.isCorrect,
+    reasoning: validationResult.reasoning,
     userAnswer: input.answerText,
     correctAnswer: input.successAnswer
   });
 
-  return { isCorrect: validationResult.isCorrect };
+  return {
+    isCorrect: validationResult.isCorrect,
+    reasoning: validationResult.reasoning  // Pass through reasoning from AI
+  };
 }
 
 /**
@@ -534,6 +541,7 @@ export interface FeedbackGenerationInput {
   correctAnswer: string;
   questionText?: string;
   conversationId?: string;
+  reasoning?: string;  // AI's reasoning for why the answer was wrong
 }
 
 /**
@@ -550,6 +558,7 @@ export function startFeedbackGeneration(input: FeedbackGenerationInput): void {
   debug.event('🚀', 'Starting feedback generation (fire-and-forget):', {
     studentAnswer: input.studentAnswer.substring(0, 50),
     correctAnswer: input.correctAnswer,
+    reasoning: input.reasoning?.substring(0, 50),
     conversationId: input.conversationId
   });
 
@@ -571,45 +580,47 @@ export function startFeedbackGeneration(input: FeedbackGenerationInput): void {
         return null;
       }
 
-      // Build AI prompt for feedback
-      const feedbackPrompt = `You are ${metadata.characterDescription}.
+      // Build AI prompt for feedback using reasoning from validation
+      const feedbackPrompt = `A student answered this question wrong.
 
 Question: "${input.questionText || 'a question'}"
-Their guess: "${input.studentAnswer}"
-Correct answer (for your eyes only): "${input.correctAnswer}"
+Student's answer: "${input.studentAnswer}"
+${input.reasoning ? `Why it's wrong: ${input.reasoning}` : ''}
+
+CHARACTER DEPOSITION:
+${metadata.characterDescription}
 
 Your job:
 - Respond as the character.
 - Politely but clearly say that their guess is not true.
-- You may add one short, playful bakery-themed detail that only relates to their guess.
+- Explain why it is not true in the real world context.
 - DO NOT mention, hint at, or allude to the correct answer or any real problem.
 - DO NOT say or imply what you actually are worried about.
 - DO NOT encourage them, correct them, or ask them to try again.
 - DO NOT mention "question," "guess," "correct," or anything meta.
 - Speak directly, like you're talking to them in the moment.
--Do NOT include quotation marks around your reply.
+- Do NOT include quotation marks around your reply.
 
 Hard constraints:
 1. Your reply MUST be exactly ONE sentence.
 2. After that one sentence, you MUST stop.
-3. You are allowed to reference ONLY what they said and normal bakery stuff (ovens, flour, pastries, etc.).
+3. You are allowed to reference ONLY what they said and what is in the context.
 4. You are NOT allowed to introduce any new situation.
 
-Output:
-Write only that one in-character sentence  with no quotes.
-
-
-Previous conversation:
+Previous conversation for context:
 ${conversationHistory.slice(-5).map(msg => `${msg.role}: ${msg.content}`).join('\n')}
+
+Output:
+Write only that one in-character sentence with no quotes.
 `;
 
       debug.event('📤', 'Calling AI for feedback generation');
 
-      // Call AI service for feedback
+      // Call AI service for feedback - use a minimal character description since it's already in the prompt
       const response = await callAI({
         questionText: feedbackPrompt,
-        characterDescription: metadata.characterDescription,
-        conversationHistory: conversationHistory.slice(-5) // Last 5 messages for context
+        characterDescription: 'You are a helpful assistant responding in character.',
+        conversationHistory: [] // Don't pass history again since it's in the prompt
       });
 
       if (response.success && response.text) {
