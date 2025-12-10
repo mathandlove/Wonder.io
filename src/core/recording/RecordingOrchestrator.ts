@@ -18,8 +18,9 @@
 import { useSTT } from './hooks/useSTT';
 import type { UseSTTCallbacks } from './hooks/useSTT';
 import { createDebugger } from '../../utils/createDebug';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import * as navigationBus from '../navigation/events/navigationBus';
+import { useNavigationStore } from '../navigation/navigationStore';
 
 const debug = createDebugger('recording:orchestrator');
 
@@ -189,17 +190,22 @@ export const RecordingOrchestratorAPI = {
 
 /**
  * Hook to access current audio level for visualization
- * Updates at 60fps during recording
+ * Updates at 60fps during recording, but only triggers re-render when value changes
  */
 export function useAudioLevel(): number {
   const [audioLevel, setAudioLevel] = useState(0);
+  const lastLevelRef = useRef(0);
 
   useEffect(() => {
     let rafId: number;
 
     const updateAudioLevel = () => {
       const level = RecordingOrchestratorAPI.getAudioLevel();
-      setAudioLevel(level);
+      // Only update state if level changed (avoid unnecessary re-renders)
+      if (level !== lastLevelRef.current) {
+        lastLevelRef.current = level;
+        setAudioLevel(level);
+      }
       rafId = requestAnimationFrame(updateAudioLevel);
     };
 
@@ -222,13 +228,18 @@ export function useAudioLevel(): number {
  */
 export function useRecordingStatus(): RecordingState {
   const [status, setStatus] = useState<RecordingState>('idle');
+  const lastStatusRef = useRef<RecordingState>('idle');
 
   useEffect(() => {
     let rafId: number;
 
     const updateStatus = () => {
       const currentStatus = recordingRegistry.getStatus();
-      setStatus(currentStatus);
+      // Only update state if status changed (avoid unnecessary re-renders)
+      if (currentStatus !== lastStatusRef.current) {
+        lastStatusRef.current = currentStatus;
+        setStatus(currentStatus);
+      }
       rafId = requestAnimationFrame(updateStatus);
     };
 
@@ -277,6 +288,7 @@ export function useRecordingOrchestrator(callbacks?: RecordingCallbacks): Record
   const sttCallbacks: UseSTTCallbacks = {
     onFinal: callbacks?.onTranscript,
     onError: callbacks?.onError,
+    onAutoStop: callbacks?.onAutoStop,
     onRecordingActive: callbacks?.onRecordingActive,
     onNoAudioDetected: callbacks?.onNoAudioDetected,
   };
@@ -344,6 +356,22 @@ export function RecordingProvider({
     onRecordingActive: () => {
       debug.log('🎙️ Recording active - emitting RECORDING_ACTIVE');
       navigationBus.emit({ type: 'RECORDING_ACTIVE' });
+    },
+    onAutoStop: () => {
+      // Called when autostop fires (1s silence after speech detected)
+      // We need to emit RECORDING_STOPPED so the navigation machine transitions to processing state
+      debug.log('⏱️ Autostop fired - emitting RECORDING_STOPPED');
+
+      // Determine recording type from current phase
+      const currentPhase = useNavigationStore.getState().getCurrentPhase();
+      const recordingType = currentPhase === 'record-answer' ? 'answer' : 'question';
+      const currentNodeId = useNavigationStore.getState().graph.currentId || '';
+
+      navigationBus.emit({
+        type: 'RECORDING_STOPPED',
+        nodeId: currentNodeId,
+        recordingType
+      });
     },
     onNoAudioDetected: () => {
       // Called when peak audio level was below threshold during recording

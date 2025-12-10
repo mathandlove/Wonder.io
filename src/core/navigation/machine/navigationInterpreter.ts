@@ -37,7 +37,6 @@ const inspector = typeof window !== 'undefined' && import.meta.env.DEV
  */
 export function startNavigationService(): ReturnType<typeof createActor> {
   if (serviceInstance) {
-    console.warn('[NavigationInterpreter] Service already started');
     return serviceInstance;
   }
 
@@ -50,44 +49,20 @@ export function startNavigationService(): ReturnType<typeof createActor> {
   // Subscribe to the event bus - forward all events to the machine
   navigationBus.subscribe((event) => {
     if (!serviceInstance) return;
-
-    console.log('[NavigationInterpreter] Received event:', event.type);
     serviceInstance.send(event);
   });
 
-  // Listen to machine transitions and process actions
-  serviceInstance.subscribe((snapshot) => {
-    // Get the current node using convenience method
-    const node = useNavigationStore.getState().getCurrentNode();
-
-    // Build log info with machine state and complete node
-    const logInfo: Record<string, unknown> = {
-      machineState: snapshot.value,
-      scene: node?.scene?.type || 'none',
-      phase: node?.phase || 'none',
-      nodeId: node?.id.substring(0, 8) + '...' || 'none',
-    };
-
-    console.log('[NavigationInterpreter] State changed to:', logInfo);
-
+  // Listen to machine transitions (for future action processing if needed)
+  serviceInstance.subscribe(() => {
     // Note: Actions now call store methods directly, no queue processing needed
   });
 
   // Start the machine
   serviceInstance.start();
 
-  console.log('[NavigationInterpreter] Navigation service started');
-  if (inspector) {
-    console.log('🔍 XState Inspector enabled - visit https://stately.ai/viz?inspect to visualize');
-  }
-
   // Expose service instance on window for debugging in development
   if (typeof window !== 'undefined' && import.meta.env.DEV) {
     (window as Window & { __xstate?: typeof serviceInstance }).__xstate = serviceInstance;
-    console.log('🐛 XState service available as window.__xstate');
-    console.log('   - Get current state: __xstate.getSnapshot().value');
-    console.log('   - Get context: __xstate.getSnapshot().context');
-    console.log('   - Send event: __xstate.send({ type: "EVENT_NAME" })');
   }
 
   // Kick off the boot sequence by requesting the gingerbread story to be loaded
@@ -106,14 +81,11 @@ export function startNavigationService(): ReturnType<typeof createActor> {
  */
 export function stopNavigationService(): void {
   if (!serviceInstance) {
-    console.warn('[NavigationInterpreter] No service to stop');
     return;
   }
 
   serviceInstance.stop();
   serviceInstance = null;
-
-  console.log('[NavigationInterpreter] Navigation service stopped');
 }
 
 /**

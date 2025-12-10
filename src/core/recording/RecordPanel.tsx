@@ -26,6 +26,12 @@ import {
 } from '@core/toast';
 import './css/RecordPanel.css';
 
+/** Truncate text to maxLength characters with ellipsis if longer */
+const truncateText = (text: string, maxLength: number = 100): string => {
+  if (text.length <= maxLength) return text;
+  return text.slice(0, maxLength) + '...';
+};
+
 interface RecordPanelProps {
   // Optional callbacks for video completion (orchestrator still needs these for coordination)
   onAnswerWrongVideoComplete?: () => void;
@@ -72,35 +78,26 @@ export const RecordPanel: React.FC<RecordPanelProps> = ({
   const conversationMetadata = getConversationMetadata(characterScene?.conversationId);
   const clueReference = conversationMetadata?.clueReference;
 
-  // Debug: trace clueReference lookup
-  console.log('[RecordPanel] conversationId:', characterScene?.conversationId, 'metadata:', conversationMetadata, 'clueReference:', clueReference);
-
   // Look up clues by reference (deterministic based on story structure)
   // Only look up clues when we have a valid reference to avoid warnings
   const clues = clueReference ? getCluesByReference(clueReference) : [];
   const dialogueState = currentNode?.phase || 'basic'; // Phase IS the dialogue state
-
-  // DEBUG: Log on every render to see what phase we're getting
-  console.log('[RecordPanel] RENDER - dialogueState:', dialogueState, '| scene type:', scene?.type);
 
   // Get unlockAnswerButton flag from machine context
   const [unlockAnswerButton, setUnlockAnswerButton] = React.useState(false);
   React.useEffect(() => {
     const service = getServiceInstance();
     if (!service) {
-      console.warn('[RecordPanel] ⚠️ No service instance available for unlockAnswerButton subscription');
       return;
     }
 
-    console.log('[RecordPanel] 🔗 Subscribing to machine for unlockAnswerButton');
     const subscription = service.subscribe((snapshot) => {
       const newValue = snapshot.context.unlockAnswerButton;
-      console.log('[RecordPanel] 🔓 unlockAnswerButton changed:', newValue, 'state:', snapshot.value);
-      setUnlockAnswerButton(newValue);
+      // Only update state if value actually changed (avoid unnecessary re-renders)
+      setUnlockAnswerButton((prev) => (prev !== newValue ? newValue : prev));
     });
 
     return () => {
-      console.log('[RecordPanel] 🔌 Unsubscribing from machine');
       subscription.unsubscribe();
     };
   }, []);
@@ -108,18 +105,6 @@ export const RecordPanel: React.FC<RecordPanelProps> = ({
   // Local state for hint toggle (internal to RecordPanel)
   const [showHint, setShowHint] = React.useState(false);
 
-  // Debug: Log clues and phase changes
-  React.useEffect(() => {
-    console.log('[RecordPanel] Phase changed to:', dialogueState, 'clueReference:', clueReference, 'clues count:', clues.length);
-    if (dialogueState === 'askClue' || dialogueState === 'answerClue') {
-      console.log('[RecordPanel] In clue state, clues:', clues);
-      if (clues.length === 0 && clueReference) {
-        console.warn('[RecordPanel] ⚠️ No clues found for reference:', clueReference);
-      } else if (!clueReference) {
-        console.warn('[RecordPanel] ⚠️ No clueReference in metadata - scene may not have useClues:true or clue-image scene not encountered yet');
-      }
-    }
-  }, [dialogueState, clues, clueReference]);
 
   // Derive quest state from phase (quest complete when we have answerText and it's correct)
   const questState: 'active' | 'complete' | 'failed' = React.useMemo(() => {
@@ -260,9 +245,6 @@ export const RecordPanel: React.FC<RecordPanelProps> = ({
   React.useEffect(() => {
     const prevState = prevDialogueStateRef.current;
 
-    // DEBUG: Log phase transitions
-    console.log('[RecordPanel Toast] Phase:', dialogueState, '| isButtonsVisible:', isButtonsVisible, '| prevState:', prevState);
-
     // Track if we just came from answer-wrong (for hint toast)
     if (prevState === 'answer-wrong' || prevState === 'fail-dance') {
       justCameFromWrongAnswerRef.current = true;
@@ -305,7 +287,6 @@ export const RecordPanel: React.FC<RecordPanelProps> = ({
     }
     // 4. Normal input state toasts (when buttons are visible and not recording)
     else if (isButtonsVisible) {
-      console.log('[RecordPanel Toast] Buttons visible, hasShown input:first?', hasShown('input:first'));
       if (!hasShown('input:first')) {
         toastToShow = 'input:first';
         markShown('input:first'); // Mark as shown since we use inline toast
@@ -330,8 +311,6 @@ export const RecordPanel: React.FC<RecordPanelProps> = ({
         return; // Early return to skip the normal setActiveToast logic
       }
     }
-
-    console.log('[RecordPanel Toast] Setting activeToast to:', toastToShow, 'needsDelay:', needsDelay);
 
     if (toastToShow && needsDelay) {
       // Delay toast to wait for container transition (0.6s transition + small buffer)
@@ -392,11 +371,7 @@ export const RecordPanel: React.FC<RecordPanelProps> = ({
     return 'bottom-anchored';
   };
 
-  // Debug: Log container class changes
   const containerClass = getContainerClass();
-  React.useEffect(() => {
-    console.log('[RecordPanel] Container class:', containerClass, '| dialogueState:', dialogueState, '| showRedGlow:', showRedGlow, '| isFailDance:', isFailDance);
-  }, [containerClass, dialogueState, showRedGlow, isFailDance]);
 
   // Allow scroll events to pass through to the underlying scene scroll container
   const handleWheel = (e: React.WheelEvent) => {
@@ -501,7 +476,7 @@ export const RecordPanel: React.FC<RecordPanelProps> = ({
                 ) : isProcessing ? (
                   <AudioVisualizer audioLevel={audioLevel} className="question-variant" mode="processing" />
                 ) : (isRecordingSubmit || isWaitingForFinalize) ? (
-                  <span className="question-placeholder">{questionText}</span>
+                  <span className="question-placeholder">{truncateText(questionText)}</span>
                 ) : null}
               </div>
             </div>
@@ -521,9 +496,9 @@ export const RecordPanel: React.FC<RecordPanelProps> = ({
                 ) : isAnswerProcessing ? (
                   <AudioVisualizer audioLevel={audioLevel} className="answer-variant" mode="processing" />
                 ) : (isAnswerSubmit || isWaitingForAnswerFinalize) ? (
-                  <span className="answer-placeholder">{answerText}</span>
+                  <span className="answer-placeholder">{truncateText(answerText)}</span>
                 ) : (
-                  <span className="quest-description">{answerText || 'Someone stole your cookies.'}</span>
+                  <span className="quest-description">{truncateText(answerText) || 'Someone stole your cookies.'}</span>
                 )}
               </div>
             </div>
@@ -540,11 +515,9 @@ export const RecordPanel: React.FC<RecordPanelProps> = ({
                 <ClueSelectionPanel
                   clues={clues}
                   onClueSelect={(label) => {
-                    console.log('[RecordPanel] Clue selected:', label);
                     // Find the clue description for this label
                     const selectedClue = clues.find(c => c.hotspotName === label);
                     const clueDescription = selectedClue?.description || '';
-                    console.log('[RecordPanel] Clue description:', clueDescription);
 
                     // Emit CLUE_SELECTED event to navigation machine with description
                     navigationBus.emit({

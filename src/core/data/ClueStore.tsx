@@ -39,7 +39,6 @@ export function ClueStoreProvider({ children }: { children: React.ReactNode }) {
 
   // Register clues under a specific map name
   const registerClues = useCallback((mapName: string, clues: ClueData[]) => {
-    console.log(`[ClueStore] Registering ${clues.length} clues for "${mapName}"`);
     setRegistry(prev => ({
       ...prev,
       [mapName]: clues
@@ -49,16 +48,10 @@ export function ClueStoreProvider({ children }: { children: React.ReactNode }) {
   // Get clues by reference (map name)
   const getCluesByReference = useCallback((mapName: string | undefined): ClueData[] => {
     if (!mapName) {
-      // This is expected for scenes without useClues - don't warn
+      // This is expected for scenes without useClues
       return [];
     }
-    const clues = registry[mapName];
-    if (!clues) {
-      // Only warn if we have a mapName but no clues - this means the clue-image scene hasn't mounted yet
-      console.warn(`[ClueStore] No clues found for reference "${mapName}" - clue-image scene may not have mounted yet`);
-      return [];
-    }
-    return clues;
+    return registry[mapName] || [];
   }, [registry]);
 
   // Clear all registered clues

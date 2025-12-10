@@ -19,6 +19,7 @@ class AudioProcessor extends AudioWorkletProcessor {
     this.silenceThreshold = 0.01; // RMS threshold
     this.silenceDurationSamples = 16000; // 1 second at 16kHz
     this.silenceCounter = 0;
+    this.inSilence = true; // Start assuming silence (no speech yet)
 
     // Dynamic normalization configuration
     // Optimized for soft-spoken children on varied devices (iPads, Chromebooks, MacBooks)
@@ -70,6 +71,8 @@ class AudioProcessor extends AudioWorkletProcessor {
       this.buffer = new Float32Array(this.bufferSize);
       this.currentGain = 1.0; // Reset gain for next recording session
       this.rmsHistory = []; // Clear RMS history
+      this.inSilence = true; // Reset silence state for next session
+      this.silenceCounter = 0; // Reset silence counter
     } else {
       // Buffer is empty, but still send acknowledgment that flush completed
       // This ensures the main thread's callback always executes
@@ -173,18 +176,25 @@ class AudioProcessor extends AudioWorkletProcessor {
     const rms = this.calculateRMS(inputChannel);
     const isSilence = rms < this.silenceThreshold;
 
-    // Track silence duration
+    // Track silence/speech state transitions
     if (isSilence) {
+      // Transition from speech to silence - notify immediately
+      if (!this.inSilence) {
+        this.inSilence = true;
+        this.port.postMessage({ type: 'silence' });
+      }
+
       this.silenceCounter += inputChannel.length;
 
-      // Send silence event when threshold is reached
+      // Send long silence event when threshold is reached (fallback timeout)
       if (this.silenceCounter >= this.silenceDurationSamples) {
-        this.port.postMessage({ type: 'silence' });
+        this.port.postMessage({ type: 'long_silence' });
         this.silenceCounter = 0; // Reset to prevent repeated messages
       }
     } else {
-      // Reset silence counter on speech activity
-      if (this.silenceCounter > 0) {
+      // Transition from silence to speech - notify immediately
+      if (this.inSilence || this.silenceCounter > 0) {
+        this.inSilence = false;
         this.port.postMessage({ type: 'speech' });
         this.silenceCounter = 0;
       }

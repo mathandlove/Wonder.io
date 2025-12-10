@@ -351,7 +351,6 @@ export default function ClueImageScene({ scene }: SceneProps<ClueImageSceneType>
           image: desc.image,
           mapName: mapName
         }));
-        console.log('[ClueImageScene] Registering clues for map:', mapName, clueData);
         // Use setTimeout to avoid setState during render cycle
         setTimeout(() => registerClues(mapName, clueData), 0);
       } catch (err) {
@@ -366,14 +365,11 @@ export default function ClueImageScene({ scene }: SceneProps<ClueImageSceneType>
 
 
   const handleHotspotClick = (label: string) => {
-    console.log('[ClueImageScene] Hotspot clicked:', label);
-
     // Dismiss discovery toast on any hotspot click
     setShowDiscoveryToast(false);
 
     const hotspot = hotspotData?.hotspots.find(h => h.label === label);
     if (!hotspot) {
-      console.warn('[ClueImageScene] Hotspot not found in data:', label);
       return;
     }
 
@@ -382,29 +378,24 @@ export default function ClueImageScene({ scene }: SceneProps<ClueImageSceneType>
       c => c.hotspotName.toLowerCase() === label.toLowerCase()
     );
     if (!clueDesc) {
-      console.warn('[ClueImageScene] No clue description found for:', label);
       return;
     }
 
     // If clicking the same hotspot that's already showing, dismiss the dialog
     if (activeDialog && activeDialog.hotspot.label === label) {
-      console.log('[ClueImageScene] Dismissing dialog for:', label);
       setActiveDialog(null);
       return;
     }
 
     // Mark as found if not already
     if (!foundClues.includes(label)) {
-      console.log('[ClueImageScene] Marking clue as found:', label);
       // Reset sparkle delay to 10 seconds after each click
       setSparkleDelayKey(prev => prev + 1);
       setFoundClues(prev => {
         const newFound = [...prev, label];
-        console.log('[ClueImageScene] Updated foundClues:', newFound);
 
         // Check if all clues are now found - use scene.clueDescriptions.length as source of truth
         if (newFound.length === scene.clueDescriptions.length) {
-          console.log('[ClueImageScene] 🎯 All clues found! Emitting ALL_CLUES_FOUND event');
           // Emit event to navigation machine to update phase
           // Use setTimeout to avoid "Cannot update component while rendering" warning
           setTimeout(() => navigationBus.emit({ type: 'ALL_CLUES_FOUND' }), 0);
@@ -412,8 +403,6 @@ export default function ClueImageScene({ scene }: SceneProps<ClueImageSceneType>
 
         return newFound;
       });
-    } else {
-      console.log('[ClueImageScene] Clue already found:', label);
     }
 
     // Show dialog (or switch to this one if another is active)
@@ -440,26 +429,20 @@ export default function ClueImageScene({ scene }: SceneProps<ClueImageSceneType>
   }, [isMobile, isComplete, activeDialog, wasPreviouslyCompleted]);
 
   const handleContinue = () => {
-    console.log('[ClueImageScene] Continue button clicked - advancing to next scene');
     // Emit navigation event to advance to next scene
     navigationBus.emit({ type: 'CONTINUE' });
   };
 
   // Show discovery toast when scene becomes visible (first time only)
   useEffect(() => {
-    console.log('[ClueImageScene Toast] isVisible:', isVisible, '| wasPreviouslyCompleted:', wasPreviouslyCompleted, '| hasShown:', hasShown('clue-image:discovery'));
-
     if (isVisible && !wasPreviouslyCompleted && !hasShown('clue-image:discovery')) {
-      console.log('[ClueImageScene Toast] Showing toast in 800ms');
       const showTimer = setTimeout(() => {
         markShown('clue-image:discovery');
         setShowDiscoveryToast(true);
-        console.log('[ClueImageScene Toast] Toast shown!');
       }, 800);
 
       const hideTimer = setTimeout(() => {
         setShowDiscoveryToast(false);
-        console.log('[ClueImageScene Toast] Toast hidden');
       }, 800 + 5000); // delay + duration
 
       return () => {

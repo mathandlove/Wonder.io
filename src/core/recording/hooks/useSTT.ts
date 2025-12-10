@@ -85,7 +85,6 @@ export function useSTT(callbacks?: UseSTTCallbacks): UseSTT {
   const mediaStreamRef = useRef<MediaStream | null>(null);
   const sourceNodeRef = useRef<MediaStreamAudioSourceNode | null>(null);
   const workletNodeRef = useRef<AudioWorkletNode | null>(null);
-  const silenceTimerRef = useRef<NodeJS.Timeout | null>(null);
 
   // Track if stop has been called to prevent duplicate stop calls
   const isStoppingRef = useRef<boolean>(false);
@@ -98,9 +97,6 @@ export function useSTT(callbacks?: UseSTTCallbacks): UseSTT {
 
   // CRITICAL: Prevent duplicate start() calls (React StrictMode protection)
   const isStartingRef = useRef<boolean>(false);
-
-  // Track if a silence timer is currently pending (prevents race condition)
-  const silenceTimerPendingRef = useRef<boolean>(false);
 
   // Audio buffer for early speech (before STT is ready)
   const audioBufferRef = useRef<ArrayBuffer[]>([]);
@@ -169,13 +165,7 @@ export function useSTT(callbacks?: UseSTTCallbacks): UseSTT {
     // Reset STT ready state
     isSttReadyRef.current = false;
 
-    // Clear ALL timers and pending flags
-    if (silenceTimerRef.current) {
-      clearTimeout(silenceTimerRef.current);
-      silenceTimerRef.current = null;
-    }
-    silenceTimerPendingRef.current = false;
-
+    // Clear ALL timers
     if (flushDelayTimerRef.current) {
       clearTimeout(flushDelayTimerRef.current);
       flushDelayTimerRef.current = null;
@@ -284,7 +274,7 @@ export function useSTT(callbacks?: UseSTTCallbacks): UseSTT {
 
 
       // 1. Start WebSocket connection (non-blocking)
-      console.log('🔌 [useSTT] Attempting WebSocket connection to:', CONFIG.WS_URL);
+      debug.log('🔌 [useSTT] Attempting WebSocket connection to:', CONFIG.WS_URL);
       const ws = new WebSocket(CONFIG.WS_URL);
       wsRef.current = ws;
 
@@ -294,7 +284,7 @@ export function useSTT(callbacks?: UseSTTCallbacks): UseSTT {
 
       ws.onopen = () => {
         connectionEstablished = true;
-        console.log('✅ [useSTT] WebSocket connected successfully');
+        debug.log('✅ [useSTT] WebSocket connected successfully');
         // Signal to backend that a new session is starting (reset accumulation)
         ws.send(JSON.stringify({ type: 'start_session' }));
         sessionStartSent = true;
@@ -382,48 +372,26 @@ export function useSTT(callbacks?: UseSTTCallbacks): UseSTT {
         }
       };
 
-      ws.onerror = (error) => {
+      ws.onerror = () => {
         const errorMsg = 'WebSocket connection failed - is backend running on port 3001?';
-        console.error('❌ [useSTT] WebSocket Connection Error:', {
-          message: errorMsg,
-          wsUrl: CONFIG.WS_URL,
-          error: error,
-          timestamp: new Date().toISOString()
-        });
-        console.error('💡 [useSTT] To fix this:');
-        console.error('   1. Navigate to backend directory: cd backend');
-        console.error('   2. Start the server: npm run dev');
-        console.error('   3. Verify it\'s running on port 3001');
+        debug.error('❌ [useSTT] WebSocket Connection Error - start backend with: cd backend && npm run dev');
         setError(errorMsg);
         setStatus('error');
         cleanup();
       };
 
       ws.onclose = (event) => {
-        console.log('🔌 [useSTT] WebSocket closed:', {
+        debug.log('🔌 [useSTT] WebSocket closed:', {
           code: event.code,
           reason: event.reason,
           wasClean: event.wasClean,
           connectionEstablished: connectionEstablished,
-          timestamp: new Date().toISOString()
         });
 
         // If connection never established, this is a connection failure
         if (!connectionEstablished) {
           const errorMsg = 'Failed to connect to backend server on port 3001';
-          console.error('❌ [useSTT] Backend Connection Failed:', {
-            message: errorMsg,
-            wsUrl: CONFIG.WS_URL,
-            closeCode: event.code,
-            closeReason: event.reason || '(no reason provided)',
-            timestamp: new Date().toISOString()
-          });
-          console.error('💡 [useSTT] To fix this:');
-          console.error('   1. Navigate to backend directory: cd backend');
-          console.error('   2. Install dependencies: npm install');
-          console.error('   3. Start the server: npm run dev');
-          console.error('   4. Look for: "🚀 Server running on http://localhost:3001"');
-          console.error('   5. Look for: "🔌 WebSocket endpoint: ws://localhost:3001/api/stt/socket"');
+          debug.error('❌ [useSTT] Backend Connection Failed - start backend with: cd backend && npm run dev');
 
           setError(errorMsg);
           setStatus('error');
@@ -682,22 +650,22 @@ export function useSTT(callbacks?: UseSTTCallbacks): UseSTT {
                 stopRef.current?.();
               }, CONFIG.AUTOSTOP_SILENCE_MS);
             }
+            break;
+          }
 
-            // FALLBACK: Start long silence timer if not already pending (20s timeout)
-            // This handles the case where user never speaks at all
-            if (!silenceTimerPendingRef.current) {
-              // Set pending flag IMMEDIATELY to prevent concurrent timer creation
-              silenceTimerPendingRef.current = true;
-
-              silenceTimerRef.current = setTimeout(() => {
-                // Call onAutoStop callback if registered (allows orchestrator to handle state transition)
-                if (callbacksRef.current?.onAutoStop) {
-                  callbacksRef.current.onAutoStop();
-                }
-                // Then stop the recording
-                stopRef.current?.();
-              }, CONFIG.SILENCE_DURATION_MS);
+          case 'long_silence': {
+            // Don't process if we're already stopping
+            if (isStoppingRef.current) {
+              break;
             }
+
+            // FALLBACK: 20s of continuous silence from worklet - auto-stop
+            // This handles the case where user never speaks at all
+            debug.log('⏱️ [useSTT] Long silence (20s) - auto-stopping');
+            if (callbacksRef.current?.onAutoStop) {
+              callbacksRef.current.onAutoStop();
+            }
+            stopRef.current?.();
             break;
           }
 
@@ -717,13 +685,6 @@ export function useSTT(callbacks?: UseSTTCallbacks): UseSTT {
             if (autostopTimerRef.current) {
               clearTimeout(autostopTimerRef.current);
               autostopTimerRef.current = null;
-            }
-
-            // Reset long silence timer on speech
-            if (silenceTimerRef.current) {
-              clearTimeout(silenceTimerRef.current);
-              silenceTimerRef.current = null;
-              silenceTimerPendingRef.current = false;
             }
             break;
           }
@@ -797,14 +758,7 @@ export function useSTT(callbacks?: UseSTTCallbacks): UseSTT {
 
     isStoppingRef.current = true;
 
-    // CRITICAL: Clear silence timer AND pending flag FIRST to prevent it from firing during cleanup
-    if (silenceTimerRef.current) {
-      clearTimeout(silenceTimerRef.current);
-      silenceTimerRef.current = null;
-    }
-    silenceTimerPendingRef.current = false;
-
-    // Clear autostop timer
+    // Clear autostop timer to prevent it from firing during cleanup
     if (autostopTimerRef.current) {
       clearTimeout(autostopTimerRef.current);
       autostopTimerRef.current = null;
