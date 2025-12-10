@@ -50,7 +50,8 @@ const CONFIG = {
   WS_URL: API_ENDPOINTS.STT_SOCKET,
   SAMPLE_RATE: 16000, // 16kHz audio for STT
   SILENCE_THRESHOLD: 0.005, // Lower threshold for soft-spoken children (was 0.01)
-  SILENCE_DURATION_MS: 20000, // Auto-stop after 20s of silence
+  SILENCE_DURATION_MS: 20000, // Auto-stop after 20s of silence (fallback)
+  AUTOSTOP_SILENCE_MS: 1000, // Auto-stop after 1s of silence AFTER speech is detected
   BUFFER_SIZE: 4096, // AudioWorklet buffer size
   // Minimum peak RMS level to consider audio was actually recorded
   // If peak never exceeds this, we assume no real audio was captured (mic blocked, silent, etc.)
@@ -120,6 +121,14 @@ export function useSTT(callbacks?: UseSTTCallbacks): UseSTT {
   // Used to detect if any real audio was captured (vs silence/blocked mic)
   const peakAudioLevelRef = useRef<number>(0);
 
+  // Track if speech has been detected during this recording session
+  // Used for autostop: only trigger 1s silence timeout AFTER speech is detected
+  const speechDetectedRef = useRef<boolean>(false);
+
+  // Autostop timer - separate from main silence timer
+  // Fires 1 second after last speech when autostop is enabled
+  const autostopTimerRef = useRef<NodeJS.Timeout | null>(null);
+
   // Safety timeout to ensure cleanup happens even if 'close' event never arrives
   const cleanupSafetyTimerRef = useRef<NodeJS.Timeout | null>(null);
 
@@ -171,6 +180,14 @@ export function useSTT(callbacks?: UseSTTCallbacks): UseSTT {
       clearTimeout(flushDelayTimerRef.current);
       flushDelayTimerRef.current = null;
     }
+
+    if (autostopTimerRef.current) {
+      clearTimeout(autostopTimerRef.current);
+      autostopTimerRef.current = null;
+    }
+
+    // Reset speech detection state
+    speechDetectedRef.current = false;
 
     if (cleanupSafetyTimerRef.current) {
       clearTimeout(cleanupSafetyTimerRef.current);
@@ -238,6 +255,7 @@ export function useSTT(callbacks?: UseSTTCallbacks): UseSTT {
 
     isStartingRef.current = true;
     peakAudioLevelRef.current = 0; // Reset peak audio level for new recording session
+    speechDetectedRef.current = false; // Reset speech detection for autostop
     debug.log('🎬 [useSTT] Starting recording session...');
 
     // CRITICAL: Clean up any existing resources before starting new recording
@@ -650,7 +668,23 @@ export function useSTT(callbacks?: UseSTTCallbacks): UseSTT {
               break;
             }
 
-            // Start silence timer if not already pending
+            // AUTOSTOP: If speech was detected, start short autostop timer (1s)
+            // This triggers stop after 1s of silence following speech
+            if (speechDetectedRef.current && !autostopTimerRef.current) {
+              debug.log('🔇 [useSTT] Speech ended, starting 1s autostop timer');
+              autostopTimerRef.current = setTimeout(() => {
+                debug.log('⏱️ [useSTT] Autostop triggered - 1s silence after speech');
+                // Call onAutoStop callback if registered (allows orchestrator to handle state transition)
+                if (callbacksRef.current?.onAutoStop) {
+                  callbacksRef.current.onAutoStop();
+                }
+                // Then stop the recording
+                stopRef.current?.();
+              }, CONFIG.AUTOSTOP_SILENCE_MS);
+            }
+
+            // FALLBACK: Start long silence timer if not already pending (20s timeout)
+            // This handles the case where user never speaks at all
             if (!silenceTimerPendingRef.current) {
               // Set pending flag IMMEDIATELY to prevent concurrent timer creation
               silenceTimerPendingRef.current = true;
@@ -673,7 +707,19 @@ export function useSTT(callbacks?: UseSTTCallbacks): UseSTT {
               break;
             }
 
-            // Reset silence timer on speech
+            // Mark that speech has been detected in this session
+            if (!speechDetectedRef.current) {
+              debug.log('🎤 [useSTT] Speech detected - autostop now armed');
+              speechDetectedRef.current = true;
+            }
+
+            // Clear autostop timer on speech (user is still talking)
+            if (autostopTimerRef.current) {
+              clearTimeout(autostopTimerRef.current);
+              autostopTimerRef.current = null;
+            }
+
+            // Reset long silence timer on speech
             if (silenceTimerRef.current) {
               clearTimeout(silenceTimerRef.current);
               silenceTimerRef.current = null;
@@ -757,6 +803,12 @@ export function useSTT(callbacks?: UseSTTCallbacks): UseSTT {
       silenceTimerRef.current = null;
     }
     silenceTimerPendingRef.current = false;
+
+    // Clear autostop timer
+    if (autostopTimerRef.current) {
+      clearTimeout(autostopTimerRef.current);
+      autostopTimerRef.current = null;
+    }
 
     // Clear flush delay timer too
     if (flushDelayTimerRef.current) {
