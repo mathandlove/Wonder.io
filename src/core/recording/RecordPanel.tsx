@@ -309,7 +309,8 @@ export const RecordPanel: React.FC<RecordPanelProps> = ({
       toastTimeoutRef.current = setTimeout(() => {
         setActiveToast(toastToShow);
       }, 700);
-    } else {
+    } else if (toastToShow) {
+      // Only set toast if we have one to show (don't clear existing toast unnecessarily)
       setActiveToast(toastToShow);
     }
 
