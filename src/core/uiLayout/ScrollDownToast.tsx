@@ -8,15 +8,8 @@ import React from 'react';
 import { useNavigationStore, selectCanScrollDown } from '@core/navigation/navigationStore';
 import './css/ScrollDownToast.css';
 
-// iOS devices scroll "up" to go forward (natural scrolling inverted from desktop)
-// Modern iPads report as MacIntel, so also check for touch support
-const isIOSDevice = () =>
-  /iPad|iPhone|iPod/.test(navigator.userAgent) ||
-  (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
-
 export const ScrollDownToast: React.FC = () => {
   const canScrollDown = useNavigationStore(selectCanScrollDown);
-  const isIOS = React.useMemo(() => isIOSDevice(), []);
   const currentPageIndex = useNavigationStore((state) => {
     if (!state.currentId) return -1;
     return state.graph.order.indexOf(state.currentId);
@@ -131,7 +124,7 @@ export const ScrollDownToast: React.FC = () => {
             />
           </svg>
         </div>
-        <span className="scroll-down-text">{isIOS ? 'Scroll Up' : 'Scroll Down'} to Continue</span>
+        <span className="scroll-down-text">Scroll Down to Continue</span>
       </div>
     </div>
   );

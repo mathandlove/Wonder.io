@@ -304,7 +304,7 @@ export function useRecordingOrchestrator(callbacks?: RecordingCallbacks): Record
     const control: RecordingControl = {
       start: stt.start,
       stop: stt.stop,
-      getAudioLevel: () => stt.audioLevel,
+      getAudioLevel: stt.getAudioLevel, // Use getter to avoid stale closure
       getStatus: () => state,
     };
 
@@ -313,7 +313,7 @@ export function useRecordingOrchestrator(callbacks?: RecordingCallbacks): Record
     return () => {
       recordingRegistry.unregister();
     };
-  }, [stt.start, stt.stop, stt.audioLevel, state]);
+  }, [stt.start, stt.stop, stt.getAudioLevel, state]);
 
   return {
     start: stt.start,

@@ -40,6 +40,7 @@ export type UseSTT = {
   transcript: string;
   error?: string;
   audioLevel: number; // Current audio level (0-1) for visualization
+  getAudioLevel: () => number; // Getter for current audio level (avoids stale closure issues)
 };
 
 // ──────────────────────────────────────────────────────────────────────────────
@@ -72,6 +73,8 @@ export function useSTT(callbacks?: UseSTTCallbacks): UseSTT {
   const [transcript, setTranscript] = useState<string>('');
   const [error, setError] = useState<string | undefined>(undefined);
   const [audioLevel, setAudioLevel] = useState<number>(0);
+  // Ref to track audio level for external getters (avoids stale closure issues)
+  const audioLevelRef = useRef<number>(0);
 
   // Store callbacks in ref to avoid re-creating WebSocket on callback changes
   const callbacksRef = useRef<UseSTTCallbacks | undefined>(callbacks);
@@ -706,6 +709,7 @@ export function useSTT(callbacks?: UseSTTCallbacks): UseSTT {
             // Scale RMS (typically 0-0.1) to 0-1 range for better visualization
             const scaledLevel = Math.min(rawLevel * 10, 1);
             setAudioLevel(scaledLevel);
+            audioLevelRef.current = scaledLevel; // Keep ref in sync for external getters
             break;
           }
         }
@@ -929,6 +933,9 @@ export function useSTT(callbacks?: UseSTTCallbacks): UseSTT {
     };
   }, [cleanup]);
 
+  // Getter for audio level that always returns current value (avoids stale closure issues)
+  const getAudioLevel = useCallback(() => audioLevelRef.current, []);
+
   return {
     start,
     stop,
@@ -937,5 +944,6 @@ export function useSTT(callbacks?: UseSTTCallbacks): UseSTT {
     transcript,
     error,
     audioLevel,
+    getAudioLevel,
   };
 }

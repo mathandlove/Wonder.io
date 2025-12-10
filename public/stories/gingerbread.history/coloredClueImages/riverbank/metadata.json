@@ -9,7 +9,43 @@
       "prompt": "Uploaded image",
       "charactersReferenced": [],
       "isModification": false
+    },
+    {
+      "version": 2,
+      "filename": "v2-1765342145755.jpeg",
+      "timestamp": 1765342145755,
+      "prompt": "Color the sign light brown. Footprints pink. Shoes pink. ANd fox's tail orange.",
+      "charactersReferenced": [],
+      "isModification": true,
+      "baseVersion": 0
+    },
+    {
+      "version": 3,
+      "filename": "v3-1765342145756.jpeg",
+      "timestamp": 1765342145756,
+      "prompt": "Color the sign light brown. Footprints pink. Shoes pink. ANd fox's tail orange.",
+      "charactersReferenced": [],
+      "isModification": true,
+      "baseVersion": 0
+    },
+    {
+      "version": 4,
+      "filename": "v4-1765342145757.jpeg",
+      "timestamp": 1765342145757,
+      "prompt": "Color the sign light brown. Footprints pink. Shoes pink. ANd fox's tail orange.",
+      "charactersReferenced": [],
+      "isModification": true,
+      "baseVersion": 0
+    },
+    {
+      "version": 5,
+      "filename": "v5-1765342145758.jpeg",
+      "timestamp": 1765342145758,
+      "prompt": "Color the sign light brown. Footprints pink. Shoes pink. ANd fox's tail orange.",
+      "charactersReferenced": [],
+      "isModification": true,
+      "baseVersion": 0
     }
   ],
-  "currentVersion": 1
+  "currentVersion": 2
 }

@@ -17,6 +17,14 @@
 
 const STORAGE_KEY = 'wonder-io-toast-memory';
 
+/**
+ * DEBUG FLAG: Force all toasts to show every time
+ * Set to true to bypass toast memory and show all guidance toasts repeatedly
+ * Useful for testing/debugging toast appearance and behavior
+ * NOTE: Always forced to false in production builds
+ */
+const DEBUG_SHOW_ALL_TOASTS = import.meta.env.PROD ? false : true;
+
 // All possible toast keys - add new ones here as needed
 export type ToastKey =
   | 'input:first'           // "Your turn. What should Leo ask?"
@@ -41,8 +49,8 @@ export interface ToastConfig {
 export const TOAST_DEFINITIONS: Record<ToastKey, ToastConfig | ToastConfig[]> = {
   'input:first': {
     key: 'input:first',
-    message: "Tap ASK to start your question.",
-    pointsTo: 'center',
+    message: "Let's ask the baker \"What's wrong?\"",
+    pointsTo: 'ask',
     position: 'top'
   },
   'input:ask-recording': {
@@ -117,7 +125,13 @@ function saveToStorage(): void {
 }
 
 // Initialize on module load
-loadFromStorage();
+// In debug mode, clear memory at the start of each session so toasts show again
+if (DEBUG_SHOW_ALL_TOASTS) {
+  localStorage.removeItem(STORAGE_KEY);
+  shownToasts = new Set();
+} else {
+  loadFromStorage();
+}
 
 /**
  * Check if a toast has been shown before

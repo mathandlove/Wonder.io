@@ -132,6 +132,8 @@
   border-bottom-width: 7px;
   display: inline-flex;
   flex-direction: column;
+  gap: 6px;
+  /* Vertical gap between question panel and buttons - matches middle column width */
   padding: 10px;
   /* Equal padding on all sides for rounded frame */
   position: relative;
@@ -143,29 +145,22 @@
   /* Include borders in width calculation */
 }
 
-/* Quest Offer State - glowing yellow effect */
-/* OPTIMIZED: Replaced expensive drop-shadow filters with box-shadow for better mobile performance */
+/* Quest Offer State - no glow effect */
 .record-panel-container.quest-offer-centered .frame {
-  animation: breathingGlow 10s ease-in-out 0.2s infinite !important;
-  /* 200ms delay after color transition */
+  animation: none !important;
   position: relative;
-  /* Ensure pseudo-element positioning works */
 }
 
-/* Inward glow overlay using ::before pseudo-element */
+/* No inward glow for quest offer */
 .record-panel-container.quest-offer-centered .frame::before {
   content: '';
   position: absolute;
   inset: 0;
-  /* Cover entire frame */
   border-radius: 25px;
-  /* Inner radius = outer 32px - border 7px */
   pointer-events: none;
-  /* Don't block clicks */
-  animation: breathingGlowInset 10s ease-in-out 0.2s infinite;
-  /* 200ms delay after color transition */
+  animation: none;
+  box-shadow: none;
   z-index: 100;
-  /* Above content so glow isn't clipped */
 }
 
 /* Breathing glow animation - outward golden aura */
@@ -454,12 +449,12 @@
 .frame .whiteframe {
   align-items: center;
   background: linear-gradient(0deg,
-      rgba(73, 48, 29, 0.2) 0%,
-      rgba(73, 48, 29, 0.2) 100%),
+      rgba(73, 48, 29, 0.08) 0%,
+      rgba(73, 48, 29, 0.08) 100%),
     linear-gradient(0deg,
       rgba(255, 255, 255, 1) 0%,
       rgba(255, 255, 255, 1) 100%);
-  border-color: #49301d;
+  border-color: rgba(73, 48, 29, 0.5);
   border-left-style: solid;
   border-left-width: 1px;
   border-radius: 22px 22px 0px 0px;
@@ -470,8 +465,8 @@
   border-top-width: 1px;
   border-bottom-style: solid;
   border-bottom-width: 1px;
-  box-shadow: inset 0px -1px 8px -3px #000000;
-  /* Bottom-only shadow: negative spread clips sides, vertical offset down */
+  box-shadow: 0 3px 6px rgba(0, 0, 0, 0.15);
+  /* Soft outer shadow for depth */
   display: flex;
   flex: 0 0 auto;
   flex-direction: column;
@@ -493,12 +488,12 @@
   display: flex;
   /* Changed from inline-flex */
   flex: 0 0 auto;
-  gap: 0;
-  /* Remove internal gap */
+  gap: 8px;
+  /* Spacing between title and question text */
   justify-content: flex-start;
   /* Align to start instead of center */
-  padding: 21px 20px;
-  /* Symmetric padding: 21px top/bottom, 20px left/right */
+  padding: 40px 24px;
+  /* More vertical padding for breathing room */
   position: relative;
   width: 100%;
   /* Full width of parent */
@@ -513,8 +508,8 @@
   color: transparent;
   /* Transparent base, colors set on spans */
   font-family: "Inter", Helvetica, sans-serif;
-  font-size: 24px;
-  /* Base size for normal state */
+  font-size: 36px;
+  /* Base size matches quest-offer for consistent sizing */
   font-weight: 400;
   letter-spacing: 0;
   line-height: normal;
@@ -526,28 +521,29 @@
   word-wrap: break-word;
 }
 
-/* Quest Label - "Quest:" heading */
+/* Quest Label - "The Big Question:" heading - smaller to let question stand out */
 .frame .quest-label {
   color: #b2652a;
   /* Orange */
   font-family: "Inter", Helvetica, sans-serif;
-  font-size: 24px;
-  /* Inherits from parent, can be overridden */
-  font-weight: 700;
-  /* Bold */
+  font-size: 20px;
+  /* Smaller label */
+  font-weight: 600;
+  /* Semi-bold */
   letter-spacing: 0;
 }
 
-/* Quest Description - the actual quest text */
+/* Quest Description - the actual quest text - larger and bolder to stand out */
 .frame .quest-description {
-  color: #5c5c5c;
-  /* Gray */
+  color: #3a3a3a;
+  /* Darker gray for emphasis */
   font-family: "Inter", Helvetica, sans-serif;
-  font-size: 24px;
-  /* Inherits from parent, can be overridden */
-  font-weight: 400;
-  /* Regular */
+  font-size: 32px;
+  /* Large question text */
+  font-weight: 600;
+  /* Semi-bold for emphasis */
   letter-spacing: 0;
+  line-height: 1.3;
 }
 
 /* Legacy class support (span) - maps to quest-label */
@@ -567,19 +563,19 @@
    QUEST OFFER STATE MODIFIERS
    =================================== */
 
-/* Quest Offer: Larger, centered layout */
+/* Quest Offer: Larger, left-aligned layout */
 .frame .quest-find-out-what.quest-offer {
   font-size: 36px;
   /* Larger base size */
-  text-align: center;
+  text-align: left;
 }
 
-/* Quest Label in offer state - larger */
+/* Quest Label in offer state - smaller heading */
 .frame .quest-find-out-what.quest-offer .quest-label {
-  font-size: 36px;
+  font-size: 20px;
 }
 
-/* Quest Description in offer state - larger */
+/* Quest Description in offer state - large and prominent */
 .frame .quest-find-out-what.quest-offer .quest-description {
   font-size: 32px;
 }
@@ -692,22 +688,22 @@
 
 .frame .frame-wrapper {
   align-items: center;
-  background-color: #ffffff;
-  border-bottom-style: solid;
-  border-bottom-width: 1px;
-  border-color: #49301d;
-  border-left-style: solid;
-  border-left-width: 1px;
-  border-right-style: solid;
-  border-right-width: 1px;
+  background-color: transparent;
+  border-bottom-style: none;
+  border-bottom-width: 0;
+  border-color: transparent;
+  border-left-style: none;
+  border-left-width: 0;
+  border-right-style: none;
+  border-right-width: 0;
   border-radius: 0px 0px 22px 22px;
   /* Rounded bottom corners only */
   display: flex;
   flex: 0 0 auto;
   flex-direction: column;
-  gap: 34px;
-  padding: 18px 20px 32px 20px;
-  /* Button padding: 18px top, 32px bottom */
+  gap: 0;
+  padding: 0;
+  /* No padding - buttons fill entire space */
   position: relative;
   width: 100%;
   /* Expand to fill frame width instead of fixed 620px */
@@ -715,8 +711,459 @@
   /* Minimum to fit buttons: 192+15+59+40+192+40 = 538px, rounded to 540px */
   box-sizing: border-box;
   /* Include padding and borders in width calculation */
+  overflow: hidden;
+  /* Clip button corners to match frame-wrapper's rounded corners */
 }
 
+/* ===================================
+   HALF-PANEL BUTTONS (ASK/ANSWER)
+   Full-width buttons filling left/right halves
+   =================================== */
+
+.button-halves-container {
+  display: flex;
+  width: 100%;
+  gap: 6px;
+  /* Subtle gap between buttons for visual separation */
+  background-image: url(/VisualAssets/cardboard.png);
+  background-position: center;
+  background-size: 360px 540px;
+  background-repeat: repeat;
+  /* Cardboard texture shows through the gap */
+  border-radius: 0 0 22px 22px;
+  /* Rounded bottom corners to match frame */
+  overflow: hidden;
+  /* Clip children to rounded corners */
+}
+
+.half-panel {
+  flex: 1 1 calc(50% - 3px);
+  /* Account for half the gap */
+  position: relative;
+}
+
+.half-panel-button {
+  all: unset;
+  width: 100%;
+  /* Match question section height: 28px padding top + ~44px content + 28px padding bottom = ~100px */
+  min-height: 100px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  padding: 42px 20px;
+  /* Extra vertical padding for big, tappable kid-friendly buttons */
+  background-color: transparent;
+  /* Solid color - no cardboard texture */
+  border: 1px solid rgba(73, 48, 29, 0.4);
+  /* Thin border around each button */
+  border-radius: 0;
+  /* No border radius - container clips to rounded corners */
+  box-sizing: border-box;
+  box-shadow: inset 0 -3px 0 rgba(0, 0, 0, 0.1), inset 0 3px 6px rgba(255, 255, 255, 0.4);
+  cursor: pointer;
+  position: relative;
+  transition: all 0.15s ease;
+}
+
+/* No divider line needed - gap provides separation */
+
+/* Button content container - stacks title and subtext vertically */
+.half-panel-button .button-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  z-index: 2;
+}
+
+/* Button subtext - smaller, lighter text below main text */
+.half-panel-button .button-subtext {
+  color: rgba(255, 255, 255, 0.85);
+  font-family: "Inter", Helvetica, sans-serif;
+  font-size: 16px;
+  font-weight: 400;
+  letter-spacing: 0;
+  line-height: normal;
+  text-align: center;
+  white-space: nowrap;
+}
+
+/* Ask panel - solid green */
+.half-panel-button.ask-panel {
+  background-color: #5a8a5a;
+}
+
+.half-panel-button.ask-panel::before {
+  display: none;
+}
+
+/* Answer panel - solid blue */
+.half-panel-button.answer-panel {
+  background-color: rgb(83, 126, 143);
+}
+
+.half-panel-button.answer-panel::before {
+  display: none;
+}
+
+/* Accept panel - solid green like Ask panel */
+.half-panel-button.accept-panel {
+  background-color: #5a8a5a;
+}
+
+.half-panel-button.accept-panel::before {
+  display: none;
+}
+
+/* Start Recording panel - with mic icon on left */
+.half-panel-button.start-recording-panel {
+  flex-direction: row;
+  gap: 16px;
+  align-items: center;
+}
+
+/* Single line text centered in button - maintains height via line-height */
+.half-panel-button .button-text.centered-single-line {
+  line-height: 52px; /* Match height of button-content with both lines */
+  text-align: center;
+}
+
+/* Mobile break - hidden on desktop, shown on mobile */
+.mobile-break {
+  display: none;
+}
+
+.half-panel-button .mic-icon {
+  width: 48px;
+  height: 48px;
+  filter: brightness(0) invert(1); /* Make icon white */
+  flex-shrink: 0;
+}
+
+/* Visualizer panel - white background with full-width visualizer */
+.half-panel-button.visualizer-panel {
+  background-color: white;
+  flex-direction: row;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  gap: 16px;
+  padding: 0 16px;
+}
+
+/* ===================================
+   LISTENING PANEL - Pulsing mic + audio-reactive waveform
+   =================================== */
+
+/* Listening panel - horizontal layout */
+.half-panel-button.listening-panel {
+  flex-direction: row;
+  align-items: center;
+  gap: 12px;
+  padding: 0 12px;
+}
+
+/* Mic with glow container */
+.half-panel-button .mic-with-glow {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 64px;
+  height: 64px;
+  flex-shrink: 0;
+}
+
+/* Large pulsing glow behind mic - obvious recording indicator */
+.half-panel-button .mic-soft-glow {
+  position: absolute;
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(76, 175, 80, 0.5) 0%, rgba(76, 175, 80, 0.2) 50%, rgba(76, 175, 80, 0) 70%);
+  animation: recording-glow 1s ease-in-out infinite;
+}
+
+@keyframes recording-glow {
+  0%, 100% {
+    transform: scale(1);
+    opacity: 0.6;
+  }
+  50% {
+    transform: scale(1.4);
+    opacity: 1;
+  }
+}
+
+/* Green mic icon - pulses larger for obvious recording state */
+.half-panel-button .mic-icon.listening-mic {
+  width: 40px;
+  height: 40px;
+  filter: brightness(0) saturate(100%) invert(51%) sepia(82%) saturate(394%) hue-rotate(80deg) brightness(92%) contrast(87%); /* Green color */
+  z-index: 1;
+  animation: mic-recording-pulse 1s ease-in-out infinite;
+}
+
+@keyframes mic-recording-pulse {
+  0%, 100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.15);
+  }
+}
+
+/* Gentle sine wave waveform - fills remaining space */
+.half-panel-button .gentle-waveform {
+  flex: 1;
+  height: 70px;
+  min-width: 0;
+  overflow: visible; /* Allow dots to extend beyond container for dramatic effect */
+}
+
+/* ===================================
+   PROCESSING PANEL - Flashing dots indicator
+   =================================== */
+
+/* Processing panel - centered layout */
+.half-panel-button.processing-panel {
+  flex-direction: row;
+  align-items: center;
+  justify-content: center;
+  padding: 0 12px;
+}
+
+/* Processing indicator container */
+.half-panel-button .processing-indicator {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  height: 70px;
+}
+
+/* Individual processing dots */
+.half-panel-button .processing-dot {
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background-color: #4ade80;
+  animation: processing-flash 1.4s ease-in-out infinite;
+}
+
+.half-panel-button .processing-dot:nth-child(1) {
+  animation-delay: 0s;
+}
+
+.half-panel-button .processing-dot:nth-child(2) {
+  animation-delay: 0.2s;
+}
+
+.half-panel-button .processing-dot:nth-child(3) {
+  animation-delay: 0.4s;
+}
+
+@keyframes processing-flash {
+  0%, 80%, 100% {
+    opacity: 0.3;
+    transform: scale(0.8);
+  }
+  40% {
+    opacity: 1;
+    transform: scale(1.2);
+  }
+}
+
+.half-panel-button .waveform-svg {
+  width: 100%;
+  height: 100%;
+}
+
+.half-panel-button .waveform-path {
+  transition: d 0.1s ease-out;
+}
+
+/* Audio-reactive waveform container - fills remaining space */
+.half-panel-button .audio-reactive-waveform {
+  flex: 1;
+  height: 48px;
+  display: flex;
+  align-items: center;
+  justify-content: space-evenly;
+  gap: 4px;
+  min-width: 0;
+  overflow: hidden;
+}
+
+/* Individual waveform bar - reacts to audio level */
+.half-panel-button .waveform-bar {
+  width: 5px;
+  min-height: 6px;
+  background: linear-gradient(180deg, #4CAF50 0%, #81C784 100%);
+  border-radius: 3px;
+  transition: height 0.08s ease-out;
+  animation: bar-idle 1.2s ease-in-out infinite;
+}
+
+/* Subtle idle animation when no audio */
+@keyframes bar-idle {
+  0%, 100% {
+    transform: scaleY(1);
+  }
+  50% {
+    transform: scaleY(0.85);
+  }
+}
+
+/* Audio visualizer inside button (legacy support) */
+.half-panel-button .button-visualizer {
+  flex: 1;
+  height: 48px;
+  min-width: 0; /* Allow shrinking */
+}
+
+/* Full width variant for single button */
+.half-panel.full-width {
+  flex: 1 1 100%;
+}
+
+/* Hover state - darken */
+.half-panel-button:hover::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(0deg,
+      rgba(0, 0, 0, 0.15) 0%,
+      rgba(0, 0, 0, 0.15) 100%);
+  border-radius: 0;
+  pointer-events: none;
+  z-index: 2;
+}
+
+/* Active/Pressed state */
+.half-panel-button:active {
+  box-shadow: inset 8px 8px 4px rgba(0, 0, 0, 0.25);
+}
+
+.half-panel-button:active::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(0deg,
+      rgba(0, 0, 0, 0.25) 0%,
+      rgba(0, 0, 0, 0.25) 100%) !important;
+  border-radius: 0;
+  pointer-events: none;
+  z-index: 2;
+}
+
+/* Locked answer button - desaturated blue-grey */
+.half-panel-button.answer-panel.locked {
+  background-color: #A8AFB7; /* Warm grey-blue */
+  cursor: not-allowed;
+  position: relative;
+}
+
+/* No overlay on locked state */
+.half-panel-button.answer-panel.locked::after {
+  display: none;
+}
+
+/* Button content when locked - 47% opacity */
+.half-panel-button.answer-panel.locked .button-content {
+  opacity: 0.47;
+  z-index: 6;
+}
+
+/* Large centered lock icon overlay - reduced glow */
+.half-panel-button.answer-panel.locked .lock-image-overlay {
+  width: 80px;
+  height: 80px;
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  z-index: 10;
+  opacity: 1;
+  filter: brightness(0) invert(1) drop-shadow(0 2px 4px rgba(0, 0, 0, 0.3)) drop-shadow(0 0 4px rgba(255, 250, 240, 0.3)); /* Reduced glow radius by ~15% */
+}
+
+.half-panel-button.locked:hover::after {
+  display: none;
+}
+
+/* Disabled state */
+.half-panel-button.disabled {
+  opacity: 0.4;
+  cursor: not-allowed !important;
+  pointer-events: none;
+}
+
+.half-panel-button.disabled:hover::after {
+  display: none;
+}
+
+/* Recording active state - Ask panel (red) */
+.half-panel-button.ask-panel.recording-active {
+  background-color: #d81919 !important;
+  background-image:
+    url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.4' numOctaves='3' /%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.6' /%3E%3C/svg%3E"),
+    linear-gradient(0deg, rgba(0, 0, 0, 0.3) 0%, rgba(0, 0, 0, 0.2) 100%) !important;
+  background-blend-mode: overlay, normal !important;
+  background-size: 150px 150px, cover !important;
+  background-position: center, center !important;
+  background-repeat: repeat, no-repeat !important;
+  border-color: #49301d !important;
+  box-shadow: inset 0px 0px 15px 0px #ff7c7c !important;
+  animation: recordingPulseRed 1.2s ease-in-out infinite;
+}
+
+.half-panel-button.ask-panel.recording-active::before {
+  display: none;
+}
+
+/* Recording active state - Answer panel (blue) */
+.half-panel-button.answer-panel.recording-active {
+  background-color: #1e64c8 !important;
+  background-image:
+    url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.4' numOctaves='3' /%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.6' /%3E%3C/svg%3E"),
+    linear-gradient(0deg, rgba(0, 0, 0, 0.3) 0%, rgba(0, 0, 0, 0.2) 100%) !important;
+  background-blend-mode: overlay, normal !important;
+  background-size: 150px 150px, cover !important;
+  background-position: center, center !important;
+  background-repeat: repeat, no-repeat !important;
+  border-color: #49301d !important;
+  box-shadow: inset 0px 0px 15px 0px rgba(100, 180, 255, 0.5) !important;
+  animation: recordingPulseBlue 1.2s ease-in-out infinite;
+}
+
+.half-panel-button.answer-panel.recording-active::before {
+  display: none;
+}
+
+/* Hide microphone icon when recording */
+.half-panel-button.recording-active .button-icon {
+  display: none;
+}
+
+/* Disable hover/active overlays when recording */
+.half-panel-button.recording-active:hover::after,
+.half-panel-button.recording-active:active::after {
+  display: none !important;
+}
+
+/* Lock icon positioning for half-panel */
+.half-panel-button .lock-image-overlay {
+  width: 34px;
+  height: 34px;
+  object-fit: contain;
+  position: absolute;
+  z-index: 3;
+}
+
+/* Legacy button row containers (kept for other states) */
 .frame .div {
   align-items: center;
   align-self: stretch;
@@ -861,6 +1308,205 @@
     0px 0px 0px 1px rgba(73, 48, 29, 0.15);
 }
 
+/* ===================================
+   RECORDING SUBMIT FRAME
+   =================================== */
+
+/* Recording Submit Frame - contains "Did you say this?" section */
+/* Matches .whiteframe styling with rounded top corners (22px) */
+.frame .whiteframe.recording-submit-frame {
+  align-items: center;
+  /* Grey tint background - matches base .whiteframe style */
+  background: linear-gradient(0deg,
+      rgba(73, 48, 29, 0.08) 0%,
+      rgba(73, 48, 29, 0.08) 100%),
+    linear-gradient(0deg,
+      rgba(255, 255, 255, 1) 0%,
+      rgba(255, 255, 255, 1) 100%);
+  border-color: rgba(73, 48, 29, 0.5);
+  border-left-style: solid;
+  border-left-width: 1px;
+  border-radius: 22px 22px 0px 0px;
+  border-right-style: solid;
+  border-right-width: 1px;
+  border-top-style: solid;
+  border-top-width: 1px;
+  border-bottom-style: solid;
+  border-bottom-width: 1px;
+  box-shadow: 0 3px 6px rgba(0, 0, 0, 0.15);
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  padding: 16px 20px;
+  /* Match standard whiteframe sizing */
+  width: 100%;
+  min-width: 540px;
+  box-sizing: border-box;
+}
+
+.frame .whiteframe.recording-submit-frame .quest {
+  flex-direction: column;
+  align-items: flex-start;
+  width: 100%;
+}
+
+/* Cancel panel - coral/terracotta background */
+.half-panel-button.cancel-panel {
+  background-color: #E76F51;
+}
+
+/* Cancel panel wrapper - narrower than submit */
+.cancel-panel-wrapper {
+  flex: 0 0 auto !important;
+  min-width: 100px;
+}
+
+/* X icon styling */
+.half-panel-button.cancel-panel .button-x {
+  font-size: 28px;
+  font-weight: 700;
+  color: #ffffff;
+}
+
+/* Try Again text styling */
+.half-panel-button.cancel-panel .button-try-again {
+  font-size: 16px;
+  font-weight: 600;
+  color: #ffffff;
+  text-align: center;
+  line-height: 1.2;
+}
+
+/* Transcript display - parchment box with mic icon */
+.transcript-display {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 16px;
+  background: #e7dbc1;
+  border-radius: 8px;
+  margin-top: 8px;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+/* Black mic icon in transcript display */
+.transcript-mic-icon {
+  width: 20px;
+  height: 20px;
+  flex-shrink: 0;
+  filter: brightness(0); /* Make it black */
+}
+
+/* Transcript text styling */
+.transcript-text {
+  color: #3d3d3d;
+  font-size: 16px;
+  font-weight: 400;
+  line-height: 1.5;
+  word-wrap: break-word;
+}
+
+/* Submit panel - green background like accept-panel */
+.half-panel-button.submit-panel {
+  background-color: #5a8a5a;
+}
+
+/* Ensure both panels have same height */
+.cancel-panel-wrapper .half-panel-button,
+.submit-panel-wrapper .half-panel-button {
+  height: 100%;
+}
+
+/* Hint panel - blue/teal background for hint button */
+.half-panel-button.hint-panel {
+  background-color: #4a7c8a;
+}
+
+/* Hint panel wrapper - narrower like cancel button */
+.hint-panel-wrapper {
+  flex: 0 0 auto !important;
+  min-width: 100px;
+}
+
+/* HINT text styling */
+.half-panel-button.hint-panel .button-hint-text {
+  font-size: 18px;
+  font-weight: 700;
+  color: #ffffff;
+  letter-spacing: 1px;
+}
+
+/* Ask panel wrapper - takes remaining space */
+.ask-panel-wrapper {
+  flex: 1 1 auto;
+}
+
+/* Ensure hint and ask panels have same height */
+.hint-panel-wrapper .half-panel-button,
+.ask-panel-wrapper .half-panel-button {
+  height: 100%;
+}
+
+/* Pre-ask buttons container - allow toast to escape overflow */
+.button-halves-container.pre-ask-buttons {
+  overflow: visible;
+}
+
+/* Pre-ask-recording: round bottom-left of hint, bottom-right of ask button */
+.pre-ask-buttons .hint-panel-wrapper .half-panel-button {
+  border-radius: 0 0 0 14px;
+}
+
+.pre-ask-buttons .ask-panel-wrapper .half-panel-button {
+  border-radius: 0 0 14px 0;
+}
+
+/* Frame wrapper needs overflow visible when pre-ask buttons are shown */
+.frame-wrapper:has(.pre-ask-buttons) {
+  overflow: visible;
+}
+
+/* Allow toast to escape overflow for Ask/Answer button container */
+.button-halves-container:has(.button-toast) {
+  overflow: visible;
+}
+
+/* Frame wrapper needs overflow visible when toast is shown */
+.frame-wrapper:has(.button-toast) {
+  overflow: visible;
+}
+
+/* Round bottom corners on buttons when overflow is visible (toast showing) */
+.button-halves-container:has(.button-toast) .ask-button-wrapper .half-panel-button {
+  border-radius: 0 0 0 22px;
+}
+
+.button-halves-container:has(.button-toast) .answer-button-wrapper .half-panel-button {
+  border-radius: 0 0 22px 0;
+}
+
+/* Hint button toast - positioned above the hint button */
+.hint-panel-wrapper .hint-button-toast {
+  position: absolute;
+  bottom: 100%;
+  left: 50%;
+  transform: translateX(-50%);
+  margin-bottom: 12px;
+  z-index: 200; /* Higher z-index to appear above everything */
+  white-space: normal;
+  max-width: 280px;
+  /* Override the default semi-transparent background with a more opaque dark brown */
+  background-color: rgba(50, 40, 30, 0.65);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+}
+
+/* Hint toast arrow - match the toast background color */
+.hint-panel-wrapper .hint-button-toast .button-toast__arrow {
+  border-top-color: rgba(50, 40, 30, 0.65);
+}
+
 /* Optional hover state for input box (subtle interaction feedback) */
 .frame .answer-input-box:hover {
   border-color: #b8b8b8;
@@ -942,6 +1588,7 @@
   border-color: #49301d;
   border-radius: 16px;
   box-sizing: border-box;
+  box-shadow: inset 0 -3px 0 rgba(0, 0, 0, 0.1), inset 0 3px 6px rgba(255, 255, 255, 0.4);
   display: flex;
   flex-direction: row;
   /* Horizontal layout for icon + text */
@@ -1197,7 +1844,7 @@
   }
 }
 
-/* Recording pulse animation - Purple (Answer button) */
+/* Recording pulse animation - Purple (Answer button) - DEPRECATED, kept for compatibility */
 /* OPTIMIZED: Removed filter:brightness() - very expensive on mobile GPU */
 @keyframes recordingPulsePurple {
 
@@ -1211,6 +1858,23 @@
     background-color: #d4b0ed;
     /* Brighter vibrant purple (slightly brighter to compensate for removed brightness filter) */
     box-shadow: inset 0px 0px 20px 0px rgba(180, 120, 255, 0.8);
+    /* Stronger glow for intense pulse */
+  }
+}
+
+/* Recording pulse animation - Blue (Answer button) */
+@keyframes recordingPulseBlue {
+
+  0%,
+  100% {
+    background-color: #1e64c8;
+    box-shadow: inset 0px 0px 15px 0px rgba(100, 180, 255, 0.5);
+  }
+
+  50% {
+    background-color: #5a9ee8;
+    /* Brighter blue */
+    box-shadow: inset 0px 0px 20px 0px rgba(100, 180, 255, 0.8);
     /* Stronger glow for intense pulse */
   }
 }
@@ -1640,6 +2304,7 @@
 /* Wrappers for button + toast positioning */
 .ask-button-wrapper,
 .hint-button-wrapper,
+.hint-panel-wrapper,
 .answer-button-wrapper,
 .clue-selection-wrapper {
   position: relative;
@@ -1747,33 +2412,37 @@ html[data-mobile="true"] .frame .whiteframe {
 
 /* Quest text container */
 html[data-mobile="true"] .frame .quest {
-  padding: 2px 4px;
+  padding: 12px 14px;
 }
 
-/* Quest text sizing */
+/* Quest text sizing - matches quest-offer proportions */
 html[data-mobile="true"] .frame .quest-find-out-what {
-  font-size: 14px;
+  font-size: 18px;
 }
 
 html[data-mobile="true"] .frame .quest-label {
   font-size: 14px;
+  /* Smaller label on mobile */
 }
 
 html[data-mobile="true"] .frame .quest-description {
-  font-size: 12px;
+  font-size: 18px;
+  /* Question stands out on mobile */
 }
 
-/* Quest offer state - still larger but scaled down */
+/* Quest offer state - same as base since we unified sizes */
 html[data-mobile="true"] .frame .quest-find-out-what.quest-offer {
   font-size: 18px;
 }
 
 html[data-mobile="true"] .frame .quest-find-out-what.quest-offer .quest-label {
-  font-size: 18px;
+  font-size: 14px;
+  /* Smaller label on mobile */
 }
 
 html[data-mobile="true"] .frame .quest-find-out-what.quest-offer .quest-description {
-  font-size: 16px;
+  font-size: 18px;
+  /* Question stands out on mobile */
 }
 
 /* Question frame (middle white box for ask recording) - compact, no rounded top corners */
@@ -1807,9 +2476,78 @@ html[data-mobile="true"] .frame .answer-input-box {
 /* Button rail (bottom section) - compact */
 html[data-mobile="true"] .frame .frame-wrapper {
   min-width: auto;
-  padding: 8px 10px 16px 10px;
-  gap: 16px;
+  padding: 0;
+  gap: 0;
   border-radius: 0 0 14px 14px;
+}
+
+/* Half-panel buttons - mobile compact */
+html[data-mobile="true"] .button-halves-container {
+  gap: 6px;
+}
+
+html[data-mobile="true"] .half-panel-button {
+  min-height: 60px;
+  /* Match mobile question section height */
+  padding: 34px 12px;
+  /* Extra vertical padding for tappable mobile buttons */
+  border-radius: 0;
+  border: none;
+}
+
+/* No divider line on mobile - gap provides separation */
+
+html[data-mobile="true"] .half-panel-button::before {
+  border-radius: 0;
+}
+
+html[data-mobile="true"] .half-panel-button:hover::after,
+html[data-mobile="true"] .half-panel-button:active::after {
+  border-radius: 0;
+}
+
+html[data-mobile="true"] .half-panel-button .button-text {
+  font-size: 16px;
+}
+
+/* Quest offer Continue button - twice as big on mobile */
+html[data-mobile="true"] .half-panel-button.accept-panel .button-text {
+  font-size: 32px;
+}
+
+/* Ask Your Question button - larger and multi-line on mobile */
+html[data-mobile="true"] .half-panel-button .button-text.centered-single-line {
+  font-size: 22px;
+  line-height: 1.3;
+}
+
+/* Show line break on mobile */
+html[data-mobile="true"] .mobile-break {
+  display: inline;
+}
+
+html[data-mobile="true"] .half-panel-button .button-subtext {
+  font-size: 12px;
+}
+
+html[data-mobile="true"] .half-panel-button .button-content {
+  gap: 2px;
+}
+
+html[data-mobile="true"] .half-panel-button .button-icon {
+  width: 22px;
+  height: 22px;
+}
+
+html[data-mobile="true"] .half-panel-button .stop-square {
+  width: 18px;
+  height: 18px;
+}
+
+/* Mobile locked state - slightly smaller lock icon but still prominent */
+html[data-mobile="true"] .half-panel-button.answer-panel.locked .lock-image-overlay {
+  width: 60px;
+  height: 60px;
 }
 
 /* Button row container */
@@ -1846,6 +2584,40 @@ html[data-mobile="true"] .frame .hint-btn:active::after,
 html[data-mobile="true"] .next-btn:hover::after,
 html[data-mobile="true"] .next-btn:active::after {
   border-radius: 10px;
+}
+
+/* Mobile: Disable sticky hover/active states to prevent "memory" when buttons are repurposed */
+html[data-mobile="true"] .half-panel-button:hover::after,
+html[data-mobile="true"] .half-panel-button:active::after {
+  display: none;
+}
+
+html[data-mobile="true"] .half-panel-button:active {
+  box-shadow: none;
+}
+
+html[data-mobile="true"] .frame .button:hover::after,
+html[data-mobile="true"] .frame .button:active::after,
+html[data-mobile="true"] .frame .hint-btn:hover::after,
+html[data-mobile="true"] .frame .hint-btn:active::after,
+html[data-mobile="true"] .next-btn:hover::after,
+html[data-mobile="true"] .next-btn:active::after {
+  display: none;
+}
+
+html[data-mobile="true"] .frame .button:active,
+html[data-mobile="true"] .frame .hint-btn:active,
+html[data-mobile="true"] .next-btn:active {
+  box-shadow: none;
+}
+
+html[data-mobile="true"] .cancel-recording-btn:active,
+html[data-mobile="true"] .send-recording-btn:active {
+  box-shadow: none;
+}
+
+html[data-mobile="true"] .button.cancel-recording-btn:hover::before {
+  background: rgba(216, 25, 25, 0.4) !important;
 }
 
 /* Ask button - fit content */
@@ -1949,22 +2721,7 @@ html[data-mobile="true"] .button-toast {
   margin: 0 20px;
 }
 
-.transcript-text {
-  background: linear-gradient(180deg, #fafafa 0%, #ffffff 100%);
-  border: 1px solid #d4d4d4;
-  box-shadow:
-    inset 0px 1px 3px rgba(0, 0, 0, 0.12),
-    0px 1px 0px rgba(255, 255, 255, 0.8);
-  border-radius: 8px;
-  padding: 12px 16px;
-  min-height: 48px;
-  font-family: "Inter", Helvetica, sans-serif;
-  font-size: 18px;
-  font-weight: 400;
-  color: #3d3d3d;
-  line-height: 1.5;
-  word-wrap: break-word;
-}
+/* transcript-text styling moved to line ~1393 */
 
 /* Recording submit buttons container - no borders */
 .recording-submit-buttons {
@@ -1997,6 +2754,7 @@ html[data-mobile="true"] .button-toast {
   background-repeat: repeat;
   border: 3px solid #49301d;
   border-radius: 16px;
+  box-shadow: inset 0 -3px 0 rgba(0, 0, 0, 0.1), inset 0 3px 6px rgba(255, 255, 255, 0.4);
   cursor: pointer;
   position: relative;
   transition: all 0.15s ease;
@@ -2091,8 +2849,6 @@ html[data-mobile="true"] .cancel-x {
 
 html[data-mobile="true"] .transcript-text {
   font-size: 14px;
-  padding: 10px 12px;
-  min-height: 40px;
 }
 
 html[data-mobile="true"] .transcript-label {
@@ -2151,18 +2907,15 @@ html[data-mobile="true"] .no-audio-subtitle {
    =================================== */
 /* Reduce/disable heavy animations on mobile devices for better performance */
 
-/* Disable breathing glow animations on mobile - use static glow instead */
+/* Disable breathing glow animations on mobile - no glow like desktop */
 html[data-mobile="true"] .record-panel-container.quest-offer-centered .frame {
   animation: none !important;
-  box-shadow:
-    0 0 25px rgba(255, 190, 60, 0.6),
-    0 0 50px rgba(255, 200, 80, 0.4);
+  box-shadow: none;
 }
 
 html[data-mobile="true"] .record-panel-container.quest-offer-centered .frame::before {
   animation: none !important;
-  box-shadow:
-    inset 0 0 30px rgba(255, 190, 60, 0.35);
+  box-shadow: none;
 }
 
 /* Static gold glow for answer states on mobile */

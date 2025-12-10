@@ -7,9 +7,9 @@
  * Displays: Quest label, Ask button, Hint button, Answer button, Toast notifications, Video feedback
  */
 import React from 'react';
-import NextButton from '../../features/chat/ui/NextButton';
 import { Toast, useToast } from '../../features/chat/ui/Toast';
 import { AudioVisualizer } from './AudioVisualizer';
+import { WaveVisualizer } from './WaveVisualizer';
 import { ClueSelectionPanel } from './ClueSelectionPanel';
 import { useClueStore } from '@core/data/ClueStore';
 import { useNavigationStore, selectCurrentNode } from '@core/navigation/navigationStore';
@@ -49,7 +49,6 @@ export const RecordPanel: React.FC<RecordPanelProps> = ({
 
   // Refs for toast positioning
   const askButtonRef = React.useRef<HTMLButtonElement>(null);
-  const hintButtonRef = React.useRef<HTMLButtonElement>(null);
   const answerButtonRef = React.useRef<HTMLDivElement>(null);
 
   // Track previous state for toast triggers
@@ -102,8 +101,6 @@ export const RecordPanel: React.FC<RecordPanelProps> = ({
     };
   }, []);
 
-  // Local state for hint toggle (internal to RecordPanel)
-  const [showHint, setShowHint] = React.useState(false);
 
 
   // Derive quest state from phase (quest complete when we have answerText and it's correct)
@@ -113,11 +110,10 @@ export const RecordPanel: React.FC<RecordPanelProps> = ({
     return 'active';
   }, [dialogueState]);
 
-  // Get quest text and hint from conversation metadata
+  // Get quest text from conversation metadata
   const conversationId = (scene as CharacterScene)?.conversationId;
   const metadata = conversationId ? getConversationMetadata(conversationId) : null;
   const questText = metadata?.questText || "Find out what going on.";
-  const hintText = metadata?.hint || "";
 
   // Get answer text from scene
   const answerText = (scene as CharacterScene)?.answerText || '';
@@ -134,6 +130,8 @@ export const RecordPanel: React.FC<RecordPanelProps> = ({
   const isInput = dialogueState === 'input';
   const isAskClue = dialogueState === 'askClue';
   const isAnswerClue = dialogueState === 'answerClue';
+  const isPreAskRecording = dialogueState === 'pre-ask-recording';
+  const isPreAnswerRecording = dialogueState === 'pre-answer-recording';
   const isAskRecording = dialogueState === 'input-recording';
   const isProcessing = dialogueState === 'input-processing';
   const isRecordingSubmit = dialogueState === 'recording-submit';
@@ -156,52 +154,51 @@ export const RecordPanel: React.FC<RecordPanelProps> = ({
   // Standalone quest also uses quest-offer styling (centered Accept button)
   const useQuestOfferStyling = isQuestOffer || isBasic || isInputBasic || isStandaloneQuest;
 
+  // Helper to dismiss toast
+  const dismissToast = () => {
+    setActiveToast(null);
+  };
+
   const handleAskClick = () => {
     if (disabled) return;
-    setActiveToast(null); // Dismiss any active toast
+    dismissToast();
     navigationBus.emit({ type: 'ASK_BUTTON_CLICKED' });
   };
 
   const handleAcceptQuest = () => {
     if (disabled) return;
-    setActiveToast(null); // Dismiss any active toast
+    dismissToast();
     navigationBus.emit({ type: 'REQUEST_NAV_NEXT' });
   };
 
   const handleAnswerClick = () => {
     if (disabled) return;
-    setActiveToast(null); // Dismiss any active toast
+    dismissToast();
     navigationBus.emit({ type: 'ANSWER_BUTTON_CLICKED' });
   };
 
-  const handleHintClick = () => {
-    if (disabled) return;
-    setActiveToast(null); // Dismiss any active toast
-    setShowHint(prev => !prev);
-  };
 
   const handleRetryRecording = () => {
-    setActiveToast(null); // Dismiss any active toast
+    dismissToast();
     navigationBus.emit({ type: 'RETRY_RECORDING' });
   };
-
-  // Apply 'recording' class only when actively recording (triggers slide-down animation)
-  const isRecording = isAskRecording || isAnswerRecording;
 
   // Disable logic:
   // - When Ask is recording: Hint and Answer are disabled, but Ask is enabled (so user can stop)
   // - When Answer is recording: Ask and Hint are disabled, but Answer is enabled (so user can stop)
   // - When waiting: all buttons disabled
   const askButtonDisabled = isAnswerRecording || isWaiting || isAnswerWaiting || disabled;
-  const hintButtonDisabled = isRecording || isWaiting || isAnswerWaiting || disabled;
   const answerButtonDisabled = isAskRecording || isWaiting || isAnswerWaiting || disabled;
 
-  // Show answer text for answer recording and all answer-related states (including success-dance, fail-dance, and answer-submit)
-  const showAnswerText = isAnswerRecording || isAnswerProcessing || isWaitingForAnswerFinalize || isAnswerWaiting || isAnswerRight || isAnswerWrong || isSuccessDance || isFailDance || isAnswerSubmit;
+  // Show answer text for answer-related states (including success-dance and fail-dance)
+  // Note: isAnswerRecording and isAnswerProcessing now use the visualizer in the button rail (same as ask recording)
+  // Note: isAnswerSubmit, isAnswerWrong, isAnswerRight, and isAnswerWaiting now have their own dedicated layout sections (same as recording-submit)
+  const showAnswerText = isWaitingForAnswerFinalize || isSuccessDance || isFailDance;
 
   // Show question text for ask recording states (mirrors answer recording display)
-  // Include recording-submit so the question shows in the input box style during review
-  const showQuestionText = isAskRecording || isProcessing || isWaitingForFinalize || isRecordingSubmit;
+  // Note: recording-submit now has its own dedicated layout section
+  // Note: isProcessing now has its own full-width panel in the button rail
+  const showQuestionText = isWaitingForFinalize;
   const questionText = (scene as CharacterScene)?.questionText || '';
 
   // Track red glow state for answer-wrong and fail-dance
@@ -265,50 +262,45 @@ export const RecordPanel: React.FC<RecordPanelProps> = ({
     let toastToShow: ToastKey | null = null;
     let needsDelay = false; // Whether to delay showing the toast (for container transition)
 
+    // Helper to check if toast should show (not in persistent memory)
+    const shouldShowToast = (key: ToastKey) => !hasShown(key);
+
     // Recording states take priority (check these first)
     // 1. Entering recording state for a question: "Ask a question out loud..."
-    if (isAskRecording && !hasShown('input:ask-recording')) {
+    if (isAskRecording && shouldShowToast('input:ask-recording')) {
       toastToShow = 'input:ask-recording';
       markShown('input:ask-recording'); // Mark as shown since we use inline toast
     }
     // 2. Entering recording state for an answer: "Tell the answer then click stop."
-    else if (isAnswerRecording && !hasShown('answer:recording')) {
+    else if (isAnswerRecording && shouldShowToast('answer:recording')) {
       toastToShow = 'answer:recording';
       markShown('answer:recording'); // Mark as shown since we use inline toast
     }
-    // 3. Clue selection phases
-    else if (isAskClue && !hasShown('clue-selection:ask')) {
-      toastToShow = 'clue-selection:ask';
-      markShown('clue-selection:ask'); // Mark as shown to prevent re-showing on each clue click
+    // 3. Pre-ask-recording phase: Show first toast pointing to "Ask Your Question" button
+    else if (isPreAskRecording && shouldShowToast('input:first')) {
+      toastToShow = 'input:first';
+      markShown('input:first');
     }
-    else if (isAnswerClue && !hasShown('clue-selection:answer')) {
-      toastToShow = 'clue-selection:answer';
-      markShown('clue-selection:answer'); // Mark as shown to prevent re-showing on each clue click
-    }
-    // 4. Normal input state toasts (when buttons are visible and not recording)
+    // 5. Normal input state toasts (when buttons are visible and not recording)
     else if (isButtonsVisible) {
-      if (!hasShown('input:first')) {
-        toastToShow = 'input:first';
-        markShown('input:first'); // Mark as shown since we use inline toast
-        // Delay showing if container was previously hidden (transitioning in)
-        needsDelay = prevState === '' || prevState === 'basic' || prevState === 'input-basic' || prevState === 'quest-showing';
+      // Priority 1: When answer button is unlocked, show post-ai toast pointing to "I Know Now"
+      // This takes priority because it's the most relevant action when user can answer
+      if (unlockAnswerButton && shouldShowToast('input:post-ai')) {
+        toastToShow = 'input:post-ai';
+        markShown('input:post-ai');
       }
-      // After getting wrong answer and returning to input: Show hint toast
-      else if (justCameFromWrongAnswerRef.current && !hasShown('input:hint')) {
+      // Priority 2: After getting wrong answer and returning to input, show hint toast
+      else if (justCameFromWrongAnswerRef.current && shouldShowToast('input:hint')) {
         toastToShow = 'input:hint';
         markShown('input:hint'); // Mark as shown since we use inline toast
         justCameFromWrongAnswerRef.current = false; // Reset flag
       }
-      // After user has been to post-ai phase and returned to input: Show post-ai toast with 2 second delay
-      else if (hasBeenToPostAIRef.current && !hasShown('input:post-ai')) {
-        // Schedule toast after 2 second delay
-        toastTimeoutRef.current = setTimeout(() => {
-          setActiveToast('input:post-ai');
-          markShown('input:post-ai');
-        }, 2000);
-        // Don't set toastToShow here since we're handling it in the timeout
-        prevDialogueStateRef.current = dialogueState;
-        return; // Early return to skip the normal setActiveToast logic
+      // Priority 3: First time seeing input phase, show initial guidance
+      else if (shouldShowToast('input:first')) {
+        toastToShow = 'input:first';
+        markShown('input:first'); // Mark as shown since we use inline toast
+        // Delay showing if container was previously hidden (transitioning in)
+        needsDelay = prevState === '' || prevState === 'basic' || prevState === 'input-basic' || prevState === 'quest-showing';
       }
     }
 
@@ -329,7 +321,7 @@ export const RecordPanel: React.FC<RecordPanelProps> = ({
         clearTimeout(toastTimeoutRef.current);
       }
     };
-  }, [dialogueState, isButtonsVisible, isAskClue, isAnswerClue, isAskRecording, isAnswerRecording, unlockAnswerButton]);
+  }, [dialogueState, isButtonsVisible, isAskClue, isAnswerClue, isAskRecording, isAnswerRecording, isPreAskRecording, unlockAnswerButton]);
 
   // Determine which positioning class to apply based on state
   const getContainerClass = () => {
@@ -358,6 +350,8 @@ export const RecordPanel: React.FC<RecordPanelProps> = ({
     if (isInput) return 'quest-offer-centered';        // Input phase (ready to record)
     if (isAskClue) return 'quest-offer-centered';      // Clue selection
     if (isAnswerClue) return 'quest-offer-centered';   // Recording answer about clue
+    if (isPreAskRecording) return 'quest-offer-centered'; // Pre-recording instruction screen for asking
+    if (isPreAnswerRecording) return 'quest-offer-centered'; // Pre-recording instruction screen for answering
     if (isAskRecording) return 'quest-offer-centered'; // Recording question (input-recording)
     if (isProcessing) return 'quest-offer-centered';   // Processing recording (input-processing)
     if (isRecordingSubmit) return 'quest-offer-centered'; // Review recording
@@ -398,41 +392,244 @@ export const RecordPanel: React.FC<RecordPanelProps> = ({
       className={`record-panel-container ${containerClass}`}
       onWheel={handleWheel}
     >
-      {/* Hint Toast - slides up from under record panel */}
-      <div className={`hint-toast ${showHint ? 'visible' : ''}`}>
-        <img className="hint-toast-icon" src="/VisualAssets/lightbulb.svg" alt="" />
-        <span className="hint-toast-text">{hintText}</span>
-      </div>
-
       {/* Main Frame - matching Figma exactly */}
       <div className="frame">
         {/* Quest Section - white card with shadow (hidden when no audio recorded or no microphone) */}
-        {!isNoAudioRecorded && !isNoMicrophone && (
-          <div className={`whiteframe ${useQuestOfferStyling ? 'quest-offer' : ''}`}>
+        {/* Also hidden during recording-submit, answer-submit, answer-wrong, answer-right, and answer-waiting phases which have their own layout */}
+        {!isNoAudioRecorded && !isNoMicrophone && !isRecordingSubmit && !isAnswerSubmit && !isAnswerWrong && !isAnswerRight && !isAnswerWaiting && (
+          <div className={`whiteframe ${useQuestOfferStyling ? 'quest-offer' : ''} ${isAskClue || isAnswerClue ? 'clue-selection' : ''}`}>
             <div className="quest">
               <p className={`quest-find-out-what ${useQuestOfferStyling ? 'quest-offer' : ''}`}>
                 {isAskClue ? (
-                  <span className="quest-label" style={{ color: '#b2652a' }}>What clue do you want to ask a question about?</span>
+                  <span className="quest-label" style={{ color: '#b2652a' }}>Select a Clue to Ask About</span>
                 ) : isAnswerClue ? (
                   <>
-                    <span className="quest-label">Quest:</span>
+                    <span className="quest-label">Question:</span>
                     <span className="quest-description"> {questText}</span>
+                  </>
+                ) : isPreAskRecording ? (
+                  <>
+                    <span className="quest-label">Ask Your Question Out Loud</span>
+                    <br />
+                    <span className="quest-description">What do you want to know?</span>
+                  </>
+                ) : isPreAnswerRecording ? (
+                  <>
+                    <span className="quest-label">Speak Your Answer Out Loud</span>
+                    <br />
+                    <span className="quest-description">{questText}</span>
                   </>
                 ) : useQuestOfferStyling ? (
                   <>
-                    <span className="quest-label">Quest:</span>
+                    <span className="quest-label">The Big Question:</span>
                     <br />
                     <span className="quest-description">{questText}</span>
                   </>
                 ) : (
                   <>
-                    <span className="quest-label">Quest:</span>
-                    <span className="quest-description"> {questText}</span>
+                    <span className="quest-label">The Big Question:</span>
+                    <br />
+                    <span className="quest-description">{questText}</span>
                   </>
                 )}
               </p>
             </div>
           </div>
+        )}
+
+        {/* Recording Submit Layout - "Did you say this?" with parchment text display and styled buttons */}
+        {isRecordingSubmit && (
+          <>
+            <div className="whiteframe recording-submit-frame">
+              <div className="quest">
+                <p className="quest-find-out-what">
+                  <span className="quest-label">Did you say this?</span>
+                </p>
+                <div className="transcript-display">
+                  <img className="transcript-mic-icon" src="/VisualAssets/recordIcon.svg" alt="" />
+                  <span className="transcript-text">{truncateText(questionText)}</span>
+                </div>
+              </div>
+            </div>
+            <div className="frame-wrapper recording-submit-buttons">
+              <div className="button-halves-container">
+                <div className="half-panel cancel-panel-wrapper">
+                  <button
+                    className="half-panel-button cancel-panel"
+                    onClick={() => {
+                      setActiveToast(null);
+                      navigationBus.emit({ type: 'CANCEL_RECORDING' });
+                    }}
+                    title="Try again"
+                  >
+                    <span className="button-try-again">Try<br />Again</span>
+                  </button>
+                </div>
+                <div className="half-panel submit-panel-wrapper">
+                  <button
+                    className="half-panel-button submit-panel"
+                    onClick={() => {
+                      setActiveToast(null);
+                      navigationBus.emit({ type: 'SUBMIT_RECORDING' });
+                    }}
+                    title="Submit"
+                  >
+                    <div className="button-text">Submit</div>
+                  </button>
+                </div>
+              </div>
+            </div>
+          </>
+        )}
+
+        {/* Answer Submit Layout - "Did you say this?" with parchment text display and styled buttons (same as recording-submit) */}
+        {/* Also shown during answer-waiting so panel maintains styling while animating (but with processing indicator) */}
+        {(isAnswerSubmit || isAnswerWaiting) && (
+          <>
+            <div className="whiteframe recording-submit-frame">
+              <div className="quest">
+                <p className="quest-find-out-what">
+                  <span className="quest-label">Did you say this?</span>
+                </p>
+                <div className="transcript-display">
+                  <img className="transcript-mic-icon" src="/VisualAssets/recordIcon.svg" alt="" />
+                  <span className="transcript-text">{truncateText(answerText)}</span>
+                </div>
+              </div>
+            </div>
+            <div className="frame-wrapper recording-submit-buttons">
+              <div className="button-halves-container">
+                {isAnswerWaiting ? (
+                  <div className="half-panel full-width">
+                    <div className="half-panel-button visualizer-panel processing-panel">
+                      <div className="processing-indicator">
+                        <span className="processing-dot" />
+                        <span className="processing-dot" />
+                        <span className="processing-dot" />
+                      </div>
+                    </div>
+                  </div>
+                ) : (
+                  <>
+                    <div className="half-panel cancel-panel-wrapper">
+                      <button
+                        className="half-panel-button cancel-panel"
+                        onClick={() => {
+                          setActiveToast(null);
+                          navigationBus.emit({ type: 'CANCEL_ANSWER' });
+                        }}
+                        title="Try again"
+                      >
+                        <span className="button-try-again">Try<br />Again</span>
+                      </button>
+                    </div>
+                    <div className="half-panel submit-panel-wrapper">
+                      <button
+                        className="half-panel-button submit-panel"
+                        onClick={() => {
+                          setActiveToast(null);
+                          navigationBus.emit({ type: 'SUBMIT_ANSWER' });
+                        }}
+                        title="Submit"
+                      >
+                        <div className="button-text">Submit</div>
+                      </button>
+                    </div>
+                  </>
+                )}
+              </div>
+            </div>
+          </>
+        )}
+
+        {/* Answer Wrong Layout - same as answer-submit with buttons (seal goes over this) */}
+        {isAnswerWrong && (
+          <>
+            <div className="whiteframe recording-submit-frame">
+              <div className="quest">
+                <p className="quest-find-out-what">
+                  <span className="quest-label">Did you say this?</span>
+                </p>
+                <div className="transcript-display">
+                  <img className="transcript-mic-icon" src="/VisualAssets/recordIcon.svg" alt="" />
+                  <span className="transcript-text">{truncateText(answerText)}</span>
+                </div>
+              </div>
+            </div>
+            <div className="frame-wrapper recording-submit-buttons">
+              <div className="button-halves-container">
+                <div className="half-panel cancel-panel-wrapper">
+                  <button
+                    className="half-panel-button cancel-panel"
+                    onClick={() => {
+                      setActiveToast(null);
+                      navigationBus.emit({ type: 'CANCEL_ANSWER' });
+                    }}
+                    title="Try again"
+                  >
+                    <span className="button-try-again">Try<br />Again</span>
+                  </button>
+                </div>
+                <div className="half-panel submit-panel-wrapper">
+                  <button
+                    className="half-panel-button submit-panel"
+                    onClick={() => {
+                      setActiveToast(null);
+                      navigationBus.emit({ type: 'SUBMIT_ANSWER' });
+                    }}
+                    title="Submit"
+                  >
+                    <div className="button-text">Submit</div>
+                  </button>
+                </div>
+              </div>
+            </div>
+          </>
+        )}
+
+        {/* Answer Right Layout - same as answer-submit with buttons (seal goes over this) */}
+        {isAnswerRight && (
+          <>
+            <div className="whiteframe recording-submit-frame">
+              <div className="quest">
+                <p className="quest-find-out-what">
+                  <span className="quest-label">Did you say this?</span>
+                </p>
+                <div className="transcript-display">
+                  <img className="transcript-mic-icon" src="/VisualAssets/recordIcon.svg" alt="" />
+                  <span className="transcript-text">{truncateText(answerText)}</span>
+                </div>
+              </div>
+            </div>
+            <div className="frame-wrapper recording-submit-buttons">
+              <div className="button-halves-container">
+                <div className="half-panel cancel-panel-wrapper">
+                  <button
+                    className="half-panel-button cancel-panel"
+                    onClick={() => {
+                      setActiveToast(null);
+                      navigationBus.emit({ type: 'CANCEL_ANSWER' });
+                    }}
+                    title="Try again"
+                  >
+                    <span className="button-try-again">Try<br />Again</span>
+                  </button>
+                </div>
+                <div className="half-panel submit-panel-wrapper">
+                  <button
+                    className="half-panel-button submit-panel"
+                    onClick={() => {
+                      setActiveToast(null);
+                      navigationBus.emit({ type: 'SUBMIT_ANSWER' });
+                    }}
+                    title="Submit"
+                  >
+                    <div className="button-text">Submit</div>
+                  </button>
+                </div>
+              </div>
+            </div>
+          </>
         )}
 
         {/* No Audio Recorded Message - shown instead of quest when no audio detected */}
@@ -491,11 +688,7 @@ export const RecordPanel: React.FC<RecordPanelProps> = ({
                 <span className="quest-label">Your answer:</span>
               </p>
               <div className="answer-input-box">
-                {isAnswerRecording ? (
-                  <AudioVisualizer audioLevel={audioLevel} className="answer-variant" mode="listening" />
-                ) : isAnswerProcessing ? (
-                  <AudioVisualizer audioLevel={audioLevel} className="answer-variant" mode="processing" />
-                ) : (isAnswerSubmit || isWaitingForAnswerFinalize) ? (
+                {(isAnswerSubmit || isWaitingForAnswerFinalize) ? (
                   <span className="answer-placeholder">{truncateText(answerText)}</span>
                 ) : (
                   <span className="quest-description">{truncateText(answerText) || 'Someone stole your cookies.'}</span>
@@ -506,8 +699,8 @@ export const RecordPanel: React.FC<RecordPanelProps> = ({
         )}
 
         {/* Button Rail - white background with buttons */}
-        {/* Hide button rail for answer feedback states only */}
-        {!isAnswerWaiting && !isAnswerRight && !isAnswerWrong && !isSuccessDance && !isFailDance && (
+        {/* Hide button rail for answer feedback states and recording-submit/answer-submit (they have their own buttons) */}
+        {!isAnswerWaiting && !isAnswerRight && !isAnswerWrong && !isSuccessDance && !isFailDance && !isRecordingSubmit && !isAnswerSubmit && (
           <div className="frame-wrapper">
             {isAskClue || isAnswerClue ? (
               /* Ask/Answer Clue State: Show clue selection panel */
@@ -527,174 +720,250 @@ export const RecordPanel: React.FC<RecordPanelProps> = ({
                     });
                   }}
                 />
-                {/* Toast anchored above clue selection */}
-                {(activeToast === 'clue-selection:ask' || activeToast === 'clue-selection:answer') && (() => {
-                  const config = getToastConfig(activeToast);
-                  const message = Array.isArray(config) ? config[0]?.message : config?.message;
-                  return (
-                    <div className="button-toast button-toast--above-grid" onClick={() => setActiveToast(null)}>
-                      {message}
-                      <div className="button-toast__arrow" />
-                    </div>
-                  );
-                })()}
               </div>
             ) : useQuestOfferStyling ? (
-              /* Quest Offer: Single Accept button centered */
-              <div className="button-wrapper">
-                <button className="button accept-btn" onClick={handleAcceptQuest} disabled={disabled}>
-                  <div className="answer">Accept</div>
-                </button>
+              /* Quest Offer: Single Accept button full width */
+              <div className="button-halves-container">
+                <div className="half-panel full-width">
+                  <button
+                    className={`half-panel-button accept-panel ${disabled ? 'disabled' : ''}`}
+                    onClick={handleAcceptQuest}
+                    disabled={disabled}
+                  >
+                    <div className="button-content">
+                      <div className="button-text">Continue</div>
+                      <div className="button-subtext">&nbsp;</div>
+                    </div>
+                  </button>
+                </div>
               </div>
-            ) : isRecordingSubmit ? (
-              /* Recording Submit State: Cancel and Send buttons (same style as answer-submit) */
-              <div className="div answer-submit-buttons">
-                {/* Cancel (X) button - red tint */}
-                <button
-                  className="button cancel-recording-btn"
-                  onClick={() => {
-                    setActiveToast(null);
-                    navigationBus.emit({ type: 'CANCEL_RECORDING' });
-                  }}
-                  title="Cancel and re-record"
-                >
-                  <span className="cancel-x">✕</span>
-                </button>
-
-                {/* Send button - green with paper airplane icon */}
-                <button
-                  className="button send-recording-btn"
-                  onClick={() => {
-                    setActiveToast(null);
-                    navigationBus.emit({ type: 'SUBMIT_RECORDING' });
-                  }}
-                  title="Send to AI"
-                >
-                  <svg className="button-icon send-icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                    <path d="M22 2L11 13M22 2L15 22L11 13M22 2L2 9L11 13" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-                  </svg>
-                  <div className="button-text">Send</div>
-                </button>
+            ) : isPreAskRecording ? (
+              /* Pre-Ask Recording: Hint button + Start Recording button */
+              <div className="button-halves-container pre-ask-buttons">
+                <div className="half-panel hint-panel-wrapper">
+                  <button
+                    className={`half-panel-button hint-panel ${disabled ? 'disabled' : ''}`}
+                    onClick={() => {
+                      // Toggle hint toast - if already showing, hide it; otherwise show it
+                      setActiveToast(activeToast === 'input:hint' ? null : 'input:hint');
+                    }}
+                    disabled={disabled}
+                    title="Get a hint"
+                  >
+                    <span className="button-hint-text">HINT</span>
+                  </button>
+                  {/* Hint toast - anchored to hint button */}
+                  {activeToast === 'input:hint' && (() => {
+                    const hintText = conversationMetadata?.hint;
+                    const fallbackConfig = getToastConfig(activeToast);
+                    const fallbackMessage = Array.isArray(fallbackConfig) ? fallbackConfig[0]?.message : fallbackConfig?.message;
+                    const message = hintText || fallbackMessage;
+                    return (
+                      <div className="button-toast hint-button-toast" onClick={dismissToast}>
+                        {message}
+                        <div className="button-toast__arrow" />
+                      </div>
+                    );
+                  })()}
+                </div>
+                <div className="half-panel ask-panel-wrapper">
+                  <button
+                    className={`half-panel-button accept-panel start-recording-panel ${disabled ? 'disabled' : ''}`}
+                    onClick={() => {
+                      setActiveToast(null);
+                      navigationBus.emit({ type: 'START_RECORDING' });
+                    }}
+                    disabled={disabled}
+                  >
+                    <img className="mic-icon" src="/VisualAssets/recordIcon.svg" alt="" />
+                    <div className="button-text centered-single-line">Ask Your<br className="mobile-break" /> Question</div>
+                  </button>
+                  {/* Toast anchored above Ask Your Question button */}
+                  {activeToast === 'input:first' && (() => {
+                    const config = getToastConfig(activeToast);
+                    const message = Array.isArray(config) ? config[0]?.message : config?.message;
+                    return (
+                      <div className="button-toast" onClick={dismissToast}>
+                        {message}
+                        <div className="button-toast__arrow" />
+                      </div>
+                    );
+                  })()}
+                </div>
               </div>
-            ) : isAnswerSubmit ? (
-              /* Answer Submit State: Cancel and Send buttons */
-              <div className="div answer-submit-buttons">
-                {/* Cancel (X) button - red tint */}
-                <button
-                  className="button cancel-recording-btn"
-                  onClick={() => {
-                    setActiveToast(null);
-                    navigationBus.emit({ type: 'CANCEL_ANSWER' });
-                  }}
-                  title="Cancel and re-record"
-                >
-                  <span className="cancel-x">✕</span>
-                </button>
-
-                {/* Send button - green with paper airplane icon */}
-                <button
-                  className="button send-recording-btn"
-                  onClick={() => {
-                    setActiveToast(null);
-                    navigationBus.emit({ type: 'SUBMIT_ANSWER' });
-                  }}
-                  title="Submit answer"
-                >
-                  <svg className="button-icon send-icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                    <path d="M22 2L11 13M22 2L15 22L11 13M22 2L2 9L11 13" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-                  </svg>
-                  <div className="button-text">Send</div>
-                </button>
+            ) : isPreAnswerRecording ? (
+              /* Pre-Answer Recording: Full width Start Recording button (no hint) */
+              <div className="button-halves-container">
+                <div className="half-panel full-width">
+                  <button
+                    className={`half-panel-button accept-panel start-recording-panel ${disabled ? 'disabled' : ''}`}
+                    onClick={() => {
+                      setActiveToast(null);
+                      navigationBus.emit({ type: 'START_RECORDING' });
+                    }}
+                    disabled={disabled}
+                  >
+                    <img className="mic-icon" src="/VisualAssets/recordIcon.svg" alt="" />
+                    <div className="button-text centered-single-line">Speak Your Answer</div>
+                  </button>
+                </div>
               </div>
-            ) : isNoAudioRecorded || isNoMicrophone ? (
-              /* No Audio Recorded / No Microphone State: Continue button on ribbon */
-              <div className="button-wrapper">
-                <button
-                  className="button continue-btn"
-                  onClick={handleRetryRecording}
-                  title="Continue"
-                >
-                  <div className="button-text">Continue</div>
-                </button>
-              </div>
-            ) : (
-              /* Normal State: Ask, Hint, Answer buttons */
-              <div className="div">
-                <div className="div-2">
-                  {/* Ask Button - transforms to Stop when recording */}
-                  <div className="ask-button-wrapper">
-                    <button
-                      ref={askButtonRef}
-                      className={`button ${isAskRecording ? 'recording-active' : ''} ${askButtonDisabled ? 'disabled' : ''} ${isAskRecording && !isActuallyRecording ? 'disabled' : ''}`}
-                      onClick={isAskRecording ? (isActuallyRecording ? onRecordStop : undefined) : handleAskClick}
-                      disabled={askButtonDisabled || (isAskRecording && !isActuallyRecording)}
-                      title={isAskRecording ? (isActuallyRecording ? "Stop recording" : "Starting...") : "Ask a question"}
-                    >
-                      <img className="button-icon" src="/VisualAssets/recordIcon.svg" alt="" />
-                      {isAskRecording ? (
-                        <>
-                          <div className="stop-square" />
-                          <div className="button-text">Stop</div>
-                        </>
-                      ) : (
-                        <div className="button-text">Ask</div>
-                      )}
-                    </button>
-                    {/* Toast anchored above Ask/Stop button */}
-                    {(activeToast === 'input:first' || activeToast === 'input:ask-recording') && (() => {
-                      const config = getToastConfig(activeToast);
-                      const message = Array.isArray(config) ? config[0]?.message : config?.message;
-                      return (
-                        <div className="button-toast" onClick={() => setActiveToast(null)}>
-                          {message}
-                          <div className="button-toast__arrow" />
-                        </div>
-                      );
-                    })()}
-                  </div>
-
-                  {/* Hint Button - cardboard button with lightbulb, pressed when hint showing */}
-                  <div className="hint-button-wrapper">
-                    <button
-                      ref={hintButtonRef}
-                      className={`hint-btn ${showHint ? 'active' : ''} ${hintButtonDisabled ? 'disabled' : ''}`}
-                      onClick={handleHintClick}
-                      disabled={hintButtonDisabled}
-                      title="Get a hint"
-                    >
-                      <img className="img" alt="" src="/VisualAssets/lightbulb.svg" />
-                    </button>
-                    {/* Toast anchored above Hint button */}
-                    {activeToast === 'input:hint' && (() => {
-                      const config = getToastConfig('input:hint');
-                      const message = Array.isArray(config) ? config[0]?.message : config?.message;
-                      return (
-                        <div className="button-toast" onClick={() => setActiveToast(null)}>
-                          {message}
-                          <div className="button-toast__arrow" />
-                        </div>
-                      );
-                    })()}
+            ) : isAskRecording ? (
+              /* Ask Recording: Pulsing mic + audio-reactive sine wave */
+              <div className="button-halves-container">
+                <div className="half-panel full-width">
+                  <div
+                    className="half-panel-button visualizer-panel listening-panel"
+                    onClick={isActuallyRecording ? onRecordStop : undefined}
+                  >
+                    <div className="mic-with-glow">
+                      <div className="mic-soft-glow" />
+                      <img className="mic-icon listening-mic" src="/VisualAssets/recordIcon.svg" alt="" />
+                    </div>
+                    <div className="gentle-waveform">
+                      <WaveVisualizer
+                        isRecording={isActuallyRecording}
+                        waveColor="#4ade80"
+                        lineWidth={4}
+                        amplitude={200}
+                      />
+                    </div>
                   </div>
                 </div>
+              </div>
+            ) : isProcessing ? (
+              /* Processing: Same layout as recording but with flashing processing indicator */
+              <div className="button-halves-container">
+                <div className="half-panel full-width">
+                  <div className="half-panel-button visualizer-panel processing-panel">
+                    <div className="processing-indicator">
+                      <span className="processing-dot" />
+                      <span className="processing-dot" />
+                      <span className="processing-dot" />
+                    </div>
+                  </div>
+                </div>
+              </div>
+            ) : isAnswerRecording ? (
+              /* Answer Recording: Pulsing mic + audio-reactive sine wave (same style as Ask Recording) */
+              <div className="button-halves-container">
+                <div className="half-panel full-width">
+                  <div
+                    className="half-panel-button visualizer-panel listening-panel"
+                    onClick={isActuallyRecording ? onRecordStop : undefined}
+                  >
+                    <div className="mic-with-glow">
+                      <div className="mic-soft-glow" />
+                      <img className="mic-icon listening-mic" src="/VisualAssets/recordIcon.svg" alt="" />
+                    </div>
+                    <div className="gentle-waveform">
+                      <WaveVisualizer
+                        isRecording={isActuallyRecording}
+                        waveColor="#4ade80"
+                        lineWidth={4}
+                        amplitude={200}
+                      />
+                    </div>
+                  </div>
+                </div>
+              </div>
+            ) : isAnswerProcessing ? (
+              /* Answer Processing: Same layout as recording but with flashing processing indicator */
+              <div className="button-halves-container">
+                <div className="half-panel full-width">
+                  <div className="half-panel-button visualizer-panel processing-panel">
+                    <div className="processing-indicator">
+                      <span className="processing-dot" />
+                      <span className="processing-dot" />
+                      <span className="processing-dot" />
+                    </div>
+                  </div>
+                </div>
+              </div>
+            ) : isNoAudioRecorded || isNoMicrophone ? (
+              /* No Audio Recorded / No Microphone State: Single full-width button (same as quest offer) */
+              <div className="button-halves-container">
+                <div className="half-panel full-width">
+                  <button
+                    className={`half-panel-button accept-panel ${disabled ? 'disabled' : ''}`}
+                    onClick={handleRetryRecording}
+                    disabled={disabled}
+                  >
+                    <div className="button-content">
+                      <div className="button-text">Continue</div>
+                      <div className="button-subtext">&nbsp;</div>
+                    </div>
+                  </button>
+                </div>
+              </div>
+            ) : (
+              /* Normal State: Ask and Answer as full-width half panels */
+              <div className="button-halves-container">
+                {/* Ask Panel - left half */}
+                <div className="ask-button-wrapper half-panel">
+                  <button
+                    ref={askButtonRef}
+                    className={`half-panel-button ask-panel ${isAskRecording ? 'recording-active' : ''} ${askButtonDisabled ? 'disabled' : ''} ${isAskRecording && !isActuallyRecording ? 'disabled' : ''}`}
+                    onClick={isAskRecording ? (isActuallyRecording ? onRecordStop : undefined) : handleAskClick}
+                    disabled={askButtonDisabled || (isAskRecording && !isActuallyRecording)}
+                    title={isAskRecording ? (isActuallyRecording ? "Stop recording" : "Starting...") : "Ask a question"}
+                  >
+                    {isAskRecording ? (
+                      <>
+                        <div className="stop-square" />
+                        <div className="button-text">Stop</div>
+                      </>
+                    ) : (
+                      <div className="button-content">
+                        <div className="button-text">I Don't Know</div>
+                        <div className="button-subtext">Ask a question to get a clue.</div>
+                      </div>
+                    )}
+                  </button>
+                  {/* Toast anchored above Ask/Stop panel */}
+                  {(activeToast === 'input:first' || activeToast === 'input:ask-recording') && (() => {
+                    const config = getToastConfig(activeToast);
+                    const message = Array.isArray(config) ? config[0]?.message : config?.message;
+                    return (
+                      <div className="button-toast" onClick={dismissToast}>
+                        {message}
+                        <div className="button-toast__arrow" />
+                      </div>
+                    );
+                  })()}
+                </div>
 
-                {/* Answer Button - locked until first transcript received or quest complete, transforms when recording answer */}
-                <div className="answer-button-wrapper" ref={answerButtonRef}>
-                  <NextButton
-                    locked={!unlockAnswerButton && questState !== 'complete'}
-                    onClick={handleAnswerClick}
-                    onRecordStop={onRecordStop}
-                    label="Answer"
-                    disabled={answerButtonDisabled}
-                    isRecording={isAnswerRecording}
-                    isActuallyRecording={isActuallyRecording}
-                  />
-                  {/* Toast anchored above Answer button */}
+                {/* Answer Panel - right half */}
+                <div className="answer-button-wrapper half-panel" ref={answerButtonRef}>
+                  <button
+                    className={`half-panel-button answer-panel ${isAnswerRecording ? 'recording-active' : ''} ${answerButtonDisabled ? 'disabled' : ''} ${(!unlockAnswerButton && questState !== 'complete') ? 'locked' : ''} ${isAnswerRecording && !isActuallyRecording ? 'disabled' : ''}`}
+                    onClick={isAnswerRecording ? (isActuallyRecording ? onRecordStop : undefined) : ((!unlockAnswerButton && questState !== 'complete') ? undefined : handleAnswerClick)}
+                    disabled={answerButtonDisabled || (isAnswerRecording && !isActuallyRecording)}
+                    title={isAnswerRecording ? (isActuallyRecording ? "Stop recording" : "Starting...") : ((!unlockAnswerButton && questState !== 'complete') ? "Ask a question first to unlock" : "Answer the question")}
+                  >
+                    {isAnswerRecording ? (
+                      <>
+                        <div className="stop-square" />
+                        <div className="button-text">Stop</div>
+                      </>
+                    ) : (
+                      <>
+                        {(!unlockAnswerButton && questState !== 'complete') && (
+                          <img className="lock-image-overlay" src="/VisualAssets/lock.png" alt="Locked" />
+                        )}
+                        <div className="button-content">
+                          <div className="button-text">I Know Now</div>
+                          <div className="button-subtext">Make your guess.</div>
+                        </div>
+                      </>
+                    )}
+                  </button>
+                  {/* Toast anchored above Answer panel */}
                   {(activeToast === 'input:post-ai' || activeToast === 'answer:recording') && (() => {
                     const config = getToastConfig(activeToast);
                     const message = Array.isArray(config) ? config[0]?.message : config?.message;
                     return (
-                      <div className="button-toast" onClick={() => setActiveToast(null)}>
+                      <div className="button-toast" onClick={dismissToast}>
                         {message}
                         <div className="button-toast__arrow" />
                       </div>

@@ -35,7 +35,7 @@ const debug = createDebugger('navigation:machine');
  * Useful for testing the answer flow directly
  * NOTE: Always forced to false in production builds
  */
-const DEBUG_AUTO_UNLOCK_ANSWER_BUTTON = import.meta.env.PROD ? false : true;
+const DEBUG_AUTO_UNLOCK_ANSWER_BUTTON = import.meta.env.PROD ? false : false;
 
 /**
  * DEBUG FLAG: Allow scroll navigation during recording
@@ -250,6 +250,12 @@ export const navigationMachine = setup({
         const scene = currentNode?.scene;
         return (scene as { conversationId?: string })?.conversationId;
       },
+    }),
+
+    // Reset unlock answer button - forces kids to ask another question after wrong answer
+    resetUnlockAnswerButton: assign({
+      unlockAnswerButton: false,
+      unlockedConversationId: undefined,
     }),
 
     // Check requiredAsk metadata and unlock answer button if requiredAsk is false
@@ -657,6 +663,11 @@ export const navigationMachine = setup({
       const currentPhase = useNavigationStore.getState().getCurrentPhase();
       return currentPhase === 'record-answer';
     },
+    // Check if current node is in pre-answer-recording phase (showing instruction screen)
+    isPreAnswerRecording: () => {
+      const currentPhase = useNavigationStore.getState().getCurrentPhase();
+      return currentPhase === 'pre-answer-recording';
+    },
     // Check if current node is in askClue phase (selecting clue to ask about)
     isAskClue: () => {
       const currentPhase = useNavigationStore.getState().getCurrentPhase();
@@ -932,6 +943,10 @@ export const navigationMachine = setup({
               target: 'questShowing',
             },
             {
+              guard: 'isPreAnswerRecording',
+              target: 'preAnswerRecording',
+            },
+            {
               guard: 'isRecordAnswer',
               target: 'answerPendingRecording',
             },
@@ -1084,43 +1099,20 @@ export const navigationMachine = setup({
                 target: 'askClue',
               },
               {
-                // If useClues is false, start recording directly
-                actions: () => debug.log('🎯 ASK_BUTTON_CLICKED on standaloneInput → starting recording'),
-                target: 'askPendingRecording',
+                // If useClues is false, show pre-recording instruction screen
+                actions: () => debug.log('🎯 ASK_BUTTON_CLICKED on standaloneInput → showing pre-recording'),
+                target: 'preAskRecording',
               }
             ],
-            // ANSWER_BUTTON_CLICKED - same handling as dialogueInput
-            ANSWER_BUTTON_CLICKED: [
-              {
-                // If useClues is true, transition to answerClue phase
-                guard: () => {
-                  const node = useNavigationStore.getState().getCurrentNode();
-                  const scene = node?.scene as { conversationId?: string } | undefined;
-                  if (!scene?.conversationId) return false;
-                  const metadata = getConversationMetadata(scene.conversationId);
-                  return metadata?.useClues === true;
-                },
-                actions: [
-                  () => {
-                    debug.log('🔍 ANSWER_BUTTON_CLICKED with useClues=true → answerClue phase');
-                    const nodeId = useNavigationStore.getState().currentId;
-                    if (nodeId) {
-                      useNavigationStore.getState().updateNodePhase(nodeId, 'answerClue');
-                    }
-                  }
-                ],
-                target: 'answerClue',
-              },
-              {
-                // If useClues is false, start recording answer directly
-                actions: () => debug.log('🎯 ANSWER_BUTTON_CLICKED on standaloneInput → starting recording'),
-                target: 'answerPendingRecording',
-              }
-            ],
-            // Recording started by orchestrator
+            // ANSWER_BUTTON_CLICKED - go directly to pre-recording (no clue selection for answers)
+            ANSWER_BUTTON_CLICKED: {
+              actions: () => debug.log('🎯 ANSWER_BUTTON_CLICKED on standaloneInput → showing pre-recording'),
+              target: 'preAnswerRecording',
+            },
+            // Recording started by orchestrator - go to pre-recording first
             RECORDING_STARTED: {
-              actions: () => debug.log('🎙️  Recording started by orchestrator'),
-              target: 'askPendingRecording',
+              actions: () => debug.log('🎙️  Recording started by orchestrator → showing pre-recording'),
+              target: 'preAskRecording',
             },
             // Handle recording failure
             RECORDING_FAILED: {
@@ -1352,46 +1344,23 @@ export const navigationMachine = setup({
                 target: '#navigation.scene.route',
               },
               {
-                // If useClues is false, start recording directly
-                actions: () => debug.log('🎯 ASK_BUTTON_CLICKED with useClues=false → starting recording'),
-                target: 'askPendingRecording',
+                // If useClues is false, show pre-recording instruction screen
+                actions: () => debug.log('🎯 ASK_BUTTON_CLICKED with useClues=false → showing pre-recording'),
+                target: 'preAskRecording',
               }
             ],
             // ANSWER_BUTTON_CLICKED - User clicked Answer button
-            // Check useClues metadata to decide: answerClue phase or start recording
-            ANSWER_BUTTON_CLICKED: [
-              {
-                // If useClues is true, transition to answerClue phase (clue selection)
-                guard: () => {
-                  const currentNode = getCurrentNode();
-                  const scene = currentNode?.scene;
-                  const conversationId = (scene as { conversationId?: string })?.conversationId;
-                  const metadata = conversationId ? getConversationMetadata(conversationId) : null;
-                  return metadata?.useClues === true;
-                },
-                actions: [
-                  () => {
-                    debug.log('🔍 ANSWER_BUTTON_CLICKED with useClues=true → answerClue phase');
-                    const nodeId = getCurrentNodeId();
-                    if (nodeId) {
-                      useNavigationStore.getState().updateNodePhase(nodeId, 'answerClue');
-                    }
-                  }
-                ],
-                target: '#navigation.scene.route',
-              },
-              {
-                // If useClues is false, start recording directly
-                actions: () => debug.log('🎯 ANSWER_BUTTON_CLICKED with useClues=false → starting answer recording'),
-                target: 'answerPendingRecording',
-              }
-            ],
+            // Go directly to pre-recording (no clue selection for answers)
+            ANSWER_BUTTON_CLICKED: {
+              actions: () => debug.log('🎯 ANSWER_BUTTON_CLICKED → showing pre-recording'),
+              target: 'preAnswerRecording',
+            },
             // RECORDING_STARTED event comes from RecordPanelOrchestrator AFTER it completes the complex flow
             // Orchestrator handles: recording start, scene creation, insertion, navigation, phase update
             // Machine just transitions state to track that we're recording
             RECORDING_STARTED: {
-              actions: () => debug.log('🎙️  Ask recording started by orchestrator'),
-              target: 'askPendingRecording',
+              actions: () => debug.log('🎙️  Ask recording started by orchestrator → showing pre-recording'),
+              target: 'preAskRecording',
             },
             // Handle recording failure
             RECORDING_FAILED: {
@@ -1459,8 +1428,8 @@ export const navigationMachine = setup({
                   }
                 },
               ],
-              // Transition to askPendingRecording which will start mic, then askRecording on RECORDING_ACTIVE
-              target: 'askPendingRecording',
+              // Transition to preAskRecording for instruction screen, then askPendingRecording on START_RECORDING
+              target: 'preAskRecording',
             },
             RECORDING_FAILED: {
               actions: ({ event }) => debug.error('❌ Recording failed:', event.error),
@@ -1520,11 +1489,56 @@ export const navigationMachine = setup({
                   }
                 },
               ],
-              // Transition to answerPendingRecording which will start mic, then answerRecording on RECORDING_ACTIVE
-              target: 'answerPendingRecording',
+              // Transition to preAnswerRecording for instruction screen, then answerPendingRecording on START_RECORDING
+              target: 'preAnswerRecording',
             },
             RECORDING_FAILED: {
               actions: ({ event }) => debug.error('❌ Recording failed:', event.error),
+            },
+          },
+        },
+
+        /**
+         * PRE ASK RECORDING state
+         * Instruction screen shown before recording starts
+         * User sees "Ask Your Question Out Loud" prompt
+         */
+        preAskRecording: {
+          entry: [
+            () => debug.log('📋 Entered preAskRecording - showing instruction screen'),
+            () => {
+              // Update phase to pre-ask-recording
+              const nodeId = getCurrentNodeId();
+              if (nodeId) {
+                useNavigationStore.getState().updateNodePhase(nodeId, 'pre-ask-recording');
+              }
+            }
+          ],
+          on: {
+            // Block navigation during pre-recording instruction
+            SCROLL_DOWN_STEP: {
+              actions: () => debug.log('⛔ SCROLL blocked during pre-recording'),
+            },
+            SCROLL_UP_STEP: {
+              actions: () => debug.log('⛔ SCROLL blocked during pre-recording'),
+            },
+            // User clicks Continue/Start Recording button
+            START_RECORDING: {
+              actions: () => debug.log('▶️ START_RECORDING clicked → starting mic'),
+              target: 'askPendingRecording',
+            },
+            // User can cancel and go back
+            CANCEL_RECORDING: {
+              actions: [
+                () => {
+                  debug.log('❌ CANCEL from pre-recording → returning to input');
+                  const nodeId = getCurrentNodeId();
+                  if (nodeId) {
+                    useNavigationStore.getState().updateNodePhase(nodeId, 'input');
+                  }
+                }
+              ],
+              target: 'dialogueInput',
             },
           },
         },
@@ -1719,7 +1733,6 @@ export const navigationMachine = setup({
             RECORDING_TRANSCRIBED: {
               actions: [
                 'storeTranscriptInScene',
-                'setUnlockAnswerButton',
                 () => {
                   debug.log('✅ Transcript stored → recording-submit for user review');
                   const nodeId = getCurrentNodeId();
@@ -1788,6 +1801,7 @@ export const navigationMachine = setup({
             // User confirms transcript - proceed to AI
             SUBMIT_RECORDING: {
               actions: [
+                'setUnlockAnswerButton', // Count question only after user confirms submission
                 async () => {
                   debug.log('✅ SUBMIT_RECORDING → proceeding to AI');
                   const currentNodeId = getCurrentNodeId();
@@ -2023,6 +2037,51 @@ export const navigationMachine = setup({
                 'createAIResponseScene',
                 () => debug.log('✅ Received AI response via legacy event')
               ]
+            },
+          },
+        },
+
+        /**
+         * PRE ANSWER RECORDING state
+         * Instruction screen shown before answer recording starts
+         * User sees "Speak Your Answer Out Loud" prompt
+         */
+        preAnswerRecording: {
+          entry: [
+            () => debug.log('📋 Entered preAnswerRecording - showing instruction screen'),
+            () => {
+              // Update phase to pre-answer-recording
+              const nodeId = getCurrentNodeId();
+              if (nodeId) {
+                useNavigationStore.getState().updateNodePhase(nodeId, 'pre-answer-recording');
+              }
+            }
+          ],
+          on: {
+            // Block navigation during pre-recording instruction
+            SCROLL_DOWN_STEP: {
+              actions: () => debug.log('⛔ SCROLL blocked during pre-answer-recording'),
+            },
+            SCROLL_UP_STEP: {
+              actions: () => debug.log('⛔ SCROLL blocked during pre-answer-recording'),
+            },
+            // User clicks Continue/Start Recording button
+            START_RECORDING: {
+              actions: () => debug.log('▶️ START_RECORDING clicked → starting mic for answer'),
+              target: 'answerPendingRecording',
+            },
+            // User can cancel and go back
+            CANCEL_ANSWER: {
+              actions: [
+                () => {
+                  debug.log('❌ CANCEL from pre-answer-recording → returning to input');
+                  const nodeId = getCurrentNodeId();
+                  if (nodeId) {
+                    useNavigationStore.getState().updateNodePhase(nodeId, 'input');
+                  }
+                }
+              ],
+              target: 'dialogueInput',
             },
           },
         },
@@ -2942,7 +3001,8 @@ export const navigationMachine = setup({
               console.log('😡 [STATE MACHINE] Entered failDance state - creating fail-dance scene');
               debug.log('😡 Entered failDance - creating fail-dance scene');
             },
-            'createAndInsertFailDanceScene'
+            'createAndInsertFailDanceScene',
+            'resetUnlockAnswerButton', // Reset to 0 questions - force kids to ask another question
           ],
           on: {
             // Block navigation during angry dance

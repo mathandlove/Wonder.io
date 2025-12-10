@@ -29,6 +29,7 @@ import type { Scene } from '@core/types/scene';
  * - 'basic' - Default dialogue state
  * - 'input-basic' - Showing input option
  * - 'input-showInput' - Input UI visible
+ * - 'pre-ask-recording' - About to start recording (instruction screen)
  * - 'input-recording' - User is recording
  * - 'input-processing' - Processing the recording
  * - 'ai-waiting' - Waiting for AI response
@@ -59,6 +60,8 @@ export type Phase =
   | 'basic'
   | 'input-basic'
   | 'input-showInput'
+  | 'pre-ask-recording'  // About to start recording (instruction screen for asking)
+  | 'pre-answer-recording'  // About to start recording (instruction screen for answering)
   | 'input-recording'
   | 'input-processing'
   | 'recording-submit'  // User reviewing transcript before submitting to AI
@@ -111,6 +114,8 @@ export const PHASES = {
   BASIC: 'basic' as const,
   INPUT_BASIC: 'input-basic' as const,
   INPUT_SHOW_INPUT: 'input-showInput' as const,
+  PRE_ASK_RECORDING: 'pre-ask-recording' as const,
+  PRE_ANSWER_RECORDING: 'pre-answer-recording' as const,
   INPUT_RECORDING: 'input-recording' as const,
   INPUT_PROCESSING: 'input-processing' as const,
   RECORDING_SUBMIT: 'recording-submit' as const,

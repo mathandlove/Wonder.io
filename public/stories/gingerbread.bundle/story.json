@@ -38,7 +38,7 @@
         },
         {
           "side": "left",
-          "text": "Hmm, something is not right."
+          "text": "Hmm, what is wrong?"
         },
         {
           "type": "quest"
@@ -58,7 +58,7 @@
     },
     {
       "type": "text",
-      "text": "Warm, sweet smells filled the bakery. Vanilla, cinnamon, and sugar drifted through the air.",
+      "text": "Warm, sweet smells filled the bakery. ",
       "background": "bakery.jpeg"
     },
     {
@@ -197,7 +197,7 @@
         },
         {
           "side": "right",
-          "text": "My window? What did they steal?"
+          "text": "My window? Oh no! What did they steal?"
         },
         {
           "type": "quest"
@@ -211,35 +211,10 @@
         },
         {
           "side": "left",
-          "text": "I'll look around outside."
+          "text": "I will follow the baby shoe trail and see where it leads."
         }
       ],
       "incorrectAnswer": []
-    },
-    {
-      "type": "clue-image",
-      "image": "outsideCobbler.jpeg",
-      "clueDescriptions": [
-        {
-          "hotspotName": "BrokenGlass",
-          "description": "Shattered glass",
-          "image": "brokenglass",
-          "dialog": "The thief jumped out the window onto the glass. Ouch."
-        },
-        {
-          "hotspotName": "BabyShoePrints",
-          "description": "Tiny shoe prints leading away",
-          "image": "babyshoeprints",
-          "dialog": "These prints are tiny—baby shoes. The thief must be wearing them."
-        },
-        {
-          "hotspotName": "Note",
-          "description": "A note left behind",
-          "image": "note",
-          "dialog": "A note! It says, 'You can't catch me!' We'll see about that."
-        }
-      ],
-      "sceneDescription": "A downward view of a sidewalk. ON the sid"
     },
     {
       "type": "image",
@@ -259,68 +234,6 @@
       "description": "The backside of a gingerbread man running through snow covered trees. He is wearing pink baby shoes. And leaving foot prints."
     },
     {
-      "type": "text",
-      "text": "I noticed that the thief was covered in thick brown mud. Why would he cover himself in mud? Perhaps to hide the cookie?",
-      "background": "riverbank.jpeg"
-    },
-    {
-      "type": "text",
-      "text": "I sprinted with all my might down the snowy hill. Right when I almost caught him...",
-      "background": "riverbank.jpeg"
-    },
-    {
-      "type": "image",
-      "image": "story/riverchase2.jpeg",
-      "text": "My feet slipped on a patch of ice, and I fell flat on my face.",
-      "description": "Leo slipping on a patch of ice. Surrounded by snow covered trees."
-    },
-    {
-      "type": "text",
-      "text": "The thief got away, but I did get some of the thick brown mud he was covered in.",
-      "background": "riverbank.jpeg"
-    },
-    {
-      "type": "image",
-      "image": "story/leotastingmud.jpeg",
-      "text": "I sniffed it, then tasted it carefully. It didn't taste like mud at all. It tasted like cinnamon and white frosting.",
-      "description": "Leo licking a gooey substance that looks like mud, with an interest look. He is sitting in a snowpile surrounded by snow covered trees"
-    },
-    {
-      "type": "character-flow",
-      "background": "riverbank.jpeg",
-      "left-character": "leo",
-      "right-character": "none",
-      "useClues": false,
-      "monologue": true,
-      "requiredAsk": false,
-      "CharacterDescription": "leoChase",
-      "question": "What was the child covered in?",
-      "successAnswer": "cookie or cinnamon or frosting",
-      "wrongAnswers": [
-        "mud"
-      ],
-      "hint": "What does the taste remind you of?",
-      "flow": [
-        {
-          "side": "left",
-          "text": "That child isn't covered in mud."
-        },
-        {
-          "side": "left",
-          "text": "He's covered in…"
-        },
-        {
-          "type": "quest"
-        },
-        {
-          "type": "input"
-        }
-      ],
-      "incorrectAnswer": [
-        "mud"
-      ]
-    },
-    {
       "type": "image",
       "image": "story/thiefrunsaway.jpeg",
       "text": "I watched the cookie-covered child dash towards the river. I had him trapped.",
@@ -333,7 +246,7 @@
     },
     {
       "type": "clue-image",
-      "image": "riverbank.jpg",
+      "image": "riverbank.jpeg",
       "clueDescriptions": [
         {
           "hotspotName": "BabyShoes",
@@ -343,7 +256,7 @@
         },
         {
           "hotspotName": "WoodenSign",
-          "description": "Franky the Fox's Ferry sign",
+          "description": "Franky the Fox's Watter Crossing sign",
           "image": "woodensign",
           "dialog": "A ferry sign. Maybe Franky gave our thief a ride."
         },
@@ -482,38 +395,6 @@
       "image": "story/cookieboyrevealed.jpeg",
       "text": "A cookie-shaped boy with frosting hair stood blinking up at me.",
       "description": "The gingerbread man stands up and looks big eyed at Leo. The fox lays exhausted on the side."
-    },
-    {
-      "type": "character-flow",
-      "background": "riverbank.jpeg",
-      "left-character": "leo",
-      "right-character": "gingerbread-man",
-      "CharacterDescription": "gingerbreadstory",
-      "useClues": false,
-      "monologue": false,
-      "requiredAsk": false,
-      "question": "What did the thief do with the stolen cookie?",
-      "successAnswer": "The cookie was the thief/boy/alive. OR There was no thief. OR the cookie ran away.",
-      "wrongAnswers": [
-        "Fox"
-      ],
-      "hint": "Tell me your story.",
-      "flow": [
-        {
-          "side": "right",
-          "text": "Hi Leo. You caught me."
-        },
-        {
-          "side": "left",
-          "text": "I know what happened to Ms. Butterbun's cookie now."
-        },
-        {
-          "type": "quest"
-        },
-        {
-          "type": "input"
-        }
-      ]
     },
     {
       "type": "image",

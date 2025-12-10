@@ -274,14 +274,6 @@ export default function ClueImageScene({ scene }: SceneProps<ClueImageSceneType>
   // Detect mobile for left-side clue panel layout
   const isMobile = useIsMobile();
 
-  // iOS devices scroll "up" to go forward (natural scrolling inverted from desktop)
-  // Modern iPads report as MacIntel, so also check for touch support
-  const isIOS = React.useMemo(
-    () => /iPad|iPhone|iPod/.test(navigator.userAgent) ||
-      (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1),
-    []
-  );
-
   // Check if scene was previously completed (for backward navigation)
   const wasPreviouslyCompleted = scene.phase === 'complete';
 
@@ -652,7 +644,7 @@ export default function ClueImageScene({ scene }: SceneProps<ClueImageSceneType>
                 />
               </svg>
             </div>
-            <span className="scroll-down-text">{isIOS ? 'Scroll Up' : 'Scroll Down'} to Continue</span>
+            <span className="scroll-down-text">Scroll Down to Continue</span>
           </div>
         </div>
       )}
