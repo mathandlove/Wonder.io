@@ -17,6 +17,7 @@ import FailDanceScene from "./FailDanceScene";
 import SuccessDanceScene from "./SuccessDanceScene";
 import ClueImageScene from "@core/scenes/clueImage/ClueImageScene";
 import MapScene from "@core/scenes/map/MapScene";
+import EmailSignUpScene from "./EmailSignUpScene";
 
 export type SceneProps<T extends Scene = Scene> = {
   scene: T;
@@ -36,5 +37,6 @@ export const sceneRegistry: Record<string, ComponentType<SceneProps>> = {
   title: TitleScene as ComponentType<SceneProps>,
   "fail-dance": FailDanceScene as ComponentType<SceneProps>,
   "success-dance": SuccessDanceScene as ComponentType<SceneProps>,
+  "email-signup": EmailSignUpScene as ComponentType<SceneProps>,
   // caption: removed - captions are now handled within ImageScene
 };

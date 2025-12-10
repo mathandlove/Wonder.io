@@ -325,11 +325,28 @@ function flattenScenes(rawScenes: RawScene[]): FlattenResult {
   return { scenes: out, flowMetadata };
 }
 
+// Check if user has already subscribed to email list
+function hasEmailSubscription(): boolean {
+  try {
+    return localStorage.getItem('wonder-email-subscribed') === 'true';
+  } catch {
+    return false;
+  }
+}
+
 export async function loadStory(url: string): Promise<{ story: Story; flowMetadata: ConversationMetadataMap }> {
   const res = await fetch(url, { cache: "no-store" });
   if (!res.ok) throw new Error(`Failed to load story: ${res.status}`);
   const data = (await res.json()) as RawStory;
-  const rawScenes = data.scenes ?? [];
+
+  // Filter out email-signup scenes if user already subscribed
+  const isSubscribed = hasEmailSubscription();
+  const rawScenes = (data.scenes ?? []).filter(scene => {
+    if (scene.type === 'email-signup' && isSubscribed) {
+      return false;
+    }
+    return true;
+  });
   const depositions = data.depositions;
   const { scenes, flowMetadata } = flattenScenes(rawScenes);
 

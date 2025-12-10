@@ -25,6 +25,8 @@ export const ScrollDownToast: React.FC = () => {
 
   // Don't show scroll-down toast on clue-image scenes
   const isClueImageScene = currentSceneType === 'clue-image';
+  const isEmailSignUpScene = currentSceneType === 'email-signup';
+  const [hasSubscribed, setHasSubscribed] = React.useState(false);
   const [showAfterDelay, setShowAfterDelay] = React.useState(false);
   const [isAnimatingOut, setIsAnimatingOut] = React.useState(false);
   const timerRef = React.useRef<NodeJS.Timeout | null>(null);
@@ -99,9 +101,25 @@ export const ScrollDownToast: React.FC = () => {
     };
   }, [showAfterDelay, canScrollDown, isAnimatingOut, startTimer]);
 
+  // Listen for email subscription event to switch back to normal text
+  React.useEffect(() => {
+    const handleEmailSubscribed = () => {
+      setHasSubscribed(true);
+    };
+
+    window.addEventListener('email-subscribed', handleEmailSubscribed);
+
+    return () => {
+      window.removeEventListener('email-subscribed', handleEmailSubscribed);
+    };
+  }, []);
+
   if (!canScrollDown || !showAfterDelay || isClueImageScene || isCaptionPhase) {
     return null;
   }
+
+  // Show "Skip for now" text on email signup scenes (unless they just subscribed)
+  const toastText = (isEmailSignUpScene && !hasSubscribed) ? 'Skip for now' : 'Scroll Down to Continue';
 
   return (
     <div className={`scroll-down-toast ${isAnimatingOut ? 'scroll-down-toast--animate-out' : ''}`}>
@@ -124,7 +142,7 @@ export const ScrollDownToast: React.FC = () => {
             />
           </svg>
         </div>
-        <span className="scroll-down-text">Scroll Down to Continue</span>
+        <span className="scroll-down-text">{toastText}</span>
       </div>
     </div>
   );

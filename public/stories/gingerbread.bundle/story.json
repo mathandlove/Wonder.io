@@ -14,6 +14,12 @@
       "background": "bakery.jpeg"
     },
     {
+      "type": "email-signup",
+      "title": "Grow Your Child's Imagination",
+      "subtitle": "Get early access to new Wonder stories and interactive books.",
+      "background": "bakery.jpeg"
+    },
+    {
       "type": "map",
       "image": "cityMap.jpeg",
       "location": "Bakery"
@@ -22,7 +28,7 @@
       "type": "character-flow",
       "background": "bakery.jpeg",
       "left-character": "leo",
-      "right-character": "butterbuns",
+      "right-character": "none",
       "CharacterDescription": "butterbuns",
       "useClues": false,
       "monologue": false,
@@ -33,8 +39,21 @@
       "hint": "Ask Ms. Butterbuns what happened.",
       "flow": [
         {
+          "side": "left",
+          "text": "Hi, my name is Leo."
+        },
+                {
+          "side": "left",
+          "text": "Usually, I hunt monsters."
+        },
+                        {
+          "side": "left",
+          "text": "But today, all I want is a muffin from Ms. Butterbun’s bakery."
+        },
+        {
           "side": "right",
-          "text": "Help! Help! Oh Leo, you must help me!"
+          "text": "Help! Help! Oh Leo, you must help me!",
+          "right-character": "butterbuns"
         },
         {
           "side": "left",

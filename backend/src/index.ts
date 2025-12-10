@@ -28,6 +28,7 @@ import {
   handleImageUpload,
   handleFixImageReferences
 } from './image-generation';
+import { handleEmailSubscribe } from './email-subscribe';
 
 // Configure multer for memory storage
 const upload = multer({ storage: multer.memoryStorage() });
@@ -220,6 +221,9 @@ app.post('/api/images/wipe-all-history', handleWipeAllHistory);
 app.post('/api/images/update-description', handleUpdateDescription);
 app.post('/api/images/upload', upload.single('file'), handleImageUpload);
 app.post('/api/images/fix-references', handleFixImageReferences);
+
+// Email subscription route (Brevo integration)
+app.post('/api/email/subscribe', handleEmailSubscribe);
 
 // Health check
 app.get('/api/health', (req, res) => {

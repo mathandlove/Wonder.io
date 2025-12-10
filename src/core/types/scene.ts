@@ -184,6 +184,20 @@ export type TitleScene = {
   phaseSteps?: string[];
 };
 
+export type EmailSignUpScene = {
+  type: "email-signup";
+  title?: string; // Main heading (e.g., "Stay in the Story!")
+  subtitle?: string; // Subheading (e.g., "Sign up for updates and new adventures")
+  buttonText?: string; // Submit button text (default: "Subscribe")
+  successMessage?: string; // Message shown after successful signup
+  background?: string;
+  flowSequence?: boolean;
+  isFirstInFlow?: boolean;
+  hidden?: boolean;
+  phase?: string; // Current phase: 'form' or 'success'
+  phaseSteps?: string[];
+};
+
 // CaptionScene removed - captions are now handled within ImageScene
 
 export type Scene =
@@ -196,7 +210,8 @@ export type Scene =
   | SuccessDanceScene
   | ClueImageScene
   | MapScene
-  | TitleScene;
+  | TitleScene
+  | EmailSignUpScene;
 
 export type Story = {
   scenes: Scene[];

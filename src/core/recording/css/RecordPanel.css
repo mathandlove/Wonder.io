@@ -132,8 +132,8 @@
   border-bottom-width: 7px;
   display: inline-flex;
   flex-direction: column;
-  gap: 6px;
-  /* Vertical gap between question panel and buttons - matches middle column width */
+  gap: 24px;
+  /* Vertical gap between question panel and buttons - matches button gap */
   padding: 10px;
   /* Equal padding on all sides for rounded frame */
   position: relative;
@@ -725,6 +725,11 @@
   width: 100%;
   gap: 6px;
   /* Subtle gap between buttons for visual separation */
+}
+
+/* Larger gap when there are two buttons (no full-width child) */
+.button-halves-container:not(:has(.full-width)) {
+  gap: 24px;
   background-image: url(/VisualAssets/cardboard.png);
   background-position: center;
   background-size: 360px 540px;
@@ -757,8 +762,8 @@
   /* Solid color - no cardboard texture */
   border: 1px solid rgba(73, 48, 29, 0.4);
   /* Thin border around each button */
-  border-radius: 0;
-  /* No border radius - container clips to rounded corners */
+  border-radius: 8px;
+  /* Rounded corners on buttons */
   box-sizing: border-box;
   box-shadow: inset 0 -3px 0 rgba(0, 0, 0, 0.1), inset 0 3px 6px rgba(255, 255, 255, 0.4);
   cursor: pointer;
@@ -793,6 +798,7 @@
 /* Ask panel - solid green */
 .half-panel-button.ask-panel {
   background-color: #5a8a5a;
+  box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.12);
 }
 
 .half-panel-button.ask-panel::before {
@@ -802,6 +808,7 @@
 /* Answer panel - solid blue */
 .half-panel-button.answer-panel {
   background-color: rgb(83, 126, 143);
+  box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.12);
 }
 
 .half-panel-button.answer-panel::before {
@@ -811,6 +818,7 @@
 /* Accept panel - solid green like Ask panel */
 .half-panel-button.accept-panel {
   background-color: #5a8a5a;
+  box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.12);
 }
 
 .half-panel-button.accept-panel::before {
@@ -1037,7 +1045,7 @@
   background: linear-gradient(0deg,
       rgba(0, 0, 0, 0.15) 0%,
       rgba(0, 0, 0, 0.15) 100%);
-  border-radius: 0;
+  border-radius: 8px;
   pointer-events: none;
   z-index: 2;
 }
@@ -1054,7 +1062,7 @@
   background: linear-gradient(0deg,
       rgba(0, 0, 0, 0.25) 0%,
       rgba(0, 0, 0, 0.25) 100%) !important;
-  border-radius: 0;
+  border-radius: 8px;
   pointer-events: none;
   z-index: 2;
 }
@@ -1352,7 +1360,8 @@
 
 /* Cancel panel - coral/terracotta background */
 .half-panel-button.cancel-panel {
-  background-color: #E76F51;
+  background-color: #E97A6B;
+  box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.12);
 }
 
 /* Cancel panel wrapper - narrower than submit */
@@ -1410,6 +1419,7 @@
 /* Submit panel - green background like accept-panel */
 .half-panel-button.submit-panel {
   background-color: #5a8a5a;
+  box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.12);
 }
 
 /* Ensure both panels have same height */
@@ -1421,6 +1431,7 @@
 /* Hint panel - blue/teal background for hint button */
 .half-panel-button.hint-panel {
   background-color: #4a7c8a;
+  box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.12);
 }
 
 /* Hint panel wrapper - narrower like cancel button */
@@ -1453,13 +1464,13 @@
   overflow: visible;
 }
 
-/* Pre-ask-recording: round bottom-left of hint, bottom-right of ask button */
+/* Pre-ask-recording: buttons have uniform 8px corners */
 .pre-ask-buttons .hint-panel-wrapper .half-panel-button {
-  border-radius: 0 0 0 14px;
+  border-radius: 8px;
 }
 
 .pre-ask-buttons .ask-panel-wrapper .half-panel-button {
-  border-radius: 0 0 14px 0;
+  border-radius: 8px;
 }
 
 /* Frame wrapper needs overflow visible when pre-ask buttons are shown */
@@ -1477,13 +1488,13 @@
   overflow: visible;
 }
 
-/* Round bottom corners on buttons when overflow is visible (toast showing) */
+/* Round corners on buttons when overflow is visible (toast showing) */
 .button-halves-container:has(.button-toast) .ask-button-wrapper .half-panel-button {
-  border-radius: 0 0 0 22px;
+  border-radius: 8px;
 }
 
 .button-halves-container:has(.button-toast) .answer-button-wrapper .half-panel-button {
-  border-radius: 0 0 22px 0;
+  border-radius: 8px;
 }
 
 /* Hint button toast - positioned above the hint button */
@@ -2491,19 +2502,19 @@ html[data-mobile="true"] .half-panel-button {
   /* Match mobile question section height */
   padding: 34px 12px;
   /* Extra vertical padding for tappable mobile buttons */
-  border-radius: 0;
+  border-radius: 8px;
   border: none;
 }
 
 /* No divider line on mobile - gap provides separation */
 
 html[data-mobile="true"] .half-panel-button::before {
-  border-radius: 0;
+  border-radius: 8px;
 }
 
 html[data-mobile="true"] .half-panel-button:hover::after,
 html[data-mobile="true"] .half-panel-button:active::after {
-  border-radius: 0;
+  border-radius: 8px;
 }
 
 html[data-mobile="true"] .half-panel-button .button-text {

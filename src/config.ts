@@ -18,4 +18,5 @@ export const API_ENDPOINTS = {
   BUNDLE_IMAGES: `${API_URL}/api/bundle/images`,
   BUNDLE_MAPS: `${API_URL}/api/bundle/maps`,
   IMAGES: `${API_URL}/api/images`,
+  EMAIL_SUBSCRIBE: `${API_URL}/api/email/subscribe`,
 };
