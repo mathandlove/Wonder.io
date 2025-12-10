@@ -51,7 +51,7 @@ const CONFIG = {
   SAMPLE_RATE: 16000, // 16kHz audio for STT
   SILENCE_THRESHOLD: 0.005, // Lower threshold for soft-spoken children (was 0.01)
   SILENCE_DURATION_MS: 20000, // Auto-stop after 20s of silence (fallback)
-  AUTOSTOP_SILENCE_MS: 1000, // Auto-stop after 1s of silence AFTER speech is detected
+  AUTOSTOP_SILENCE_MS: 2000, // Auto-stop after 2s of silence AFTER speech is detected
   BUFFER_SIZE: 4096, // AudioWorklet buffer size
   // Minimum peak RMS level to consider audio was actually recorded
   // If peak never exceeds this, we assume no real audio was captured (mic blocked, silent, etc.)
