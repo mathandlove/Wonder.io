@@ -865,12 +865,15 @@
    LISTENING PANEL - Pulsing mic + audio-reactive waveform
    =================================== */
 
-/* Listening panel - horizontal layout */
-.half-panel-button.listening-panel {
+/* Listening panel - horizontal layout with text below */
+.half-panel-button.visualizer-panel.listening-panel {
   flex-direction: row;
+  flex-wrap: wrap;
   align-items: center;
-  gap: 12px;
-  padding: 0 12px;
+  justify-content: center;
+  align-content: center;
+  gap: 6px;
+  padding: 12px 12px;
 }
 
 /* Mic with glow container */
@@ -926,9 +929,9 @@
 /* Gentle sine wave waveform - fills remaining space */
 .half-panel-button .gentle-waveform {
   flex: 1;
-  height: 70px;
+  height: 50px;
   min-width: 0;
-  overflow: visible; /* Allow dots to extend beyond container for dramatic effect */
+  overflow: hidden;
 }
 
 /* ===================================
@@ -959,6 +962,17 @@
   border-radius: 50%;
   background-color: #4ade80;
   animation: processing-flash 1.4s ease-in-out infinite;
+}
+
+/* Tap to Stop text inside recording panel */
+.tap-to-stop-text {
+  width: 100%;
+  color: rgba(73, 48, 29, 0.5);
+  font-family: "Inter", Helvetica, sans-serif;
+  font-size: 12px;
+  font-weight: 400;
+  text-align: center;
+  letter-spacing: 0.25px;
 }
 
 .half-panel-button .processing-dot:nth-child(1) {

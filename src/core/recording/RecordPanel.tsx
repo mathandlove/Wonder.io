@@ -826,9 +826,10 @@ export const RecordPanel: React.FC<RecordPanelProps> = ({
                         isRecording={isActuallyRecording}
                         waveColor="#4ade80"
                         lineWidth={4}
-                        amplitude={200}
+                        amplitude={80}
                       />
                     </div>
+                    <div className="tap-to-stop-text">Tap to Stop</div>
                   </div>
                 </div>
               </div>
@@ -865,6 +866,7 @@ export const RecordPanel: React.FC<RecordPanelProps> = ({
                         amplitude={200}
                       />
                     </div>
+                    <div className="tap-to-stop-text">Tap to Stop</div>
                   </div>
                 </div>
               </div>
