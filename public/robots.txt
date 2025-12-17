@@ -1,0 +1,25 @@
+# robots.txt for Wonder.io - Interactive Stories for Kids
+# Help kids who struggle with focus discover engaging reading!
+
+User-agent: *
+Allow: /
+Allow: /books
+Allow: /book/
+
+# Sitemap
+Sitemap: https://wonder.io/sitemap.xml
+
+# Crawl-delay for politeness
+Crawl-delay: 1
+
+# Block admin and dev paths if they exist
+Disallow: /admin
+Disallow: /_
+Disallow: /*.json$
+
+# Allow all images
+User-agent: Googlebot-Image
+Allow: /
+
+# Additional sitemaps (if we add more later)
+# Sitemap: https://wonder.io/sitemap-images.xml

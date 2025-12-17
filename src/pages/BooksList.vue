@@ -3,7 +3,7 @@
     <div class="navBarColor navBarHeight row text-center">
       <div class="p-0 m-0">
         <router-link to="/">
-          <img class="menuIconSize" alt="" src="../assets/Images/home.png" />
+          <img class="menuIconSize" alt="Home icon" src="../assets/Images/home.png" />
         </router-link>
       </div>
       <input
@@ -16,7 +16,7 @@
       <div class="wonderLogo">
         <img
           class="WonderLogoStyle"
-          alt=""
+          alt="Wonder.io - Free Interactive Stories for Kids"
           src="../assets/Images/WonderStories_Logo_BlackAlt.png"
         />
       </div>
@@ -33,7 +33,7 @@
           <base-spinner class="spinner" v-show="!Book.isLoaded" />
           <img
             v-show="Book.isLoaded"
-            alt=""
+            :alt="`${Book.title || 'Interactive story'} - Free book cover`"
             :src="Book.bookCoverImageUrl"
             @load="bookLoaded(Book)"
           />

@@ -34,6 +34,7 @@ import EndElements from "@/components/booklayout/EndElements.vue";
 import Store from "../store/index.js";
 import { mapState } from "vuex";
 import { mapGetters } from "vuex";
+import { updateBookMetaTags } from "@/utils/seo.js";
 
 export default {
   components: {
@@ -109,6 +110,9 @@ export default {
     },
   },
   beforeRouteUpdate(to, from, next) {
+    // Update SEO when navigating between pages
+    updateBookMetaTags(to.params.id, to.params.page);
+
     Store.dispatch("setBookId", to.params.id);
     Store.dispatch("setBookPage", to.params.page);
 
@@ -141,6 +145,9 @@ export default {
   },
 
   async mounted() {
+    // Update SEO meta tags for this book
+    updateBookMetaTags(this.id, this.page);
+
     if (this.totalBooks <= 1) {
       await this.$store.dispatch("setBookList");
     }

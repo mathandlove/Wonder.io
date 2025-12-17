@@ -1,0 +1,79 @@
+{
+  "book1": {
+    "bookNumber": "1",
+    "title": "The Case of the Bedroom Egg",
+    "grade": "1",
+    "description": "When Dee wakes up to a mysterious cracking noise, she discovers a beach-ball-sized egg in her bedroom. Who put it there? This interactive detective story for 1st graders follows young sleuth Dee as she interrogates suspects at the breakfast table—including her distracted Mom, sleepy Dad, and the very suspicious Uncle TBone who might just be a real dinosaur. Kids will love clicking to uncover clues, identifying dinosaur footprints, and following the mystery into an exciting chase through the woods. With decision points that let readers choose how to track down Uncle TBone, plus fascinating dinosaur facts woven throughout, this story keeps young minds engaged while building critical thinking and reading comprehension skills. Perfect for kids who struggle with focus, the short interactive segments and fun mystery format make reading feel like solving a puzzle.",
+    "metaDescription": "Interactive 1st grade mystery where kids solve who put a dinosaur egg in the bedroom. Engaging detective story for kids who struggle with focus."
+  },
+  "book2": {
+    "bookNumber": "2",
+    "title": "Danger in the Woods: The Weird Voice and the Dog",
+    "grade": "2",
+    "description": "Tilly hears a spooky voice calling her name, but nobody in the house admits to it—not busy Mom, distracted Dad, or even her twin brother Billy. When their dog Max goes missing, both twins end up in the forbidden woods on separate quests. This interactive adventure for 2nd graders combines mystery, sibling teamwork, and problem-solving as readers help Tilly and Billy navigate challenges like choosing the right tool to cut through undergrowth, using a lever to free a trapped foot, and decoding clues about a mysterious wild child covered in glowing green paint. With multiple choice points, clickable clues, and science concepts like levers integrated naturally into the story, this book keeps restless readers engaged through active participation. The dual perspective storytelling and cliffhanger ending will have kids begging for more.",
+    "metaDescription": "Interactive 2nd grade mystery adventure. Twins search for their missing dog and encounter a mysterious voice. Perfect for kids who struggle with focus."
+  },
+  "book3": {
+    "bookNumber": "3",
+    "title": "The Case of the Wrong Bus",
+    "grade": "2",
+    "author": "Nelson Yu",
+    "illustrator": "Silvia Amelio",
+    "description": "Freddie's Monday morning goes from bad to worse when his distracted mom pushes him onto the wrong bus—one driven by a triceratops named Miss Shelby and filled with dinosaur kids. This hilarious interactive story for 2nd graders teaches kids about herbivores and carnivores while Freddie desperately tries to avoid being eaten by his new T. rex classmate Billy. Readers help Freddie make crucial decisions: Should he fake being sick? How can he prove he's not a carnivore? The story brilliantly weaves science education about dinosaur teeth, diets, and behavior into an engaging narrative with multiple choice points. Kids learn to analyze evidence (sharp teeth vs. flat teeth) and make logical deductions while staying completely absorbed in Freddie's predicament. With humor, interactive questions, and a mystery about why dinosaurs don't know they'll go extinct, this book makes learning irresistible for kids who need constant engagement.",
+    "metaDescription": "Interactive 2nd grade story about a boy on a bus full of dinosaurs. Hilarious adventure teaches science while keeping ADHD kids engaged."
+  },
+  "book4": {
+    "bookNumber": "4",
+    "title": "The Case of the Missing Moon",
+    "grade": "3",
+    "author": "Shanna Germain",
+    "illustrator": "Kelly Latham",
+    "description": "It's Science Day and Kara can't find the moon she made for her school presentation. This charming interactive mystery for 3rd graders follows Kara as she interrogates suspects (her little brother Miles, their dog Cookie), follows clues around the house, and makes an unexpected discovery—a friendly Martian playing fetch with Cookie in the backyard. Readers help Kara solve problems through clickable investigations, learning about different types of aliens (Venusians, Martians, Plutonians) and practicing communication skills when Kara must use drawings to talk with the Martian who doesn't speak English. The story beautifully balances problem-solving, science concepts, and heartwarming choices—should Kara give up her beloved moon project to help the Martian repair her broken spaceship? With shorter segments, visual clues to click, and a sweet message about helping others, this story keeps easily distracted readers engaged while building empathy and critical thinking.",
+    "metaDescription": "Interactive 3rd grade mystery about a missing moon project and a friendly alien. Science-based story perfect for kids who need engaging content."
+  },
+  "book5": {
+    "bookNumber": "5",
+    "title": "The Case of the Haunted House",
+    "grade": "2",
+    "author": "Loni Kim",
+    "illustrator": "Silvia Amelio",
+    "description": "When Aliz and her friends hear a mysterious howl from the abandoned house on Coral Street, she accepts a dare to investigate alone. This spooky interactive adventure for 2nd graders combines mystery and science as Aliz encounters a series of creepy creatures—a cat leaving dead rats, a spider eating leaf tips, bats breaking lightbulbs, and slugs leaving slime trails. Readers make choices about which path to explore and learn fascinating science facts: Why do caterpillars eat only parts of leaves? Which animals are vegetarian? How do bats create darkness? The story masterfully integrates mini science lessons into the narrative through clickable questions and branching paths. With atmospheric tension building toward a basement mystery and a cliffhanger ending, this book keeps anxious readers engaged through active participation. The combination of spooky fun, real science, and interactive choices makes this perfect for kids who need constant stimulation to stay focused.",
+    "metaDescription": "Interactive 2nd grade mystery exploring a haunted house. Spooky adventure teaches science while keeping restless readers engaged and focused."
+  },
+  "book10": {
+    "bookNumber": "10",
+    "title": "The Case of the Sidewalk Pirate Ship",
+    "grade": "3",
+    "author": "Tula Eriksson Turtiainen",
+    "illustrator": "Silvia Amelio",
+    "description": "When strange creaking sounds wake our young hero at bedtime, they discover something impossible—a full-sized pirate ship sailing down their street, which has transformed into a river. This epic interactive adventure for 3rd graders follows a child's determination to board the mysterious vessel, despite being dismissed as a 'landlubber' by the pirate captain. Readers help make crucial decisions: How do you sneak past your parents? What items will make you look like a real pirate? Through reading embedded pirate stories about Captain Fin and Bella, kids learn what pirates wear and why—discovering they need a hook, an eye patch, and a red sash. The story brilliantly layers mini-narratives within the main adventure, teaching reading comprehension through context clues. With longer segments perfect for advanced readers, multiple choice points, and problem-solving challenges, this immersive tale keeps curious minds engaged. The pirate theme and sense of nighttime adventure create irresistible momentum for kids who need high-interest content.",
+    "metaDescription": "Interactive 3rd grade pirate adventure. Kid must become a pirate to board a magical ship. Engaging story perfect for restless readers."
+  },
+  "book100": {
+    "bookNumber": "100",
+    "title": "The Turkey Temple",
+    "author": "Elliott Hedman",
+    "illustrator": "Silvia Amelio",
+    "grade": "2",
+    "description": "Explorer Lola discovers something strange in an ancient Mayan temple—a carved picture of a king and queen with a turkey wearing a golden crown. This fascinating interactive story for 2nd graders combines history and mystery as Lola investigates why the ancient Mayans treated turkeys like gods. Kids learn real history: turkeys were sacred to the Mayan people, would haunt mean kings in their dreams, and were kept as royal pets to show friendship with the gods. One king even earned the nickname 'Turkey' as a sign of respect. With fill-in-the-blank interactive questions that reinforce comprehension and short, focused segments perfect for maintaining attention, this book makes ancient history come alive. The combination of archaeological adventure, surprising historical facts, and engaging questions helps kids who struggle with traditional reading formats stay focused. Perfect for curious minds who love solving mysteries about the past.",
+    "metaDescription": "Interactive 2nd grade story exploring why Mayans gave turkeys crowns. History mystery perfect for keeping curious kids engaged and focused."
+  },
+  "book104": {
+    "bookNumber": "104",
+    "title": "The Bunny Battle",
+    "author": "Elliott Hedman",
+    "illustrator": "Silvia Amelio",
+    "grade": "1",
+    "description": "Napoleon, the greatest army commander of all time, faces his most humiliating defeat—against 3,000 bunnies. This hilarious interactive story for 1st graders tells the true historical tale of Napoleon's disastrous rabbit hunt. Kids learn about this real event in history: Napoleon ordered French farmers to trap thousands of rabbits for a royal hunt, but when released, the bunnies didn't run away—they charged straight at him, overwhelming his horse, crawling into his pockets, and even invading his car, forcing the great commander to retreat. Through simple fill-in-the-blank questions and short, punchy segments, young readers grasp concepts like why a gun is useless against 3,000 attackers and what 'retreat' means. The absurd humor of a mighty general defeated by cute bunnies keeps kids giggling while building historical knowledge and reading skills. Perfect for beginning readers who need funny, engaging content to stay focused on the page.",
+    "metaDescription": "Interactive 1st grade story about Napoleon's bunny battle. Hilarious true history tale perfect for keeping young readers engaged and focused."
+  },
+  "book106": {
+    "bookNumber": "106",
+    "title": "The Cow Man",
+    "author": "Elliott Hedman",
+    "illustrator": "Silvia Amelio",
+    "grade": "1",
+    "description": "Monster hunter Eva tracks down the legendary Minotaur—a creature with the head of a cow and the body of a human. This heartwarming interactive adventure for 1st graders subverts expectations when Eva discovers the Minotaur isn't dangerous at all—he's lost in his maze and crying because he misses his mom. Readers help Eva navigate the maze by making smart choices (tying a rope to find the way back) and solve problems using kindness instead of violence. The story teaches valuable lessons about not judging by appearances, helping others in need, and using your brain to solve problems. With simple fill-in-the-blank questions, clear decision points, and a focus on empathy, this tale engages young readers while building emotional intelligence. The mythology element introduces kids to ancient Greek stories in an accessible, non-scary way. Perfect for sensitive readers who love adventures with heart and need interactive elements to maintain focus.",
+    "metaDescription": "Interactive 1st grade mythology story about helping a lost Minotaur. Kind-hearted adventure perfect for young readers who need engagement."
+  }
+}
