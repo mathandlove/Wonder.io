@@ -25,8 +25,10 @@
         <div>WordFilter: {{ WordFilter }}</div>
       </div>
     </div>
-    <div class="bookCardContainer">
-      <div v-for="Book in booksToDisplay" :key="Book">
+    <new-story-pinned-note />
+    <div class="content-wrapper">
+      <div class="bookCardContainer">
+        <div v-for="Book in booksToDisplay" :key="Book">
         <div class="cardSize" @click="BookSelected(Book)">
           <base-spinner class="spinner" v-show="!Book.isLoaded" />
           <img
@@ -45,6 +47,7 @@
           />
         </div>
       </div>
+      </div>
     </div>
   </div>
 </template>
@@ -52,6 +55,7 @@
 <script>
 import InfoPill from "@/components/ux/InfoPill.vue";
 import BaseSpinner from "@/components/ux/BaseSpinner.vue";
+import NewStoryPinnedNote from "@/components/NewStoryPinnedNote.vue";
 
 import { mapGetters } from "vuex";
 import TheBackground from "../components/ux/TheBackground.vue";
@@ -80,7 +84,7 @@ export default {
     ]),
   },
 
-  components: { InfoPill, BaseSpinner, TheBackground },
+  components: { InfoPill, BaseSpinner, TheBackground, NewStoryPinnedNote },
   methods: {
     preloadImage: function (url) {
       let img = new Image();
@@ -227,6 +231,11 @@ export default {
   overscroll-behavior: none;
   overflow-x: hidden;
   width: 100%;
+}
+
+.content-wrapper {
+  width: 100%;
+  padding: 32px 16px 0 16px;
 }
 
 @media (max-width: 1400px) {
