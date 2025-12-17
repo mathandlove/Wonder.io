@@ -41,7 +41,7 @@
 
 .email-signup-bubble-inner {
   background: #FFFFFF;
-  padding: 32px 28px;
+  padding: 16px 24px;
   margin: 0;
   border-radius: 15px;
   box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
@@ -49,26 +49,26 @@
 }
 
 .email-signup-title {
-  margin: 0 0 8px 0;
-  font-size: 28px;
+  margin: 0 0 4px 0;
+  font-size: 20px;
   font-family: 'Nunito', sans-serif;
   font-weight: 700;
   color: #333;
-  line-height: 1.2;
+  line-height: 1.1;
 }
 
 .email-signup-subtitle {
-  margin: 0 0 24px 0;
-  font-size: 18px;
+  margin: 0 0 12px 0;
+  font-size: 14px;
   font-family: 'Nunito', sans-serif;
   color: #666;
-  line-height: 1.4;
+  line-height: 1.2;
 }
 
 .email-signup-form {
   display: flex;
   flex-direction: column;
-  gap: 16px;
+  gap: 10px;
 }
 
 .email-input-wrapper {
@@ -77,13 +77,13 @@
 
 .email-input {
   width: 100%;
-  padding: 14px 18px;
-  font-size: 18px;
+  padding: 10px 14px;
+  font-size: 15px;
   font-family: 'Nunito', sans-serif;
   color: #333;
   background: #f8f8f8;
   border: 2px solid #e0e0e0;
-  border-radius: 12px;
+  border-radius: 10px;
   outline: none;
   transition: border-color 0.2s ease, box-shadow 0.2s ease;
   box-sizing: border-box;
@@ -117,19 +117,19 @@
 
 .email-submit-button {
   width: 100%;
-  padding: 14px 24px;
-  font-size: 18px;
+  padding: 10px 18px;
+  font-size: 15px;
   font-family: 'Nunito', sans-serif;
   font-weight: 600;
   color: #FFFFFF;
   background: #27ae60;
   border: 2px solid #FFFFFF;
-  border-radius: 12px;
+  border-radius: 10px;
   cursor: pointer;
   transition: transform 0.15s ease, box-shadow 0.15s ease, background 0.15s ease;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
   text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
-  min-height: 52px;
+  min-height: 40px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -166,27 +166,27 @@
 }
 
 .email-privacy-note {
-  margin: 16px 0 0 0;
-  font-size: 13px;
+  margin: 8px 0 0 0;
+  font-size: 11px;
   font-family: 'Nunito', sans-serif;
   color: #999;
 }
 
 /* Success state */
 .email-signup-success {
-  padding: 20px 0;
+  padding: 16px 0;
 }
 
 .success-icon {
-  width: 64px;
-  height: 64px;
-  margin: 0 auto 16px;
+  width: 52px;
+  height: 52px;
+  margin: 0 auto 12px;
   background: #27ae60;
   border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 32px;
+  font-size: 26px;
   color: #FFFFFF;
   animation: success-pop 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
 }
@@ -207,10 +207,10 @@
 
 .success-message {
   margin: 0;
-  font-size: 20px;
+  font-size: 18px;
   font-family: 'Nunito', sans-serif;
   color: #333;
-  line-height: 1.4;
+  line-height: 1.3;
 }
 
 /* Responsive design */
@@ -222,25 +222,25 @@
   }
 
   .email-signup-bubble-inner {
-    padding: 24px 20px;
+    padding: 14px 18px;
   }
 
   .email-signup-title {
-    font-size: 24px;
+    font-size: 18px;
   }
 
   .email-signup-subtitle {
-    font-size: 16px;
+    font-size: 13px;
   }
 
   .email-input {
-    font-size: 16px;
-    padding: 12px 14px;
+    font-size: 14px;
+    padding: 9px 12px;
   }
 
   .email-submit-button {
-    font-size: 16px;
-    padding: 12px 20px;
+    font-size: 14px;
+    padding: 9px 16px;
   }
 }
 
