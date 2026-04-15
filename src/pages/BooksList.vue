@@ -59,6 +59,7 @@ import NewStoryPinnedNote from "@/components/NewStoryPinnedNote.vue";
 
 import { mapGetters } from "vuex";
 import TheBackground from "../components/ux/TheBackground.vue";
+import { updateBooksListingMetaTags } from "@/utils/seo";
 
 export default {
   data() {
@@ -107,13 +108,11 @@ export default {
     BookSelected(bookListItem) {
       console.log("selected with book :", bookListItem.bookId);
       let bookId = parseInt(bookListItem.bookId);
-      this.$gtag.event('book_selected', { event_category: 'Book', book_id: bookId, event_label: 'Book Selected' });
-      this.$store.dispatch("setBookId", bookListItem.bookId);
-      this.$store.dispatch("loadBookmark");
-      this.$router.push(`/book/${bookId}/${this.lastPageVisited}`);
+      this.$router.push(`/book/${bookId}`);
     },
   },
   async mounted() {
+    updateBooksListingMetaTags();
     if (this.totalBooks <= 1) {
       await this.$store.dispatch("setBookList");
     }
@@ -196,6 +195,7 @@ export default {
 }
 .navBarColor {
   background-color: #3aaaa3;
+  position: relative;
 }
 .navBarHeight {
   height: 8vh;
@@ -228,7 +228,6 @@ export default {
 
 .noSelectText {
   user-select: none;
-  overscroll-behavior: none;
   overflow-x: hidden;
   width: 100%;
 }

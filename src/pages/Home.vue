@@ -22,6 +22,7 @@
 <script>
 import GradeSelector from "@/molecules/GradeSelector.vue";
 import TheBackground from "@/components/ux/TheBackground.vue";
+import { updateHomeMetaTags } from "@/utils/seo";
 
 export default {
   components: {
@@ -45,6 +46,7 @@ export default {
     };
   },
   async mounted() {
+    updateHomeMetaTags();
     await this.getApiBooks();
   },
   methods: {

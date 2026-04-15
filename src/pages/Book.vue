@@ -190,8 +190,9 @@ img {
   z-index: 0;
 }
 .notepadsContainer {
-  height: 100%;
+  height: calc(100vh - 100px);
   width: 100%;
   position: relative;
+  flex-shrink: 0;
 }
 </style>

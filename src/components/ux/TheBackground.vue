@@ -69,5 +69,6 @@ body {
   position: fixed;
   padding: 0;
   margin: 0;
+  overflow-y: auto;
 }
 </style>

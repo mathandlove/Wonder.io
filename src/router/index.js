@@ -2,14 +2,19 @@ import { createRouter, createWebHistory } from 'vue-router';
 import Home from '../pages/Home.vue';
 import Books from '../pages/BooksList.vue';
 import Book from '../pages/Book.vue';
+import BookLanding from '../pages/BookLanding.vue';
 import Tcr from '../pages/Tcr.vue';
 import TcrIntro from '../pages/TcrIntro.vue';
 import TcrLetterQuiz from '../pages/TcrLetterQuiz.vue';
 import TcrLibrary from '../pages/TcrLibrary.vue';
 import TcrGameDescription from '../pages/TcrGameDescription.vue';
 
-
-
+// SEO Landing Pages
+const InteractiveBooksForKids = () => import('../pages/landing/InteractiveBooksForKids.vue');
+const InteractiveStoriesForKids = () => import('../pages/landing/InteractiveStoriesForKids.vue');
+const FreeInteractiveBooks = () => import('../pages/landing/FreeInteractiveBooks.vue');
+const BooksForKidsWithAdhd = () => import('../pages/landing/BooksForKidsWithAdhd.vue');
+const BooksForKidsWithDyslexia = () => import('../pages/landing/BooksForKidsWithDyslexia.vue');
 
 const routes = [
   {
@@ -19,18 +24,54 @@ const routes = [
     meta: { title: 'Welcome to Wonder.io' },
   },
   {
+    path: '/book/:id',
+    name: 'BookLanding',
+    component: BookLanding,
+    meta: { title: 'Wonder.io - Book' },
+    props: true,
+  },
+  {
     path: '/book/:id/:page',
     name: 'Book',
     component: Book,
     meta: { title: 'Wonder.io - Book' },
     props: true,
-
   },
   {
     path: '/books',
     name: 'Books',
     component: Books,
     meta: { title: 'Wonder.io - Books' },
+  },
+  {
+    path: '/interactive-books-for-kids',
+    name: 'InteractiveBooksForKids',
+    component: InteractiveBooksForKids,
+    meta: { title: 'Interactive Books for Kids | Wonder.io' },
+  },
+  {
+    path: '/interactive-stories-for-kids',
+    name: 'InteractiveStoriesForKids',
+    component: InteractiveStoriesForKids,
+    meta: { title: 'Interactive Stories for Kids | Wonder.io' },
+  },
+  {
+    path: '/free-interactive-books',
+    name: 'FreeInteractiveBooks',
+    component: FreeInteractiveBooks,
+    meta: { title: 'Free Interactive Books for Kids | Wonder.io' },
+  },
+  {
+    path: '/books-for-kids-with-adhd',
+    name: 'BooksForKidsWithAdhd',
+    component: BooksForKidsWithAdhd,
+    meta: { title: 'Books for Kids with ADHD | Wonder.io' },
+  },
+  {
+    path: '/books-for-kids-with-dyslexia',
+    name: 'BooksForKidsWithDyslexia',
+    component: BooksForKidsWithDyslexia,
+    meta: { title: 'Books for Kids with Dyslexia | Wonder.io' },
   },
   {
     path: '/tcr',
@@ -117,6 +158,13 @@ router.beforeEach((to, from, next) => {
 
 
   next();
+});
+
+// Signal to prerenderer that the page is ready after meta tags and content load
+router.afterEach(() => {
+  setTimeout(() => {
+    document.dispatchEvent(new Event('__RENDERED__'));
+  }, 1000);
 });
 
 export default router;

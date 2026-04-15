@@ -185,17 +185,17 @@ export default {
         this.currentAspect = aspectScreen;
         const aspectImage = 2565 / 1495;
         this.$store.state.AspectRatio = aspectScreen;
-        // this.name =
-        //   this.$store.state.AspectRatio +
-        //   " w: " +
-        //   window.innerHeight / window.innerWidth;
 
         if (aspectScreen < aspectImage) {
           this.adjustingBox.height = "100%";
           this.adjustingBox.width = "auto";
+          this.adjustingBox.maxWidth = "80%";
+          this.adjustingBox.maxHeight = "none";
         } else {
-          this.adjustingBox.height = "auto";
           this.adjustingBox.width = "80%";
+          this.adjustingBox.height = "auto";
+          this.adjustingBox.maxHeight = "100%";
+          this.adjustingBox.maxWidth = "none";
         }
       }
     },
@@ -322,6 +322,7 @@ Button:hover {
   left: 51%;
 
   width: 80%;
+  max-height: 100%;
   transform: translate(-50%, -50%);
 }
 

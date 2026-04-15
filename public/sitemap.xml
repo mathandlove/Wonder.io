@@ -4,826 +4,858 @@
   <!-- Main Pages -->
   <url>
     <loc>https://wonder.io/</loc>
-    <lastmod>2025-12-17</lastmod>
+    <lastmod>2026-04-15</lastmod>
     <changefreq>weekly</changefreq>
     <priority>1.0</priority>
   </url>
   <url>
     <loc>https://wonder.io/books</loc>
-    <lastmod>2025-12-17</lastmod>
+    <lastmod>2026-04-15</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.9</priority>
+  </url>
+
+  <!-- Landing Pages -->
+  <url>
+    <loc>https://wonder.io/interactive-books-for-kids</loc>
+    <lastmod>2026-04-15</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.9</priority>
+  </url>
+  <url>
+    <loc>https://wonder.io/interactive-stories-for-kids</loc>
+    <lastmod>2026-04-15</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.9</priority>
+  </url>
+  <url>
+    <loc>https://wonder.io/free-interactive-books</loc>
+    <lastmod>2026-04-15</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.9</priority>
+  </url>
+  <url>
+    <loc>https://wonder.io/books-for-kids-with-adhd</loc>
+    <lastmod>2026-04-15</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.9</priority>
+  </url>
+  <url>
+    <loc>https://wonder.io/books-for-kids-with-dyslexia</loc>
+    <lastmod>2026-04-15</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.9</priority>
   </url>
 
   <!-- Book Pages -->
   <url>
-    <loc>https://wonder.io/book/138/1</loc>
-    <lastmod>2025-12-17</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.8</priority>
-    <image:image>
-      <image:loc>https://storage.googleapis.com/wonder-stories-web.appspot.com/books/images/book138/cover.png</image:loc>
-      <image:title>Interactive Story Book 138</image:title>
-    </image:image>
-  </url>
-  <url>
-    <loc>https://wonder.io/book/9/1</loc>
-    <lastmod>2025-12-17</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.8</priority>
-    <image:image>
-      <image:loc>https://storage.googleapis.com/wonder-stories-web.appspot.com/books/images/book9/cover.png</image:loc>
-      <image:title>Space Adventure</image:title>
-    </image:image>
-  </url>
-  <url>
-    <loc>https://wonder.io/book/24/1</loc>
-    <lastmod>2025-12-17</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.8</priority>
-    <image:image>
-      <image:loc>https://storage.googleapis.com/wonder-stories-web.appspot.com/books/images/book24/cover.png</image:loc>
-      <image:title>Interactive Story Book 24</image:title>
-    </image:image>
-  </url>
-  <url>
-    <loc>https://wonder.io/book/11/1</loc>
-    <lastmod>2025-12-17</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.8</priority>
-    <image:image>
-      <image:loc>https://storage.googleapis.com/wonder-stories-web.appspot.com/books/images/book11/cover.png</image:loc>
-      <image:title>Interactive Story Book 11</image:title>
-    </image:image>
-  </url>
-  <url>
-    <loc>https://wonder.io/book/42/1</loc>
-    <lastmod>2025-12-17</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.8</priority>
-    <image:image>
-      <image:loc>https://storage.googleapis.com/wonder-stories-web.appspot.com/books/images/book42/cover.png</image:loc>
-      <image:title>Interactive Story Book 42</image:title>
-    </image:image>
-  </url>
-  <url>
-    <loc>https://wonder.io/book/125/1</loc>
-    <lastmod>2025-12-17</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.8</priority>
-    <image:image>
-      <image:loc>https://storage.googleapis.com/wonder-stories-web.appspot.com/books/images/book125/cover.png</image:loc>
-      <image:title>Interactive Story Book 125</image:title>
-    </image:image>
-  </url>
-  <url>
-    <loc>https://wonder.io/book/130/1</loc>
-    <lastmod>2025-12-17</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.8</priority>
-    <image:image>
-      <image:loc>https://storage.googleapis.com/wonder-stories-web.appspot.com/books/images/book130/cover.png</image:loc>
-      <image:title>Interactive Story Book 130</image:title>
-    </image:image>
-  </url>
-  <url>
-    <loc>https://wonder.io/book/34/1</loc>
-    <lastmod>2025-12-17</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.8</priority>
-    <image:image>
-      <image:loc>https://storage.googleapis.com/wonder-stories-web.appspot.com/books/images/book34/cover.png</image:loc>
-      <image:title>Interactive Story Book 34</image:title>
-    </image:image>
-  </url>
-  <url>
-    <loc>https://wonder.io/book/12/1</loc>
-    <lastmod>2025-12-17</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.8</priority>
-    <image:image>
-      <image:loc>https://storage.googleapis.com/wonder-stories-web.appspot.com/books/images/book12/cover.png</image:loc>
-      <image:title>Interactive Story Book 12</image:title>
-    </image:image>
-  </url>
-  <url>
-    <loc>https://wonder.io/book/126/1</loc>
-    <lastmod>2025-12-17</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.8</priority>
-    <image:image>
-      <image:loc>https://storage.googleapis.com/wonder-stories-web.appspot.com/books/images/book126/cover.png</image:loc>
-      <image:title>Interactive Story Book 126</image:title>
-    </image:image>
-  </url>
-  <url>
-    <loc>https://wonder.io/book/124/1</loc>
-    <lastmod>2025-12-17</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.8</priority>
-    <image:image>
-      <image:loc>https://storage.googleapis.com/wonder-stories-web.appspot.com/books/images/book124/cover.png</image:loc>
-      <image:title>Interactive Story Book 124</image:title>
-    </image:image>
-  </url>
-  <url>
-    <loc>https://wonder.io/book/119/1</loc>
-    <lastmod>2025-12-17</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.8</priority>
-    <image:image>
-      <image:loc>https://storage.googleapis.com/wonder-stories-web.appspot.com/books/images/book119/cover.png</image:loc>
-      <image:title>Interactive Story Book 119</image:title>
-    </image:image>
-  </url>
-  <url>
-    <loc>https://wonder.io/book/100/1</loc>
-    <lastmod>2025-12-17</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.8</priority>
-    <image:image>
-      <image:loc>https://storage.googleapis.com/wonder-stories-web.appspot.com/books/images/book100/cover.png</image:loc>
-      <image:title>Interactive Story Book 100</image:title>
-    </image:image>
-  </url>
-  <url>
-    <loc>https://wonder.io/book/102/1</loc>
-    <lastmod>2025-12-17</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.8</priority>
-    <image:image>
-      <image:loc>https://storage.googleapis.com/wonder-stories-web.appspot.com/books/images/book102/cover.png</image:loc>
-      <image:title>Interactive Story Book 102</image:title>
-    </image:image>
-  </url>
-  <url>
-    <loc>https://wonder.io/book/31/1</loc>
-    <lastmod>2025-12-17</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.8</priority>
-    <image:image>
-      <image:loc>https://storage.googleapis.com/wonder-stories-web.appspot.com/books/images/book31/cover.png</image:loc>
-      <image:title>Interactive Story Book 31</image:title>
-    </image:image>
-  </url>
-  <url>
-    <loc>https://wonder.io/book/129/1</loc>
-    <lastmod>2025-12-17</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.8</priority>
-    <image:image>
-      <image:loc>https://storage.googleapis.com/wonder-stories-web.appspot.com/books/images/book129/cover.png</image:loc>
-      <image:title>Interactive Story Book 129</image:title>
-    </image:image>
-  </url>
-  <url>
-    <loc>https://wonder.io/book/903/1</loc>
-    <lastmod>2025-12-17</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.8</priority>
-    <image:image>
-      <image:loc>https://storage.googleapis.com/wonder-stories-web.appspot.com/books/images/book903/cover.png</image:loc>
-      <image:title>Interactive Story Book 903</image:title>
-    </image:image>
-  </url>
-  <url>
-    <loc>https://wonder.io/book/45/1</loc>
-    <lastmod>2025-12-17</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.8</priority>
-    <image:image>
-      <image:loc>https://storage.googleapis.com/wonder-stories-web.appspot.com/books/images/book45/cover.png</image:loc>
-      <image:title>Interactive Story Book 45</image:title>
-    </image:image>
-  </url>
-  <url>
-    <loc>https://wonder.io/book/118/1</loc>
-    <lastmod>2025-12-17</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.8</priority>
-    <image:image>
-      <image:loc>https://storage.googleapis.com/wonder-stories-web.appspot.com/books/images/book118/cover.png</image:loc>
-      <image:title>Interactive Story Book 118</image:title>
-    </image:image>
-  </url>
-  <url>
-    <loc>https://wonder.io/book/21/1</loc>
-    <lastmod>2025-12-17</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.8</priority>
-    <image:image>
-      <image:loc>https://storage.googleapis.com/wonder-stories-web.appspot.com/books/images/book21/cover.png</image:loc>
-      <image:title>Interactive Story Book 21</image:title>
-    </image:image>
-  </url>
-  <url>
-    <loc>https://wonder.io/book/27/1</loc>
-    <lastmod>2025-12-17</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.8</priority>
-    <image:image>
-      <image:loc>https://storage.googleapis.com/wonder-stories-web.appspot.com/books/images/book27/cover.png</image:loc>
-      <image:title>Interactive Story Book 27</image:title>
-    </image:image>
-  </url>
-  <url>
-    <loc>https://wonder.io/book/109/1</loc>
-    <lastmod>2025-12-17</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.8</priority>
-    <image:image>
-      <image:loc>https://storage.googleapis.com/wonder-stories-web.appspot.com/books/images/book109/cover.png</image:loc>
-      <image:title>Interactive Story Book 109</image:title>
-    </image:image>
-  </url>
-  <url>
-    <loc>https://wonder.io/book/200/1</loc>
-    <lastmod>2025-12-17</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.8</priority>
-    <image:image>
-      <image:loc>https://storage.googleapis.com/wonder-stories-web.appspot.com/books/images/book200/cover.png</image:loc>
-      <image:title>Interactive Story Book 200</image:title>
-    </image:image>
-  </url>
-  <url>
-    <loc>https://wonder.io/book/111/1</loc>
-    <lastmod>2025-12-17</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.8</priority>
-    <image:image>
-      <image:loc>https://storage.googleapis.com/wonder-stories-web.appspot.com/books/images/book111/cover.png</image:loc>
-      <image:title>Interactive Story Book 111</image:title>
-    </image:image>
-  </url>
-  <url>
-    <loc>https://wonder.io/book/30/1</loc>
-    <lastmod>2025-12-17</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.8</priority>
-    <image:image>
-      <image:loc>https://storage.googleapis.com/wonder-stories-web.appspot.com/books/images/book30/cover.png</image:loc>
-      <image:title>Interactive Story Book 30</image:title>
-    </image:image>
-  </url>
-  <url>
-    <loc>https://wonder.io/book/4/1</loc>
-    <lastmod>2025-12-17</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.8</priority>
-    <image:image>
-      <image:loc>https://storage.googleapis.com/wonder-stories-web.appspot.com/books/images/book4/cover.png</image:loc>
-      <image:title>Interactive Story Book 4</image:title>
-    </image:image>
-  </url>
-  <url>
-    <loc>https://wonder.io/book/7/1</loc>
-    <lastmod>2025-12-17</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.8</priority>
-    <image:image>
-      <image:loc>https://storage.googleapis.com/wonder-stories-web.appspot.com/books/images/book7/cover.png</image:loc>
-      <image:title>Interactive Story Book 7</image:title>
-    </image:image>
-  </url>
-  <url>
-    <loc>https://wonder.io/book/15/1</loc>
-    <lastmod>2025-12-17</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.8</priority>
-    <image:image>
-      <image:loc>https://storage.googleapis.com/wonder-stories-web.appspot.com/books/images/book15/cover.png</image:loc>
-      <image:title>The Red Door Mystery</image:title>
-    </image:image>
-  </url>
-  <url>
-    <loc>https://wonder.io/book/103/1</loc>
-    <lastmod>2025-12-17</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.8</priority>
-    <image:image>
-      <image:loc>https://storage.googleapis.com/wonder-stories-web.appspot.com/books/images/book103/cover.png</image:loc>
-      <image:title>Interactive Story Book 103</image:title>
-    </image:image>
-  </url>
-  <url>
-    <loc>https://wonder.io/book/113/1</loc>
-    <lastmod>2025-12-17</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.8</priority>
-    <image:image>
-      <image:loc>https://storage.googleapis.com/wonder-stories-web.appspot.com/books/images/book113/cover.png</image:loc>
-      <image:title>Interactive Story Book 113</image:title>
-    </image:image>
-  </url>
-  <url>
-    <loc>https://wonder.io/book/36/1</loc>
-    <lastmod>2025-12-17</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.8</priority>
-    <image:image>
-      <image:loc>https://storage.googleapis.com/wonder-stories-web.appspot.com/books/images/book36/cover.png</image:loc>
-      <image:title>Interactive Story Book 36</image:title>
-    </image:image>
-  </url>
-  <url>
-    <loc>https://wonder.io/book/115/1</loc>
-    <lastmod>2025-12-17</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.8</priority>
-    <image:image>
-      <image:loc>https://storage.googleapis.com/wonder-stories-web.appspot.com/books/images/book115/cover.png</image:loc>
-      <image:title>Interactive Story Book 115</image:title>
-    </image:image>
-  </url>
-  <url>
-    <loc>https://wonder.io/book/139/1</loc>
-    <lastmod>2025-12-17</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.8</priority>
-    <image:image>
-      <image:loc>https://storage.googleapis.com/wonder-stories-web.appspot.com/books/images/book139/cover.png</image:loc>
-      <image:title>Interactive Story Book 139</image:title>
-    </image:image>
-  </url>
-  <url>
-    <loc>https://wonder.io/book/37/1</loc>
-    <lastmod>2025-12-17</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.8</priority>
-    <image:image>
-      <image:loc>https://storage.googleapis.com/wonder-stories-web.appspot.com/books/images/book37/cover.png</image:loc>
-      <image:title>Interactive Story Book 37</image:title>
-    </image:image>
-  </url>
-  <url>
-    <loc>https://wonder.io/book/14/1</loc>
-    <lastmod>2025-12-17</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.8</priority>
-    <image:image>
-      <image:loc>https://storage.googleapis.com/wonder-stories-web.appspot.com/books/images/book14/cover.png</image:loc>
-      <image:title>Interactive Story Book 14</image:title>
-    </image:image>
-  </url>
-  <url>
-    <loc>https://wonder.io/book/6/1</loc>
-    <lastmod>2025-12-17</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.8</priority>
-    <image:image>
-      <image:loc>https://storage.googleapis.com/wonder-stories-web.appspot.com/books/images/book6/cover.png</image:loc>
-      <image:title>Interactive Story Book 6</image:title>
-    </image:image>
-  </url>
-  <url>
-    <loc>https://wonder.io/book/136/1</loc>
-    <lastmod>2025-12-17</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.8</priority>
-    <image:image>
-      <image:loc>https://storage.googleapis.com/wonder-stories-web.appspot.com/books/images/book136/cover.png</image:loc>
-      <image:title>Interactive Story Book 136</image:title>
-    </image:image>
-  </url>
-  <url>
-    <loc>https://wonder.io/book/110/1</loc>
-    <lastmod>2025-12-17</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.8</priority>
-    <image:image>
-      <image:loc>https://storage.googleapis.com/wonder-stories-web.appspot.com/books/images/book110/cover.png</image:loc>
-      <image:title>Interactive Story Book 110</image:title>
-    </image:image>
-  </url>
-  <url>
-    <loc>https://wonder.io/book/101/1</loc>
-    <lastmod>2025-12-17</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.8</priority>
-    <image:image>
-      <image:loc>https://storage.googleapis.com/wonder-stories-web.appspot.com/books/images/book101/cover.png</image:loc>
-      <image:title>Interactive Story Book 101</image:title>
-    </image:image>
-  </url>
-  <url>
-    <loc>https://wonder.io/book/127/1</loc>
-    <lastmod>2025-12-17</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.8</priority>
-    <image:image>
-      <image:loc>https://storage.googleapis.com/wonder-stories-web.appspot.com/books/images/book127/cover.png</image:loc>
-      <image:title>Interactive Story Book 127</image:title>
-    </image:image>
-  </url>
-  <url>
-    <loc>https://wonder.io/book/105/1</loc>
-    <lastmod>2025-12-17</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.8</priority>
-    <image:image>
-      <image:loc>https://storage.googleapis.com/wonder-stories-web.appspot.com/books/images/book105/cover.png</image:loc>
-      <image:title>Interactive Story Book 105</image:title>
-    </image:image>
-  </url>
-  <url>
-    <loc>https://wonder.io/book/40/1</loc>
-    <lastmod>2025-12-17</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.8</priority>
-    <image:image>
-      <image:loc>https://storage.googleapis.com/wonder-stories-web.appspot.com/books/images/book40/cover.png</image:loc>
-      <image:title>Interactive Story Book 40</image:title>
-    </image:image>
-  </url>
-  <url>
-    <loc>https://wonder.io/book/10/1</loc>
-    <lastmod>2025-12-17</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.8</priority>
-    <image:image>
-      <image:loc>https://storage.googleapis.com/wonder-stories-web.appspot.com/books/images/book10/cover.png</image:loc>
-      <image:title>Interactive Story Book 10</image:title>
-    </image:image>
-  </url>
-  <url>
-    <loc>https://wonder.io/book/122/1</loc>
-    <lastmod>2025-12-17</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.8</priority>
-    <image:image>
-      <image:loc>https://storage.googleapis.com/wonder-stories-web.appspot.com/books/images/book122/cover.png</image:loc>
-      <image:title>Interactive Story Book 122</image:title>
-    </image:image>
-  </url>
-  <url>
-    <loc>https://wonder.io/book/107/1</loc>
-    <lastmod>2025-12-17</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.8</priority>
-    <image:image>
-      <image:loc>https://storage.googleapis.com/wonder-stories-web.appspot.com/books/images/book107/cover.png</image:loc>
-      <image:title>Interactive Story Book 107</image:title>
-    </image:image>
-  </url>
-  <url>
-    <loc>https://wonder.io/book/106/1</loc>
-    <lastmod>2025-12-17</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.8</priority>
-    <image:image>
-      <image:loc>https://storage.googleapis.com/wonder-stories-web.appspot.com/books/images/book106/cover.png</image:loc>
-      <image:title>Interactive Story Book 106</image:title>
-    </image:image>
-  </url>
-  <url>
-    <loc>https://wonder.io/book/44/1</loc>
-    <lastmod>2025-12-17</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.8</priority>
-    <image:image>
-      <image:loc>https://storage.googleapis.com/wonder-stories-web.appspot.com/books/images/book44/cover.png</image:loc>
-      <image:title>Interactive Story Book 44</image:title>
-    </image:image>
-  </url>
-  <url>
-    <loc>https://wonder.io/book/132/1</loc>
-    <lastmod>2025-12-17</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.8</priority>
-    <image:image>
-      <image:loc>https://storage.googleapis.com/wonder-stories-web.appspot.com/books/images/book132/cover.png</image:loc>
-      <image:title>Interactive Story Book 132</image:title>
-    </image:image>
-  </url>
-  <url>
-    <loc>https://wonder.io/book/190/1</loc>
-    <lastmod>2025-12-17</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.8</priority>
-    <image:image>
-      <image:loc>https://storage.googleapis.com/wonder-stories-web.appspot.com/books/images/book190/cover.png</image:loc>
-      <image:title>Interactive Story Book 190</image:title>
-    </image:image>
-  </url>
-  <url>
-    <loc>https://wonder.io/book/47/1</loc>
-    <lastmod>2025-12-17</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.8</priority>
-    <image:image>
-      <image:loc>https://storage.googleapis.com/wonder-stories-web.appspot.com/books/images/book47/cover.png</image:loc>
-      <image:title>Interactive Story Book 47</image:title>
-    </image:image>
-  </url>
-  <url>
-    <loc>https://wonder.io/book/18/1</loc>
-    <lastmod>2025-12-17</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.8</priority>
-    <image:image>
-      <image:loc>https://storage.googleapis.com/wonder-stories-web.appspot.com/books/images/book18/cover.png</image:loc>
-      <image:title>Interactive Story Book 18</image:title>
-    </image:image>
-  </url>
-  <url>
     <loc>https://wonder.io/book/1/1</loc>
-    <lastmod>2025-12-17</lastmod>
+    <lastmod>2026-04-15</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
     <image:image>
       <image:loc>https://storage.googleapis.com/wonder-stories-web.appspot.com/books/images/book1/cover.png</image:loc>
-      <image:title>The Magic Garden</image:title>
-    </image:image>
-  </url>
-  <url>
-    <loc>https://wonder.io/book/120/1</loc>
-    <lastmod>2025-12-17</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.8</priority>
-    <image:image>
-      <image:loc>https://storage.googleapis.com/wonder-stories-web.appspot.com/books/images/book120/cover.png</image:loc>
-      <image:title>Interactive Story Book 120</image:title>
-    </image:image>
-  </url>
-  <url>
-    <loc>https://wonder.io/book/134/1</loc>
-    <lastmod>2025-12-17</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.8</priority>
-    <image:image>
-      <image:loc>https://storage.googleapis.com/wonder-stories-web.appspot.com/books/images/book134/cover.png</image:loc>
-      <image:title>Interactive Story Book 134</image:title>
-    </image:image>
-  </url>
-  <url>
-    <loc>https://wonder.io/book/121/1</loc>
-    <lastmod>2025-12-17</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.8</priority>
-    <image:image>
-      <image:loc>https://storage.googleapis.com/wonder-stories-web.appspot.com/books/images/book121/cover.png</image:loc>
-      <image:title>Interactive Story Book 121</image:title>
-    </image:image>
-  </url>
-  <url>
-    <loc>https://wonder.io/book/5/1</loc>
-    <lastmod>2025-12-17</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.8</priority>
-    <image:image>
-      <image:loc>https://storage.googleapis.com/wonder-stories-web.appspot.com/books/images/book5/cover.png</image:loc>
-      <image:title>Interactive Story Book 5</image:title>
+      <image:title>The Case of the Bedroom Egg</image:title>
     </image:image>
   </url>
   <url>
     <loc>https://wonder.io/book/2/1</loc>
-    <lastmod>2025-12-17</lastmod>
+    <lastmod>2026-04-15</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
     <image:image>
       <image:loc>https://storage.googleapis.com/wonder-stories-web.appspot.com/books/images/book2/cover.png</image:loc>
-      <image:title>Ocean Adventure</image:title>
-    </image:image>
-  </url>
-  <url>
-    <loc>https://wonder.io/book/184/1</loc>
-    <lastmod>2025-12-17</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.8</priority>
-    <image:image>
-      <image:loc>https://storage.googleapis.com/wonder-stories-web.appspot.com/books/images/book184/cover.png</image:loc>
-      <image:title>Interactive Story Book 184</image:title>
-    </image:image>
-  </url>
-  <url>
-    <loc>https://wonder.io/book/46/1</loc>
-    <lastmod>2025-12-17</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.8</priority>
-    <image:image>
-      <image:loc>https://storage.googleapis.com/wonder-stories-web.appspot.com/books/images/book46/cover.png</image:loc>
-      <image:title>Interactive Story Book 46</image:title>
+      <image:title>The Weird Voice in the Woods</image:title>
     </image:image>
   </url>
   <url>
     <loc>https://wonder.io/book/3/1</loc>
-    <lastmod>2025-12-17</lastmod>
+    <lastmod>2026-04-15</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
     <image:image>
       <image:loc>https://storage.googleapis.com/wonder-stories-web.appspot.com/books/images/book3/cover.png</image:loc>
-      <image:title>Forest Friends</image:title>
+      <image:title>The Case of the Wrong Bus</image:title>
     </image:image>
   </url>
   <url>
-    <loc>https://wonder.io/book/131/1</loc>
-    <lastmod>2025-12-17</lastmod>
+    <loc>https://wonder.io/book/4/1</loc>
+    <lastmod>2026-04-15</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
     <image:image>
-      <image:loc>https://storage.googleapis.com/wonder-stories-web.appspot.com/books/images/book131/1cover.png</image:loc>
-      <image:title>Interactive Story Book 131</image:title>
+      <image:loc>https://storage.googleapis.com/wonder-stories-web.appspot.com/books/images/book4/cover.png</image:loc>
+      <image:title>The Case of the Missing Moon</image:title>
     </image:image>
   </url>
   <url>
-    <loc>https://wonder.io/book/104/1</loc>
-    <lastmod>2025-12-17</lastmod>
+    <loc>https://wonder.io/book/5/1</loc>
+    <lastmod>2026-04-15</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
     <image:image>
-      <image:loc>https://storage.googleapis.com/wonder-stories-web.appspot.com/books/images/book104/cover.png</image:loc>
-      <image:title>Interactive Story Book 104</image:title>
+      <image:loc>https://storage.googleapis.com/wonder-stories-web.appspot.com/books/images/book5/cover.png</image:loc>
+      <image:title>The Case of the Haunted House</image:title>
     </image:image>
   </url>
   <url>
-    <loc>https://wonder.io/book/22/1</loc>
-    <lastmod>2025-12-17</lastmod>
+    <loc>https://wonder.io/book/6/1</loc>
+    <lastmod>2026-04-15</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
     <image:image>
-      <image:loc>https://storage.googleapis.com/wonder-stories-web.appspot.com/books/images/book22/cover.png</image:loc>
-      <image:title>Interactive Story Book 22</image:title>
+      <image:loc>https://storage.googleapis.com/wonder-stories-web.appspot.com/books/images/book6/cover.png</image:loc>
+      <image:title>The Case of the Door to Tomorrow</image:title>
     </image:image>
   </url>
   <url>
-    <loc>https://wonder.io/book/20/1</loc>
-    <lastmod>2025-12-17</lastmod>
+    <loc>https://wonder.io/book/7/1</loc>
+    <lastmod>2026-04-15</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
     <image:image>
-      <image:loc>https://storage.googleapis.com/wonder-stories-web.appspot.com/books/images/book20/cover.png</image:loc>
-      <image:title>Interactive Story Book 20</image:title>
-    </image:image>
-  </url>
-  <url>
-    <loc>https://wonder.io/book/123/1</loc>
-    <lastmod>2025-12-17</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.8</priority>
-    <image:image>
-      <image:loc>https://storage.googleapis.com/wonder-stories-web.appspot.com/books/images/book123/cover.png</image:loc>
-      <image:title>Interactive Story Book 123</image:title>
-    </image:image>
-  </url>
-  <url>
-    <loc>https://wonder.io/book/26/1</loc>
-    <lastmod>2025-12-17</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.8</priority>
-    <image:image>
-      <image:loc>https://storage.googleapis.com/wonder-stories-web.appspot.com/books/images/book26/cover.png</image:loc>
-      <image:title>Interactive Story Book 26</image:title>
-    </image:image>
-  </url>
-  <url>
-    <loc>https://wonder.io/book/13/1</loc>
-    <lastmod>2025-12-17</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.8</priority>
-    <image:image>
-      <image:loc>https://storage.googleapis.com/wonder-stories-web.appspot.com/books/images/book13/cover.png</image:loc>
-      <image:title>Interactive Story Book 13</image:title>
-    </image:image>
-  </url>
-  <url>
-    <loc>https://wonder.io/book/108/1</loc>
-    <lastmod>2025-12-17</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.8</priority>
-    <image:image>
-      <image:loc>https://storage.googleapis.com/wonder-stories-web.appspot.com/books/images/book108/cover.png</image:loc>
-      <image:title>Interactive Story Book 108</image:title>
-    </image:image>
-  </url>
-  <url>
-    <loc>https://wonder.io/book/29/1</loc>
-    <lastmod>2025-12-17</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.8</priority>
-    <image:image>
-      <image:loc>https://storage.googleapis.com/wonder-stories-web.appspot.com/books/images/book29/cover.png</image:loc>
-      <image:title>Interactive Story Book 29</image:title>
+      <image:loc>https://storage.googleapis.com/wonder-stories-web.appspot.com/books/images/book7/cover.png</image:loc>
+      <image:title>The Case of the Pencil Thief</image:title>
     </image:image>
   </url>
   <url>
     <loc>https://wonder.io/book/8/1</loc>
-    <lastmod>2025-12-17</lastmod>
+    <lastmod>2026-04-15</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
     <image:image>
       <image:loc>https://storage.googleapis.com/wonder-stories-web.appspot.com/books/images/book8/cover.png</image:loc>
-      <image:title>Interactive Story Book 8</image:title>
+      <image:title>The Case of the Popped Balloons</image:title>
     </image:image>
   </url>
   <url>
-    <loc>https://wonder.io/book/128/1</loc>
-    <lastmod>2025-12-17</lastmod>
+    <loc>https://wonder.io/book/9/1</loc>
+    <lastmod>2026-04-15</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
     <image:image>
-      <image:loc>https://storage.googleapis.com/wonder-stories-web.appspot.com/books/images/book128/cover.png</image:loc>
-      <image:title>Interactive Story Book 128</image:title>
+      <image:loc>https://storage.googleapis.com/wonder-stories-web.appspot.com/books/images/book9/cover.png</image:loc>
+      <image:title>The Case of the Lunchtime Detectives</image:title>
     </image:image>
   </url>
   <url>
-    <loc>https://wonder.io/book/189/1</loc>
-    <lastmod>2025-12-17</lastmod>
+    <loc>https://wonder.io/book/10/1</loc>
+    <lastmod>2026-04-15</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
     <image:image>
-      <image:loc>https://storage.googleapis.com/wonder-stories-web.appspot.com/books/images/book189/cover.png</image:loc>
-      <image:title>Interactive Story Book 189</image:title>
+      <image:loc>https://storage.googleapis.com/wonder-stories-web.appspot.com/books/images/book10/cover.png</image:loc>
+      <image:title>The Case of the Sidewalk Pirate Ship</image:title>
     </image:image>
   </url>
   <url>
-    <loc>https://wonder.io/book/28/1</loc>
-    <lastmod>2025-12-17</lastmod>
+    <loc>https://wonder.io/book/11/1</loc>
+    <lastmod>2026-04-15</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
     <image:image>
-      <image:loc>https://storage.googleapis.com/wonder-stories-web.appspot.com/books/images/book28/cover.png</image:loc>
-      <image:title>Interactive Story Book 28</image:title>
+      <image:loc>https://storage.googleapis.com/wonder-stories-web.appspot.com/books/images/book11/cover.png</image:loc>
+      <image:title>The Case of Piper&apos;s Mustache</image:title>
     </image:image>
   </url>
   <url>
-    <loc>https://wonder.io/book/112/1</loc>
-    <lastmod>2025-12-17</lastmod>
+    <loc>https://wonder.io/book/12/1</loc>
+    <lastmod>2026-04-15</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
     <image:image>
-      <image:loc>https://storage.googleapis.com/wonder-stories-web.appspot.com/books/images/book112/cover.png</image:loc>
-      <image:title>Interactive Story Book 112</image:title>
+      <image:loc>https://storage.googleapis.com/wonder-stories-web.appspot.com/books/images/book12/cover.png</image:loc>
+      <image:title>The Case of the Friend In Need</image:title>
     </image:image>
   </url>
   <url>
-    <loc>https://wonder.io/book/23/1</loc>
-    <lastmod>2025-12-17</lastmod>
+    <loc>https://wonder.io/book/13/1</loc>
+    <lastmod>2026-04-15</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
     <image:image>
-      <image:loc>https://storage.googleapis.com/wonder-stories-web.appspot.com/books/images/book23/cover.png</image:loc>
-      <image:title>Interactive Story Book 23</image:title>
+      <image:loc>https://storage.googleapis.com/wonder-stories-web.appspot.com/books/images/book13/cover.png</image:loc>
+      <image:title>The Case of the Lunch Ladies</image:title>
     </image:image>
   </url>
   <url>
-    <loc>https://wonder.io/book/114/1</loc>
-    <lastmod>2025-12-17</lastmod>
+    <loc>https://wonder.io/book/14/1</loc>
+    <lastmod>2026-04-15</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
     <image:image>
-      <image:loc>https://storage.googleapis.com/wonder-stories-web.appspot.com/books/images/book114/cover.png</image:loc>
-      <image:title>Interactive Story Book 114</image:title>
+      <image:loc>https://storage.googleapis.com/wonder-stories-web.appspot.com/books/images/book14/cover.png</image:loc>
+      <image:title>The Case of the Haunted House 2</image:title>
     </image:image>
   </url>
   <url>
-    <loc>https://wonder.io/book/39/1</loc>
-    <lastmod>2025-12-17</lastmod>
+    <loc>https://wonder.io/book/15/1</loc>
+    <lastmod>2026-04-15</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
     <image:image>
-      <image:loc>https://storage.googleapis.com/wonder-stories-web.appspot.com/books/images/book39/cover.png</image:loc>
-      <image:title>Interactive Story Book 39</image:title>
-    </image:image>
-  </url>
-  <url>
-    <loc>https://wonder.io/book/38/1</loc>
-    <lastmod>2025-12-17</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.8</priority>
-    <image:image>
-      <image:loc>https://storage.googleapis.com/wonder-stories-web.appspot.com/books/images/book38/cover.png</image:loc>
-      <image:title>Interactive Story Book 38</image:title>
-    </image:image>
-  </url>
-  <url>
-    <loc>https://wonder.io/book/17/1</loc>
-    <lastmod>2025-12-17</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.8</priority>
-    <image:image>
-      <image:loc>https://storage.googleapis.com/wonder-stories-web.appspot.com/books/images/book17/cover.png</image:loc>
-      <image:title>Interactive Story Book 17</image:title>
+      <image:loc>https://storage.googleapis.com/wonder-stories-web.appspot.com/books/images/book15/cover.png</image:loc>
+      <image:title>The Door to Tomorrow Part 2</image:title>
     </image:image>
   </url>
   <url>
     <loc>https://wonder.io/book/16/1</loc>
-    <lastmod>2025-12-17</lastmod>
+    <lastmod>2026-04-15</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
     <image:image>
       <image:loc>https://storage.googleapis.com/wonder-stories-web.appspot.com/books/images/book16/cover.png</image:loc>
-      <image:title>Interactive Story Book 16</image:title>
+      <image:title>The Case of the  Flying Birthday</image:title>
+    </image:image>
+  </url>
+  <url>
+    <loc>https://wonder.io/book/17/1</loc>
+    <lastmod>2026-04-15</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+    <image:image>
+      <image:loc>https://storage.googleapis.com/wonder-stories-web.appspot.com/books/images/book17/cover.png</image:loc>
+      <image:title>The Case of the Exploding Toilets</image:title>
+    </image:image>
+  </url>
+  <url>
+    <loc>https://wonder.io/book/18/1</loc>
+    <lastmod>2026-04-15</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+    <image:image>
+      <image:loc>https://storage.googleapis.com/wonder-stories-web.appspot.com/books/images/book18/cover.png</image:loc>
+      <image:title>The Green Goo</image:title>
+    </image:image>
+  </url>
+  <url>
+    <loc>https://wonder.io/book/20/1</loc>
+    <lastmod>2026-04-15</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+    <image:image>
+      <image:loc>https://storage.googleapis.com/wonder-stories-web.appspot.com/books/images/book20/cover.png</image:loc>
+      <image:title>The Case of the  Monkeys and Lies</image:title>
+    </image:image>
+  </url>
+  <url>
+    <loc>https://wonder.io/book/21/1</loc>
+    <lastmod>2026-04-15</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+    <image:image>
+      <image:loc>https://storage.googleapis.com/wonder-stories-web.appspot.com/books/images/book21/cover.png</image:loc>
+      <image:title>The Case of the Multiplying Bunnies</image:title>
+    </image:image>
+  </url>
+  <url>
+    <loc>https://wonder.io/book/22/1</loc>
+    <lastmod>2026-04-15</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+    <image:image>
+      <image:loc>https://storage.googleapis.com/wonder-stories-web.appspot.com/books/images/book22/cover.png</image:loc>
+      <image:title>The Case of the Purple Gas</image:title>
+    </image:image>
+  </url>
+  <url>
+    <loc>https://wonder.io/book/23/1</loc>
+    <lastmod>2026-04-15</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+    <image:image>
+      <image:loc>https://storage.googleapis.com/wonder-stories-web.appspot.com/books/images/book23/cover.png</image:loc>
+      <image:title>The Case of the Escaped Platypus</image:title>
+    </image:image>
+  </url>
+  <url>
+    <loc>https://wonder.io/book/24/1</loc>
+    <lastmod>2026-04-15</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+    <image:image>
+      <image:loc>https://storage.googleapis.com/wonder-stories-web.appspot.com/books/images/book24/cover.png</image:loc>
+      <image:title>The Case of the New Dog</image:title>
+    </image:image>
+  </url>
+  <url>
+    <loc>https://wonder.io/book/26/1</loc>
+    <lastmod>2026-04-15</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+    <image:image>
+      <image:loc>https://storage.googleapis.com/wonder-stories-web.appspot.com/books/images/book26/cover.png</image:loc>
+      <image:title>Ziggy Higgs and the Missing Box of Figs</image:title>
+    </image:image>
+  </url>
+  <url>
+    <loc>https://wonder.io/book/27/1</loc>
+    <lastmod>2026-04-15</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+    <image:image>
+      <image:loc>https://storage.googleapis.com/wonder-stories-web.appspot.com/books/images/book27/cover.png</image:loc>
+      <image:title>The Case of the Cookie Ants</image:title>
+    </image:image>
+  </url>
+  <url>
+    <loc>https://wonder.io/book/28/1</loc>
+    <lastmod>2026-04-15</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+    <image:image>
+      <image:loc>https://storage.googleapis.com/wonder-stories-web.appspot.com/books/images/book28/cover.png</image:loc>
+      <image:title>The Case of the Shaking Classroom</image:title>
+    </image:image>
+  </url>
+  <url>
+    <loc>https://wonder.io/book/29/1</loc>
+    <lastmod>2026-04-15</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+    <image:image>
+      <image:loc>https://storage.googleapis.com/wonder-stories-web.appspot.com/books/images/book29/cover.png</image:loc>
+      <image:title>The Forbidden Palace</image:title>
+    </image:image>
+  </url>
+  <url>
+    <loc>https://wonder.io/book/30/1</loc>
+    <lastmod>2026-04-15</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+    <image:image>
+      <image:loc>https://storage.googleapis.com/wonder-stories-web.appspot.com/books/images/book30/cover.png</image:loc>
+      <image:title>The Case of  Bubble Gum Hair</image:title>
+    </image:image>
+  </url>
+  <url>
+    <loc>https://wonder.io/book/31/1</loc>
+    <lastmod>2026-04-15</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+    <image:image>
+      <image:loc>https://storage.googleapis.com/wonder-stories-web.appspot.com/books/images/book31/cover.png</image:loc>
+      <image:title>The  Muddy Race</image:title>
+    </image:image>
+  </url>
+  <url>
+    <loc>https://wonder.io/book/34/1</loc>
+    <lastmod>2026-04-15</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+    <image:image>
+      <image:loc>https://storage.googleapis.com/wonder-stories-web.appspot.com/books/images/book34/cover.png</image:loc>
+      <image:title>The Case of the Shrinking Circus</image:title>
+    </image:image>
+  </url>
+  <url>
+    <loc>https://wonder.io/book/36/1</loc>
+    <lastmod>2026-04-15</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+    <image:image>
+      <image:loc>https://storage.googleapis.com/wonder-stories-web.appspot.com/books/images/book36/cover.png</image:loc>
+      <image:title>The Case of the Desk of Worms</image:title>
+    </image:image>
+  </url>
+  <url>
+    <loc>https://wonder.io/book/37/1</loc>
+    <lastmod>2026-04-15</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+    <image:image>
+      <image:loc>https://storage.googleapis.com/wonder-stories-web.appspot.com/books/images/book37/cover.png</image:loc>
+      <image:title>Prankster&apos;s Diary:  Go Fish</image:title>
+    </image:image>
+  </url>
+  <url>
+    <loc>https://wonder.io/book/38/1</loc>
+    <lastmod>2026-04-15</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+    <image:image>
+      <image:loc>https://storage.googleapis.com/wonder-stories-web.appspot.com/books/images/book38/cover.png</image:loc>
+      <image:title>The Cursed Diamond Part 1</image:title>
+    </image:image>
+  </url>
+  <url>
+    <loc>https://wonder.io/book/39/1</loc>
+    <lastmod>2026-04-15</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+    <image:image>
+      <image:loc>https://storage.googleapis.com/wonder-stories-web.appspot.com/books/images/book39/cover.png</image:loc>
+      <image:title>The Cursed Diamond Part 2</image:title>
+    </image:image>
+  </url>
+  <url>
+    <loc>https://wonder.io/book/40/1</loc>
+    <lastmod>2026-04-15</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+    <image:image>
+      <image:loc>https://storage.googleapis.com/wonder-stories-web.appspot.com/books/images/book40/cover.png</image:loc>
+      <image:title>War Pig</image:title>
+    </image:image>
+  </url>
+  <url>
+    <loc>https://wonder.io/book/42/1</loc>
+    <lastmod>2026-04-15</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+    <image:image>
+      <image:loc>https://storage.googleapis.com/wonder-stories-web.appspot.com/books/images/book42/cover.png</image:loc>
+      <image:title>The Case of the  Laughing Vampire</image:title>
+    </image:image>
+  </url>
+  <url>
+    <loc>https://wonder.io/book/44/1</loc>
+    <lastmod>2026-04-15</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+    <image:image>
+      <image:loc>https://storage.googleapis.com/wonder-stories-web.appspot.com/books/images/book44/cover.png</image:loc>
+      <image:title>The Case of  the Electric Thief</image:title>
+    </image:image>
+  </url>
+  <url>
+    <loc>https://wonder.io/book/45/1</loc>
+    <lastmod>2026-04-15</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+    <image:image>
+      <image:loc>https://storage.googleapis.com/wonder-stories-web.appspot.com/books/images/book45/cover.png</image:loc>
+      <image:title>The Case of  the Electric Thief</image:title>
+    </image:image>
+  </url>
+  <url>
+    <loc>https://wonder.io/book/46/1</loc>
+    <lastmod>2026-04-15</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+    <image:image>
+      <image:loc>https://storage.googleapis.com/wonder-stories-web.appspot.com/books/images/book46/cover.png</image:loc>
+      <image:title>The Case of the Silly Lightning Hair</image:title>
+    </image:image>
+  </url>
+  <url>
+    <loc>https://wonder.io/book/47/1</loc>
+    <lastmod>2026-04-15</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+    <image:image>
+      <image:loc>https://storage.googleapis.com/wonder-stories-web.appspot.com/books/images/book47/cover.png</image:loc>
+      <image:title>The Case of the Popped Soccer Ball</image:title>
+    </image:image>
+  </url>
+  <url>
+    <loc>https://wonder.io/book/100/1</loc>
+    <lastmod>2026-04-15</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+    <image:image>
+      <image:loc>https://storage.googleapis.com/wonder-stories-web.appspot.com/books/images/book100/cover.png</image:loc>
+      <image:title>The Turkey Temple</image:title>
+    </image:image>
+  </url>
+  <url>
+    <loc>https://wonder.io/book/101/1</loc>
+    <lastmod>2026-04-15</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+    <image:image>
+      <image:loc>https://storage.googleapis.com/wonder-stories-web.appspot.com/books/images/book101/cover.png</image:loc>
+      <image:title>The Flying Bowling Ball</image:title>
+    </image:image>
+  </url>
+  <url>
+    <loc>https://wonder.io/book/102/1</loc>
+    <lastmod>2026-04-15</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+    <image:image>
+      <image:loc>https://storage.googleapis.com/wonder-stories-web.appspot.com/books/images/book102/cover.png</image:loc>
+      <image:title>Who sprayed Mom?</image:title>
+    </image:image>
+  </url>
+  <url>
+    <loc>https://wonder.io/book/103/1</loc>
+    <lastmod>2026-04-15</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+    <image:image>
+      <image:loc>https://storage.googleapis.com/wonder-stories-web.appspot.com/books/images/book103/cover.png</image:loc>
+      <image:title>Basketball Blunder</image:title>
+    </image:image>
+  </url>
+  <url>
+    <loc>https://wonder.io/book/104/1</loc>
+    <lastmod>2026-04-15</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+    <image:image>
+      <image:loc>https://storage.googleapis.com/wonder-stories-web.appspot.com/books/images/book104/cover.png</image:loc>
+      <image:title>The Bunny Battle</image:title>
+    </image:image>
+  </url>
+  <url>
+    <loc>https://wonder.io/book/105/1</loc>
+    <lastmod>2026-04-15</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+    <image:image>
+      <image:loc>https://storage.googleapis.com/wonder-stories-web.appspot.com/books/images/book105/cover.png</image:loc>
+      <image:title>Skeleton Faces</image:title>
+    </image:image>
+  </url>
+  <url>
+    <loc>https://wonder.io/book/106/1</loc>
+    <lastmod>2026-04-15</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+    <image:image>
+      <image:loc>https://storage.googleapis.com/wonder-stories-web.appspot.com/books/images/book106/cover.png</image:loc>
+      <image:title>The Cow Man</image:title>
+    </image:image>
+  </url>
+  <url>
+    <loc>https://wonder.io/book/107/1</loc>
+    <lastmod>2026-04-15</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+    <image:image>
+      <image:loc>https://storage.googleapis.com/wonder-stories-web.appspot.com/books/images/book107/cover.png</image:loc>
+      <image:title>The Robbery</image:title>
+    </image:image>
+  </url>
+  <url>
+    <loc>https://wonder.io/book/108/1</loc>
+    <lastmod>2026-04-15</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+    <image:image>
+      <image:loc>https://storage.googleapis.com/wonder-stories-web.appspot.com/books/images/book108/cover.png</image:loc>
+      <image:title>Where is Nacho 1</image:title>
+    </image:image>
+  </url>
+  <url>
+    <loc>https://wonder.io/book/109/1</loc>
+    <lastmod>2026-04-15</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+    <image:image>
+      <image:loc>https://storage.googleapis.com/wonder-stories-web.appspot.com/books/images/book109/cover.png</image:loc>
+      <image:title>Where is Nacho 2</image:title>
+    </image:image>
+  </url>
+  <url>
+    <loc>https://wonder.io/book/110/1</loc>
+    <lastmod>2026-04-15</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+    <image:image>
+      <image:loc>https://storage.googleapis.com/wonder-stories-web.appspot.com/books/images/book110/cover.png</image:loc>
+      <image:title>Where is Nacho 3</image:title>
+    </image:image>
+  </url>
+  <url>
+    <loc>https://wonder.io/book/111/1</loc>
+    <lastmod>2026-04-15</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+    <image:image>
+      <image:loc>https://storage.googleapis.com/wonder-stories-web.appspot.com/books/images/book111/cover.png</image:loc>
+      <image:title>Baby Jumping</image:title>
+    </image:image>
+  </url>
+  <url>
+    <loc>https://wonder.io/book/112/1</loc>
+    <lastmod>2026-04-15</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+    <image:image>
+      <image:loc>https://storage.googleapis.com/wonder-stories-web.appspot.com/books/images/book112/cover.png</image:loc>
+      <image:title>The Bullet Ant Dance</image:title>
+    </image:image>
+  </url>
+  <url>
+    <loc>https://wonder.io/book/113/1</loc>
+    <lastmod>2026-04-15</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+    <image:image>
+      <image:loc>https://storage.googleapis.com/wonder-stories-web.appspot.com/books/images/book113/cover.png</image:loc>
+      <image:title>The Case of the Lunchtime Detectives</image:title>
+    </image:image>
+  </url>
+  <url>
+    <loc>https://wonder.io/book/114/1</loc>
+    <lastmod>2026-04-15</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+    <image:image>
+      <image:loc>https://storage.googleapis.com/wonder-stories-web.appspot.com/books/images/book114/cover.png</image:loc>
+      <image:title>The Tomato Fight</image:title>
+    </image:image>
+  </url>
+  <url>
+    <loc>https://wonder.io/book/115/1</loc>
+    <lastmod>2026-04-15</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+    <image:image>
+      <image:loc>https://storage.googleapis.com/wonder-stories-web.appspot.com/books/images/book115/cover.png</image:loc>
+      <image:title>Where is Dad</image:title>
     </image:image>
   </url>
   <url>
     <loc>https://wonder.io/book/116/1</loc>
-    <lastmod>2025-12-17</lastmod>
+    <lastmod>2026-04-15</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
     <image:image>
       <image:loc>https://storage.googleapis.com/wonder-stories-web.appspot.com/books/images/book116/cover.png</image:loc>
-      <image:title>Interactive Story Book 116</image:title>
+      <image:title>Dog Party</image:title>
+    </image:image>
+  </url>
+  <url>
+    <loc>https://wonder.io/book/118/1</loc>
+    <lastmod>2026-04-15</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+    <image:image>
+      <image:loc>https://storage.googleapis.com/wonder-stories-web.appspot.com/books/images/book118/cover.png</image:loc>
+      <image:title>Snake Hair</image:title>
+    </image:image>
+  </url>
+  <url>
+    <loc>https://wonder.io/book/119/1</loc>
+    <lastmod>2026-04-15</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+    <image:image>
+      <image:loc>https://storage.googleapis.com/wonder-stories-web.appspot.com/books/images/book119/cover.png</image:loc>
+      <image:title>Messy Sauce</image:title>
+    </image:image>
+  </url>
+  <url>
+    <loc>https://wonder.io/book/120/1</loc>
+    <lastmod>2026-04-15</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+    <image:image>
+      <image:loc>https://storage.googleapis.com/wonder-stories-web.appspot.com/books/images/book120/cover.png</image:loc>
+      <image:title>I Lost the Moon</image:title>
+    </image:image>
+  </url>
+  <url>
+    <loc>https://wonder.io/book/121/1</loc>
+    <lastmod>2026-04-15</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+    <image:image>
+      <image:loc>https://storage.googleapis.com/wonder-stories-web.appspot.com/books/images/book121/cover.png</image:loc>
+      <image:title>The Slippery Soccer Field</image:title>
+    </image:image>
+  </url>
+  <url>
+    <loc>https://wonder.io/book/122/1</loc>
+    <lastmod>2026-04-15</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+    <image:image>
+      <image:loc>https://storage.googleapis.com/wonder-stories-web.appspot.com/books/images/book122/cover.png</image:loc>
+      <image:title>The Case of the Broken Clams</image:title>
+    </image:image>
+  </url>
+  <url>
+    <loc>https://wonder.io/book/123/1</loc>
+    <lastmod>2026-04-15</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+    <image:image>
+      <image:loc>https://storage.googleapis.com/wonder-stories-web.appspot.com/books/images/book123/cover.png</image:loc>
+      <image:title>The Baby Unicorn</image:title>
+    </image:image>
+  </url>
+  <url>
+    <loc>https://wonder.io/book/124/1</loc>
+    <lastmod>2026-04-15</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+    <image:image>
+      <image:loc>https://storage.googleapis.com/wonder-stories-web.appspot.com/books/images/book124/cover.png</image:loc>
+      <image:title>Mustache Day</image:title>
+    </image:image>
+  </url>
+  <url>
+    <loc>https://wonder.io/book/125/1</loc>
+    <lastmod>2026-04-15</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+    <image:image>
+      <image:loc>https://storage.googleapis.com/wonder-stories-web.appspot.com/books/images/book125/cover.png</image:loc>
+      <image:title>Missing Friends</image:title>
+    </image:image>
+  </url>
+  <url>
+    <loc>https://wonder.io/book/126/1</loc>
+    <lastmod>2026-04-15</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+    <image:image>
+      <image:loc>https://storage.googleapis.com/wonder-stories-web.appspot.com/books/images/book126/cover.png</image:loc>
+      <image:title>Bad Pudding</image:title>
+    </image:image>
+  </url>
+  <url>
+    <loc>https://wonder.io/book/127/1</loc>
+    <lastmod>2026-04-15</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+    <image:image>
+      <image:loc>https://storage.googleapis.com/wonder-stories-web.appspot.com/books/images/book127/cover.png</image:loc>
+      <image:title>The Headless Man</image:title>
+    </image:image>
+  </url>
+  <url>
+    <loc>https://wonder.io/book/128/1</loc>
+    <lastmod>2026-04-15</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+    <image:image>
+      <image:loc>https://storage.googleapis.com/wonder-stories-web.appspot.com/books/images/book128/cover.png</image:loc>
+      <image:title>How the Dog Got Its Bark</image:title>
+    </image:image>
+  </url>
+  <url>
+    <loc>https://wonder.io/book/129/1</loc>
+    <lastmod>2026-04-15</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+    <image:image>
+      <image:loc>https://storage.googleapis.com/wonder-stories-web.appspot.com/books/images/book129/cover.png</image:loc>
+      <image:title>April Fools!</image:title>
+    </image:image>
+  </url>
+  <url>
+    <loc>https://wonder.io/book/130/1</loc>
+    <lastmod>2026-04-15</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+    <image:image>
+      <image:loc>https://storage.googleapis.com/wonder-stories-web.appspot.com/books/images/book130/cover.png</image:loc>
+      <image:title>Glomper Goes to the Dentist</image:title>
+    </image:image>
+  </url>
+  <url>
+    <loc>https://wonder.io/book/131/1</loc>
+    <lastmod>2026-04-15</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+    <image:image>
+      <image:loc>https://storage.googleapis.com/wonder-stories-web.appspot.com/books/images/book131/1cover.png</image:loc>
+      <image:title>Growth Spurt</image:title>
+    </image:image>
+  </url>
+  <url>
+    <loc>https://wonder.io/book/132/1</loc>
+    <lastmod>2026-04-15</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+    <image:image>
+      <image:loc>https://storage.googleapis.com/wonder-stories-web.appspot.com/books/images/book132/cover.png</image:loc>
+      <image:title>Hide and Seek</image:title>
+    </image:image>
+  </url>
+  <url>
+    <loc>https://wonder.io/book/134/1</loc>
+    <lastmod>2026-04-15</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+    <image:image>
+      <image:loc>https://storage.googleapis.com/wonder-stories-web.appspot.com/books/images/book134/cover.png</image:loc>
+      <image:title>I Ate Bugs</image:title>
+    </image:image>
+  </url>
+  <url>
+    <loc>https://wonder.io/book/136/1</loc>
+    <lastmod>2026-04-15</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+    <image:image>
+      <image:loc>https://storage.googleapis.com/wonder-stories-web.appspot.com/books/images/book136/cover.png</image:loc>
+      <image:title>Lost in the Woods</image:title>
+    </image:image>
+  </url>
+  <url>
+    <loc>https://wonder.io/book/138/1</loc>
+    <lastmod>2026-04-15</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+    <image:image>
+      <image:loc>https://storage.googleapis.com/wonder-stories-web.appspot.com/books/images/book138/cover.png</image:loc>
+      <image:title>My First New Friend</image:title>
+    </image:image>
+  </url>
+  <url>
+    <loc>https://wonder.io/book/139/1</loc>
+    <lastmod>2026-04-15</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+    <image:image>
+      <image:loc>https://storage.googleapis.com/wonder-stories-web.appspot.com/books/images/book139/cover.png</image:loc>
+      <image:title>My New Pen Pal</image:title>
+    </image:image>
+  </url>
+  <url>
+    <loc>https://wonder.io/book/184/1</loc>
+    <lastmod>2026-04-15</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+    <image:image>
+      <image:loc>https://storage.googleapis.com/wonder-stories-web.appspot.com/books/images/book184/cover.png</image:loc>
+      <image:title>The Missing Girl</image:title>
+    </image:image>
+  </url>
+  <url>
+    <loc>https://wonder.io/book/189/1</loc>
+    <lastmod>2026-04-15</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+    <image:image>
+      <image:loc>https://storage.googleapis.com/wonder-stories-web.appspot.com/books/images/book189/cover.png</image:loc>
+      <image:title>Melted Video Games</image:title>
+    </image:image>
+  </url>
+  <url>
+    <loc>https://wonder.io/book/190/1</loc>
+    <lastmod>2026-04-15</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+    <image:image>
+      <image:loc>https://storage.googleapis.com/wonder-stories-web.appspot.com/books/images/book190/cover.png</image:loc>
+      <image:title>Fireplace Problems</image:title>
+    </image:image>
+  </url>
+  <url>
+    <loc>https://wonder.io/book/200/1</loc>
+    <lastmod>2026-04-15</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+    <image:image>
+      <image:loc>https://storage.googleapis.com/wonder-stories-web.appspot.com/books/images/book200/cover.png</image:loc>
+      <image:title>The Island of the Ring Tailed Bandit</image:title>
+    </image:image>
+  </url>
+  <url>
+    <loc>https://wonder.io/book/903/1</loc>
+    <lastmod>2026-04-15</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+    <image:image>
+      <image:loc>https://storage.googleapis.com/wonder-stories-web.appspot.com/books/images/book903/cover.png</image:loc>
+      <image:title>Saving Big Foot</image:title>
     </image:image>
   </url>
 </urlset>

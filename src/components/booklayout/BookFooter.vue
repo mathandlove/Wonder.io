@@ -61,7 +61,9 @@ export default {
 </script>
 <style  scoped>
 .footer {
+  position: relative;
   height: 100px;
+  flex-shrink: 0;
   display: flex;
 }
 

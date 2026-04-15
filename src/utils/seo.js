@@ -103,24 +103,24 @@ export function updateBookMetaTags(bookId, pageNumber = 1) {
   if (!metadata) {
     // Fallback generic meta for books without metadata
     updateMetaTags({
-      title: `FREE Interactive Story ${bookId} | Wonder.io - Engaging Books for Kids`,
-      description: `FREE interactive story for kids who struggle with focus. Engaging AI-powered reading with comprehension questions. Perfect for active learners. No subscription required!`,
+      title: `Free Interactive Story for Kids | Wonder.io`,
+      description: `A free interactive story for kids who struggle with focus. Engaging AI-powered reading with comprehension questions. Perfect for active learners. No subscription required!`,
       keywords: 'free interactive stories for kids, free books for ADHD kids, engaging reading, AI storytelling',
-      canonical: `https://wonder.io/book/${bookId}/${pageNumber}`,
+      canonical: `https://wonder.io/book/${bookId}`,
       ogImage: `https://storage.googleapis.com/wonder-stories-web.appspot.com/books/images/book${bookId}/cover.png`
     });
     return;
   }
 
-  // Update with book-specific metadata
+  // Update with book-specific metadata — canonical always points to landing page
   updateMetaTags({
-    title: `FREE: ${metadata.title} | ${metadata.gradeLevel} Interactive Story | Wonder.io`,
+    title: `${metadata.title} — Free Interactive Story for Kids | Wonder.io`,
     description: metadata.metaDescription,
     keywords: metadata.keywords,
-    ogTitle: `FREE: ${metadata.title} - Interactive Story for Kids`,
+    ogTitle: `${metadata.title} — Free Interactive Story for Kids | Wonder.io`,
     ogDescription: metadata.ogDescription,
     ogImage: metadata.largeCoverImage || metadata.coverImage,
-    canonical: `https://wonder.io/book/${bookId}/${pageNumber}`,
+    canonical: `https://wonder.io/book/${bookId}`,
     type: 'article'
   });
 
@@ -163,7 +163,7 @@ function addBookStructuredData(metadata, bookId) {
     'learningResourceType': 'Interactive Story',
     'isAccessibleForFree': true,
     'image': metadata.largeCoverImage || metadata.coverImage,
-    'url': `https://wonder.io/book/${bookId}/1`,
+    'url': `https://wonder.io/book/${bookId}`,
     'offers': {
       '@type': 'Offer',
       'price': '0',

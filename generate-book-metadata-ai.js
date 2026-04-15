@@ -1,357 +1,218 @@
 const axios = require('axios');
 const fs = require('fs');
 const path = require('path');
-require('dotenv').config({ path: path.join(__dirname, '../wonder.io/backend/.env') });
 const OpenAI = require('openai');
+
+require('dotenv').config({ path: path.join(__dirname, '.env.development') });
+require('dotenv').config({ path: path.join(__dirname, '.env') });
 
 const GCS_BASE = 'https://storage.googleapis.com/wonder-stories-web.appspot.com/books/texts';
 const API_URL = 'https://wonder-api.azurewebsites.net/book';
 
-// Initialize OpenAI client
 const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY,
 });
 
-// Helper to extract story content from pageData
+// Extract story text and author/illustrator from page data
 function extractStoryContent(pageData, maxWords = 1000) {
   let content = '';
   let chapterTitle = '';
 
   for (const page of pageData) {
-    // Get chapter title
-    if (page.type === 'chapterTitle' && !chapterTitle) {
-      chapterTitle = page.text || '';
-    }
-
-    // Extract text from read pages
-    if (page.type === 'read' && page.text) {
-      // Clean the text
-      const cleanText = page.text
-        .replace(/<[^>]*>/g, ' ') // Remove HTML-like tags
-        .replace(/\\n/g, ' ')
-        .replace(/\s+/g, ' ')
-        .trim();
-
-      if (cleanText) {
-        content += cleanText + ' ';
+    if ((page.type === 'chapterTitle' || page.type === 'chaptertitle') && !chapterTitle) {
+      chapterTitle = page.text || page.pageTitleText || '';
+      if (!chapterTitle && page.pageParts && page.pageParts[0]?.lineParts?.[0]) {
+        chapterTitle = page.pageParts[0].lineParts[0].text || '';
       }
     }
 
-    // Get enough content for AI to understand the story
+    if (page.type === 'read') {
+      // GCS format: page.text
+      const rawText = page.text || '';
+      // API format: page.pageParts[].lineParts[].text
+      let apiText = '';
+      if (page.pageParts) {
+        for (const part of page.pageParts) {
+          for (const line of part.lineParts || []) {
+            if (line.text) apiText += line.text + ' ';
+          }
+        }
+      }
+      const raw = rawText || apiText;
+      const clean = raw
+        .replace(/<[^>]*>/g, ' ')
+        .replace(/\\n/g, ' ')
+        .replace(/\s+/g, ' ')
+        .trim();
+      if (clean) content += clean + ' ';
+    }
+
     if (content.split(' ').length > maxWords) break;
   }
 
   return { chapterTitle, content: content.trim() };
 }
 
-// Use AI to generate book description (like back-of-book copy)
-async function generateAIDescription(title, content, genre, gradeLevel) {
-  const prompt = `You are an expert at writing back-cover book descriptions for children's stories.
-
-STRICT RULES - READ CAREFULLY:
-
-Your job is to write metadata that reads like the BACK COVER of a physical book.
-- Focus on the STORY ITSELF: character, setting, conflict, stakes, emotion
-- DO NOT mention the platform (Wonder.io), features, interactivity, or benefits
-- DO NOT use medical/therapeutic language (ADHD, focus, autism, therapy)
-- Each description must be UNIQUE and story-specific
-
-Story Title: ${title}
-Suggested Genre: ${genre} (NOTE: This may be incorrect - use your judgment based on the actual story content)
-Grade Level: ${gradeLevel}
-Story Content (first 1000 words):
-${content}
-
-IMPORTANT: Read the story and determine the ACTUAL genre. If the story doesn't match the suggested genre, use the correct genre instead.
-For example, if labeled "Pirate Adventure" but it's actually about a family prank, call it "Adventure" or "Mystery".
-
-Based on this story, write:
-
-1. BOOK DESCRIPTION (40-60 words):
-   Write like this appears on the back of a printed book.
-
-   Include:
-   - Main character's name (if clear from story)
-   - Setting (where/when)
-   - Central conflict or mystery (what problem needs solving?)
-   - Emotional hook (why should kids care?)
-   - Tone (funny, mysterious, adventurous)
-
-   DO NOT include:
-   - Platform features (interactive, clickable, choices)
-   - Therapeutic claims (helps focus, engagement, ADHD)
-   - Marketing language (FREE, no subscription) - save for meta
-   - Generic phrases that could apply to any book
-
-   Use active voice and vivid story-specific language.
-
-2. META DESCRIPTION (exactly 130-150 characters):
-   Format: "FREE [Genre] for Grade X-Y | [Story-specific hook mentioning character or conflict]"
-
-   Rules:
-   - Must start with "FREE"
-   - Include grade level
-   - Reference the main character OR central conflict (make it unique)
-   - NO therapeutic language
-   - NO platform features
-   - Must be clearly different from other books
-
-   Example: "FREE Mystery for Grade 3-4 | Jake investigates a mysterious egg in his bedroom before it hatches"
-
-EXAMPLE - Mystery about finding a lost puppy:
-
-Book Description: "When Max wakes up to find his puppy Scout missing from the backyard, he suspects foul play. With muddy paw prints leading to the neighbor's fence and Scout's favorite toy left behind, Max must interview suspects and follow clues around the neighborhood. Can he solve the mystery before dinnertime?"
-
-Meta Description: "FREE Mystery for Grade 2-3 | Max searches for his missing puppy Scout with clues and suspects around the neighborhood"
-
-VALIDATION CHECKLIST (verify before returning):
-- [ ] Could this description appear on a physical book?
-- [ ] Would it still make sense if Wonder.io didn't exist?
-- [ ] Is it meaningfully different from other book descriptions?
-- [ ] Does it focus on story, not platform?
-- [ ] No medical/therapeutic claims?
-
-Return ONLY in this exact JSON format:
-{
-  "description": "your back-of-book description here (40-60 words)",
-  "metaDescription": "your meta description here (130-150 chars)"
-}`;
-
-  try {
-    const completion = await openai.chat.completions.create({
-      model: 'gpt-4o',
-      messages: [{
-        role: 'user',
-        content: prompt
-      }],
-      max_tokens: 300,
-      temperature: 0.7
-    });
-
-    const responseText = completion.choices[0].message.content.trim();
-    // Extract JSON from response (in case AI adds extra text)
-    const jsonMatch = responseText.match(/\{[\s\S]*\}/);
-    if (jsonMatch) {
-      return JSON.parse(jsonMatch[0]);
-    }
-    throw new Error('No JSON found in AI response');
-  } catch (error) {
-    console.error(`AI generation error: ${error.message}`);
-    // Fallback to first 150 chars
-    const storyStart = content.substring(0, 150).trim() + '...';
-    return {
-      hook: storyStart,
-      metaDescription: `FREE ${genre} for ${gradeLevel} readers. ${title}.`
-    };
-  }
-}
-
-// Detect genre from content
 function detectGenre(title, content) {
   const text = (title + ' ' + content).toLowerCase();
-
-  if (text.match(/mystery|detective|case|clue|solve|investigate|suspect|crime/i)) {
-    return 'Mystery';
-  }
-  if (text.match(/pirate|treasure|ship|sail|crew|captain|ocean voyage/i)) {
-    return 'Pirate Adventure';
-  }
-  if (text.match(/space|planet|alien|rocket|astronaut|galaxy|mars/i)) {
-    return 'Science Fiction';
-  }
-  if (text.match(/dinosaur|prehistoric|fossil|t-rex|jurassic/i)) {
-    return 'Dinosaur Adventure';
-  }
-  if (text.match(/dragon|magic|wizard|spell|enchant|kingdom|fairy|fantasy/i)) {
-    return 'Fantasy';
-  }
-  if (text.match(/school|classroom|teacher|homework|recess|bus/i)) {
-    return 'School Adventure';
-  }
-  if (text.match(/haunted|ghost|scary|spooky|afraid|dark|creepy/i)) {
-    return 'Mystery';
-  }
-
+  if (text.match(/mystery|detective|case|clue|solve|investigate|suspect/i)) return 'Mystery';
+  if (text.match(/halloween|headless|ghost|haunted|spooky|skeleton|witch|vampire/i)) return 'Halloween';
+  if (text.match(/pirate|treasure|ship|sail|captain/i)) return 'Pirate Adventure';
+  if (text.match(/space|planet|alien|rocket|astronaut|galaxy/i)) return 'Science Fiction';
+  if (text.match(/dinosaur|prehistoric|t-rex|fossil/i)) return 'Dinosaur Adventure';
+  if (text.match(/dragon|wizard|spell|enchant|kingdom|fairy/i)) return 'Fantasy';
+  if (text.match(/school|classroom|teacher|homework|recess/i)) return 'School Adventure';
   return 'Adventure';
 }
 
-// Generate complete metadata using AI
-async function generateMetadata(bookId, title, content, genre, totalPages) {
-  const wordCount = content.split(' ').length;
-  const hasQuestions = content.toLowerCase().includes('question');
-
-  // Estimate grade level
-  let gradeLevel = 'Grade 2-3';
-  let ageRange = '7-9 years';
-  if (totalPages < 30 || wordCount < 200) {
-    gradeLevel = 'Grade 1-2';
-    ageRange = '6-8 years';
-  } else if (totalPages > 60 || wordCount > 400) {
-    gradeLevel = 'Grade 3-4';
-    ageRange = '8-10 years';
-  }
-
-  // Use AI to generate back-of-book descriptions
-  const aiDescriptions = await generateAIDescription(title, content, genre, gradeLevel);
-
-  // Use AI-generated story description (no platform marketing)
-  const description = aiDescriptions.description;
-
-  // Use AI-generated meta description
-  const metaDescription = aiDescriptions.metaDescription;
-
-  // Keywords - focus on story/genre/grade, no medical terms
-  const genreKeyword = genre.toLowerCase().replace(' adventure', '');
-  const keywords = [
-    'free stories for kids',
-    `free ${genreKeyword} for children`,
-    `${gradeLevel.toLowerCase()} reading`,
-    'interactive children\'s books',
-    `free ${genreKeyword} books`,
-    'kids stories online'
-  ].join(', ');
-
-  return {
-    description,
-    metaDescription,
-    keywords,
-    genre,
-    gradeLevel,
-    ageRange,
-    ogDescription: description,
-    // Features removed - all books have the same features
-  };
+function estimateGradeLevel(totalPages, wordCount) {
+  if (totalPages < 30 || wordCount < 200) return { gradeLevel: 'Grade 1-2', ageRange: '6-8 years' };
+  if (totalPages > 60 || wordCount > 400) return { gradeLevel: 'Grade 3-4', ageRange: '8-10 years' };
+  return { gradeLevel: 'Grade 2-3', ageRange: '7-9 years' };
 }
 
-async function generateMetadataFromGCS() {
-  try {
-    console.log('🔍 Fetching book list from API...');
-    const listResponse = await axios.get(API_URL);
-    const bookList = listResponse.data;
+async function generateAIMetadata(title, author, content, genre, gradeLevel) {
+  const prompt = `You are an expert SEO copywriter for a children's reading platform. Write metadata for this book that will rank well on Google and get clicks from parents searching for free kids' stories.
 
-    console.log(`📚 Found ${bookList.length} books`);
-    console.log('📖 Fetching book data from Google Cloud Storage...');
-    console.log('🤖 Using OpenAI GPT-4o to generate engaging descriptions...\n');
+Book title: ${title}
+Author: ${author || 'unknown'}
+Genre: ${genre}
+Grade level: ${gradeLevel}
+Story content (first 1000 words):
+${content.substring(0, 2000)}
 
-    const metadata = {};
-    let successCount = 0;
-    let failureCount = 0;
+Write the following. Return ONLY valid JSON, no other text.
 
-    for (const bookItem of bookList) {
-      const bookId = bookItem.bookId;
+{
+  "description": "Back-cover style description, 40-60 words. Mention the main character by name, the setting, the central conflict, and a question that creates suspense. Vivid and specific to THIS story. No marketing language.",
+  "metaDescription": "155-160 characters exactly. Format: 'Free [genre] story for [Grade X-Y]. [Specific hook about this story's character and conflict]. Read free on Wonder.io!' Make it compelling and click-worthy.",
+  "ogDescription": "Same as description but max 200 chars, punchy.",
+  "keywords": "8-10 comma-separated keywords. Mix: story-specific terms (character name, setting, plot element), genre terms, grade/age terms, and 2-3 high-volume search terms like 'free stories for kids' or 'interactive books for children'."
+}`;
 
-      try {
-        // Try Google Cloud Storage first
-        let bookData = null;
-        let source = 'GCS';
+  const completion = await openai.chat.completions.create({
+    model: 'gpt-4o',
+    max_tokens: 500,
+    messages: [{ role: 'user', content: prompt }],
+  });
 
-        try {
-          const gcsResponse = await axios.get(`${GCS_BASE}/book${bookId}.json`);
-          bookData = gcsResponse.data;
-        } catch (gcsError) {
-          // Fallback to API if GCS fails
-          console.log(`⚠️  Book ${bookId}: GCS not found, trying API...`);
-          const apiResponse = await axios.get(`${API_URL}/${bookId}`);
-          bookData = apiResponse.data;
-          source = 'API';
-        }
+  const responseText = completion.choices[0].message.content.trim();
+  const jsonMatch = responseText.match(/\{[\s\S]*\}/);
+  if (!jsonMatch) throw new Error('No JSON in Claude response');
+  return JSON.parse(jsonMatch[0]);
+}
 
-        if (!bookData || (!bookData.pageData && !bookData.pages)) {
-          console.log(`⚠️  Book ${bookId}: No page data`);
-          failureCount++;
-          continue;
-        }
-
-        // Handle both GCS (pageData) and API (pages) formats
-        const pages = bookData.pageData || bookData.pages || [];
-
-        // Extract content (get more for AI analysis)
-        const { chapterTitle, content } = extractStoryContent(pages, 1000);
-
-        if (!content || content.length < 50) {
-          console.log(`⚠️  Book ${bookId}: Insufficient content`);
-          failureCount++;
-          continue;
-        }
-
-        // Use proper title (GCS format has it)
-        const fullTitle = bookData.title || bookItem.title || chapterTitle || `Interactive Story ${bookId}`;
-        const cleanTitle = fullTitle.replace(/\n/g, ' ').trim();
-
-        // Detect genre
-        const genre = detectGenre(cleanTitle, content);
-
-        // Generate SEO data with AI
-        const totalPages = bookData.pageData?.length || bookData.pages?.length || bookData.totalPages || 50;
-        const seoData = await generateMetadata(bookId, cleanTitle, content, genre, totalPages);
-
-        // Store metadata
-        metadata[bookId] = {
-          id: bookId,
-          title: cleanTitle,
-          author: bookData.author || bookItem.author || null,
-          illustrator: bookData.illustrator || bookItem.illustrator || null,
-          totalPages,
-          coverImage: bookItem.bookCoverImageUrl,
-          largeCoverImage: bookItem.largeBookCoverImageUrl,
-          ...seoData,
-          readingLevel: seoData.gradeLevel,
-          wordCount: content.split(' ').filter(w => w.length > 0).length,
-          source // Track where data came from
-        };
-
-        successCount++;
-        console.log(`✅ Book ${bookId} (${source}): "${cleanTitle}" (${genre}, ${seoData.gradeLevel})`);
-        console.log(`   Description: ${seoData.description.substring(0, 80)}...`);
-
-        // Save progress after each book
-        const outputPath = 'src/assets/book-seo-metadata.json';
-        fs.writeFileSync(outputPath, JSON.stringify(metadata, null, 2));
-
-        // Rate limiting for OpenAI API
-        await new Promise(resolve => setTimeout(resolve, 300));
-
-      } catch (error) {
-        console.log(`❌ Book ${bookId}: Error - ${error.message}`);
-        failureCount++;
-      }
-    }
-
-    // Save to file
-    const outputPath = 'src/assets/book-seo-metadata.json';
-    fs.writeFileSync(outputPath, JSON.stringify(metadata, null, 2));
-
-    console.log(`\n✨ Metadata generation complete!`);
-    console.log(`📊 Success: ${successCount} books`);
-    console.log(`⚠️  Failed: ${failureCount} books`);
-    console.log(`💾 Saved to: ${outputPath}`);
-
-    // Generate stats
-    const genres = {};
-    const grades = {};
-    const sources = {};
-
-    Object.values(metadata).forEach(book => {
-      genres[book.genre] = (genres[book.genre] || 0) + 1;
-      grades[book.gradeLevel] = (grades[book.gradeLevel] || 0) + 1;
-      sources[book.source] = (sources[book.source] || 0) + 1;
-    });
-
-    console.log(`\n📈 Content breakdown:`);
-    console.log('Genres:', genres);
-    console.log('Grade levels:', grades);
-    console.log('Data sources:', sources);
-
-  } catch (error) {
-    console.error('❌ Fatal error:', error.message);
+async function generateMetadataForAllBooks() {
+  if (!process.env.OPENAI_API_KEY) {
+    console.error('❌ OPENAI_API_KEY not found. Add it to .env or .env.development');
     process.exit(1);
   }
+
+  console.log('🔍 Fetching book list from API...');
+  const listResponse = await axios.get(API_URL);
+  const bookList = listResponse.data;
+  console.log(`📚 Found ${bookList.length} books`);
+
+  // Load existing metadata so we can do incremental updates
+  const outputPath = 'src/assets/book-seo-metadata.json';
+  let existing = {};
+  if (fs.existsSync(outputPath)) {
+    existing = JSON.parse(fs.readFileSync(outputPath, 'utf8'));
+  }
+
+  const metadata = { ...existing };
+  let successCount = 0;
+  let failureCount = 0;
+  let skippedCount = 0;
+
+  const force = process.argv.includes('--force');
+  if (force) console.log('⚡ --force mode: regenerating all books');
+
+  const CONCURRENCY = 10; // process 10 books at a time
+
+  async function processBook(bookItem) {
+    const bookId = bookItem.bookId;
+
+    if (!force && existing[bookId]?.source === 'claude') {
+      skippedCount++;
+      return;
+    }
+
+    try {
+      let bookData = null;
+      let source = 'GCS';
+      try {
+        const gcsResponse = await axios.get(`${GCS_BASE}/book${bookId}.json`);
+        bookData = gcsResponse.data;
+      } catch {
+        const apiResponse = await axios.get(`${API_URL}/${bookId}`);
+        bookData = apiResponse.data;
+        source = 'API';
+      }
+
+      if (!bookData) { console.log(`⚠️  Book ${bookId}: No data`); failureCount++; return; }
+
+      const pages = bookData.pageData || bookData.pages || [];
+      if (pages.length === 0) { console.log(`⚠️  Book ${bookId}: No pages`); failureCount++; return; }
+
+      const { chapterTitle, content } = extractStoryContent(pages, 1000);
+      if (!content || content.length < 50) { console.log(`⚠️  Book ${bookId}: No content`); failureCount++; return; }
+
+      const rawTitle = bookData.title || bookItem.title || chapterTitle || `Interactive Story ${bookId}`;
+      const cleanTitle = rawTitle.replace(/\n/g, ' ').trim();
+      const author = bookItem.author || bookData.author || null;
+      const illustrator = bookItem.illustrator || bookData.illustrator || null;
+      const genre = detectGenre(cleanTitle, content);
+      const totalPages = pages.length || bookData.totalPages || 50;
+      const wordCount = content.split(' ').filter(w => w.length > 0).length;
+      const { gradeLevel, ageRange } = estimateGradeLevel(totalPages, wordCount);
+
+      const aiData = await generateAIMetadata(cleanTitle, author, content, genre, gradeLevel);
+
+      const keywords = aiData.keywords || [
+        `free ${genre.toLowerCase()} for kids`,
+        `${gradeLevel.toLowerCase()} reading`,
+        'free interactive stories for kids',
+        'interactive children\'s books',
+        'kids stories online',
+      ].join(', ');
+
+      metadata[bookId] = {
+        id: bookId, title: cleanTitle, author, illustrator, totalPages,
+        coverImage: bookItem.bookCoverImageUrl,
+        largeCoverImage: bookItem.largeBookCoverImageUrl,
+        description: aiData.description,
+        metaDescription: aiData.metaDescription,
+        keywords, genre, gradeLevel, ageRange,
+        ogDescription: aiData.ogDescription || aiData.description,
+        readingLevel: gradeLevel, wordCount, source: 'claude',
+      };
+
+      successCount++;
+      console.log(`✅ Book ${bookId} (${source}): "${cleanTitle}" by ${author || 'unknown'}`);
+      console.log(`   ${aiData.metaDescription}`);
+
+    } catch (error) {
+      console.log(`❌ Book ${bookId}: ${error.message}`);
+      failureCount++;
+    }
+  }
+
+  // Process in batches of CONCURRENCY
+  for (let i = 0; i < bookList.length; i += CONCURRENCY) {
+    const batch = bookList.slice(i, i + CONCURRENCY);
+    await Promise.all(batch.map(processBook));
+    // Save after each batch
+    fs.writeFileSync(outputPath, JSON.stringify(metadata, null, 2));
+    console.log(`📦 Batch ${Math.floor(i / CONCURRENCY) + 1} done (${Math.min(i + CONCURRENCY, bookList.length)}/${bookList.length})`);
+  }
+
+  fs.writeFileSync(outputPath, JSON.stringify(metadata, null, 2));
+  console.log(`\n✨ Done! Success: ${successCount} | Failed: ${failureCount} | Skipped (already done): ${skippedCount}`);
+  console.log(`💾 Saved to: ${outputPath}`);
 }
 
-// Check for API key
-if (!process.env.OPENAI_API_KEY) {
-  console.error('❌ Error: OPENAI_API_KEY not found in wonder.io/backend/.env');
+generateMetadataForAllBooks().catch(err => {
+  console.error('❌ Fatal:', err.message);
   process.exit(1);
-}
-
-generateMetadataFromGCS();
+});
