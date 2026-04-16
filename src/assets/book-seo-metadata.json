@@ -3,58 +3,86 @@
     "id": "1",
     "title": "The Case of the Bedroom Egg",
     "author": "Elliott Hedman",
-    "illustrator": "Sarah Lee",
+    "illustrator": "Enna Kladstrup",
     "totalPages": 61,
     "coverImage": "https://storage.googleapis.com/wonder-stories-web.appspot.com/books/images/book1/cover.png",
     "largeCoverImage": "https://storage.googleapis.com/wonder-stories-web.appspot.com/books/images/book1/lcover.png",
     "description": "Dee wakes up to a mysterious cracking noise and discovers a giant egg in her bedroom. Suspecting her family, Dee races against time before school to solve 'The Case of the Bedroom Egg'. Who placed the strange object, and why? Can Dee crack the case before the bus arrives?",
-    "metaDescription": "Free mystery story for Grade 3-4. Dee finds a giant egg in her room and must solve this early morning mystery. Read free on Wonder.io!",
-    "keywords": "Dee, giant egg, bedroom mystery, family suspects, mystery story, Grade 3-4, children's book, free stories for kids, Emily Brown",
+    "metaDescription": "Free mystery story for Grade 2-3. Dee finds a giant egg in her room and must solve this early morning mystery. Read free on Wonder.io!",
+    "keywords": "Dee, giant egg, bedroom mystery, family suspects, mystery story, Grade 2-3, children's book, free stories for kids, Emily Brown",
     "genre": "Mystery",
-    "gradeLevel": "Grade 3-4",
-    "ageRange": "8-10 years",
+    "gradeLevel": "Grade 2-3",
+    "ageRange": "7-9 years",
     "ogDescription": "Dee discovers a giant egg in her room and must solve the mystery before school starts. Can she crack 'The Case of the Bedroom Egg' in time?",
-    "readingLevel": "Grade 3-4",
-    "wordCount": 1005,
-    "source": "claude"
+    "readingLevel": "Developing Reader",
+    "wordCount": 1214,
+    "source": "claude",
+    "readingTime": "17 min",
+    "tags": [
+      "Mystery",
+      "family",
+      "nature",
+      "School Story",
+      "Animal Story"
+    ]
   },
   "2": {
     "id": "2",
     "title": "The Weird Voice in the Woods",
-    "author": "James Wilson",
-    "illustrator": "Maria Garcia",
+    "author": "Steve Ince",
+    "illustrator": "Steve Ince",
     "totalPages": 85,
     "coverImage": "https://storage.googleapis.com/wonder-stories-web.appspot.com/books/images/book2/cover.png",
     "largeCoverImage": "https://storage.googleapis.com/wonder-stories-web.appspot.com/books/images/book2/lcover.png",
     "description": "When Tilly hears a mysterious voice in the woods, her daydreaming turns into a real-life mystery. With only her wit, she ventures to uncover who—or what—is calling her. Can she solve the mystery before it's too late?",
-    "metaDescription": "Free mystery story for Grade 3-4. Tilly hears a mysterious voice in the woods. Can she uncover the source? Find out on Wonder.io! Read free now!",
-    "keywords": "Tilly, mystery voice, woods, Grade 3-4, mystery story, James Wilson, free stories for kids, interactive books for children",
+    "metaDescription": "Free mystery story for Grade 2-3. Tilly hears a mysterious voice in the woods. Can she uncover the source? Find out on Wonder.io! Read free now!",
+    "keywords": "Tilly, mystery voice, woods, Grade 2-3, mystery story, James Wilson, free stories for kids, interactive books for children",
     "genre": "Mystery",
-    "gradeLevel": "Grade 3-4",
-    "ageRange": "8-10 years",
+    "gradeLevel": "Grade 2-3",
+    "ageRange": "7-9 years",
     "ogDescription": "Tilly hears a mysterious voice in the woods. Can she uncover who—or what—is calling her before it's too late?",
-    "readingLevel": "Grade 3-4",
-    "wordCount": 1012,
-    "source": "claude"
+    "readingLevel": "Developing Reader",
+    "wordCount": 2132,
+    "source": "claude",
+    "readingTime": "24 min",
+    "tags": [
+      "Mystery",
+      "family",
+      "animals",
+      "nature",
+      "food",
+      "courage",
+      "humor",
+      "Animal Story"
+    ]
   },
   "3": {
     "id": "3",
     "title": "The Case of the Wrong Bus",
-    "author": "Lisa Chen",
-    "illustrator": "Tom Anderson",
+    "author": "Nelson Yu",
+    "illustrator": "Silvia Amelio",
     "totalPages": 72,
     "coverImage": "https://storage.googleapis.com/wonder-stories-web.appspot.com/books/images/book3/cover.png",
     "largeCoverImage": "https://storage.googleapis.com/wonder-stories-web.appspot.com/books/images/book3/lcover.png",
     "description": "Freddie finds himself on a bus with dinosaur kids and a triceratops driver, Miss Shelby. Lost in a prehistoric adventure, can Freddie figure out how to survive the ride before he becomes a lunchtime snack?",
-    "metaDescription": "Free mystery story for Grade 3-4. Freddie meets dinosaurs on a bus. Can he survive his dino encounter? Read free on Wonder.io!",
+    "metaDescription": "Free mystery story for Grade 2-3. Freddie meets dinosaurs on a bus. Can he survive his dino encounter? Read free on Wonder.io!",
     "keywords": "Freddie, triceratops, dinosaur bus, dino kids, Grade 3, Grade 4, free kids' stories, adventure, mystery, Wonder.io",
-    "genre": "Mystery",
-    "gradeLevel": "Grade 3-4",
-    "ageRange": "8-10 years",
+    "genre": "School Story",
+    "gradeLevel": "Grade 2-3",
+    "ageRange": "7-9 years",
     "ogDescription": "Freddie, on a dino-filled bus, faces danger. Can he survive and get home?",
-    "readingLevel": "Grade 3-4",
-    "wordCount": 1012,
-    "source": "claude"
+    "readingLevel": "Developing Reader",
+    "wordCount": 1635,
+    "source": "claude",
+    "readingTime": "21 min",
+    "tags": [
+      "School Story",
+      "family",
+      "school",
+      "humor",
+      "Humor",
+      "Mystery"
+    ]
   },
   "4": {
     "id": "4",
@@ -65,15 +93,25 @@
     "coverImage": "https://storage.googleapis.com/wonder-stories-web.appspot.com/books/images/book4/cover.png",
     "largeCoverImage": "https://storage.googleapis.com/wonder-stories-web.appspot.com/books/images/book4/lcover.png",
     "description": "Kara is excited for Science Day at school but finds her moon project missing. Suspecting her mischievous brother and pesky pets, she encounters a strange, green creature. Can Kara solve the mystery and get her moon back in time?",
-    "metaDescription": "Free mystery story for Grade 3-4. Kara's moon is missing on Science Day! A strange creature lurks. What's the mystery? Read free on Wonder.io!",
-    "keywords": "Kara, Science Day, mysterious creature, missing moon, Grade 3-4, children's mystery, free kids' stories, interactive books for children, Shanna Germain, free stories for kids",
+    "metaDescription": "Free mystery story for Grade 1-2. Kara's moon is missing on Science Day! A strange creature lurks. What's the mystery? Read free on Wonder.io!",
+    "keywords": "Kara, Science Day, mysterious creature, missing moon, Grade 1-2, children's mystery, free kids' stories, interactive books for children, Shanna Germain, free stories for kids",
     "genre": "Mystery",
-    "gradeLevel": "Grade 3-4",
-    "ageRange": "8-10 years",
+    "gradeLevel": "Grade 1-2",
+    "ageRange": "6-8 years",
     "ogDescription": "Kara's moon is gone! A mystery unfolds with a green creature. Can she solve it in time for Science Day?",
-    "readingLevel": "Grade 3-4",
-    "wordCount": 978,
-    "source": "claude"
+    "readingLevel": "Early Reader",
+    "wordCount": 954,
+    "source": "claude",
+    "readingTime": "18 min",
+    "tags": [
+      "Mystery",
+      "school",
+      "animals",
+      "food",
+      "science",
+      "School Story",
+      "Animal Story"
+    ]
   },
   "5": {
     "id": "5",
@@ -84,15 +122,23 @@
     "coverImage": "https://storage.googleapis.com/wonder-stories-web.appspot.com/books/images/book5/cover.png",
     "largeCoverImage": "https://storage.googleapis.com/wonder-stories-web.appspot.com/books/images/book5/lcover.png",
     "description": "Aliz and her friends hear a strange howl from an abandoned house on Coral Street. With curiosity and courage, Aliz ventures inside alone. What eerie secrets will she uncover in the shadowy halls?",
-    "metaDescription": "Free mystery story for Grade 3-4. Aliz hears a strange howl from an abandoned house. Will she discover what's behind the eerie noise? Read free on Wonder.io!",
+    "metaDescription": "Free mystery story for Grade 2-3. Aliz hears a strange howl from an abandoned house. Will she discover what's behind the eerie noise? Read free on Wonder.io!",
     "keywords": "Aliz, haunted house, mystery story, Coral Street, grade 3-4, children's mystery, free stories for kids, interactive books for children, kids stories, free kids stories",
-    "genre": "Mystery",
-    "gradeLevel": "Grade 3-4",
-    "ageRange": "8-10 years",
+    "genre": "Animal Story",
+    "gradeLevel": "Grade 2-3",
+    "ageRange": "7-9 years",
     "ogDescription": "Aliz hears a strange howl from an abandoned house and ventures inside. What eerie secrets await her?",
-    "readingLevel": "Grade 3-4",
-    "wordCount": 1032,
-    "source": "claude"
+    "readingLevel": "Developing Reader",
+    "wordCount": 1231,
+    "source": "claude",
+    "readingTime": "16 min",
+    "tags": [
+      "Animal Story",
+      "animals",
+      "food",
+      "courage",
+      "Mystery"
+    ]
   },
   "6": {
     "id": "6",
@@ -103,15 +149,25 @@
     "coverImage": "https://storage.googleapis.com/wonder-stories-web.appspot.com/books/images/book6/cover.png",
     "largeCoverImage": "https://storage.googleapis.com/wonder-stories-web.appspot.com/books/images/book6/lcover.png",
     "description": "Join Jamal in New York City as he unravels a mystery at Grandpop's old house. With a mysterious uncle and strange happenings, Jamal faces a summer unlike any other. Will he find the Door to Tomorrow?",
-    "metaDescription": "Free mystery story for Grade 3-4. Jamal uncovers secrets in NYC, navigating family mysteries and strange encounters. Read free on Wonder.io!",
-    "keywords": "Jamal, New York City, mystery, Door to Tomorrow, free stories for kids, Grade 3-4, children's mystery book, interactive books, free kids stories",
-    "genre": "Mystery",
-    "gradeLevel": "Grade 3-4",
-    "ageRange": "8-10 years",
+    "metaDescription": "Free mystery story for Grade 2-3. Jamal uncovers secrets in NYC, navigating family mysteries and strange encounters. Read free on Wonder.io!",
+    "keywords": "Jamal, New York City, mystery, Door to Tomorrow, free stories for kids, Grade 2-3, children's mystery book, interactive books, free kids stories",
+    "genre": "School Story",
+    "gradeLevel": "Grade 2-3",
+    "ageRange": "7-9 years",
     "ogDescription": "Jamal is in NYC solving mysteries. A strange uncle, secrets, and more await. Will he find the Door to Tomorrow?",
-    "readingLevel": "Grade 3-4",
-    "wordCount": 1019,
-    "source": "claude"
+    "readingLevel": "Developing Reader",
+    "wordCount": 2125,
+    "source": "claude",
+    "readingTime": "25 min",
+    "tags": [
+      "School Story",
+      "family",
+      "food",
+      "science",
+      "holidays",
+      "Mystery",
+      "Animal Story"
+    ]
   },
   "7": {
     "id": "7",
@@ -124,13 +180,24 @@
     "description": "Join young detective Penelope, known as Pen, as she navigates rainy school grounds to solve the mystery of Lyle's missing dinosaur pencils. Will she crack the case of the Pencil Thief on wet footprints and cafeteria clues?",
     "metaDescription": "Free mystery story for Grade 3-4. Pen, the detective, tackles a thrilling pencil theft at school. Can she solve it? Read free on Wonder.io!",
     "keywords": "Penelope, Pencil Thief, detective story, mystery, Grade 3-4, free stories for kids, interactive books for children, school mystery",
-    "genre": "Mystery",
+    "genre": "School Story",
     "gradeLevel": "Grade 3-4",
     "ageRange": "8-10 years",
     "ogDescription": "Join Pen as she cracks the case of Lyle's missing dinosaur pencils. Can the school sleuth catch the Pencil Thief?",
-    "readingLevel": "Grade 3-4",
-    "wordCount": 1013,
-    "source": "claude"
+    "readingLevel": "Fluent Reader",
+    "wordCount": 3235,
+    "source": "claude",
+    "readingTime": "33 min",
+    "tags": [
+      "School Story",
+      "school",
+      "nature",
+      "sports",
+      "science",
+      "problem-solving",
+      "Mystery",
+      "Humor"
+    ]
   },
   "8": {
     "id": "8",
@@ -141,34 +208,49 @@
     "coverImage": "https://storage.googleapis.com/wonder-stories-web.appspot.com/books/images/book8/cover.png",
     "largeCoverImage": "https://storage.googleapis.com/wonder-stories-web.appspot.com/books/images/book8/lcover.png",
     "description": "Jesse Chipperfield and his friend Tanner face Test Day at circus school, deciding their future skills. As Tanner's nerves unravel, will their dreams soar or pop like balloons?",
-    "metaDescription": "Free mystery story for Grade 3-4. Jesse tackles Test Day nerves and circus dreams with Tanner. What will their fates be? Read free on Wonder.io!",
-    "keywords": "Jesse Chipperfield, circus school, Test Day, balloons mystery, Monica Valentinelli, Grade 3-4, free stories for kids, children's mystery, interactive books for children",
-    "genre": "Mystery",
-    "gradeLevel": "Grade 3-4",
-    "ageRange": "8-10 years",
+    "metaDescription": "Free mystery story for Grade 2-3. Jesse tackles Test Day nerves and circus dreams with Tanner. What will their fates be? Read free on Wonder.io!",
+    "keywords": "Jesse Chipperfield, circus school, Test Day, balloons mystery, Monica Valentinelli, Grade 2-3, free stories for kids, children's mystery, interactive books for children",
+    "genre": "School Story",
+    "gradeLevel": "Grade 2-3",
+    "ageRange": "7-9 years",
     "ogDescription": "Jesse faces Test Day at circus school with Tanner. Will dreams soar or pop like balloons?",
-    "readingLevel": "Grade 3-4",
-    "wordCount": 1010,
-    "source": "claude"
+    "readingLevel": "Developing Reader",
+    "wordCount": 1813,
+    "source": "claude",
+    "readingTime": "24 min",
+    "tags": [
+      "School Story",
+      "school",
+      "humor",
+      "Humor",
+      "Animal Story"
+    ]
   },
   "9": {
     "id": "9",
     "title": "The Case of the Lunchtime Detectives",
-    "author": "Alex Rivera",
+    "author": "Mur Lafferty",
     "illustrator": "Silvia Amelio",
     "totalPages": 50,
     "coverImage": "https://storage.googleapis.com/wonder-stories-web.appspot.com/books/images/book9/cover.png",
     "largeCoverImage": "https://storage.googleapis.com/wonder-stories-web.appspot.com/books/images/book9/lcover.png",
     "description": "Join Alex as he navigates his first day at a new school, meeting mysterious Kendra and discovering a swapped lunch with a surprising secret. Can they solve the lunchtime mystery together?",
-    "metaDescription": "Free mystery story for Grade 3-4. Alex's lunch swap at a new school unravels a mystery with Kendra's help. Read free on Wonder.io!",
+    "metaDescription": "Free mystery story for Grade 2-3. Alex's lunch swap at a new school unravels a mystery with Kendra's help. Read free on Wonder.io!",
     "keywords": "Alex Rivera, lunchtime detectives, peanut butter sandwich, grade 3 stories, interactive books for children, mystery story free, Kendra, new school, children's reading platform, free stories for kids",
-    "genre": "Mystery",
-    "gradeLevel": "Grade 3-4",
-    "ageRange": "8-10 years",
+    "genre": "School Story",
+    "gradeLevel": "Grade 2-3",
+    "ageRange": "7-9 years",
     "ogDescription": "Alex's first day turns mysterious with swapped lunches and secrets. Can he and Kendra crack the case?",
-    "readingLevel": "Grade 3-4",
-    "wordCount": 1000,
-    "source": "claude"
+    "readingLevel": "Developing Reader",
+    "wordCount": 1205,
+    "source": "claude",
+    "readingTime": "17 min",
+    "tags": [
+      "School Story",
+      "family",
+      "school",
+      "science"
+    ]
   },
   "10": {
     "id": "10",
@@ -179,15 +261,25 @@
     "coverImage": "https://storage.googleapis.com/wonder-stories-web.appspot.com/books/images/book10/cover.png",
     "largeCoverImage": "https://storage.googleapis.com/wonder-stories-web.appspot.com/books/images/book10/lcover.png",
     "description": "When Alex hears strange noises outside, he discovers a ghostly pirate ship on the street. Can he solve the mystery and uncover the secret of the Sidewalk Pirate Ship before his parents find out?",
-    "metaDescription": "Free mystery story for Grade 3-4. Discover Alex's adventure as he uncovers a pirate ship outside his window! Read free on Wonder.io!",
+    "metaDescription": "Free mystery story for Grade 2-3. Discover Alex's adventure as he uncovers a pirate ship outside his window! Read free on Wonder.io!",
     "keywords": "Alex, sidewalk pirate ship, mystery story, grade 3-4, Tula Eriksson Turtiainen, kids' mystery, free stories for kids, interactive books for children",
-    "genre": "Mystery",
-    "gradeLevel": "Grade 3-4",
-    "ageRange": "8-10 years",
+    "genre": "Pirate Adventure",
+    "gradeLevel": "Grade 2-3",
+    "ageRange": "7-9 years",
     "ogDescription": "Alex finds a pirate ship on the street. Can he solve its mystery before his parents find out?",
-    "readingLevel": "Grade 3-4",
-    "wordCount": 1018,
-    "source": "claude"
+    "readingLevel": "Developing Reader",
+    "wordCount": 1533,
+    "source": "claude",
+    "readingTime": "20 min",
+    "tags": [
+      "Pirate Adventure",
+      "family",
+      "animals",
+      "nature",
+      "Mystery",
+      "Halloween",
+      "School Story"
+    ]
   },
   "11": {
     "id": "11",
@@ -198,15 +290,20 @@
     "coverImage": "https://storage.googleapis.com/wonder-stories-web.appspot.com/books/images/book11/cover.png",
     "largeCoverImage": "https://storage.googleapis.com/wonder-stories-web.appspot.com/books/images/book11/lcover.png",
     "description": "Third-grader awakes to a snowy morning, but Piper, his dog, sports a mysterious mustache. As Piper's friend wonders how it appeared, will his investigation uncover the truth? A charming tale unfolds with breakfast hijinks and snowy secrets.",
-    "metaDescription": "Free mystery story for Grade 3-4. Piper's dog sports a new mustache—can her young friend crack the case? Read free on Wonder.io!",
-    "keywords": "Piper's Mustache, snowy morning, dog mystery, kids detective story, Grade 3-4 book, free stories for kids, interactive books for children, winter adventure, Carly Schuna",
+    "metaDescription": "Free mystery story for Grade 2-3. Piper's dog sports a new mustache—can her young friend crack the case? Read free on Wonder.io!",
+    "keywords": "Piper's Mustache, snowy morning, dog mystery, kids detective story, Grade 2-3 book, free stories for kids, interactive books for children, winter adventure, Carly Schuna",
     "genre": "Mystery",
-    "gradeLevel": "Grade 3-4",
-    "ageRange": "8-10 years",
+    "gradeLevel": "Grade 2-3",
+    "ageRange": "7-9 years",
     "ogDescription": "Third-grader wakes up to snowy mysteries when his dog Piper has a mustache. Can he solve the furry puzzle?",
-    "readingLevel": "Grade 3-4",
-    "wordCount": 1003,
-    "source": "claude"
+    "readingLevel": "Developing Reader",
+    "wordCount": 1128,
+    "source": "claude",
+    "readingTime": "17 min",
+    "tags": [
+      "Mystery",
+      "family"
+    ]
   },
   "12": {
     "id": "12",
@@ -217,15 +314,24 @@
     "coverImage": "https://storage.googleapis.com/wonder-stories-web.appspot.com/books/images/book12/cover.png",
     "largeCoverImage": "https://storage.googleapis.com/wonder-stories-web.appspot.com/books/images/book12/lcover.png",
     "description": "Join Jake on a Saturday adventure when a mysterious noise from his window leads him to a monkey in sign language distress. With Gramps snoring away inside, can Jake solve the mystery in time to help his new friend?",
-    "metaDescription": "Free mystery story for Grade 3-4. Jake discovers a monkey needing help outside his window. Can he solve the case? Read free on Wonder.io!",
-    "keywords": "Jake, monkey, Gramps, mystery, Grade 3-4, sleuth, detective story, free kids stories, interactive books for children",
+    "metaDescription": "Free mystery story for Grade 2-3. Jake discovers a monkey needing help outside his window. Can he solve the case? Read free on Wonder.io!",
+    "keywords": "Jake, monkey, Gramps, mystery, Grade 2-3, sleuth, detective story, free kids stories, interactive books for children",
     "genre": "Mystery",
-    "gradeLevel": "Grade 3-4",
-    "ageRange": "8-10 years",
+    "gradeLevel": "Grade 2-3",
+    "ageRange": "7-9 years",
     "ogDescription": "Jake discovers a monkey needing help outside his window. Can he solve the case? Join his Saturday adventure now!",
-    "readingLevel": "Grade 3-4",
-    "wordCount": 1022,
-    "source": "claude"
+    "readingLevel": "Developing Reader",
+    "wordCount": 1635,
+    "source": "claude",
+    "readingTime": "21 min",
+    "tags": [
+      "Mystery",
+      "friendship",
+      "family",
+      "animals",
+      "science",
+      "problem-solving"
+    ]
   },
   "13": {
     "id": "13",
@@ -236,15 +342,25 @@
     "coverImage": "https://storage.googleapis.com/wonder-stories-web.appspot.com/books/images/book13/cover.png",
     "largeCoverImage": "https://storage.googleapis.com/wonder-stories-web.appspot.com/books/images/book13/lcover.png",
     "description": "When Tom and his friends fall ill after eating lunch, it's up to them to uncover the mystery behind the cafeteria's strange happenings. Will they solve 'The Case of the Lunch Ladies' and bring fun back to lunchtime?",
-    "metaDescription": "Free mystery story for Grade 3-4. Join Tom as he investigates the strange cafeteria sickness affecting his school. Read free on Wonder.io!",
-    "keywords": "Tom, cafeteria, mystery, lunch ladies, Grade 3-4, children's story, middle grade, free stories for kids, interactive books for children, school adventure",
+    "metaDescription": "Free mystery story for Grade 1-2. Join Tom as he investigates the strange cafeteria sickness affecting his school. Read free on Wonder.io!",
+    "keywords": "Tom, cafeteria, mystery, lunch ladies, Grade 1-2, children's story, middle grade, free stories for kids, interactive books for children, school adventure",
     "genre": "Mystery",
-    "gradeLevel": "Grade 3-4",
-    "ageRange": "8-10 years",
+    "gradeLevel": "Grade 1-2",
+    "ageRange": "6-8 years",
     "ogDescription": "Tom and friends must solve the cafeteria mystery: Why is everyone sick? Can they crack 'The Case of the Lunch Ladies' and save lunchtime?",
-    "readingLevel": "Grade 3-4",
-    "wordCount": 1018,
-    "source": "claude"
+    "readingLevel": "Early Reader",
+    "wordCount": 1315,
+    "source": "claude",
+    "readingTime": "23 min",
+    "tags": [
+      "Mystery",
+      "friendship",
+      "animals",
+      "food",
+      "sports",
+      "School Story",
+      "Animal Story"
+    ]
   },
   "14": {
     "id": "14",
@@ -255,34 +371,51 @@
     "coverImage": "https://storage.googleapis.com/wonder-stories-web.appspot.com/books/images/book14/cover.png",
     "largeCoverImage": "https://storage.googleapis.com/wonder-stories-web.appspot.com/books/images/book14/lcover.png",
     "description": "In 'The Case of the Haunted House 2,' young sleuth Aliz faces a rattling door in a mysterious house. Can she uncover the cause of the eerie sounds and unlock the secrets within? Join Aliz as she dives into the thrilling investigation.",
-    "metaDescription": "Free mystery story for Grade 3-4. Young detective Aliz faces rattling doors and talking parrots in a thrilling adventure. Read free on Wonder.io!",
-    "keywords": "Aliz, haunted house, mystery, Grade 3-4, free kids stories, interactive books, detective story, Wonder.io, free children's stories",
-    "genre": "Mystery",
-    "gradeLevel": "Grade 3-4",
-    "ageRange": "8-10 years",
+    "metaDescription": "Free mystery story for Grade 2-3. Young detective Aliz faces rattling doors and talking parrots in a thrilling adventure. Read free on Wonder.io!",
+    "keywords": "Aliz, haunted house, mystery, Grade 2-3, free kids stories, interactive books, detective story, Wonder.io, free children's stories",
+    "genre": "Animal Story",
+    "gradeLevel": "Grade 2-3",
+    "ageRange": "7-9 years",
     "ogDescription": "Join Aliz as she unravels the mystery of the rattling door in 'The Case of the Haunted House 2.'",
-    "readingLevel": "Grade 3-4",
-    "wordCount": 1025,
-    "source": "claude"
+    "readingLevel": "Developing Reader",
+    "wordCount": 1256,
+    "source": "claude",
+    "readingTime": "20 min",
+    "tags": [
+      "Animal Story",
+      "animals",
+      "courage",
+      "Mystery",
+      "Humor"
+    ]
   },
   "15": {
     "id": "15",
     "title": "The Door to Tomorrow Part 2",
-    "author": "Sarah Johnson",
-    "illustrator": "Michael Chen",
+    "author": "Jerry Gordon",
+    "illustrator": "Kelly Latham",
     "totalPages": 87,
     "coverImage": "https://storage.googleapis.com/wonder-stories-web.appspot.com/books/images/book15/cover.png",
     "largeCoverImage": "https://storage.googleapis.com/wonder-stories-web.appspot.com/books/images/book15/lcover.png",
     "description": "Join Jamal as he navigates his grandpop's eerie, deserted lab, unraveling time's mysteries. With no Wi-Fi or modern gadgets in sight, can he solve the puzzle of the red door before time runs out?",
-    "metaDescription": "Free science fiction story for Grade 3-4. Jamal must navigate his Grandpop's lab through time's twists to solve the red door mystery. Read free on Wonder.io!",
-    "keywords": "Jamal, Grandpop's lab, red door, time travel, science fiction, Grade 3-4, kids stories, free stories for kids, interactive books for children",
-    "genre": "Science Fiction",
-    "gradeLevel": "Grade 3-4",
-    "ageRange": "8-10 years",
+    "metaDescription": "Free science fiction story for Grade 2-3. Jamal must navigate his Grandpop's lab through time's twists to solve the red door mystery. Read free on Wonder.io!",
+    "keywords": "Jamal, Grandpop's lab, red door, time travel, science fiction, Grade 2-3, kids stories, free stories for kids, interactive books for children",
+    "genre": "Animal Story",
+    "gradeLevel": "Grade 2-3",
+    "ageRange": "7-9 years",
     "ogDescription": "Join Jamal in a deserted lab, solving time's mysteries. Can he unlock the red door?",
-    "readingLevel": "Grade 3-4",
-    "wordCount": 1040,
-    "source": "claude"
+    "readingLevel": "Developing Reader",
+    "wordCount": 2613,
+    "source": "claude",
+    "readingTime": "31 min",
+    "tags": [
+      "Animal Story",
+      "family",
+      "animals",
+      "food",
+      "science",
+      "Science Fiction"
+    ]
   },
   "16": {
     "id": "16",
@@ -299,9 +432,14 @@
     "gradeLevel": "Grade 3-4",
     "ageRange": "8-10 years",
     "ogDescription": "Keisha's flying birthday surprise leads to trapeze thrills. Will she conquer her fear?",
-    "readingLevel": "Grade 3-4",
-    "wordCount": 1006,
-    "source": "claude"
+    "readingLevel": "Fluent Reader",
+    "wordCount": 1001,
+    "source": "claude",
+    "readingTime": "15 min",
+    "tags": [
+      "Mystery",
+      "family"
+    ]
   },
   "17": {
     "id": "17",
@@ -312,15 +450,21 @@
     "coverImage": "https://storage.googleapis.com/wonder-stories-web.appspot.com/books/images/book17/cover.png",
     "largeCoverImage": "https://storage.googleapis.com/wonder-stories-web.appspot.com/books/images/book17/lcover.png",
     "description": "Join [Main Character], a curious third-grader, as he uncovers the truth behind the mysterious meeting involving Principal Corruption. With secret notes and suspicious stains, can they crack the case before it's too late?",
-    "metaDescription": "Free mystery story for Grade 3-4. Discover the truth with curious kids and an odd note. Read free on Wonder.io!",
+    "metaDescription": "Free mystery story for Grade 1-2. Discover the truth with curious kids and an odd note. Read free on Wonder.io!",
     "keywords": "Exploding Toilets, Principal Corruption, mystery story, grade 3-4, free kids' stories, interactive books, detective children, secret note, free stories for kids, kids mystery books",
-    "genre": "Mystery",
-    "gradeLevel": "Grade 3-4",
-    "ageRange": "8-10 years",
+    "genre": "School Story",
+    "gradeLevel": "Grade 1-2",
+    "ageRange": "6-8 years",
     "ogDescription": "Join [Main Character] in unraveling a secret meeting with Principal Corruption. Will they solve the mystery in time?",
-    "readingLevel": "Grade 3-4",
-    "wordCount": 1012,
-    "source": "claude"
+    "readingLevel": "Early Reader",
+    "wordCount": 1137,
+    "source": "claude",
+    "readingTime": "19 min",
+    "tags": [
+      "School Story",
+      "school",
+      "Mystery"
+    ]
   },
   "18": {
     "id": "18",
@@ -331,15 +475,24 @@
     "coverImage": "https://storage.googleapis.com/wonder-stories-web.appspot.com/books/images/book18/cover.png",
     "largeCoverImage": "https://storage.googleapis.com/wonder-stories-web.appspot.com/books/images/book18/lcover.png",
     "description": "In 'The Green Goo,' join young twins Billy and Tilly on a thrilling mystery set in the forbidden woods. As tension rises between them, can they uncover the secrets lurking among the trees before danger strikes again?",
-    "metaDescription": "Free mystery story for Grade 3-4. Twins Billy and Tilly face unknown dangers in forbidden woods. Can they unravel the mystery? Read free on Wonder.io!",
-    "keywords": "The Green Goo, Billy and Tilly, mystery story, twin characters, forbidden woods, Grade 3-4, free stories for kids, kids' books online, interactive books for children",
+    "metaDescription": "Free mystery story for Grade 2-3. Twins Billy and Tilly face unknown dangers in forbidden woods. Can they unravel the mystery? Read free on Wonder.io!",
+    "keywords": "The Green Goo, Billy and Tilly, mystery story, twin characters, forbidden woods, Grade 2-3, free stories for kids, kids' books online, interactive books for children",
     "genre": "Mystery",
-    "gradeLevel": "Grade 3-4",
-    "ageRange": "8-10 years",
+    "gradeLevel": "Grade 2-3",
+    "ageRange": "7-9 years",
     "ogDescription": "Twins Billy and Tilly are entangled in mystery in the forbidden woods. Can they unravel it together before danger strikes?",
-    "readingLevel": "Grade 3-4",
-    "wordCount": 1008,
-    "source": "claude"
+    "readingLevel": "Developing Reader",
+    "wordCount": 2309,
+    "source": "claude",
+    "readingTime": "27 min",
+    "tags": [
+      "Mystery",
+      "family",
+      "nature",
+      "problem-solving",
+      "School Story",
+      "Humor"
+    ]
   },
   "20": {
     "id": "20",
@@ -350,15 +503,26 @@
     "coverImage": "https://storage.googleapis.com/wonder-stories-web.appspot.com/books/images/book20/cover.png",
     "largeCoverImage": "https://storage.googleapis.com/wonder-stories-web.appspot.com/books/images/book20/lcover.png",
     "description": "Jake's mom may be a hero to him, but his talking monkey friend Bongo fears her job at a high-tech company threatens his freedom. Can Jake unravel the truth?",
-    "metaDescription": "Free mystery story for Grade 3-4. Jake's mom is a hero, but can he trust her with Bongo, his talking monkey buddy? Read free on Wonder.io!",
-    "keywords": "Jake, Bongo, talking monkey, mom, high-tech company, mystery, Grade 3-4, free stories for kids, children's mystery books, interactive books for children",
-    "genre": "Mystery",
-    "gradeLevel": "Grade 3-4",
-    "ageRange": "8-10 years",
+    "metaDescription": "Free mystery story for Grade 2-3. Jake's mom is a hero, but can he trust her with Bongo, his talking monkey buddy? Read free on Wonder.io!",
+    "keywords": "Jake, Bongo, talking monkey, mom, high-tech company, mystery, Grade 2-3, free stories for kids, children's mystery books, interactive books for children",
+    "genre": "School Story",
+    "gradeLevel": "Grade 2-3",
+    "ageRange": "7-9 years",
     "ogDescription": "Jake must decide if he can trust his mom, the hunter. Can he protect Bongo, his talking monkey friend? Find out in this thrilling mystery.",
-    "readingLevel": "Grade 3-4",
-    "wordCount": 1004,
-    "source": "claude"
+    "readingLevel": "Developing Reader",
+    "wordCount": 2475,
+    "source": "claude",
+    "readingTime": "32 min",
+    "tags": [
+      "School Story",
+      "family",
+      "school",
+      "animals",
+      "food",
+      "science",
+      "problem-solving",
+      "Mystery"
+    ]
   },
   "21": {
     "id": "21",
@@ -369,15 +533,26 @@
     "coverImage": "https://storage.googleapis.com/wonder-stories-web.appspot.com/books/images/book21/cover.png",
     "largeCoverImage": "https://storage.googleapis.com/wonder-stories-web.appspot.com/books/images/book21/lcover.png",
     "description": "Jesse Chipperfield, a student at Miss Adelaide's Traveling Academy, faces a dilemma aboard the Humongous Book Train. With a looming deadline for his circus performer project, he must uncover the secrets of his grandmother's legacy. Will he find the information he desperately needs?",
-    "metaDescription": "Free mystery story for Grade 3-4. Join Jesse's quest to uncover his grandmother's secrets on the Humongous Book Train. Read free on Wonder.io!",
+    "metaDescription": "Free mystery story for Grade 2-3. Join Jesse's quest to uncover his grandmother's secrets on the Humongous Book Train. Read free on Wonder.io!",
     "keywords": "Jesse Chipperfield, Miss Adelaide's Academy, Humongous Book Train, circus mystery, grade 3-4 stories, free stories for kids, interactive books for children, Monica Valentinelli",
-    "genre": "Mystery",
-    "gradeLevel": "Grade 3-4",
-    "ageRange": "8-10 years",
+    "genre": "School Story",
+    "gradeLevel": "Grade 2-3",
+    "ageRange": "7-9 years",
     "ogDescription": "Jesse Chipperfield's quest on the Humongous Book Train sparks curiosity as he seeks his grandmother's history for a circus project.",
-    "readingLevel": "Grade 3-4",
-    "wordCount": 1006,
-    "source": "claude"
+    "readingLevel": "Developing Reader",
+    "wordCount": 2575,
+    "source": "claude",
+    "readingTime": "32 min",
+    "tags": [
+      "School Story",
+      "school",
+      "animals",
+      "courage",
+      "problem-solving",
+      "imagination",
+      "humor",
+      "Animal Story"
+    ]
   },
   "22": {
     "id": "22",
@@ -388,15 +563,20 @@
     "coverImage": "https://storage.googleapis.com/wonder-stories-web.appspot.com/books/images/book22/cover.png",
     "largeCoverImage": "https://storage.googleapis.com/wonder-stories-web.appspot.com/books/images/book22/lcover.png",
     "description": "Join our young hero aboard a mysterious pirate ship high above the city, cloaked in purple gas. As Max grapples with an invisible vessel, he seeks answers and embarks on an adventure to uncover the captain's secret magic. Will Max solve the mystery of the ship before it vanishes?",
-    "metaDescription": "Free mystery story for Grade 3-4. Max explores a pirate ship floating above the city shrouded in purple gas. Why won't anyone notice? Read free on Wonder.io!",
-    "keywords": "Max, purple gas, pirate ship, mystery, Grade 3-4, kids' stories, free stories for kids, interactive books for children, reading platform",
-    "genre": "Mystery",
-    "gradeLevel": "Grade 3-4",
-    "ageRange": "8-10 years",
+    "metaDescription": "Free mystery story for Grade 2-3. Max explores a pirate ship floating above the city shrouded in purple gas. Why won't anyone notice? Read free on Wonder.io!",
+    "keywords": "Max, purple gas, pirate ship, mystery, Grade 2-3, kids' stories, free stories for kids, interactive books for children, reading platform",
+    "genre": "Pirate Adventure",
+    "gradeLevel": "Grade 2-3",
+    "ageRange": "7-9 years",
     "ogDescription": "Max boards a pirate ship floating unnoticed in purple gas. Will he uncover its magic before it vanishes?",
-    "readingLevel": "Grade 3-4",
-    "wordCount": 1033,
-    "source": "claude"
+    "readingLevel": "Developing Reader",
+    "wordCount": 1694,
+    "source": "claude",
+    "readingTime": "20 min",
+    "tags": [
+      "Pirate Adventure",
+      "imagination"
+    ]
   },
   "23": {
     "id": "23",
@@ -407,15 +587,21 @@
     "coverImage": "https://storage.googleapis.com/wonder-stories-web.appspot.com/books/images/book23/cover.png",
     "largeCoverImage": "https://storage.googleapis.com/wonder-stories-web.appspot.com/books/images/book23/lcover.png",
     "description": "Join Alex as he stumbles upon a mysterious book and sets out on a weekend adventure to find an escaped platypus from the local zoo. Can he solve the mystery before time runs out?",
-    "metaDescription": "Free mystery story for Grade 3-4. Follow Alex's exciting quest to find a runaway platypus from the zoo. Read free on Wonder.io!",
-    "keywords": "Alex, platypus, zoo escape, Grade 3-4, mystery, free stories for kids, children's book, interactive books for children, reading platform, child detective",
+    "metaDescription": "Free mystery story for Grade 2-3. Follow Alex's exciting quest to find a runaway platypus from the zoo. Read free on Wonder.io!",
+    "keywords": "Alex, platypus, zoo escape, Grade 2-3, mystery, free stories for kids, children's book, interactive books for children, reading platform, child detective",
     "genre": "Mystery",
-    "gradeLevel": "Grade 3-4",
-    "ageRange": "8-10 years",
+    "gradeLevel": "Grade 2-3",
+    "ageRange": "7-9 years",
     "ogDescription": "Alex discovers a mysterious book and hunts for a runaway platypus. Will he succeed?",
-    "readingLevel": "Grade 3-4",
-    "wordCount": 1024,
-    "source": "claude"
+    "readingLevel": "Developing Reader",
+    "wordCount": 1539,
+    "source": "claude",
+    "readingTime": "21 min",
+    "tags": [
+      "Mystery",
+      "nature",
+      "science"
+    ]
   },
   "24": {
     "id": "24",
@@ -426,15 +612,21 @@
     "coverImage": "https://storage.googleapis.com/wonder-stories-web.appspot.com/books/images/book24/cover.png",
     "largeCoverImage": "https://storage.googleapis.com/wonder-stories-web.appspot.com/books/images/book24/lcover.png",
     "description": "Meet Max, a curious third-grader who finally gets his dream dog, Fluff. But Fluff is no ordinary pup - he loves baths! Can Max unravel the mystery behind Fluff's unusual behavior?",
-    "metaDescription": "Free mystery story for Grade 3-4. Max's new dog Fluff loves baths, but why? Discover the mystery with Max in this captivating tale. Read free on Wonder.io!",
-    "keywords": "Max, Fluff, dog's odd habits, mystery, Grade 3-4, children's story, free stories for kids, interactive books for children, mystery book for kids",
-    "genre": "Mystery",
-    "gradeLevel": "Grade 3-4",
-    "ageRange": "8-10 years",
+    "metaDescription": "Free mystery story for Grade 1-2. Max's new dog Fluff loves baths, but why? Discover the mystery with Max in this captivating tale. Read free on Wonder.io!",
+    "keywords": "Max, Fluff, dog's odd habits, mystery, Grade 1-2, children's story, free stories for kids, interactive books for children, mystery book for kids",
+    "genre": "Animal Story",
+    "gradeLevel": "Grade 1-2",
+    "ageRange": "6-8 years",
     "ogDescription": "Max's new dog Fluff loves baths! Can Max solve this wet-and-wild mystery? Find out in this engaging story!",
-    "readingLevel": "Grade 3-4",
-    "wordCount": 1009,
-    "source": "claude"
+    "readingLevel": "Early Reader",
+    "wordCount": 1131,
+    "source": "claude",
+    "readingTime": "20 min",
+    "tags": [
+      "Animal Story",
+      "family",
+      "animals"
+    ]
   },
   "26": {
     "id": "26",
@@ -445,15 +637,25 @@
     "coverImage": "https://storage.googleapis.com/wonder-stories-web.appspot.com/books/images/book26/cover.png",
     "largeCoverImage": "https://storage.googleapis.com/wonder-stories-web.appspot.com/books/images/book26/lcover.png",
     "description": "When Ziggy Higgs discovers a mysterious disappearance of figs meant for his Grampa, he must navigate a series of humorous obstacles in his home to solve the mystery before losing his swim club privileges. Will Ziggy find the missing figs in time?",
-    "metaDescription": "Free mystery story for Grade 3-4. Ziggy Higgs must find missing figs before losing swim club. Join his funny adventure! Read free on Wonder.io!",
-    "keywords": "Ziggy Higgs, missing figs mystery, children's mystery story, Grade 3-4 book, free stories for kids, interactive books for children, Steve Ince, kid detective story, fun family read",
-    "genre": "Mystery",
-    "gradeLevel": "Grade 3-4",
-    "ageRange": "8-10 years",
+    "metaDescription": "Free mystery story for Grade 2-3. Ziggy Higgs must find missing figs before losing swim club. Join his funny adventure! Read free on Wonder.io!",
+    "keywords": "Ziggy Higgs, missing figs mystery, children's mystery story, Grade 2-3 book, free stories for kids, interactive books for children, Steve Ince, kid detective story, fun family read",
+    "genre": "Animal Story",
+    "gradeLevel": "Grade 2-3",
+    "ageRange": "7-9 years",
     "ogDescription": "Ziggy Higgs must solve the mystery of the missing figs to avoid losing swim club. Can he do it? A humorous adventure awaits!",
-    "readingLevel": "Grade 3-4",
-    "wordCount": 1000,
-    "source": "claude"
+    "readingLevel": "Developing Reader",
+    "wordCount": 1534,
+    "source": "claude",
+    "readingTime": "18 min",
+    "tags": [
+      "Animal Story",
+      "family",
+      "animals",
+      "nature",
+      "food",
+      "Mystery",
+      "School Story"
+    ]
   },
   "27": {
     "id": "27",
@@ -464,15 +666,25 @@
     "coverImage": "https://storage.googleapis.com/wonder-stories-web.appspot.com/books/images/book27/cover.png",
     "largeCoverImage": "https://storage.googleapis.com/wonder-stories-web.appspot.com/books/images/book27/lcover.png",
     "description": "Dee wakes up to his mom's screams in the kitchen, discovering a trail of cookie-loving ants. Can Dee solve the mystery of the cookie jar invaders before more chaos erupts?",
-    "metaDescription": "Free mystery story for Grade 3-4. Dee faces a kitchen ant invasion from a cookie jar. Can he solve the mystery? Read free on Wonder.io!",
-    "keywords": "Dee, ants, mystery, cookie jar, Grade 3-4, children's mystery, interactive book, free stories for kids, reading platform, kids' books",
+    "metaDescription": "Free mystery story for Grade 1-2. Dee faces a kitchen ant invasion from a cookie jar. Can he solve the mystery? Read free on Wonder.io!",
+    "keywords": "Dee, ants, mystery, cookie jar, Grade 1-2, children's mystery, interactive book, free stories for kids, reading platform, kids' books",
     "genre": "Mystery",
-    "gradeLevel": "Grade 3-4",
-    "ageRange": "8-10 years",
+    "gradeLevel": "Grade 1-2",
+    "ageRange": "6-8 years",
     "ogDescription": "Dee's on a delicious chase to unmask cookie-stealing ants. Can he crack the case before the chaos grows?",
-    "readingLevel": "Grade 3-4",
-    "wordCount": 1006,
-    "source": "claude"
+    "readingLevel": "Early Reader",
+    "wordCount": 1701,
+    "source": "claude",
+    "readingTime": "29 min",
+    "tags": [
+      "Mystery",
+      "family",
+      "animals",
+      "food",
+      "courage",
+      "imagination",
+      "School Story"
+    ]
   },
   "28": {
     "id": "28",
@@ -483,15 +695,21 @@
     "coverImage": "https://storage.googleapis.com/wonder-stories-web.appspot.com/books/images/book28/cover.png",
     "largeCoverImage": "https://storage.googleapis.com/wonder-stories-web.appspot.com/books/images/book28/lcover.png",
     "description": "Dee, a 4th grader at Barry Wottle Elementary, faces a mystery when a 20-minute 'earthquake' shakes their baby-bottle-shaped school. Why did it last so long? Can Dee uncover the truth behind the unusual event?",
-    "metaDescription": "Free mystery story for Grade 3-4. Dee must solve why a '20-minute earthquake' shook her school. Can she uncover the truth? Read free on Wonder.io!",
+    "metaDescription": "Free mystery story for Grade 1-2. Dee must solve why a '20-minute earthquake' shook her school. Can she uncover the truth? Read free on Wonder.io!",
     "keywords": "Dee, Barry Wottle Elementary, shaking classroom, mystery story, 4th grade, earthquake mystery, free stories for kids, interactive books for children, free kids' stories, mystery books for grades 3-4",
-    "genre": "Mystery",
-    "gradeLevel": "Grade 3-4",
-    "ageRange": "8-10 years",
+    "genre": "School Story",
+    "gradeLevel": "Grade 1-2",
+    "ageRange": "6-8 years",
     "ogDescription": "Dee's school shakes for 20 minutes! Can she solve the mystery behind this strange 'earthquake'?",
-    "readingLevel": "Grade 3-4",
-    "wordCount": 1030,
-    "source": "claude"
+    "readingLevel": "Early Reader",
+    "wordCount": 1441,
+    "source": "claude",
+    "readingTime": "27 min",
+    "tags": [
+      "School Story",
+      "school",
+      "Mystery"
+    ]
   },
   "29": {
     "id": "29",
@@ -504,13 +722,20 @@
     "description": "Join young Emperor Puyi in the Forbidden Palace, where he's trapped by tradition but dreams of the outside world. Can he find a way to break free and discover his destiny?",
     "metaDescription": "Free school adventure story for Grade 3-4. Follow Puyi, the boy emperor, as he navigates life in the isolated Forbidden Palace. Read free on Wonder.io!",
     "keywords": "Puyi, Forbidden Palace, Emperor of China, school adventure, free stories for kids, interactive books for children, grade 3-4 reading, children's historical fiction",
-    "genre": "School Adventure",
+    "genre": "Humor",
     "gradeLevel": "Grade 3-4",
     "ageRange": "8-10 years",
     "ogDescription": "Young Emperor Puyi is stuck in the Forbidden Palace, longing for freedom. Will he escape and find his true path?",
-    "readingLevel": "Grade 3-4",
-    "wordCount": 1042,
-    "source": "claude"
+    "readingLevel": "Fluent Reader",
+    "wordCount": 1941,
+    "source": "claude",
+    "readingTime": "22 min",
+    "tags": [
+      "Humor",
+      "family",
+      "humor",
+      "School Story"
+    ]
   },
   "30": {
     "id": "30",
@@ -521,15 +746,24 @@
     "coverImage": "https://storage.googleapis.com/wonder-stories-web.appspot.com/books/images/book30/cover.png",
     "largeCoverImage": "https://storage.googleapis.com/wonder-stories-web.appspot.com/books/images/book30/lcover.png",
     "description": "Dee, a sharp fourth-grade detective, faces an unexpected mystery at school on Bubble Gum Day when a classmate ends up with sticky gum in her hair. Who's behind the prank, and can Dee solve it before chaos ensues?",
-    "metaDescription": "Free mystery story for Grade 3-4. Follow Dee, the detective, as she tackles a sticky bubble gum mystery at school. Read free on Wonder.io!",
-    "keywords": "Dee detective, bubble gum prank, school mystery, Grade 3-4, children's mystery book, interactive stories, free stories for kids, Bubble Gum Day",
-    "genre": "Mystery",
-    "gradeLevel": "Grade 3-4",
-    "ageRange": "8-10 years",
+    "metaDescription": "Free mystery story for Grade 2-3. Follow Dee, the detective, as she tackles a sticky bubble gum mystery at school. Read free on Wonder.io!",
+    "keywords": "Dee detective, bubble gum prank, school mystery, Grade 2-3, children's mystery book, interactive stories, free stories for kids, Bubble Gum Day",
+    "genre": "School Story",
+    "gradeLevel": "Grade 2-3",
+    "ageRange": "7-9 years",
     "ogDescription": "Dee, a fourth-grade detective, must solve the bubble gum hair mystery. Can she crack the case? Discover the fun-filled adventure!",
-    "readingLevel": "Grade 3-4",
-    "wordCount": 1026,
-    "source": "claude"
+    "readingLevel": "Developing Reader",
+    "wordCount": 2277,
+    "source": "claude",
+    "readingTime": "30 min",
+    "tags": [
+      "School Story",
+      "school",
+      "problem-solving",
+      "humor",
+      "Mystery",
+      "Humor"
+    ]
   },
   "31": {
     "id": "31",
@@ -540,15 +774,23 @@
     "coverImage": "https://storage.googleapis.com/wonder-stories-web.appspot.com/books/images/book31/cover.png",
     "largeCoverImage": "https://storage.googleapis.com/wonder-stories-web.appspot.com/books/images/book31/lcover.png",
     "description": "Meet Tobin, the fastest kid in Texas, and his trusty bike, Goliath. In a thrilling dirt race against his playful dad's truck, Tobin faces an unexpected challenge. Can he prove he's the true speed champion?",
-    "metaDescription": "Free school adventure story for Grade 3-4. Can Tobin, the fastest kid with his bike, defeat his dad's truck in a muddy race? Read free on Wonder.io!",
+    "metaDescription": "Free school adventure story for Grade 2-3. Can Tobin, the fastest kid with his bike, defeat his dad's truck in a muddy race? Read free on Wonder.io!",
     "keywords": "Tobin, Goliath bike, Texas race, school adventure, grade 3-4, muddy race, free stories for kids, interactive books for children, kids stories free",
-    "genre": "School Adventure",
-    "gradeLevel": "Grade 3-4",
-    "ageRange": "8-10 years",
+    "genre": "Humor",
+    "gradeLevel": "Grade 2-3",
+    "ageRange": "7-9 years",
     "ogDescription": "Join Tobin, the speed king of Texas, in a muddy bike vs. truck race against his dad. Can he keep his crown as the fastest?",
-    "readingLevel": "Grade 3-4",
-    "wordCount": 1039,
-    "source": "claude"
+    "readingLevel": "Developing Reader",
+    "wordCount": 2163,
+    "source": "claude",
+    "readingTime": "26 min",
+    "tags": [
+      "Humor",
+      "family",
+      "sports",
+      "humor",
+      "School Story"
+    ]
   },
   "34": {
     "id": "34",
@@ -561,13 +803,24 @@
     "description": "Join Jesse Chipperfield, a student at Miss Adelaide's Travelling Academy of Circus Arts, as he unravels the mystery of the shrinking circus animals. Can Jesse and his friend Tanner restore the animals to their proper size before Parent-Teacher night?",
     "metaDescription": "Free mystery story for Grade 3-4. Jesse must solve why circus animals are shrinking before a big performance. Read free on Wonder.io!",
     "keywords": "Jesse Chipperfield, Miss Adelaide's Travelling Academy, shrinking circus animals, mystery story, Grade 3-4, free stories for kids, interactive books for children, Wonder.io",
-    "genre": "Mystery",
+    "genre": "School Story",
     "gradeLevel": "Grade 3-4",
     "ageRange": "8-10 years",
     "ogDescription": "Jesse faces a mystery at Miss Adelaide's circus school: Why are the animals shrinking? Can he fix it before Parent-Teacher night?",
-    "readingLevel": "Grade 3-4",
-    "wordCount": 1032,
-    "source": "claude"
+    "readingLevel": "Fluent Reader",
+    "wordCount": 2669,
+    "source": "claude",
+    "readingTime": "30 min",
+    "tags": [
+      "School Story",
+      "family",
+      "school",
+      "food",
+      "problem-solving",
+      "imagination",
+      "humor",
+      "Mystery"
+    ]
   },
   "36": {
     "id": "36",
@@ -578,15 +831,26 @@
     "coverImage": "https://storage.googleapis.com/wonder-stories-web.appspot.com/books/images/book36/cover.png",
     "largeCoverImage": "https://storage.googleapis.com/wonder-stories-web.appspot.com/books/images/book36/lcover.png",
     "description": "Join young detective Dee at her school as she solves the gross mystery of worms in her desk. Are they a prank or something more? Can Dee crack the case?",
-    "metaDescription": "Free mystery story for Grade 3-4. Detective Dee tackles worms in her school desk! Who's behind the creepy crawlies? Read free on Wonder.io!",
-    "keywords": "Detective Dee, worms in desk, school mystery, Grade 3-4 reading, free stories for kids, interactive books for children, mystery for kids, Elliott Hedman, kids detective story, prank mystery",
-    "genre": "Mystery",
-    "gradeLevel": "Grade 3-4",
-    "ageRange": "8-10 years",
+    "metaDescription": "Free mystery story for Grade 2-3. Detective Dee tackles worms in her school desk! Who's behind the creepy crawlies? Read free on Wonder.io!",
+    "keywords": "Detective Dee, worms in desk, school mystery, Grade 2-3 reading, free stories for kids, interactive books for children, mystery for kids, Elliott Hedman, kids detective story, prank mystery",
+    "genre": "School Story",
+    "gradeLevel": "Grade 2-3",
+    "ageRange": "7-9 years",
     "ogDescription": "Detective Dee tackles a desk full of worms. A prank or something more? Join her at school to crack the mystery!",
-    "readingLevel": "Grade 3-4",
-    "wordCount": 1005,
-    "source": "claude"
+    "readingLevel": "Developing Reader",
+    "wordCount": 2371,
+    "source": "claude",
+    "readingTime": "31 min",
+    "tags": [
+      "School Story",
+      "friendship",
+      "school",
+      "science",
+      "problem-solving",
+      "humor",
+      "Mystery",
+      "Humor"
+    ]
   },
   "37": {
     "id": "37",
@@ -597,15 +861,26 @@
     "coverImage": "https://storage.googleapis.com/wonder-stories-web.appspot.com/books/images/book37/cover.png",
     "largeCoverImage": "https://storage.googleapis.com/wonder-stories-web.appspot.com/books/images/book37/lcover.png",
     "description": "Franky, a new 4th grader at Barry Wottle Elementary, faces the challenges of a new school and a bully named Cain. When Cain steals Franky's sunglasses, Franky plots his ultimate prank. Will his clever plan succeed?",
-    "metaDescription": "Free school adventure story for Grade 3-4. Meet Franky, a clever prankster facing a bully on his first day. Can he outsmart his foe? Read free on Wonder.io!",
-    "keywords": "Franky, Barry Wottle Elementary, bully, prank, school adventure, Grade 3-4, kids stories, free stories for kids, interactive books for children",
-    "genre": "School Adventure",
-    "gradeLevel": "Grade 3-4",
-    "ageRange": "8-10 years",
+    "metaDescription": "Free school adventure story for Grade 2-3. Meet Franky, a clever prankster facing a bully on his first day. Can he outsmart his foe? Read free on Wonder.io!",
+    "keywords": "Franky, Barry Wottle Elementary, bully, prank, school adventure, Grade 2-3, kids stories, free stories for kids, interactive books for children",
+    "genre": "School Story",
+    "gradeLevel": "Grade 2-3",
+    "ageRange": "7-9 years",
     "ogDescription": "Franky navigates his first day at a new school with a bully and plots a prank. Can his cleverness prevail? Join Franky's adventure!",
-    "readingLevel": "Grade 3-4",
-    "wordCount": 1008,
-    "source": "claude"
+    "readingLevel": "Developing Reader",
+    "wordCount": 3365,
+    "source": "claude",
+    "readingTime": "40 min",
+    "tags": [
+      "School Story",
+      "family",
+      "school",
+      "animals",
+      "sports",
+      "courage",
+      "imagination",
+      "humor"
+    ]
   },
   "38": {
     "id": "38",
@@ -616,15 +891,24 @@
     "coverImage": "https://storage.googleapis.com/wonder-stories-web.appspot.com/books/images/book38/cover.png",
     "largeCoverImage": "https://storage.googleapis.com/wonder-stories-web.appspot.com/books/images/book38/lcover.png",
     "description": "Sarah, a young Lunchtime Detective, uncovers a mystery involving a 'Cursed Diamond' during a dull school week. When a teacher's cryptic joke leads to suspicious behavior, can Sarah solve the puzzle before homework beckons?",
-    "metaDescription": "Free mystery story for Grade 3-4. Join Sarah, a Lunchtime Detective, unraveling the mystery of the 'Cursed Diamond.' Read free on Wonder.io!",
+    "metaDescription": "Free mystery story for Grade 2-3. Join Sarah, a Lunchtime Detective, unraveling the mystery of the 'Cursed Diamond.' Read free on Wonder.io!",
     "keywords": "Cursed Diamond, Lunchtime Detective, Sarah, mystery story, grade 3-4, free stories for kids, interactive books for children, school mystery, children's reading",
     "genre": "Mystery",
-    "gradeLevel": "Grade 3-4",
-    "ageRange": "8-10 years",
+    "gradeLevel": "Grade 2-3",
+    "ageRange": "7-9 years",
     "ogDescription": "Lunchtime detective Sarah tackles a 'Cursed Diamond' mystery, sparking intrigue at her new school.",
-    "readingLevel": "Grade 3-4",
-    "wordCount": 1039,
-    "source": "claude"
+    "readingLevel": "Developing Reader",
+    "wordCount": 1448,
+    "source": "claude",
+    "readingTime": "18 min",
+    "tags": [
+      "Mystery",
+      "family",
+      "school",
+      "sports",
+      "problem-solving",
+      "School Story"
+    ]
   },
   "39": {
     "id": "39",
@@ -635,15 +919,23 @@
     "coverImage": "https://storage.googleapis.com/wonder-stories-web.appspot.com/books/images/book39/cover.png",
     "largeCoverImage": "https://storage.googleapis.com/wonder-stories-web.appspot.com/books/images/book39/lcover.png",
     "description": "Sarah, a Lunchtime Detective, tackles her toughest mystery yet at school. When a cursed diamond goes missing after a football mishap, can Sarah solve the case before it strikes again?",
-    "metaDescription": "Free mystery story for Grade 3-4. Join Sarah in her quest to recover a cursed diamond. Read free on Wonder.io!",
+    "metaDescription": "Free mystery story for Grade 2-3. Join Sarah in her quest to recover a cursed diamond. Read free on Wonder.io!",
     "keywords": "Sarah, Lunchtime Detective, cursed diamond, mystery story, children's book, Grade 3, Grade 4, free stories for kids, interactive books for children",
     "genre": "Mystery",
-    "gradeLevel": "Grade 3-4",
-    "ageRange": "8-10 years",
+    "gradeLevel": "Grade 2-3",
+    "ageRange": "7-9 years",
     "ogDescription": "Sarah, a Lunchtime Detective, must find a cursed diamond lost at school. Can she solve this mystery before it strikes again?",
-    "readingLevel": "Grade 3-4",
-    "wordCount": 1008,
-    "source": "claude"
+    "readingLevel": "Developing Reader",
+    "wordCount": 1428,
+    "source": "claude",
+    "readingTime": "18 min",
+    "tags": [
+      "Mystery",
+      "family",
+      "school",
+      "sports",
+      "School Story"
+    ]
   },
   "40": {
     "id": "40",
@@ -656,13 +948,19 @@
     "description": "Join Dion as he navigates life in ancient Greece with his squealing companion, Squealer the war pig. Will he choose the farm or the army? Find out in this thrilling historical tale.",
     "metaDescription": "Free mystery story for Grade 3-4. Dion and his noisy pig Squealer face a big choice in ancient Greece. Read free on Wonder.io!",
     "keywords": "Dion, Squealer, ancient Greece, war pig, mystery story, Grade 3-4, Elliott Hedman, free stories for kids, interactive books for children",
-    "genre": "Mystery",
+    "genre": "Animal Story",
     "gradeLevel": "Grade 3-4",
     "ageRange": "8-10 years",
     "ogDescription": "Dion in ancient Greece with Squealer. Farm life or army dream? Discover a historical adventure.",
-    "readingLevel": "Grade 3-4",
-    "wordCount": 1022,
-    "source": "claude"
+    "readingLevel": "Fluent Reader",
+    "wordCount": 1361,
+    "source": "claude",
+    "readingTime": "18 min",
+    "tags": [
+      "Animal Story",
+      "animals",
+      "courage"
+    ]
   },
   "42": {
     "id": "42",
@@ -673,15 +971,25 @@
     "coverImage": "https://storage.googleapis.com/wonder-stories-web.appspot.com/books/images/book42/cover.png",
     "largeCoverImage": "https://storage.googleapis.com/wonder-stories-web.appspot.com/books/images/book42/lcover.png",
     "description": "Selene, a vampire in 4th grade at Barry Wottle Elementary, struggles to fit in. Alone and hungry, can she make her classmates laugh and find friendship? Discover Selene's humorous quest.",
-    "metaDescription": "Free mystery story for Grade 3-4. Join Selene, a 4th-grade vampire, as she tries to make her peers laugh and find friends. Read free on Wonder.io!",
+    "metaDescription": "Free mystery story for Grade 2-3. Join Selene, a 4th-grade vampire, as she tries to make her peers laugh and find friends. Read free on Wonder.io!",
     "keywords": "Selene, vampire stories, Barry Wottle Elementary, 4th grade mystery, kids vampire book, Elliott Hedman, free stories for kids, interactive books for children, free kids' stories",
-    "genre": "Mystery",
-    "gradeLevel": "Grade 3-4",
-    "ageRange": "8-10 years",
+    "genre": "Humor",
+    "gradeLevel": "Grade 2-3",
+    "ageRange": "7-9 years",
     "ogDescription": "Selene, the 4th grade vampire, seeks laughter and friends in class. Can she succeed? Find out in 'The Case of the Laughing Vampire'!",
-    "readingLevel": "Grade 3-4",
-    "wordCount": 1031,
-    "source": "claude"
+    "readingLevel": "Developing Reader",
+    "wordCount": 2033,
+    "source": "claude",
+    "readingTime": "25 min",
+    "tags": [
+      "Humor",
+      "school",
+      "courage",
+      "humor",
+      "Halloween",
+      "School Story",
+      "Animal Story"
+    ]
   },
   "44": {
     "id": "44",
@@ -694,13 +1002,23 @@
     "description": "Meet Dee, a 4th grade detective at Barry Wottle Elementary. When a strange zap plunges her class into darkness, can Dee solve the mystery of the electric thief and restore the light?",
     "metaDescription": "Free mystery story for Grade 3-4. Dee's classroom goes dark after a strange zap—can she solve the case of the electric thief? Read free on Wonder.io!",
     "keywords": "Dee detective, Barry Wottle Elementary, electric thief, mystery story, free stories for kids, Grade 3-4 books, interactive books for children, elementary school mystery",
-    "genre": "Mystery",
+    "genre": "School Story",
     "gradeLevel": "Grade 3-4",
     "ageRange": "8-10 years",
     "ogDescription": "Dee, a 4th-grade detective, faces a blackout mystery at school. Can she uncover the electric thief? Dive in and find out!",
-    "readingLevel": "Grade 3-4",
-    "wordCount": 1009,
-    "source": "claude"
+    "readingLevel": "Fluent Reader",
+    "wordCount": 1873,
+    "source": "claude",
+    "readingTime": "23 min",
+    "tags": [
+      "School Story",
+      "school",
+      "science",
+      "problem-solving",
+      "Mystery",
+      "Science Fiction",
+      "Humor"
+    ]
   },
   "45": {
     "id": "45",
@@ -711,15 +1029,26 @@
     "coverImage": "https://storage.googleapis.com/wonder-stories-web.appspot.com/books/images/book45/cover.png",
     "largeCoverImage": "https://storage.googleapis.com/wonder-stories-web.appspot.com/books/images/book45/lcover.png",
     "description": "Join 4th grader Dee, a detective at Barry Wottle Elementary, as she unravels the mystery of Mr. Socket, the suspicious new teacher who might just be a robot. Can Dee and her friends uncover the truth before it's too late?",
-    "metaDescription": "Free Mystery story for Grade 3-4. Follow Dee, a curious detective unraveling her teacher's secret. Is he a robot? Read free on Wonder.io!",
+    "metaDescription": "Free Mystery story for Grade 1-2. Follow Dee, a curious detective unraveling her teacher's secret. Is he a robot? Read free on Wonder.io!",
     "keywords": "Dee, Barry Wottle Elementary, Mr. Socket robot, 4th grade detective, free stories for kids, mystery for children, grade 3-4 stories, interactive books for children",
-    "genre": "Mystery",
-    "gradeLevel": "Grade 3-4",
-    "ageRange": "8-10 years",
+    "genre": "Science Fiction",
+    "gradeLevel": "Grade 1-2",
+    "ageRange": "6-8 years",
     "ogDescription": "Join 4th grader Dee as she uncovers the secret of Mr. Socket, the new teacher who might be a robot. Can Dee solve the mystery?",
-    "readingLevel": "Grade 3-4",
-    "wordCount": 1032,
-    "source": "claude"
+    "readingLevel": "Early Reader",
+    "wordCount": 1370,
+    "source": "claude",
+    "readingTime": "23 min",
+    "tags": [
+      "Science Fiction",
+      "school",
+      "animals",
+      "science",
+      "School Story",
+      "Mystery",
+      "Animal Story",
+      "Humor"
+    ]
   },
   "46": {
     "id": "46",
@@ -730,15 +1059,21 @@
     "coverImage": "https://storage.googleapis.com/wonder-stories-web.appspot.com/books/images/book46/cover.png",
     "largeCoverImage": "https://storage.googleapis.com/wonder-stories-web.appspot.com/books/images/book46/lcover.png",
     "description": "When Alex wakes up with hair sticking out like a silly clown, he discovers the mystery of static electricity at home. As Alex chases his brother to zap him, will laughter or lightning prevail?",
-    "metaDescription": "Free mystery story for Grade 1-2. Alex's silly hair and static shock lead to a laugh-out-loud electrifying adventure. Read free on Wonder.io!",
+    "metaDescription": "Free mystery story for Grade 2-3. Alex's silly hair and static shock lead to a laugh-out-loud electrifying adventure. Read free on Wonder.io!",
     "keywords": "Alex, static electricity, silly hair, mystery story, children's book, grade 1, grade 2, free stories for kids, interactive books for children",
-    "genre": "Mystery",
-    "gradeLevel": "Grade 1-2",
-    "ageRange": "6-8 years",
+    "genre": "Humor",
+    "gradeLevel": "Grade 2-3",
+    "ageRange": "7-9 years",
     "ogDescription": "Alex's silly clown hair leads to a shocking static electricity mystery. Can laughter zap away the surprise? Read on!",
-    "readingLevel": "Grade 1-2",
-    "wordCount": 152,
-    "source": "claude"
+    "readingLevel": "Developing Reader",
+    "wordCount": 141,
+    "source": "claude",
+    "readingTime": "5 min",
+    "tags": [
+      "Humor",
+      "family",
+      "humor"
+    ]
   },
   "47": {
     "id": "47",
@@ -755,9 +1090,15 @@
     "gradeLevel": "Grade 1-2",
     "ageRange": "6-8 years",
     "ogDescription": "Detective Max must solve the popped soccer ball mystery on the lively field. Can he save the game?",
-    "readingLevel": "Grade 1-2",
-    "wordCount": 78,
-    "source": "claude"
+    "readingLevel": "Early Reader",
+    "wordCount": 67,
+    "source": "claude",
+    "readingTime": "3 min",
+    "tags": [
+      "Mystery",
+      "family",
+      "sports"
+    ]
   },
   "100": {
     "id": "100",
@@ -768,15 +1109,20 @@
     "coverImage": "https://storage.googleapis.com/wonder-stories-web.appspot.com/books/images/book100/cover.png",
     "largeCoverImage": "https://storage.googleapis.com/wonder-stories-web.appspot.com/books/images/book100/lcover.png",
     "description": "Lola, a daring explorer, discovers a peculiar carving in an ancient Mayan temple. With a crowned turkey by the king's side, Lola unravels turkey legends. Will she solve the temple's secrets?",
-    "metaDescription": "Free adventure story for Grade 1-2. Lola finds a crowned turkey carving and uncovers Mayan legends in a temple. Read free on Wonder.io!",
+    "metaDescription": "Free adventure story for Grade 2-3. Lola finds a crowned turkey carving and uncovers Mayan legends in a temple. Read free on Wonder.io!",
     "keywords": "Lola, Mayan temple, turkey legend, adventure story, Grade 1, Grade 2, free stories for kids, interactive books for children, turkey with crown",
-    "genre": "Adventure",
-    "gradeLevel": "Grade 1-2",
-    "ageRange": "6-8 years",
+    "genre": "Animal Story",
+    "gradeLevel": "Grade 2-3",
+    "ageRange": "7-9 years",
     "ogDescription": "Lola, a daring explorer, uncovers turkey legends within a Mayan temple. Will she uncover its secrets?",
-    "readingLevel": "Grade 1-2",
-    "wordCount": 187,
-    "source": "claude"
+    "readingLevel": "Developing Reader",
+    "wordCount": 181,
+    "source": "claude",
+    "readingTime": "4 min",
+    "tags": [
+      "Animal Story",
+      "animals"
+    ]
   },
   "101": {
     "id": "101",
@@ -787,15 +1133,21 @@
     "coverImage": "https://storage.googleapis.com/wonder-stories-web.appspot.com/books/images/book101/cover.png",
     "largeCoverImage": "https://storage.googleapis.com/wonder-stories-web.appspot.com/books/images/book101/lcover.png",
     "description": "Join a young detective as he saves his dad from a falling bowling ball in the busy city streets. Discover mysterious clues and find out why this strange event happened. Will he solve the mystery of the flying bowling ball?",
-    "metaDescription": "Free mystery story for Grade 1-2. Join a young detective unraveling the mystery of a falling bowling ball. Read free on Wonder.io!",
-    "keywords": "The Flying Bowling Ball, Elliott Hedman, children's mystery, detective story, young detective, Grade 1-2 stories, free stories for kids, interactive books for children, free kids' stories, mystery stories for children",
-    "genre": "Mystery",
-    "gradeLevel": "Grade 1-2",
-    "ageRange": "6-8 years",
+    "metaDescription": "Free mystery story for Grade 2-3. Join a young detective unraveling the mystery of a falling bowling ball. Read free on Wonder.io!",
+    "keywords": "The Flying Bowling Ball, Elliott Hedman, children's mystery, detective story, young detective, Grade 2-3 stories, free stories for kids, interactive books for children, free kids' stories, mystery stories for children",
+    "genre": "School Story",
+    "gradeLevel": "Grade 2-3",
+    "ageRange": "7-9 years",
     "ogDescription": "A young detective tackles the mystery of a falling bowling ball. Can he uncover the truth?",
-    "readingLevel": "Grade 1-2",
-    "wordCount": 249,
-    "source": "claude"
+    "readingLevel": "Developing Reader",
+    "wordCount": 242,
+    "source": "claude",
+    "readingTime": "6 min",
+    "tags": [
+      "School Story",
+      "family",
+      "sports"
+    ]
   },
   "102": {
     "id": "102",
@@ -806,15 +1158,21 @@
     "coverImage": "https://storage.googleapis.com/wonder-stories-web.appspot.com/books/images/book102/cover.png",
     "largeCoverImage": "https://storage.googleapis.com/wonder-stories-web.appspot.com/books/images/book102/lcover.png",
     "description": "Elliott Hedman's 'Who sprayed Mom?' follows a curious child solving a mystery in their own kitchen. As water sprays everywhere, can they uncover who set up the prank before dessert time? Enjoy this thrilling kitchen adventure where anyone could be the culprit.",
-    "metaDescription": "Free adventure story for Grade 1-2. Join a mystery as a child solves who pranked Mom with a spray. Read free on Wonder.io!",
+    "metaDescription": "Free adventure story for Grade K-1. Join a mystery as a child solves who pranked Mom with a spray. Read free on Wonder.io!",
     "keywords": "Elliott Hedman, kitchen mystery, prank, adventure story, Grade 1, Grade 2, free stories for kids, interactive books for children",
     "genre": "Adventure",
-    "gradeLevel": "Grade 1-2",
-    "ageRange": "6-8 years",
+    "gradeLevel": "Grade K-1",
+    "ageRange": "5-7 years",
     "ogDescription": "In 'Who sprayed Mom?' a child solves a kitchen mystery. Who pranked Mom? Read to find out!",
-    "readingLevel": "Grade 1-2",
-    "wordCount": 193,
-    "source": "claude"
+    "readingLevel": "Beginning Reader",
+    "wordCount": 187,
+    "source": "claude",
+    "readingTime": "7 min",
+    "tags": [
+      "Adventure",
+      "family",
+      "food"
+    ]
   },
   "103": {
     "id": "103",
@@ -825,15 +1183,21 @@
     "coverImage": "https://storage.googleapis.com/wonder-stories-web.appspot.com/books/images/book103/cover.png",
     "largeCoverImage": "https://storage.googleapis.com/wonder-stories-web.appspot.com/books/images/book103/lcover.png",
     "description": "Join Deon, the basketball team captain, in a pirate adventure as he discovers a bouncing egg instead of a ball during a crucial game. Can Deon solve the mystery and save the day?",
-    "metaDescription": "Free Pirate Adventure story for Grade 1-2. Deon's game halts when a basketball turns into an egg. Discover the surprise in Basketball Blunder! Read free on Wonder.io!",
-    "keywords": "Deon, pirate adventure, basketball egg, Grade 1-2, Elliott Hedman, free stories for kids, interactive books for children, kids' stories, free kids' books",
-    "genre": "Pirate Adventure",
-    "gradeLevel": "Grade 1-2",
-    "ageRange": "6-8 years",
+    "metaDescription": "Free Pirate Adventure story for Grade K-1. Deon's game halts when a basketball turns into an egg. Discover the surprise in Basketball Blunder! Read free on Wonder.io!",
+    "keywords": "Deon, pirate adventure, basketball egg, Grade K-1, Elliott Hedman, free stories for kids, interactive books for children, kids' stories, free kids' books",
+    "genre": "Animal Story",
+    "gradeLevel": "Grade K-1",
+    "ageRange": "5-7 years",
     "ogDescription": "Deon discovers his basketball is an egg during a game! Join his pirate adventure to see if he can solve the mystery.",
-    "readingLevel": "Grade 1-2",
-    "wordCount": 198,
-    "source": "claude"
+    "readingLevel": "Beginning Reader",
+    "wordCount": 194,
+    "source": "claude",
+    "readingTime": "5 min",
+    "tags": [
+      "Animal Story",
+      "animals",
+      "sports"
+    ]
   },
   "104": {
     "id": "104",
@@ -846,13 +1210,18 @@
     "description": "Join Napoleon, the famed commander, in a whimsical French forest as he faces an unexpected bunny uprising. Can he outsmart 3,000 cunning rabbits? Discover the outcome in this delightful tale!",
     "metaDescription": "Free adventure story for Grade 1-2. Napoleon's bunny hunt turns wild as 3,000 rabbits rebel. Read free on Wonder.io!",
     "keywords": "Napoleon, bunny battle, French forest, grade 1-2, adventure tale, kids story, free stories for kids, interactive books for children",
-    "genre": "Adventure",
+    "genre": "Animal Story",
     "gradeLevel": "Grade 1-2",
     "ageRange": "6-8 years",
     "ogDescription": "Napoleon faces an unexpected bunny attack in a French forest. Can he outwit 3,000? Find out in this playful adventure!",
-    "readingLevel": "Grade 1-2",
-    "wordCount": 197,
-    "source": "claude"
+    "readingLevel": "Early Reader",
+    "wordCount": 188,
+    "source": "claude",
+    "readingTime": "5 min",
+    "tags": [
+      "Animal Story",
+      "animals"
+    ]
   },
   "105": {
     "id": "105",
@@ -863,15 +1232,20 @@
     "coverImage": "https://storage.googleapis.com/wonder-stories-web.appspot.com/books/images/book105/cover.png",
     "largeCoverImage": "https://storage.googleapis.com/wonder-stories-web.appspot.com/books/images/book105/lcover.png",
     "description": "Emily and her family visit Mexico City, where roads are blocked by a parade of dancing skeletons. Emily discovers they're celebrating Dia De Los Muertos. Who and what will they encounter on this vibrant journey?",
-    "metaDescription": "Free Halloween story for Grade 1-2. Discover Emily's adventure with dancing skeletons at Dia De Los Muertos! Read free on Wonder.io!",
-    "keywords": "Emily, Mexico City, Dia De Los Muertos, skeletons, Halloween, Grade 1-2, free stories for kids, interactive books for children, kids' Halloween stories",
+    "metaDescription": "Free Halloween story for Grade 2-3. Discover Emily's adventure with dancing skeletons at Dia De Los Muertos! Read free on Wonder.io!",
+    "keywords": "Emily, Mexico City, Dia De Los Muertos, skeletons, Halloween, Grade 2-3, free stories for kids, interactive books for children, kids' Halloween stories",
     "genre": "Halloween",
-    "gradeLevel": "Grade 1-2",
-    "ageRange": "6-8 years",
+    "gradeLevel": "Grade 2-3",
+    "ageRange": "7-9 years",
     "ogDescription": "Emily's Mexico trip turns spooky when she meets dancing skeletons. Celebrate Dia De Los Muertos with her!",
-    "readingLevel": "Grade 1-2",
-    "wordCount": 186,
-    "source": "claude"
+    "readingLevel": "Developing Reader",
+    "wordCount": 181,
+    "source": "claude",
+    "readingTime": "4 min",
+    "tags": [
+      "Halloween",
+      "family"
+    ]
   },
   "106": {
     "id": "106",
@@ -882,15 +1256,20 @@
     "coverImage": "https://storage.googleapis.com/wonder-stories-web.appspot.com/books/images/book106/cover.png",
     "largeCoverImage": "https://storage.googleapis.com/wonder-stories-web.appspot.com/books/images/book106/lcover.png",
     "description": "Join Eva, a brave young monster hunter, as she navigates a twisting maze to confront the forlorn Minotaur. Can she help him find his way home and reunite with his family?",
-    "metaDescription": "Free adventure story for Grade 1-2. Follow Eva's quest in a maze to help a lost Minotaur find home. Read free on Wonder.io!",
-    "keywords": "Eva, Minotaur, maze, monster hunter, adventure, Grade 1-2, children's stories, free stories for kids, interactive books for children",
+    "metaDescription": "Free adventure story for Grade K-1. Follow Eva's quest in a maze to help a lost Minotaur find home. Read free on Wonder.io!",
+    "keywords": "Eva, Minotaur, maze, monster hunter, adventure, Grade K-1, children's stories, free stories for kids, interactive books for children",
     "genre": "Adventure",
-    "gradeLevel": "Grade 1-2",
-    "ageRange": "6-8 years",
+    "gradeLevel": "Grade K-1",
+    "ageRange": "5-7 years",
     "ogDescription": "Join Eva in a maze to help a lost Minotaur find home. Can she succeed?",
-    "readingLevel": "Grade 1-2",
-    "wordCount": 158,
-    "source": "claude"
+    "readingLevel": "Beginning Reader",
+    "wordCount": 150,
+    "source": "claude",
+    "readingTime": "6 min",
+    "tags": [
+      "Adventure",
+      "animals"
+    ]
   },
   "107": {
     "id": "107",
@@ -903,13 +1282,18 @@
     "description": "Join young sleuth Lily as she navigates a rainy night mystery at home. With Mom's makeup mysteriously scattered and their pet dog Nacho acting strange, can Lily uncover the truth behind the mess? A playful and engaging adventure awaits.",
     "metaDescription": "Free school adventure story for Grade 1-2. Join Lily as she uncovers a rain-soaked mystery caused by her dog. Read free on Wonder.io!",
     "keywords": "Lily, school adventure, rainy night mystery, pet dog, Nacho, Grade 1, Grade 2, free stories for kids, interactive books for children",
-    "genre": "School Adventure",
+    "genre": "School Story",
     "gradeLevel": "Grade 1-2",
     "ageRange": "6-8 years",
     "ogDescription": "Young sleuth Lily, rain-soaked mystery at home, and a suspiciously red-mouthed dog. Can she solve it? Adventure awaits!",
-    "readingLevel": "Grade 1-2",
-    "wordCount": 228,
-    "source": "claude"
+    "readingLevel": "Early Reader",
+    "wordCount": 224,
+    "source": "claude",
+    "readingTime": "7 min",
+    "tags": [
+      "School Story",
+      "family"
+    ]
   },
   "108": {
     "id": "108",
@@ -922,13 +1306,18 @@
     "description": "Join the adventurous search as a young boy tries to rescue Nacho, his clever dog lost at the icy South Pole. Amid glacial landscapes and playful penguins, will they reunite before it's too late?",
     "metaDescription": "Free adventure story for Grade 1-2. A boy's mission to find his dog Nacho stuck on a glacier among penguins. Read free on Wonder.io!",
     "keywords": "Nacho, South Pole, glacier, Grade 1-2, kids adventure, penguins, free stories for kids, interactive books for children",
-    "genre": "Adventure",
+    "genre": "Animal Story",
     "gradeLevel": "Grade 1-2",
     "ageRange": "6-8 years",
     "ogDescription": "When Nacho, a clever dog, gets lost at the South Pole, his young owner embarks on a rescue mission. Will they reunite before it's too late?",
-    "readingLevel": "Grade 1-2",
-    "wordCount": 194,
-    "source": "claude"
+    "readingLevel": "Early Reader",
+    "wordCount": 188,
+    "source": "claude",
+    "readingTime": "5 min",
+    "tags": [
+      "Animal Story",
+      "animals"
+    ]
   },
   "109": {
     "id": "109",
@@ -941,13 +1330,17 @@
     "description": "Nacho, the texting dog, is on another adventure! This time, he's having marshmallow mishaps near an active volcano. Can Nacho escape the fiery chaos? Join the fun to find out!",
     "metaDescription": "Free adventure story for Grade 1-2. Nacho the texting dog faces marshmallow mishaps at a volcano! Can he escape? Read free on Wonder.io!",
     "keywords": "Nacho, volcano, texting dog, adventure story, Grade 1-2, free stories for kids, interactive books for children, kids adventure books",
-    "genre": "Adventure",
+    "genre": "Mystery",
     "gradeLevel": "Grade 1-2",
     "ageRange": "6-8 years",
     "ogDescription": "Nacho the texting dog is having marshmallow mishaps by a volcano! Discover if he can escape the fiery chaos!",
-    "readingLevel": "Grade 1-2",
-    "wordCount": 128,
-    "source": "claude"
+    "readingLevel": "Early Reader",
+    "wordCount": 122,
+    "source": "claude",
+    "readingTime": "5 min",
+    "tags": [
+      "Mystery"
+    ]
   },
   "110": {
     "id": "110",
@@ -958,15 +1351,19 @@
     "coverImage": "https://storage.googleapis.com/wonder-stories-web.appspot.com/books/images/book110/cover.png",
     "largeCoverImage": "https://storage.googleapis.com/wonder-stories-web.appspot.com/books/images/book110/lcover.png",
     "description": "Follow Max as he searches for his missing dog, Nacho, who cleverly sends clues from far-off lands. Will Max find Nacho amidst the mysterious pyramids in a hot desert?",
-    "metaDescription": "Free adventure story for Grade 1-2. Max's dog, Nacho, is missing and sends him clues from a hot desert with pyramids. Read free on Wonder.io!",
-    "keywords": "Nacho, desert, pyramids, Grade 1-2, dog adventure, Elliott Hedman, free kids' stories, interactive books for children, adventure story, equator",
-    "genre": "Adventure",
-    "gradeLevel": "Grade 1-2",
-    "ageRange": "6-8 years",
+    "metaDescription": "Free adventure story for Grade 2-3. Max's dog, Nacho, is missing and sends him clues from a hot desert with pyramids. Read free on Wonder.io!",
+    "keywords": "Nacho, desert, pyramids, Grade 2-3, dog adventure, Elliott Hedman, free kids' stories, interactive books for children, adventure story, equator",
+    "genre": "Mystery",
+    "gradeLevel": "Grade 2-3",
+    "ageRange": "7-9 years",
     "ogDescription": "Max hunts for his missing dog, Nacho, amidst pyramids in a desert. Will he find him?",
-    "readingLevel": "Grade 1-2",
-    "wordCount": 149,
-    "source": "claude"
+    "readingLevel": "Developing Reader",
+    "wordCount": 145,
+    "source": "claude",
+    "readingTime": "4 min",
+    "tags": [
+      "Mystery"
+    ]
   },
   "111": {
     "id": "111",
@@ -977,15 +1374,20 @@
     "coverImage": "https://storage.googleapis.com/wonder-stories-web.appspot.com/books/images/book111/cover.png",
     "largeCoverImage": "https://storage.googleapis.com/wonder-stories-web.appspot.com/books/images/book111/lcover.png",
     "description": "Vera visits Spain with baby sister Maria on a day destined to be extraordinary. As a devilish man jumps over Maria, will she be protected from evil? Discover the tradition and suspense in this unique adventure!",
-    "metaDescription": "Free adventure story for Grade 1-2. Vera witnesses a thrilling Spanish tradition to protect her sister. Read free on Wonder.io!",
+    "metaDescription": "Free adventure story for Grade 2-3. Vera witnesses a thrilling Spanish tradition to protect her sister. Read free on Wonder.io!",
     "keywords": "Baby Jumping, Vera, Spain, adventure story, children's book, Grade 1, Grade 2, free stories for kids, interactive books for children, cultural tradition",
     "genre": "Adventure",
-    "gradeLevel": "Grade 1-2",
-    "ageRange": "6-8 years",
+    "gradeLevel": "Grade 2-3",
+    "ageRange": "7-9 years",
     "ogDescription": "Vera's in Spain with Maria. A devil leaps over her sister, sparking thrilling tradition and suspense. Can Vera keep Maria safe?",
-    "readingLevel": "Grade 1-2",
-    "wordCount": 285,
-    "source": "claude"
+    "readingLevel": "Developing Reader",
+    "wordCount": 277,
+    "source": "claude",
+    "readingTime": "6 min",
+    "tags": [
+      "Adventure",
+      "family"
+    ]
   },
   "112": {
     "id": "112",
@@ -1002,9 +1404,14 @@
     "gradeLevel": "Grade 1-2",
     "ageRange": "6-8 years",
     "ogDescription": "Benito must endure the Bullet Ant Dance in the Amazon to become a warrior. Can he handle the pain and prove himself?",
-    "readingLevel": "Grade 1-2",
-    "wordCount": 224,
-    "source": "claude"
+    "readingLevel": "Early Reader",
+    "wordCount": 215,
+    "source": "claude",
+    "readingTime": "7 min",
+    "tags": [
+      "Adventure",
+      "animals"
+    ]
   },
   "113": {
     "id": "113",
@@ -1015,15 +1422,22 @@
     "coverImage": "https://storage.googleapis.com/wonder-stories-web.appspot.com/books/images/book113/cover.png",
     "largeCoverImage": "https://storage.googleapis.com/wonder-stories-web.appspot.com/books/images/book113/lcover.png",
     "description": "Meet Sarah on her first day at a new school where everything goes awry. From swapped lunches to mysterious jewelry, can Sarah unravel The Case of the Lunchtime Detectives?",
-    "metaDescription": "Free mystery story for Grade 3-4. Sarah's first day at a new school turns mysterious with a lunch swap and a hidden necklace. Read free on Wonder.io!",
+    "metaDescription": "Free mystery story for Grade 2-3. Sarah's first day at a new school turns mysterious with a lunch swap and a hidden necklace. Read free on Wonder.io!",
     "keywords": "Sarah, Kendra, tiger lunchbox, lunch swap, mystery story, children's book, Grade 3, Grade 4, interactive books for children, free stories for kids",
-    "genre": "Mystery",
-    "gradeLevel": "Grade 3-4",
-    "ageRange": "8-10 years",
+    "genre": "School Story",
+    "gradeLevel": "Grade 2-3",
+    "ageRange": "7-9 years",
     "ogDescription": "Sarah's first day at a new school goes awry with swapped lunches and a mystery to solve. Can she crack The Case of the Lunchtime Detectives?",
-    "readingLevel": "Grade 3-4",
-    "wordCount": 1000,
-    "source": "claude"
+    "readingLevel": "Developing Reader",
+    "wordCount": 1205,
+    "source": "claude",
+    "readingTime": "17 min",
+    "tags": [
+      "School Story",
+      "family",
+      "school",
+      "science"
+    ]
   },
   "114": {
     "id": "114",
@@ -1034,15 +1448,19 @@
     "coverImage": "https://storage.googleapis.com/wonder-stories-web.appspot.com/books/images/book114/cover.png",
     "largeCoverImage": "https://storage.googleapis.com/wonder-stories-web.appspot.com/books/images/book114/lcover.png",
     "description": "Join Ava on an unforgettable adventure in Spain where tossed tomatoes become the challenge of a lifetime! Will she conquer the world's biggest food fight? Dive into the splattering excitement and find out!",
-    "metaDescription": "Free adventure story for Grade 1-2. Join Ava in Spain's dizzying tomato food fight! Can she dodge and conquer? Read free on Wonder.io!",
+    "metaDescription": "Free adventure story for Grade 2-3. Join Ava in Spain's dizzying tomato food fight! Can she dodge and conquer? Read free on Wonder.io!",
     "keywords": "Ava, Spain, tomato fight, food fight, adventure story, grade 1-2, children's book, free stories for kids, interactive books for children, Elliott Hedman",
     "genre": "Adventure",
-    "gradeLevel": "Grade 1-2",
-    "ageRange": "6-8 years",
+    "gradeLevel": "Grade 2-3",
+    "ageRange": "7-9 years",
     "ogDescription": "Ava's in Spain where the biggest food fight awaits. Can she dodge splattering tomatoes and win? Discover the excitement now!",
-    "readingLevel": "Grade 1-2",
-    "wordCount": 218,
-    "source": "claude"
+    "readingLevel": "Developing Reader",
+    "wordCount": 209,
+    "source": "claude",
+    "readingTime": "5 min",
+    "tags": [
+      "Adventure"
+    ]
   },
   "115": {
     "id": "115",
@@ -1053,15 +1471,20 @@
     "coverImage": "https://storage.googleapis.com/wonder-stories-web.appspot.com/books/images/book115/cover.png",
     "largeCoverImage": "https://storage.googleapis.com/wonder-stories-web.appspot.com/books/images/book115/lcover.png",
     "description": "Shevon, a middle schooler, waits for Dad to pick her up after the school dance. Discovering him passed out and sick on the couch, she faces a dilemma. Will she help him recover or confront her frustration? Follow Shevon in this heartfelt school adventure.",
-    "metaDescription": "Free School Adventure story for Grade 1-2. Shevon's journey home reveals an unexpected challenge with her dad. Read free on Wonder.io!",
+    "metaDescription": "Free School Adventure story for Grade K-1. Shevon's journey home reveals an unexpected challenge with her dad. Read free on Wonder.io!",
     "keywords": "Shevon, middle school dance, Dad, missed pick-up, school adventure, grade 1-2 story, Elliott Hedman, free stories for kids, interactive books for children",
-    "genre": "School Adventure",
-    "gradeLevel": "Grade 1-2",
-    "ageRange": "6-8 years",
+    "genre": "School Story",
+    "gradeLevel": "Grade K-1",
+    "ageRange": "5-7 years",
     "ogDescription": "Shevon waits for Dad after the dance, finds him sick at home. Can she help him? Follow this school adventure.",
-    "readingLevel": "Grade 1-2",
-    "wordCount": 174,
-    "source": "claude"
+    "readingLevel": "Beginning Reader",
+    "wordCount": 168,
+    "source": "claude",
+    "readingTime": "5 min",
+    "tags": [
+      "School Story",
+      "family"
+    ]
   },
   "116": {
     "id": "116",
@@ -1074,13 +1497,18 @@
     "description": "Join Sarah on a vibrant adventure in Nepal, where she discovers a joyful dog party amidst an ancient tradition. Why are the dogs adorned with flowers and red dots? As Sarah unravels the mystery, she embarks on a journey of wonder and friendship.",
     "metaDescription": "Free adventure story for Grade 1-2. Sarah explores Nepal's dog celebration where canines wear flowers. What's behind this joyful ritual? Read free on Wonder.io!",
     "keywords": "Sarah, Nepal, dog party, adventure, Grade 1-2, kids, free stories for kids, interactive books for children, free adventure story, Day of the Dog",
-    "genre": "Adventure",
+    "genre": "Animal Story",
     "gradeLevel": "Grade 1-2",
     "ageRange": "6-8 years",
     "ogDescription": "Sarah's Nepal adventure leads to a colorful dog party. What's the secret behind this joyous tradition? Discover in this vivid tale.",
-    "readingLevel": "Grade 1-2",
-    "wordCount": 211,
-    "source": "claude"
+    "readingLevel": "Early Reader",
+    "wordCount": 205,
+    "source": "claude",
+    "readingTime": "6 min",
+    "tags": [
+      "Animal Story",
+      "animals"
+    ]
   },
   "118": {
     "id": "118",
@@ -1091,15 +1519,19 @@
     "coverImage": "https://storage.googleapis.com/wonder-stories-web.appspot.com/books/images/book118/cover.png",
     "largeCoverImage": "https://storage.googleapis.com/wonder-stories-web.appspot.com/books/images/book118/lcover.png",
     "description": "Gwen, a young monster hunter, bravely enters Medusa's palace in search of her missing friends. With statues and danger lurking, can she defeat the witch with her mirror before becoming stone herself?",
-    "metaDescription": "Free Halloween story for Grade 1-2. Gwen faces Medusa's petrifying gaze in a thrilling monster hunt. Read free on Wonder.io!",
-    "keywords": "Gwen, Medusa, Halloween story, monster hunter, Grade 1-2, free stories for kids, interactive books for children, snake hair, Wonder.io, children's reading",
+    "metaDescription": "Free Halloween story for Grade 2-3. Gwen faces Medusa's petrifying gaze in a thrilling monster hunt. Read free on Wonder.io!",
+    "keywords": "Gwen, Medusa, Halloween story, monster hunter, Grade 2-3, free stories for kids, interactive books for children, snake hair, Wonder.io, children's reading",
     "genre": "Halloween",
-    "gradeLevel": "Grade 1-2",
-    "ageRange": "6-8 years",
+    "gradeLevel": "Grade 2-3",
+    "ageRange": "7-9 years",
     "ogDescription": "Gwen, a young monster hunter, bravely enters Medusa's palace to save her friends. Can she defeat the witch before turning to stone?",
-    "readingLevel": "Grade 1-2",
-    "wordCount": 241,
-    "source": "claude"
+    "readingLevel": "Developing Reader",
+    "wordCount": 235,
+    "source": "claude",
+    "readingTime": "6 min",
+    "tags": [
+      "Halloween"
+    ]
   },
   "119": {
     "id": "119",
@@ -1116,9 +1548,14 @@
     "gradeLevel": "Grade 1-2",
     "ageRange": "6-8 years",
     "ogDescription": "Meet Franca in 1000 AD Italy—a pasta-loving inventor! Can she beat the messy sauce with her clever creation? Find out!",
-    "readingLevel": "Grade 1-2",
-    "wordCount": 203,
-    "source": "claude"
+    "readingLevel": "Early Reader",
+    "wordCount": 195,
+    "source": "claude",
+    "readingTime": "5 min",
+    "tags": [
+      "Halloween",
+      "food"
+    ]
   },
   "120": {
     "id": "120",
@@ -1129,15 +1566,19 @@
     "coverImage": "https://storage.googleapis.com/wonder-stories-web.appspot.com/books/images/book120/cover.png",
     "largeCoverImage": "https://storage.googleapis.com/wonder-stories-web.appspot.com/books/images/book120/lcover.png",
     "description": "Talisa and her robotic friend Chip are on a nighttime adventure. The moon has disappeared from the sky, and Talisa must find it before her mom discovers it's missing. Can they solve the mystery in time?",
-    "metaDescription": "Free adventure story for Grade 1-2. Talisa’s moon is missing! Will she find it before Mom notices? Read free on Wonder.io!",
+    "metaDescription": "Free adventure story for Grade K-1. Talisa’s moon is missing! Will she find it before Mom notices? Read free on Wonder.io!",
     "keywords": "Talisa, Chip, moon mystery, adventure story, children's book, free stories for kids, grade 1-2, interactive books, bedtime stories, reading platform",
-    "genre": "Adventure",
-    "gradeLevel": "Grade 1-2",
-    "ageRange": "6-8 years",
+    "genre": "Science Fiction",
+    "gradeLevel": "Grade K-1",
+    "ageRange": "5-7 years",
     "ogDescription": "Talisa and Chip's adventure takes a twist when the moon vanishes. Can they find it before it's too late?",
-    "readingLevel": "Grade 1-2",
-    "wordCount": 239,
-    "source": "claude"
+    "readingLevel": "Beginning Reader",
+    "wordCount": 231,
+    "source": "claude",
+    "readingTime": "6 min",
+    "tags": [
+      "Science Fiction"
+    ]
   },
   "121": {
     "id": "121",
@@ -1148,15 +1589,20 @@
     "coverImage": "https://storage.googleapis.com/wonder-stories-web.appspot.com/books/images/book121/cover.png",
     "largeCoverImage": "https://storage.googleapis.com/wonder-stories-web.appspot.com/books/images/book121/lcover.png",
     "description": "Andres loves soccer, but this year's game is on slippery ice! With players slipping everywhere, can Andres turn this frosty fiasco into a fun game of soccer hockey? Discover what happens when creativity meets challenge on a cold, blue field.",
-    "metaDescription": "Free adventure story for Grade 1-2. Andres faces a slippery challenge on an icy soccer field. Can he turn it into a soccer hockey match? Read free on Wonder.io!",
-    "keywords": "Andres, slippery soccer field, icy soccer adventure, soccer hockey story, free stories for kids, children's adventure book, Grade 1-2 book, interactive books for children, free kids' stories",
+    "metaDescription": "Free adventure story for Grade K-1. Andres faces a slippery challenge on an icy soccer field. Can he turn it into a soccer hockey match? Read free on Wonder.io!",
+    "keywords": "Andres, slippery soccer field, icy soccer adventure, soccer hockey story, free stories for kids, children's adventure book, Grade K-1 book, interactive books for children, free kids' stories",
     "genre": "Adventure",
-    "gradeLevel": "Grade 1-2",
-    "ageRange": "6-8 years",
+    "gradeLevel": "Grade K-1",
+    "ageRange": "5-7 years",
     "ogDescription": "Andres loves soccer, but icy surprises lead to a unique game. Can he save the day?",
-    "readingLevel": "Grade 1-2",
-    "wordCount": 185,
-    "source": "claude"
+    "readingLevel": "Beginning Reader",
+    "wordCount": 179,
+    "source": "claude",
+    "readingTime": "5 min",
+    "tags": [
+      "Adventure",
+      "sports"
+    ]
   },
   "122": {
     "id": "122",
@@ -1167,15 +1613,19 @@
     "coverImage": "https://storage.googleapis.com/wonder-stories-web.appspot.com/books/images/book122/cover.png",
     "largeCoverImage": "https://storage.googleapis.com/wonder-stories-web.appspot.com/books/images/book122/lcover.png",
     "description": "Join Jamar in a mysterious kitchen adventure as he uncovers who smashed one hundred clams. With tiny footprints leading to a daring discovery, can Jamar solve the curious case before he's blamed?",
-    "metaDescription": "Free mystery story for Grade 1-2. Jamar must solve the mystery of the broken clams with curious clues and clever thinking. Read free on Wonder.io!",
-    "keywords": "Jamar, broken clams, shrimp mantis, mystery story, children's book, Grade 1-2, free stories for kids, interactive books for children, grade school reading",
+    "metaDescription": "Free mystery story for Grade K-1. Jamar must solve the mystery of the broken clams with curious clues and clever thinking. Read free on Wonder.io!",
+    "keywords": "Jamar, broken clams, shrimp mantis, mystery story, children's book, Grade K-1, free stories for kids, interactive books for children, grade school reading",
     "genre": "Mystery",
-    "gradeLevel": "Grade 1-2",
-    "ageRange": "6-8 years",
+    "gradeLevel": "Grade K-1",
+    "ageRange": "5-7 years",
     "ogDescription": "Jamar faces tiny clues and big questions in this hilarious kitchen mystery. Can he solve the case of the broken clams before he's blamed?",
-    "readingLevel": "Grade 1-2",
-    "wordCount": 237,
-    "source": "claude"
+    "readingLevel": "Beginning Reader",
+    "wordCount": 231,
+    "source": "claude",
+    "readingTime": "7 min",
+    "tags": [
+      "Mystery"
+    ]
   },
   "123": {
     "id": "123",
@@ -1188,13 +1638,22 @@
     "description": "Join Kendis in Candy Woods as she helps the queen find her lost baby unicorn, Pokey. Can she solve the mystery of the spooky trails and bring Pokey back home safely?",
     "metaDescription": "Free Halloween story for Grade 1-2. Follow Kendis as she finds the lost unicorn Pokey in Candy Woods. Read free on Wonder.io!",
     "keywords": "Kendis, Pokey, Candy Woods, baby unicorn, Halloween story, grade 1-2, free stories for kids, interactive books for children, lost unicorn story, children's Halloween tale",
-    "genre": "Halloween",
+    "genre": "Fantasy",
     "gradeLevel": "Grade 1-2",
     "ageRange": "6-8 years",
     "ogDescription": "Join Kendis in Candy Woods to find the lost unicorn Pokey. Can she solve the spooky mystery?",
-    "readingLevel": "Grade 1-2",
-    "wordCount": 242,
-    "source": "claude"
+    "readingLevel": "Early Reader",
+    "wordCount": 236,
+    "source": "claude",
+    "readingTime": "5 min",
+    "tags": [
+      "Fantasy",
+      "animals",
+      "nature",
+      "food",
+      "Halloween",
+      "Animal Story"
+    ]
   },
   "124": {
     "id": "124",
@@ -1205,15 +1664,20 @@
     "coverImage": "https://storage.googleapis.com/wonder-stories-web.appspot.com/books/images/book124/cover.png",
     "largeCoverImage": "https://storage.googleapis.com/wonder-stories-web.appspot.com/books/images/book124/lcover.png",
     "description": "Sophia, a nine-year-old girl, wakes up to discover a giant mustache mysteriously placed on her face. In this quirky pirate adventure, her mom joins the mustache madness. Who's behind this hairy caper, and how will their day unfold?",
-    "metaDescription": "Free pirate adventure story for Grade 1-2. Nine-year-old Sophia wakes with a mysterious mustache. What's behind the hairy prank? Read free on Wonder.io!",
-    "keywords": "Sophia, mustache prank, pirate adventure, Grade 1-2, interactive books, free stories for kids, children's reading, Elliott Hedman, family fun",
-    "genre": "Pirate Adventure",
-    "gradeLevel": "Grade 1-2",
-    "ageRange": "6-8 years",
+    "metaDescription": "Free pirate adventure story for Grade K-1. Nine-year-old Sophia wakes with a mysterious mustache. What's behind the hairy prank? Read free on Wonder.io!",
+    "keywords": "Sophia, mustache prank, pirate adventure, Grade K-1, interactive books, free stories for kids, children's reading, Elliott Hedman, family fun",
+    "genre": "Humor",
+    "gradeLevel": "Grade K-1",
+    "ageRange": "5-7 years",
     "ogDescription": "Sophia wakes up with a mysterious mustache! Join her in this quirky pirate adventure to solve the hairy mystery.",
-    "readingLevel": "Grade 1-2",
-    "wordCount": 186,
-    "source": "claude"
+    "readingLevel": "Beginning Reader",
+    "wordCount": 180,
+    "source": "claude",
+    "readingTime": "6 min",
+    "tags": [
+      "Humor",
+      "family"
+    ]
   },
   "125": {
     "id": "125",
@@ -1224,15 +1688,19 @@
     "coverImage": "https://storage.googleapis.com/wonder-stories-web.appspot.com/books/images/book125/cover.png",
     "largeCoverImage": "https://storage.googleapis.com/wonder-stories-web.appspot.com/books/images/book125/lcover.png",
     "description": "Ava, turning nine, discovers her best friend Riley isn't home. As she searches for friends to invite to her party, an unexpected twist leads her on a mysterious adventure. Will Ava uncover the surprising truth behind her missing friends?",
-    "metaDescription": "Free adventure story for Grade 1-2. Ava searches for friends invites on her birthday, unfolding a suspenseful mystery. Read free on Wonder.io!",
+    "metaDescription": "Free adventure story for Grade K-1. Ava searches for friends invites on her birthday, unfolding a suspenseful mystery. Read free on Wonder.io!",
     "keywords": "Ava, birthday party, missing friends, children's adventure, grade 1-2, interactive, Riley, Jose, free stories for kids, surprise birthday",
-    "genre": "Adventure",
-    "gradeLevel": "Grade 1-2",
-    "ageRange": "6-8 years",
+    "genre": "Mystery",
+    "gradeLevel": "Grade K-1",
+    "ageRange": "5-7 years",
     "ogDescription": "Ava turns nine and finds her friends missing. Follow her suspenseful adventure in search of the truth behind their disappearance.",
-    "readingLevel": "Grade 1-2",
-    "wordCount": 195,
-    "source": "claude"
+    "readingLevel": "Beginning Reader",
+    "wordCount": 189,
+    "source": "claude",
+    "readingTime": "6 min",
+    "tags": [
+      "Mystery"
+    ]
   },
   "126": {
     "id": "126",
@@ -1243,15 +1711,20 @@
     "coverImage": "https://storage.googleapis.com/wonder-stories-web.appspot.com/books/images/book126/cover.png",
     "largeCoverImage": "https://storage.googleapis.com/wonder-stories-web.appspot.com/books/images/book126/lcover.png",
     "description": "Gwen and her brother Lance face a monstrous lime pudding that devours everything in sight! Can they satisfy its hunger before it swallows the entire house? Discover the suspenseful adventure as they race against time in a quest to tame the pudding's appetite.",
-    "metaDescription": "Free adventure story for Grade 1-2. Gwen must stop a monstrous pudding from devouring everything in its path. Can she succeed? Read free on Wonder.io!",
-    "keywords": "Gwen, lime pudding, monster pudding, Grade 1-2 story, kids adventure, Mia Serrano, free stories for kids, interactive books for children, hungry pudding",
+    "metaDescription": "Free adventure story for Grade K-1. Gwen must stop a monstrous pudding from devouring everything in its path. Can she succeed? Read free on Wonder.io!",
+    "keywords": "Gwen, lime pudding, monster pudding, Grade K-1 story, kids adventure, Mia Serrano, free stories for kids, interactive books for children, hungry pudding",
     "genre": "Adventure",
-    "gradeLevel": "Grade 1-2",
-    "ageRange": "6-8 years",
+    "gradeLevel": "Grade K-1",
+    "ageRange": "5-7 years",
     "ogDescription": "Gwen and Lance battle a monstrous pudding in a thrilling adventure! Can they tame its appetite? Dive into suspense and fun in 'Bad Pudding'!",
-    "readingLevel": "Grade 1-2",
-    "wordCount": 214,
-    "source": "claude"
+    "readingLevel": "Beginning Reader",
+    "wordCount": 201,
+    "source": "claude",
+    "readingTime": "7 min",
+    "tags": [
+      "Adventure",
+      "food"
+    ]
   },
   "127": {
     "id": "127",
@@ -1262,15 +1735,22 @@
     "coverImage": "https://storage.googleapis.com/wonder-stories-web.appspot.com/books/images/book127/cover.png",
     "largeCoverImage": "https://storage.googleapis.com/wonder-stories-web.appspot.com/books/images/book127/lcover.png",
     "description": "Lance and his sister Gwen meet a mysterious Headless Man while trick-or-treating. With the man's head lost, can they find a replacement before night's end? A fun, spooky adventure unfolds.",
-    "metaDescription": "Free Halloween story for Grade 2-3. Discover Lance's spooky adventure with a Headless Man on Halloween night. Read free on Wonder.io!",
+    "metaDescription": "Free Halloween story for Grade 1-2. Discover Lance's spooky adventure with a Headless Man on Halloween night. Read free on Wonder.io!",
     "keywords": "Lance, Gwen, Headless Man, Halloween, Grade 2, Grade 3, spooky adventure, trick-or-treating, free stories for kids, interactive books for children",
     "genre": "Halloween",
-    "gradeLevel": "Grade 2-3",
-    "ageRange": "7-9 years",
+    "gradeLevel": "Grade 1-2",
+    "ageRange": "6-8 years",
     "ogDescription": "Lance and Gwen meet a Headless Man. Can they find his head? Discover this fun, spooky Halloween adventure for kids.",
-    "readingLevel": "Grade 2-3",
-    "wordCount": 326,
-    "source": "claude"
+    "readingLevel": "Early Reader",
+    "wordCount": 318,
+    "source": "claude",
+    "readingTime": "9 min",
+    "tags": [
+      "Halloween",
+      "school",
+      "food",
+      "School Story"
+    ]
   },
   "128": {
     "id": "128",
@@ -1281,15 +1761,20 @@
     "coverImage": "https://storage.googleapis.com/wonder-stories-web.appspot.com/books/images/book128/cover.png",
     "largeCoverImage": "https://storage.googleapis.com/wonder-stories-web.appspot.com/books/images/book128/lcover.png",
     "description": "Join Buggy, a curious wild dog, in his quest for the perfect chew toy amidst the forest. What mysterious object will finally bring Buggy his voice? Discover the adventure that gave dogs their bark.",
-    "metaDescription": "Free adventure story for Grade 1-2. Follow Buggy's quest in the forest for the perfect chew toy that leads to an unexpected discovery. Read free on Wonder.io!",
-    "keywords": "Buggy the dog, how dog got bark, chew toy quest, wild dog adventure, kids forest story, free stories for kids, interactive books, Grade 1-2, children's adventure",
-    "genre": "Adventure",
-    "gradeLevel": "Grade 1-2",
-    "ageRange": "6-8 years",
+    "metaDescription": "Free adventure story for Grade K-1. Follow Buggy's quest in the forest for the perfect chew toy that leads to an unexpected discovery. Read free on Wonder.io!",
+    "keywords": "Buggy the dog, how dog got bark, chew toy quest, wild dog adventure, kids forest story, free stories for kids, interactive books, Grade K-1, children's adventure",
+    "genre": "Animal Story",
+    "gradeLevel": "Grade K-1",
+    "ageRange": "5-7 years",
     "ogDescription": "Join Buggy's quest through the forest for the perfect chew toy. What will finally bring him a bark? Discover the adventure that changed dogs forever!",
-    "readingLevel": "Grade 1-2",
-    "wordCount": 202,
-    "source": "claude"
+    "readingLevel": "Beginning Reader",
+    "wordCount": 195,
+    "source": "claude",
+    "readingTime": "6 min",
+    "tags": [
+      "Animal Story",
+      "animals"
+    ]
   },
   "129": {
     "id": "129",
@@ -1300,15 +1785,26 @@
     "coverImage": "https://storage.googleapis.com/wonder-stories-web.appspot.com/books/images/book129/cover.png",
     "largeCoverImage": "https://storage.googleapis.com/wonder-stories-web.appspot.com/books/images/book129/lcover.png",
     "description": "Join young sleuth Alex as they unravel a household mystery in a cozy family kitchen. When a goat picture replaces Alex's ID photo, it's a puzzling April Fools' mystery. Can Alex discover the prankster in time to plan their own joke?",
-    "metaDescription": "Free mystery story for Grade 1-2. Alex finds a goat on their ID—who's behind the prank? Uncover the mystery and enjoy free on Wonder.io!",
+    "metaDescription": "Free mystery story for Grade K-1. Alex finds a goat on their ID—who's behind the prank? Uncover the mystery and enjoy free on Wonder.io!",
     "keywords": "Alex, April Fools, mystery, kitchen, ID prank, grade 1-2, free stories for kids, interactive books for children, Carly Schuna, Wonder.io",
-    "genre": "Mystery",
-    "gradeLevel": "Grade 1-2",
-    "ageRange": "6-8 years",
+    "genre": "Halloween",
+    "gradeLevel": "Grade K-1",
+    "ageRange": "5-7 years",
     "ogDescription": "Join Alex in solving a mystery prank involving a goat picture on their ID. Can Alex catch the prankster?",
-    "readingLevel": "Grade 1-2",
-    "wordCount": 207,
-    "source": "claude"
+    "readingLevel": "Beginning Reader",
+    "wordCount": 203,
+    "source": "claude",
+    "readingTime": "6 min",
+    "tags": [
+      "Halloween",
+      "family",
+      "school",
+      "food",
+      "holidays",
+      "humor",
+      "Humor",
+      "School Story"
+    ]
   },
   "130": {
     "id": "130",
@@ -1319,15 +1815,19 @@
     "coverImage": "https://storage.googleapis.com/wonder-stories-web.appspot.com/books/images/book130/cover.png",
     "largeCoverImage": "https://storage.googleapis.com/wonder-stories-web.appspot.com/books/images/book130/lcover.png",
     "description": "Meet Glomper the crocodile, who's not feeling well in the dentist's office. With a toothache that hides a surprising secret, can Dr. Llama solve the mystery? Discover what happens when humor meets a quirky adventure in this entertaining tale.",
-    "metaDescription": "Free adventure story for Grade 1-2. Glomper's toothache reveals a secret. Can Dr. Llama solve it? Read free on Wonder.io!",
-    "keywords": "Glomper, dentist, toothache, Dr. Llama, free adventure stories, Grade 1-2 books, children's books, crocodile story, free stories for kids, interactive books for children",
+    "metaDescription": "Free adventure story for Grade K-1. Glomper's toothache reveals a secret. Can Dr. Llama solve it? Read free on Wonder.io!",
+    "keywords": "Glomper, dentist, toothache, Dr. Llama, free adventure stories, Grade K-1 books, children's books, crocodile story, free stories for kids, interactive books for children",
     "genre": "Adventure",
-    "gradeLevel": "Grade 1-2",
-    "ageRange": "6-8 years",
+    "gradeLevel": "Grade K-1",
+    "ageRange": "5-7 years",
     "ogDescription": "Glomper the crocodile's dentist visit uncovers a surprising secret. Can Dr. Llama solve it? A quirky adventure awaits!",
-    "readingLevel": "Grade 1-2",
-    "wordCount": 224,
-    "source": "claude"
+    "readingLevel": "Beginning Reader",
+    "wordCount": 217,
+    "source": "claude",
+    "readingTime": "7 min",
+    "tags": [
+      "Adventure"
+    ]
   },
   "131": {
     "id": "131",
@@ -1338,15 +1838,21 @@
     "coverImage": "https://storage.googleapis.com/wonder-stories-web.appspot.com/books/images/book131/1cover.png",
     "largeCoverImage": "https://storage.googleapis.com/wonder-stories-web.appspot.com/books/images/book131/lcover.png",
     "description": "When young Jamie wakes up one morning, everything seems out of reach—literally! Suddenly taller than his mom, he faces a hilarious day at school. Will he discover the secret behind his mysterious growth spurt?",
-    "metaDescription": "Free school adventure story for Grade 1-2. Jamie suddenly grows taller than his mom overnight—can he uncover the reason? Read free on Wonder.io!",
-    "keywords": "Jamie, school adventure, growth spurt, funny day, Grade 1-2, free stories for kids, interactive books for children, Wonder.io",
-    "genre": "School Adventure",
-    "gradeLevel": "Grade 1-2",
-    "ageRange": "6-8 years",
+    "metaDescription": "Free school adventure story for Grade K-1. Jamie suddenly grows taller than his mom overnight—can he uncover the reason? Read free on Wonder.io!",
+    "keywords": "Jamie, school adventure, growth spurt, funny day, Grade K-1, free stories for kids, interactive books for children, Wonder.io",
+    "genre": "School Story",
+    "gradeLevel": "Grade K-1",
+    "ageRange": "5-7 years",
     "ogDescription": "Jamie's growth spurt has him towering over everyone. Can he solve this tall mystery?",
-    "readingLevel": "Grade 1-2",
-    "wordCount": 202,
-    "source": "claude"
+    "readingLevel": "Beginning Reader",
+    "wordCount": 198,
+    "source": "claude",
+    "readingTime": "6 min",
+    "tags": [
+      "School Story",
+      "family",
+      "school"
+    ]
   },
   "132": {
     "id": "132",
@@ -1363,9 +1869,13 @@
     "gradeLevel": "Grade 1-2",
     "ageRange": "6-8 years",
     "ogDescription": "Elephant and Chameleon's jungle hide and seek adventure. Can Elephant outsmart Chameleon, or is Chameleon too tricky?",
-    "readingLevel": "Grade 1-2",
-    "wordCount": 230,
-    "source": "claude"
+    "readingLevel": "Early Reader",
+    "wordCount": 226,
+    "source": "claude",
+    "readingTime": "5 min",
+    "tags": [
+      "Adventure"
+    ]
   },
   "134": {
     "id": "134",
@@ -1376,15 +1886,19 @@
     "coverImage": "https://storage.googleapis.com/wonder-stories-web.appspot.com/books/images/book134/cover.png",
     "largeCoverImage": "https://storage.googleapis.com/wonder-stories-web.appspot.com/books/images/book134/lcover.png",
     "description": "Join Alex on a wild biking adventure where he accidentally eats bugs on the way to the park! As he discovers the surprising truth about bug-eating, will Alex embrace this brave new world? Find out in this quirky tale full of unexpected twists.",
-    "metaDescription": "Free adventure story for Grade 1-2. Alex accidentally eats bugs and discovers a gross yet cool truth about them. Read free on Wonder.io!",
-    "keywords": "Alex, biking adventure, accidentally eats bugs, Grade 1-2, free adventure stories, interactive children's books, stories for young readers, free stories for kids",
+    "metaDescription": "Free adventure story for Grade K-1. Alex accidentally eats bugs and discovers a gross yet cool truth about them. Read free on Wonder.io!",
+    "keywords": "Alex, biking adventure, accidentally eats bugs, Grade K-1, free adventure stories, interactive children's books, stories for young readers, free stories for kids",
     "genre": "Adventure",
-    "gradeLevel": "Grade 1-2",
-    "ageRange": "6-8 years",
+    "gradeLevel": "Grade K-1",
+    "ageRange": "5-7 years",
     "ogDescription": "Join Alex's adventure as he accidentally eats bugs and discovers they're not so gross. What will he do next?",
-    "readingLevel": "Grade 1-2",
-    "wordCount": 214,
-    "source": "claude"
+    "readingLevel": "Beginning Reader",
+    "wordCount": 210,
+    "source": "claude",
+    "readingTime": "6 min",
+    "tags": [
+      "Adventure"
+    ]
   },
   "136": {
     "id": "136",
@@ -1395,15 +1909,21 @@
     "coverImage": "https://storage.googleapis.com/wonder-stories-web.appspot.com/books/images/book136/cover.png",
     "largeCoverImage": "https://storage.googleapis.com/wonder-stories-web.appspot.com/books/images/book136/lcover.png",
     "description": "Join a young adventurer and their dog Fred as they find themselves lost in the woods. With only a map, peanuts, and Fred's instincts, can they find their way back to the trail? The suspense builds as they navigate the forest's challenges!",
-    "metaDescription": "Free adventure story for Grade 1-2. A child and their dog are lost in the woods. Can they follow clues back home? Read free on Wonder.io!",
-    "keywords": "Carly Schuna, Lost in the Woods, adventure story, Fred the dog, Grade 1-2, lost trail, free stories for kids, interactive books for children, young adventurer",
-    "genre": "Adventure",
-    "gradeLevel": "Grade 1-2",
-    "ageRange": "6-8 years",
+    "metaDescription": "Free adventure story for Grade K-1. A child and their dog are lost in the woods. Can they follow clues back home? Read free on Wonder.io!",
+    "keywords": "Carly Schuna, Lost in the Woods, adventure story, Fred the dog, Grade K-1, lost trail, free stories for kids, interactive books for children, young adventurer",
+    "genre": "Animal Story",
+    "gradeLevel": "Grade K-1",
+    "ageRange": "5-7 years",
     "ogDescription": "Lost in the woods with just a map and Fred the dog, can they make it back? A suspenseful adventure for young readers!",
-    "readingLevel": "Grade 1-2",
-    "wordCount": 219,
-    "source": "claude"
+    "readingLevel": "Beginning Reader",
+    "wordCount": 215,
+    "source": "claude",
+    "readingTime": "6 min",
+    "tags": [
+      "Animal Story",
+      "animals",
+      "nature"
+    ]
   },
   "138": {
     "id": "138",
@@ -1414,15 +1934,21 @@
     "coverImage": "https://storage.googleapis.com/wonder-stories-web.appspot.com/books/images/book138/cover.png",
     "largeCoverImage": "https://storage.googleapis.com/wonder-stories-web.appspot.com/books/images/book138/lcover.png",
     "description": "In 'My First New Friend,' follow Alex on his first day at a new school just three blocks from home. He encounters a mysterious, talking parrot, sparking curiosity and adventure. Will Alex find a new friend on this unexpected journey?",
-    "metaDescription": "Free School Adventure story for Grade 1-2. Meet Alex and his surprising parrot friend on his first day at a new school. Read free on Wonder.io!",
-    "keywords": "Alex, new school, parrot, first day, Grade 1-2, school adventure, making friends, free stories for kids, interactive books for children",
-    "genre": "School Adventure",
-    "gradeLevel": "Grade 1-2",
-    "ageRange": "6-8 years",
+    "metaDescription": "Free School Adventure story for Grade K-1. Meet Alex and his surprising parrot friend on his first day at a new school. Read free on Wonder.io!",
+    "keywords": "Alex, new school, parrot, first day, Grade K-1, school adventure, making friends, free stories for kids, interactive books for children",
+    "genre": "School Story",
+    "gradeLevel": "Grade K-1",
+    "ageRange": "5-7 years",
     "ogDescription": "Join Alex's adventure with a chatty parrot on his first school day. Will he make a new friend?",
-    "readingLevel": "Grade 1-2",
-    "wordCount": 191,
-    "source": "claude"
+    "readingLevel": "Beginning Reader",
+    "wordCount": 187,
+    "source": "claude",
+    "readingTime": "6 min",
+    "tags": [
+      "School Story",
+      "friendship",
+      "school"
+    ]
   },
   "139": {
     "id": "139",
@@ -1433,15 +1959,20 @@
     "coverImage": "https://storage.googleapis.com/wonder-stories-web.appspot.com/books/images/book139/cover.png",
     "largeCoverImage": "https://storage.googleapis.com/wonder-stories-web.appspot.com/books/images/book139/lcover.png",
     "description": "Join Kaylee in 'My New Pen Pal,' an exciting adventure where she connects with a unique friend from the zoo. When her pen pal turns out to be a seal, questions arise—can their unusual friendship thrive? Discover if Kaylee embraces this wild correspondence.",
-    "metaDescription": "Free adventure story for Grade 1-2. Kaylee's new pen pal is a seal! Can they be friends despite the differences? Read free on Wonder.io!",
-    "keywords": "Kaylee, zoo, seal, pen pal, Grade 1-2 adventure, children's book, interactive stories for kids, free stories for kids, online reading for children",
-    "genre": "Adventure",
-    "gradeLevel": "Grade 1-2",
-    "ageRange": "6-8 years",
+    "metaDescription": "Free adventure story for Grade K-1. Kaylee's new pen pal is a seal! Can they be friends despite the differences? Read free on Wonder.io!",
+    "keywords": "Kaylee, zoo, seal, pen pal, Grade K-1 adventure, children's book, interactive stories for kids, free stories for kids, online reading for children",
+    "genre": "Animal Story",
+    "gradeLevel": "Grade K-1",
+    "ageRange": "5-7 years",
     "ogDescription": "In 'My New Pen Pal,' Kaylee, a 1st grader, befriends a seal from the zoo. Can this unlikely friendship work?",
-    "readingLevel": "Grade 1-2",
-    "wordCount": 182,
-    "source": "claude"
+    "readingLevel": "Beginning Reader",
+    "wordCount": 178,
+    "source": "claude",
+    "readingTime": "5 min",
+    "tags": [
+      "Animal Story",
+      "friendship"
+    ]
   },
   "184": {
     "id": "184",
@@ -1452,15 +1983,20 @@
     "coverImage": "https://storage.googleapis.com/wonder-stories-web.appspot.com/books/images/book184/cover.png",
     "largeCoverImage": "https://storage.googleapis.com/wonder-stories-web.appspot.com/books/images/book184/lcover.png",
     "description": "Detective Red is on a mission to solve the curious case of Oro, a missing girl last seen near the dark woods. What unfolds deeper in the forest raises more questions. Will Red decipher the mystery behind Oro and the strange bear tracks?",
-    "metaDescription": "Free mystery story for Grade 1-2. Follow Detective Red in a suspenseful quest to find a missing girl named Oro in the woods. Read free on Wonder.io!",
+    "metaDescription": "Free mystery story for Grade K-1. Follow Detective Red in a suspenseful quest to find a missing girl named Oro in the woods. Read free on Wonder.io!",
     "keywords": "The Missing Girl, Elliott Hedman, Detective Red, Oro, storybook mystery, children's mystery, grade 1-2, Goldilocks twist, free stories for kids, wonder.io",
     "genre": "Mystery",
-    "gradeLevel": "Grade 1-2",
-    "ageRange": "6-8 years",
+    "gradeLevel": "Grade K-1",
+    "ageRange": "5-7 years",
     "ogDescription": "Detective Red dives into the dark woods to find Oro. Encounter mysteries and bears. Will Red solve the case?",
-    "readingLevel": "Grade 1-2",
-    "wordCount": 295,
-    "source": "claude"
+    "readingLevel": "Beginning Reader",
+    "wordCount": 289,
+    "source": "claude",
+    "readingTime": "10 min",
+    "tags": [
+      "Mystery",
+      "nature"
+    ]
   },
   "189": {
     "id": "189",
@@ -1471,15 +2007,20 @@
     "coverImage": "https://storage.googleapis.com/wonder-stories-web.appspot.com/books/images/book189/cover.png",
     "largeCoverImage": "https://storage.googleapis.com/wonder-stories-web.appspot.com/books/images/book189/lcover.png",
     "description": "Join Alex in 'Melted Video Games' as a mysterious snowstorm brings his snowman to life inside the house. With his parents stuck at work, can Alex solve the mystery and save his frosty friend before he's gone for good?",
-    "metaDescription": "Free school adventure story for Grade 1-2. Alex's snowman melts indoors during a snowstorm. Can Alex save him? Read free on Wonder.io!",
-    "keywords": "Alex, snowman, snowstorm, Fortnite, Grade 1-2, school adventure, children's book, free stories for kids, interactive books for children",
-    "genre": "School Adventure",
-    "gradeLevel": "Grade 1-2",
-    "ageRange": "6-8 years",
+    "metaDescription": "Free school adventure story for Grade K-1. Alex's snowman melts indoors during a snowstorm. Can Alex save him? Read free on Wonder.io!",
+    "keywords": "Alex, snowman, snowstorm, Fortnite, Grade K-1, school adventure, children's book, free stories for kids, interactive books for children",
+    "genre": "School Story",
+    "gradeLevel": "Grade K-1",
+    "ageRange": "5-7 years",
     "ogDescription": "Alex finds his snowman melted indoors. Can he save it? Discover the whimsical adventure in 'Melted Video Games.'",
-    "readingLevel": "Grade 1-2",
-    "wordCount": 232,
-    "source": "claude"
+    "readingLevel": "Beginning Reader",
+    "wordCount": 221,
+    "source": "claude",
+    "readingTime": "9 min",
+    "tags": [
+      "School Story",
+      "family"
+    ]
   },
   "190": {
     "id": "190",
@@ -1490,15 +2031,20 @@
     "coverImage": "https://storage.googleapis.com/wonder-stories-web.appspot.com/books/images/book190/cover.png",
     "largeCoverImage": "https://storage.googleapis.com/wonder-stories-web.appspot.com/books/images/book190/lcover.png",
     "description": "On a snowy night, a young child named Nat hears a mysterious bump near the fireplace. As Nat investigates, they discover Santa Claus stuck in the chimney! Can Nat help Santa escape and save Christmas? Join this thrilling adventure as Nat uses clever tricks to help Santa deliver gifts!",
-    "metaDescription": "Free adventure story for Grade 3-4. Nat finds Santa stuck in the chimney on a snowy night! Will Nat save Christmas? Read free on Wonder.io!",
-    "keywords": "Nat, fireplace, Santa, adventure story, Grade 3-4, children's book, free stories for kids, interactive books for children, snowy night",
-    "genre": "Adventure",
-    "gradeLevel": "Grade 3-4",
-    "ageRange": "8-10 years",
+    "metaDescription": "Free adventure story for Grade K-1. Nat finds Santa stuck in the chimney on a snowy night! Will Nat save Christmas? Read free on Wonder.io!",
+    "keywords": "Nat, fireplace, Santa, adventure story, Grade K-1, children's book, free stories for kids, interactive books for children, snowy night",
+    "genre": "Humor",
+    "gradeLevel": "Grade K-1",
+    "ageRange": "5-7 years",
     "ogDescription": "Nat discovers Santa stuck in the chimney! Will Nat help him? Join this snowy adventure and find out!",
-    "readingLevel": "Grade 3-4",
-    "wordCount": 440,
-    "source": "claude"
+    "readingLevel": "Beginning Reader",
+    "wordCount": 428,
+    "source": "claude",
+    "readingTime": "13 min",
+    "tags": [
+      "Humor",
+      "family"
+    ]
   },
   "200": {
     "id": "200",
@@ -1509,15 +2055,20 @@
     "coverImage": "https://storage.googleapis.com/wonder-stories-web.appspot.com/books/images/book200/cover.png",
     "largeCoverImage": "https://storage.googleapis.com/wonder-stories-web.appspot.com/books/images/book200/lcover.png",
     "description": "Join Elliott and his friend Natalie as they go camping on the mysterious Island of the Ring Tailed Bandit. Food is forbidden, yet Elliott adores his gummy worms. When eyes appear in the woods, can they solve the island's secret?",
-    "metaDescription": "Free mystery story for Grade 3-4. Elliott and Natalie explore a forbidden island. What's lurking beyond the trees? Read free on Wonder.io!",
+    "metaDescription": "Free mystery story for Grade 2-3. Elliott and Natalie explore a forbidden island. What's lurking beyond the trees? Read free on Wonder.io!",
     "keywords": "Elliott, Natalie, Island of the Ring Tailed Bandit, mystery story, grade 3-4, free kids' stories, camping adventure, forbidden island, interactive books for children",
-    "genre": "Mystery",
-    "gradeLevel": "Grade 3-4",
-    "ageRange": "8-10 years",
+    "genre": "Animal Story",
+    "gradeLevel": "Grade 2-3",
+    "ageRange": "7-9 years",
     "ogDescription": "Elliott and Natalie camp on an island with forbidden food. Who's watching them in the woods?",
-    "readingLevel": "Grade 3-4",
-    "wordCount": 820,
-    "source": "claude"
+    "readingLevel": "Developing Reader",
+    "wordCount": 797,
+    "source": "claude",
+    "readingTime": "13 min",
+    "tags": [
+      "Animal Story",
+      "nature"
+    ]
   },
   "903": {
     "id": "903",
@@ -1534,8 +2085,12 @@
     "gradeLevel": "Grade 1-2",
     "ageRange": "6-8 years",
     "ogDescription": "Join Bubbles on an adventure to save Big Foot, stuck in a tree. Can creative teamwork rescue the day?",
-    "readingLevel": "Grade 1-2",
-    "wordCount": 147,
-    "source": "claude"
+    "readingLevel": "Early Reader",
+    "wordCount": 97,
+    "source": "claude",
+    "readingTime": "4 min",
+    "tags": [
+      "Adventure"
+    ]
   }
 }

@@ -12,8 +12,6 @@
         </router-link>
         <div class="nav-links">
           <router-link to="/books" class="nav-link">Books</router-link>
-          <a href="https://www.wonderstories.app/research" class="nav-link" target="_blank" rel="noopener">Research</a>
-          <a href="https://www.wonderstories.app/about-us" class="nav-link" target="_blank" rel="noopener">About</a>
           <router-link to="/books" class="nav-cta-btn">Start Reading</router-link>
         </div>
       </div>
@@ -28,12 +26,14 @@
             <h1 class="hero-h1">{{ title }}</h1>
             <p class="hero-subtitle">{{ subtitle }}</p>
             <router-link to="/books" class="cta-primary">Start Reading Now</router-link>
+            <p class="cta-microcopy">No signup required · Works on any device · 100% free</p>
           </div>
           <div class="hero-image">
             <img
               src="../assets/Images/landing/app-example.png"
-              alt="Wonder Stories interactive book example"
+              alt="Child reading a free interactive story on Wonder.io with comprehension questions"
               class="hero-screenshot"
+              fetchpriority="high"
             />
           </div>
         </div>
@@ -178,18 +178,20 @@
     <footer class="landing-footer">
       <div class="footer-inner">
         <div class="footer-brand">
-          <img
-            src="../assets/Images/landing/wonderstories-logo.png"
-            alt="Wonder Stories"
-            class="footer-logo"
-          />
-          <p class="footer-company">MPATH LEARNING LABS</p>
+          <router-link to="/">
+            <img
+              src="../assets/Images/landing/wonderstories-logo.png"
+              alt="Wonder Stories"
+              class="footer-logo"
+            />
+          </router-link>
         </div>
         <div class="footer-links">
           <router-link to="/interactive-books-for-kids">Interactive Books</router-link>
           <router-link to="/free-interactive-books">Free Books</router-link>
           <router-link to="/books-for-kids-with-adhd">Books for ADHD</router-link>
           <router-link to="/books-for-kids-with-dyslexia">Books for Dyslexia</router-link>
+          <router-link to="/free-online-books-for-kids">Free Online Books</router-link>
           <router-link to="/books">All Books</router-link>
         </div>
         <p class="footer-copy">© {{ new Date().getFullYear() }} Wonder Stories — Free interactive stories for every child.</p>
@@ -236,6 +238,8 @@ export default {
     },
   },
   mounted() {
+    // Mark visitor so they skip the landing page on return visits
+    localStorage.setItem('wonder_visited', '1');
     updateMetaTags({
       title: this.metaTitle,
       description: this.metaDescription,
@@ -342,7 +346,7 @@ export default {
 
 /* ===== Hero ===== */
 .hero {
-  background: linear-gradient(135deg, #f0fafa 0%, #e8f4f3 100%);
+  background: #fff;
   padding: 64px 24px 48px;
 }
 
@@ -404,6 +408,12 @@ export default {
   color: #fff;
 }
 
+.cta-microcopy {
+  margin: 10px 0 0 0;
+  font-size: 0.8rem;
+  color: #999;
+}
+
 .hero-image {
   flex: 0 0 380px;
 }
@@ -411,8 +421,6 @@ export default {
 .hero-screenshot {
   width: 100%;
   height: auto;
-  border-radius: 12px;
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.12);
 }
 
 /* ===== Social Proof Bar ===== */
@@ -756,7 +764,8 @@ details[open] .faq-question::before {
 
 /* ===== Footer ===== */
 .landing-footer {
-  background: #1a1a2e;
+  background: #fff;
+  border-top: 1px solid #eee;
   padding: 40px 24px;
   color: #888;
 }
@@ -770,16 +779,7 @@ details[open] .faq-question::before {
 .footer-logo {
   height: 28px;
   width: auto;
-  opacity: 0.7;
   margin-bottom: 8px;
-}
-
-.footer-company {
-  font-size: 0.75rem;
-  color: #666;
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
-  margin: 0 0 16px 0;
 }
 
 .footer-links {

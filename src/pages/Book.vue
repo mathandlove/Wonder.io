@@ -3,11 +3,7 @@
   <audio
     preload="auto"
     autoplay
-    v-if="
-      pageMicroType == 'end' ||
-      pageMicroType == 'nextbookpage' ||
-      pageMicroType == 'join'
-    "
+    v-if="pageMicroType == 'end'"
   >
     <source src="@/assets/sounds/rockTheme.mp3" type="audio/mpeg" />
   </audio>
@@ -190,9 +186,9 @@ img {
   z-index: 0;
 }
 .notepadsContainer {
-  height: calc(100vh - 100px);
+  flex: 1;
+  min-height: 0;
   width: 100%;
   position: relative;
-  flex-shrink: 0;
 }
 </style>

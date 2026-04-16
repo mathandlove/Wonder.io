@@ -46,10 +46,54 @@
     <changefreq>weekly</changefreq>
     <priority>0.9</priority>
   </url>
-
-  <!-- Book Pages -->
   <url>
-    <loc>https://wonder.io/book/1/1</loc>
+    <loc>https://wonder.io/free-online-books-for-kids</loc>
+    <lastmod>2026-04-15</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.9</priority>
+  </url>
+
+  <!-- Blog -->
+  <url>
+    <loc>https://wonder.io/blog</loc>
+    <lastmod>2026-04-15</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://wonder.io/blog/interactive-books-for-kids-with-adhd</loc>
+    <lastmod>2026-04-15</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://wonder.io/blog/interactive-reading-struggling-readers</loc>
+    <lastmod>2026-04-15</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://wonder.io/blog/grade-by-grade-reading-guide</loc>
+    <lastmod>2026-04-15</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://wonder.io/blog/free-online-books-for-kids-parents-guide</loc>
+    <lastmod>2026-04-15</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://wonder.io/blog/interactive-vs-traditional-reading</loc>
+    <lastmod>2026-04-15</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+
+  <!-- Book Landing Pages -->
+  <url>
+    <loc>https://wonder.io/book/1</loc>
     <lastmod>2026-04-15</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
@@ -59,7 +103,7 @@
     </image:image>
   </url>
   <url>
-    <loc>https://wonder.io/book/2/1</loc>
+    <loc>https://wonder.io/book/2</loc>
     <lastmod>2026-04-15</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
@@ -69,7 +113,7 @@
     </image:image>
   </url>
   <url>
-    <loc>https://wonder.io/book/3/1</loc>
+    <loc>https://wonder.io/book/3</loc>
     <lastmod>2026-04-15</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
@@ -79,7 +123,7 @@
     </image:image>
   </url>
   <url>
-    <loc>https://wonder.io/book/4/1</loc>
+    <loc>https://wonder.io/book/4</loc>
     <lastmod>2026-04-15</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
@@ -89,7 +133,7 @@
     </image:image>
   </url>
   <url>
-    <loc>https://wonder.io/book/5/1</loc>
+    <loc>https://wonder.io/book/5</loc>
     <lastmod>2026-04-15</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
@@ -99,7 +143,7 @@
     </image:image>
   </url>
   <url>
-    <loc>https://wonder.io/book/6/1</loc>
+    <loc>https://wonder.io/book/6</loc>
     <lastmod>2026-04-15</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
@@ -109,7 +153,7 @@
     </image:image>
   </url>
   <url>
-    <loc>https://wonder.io/book/7/1</loc>
+    <loc>https://wonder.io/book/7</loc>
     <lastmod>2026-04-15</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
@@ -119,7 +163,7 @@
     </image:image>
   </url>
   <url>
-    <loc>https://wonder.io/book/8/1</loc>
+    <loc>https://wonder.io/book/8</loc>
     <lastmod>2026-04-15</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
@@ -129,7 +173,7 @@
     </image:image>
   </url>
   <url>
-    <loc>https://wonder.io/book/9/1</loc>
+    <loc>https://wonder.io/book/9</loc>
     <lastmod>2026-04-15</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
@@ -139,7 +183,7 @@
     </image:image>
   </url>
   <url>
-    <loc>https://wonder.io/book/10/1</loc>
+    <loc>https://wonder.io/book/10</loc>
     <lastmod>2026-04-15</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
@@ -149,7 +193,7 @@
     </image:image>
   </url>
   <url>
-    <loc>https://wonder.io/book/11/1</loc>
+    <loc>https://wonder.io/book/11</loc>
     <lastmod>2026-04-15</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
@@ -159,7 +203,7 @@
     </image:image>
   </url>
   <url>
-    <loc>https://wonder.io/book/12/1</loc>
+    <loc>https://wonder.io/book/12</loc>
     <lastmod>2026-04-15</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
@@ -169,7 +213,7 @@
     </image:image>
   </url>
   <url>
-    <loc>https://wonder.io/book/13/1</loc>
+    <loc>https://wonder.io/book/13</loc>
     <lastmod>2026-04-15</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
@@ -179,7 +223,7 @@
     </image:image>
   </url>
   <url>
-    <loc>https://wonder.io/book/14/1</loc>
+    <loc>https://wonder.io/book/14</loc>
     <lastmod>2026-04-15</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
@@ -189,7 +233,7 @@
     </image:image>
   </url>
   <url>
-    <loc>https://wonder.io/book/15/1</loc>
+    <loc>https://wonder.io/book/15</loc>
     <lastmod>2026-04-15</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
@@ -199,7 +243,7 @@
     </image:image>
   </url>
   <url>
-    <loc>https://wonder.io/book/16/1</loc>
+    <loc>https://wonder.io/book/16</loc>
     <lastmod>2026-04-15</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
@@ -209,7 +253,7 @@
     </image:image>
   </url>
   <url>
-    <loc>https://wonder.io/book/17/1</loc>
+    <loc>https://wonder.io/book/17</loc>
     <lastmod>2026-04-15</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
@@ -219,7 +263,7 @@
     </image:image>
   </url>
   <url>
-    <loc>https://wonder.io/book/18/1</loc>
+    <loc>https://wonder.io/book/18</loc>
     <lastmod>2026-04-15</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
@@ -229,7 +273,7 @@
     </image:image>
   </url>
   <url>
-    <loc>https://wonder.io/book/20/1</loc>
+    <loc>https://wonder.io/book/20</loc>
     <lastmod>2026-04-15</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
@@ -239,7 +283,7 @@
     </image:image>
   </url>
   <url>
-    <loc>https://wonder.io/book/21/1</loc>
+    <loc>https://wonder.io/book/21</loc>
     <lastmod>2026-04-15</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
@@ -249,7 +293,7 @@
     </image:image>
   </url>
   <url>
-    <loc>https://wonder.io/book/22/1</loc>
+    <loc>https://wonder.io/book/22</loc>
     <lastmod>2026-04-15</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
@@ -259,7 +303,7 @@
     </image:image>
   </url>
   <url>
-    <loc>https://wonder.io/book/23/1</loc>
+    <loc>https://wonder.io/book/23</loc>
     <lastmod>2026-04-15</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
@@ -269,7 +313,7 @@
     </image:image>
   </url>
   <url>
-    <loc>https://wonder.io/book/24/1</loc>
+    <loc>https://wonder.io/book/24</loc>
     <lastmod>2026-04-15</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
@@ -279,7 +323,7 @@
     </image:image>
   </url>
   <url>
-    <loc>https://wonder.io/book/26/1</loc>
+    <loc>https://wonder.io/book/26</loc>
     <lastmod>2026-04-15</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
@@ -289,7 +333,7 @@
     </image:image>
   </url>
   <url>
-    <loc>https://wonder.io/book/27/1</loc>
+    <loc>https://wonder.io/book/27</loc>
     <lastmod>2026-04-15</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
@@ -299,7 +343,7 @@
     </image:image>
   </url>
   <url>
-    <loc>https://wonder.io/book/28/1</loc>
+    <loc>https://wonder.io/book/28</loc>
     <lastmod>2026-04-15</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
@@ -309,7 +353,7 @@
     </image:image>
   </url>
   <url>
-    <loc>https://wonder.io/book/29/1</loc>
+    <loc>https://wonder.io/book/29</loc>
     <lastmod>2026-04-15</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
@@ -319,7 +363,7 @@
     </image:image>
   </url>
   <url>
-    <loc>https://wonder.io/book/30/1</loc>
+    <loc>https://wonder.io/book/30</loc>
     <lastmod>2026-04-15</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
@@ -329,7 +373,7 @@
     </image:image>
   </url>
   <url>
-    <loc>https://wonder.io/book/31/1</loc>
+    <loc>https://wonder.io/book/31</loc>
     <lastmod>2026-04-15</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
@@ -339,7 +383,7 @@
     </image:image>
   </url>
   <url>
-    <loc>https://wonder.io/book/34/1</loc>
+    <loc>https://wonder.io/book/34</loc>
     <lastmod>2026-04-15</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
@@ -349,7 +393,7 @@
     </image:image>
   </url>
   <url>
-    <loc>https://wonder.io/book/36/1</loc>
+    <loc>https://wonder.io/book/36</loc>
     <lastmod>2026-04-15</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
@@ -359,7 +403,7 @@
     </image:image>
   </url>
   <url>
-    <loc>https://wonder.io/book/37/1</loc>
+    <loc>https://wonder.io/book/37</loc>
     <lastmod>2026-04-15</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
@@ -369,7 +413,7 @@
     </image:image>
   </url>
   <url>
-    <loc>https://wonder.io/book/38/1</loc>
+    <loc>https://wonder.io/book/38</loc>
     <lastmod>2026-04-15</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
@@ -379,7 +423,7 @@
     </image:image>
   </url>
   <url>
-    <loc>https://wonder.io/book/39/1</loc>
+    <loc>https://wonder.io/book/39</loc>
     <lastmod>2026-04-15</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
@@ -389,7 +433,7 @@
     </image:image>
   </url>
   <url>
-    <loc>https://wonder.io/book/40/1</loc>
+    <loc>https://wonder.io/book/40</loc>
     <lastmod>2026-04-15</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
@@ -399,7 +443,7 @@
     </image:image>
   </url>
   <url>
-    <loc>https://wonder.io/book/42/1</loc>
+    <loc>https://wonder.io/book/42</loc>
     <lastmod>2026-04-15</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
@@ -409,7 +453,7 @@
     </image:image>
   </url>
   <url>
-    <loc>https://wonder.io/book/44/1</loc>
+    <loc>https://wonder.io/book/44</loc>
     <lastmod>2026-04-15</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
@@ -419,7 +463,7 @@
     </image:image>
   </url>
   <url>
-    <loc>https://wonder.io/book/45/1</loc>
+    <loc>https://wonder.io/book/45</loc>
     <lastmod>2026-04-15</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
@@ -429,7 +473,7 @@
     </image:image>
   </url>
   <url>
-    <loc>https://wonder.io/book/46/1</loc>
+    <loc>https://wonder.io/book/46</loc>
     <lastmod>2026-04-15</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
@@ -439,7 +483,7 @@
     </image:image>
   </url>
   <url>
-    <loc>https://wonder.io/book/47/1</loc>
+    <loc>https://wonder.io/book/47</loc>
     <lastmod>2026-04-15</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
@@ -449,7 +493,7 @@
     </image:image>
   </url>
   <url>
-    <loc>https://wonder.io/book/100/1</loc>
+    <loc>https://wonder.io/book/100</loc>
     <lastmod>2026-04-15</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
@@ -459,7 +503,7 @@
     </image:image>
   </url>
   <url>
-    <loc>https://wonder.io/book/101/1</loc>
+    <loc>https://wonder.io/book/101</loc>
     <lastmod>2026-04-15</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
@@ -469,7 +513,7 @@
     </image:image>
   </url>
   <url>
-    <loc>https://wonder.io/book/102/1</loc>
+    <loc>https://wonder.io/book/102</loc>
     <lastmod>2026-04-15</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
@@ -479,7 +523,7 @@
     </image:image>
   </url>
   <url>
-    <loc>https://wonder.io/book/103/1</loc>
+    <loc>https://wonder.io/book/103</loc>
     <lastmod>2026-04-15</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
@@ -489,7 +533,7 @@
     </image:image>
   </url>
   <url>
-    <loc>https://wonder.io/book/104/1</loc>
+    <loc>https://wonder.io/book/104</loc>
     <lastmod>2026-04-15</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
@@ -499,7 +543,7 @@
     </image:image>
   </url>
   <url>
-    <loc>https://wonder.io/book/105/1</loc>
+    <loc>https://wonder.io/book/105</loc>
     <lastmod>2026-04-15</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
@@ -509,7 +553,7 @@
     </image:image>
   </url>
   <url>
-    <loc>https://wonder.io/book/106/1</loc>
+    <loc>https://wonder.io/book/106</loc>
     <lastmod>2026-04-15</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
@@ -519,7 +563,7 @@
     </image:image>
   </url>
   <url>
-    <loc>https://wonder.io/book/107/1</loc>
+    <loc>https://wonder.io/book/107</loc>
     <lastmod>2026-04-15</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
@@ -529,7 +573,7 @@
     </image:image>
   </url>
   <url>
-    <loc>https://wonder.io/book/108/1</loc>
+    <loc>https://wonder.io/book/108</loc>
     <lastmod>2026-04-15</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
@@ -539,7 +583,7 @@
     </image:image>
   </url>
   <url>
-    <loc>https://wonder.io/book/109/1</loc>
+    <loc>https://wonder.io/book/109</loc>
     <lastmod>2026-04-15</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
@@ -549,7 +593,7 @@
     </image:image>
   </url>
   <url>
-    <loc>https://wonder.io/book/110/1</loc>
+    <loc>https://wonder.io/book/110</loc>
     <lastmod>2026-04-15</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
@@ -559,7 +603,7 @@
     </image:image>
   </url>
   <url>
-    <loc>https://wonder.io/book/111/1</loc>
+    <loc>https://wonder.io/book/111</loc>
     <lastmod>2026-04-15</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
@@ -569,7 +613,7 @@
     </image:image>
   </url>
   <url>
-    <loc>https://wonder.io/book/112/1</loc>
+    <loc>https://wonder.io/book/112</loc>
     <lastmod>2026-04-15</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
@@ -579,7 +623,7 @@
     </image:image>
   </url>
   <url>
-    <loc>https://wonder.io/book/113/1</loc>
+    <loc>https://wonder.io/book/113</loc>
     <lastmod>2026-04-15</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
@@ -589,7 +633,7 @@
     </image:image>
   </url>
   <url>
-    <loc>https://wonder.io/book/114/1</loc>
+    <loc>https://wonder.io/book/114</loc>
     <lastmod>2026-04-15</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
@@ -599,7 +643,7 @@
     </image:image>
   </url>
   <url>
-    <loc>https://wonder.io/book/115/1</loc>
+    <loc>https://wonder.io/book/115</loc>
     <lastmod>2026-04-15</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
@@ -609,7 +653,7 @@
     </image:image>
   </url>
   <url>
-    <loc>https://wonder.io/book/116/1</loc>
+    <loc>https://wonder.io/book/116</loc>
     <lastmod>2026-04-15</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
@@ -619,7 +663,7 @@
     </image:image>
   </url>
   <url>
-    <loc>https://wonder.io/book/118/1</loc>
+    <loc>https://wonder.io/book/118</loc>
     <lastmod>2026-04-15</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
@@ -629,7 +673,7 @@
     </image:image>
   </url>
   <url>
-    <loc>https://wonder.io/book/119/1</loc>
+    <loc>https://wonder.io/book/119</loc>
     <lastmod>2026-04-15</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
@@ -639,7 +683,7 @@
     </image:image>
   </url>
   <url>
-    <loc>https://wonder.io/book/120/1</loc>
+    <loc>https://wonder.io/book/120</loc>
     <lastmod>2026-04-15</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
@@ -649,7 +693,7 @@
     </image:image>
   </url>
   <url>
-    <loc>https://wonder.io/book/121/1</loc>
+    <loc>https://wonder.io/book/121</loc>
     <lastmod>2026-04-15</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
@@ -659,7 +703,7 @@
     </image:image>
   </url>
   <url>
-    <loc>https://wonder.io/book/122/1</loc>
+    <loc>https://wonder.io/book/122</loc>
     <lastmod>2026-04-15</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
@@ -669,7 +713,7 @@
     </image:image>
   </url>
   <url>
-    <loc>https://wonder.io/book/123/1</loc>
+    <loc>https://wonder.io/book/123</loc>
     <lastmod>2026-04-15</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
@@ -679,7 +723,7 @@
     </image:image>
   </url>
   <url>
-    <loc>https://wonder.io/book/124/1</loc>
+    <loc>https://wonder.io/book/124</loc>
     <lastmod>2026-04-15</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
@@ -689,7 +733,7 @@
     </image:image>
   </url>
   <url>
-    <loc>https://wonder.io/book/125/1</loc>
+    <loc>https://wonder.io/book/125</loc>
     <lastmod>2026-04-15</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
@@ -699,7 +743,7 @@
     </image:image>
   </url>
   <url>
-    <loc>https://wonder.io/book/126/1</loc>
+    <loc>https://wonder.io/book/126</loc>
     <lastmod>2026-04-15</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
@@ -709,7 +753,7 @@
     </image:image>
   </url>
   <url>
-    <loc>https://wonder.io/book/127/1</loc>
+    <loc>https://wonder.io/book/127</loc>
     <lastmod>2026-04-15</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
@@ -719,7 +763,7 @@
     </image:image>
   </url>
   <url>
-    <loc>https://wonder.io/book/128/1</loc>
+    <loc>https://wonder.io/book/128</loc>
     <lastmod>2026-04-15</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
@@ -729,7 +773,7 @@
     </image:image>
   </url>
   <url>
-    <loc>https://wonder.io/book/129/1</loc>
+    <loc>https://wonder.io/book/129</loc>
     <lastmod>2026-04-15</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
@@ -739,7 +783,7 @@
     </image:image>
   </url>
   <url>
-    <loc>https://wonder.io/book/130/1</loc>
+    <loc>https://wonder.io/book/130</loc>
     <lastmod>2026-04-15</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
@@ -749,7 +793,7 @@
     </image:image>
   </url>
   <url>
-    <loc>https://wonder.io/book/131/1</loc>
+    <loc>https://wonder.io/book/131</loc>
     <lastmod>2026-04-15</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
@@ -759,7 +803,7 @@
     </image:image>
   </url>
   <url>
-    <loc>https://wonder.io/book/132/1</loc>
+    <loc>https://wonder.io/book/132</loc>
     <lastmod>2026-04-15</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
@@ -769,7 +813,7 @@
     </image:image>
   </url>
   <url>
-    <loc>https://wonder.io/book/134/1</loc>
+    <loc>https://wonder.io/book/134</loc>
     <lastmod>2026-04-15</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
@@ -779,7 +823,7 @@
     </image:image>
   </url>
   <url>
-    <loc>https://wonder.io/book/136/1</loc>
+    <loc>https://wonder.io/book/136</loc>
     <lastmod>2026-04-15</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
@@ -789,7 +833,7 @@
     </image:image>
   </url>
   <url>
-    <loc>https://wonder.io/book/138/1</loc>
+    <loc>https://wonder.io/book/138</loc>
     <lastmod>2026-04-15</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
@@ -799,7 +843,7 @@
     </image:image>
   </url>
   <url>
-    <loc>https://wonder.io/book/139/1</loc>
+    <loc>https://wonder.io/book/139</loc>
     <lastmod>2026-04-15</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
@@ -809,7 +853,7 @@
     </image:image>
   </url>
   <url>
-    <loc>https://wonder.io/book/184/1</loc>
+    <loc>https://wonder.io/book/184</loc>
     <lastmod>2026-04-15</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
@@ -819,7 +863,7 @@
     </image:image>
   </url>
   <url>
-    <loc>https://wonder.io/book/189/1</loc>
+    <loc>https://wonder.io/book/189</loc>
     <lastmod>2026-04-15</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
@@ -829,7 +873,7 @@
     </image:image>
   </url>
   <url>
-    <loc>https://wonder.io/book/190/1</loc>
+    <loc>https://wonder.io/book/190</loc>
     <lastmod>2026-04-15</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
@@ -839,7 +883,7 @@
     </image:image>
   </url>
   <url>
-    <loc>https://wonder.io/book/200/1</loc>
+    <loc>https://wonder.io/book/200</loc>
     <lastmod>2026-04-15</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
@@ -849,7 +893,7 @@
     </image:image>
   </url>
   <url>
-    <loc>https://wonder.io/book/903/1</loc>
+    <loc>https://wonder.io/book/903</loc>
     <lastmod>2026-04-15</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>

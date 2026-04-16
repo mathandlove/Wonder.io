@@ -2,7 +2,7 @@
   <the-background>
     <div class="topPadding">
       <img
-        alt=""
+        alt="Wonder Stories - Free Interactive Books for Kids"
         src="../assets/Images/WonderStories_Logo_BlackAlt.png"
         class="NavWonderLogo"
       />
@@ -46,6 +46,8 @@ export default {
     };
   },
   async mounted() {
+    // Mark as returning visitor for future visits
+    localStorage.setItem('wonder_visited', '1');
     updateHomeMetaTags();
     await this.getApiBooks();
   },
@@ -61,11 +63,6 @@ export default {
 </script>
 
 <style scoped>
-.blueBackground {
-  background-color: #96c5c2;
-  height: 100vh;
-  width: 100vw;
-}
 .topPadding {
   height: 20vh;
   display: flex;
@@ -90,11 +87,6 @@ export default {
   background-size: 100% 110%;
 }
 
-.textThickness {
-  font-weight: 900;
-  font-size: min(3vw, 5vh);
-}
-
 .NavWonderLogo {
   width: 300px;
   object-fit: contain;
@@ -108,12 +100,11 @@ export default {
   justify-items: center;
   align-items: center;
   justify-content: center;
-
   width: 100%;
   height: 80vh;
-
   padding-bottom: 10vh;
 }
+
 @media (max-aspect-ratio: 857/847) {
   .gradeGrid {
     grid-template-columns: repeat(3, 33%);
@@ -151,5 +142,3 @@ export default {
   }
 }
 </style>
-
-

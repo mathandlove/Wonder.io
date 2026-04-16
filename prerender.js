@@ -12,12 +12,21 @@ const bookMetadata = require('./src/assets/book-seo-metadata.json');
 const bookIds = Object.keys(bookMetadata).sort((a, b) => Number(a) - Number(b));
 const routes = [
   '/',
+  '/start',
   '/books',
   '/interactive-books-for-kids',
   '/interactive-stories-for-kids',
   '/free-interactive-books',
   '/books-for-kids-with-adhd',
   '/books-for-kids-with-dyslexia',
+  '/free-online-books-for-kids',
+  '/blog',
+  '/blog/interactive-books-for-kids-with-adhd',
+  '/blog/interactive-reading-struggling-readers',
+  '/blog/grade-by-grade-reading-guide',
+  '/blog/free-online-books-for-kids-parents-guide',
+  '/blog/interactive-vs-traditional-reading',
+  ...bookIds.map(id => `/book/${id}`),
   ...bookIds.map(id => `/book/${id}/1`)
 ];
 

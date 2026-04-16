@@ -64,8 +64,52 @@ let xml = `<?xml version="1.0" encoding="UTF-8"?>
     <changefreq>weekly</changefreq>
     <priority>0.9</priority>
   </url>
+  <url>
+    <loc>https://wonder.io/free-online-books-for-kids</loc>
+    <lastmod>${today}</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.9</priority>
+  </url>
 
-  <!-- Book Pages -->`;
+  <!-- Blog -->
+  <url>
+    <loc>https://wonder.io/blog</loc>
+    <lastmod>${today}</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://wonder.io/blog/interactive-books-for-kids-with-adhd</loc>
+    <lastmod>${today}</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://wonder.io/blog/interactive-reading-struggling-readers</loc>
+    <lastmod>${today}</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://wonder.io/blog/grade-by-grade-reading-guide</loc>
+    <lastmod>${today}</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://wonder.io/blog/free-online-books-for-kids-parents-guide</loc>
+    <lastmod>${today}</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://wonder.io/blog/interactive-vs-traditional-reading</loc>
+    <lastmod>${today}</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+
+  <!-- Book Landing Pages -->`;
 
 const bookIds = Object.keys(metadata).sort((a, b) => Number(a) - Number(b));
 
@@ -74,9 +118,10 @@ for (const id of bookIds) {
   const title = escapeXml(book.title);
   const coverImage = book.coverImage;
 
+  // Book landing page (primary SEO target)
   xml += `
   <url>
-    <loc>https://wonder.io/book/${id}/1</loc>
+    <loc>https://wonder.io/book/${id}</loc>
     <lastmod>${today}</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>

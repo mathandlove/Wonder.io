@@ -70,8 +70,9 @@ export default {
       return bookMetadata[String(this.bookId)] || null;
     },
     readingTime() {
-      if (!this.metadata || !this.metadata.wordCount) return 5;
-      // Average child reads ~150 words/min, interactive adds time
+      if (!this.metadata) return 5;
+      if (this.metadata.readingTime) return parseInt(this.metadata.readingTime);
+      if (!this.metadata.wordCount) return 5;
       return Math.max(3, Math.ceil(this.metadata.wordCount / 120));
     },
     relatedBooks() {

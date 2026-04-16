@@ -8,20 +8,45 @@ import TcrIntro from '../pages/TcrIntro.vue';
 import TcrLetterQuiz from '../pages/TcrLetterQuiz.vue';
 import TcrLibrary from '../pages/TcrLibrary.vue';
 import TcrGameDescription from '../pages/TcrGameDescription.vue';
+import NotFound from '../pages/NotFound.vue';
 
 // SEO Landing Pages
+const HomeLanding = () => import('../pages/landing/HomeLanding.vue');
 const InteractiveBooksForKids = () => import('../pages/landing/InteractiveBooksForKids.vue');
 const InteractiveStoriesForKids = () => import('../pages/landing/InteractiveStoriesForKids.vue');
 const FreeInteractiveBooks = () => import('../pages/landing/FreeInteractiveBooks.vue');
 const BooksForKidsWithAdhd = () => import('../pages/landing/BooksForKidsWithAdhd.vue');
 const BooksForKidsWithDyslexia = () => import('../pages/landing/BooksForKidsWithDyslexia.vue');
+const FreeOnlineBooksForKids = () => import('../pages/landing/FreeOnlineBooksForKids.vue');
+
+// Blog Pages
+const BlogIndex = () => import('../pages/BlogIndex.vue');
+const BlogInteractiveBooksAdhd = () => import('../pages/blog/InteractiveBooksAdhd.vue');
+const BlogInteractiveReadingStrugglingReaders = () => import('../pages/blog/InteractiveReadingStrugglingReaders.vue');
+const BlogGradeByGradeReadingGuide = () => import('../pages/blog/GradeByGradeReadingGuide.vue');
+const BlogFreeOnlineBooksParentsGuide = () => import('../pages/blog/FreeOnlineBooksParentsGuide.vue');
+const BlogInteractiveVsTraditionalReading = () => import('../pages/blog/InteractiveVsTraditionalReading.vue');
 
 const routes = [
   {
     path: '/',
     name: 'Home',
+    // First visit → marketing landing page; return visits → grade selector
+    beforeEnter: (to, from, next) => {
+      if (localStorage.getItem('wonder_visited')) {
+        next({ name: 'GradeSelector', replace: true });
+      } else {
+        next();
+      }
+    },
+    component: HomeLanding,
+    meta: { title: 'Wonder.io — Free Interactive Books for Kids' },
+  },
+  {
+    path: '/start',
+    name: 'GradeSelector',
     component: Home,
-    meta: { title: 'Welcome to Wonder.io' },
+    meta: { title: 'Choose a Grade Level | Wonder.io' },
   },
   {
     path: '/book/:id',
@@ -74,6 +99,48 @@ const routes = [
     meta: { title: 'Books for Kids with Dyslexia | Wonder.io' },
   },
   {
+    path: '/free-online-books-for-kids',
+    name: 'FreeOnlineBooksForKids',
+    component: FreeOnlineBooksForKids,
+    meta: { title: 'Free Online Books for Kids | Wonder.io' },
+  },
+  {
+    path: '/blog',
+    name: 'Blog',
+    component: BlogIndex,
+    meta: { title: 'Blog | Wonder.io' },
+  },
+  {
+    path: '/blog/interactive-books-for-kids-with-adhd',
+    name: 'BlogInteractiveBooksAdhd',
+    component: BlogInteractiveBooksAdhd,
+    meta: { title: 'Best Interactive Books for Kids with ADHD | Wonder.io' },
+  },
+  {
+    path: '/blog/interactive-reading-struggling-readers',
+    name: 'BlogInteractiveReadingStrugglingReaders',
+    component: BlogInteractiveReadingStrugglingReaders,
+    meta: { title: 'How Interactive Reading Helps Struggling Readers | Wonder.io' },
+  },
+  {
+    path: '/blog/grade-by-grade-reading-guide',
+    name: 'BlogGradeByGradeReadingGuide',
+    component: BlogGradeByGradeReadingGuide,
+    meta: { title: 'Grade-by-Grade Reading Guide | Wonder.io' },
+  },
+  {
+    path: '/blog/free-online-books-for-kids-parents-guide',
+    name: 'BlogFreeOnlineBooksParentsGuide',
+    component: BlogFreeOnlineBooksParentsGuide,
+    meta: { title: "Free Online Books for Kids: A Parent's Guide | Wonder.io" },
+  },
+  {
+    path: '/blog/interactive-vs-traditional-reading',
+    name: 'BlogInteractiveVsTraditionalReading',
+    component: BlogInteractiveVsTraditionalReading,
+    meta: { title: 'Interactive vs Traditional Reading | Wonder.io' },
+  },
+  {
     path: '/tcr',
     name: 'Toddlers Can Read',
     component: Tcr,
@@ -103,12 +170,14 @@ const routes = [
     name: 'Game',
     component: TcrGameDescription,
     meta: { title: 'Toddlers Can Read Prototype' },
-    props: true 
+    props: true
   },
-
-
-
-
+  {
+    path: '/:pathMatch(.*)*',
+    name: 'NotFound',
+    component: NotFound,
+    meta: { title: 'Page Not Found | Wonder.io' },
+  },
 
 ];
 

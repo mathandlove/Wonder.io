@@ -61,18 +61,20 @@
 - [x] Built `/interactive-stories-for-kids` — targeting ~1,500 impressions cluster
 - [x] Built `/free-interactive-books` — targeting ~500 impressions cluster
 - [x] Built `/books-for-kids-with-adhd` — unique differentiator, untapped keyword space
+- [x] Built `/books-for-kids-with-dyslexia` — unique differentiator, untapped keyword space
 - [x] All pages: added to router (lazy-loaded), sitemap, and prerender pipeline
 - [x] All pages: include FAQ schema (FAQPage structured data) for rich snippets
 - [x] All pages: prerendered with full HTML content (87 total prerendered pages)
 
-### 2.2 Improve Click-Through Rate (CTR) -- PARTIALLY DONE
+### 2.2 Improve Click-Through Rate (CTR) -- MOSTLY DONE
 
 - [x] Title tags use numbers and specifics ("81+ Free Interactive Books for Kids")
 - [x] Meta descriptions include CTAs ("No subscription needed!")
 - [x] FAQ schema added to all 4 landing pages (enables rich snippets)
 - [ ] Add Review/Rating schema if you have any user feedback data
-- [ ] Add Breadcrumb schema for book pages
-- [ ] Consider adding `datePublished` and `dateModified` to book structured data
+- [x] Add Breadcrumb schema for book pages (BreadcrumbList structured data: Home > Books > Book Title)
+- [x] Added `datePublished` and `dateModified` to book structured data
+- [x] Added `publisher` (Organization) to book structured data
 
 ### 2.3 Add Visible Content to Book Pages -- DONE
 
@@ -95,26 +97,31 @@ Currently invisible (position 50+) for massive keywords:
 | interactive ebook | 157 | 62 |
 
 - [ ] After prerendering is live, monitor position changes for these keywords
-- [ ] Create dedicated content targeting "free online books for kids" cluster
-- [ ] Optimize page titles and H1s for these terms
+- [x] Created `/free-online-books-for-kids` landing page targeting "free online books for kids" cluster
+- [x] Created `/books-for-kids-with-adhd` landing page (3 features + 7 FAQs, FAQ schema, prerendered)
+- [x] Created `/books-for-kids-with-dyslexia` landing page (3 features + 7 FAQs, FAQ schema, prerendered)
+- [x] Optimized page titles and H1s for these terms
 - [ ] Request re-indexing of key pages after content changes
 
 ---
 
 ## Tier 3: Growth Amplifiers (Long-term)
 
-### 3.1 Blog / Content Marketing
+### 3.1 Blog / Content Marketing -- DONE
 
-Create a blog section at `/blog` or `/resources` targeting informational intent:
+Blog section at `/blog` with Vue pages, Article schema, and internal linking:
 
-- [ ] Set up blog infrastructure (could be simple Vue pages or a CMS)
-- [ ] Write: "Best Interactive Books for Kids with ADHD"
-- [ ] Write: "How Interactive Reading Helps Struggling Readers"
-- [ ] Write: "Grade-by-Grade Reading Guide for Active Learners"
-- [ ] Write: "Free Online Books for Kids: A Parent's Guide"
-- [ ] Write: "Interactive vs Traditional Reading: What Research Says"
-- [ ] Add blog posts to sitemap
-- [ ] Internal link from blog posts to relevant book pages
+- [x] Set up blog infrastructure (`BlogPost.vue` layout + `BlogIndex.vue` index page)
+- [x] Write: "Best Interactive Books for Kids with ADHD" (`/blog/interactive-books-for-kids-with-adhd`)
+- [x] Write: "How Interactive Reading Helps Struggling Readers" (`/blog/interactive-reading-struggling-readers`)
+- [x] Write: "Grade-by-Grade Reading Guide for Active Learners" (`/blog/grade-by-grade-reading-guide`)
+- [x] Write: "Free Online Books for Kids: A Parent's Guide" (`/blog/free-online-books-for-kids-parents-guide`)
+- [x] Write: "Interactive vs Traditional Reading: What Research Says" (`/blog/interactive-vs-traditional-reading`)
+- [x] All blog posts added to sitemap (priority 0.7, monthly changefreq)
+- [x] Internal links from blog posts to `/books` and relevant landing pages
+- [x] All blog pages added to prerender pipeline
+- [x] Article schema (JSON-LD) on every blog post
+- [x] Related articles sidebar with cross-links between posts
 
 ### 3.2 Backlink Outreach
 

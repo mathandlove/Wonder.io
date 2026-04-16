@@ -138,6 +138,12 @@ function addBookStructuredData(metadata, bookId) {
     existing.remove();
   }
 
+  // Remove existing breadcrumb schema
+  const existingBreadcrumb = document.querySelector('script[data-breadcrumb-schema]');
+  if (existingBreadcrumb) {
+    existingBreadcrumb.remove();
+  }
+
   const structuredData = {
     '@context': 'https://schema.org',
     '@type': 'Book',
@@ -164,13 +170,24 @@ function addBookStructuredData(metadata, bookId) {
     'isAccessibleForFree': true,
     'image': metadata.largeCoverImage || metadata.coverImage,
     'url': `https://wonder.io/book/${bookId}`,
+    'datePublished': '2025-01-01',
+    'dateModified': new Date().toISOString().split('T')[0],
+    'timeRequired': metadata.readingTime ? `PT${parseInt(metadata.readingTime)}M` : undefined,
+    'wordCount': metadata.wordCount || undefined,
+    'publisher': {
+      '@type': 'Organization',
+      'name': 'Wonder.io',
+      'url': 'https://wonder.io'
+    },
     'offers': {
       '@type': 'Offer',
       'price': '0',
       'priceCurrency': 'USD',
       'availability': 'https://schema.org/InStock'
     },
-    'keywords': metadata.keywords.split(', ')
+    'keywords': metadata.tags && metadata.tags.length > 0
+      ? metadata.tags
+      : metadata.keywords.split(', ')
   };
 
   const script = document.createElement('script');
@@ -178,6 +195,38 @@ function addBookStructuredData(metadata, bookId) {
   script.setAttribute('data-book-schema', '');
   script.textContent = JSON.stringify(structuredData);
   document.head.appendChild(script);
+
+  // Add Breadcrumb structured data
+  const breadcrumbData = {
+    '@context': 'https://schema.org',
+    '@type': 'BreadcrumbList',
+    'itemListElement': [
+      {
+        '@type': 'ListItem',
+        'position': 1,
+        'name': 'Home',
+        'item': 'https://wonder.io/'
+      },
+      {
+        '@type': 'ListItem',
+        'position': 2,
+        'name': 'Books',
+        'item': 'https://wonder.io/books'
+      },
+      {
+        '@type': 'ListItem',
+        'position': 3,
+        'name': metadata.title,
+        'item': `https://wonder.io/book/${bookId}`
+      }
+    ]
+  };
+
+  const breadcrumbScript = document.createElement('script');
+  breadcrumbScript.setAttribute('type', 'application/ld+json');
+  breadcrumbScript.setAttribute('data-breadcrumb-schema', '');
+  breadcrumbScript.textContent = JSON.stringify(breadcrumbData);
+  document.head.appendChild(breadcrumbScript);
 }
 
 /**
@@ -199,9 +248,12 @@ export function updateBooksListingMetaTags() {
  * Update meta tags for the home page
  */
 export function updateHomeMetaTags() {
-  // The default meta tags in public/index.html are already optimized for home
-  // This function exists for consistency but can be enhanced if needed
   updateMetaTags({
+    title: 'Wonder.io — Free Interactive Books for Kids | PreK–Grade 6',
+    description: '81+ free interactive stories designed for kids who learn by doing. Built-in comprehension questions, choice-driven plots, and AI-powered engagement. Grades PreK-6. No subscription needed.',
+    keywords: 'free interactive books for kids, free kids books online, interactive stories for children, reading for kids with ADHD, books for kids with dyslexia, educational stories, reading comprehension, PreK-6 books',
+    ogTitle: 'Wonder.io — 81+ Free Interactive Books for Kids',
+    ogDescription: 'Engaging, research-backed interactive stories for kids who learn by doing. All free, PreK–Grade 6.',
     canonical: 'https://wonder.io/'
   });
 }

@@ -1,0 +1,2906 @@
+{
+  "1": {
+    "id": "1",
+    "title": "The Case of the Bedroom Egg",
+    "author": "Emily Brown",
+    "totalPages": 61,
+    "wordCount": 1214,
+    "readingTime": "17 min",
+    "gradeLevel": "Grade 2-3",
+    "ageRange": "7-9 years",
+    "readingLevel": "Developing Reader",
+    "genre": "Mystery",
+    "tags": [
+      "Mystery",
+      "family",
+      "nature",
+      "School Story",
+      "Animal Story"
+    ],
+    "_stats": {
+      "fkGrade": 2.4,
+      "cliGrade": 4.2,
+      "fleschEase": 93.7,
+      "avgWordsPerSentence": 8.9,
+      "avgSyllablesPerWord": 1.23,
+      "complexWordPercent": 3,
+      "vocabularyDiversity": 34,
+      "questionCount": 11,
+      "chapterCount": 2,
+      "hasChoices": true
+    },
+    "_previous": {
+      "gradeLevel": "Grade 3-4",
+      "ageRange": "8-10 years",
+      "genre": "Mystery",
+      "wordCount": 1005
+    }
+  },
+  "2": {
+    "id": "2",
+    "title": "The Weird Voice in the Woods",
+    "author": "James Wilson",
+    "totalPages": 85,
+    "wordCount": 2132,
+    "readingTime": "24 min",
+    "gradeLevel": "Grade 2-3",
+    "ageRange": "7-9 years",
+    "readingLevel": "Developing Reader",
+    "genre": "Mystery",
+    "tags": [
+      "Mystery",
+      "family",
+      "animals",
+      "nature",
+      "food",
+      "courage",
+      "humor",
+      "Animal Story"
+    ],
+    "_stats": {
+      "fkGrade": 2.5,
+      "cliGrade": 3.6,
+      "fleschEase": 93.5,
+      "avgWordsPerSentence": 9.1,
+      "avgSyllablesPerWord": 1.23,
+      "complexWordPercent": 3,
+      "vocabularyDiversity": 28,
+      "questionCount": 9,
+      "chapterCount": 3,
+      "hasChoices": true
+    },
+    "_previous": {
+      "gradeLevel": "Grade 3-4",
+      "ageRange": "8-10 years",
+      "genre": "Mystery",
+      "wordCount": 1012
+    }
+  },
+  "3": {
+    "id": "3",
+    "title": "The Case of the Wrong Bus",
+    "author": "Nelson Yu",
+    "totalPages": 72,
+    "wordCount": 1635,
+    "readingTime": "21 min",
+    "gradeLevel": "Grade 2-3",
+    "ageRange": "7-9 years",
+    "readingLevel": "Developing Reader",
+    "genre": "School Story",
+    "tags": [
+      "School Story",
+      "family",
+      "school",
+      "humor",
+      "Humor",
+      "Mystery"
+    ],
+    "_stats": {
+      "fkGrade": 2.7,
+      "cliGrade": 4.7,
+      "fleschEase": 88.8,
+      "avgWordsPerSentence": 7.3,
+      "avgSyllablesPerWord": 1.31,
+      "complexWordPercent": 6,
+      "vocabularyDiversity": 31,
+      "questionCount": 12,
+      "chapterCount": 2,
+      "hasChoices": true
+    },
+    "_previous": {
+      "gradeLevel": "Grade 3-4",
+      "ageRange": "8-10 years",
+      "genre": "Mystery",
+      "wordCount": 1012
+    }
+  },
+  "4": {
+    "id": "4",
+    "title": "The Case of the Missing Moon",
+    "author": "Shanna Germain",
+    "totalPages": 44,
+    "wordCount": 954,
+    "readingTime": "18 min",
+    "gradeLevel": "Grade 1-2",
+    "ageRange": "6-8 years",
+    "readingLevel": "Early Reader",
+    "genre": "Mystery",
+    "tags": [
+      "Mystery",
+      "school",
+      "animals",
+      "food",
+      "science",
+      "School Story",
+      "Animal Story"
+    ],
+    "_stats": {
+      "fkGrade": 2.6,
+      "cliGrade": 3.6,
+      "fleschEase": 90.2,
+      "avgWordsPerSentence": 7.6,
+      "avgSyllablesPerWord": 1.29,
+      "complexWordPercent": 6,
+      "vocabularyDiversity": 35,
+      "questionCount": 12,
+      "chapterCount": 0,
+      "hasChoices": false
+    },
+    "_previous": {
+      "gradeLevel": "Grade 3-4",
+      "ageRange": "8-10 years",
+      "genre": "Mystery",
+      "wordCount": 978
+    }
+  },
+  "5": {
+    "id": "5",
+    "title": "The Case of the Haunted House",
+    "author": "Loni Kim",
+    "totalPages": 47,
+    "wordCount": 1231,
+    "readingTime": "16 min",
+    "gradeLevel": "Grade 2-3",
+    "ageRange": "7-9 years",
+    "readingLevel": "Developing Reader",
+    "genre": "Animal Story",
+    "tags": [
+      "Animal Story",
+      "animals",
+      "food",
+      "courage",
+      "Mystery"
+    ],
+    "_stats": {
+      "fkGrade": 2.8,
+      "cliGrade": 4.8,
+      "fleschEase": 91.9,
+      "avgWordsPerSentence": 9.3,
+      "avgSyllablesPerWord": 1.25,
+      "complexWordPercent": 5,
+      "vocabularyDiversity": 36,
+      "questionCount": 9,
+      "chapterCount": 0,
+      "hasChoices": true
+    },
+    "_previous": {
+      "gradeLevel": "Grade 3-4",
+      "ageRange": "8-10 years",
+      "genre": "Mystery",
+      "wordCount": 1032
+    }
+  },
+  "6": {
+    "id": "6",
+    "title": "The Case of the Door to Tomorrow",
+    "author": "Jerry Gordon",
+    "totalPages": 74,
+    "wordCount": 2125,
+    "readingTime": "25 min",
+    "gradeLevel": "Grade 2-3",
+    "ageRange": "7-9 years",
+    "readingLevel": "Developing Reader",
+    "genre": "School Story",
+    "tags": [
+      "School Story",
+      "family",
+      "food",
+      "science",
+      "holidays",
+      "Mystery",
+      "Animal Story"
+    ],
+    "_stats": {
+      "fkGrade": 2.6,
+      "cliGrade": 4.6,
+      "fleschEase": 92.6,
+      "avgWordsPerSentence": 9.2,
+      "avgSyllablesPerWord": 1.24,
+      "complexWordPercent": 3,
+      "vocabularyDiversity": 30,
+      "questionCount": 11,
+      "chapterCount": 3,
+      "hasChoices": true
+    },
+    "_previous": {
+      "gradeLevel": "Grade 3-4",
+      "ageRange": "8-10 years",
+      "genre": "Mystery",
+      "wordCount": 1019
+    }
+  },
+  "7": {
+    "id": "7",
+    "title": "The Case of the Pencil Thief",
+    "author": "Cole Swany",
+    "totalPages": 127,
+    "wordCount": 3235,
+    "readingTime": "33 min",
+    "gradeLevel": "Grade 3-4",
+    "ageRange": "8-10 years",
+    "readingLevel": "Fluent Reader",
+    "genre": "School Story",
+    "tags": [
+      "School Story",
+      "school",
+      "nature",
+      "sports",
+      "science",
+      "problem-solving",
+      "Mystery",
+      "Humor"
+    ],
+    "_stats": {
+      "fkGrade": 3.2,
+      "cliGrade": 5.1,
+      "fleschEase": 87.6,
+      "avgWordsPerSentence": 8.9,
+      "avgSyllablesPerWord": 1.3,
+      "complexWordPercent": 5,
+      "vocabularyDiversity": 24,
+      "questionCount": 15,
+      "chapterCount": 4,
+      "hasChoices": true
+    },
+    "_previous": {
+      "gradeLevel": "Grade 3-4",
+      "ageRange": "8-10 years",
+      "genre": "Mystery",
+      "wordCount": 1013
+    }
+  },
+  "8": {
+    "id": "8",
+    "title": "The Case of the Popped Balloons",
+    "author": "Monica Valentinelli",
+    "totalPages": 72,
+    "wordCount": 1813,
+    "readingTime": "24 min",
+    "gradeLevel": "Grade 2-3",
+    "ageRange": "7-9 years",
+    "readingLevel": "Developing Reader",
+    "genre": "School Story",
+    "tags": [
+      "School Story",
+      "school",
+      "humor",
+      "Humor",
+      "Animal Story"
+    ],
+    "_stats": {
+      "fkGrade": 2.7,
+      "cliGrade": 4.8,
+      "fleschEase": 90.9,
+      "avgWordsPerSentence": 8.5,
+      "avgSyllablesPerWord": 1.27,
+      "complexWordPercent": 4,
+      "vocabularyDiversity": 33,
+      "questionCount": 15,
+      "chapterCount": 1,
+      "hasChoices": true
+    },
+    "_previous": {
+      "gradeLevel": "Grade 3-4",
+      "ageRange": "8-10 years",
+      "genre": "Mystery",
+      "wordCount": 1010
+    }
+  },
+  "9": {
+    "id": "9",
+    "title": "The Case of the Lunchtime Detectives",
+    "author": "Mur Lafferty",
+    "totalPages": 50,
+    "wordCount": 1205,
+    "readingTime": "17 min",
+    "gradeLevel": "Grade 2-3",
+    "ageRange": "7-9 years",
+    "readingLevel": "Developing Reader",
+    "genre": "School Story",
+    "tags": [
+      "School Story",
+      "family",
+      "school",
+      "science"
+    ],
+    "_stats": {
+      "fkGrade": 2.9,
+      "cliGrade": 4.5,
+      "fleschEase": 92.6,
+      "avgWordsPerSentence": 10.2,
+      "avgSyllablesPerWord": 1.23,
+      "complexWordPercent": 3,
+      "vocabularyDiversity": 33,
+      "questionCount": 12,
+      "chapterCount": 0,
+      "hasChoices": false
+    },
+    "_previous": {
+      "gradeLevel": "Grade 3-4",
+      "ageRange": "8-10 years",
+      "genre": "Mystery",
+      "wordCount": 1000
+    }
+  },
+  "10": {
+    "id": "10",
+    "title": "The Case of the Sidewalk Pirate Ship",
+    "author": "Tula Eriksson Turtiainen",
+    "totalPages": 54,
+    "wordCount": 1533,
+    "readingTime": "20 min",
+    "gradeLevel": "Grade 2-3",
+    "ageRange": "7-9 years",
+    "readingLevel": "Developing Reader",
+    "genre": "Pirate Adventure",
+    "tags": [
+      "Pirate Adventure",
+      "family",
+      "animals",
+      "nature",
+      "Mystery",
+      "Halloween",
+      "School Story"
+    ],
+    "_stats": {
+      "fkGrade": 2.6,
+      "cliGrade": 3.6,
+      "fleschEase": 93.9,
+      "avgWordsPerSentence": 9.6,
+      "avgSyllablesPerWord": 1.22,
+      "complexWordPercent": 2,
+      "vocabularyDiversity": 32,
+      "questionCount": 12,
+      "chapterCount": 0,
+      "hasChoices": true
+    },
+    "_previous": {
+      "gradeLevel": "Grade 3-4",
+      "ageRange": "8-10 years",
+      "genre": "Mystery",
+      "wordCount": 1018
+    }
+  },
+  "11": {
+    "id": "11",
+    "title": "The Case of Piper's Mustache",
+    "author": "Carly Schuna",
+    "totalPages": 49,
+    "wordCount": 1128,
+    "readingTime": "17 min",
+    "gradeLevel": "Grade 2-3",
+    "ageRange": "7-9 years",
+    "readingLevel": "Developing Reader",
+    "genre": "Mystery",
+    "tags": [
+      "Mystery",
+      "family"
+    ],
+    "_stats": {
+      "fkGrade": 2.4,
+      "cliGrade": 3.9,
+      "fleschEase": 92.4,
+      "avgWordsPerSentence": 8.2,
+      "avgSyllablesPerWord": 1.25,
+      "complexWordPercent": 4,
+      "vocabularyDiversity": 34,
+      "questionCount": 12,
+      "chapterCount": 0,
+      "hasChoices": true
+    },
+    "_previous": {
+      "gradeLevel": "Grade 3-4",
+      "ageRange": "8-10 years",
+      "genre": "Mystery",
+      "wordCount": 1003
+    }
+  },
+  "12": {
+    "id": "12",
+    "title": "The Case of the Friend In Need",
+    "author": "John Zakour",
+    "totalPages": 64,
+    "wordCount": 1635,
+    "readingTime": "21 min",
+    "gradeLevel": "Grade 2-3",
+    "ageRange": "7-9 years",
+    "readingLevel": "Developing Reader",
+    "genre": "Mystery",
+    "tags": [
+      "Mystery",
+      "friendship",
+      "family",
+      "animals",
+      "science",
+      "problem-solving"
+    ],
+    "_stats": {
+      "fkGrade": 2.5,
+      "cliGrade": 3.7,
+      "fleschEase": 91.7,
+      "avgWordsPerSentence": 8,
+      "avgSyllablesPerWord": 1.27,
+      "complexWordPercent": 4,
+      "vocabularyDiversity": 32,
+      "questionCount": 11,
+      "chapterCount": 0,
+      "hasChoices": true
+    },
+    "_previous": {
+      "gradeLevel": "Grade 3-4",
+      "ageRange": "8-10 years",
+      "genre": "Mystery",
+      "wordCount": 1022
+    }
+  },
+  "13": {
+    "id": "13",
+    "title": "The Case of the Lunch Ladies",
+    "author": "Matt Denis",
+    "totalPages": 55,
+    "wordCount": 1315,
+    "readingTime": "23 min",
+    "gradeLevel": "Grade 1-2",
+    "ageRange": "6-8 years",
+    "readingLevel": "Early Reader",
+    "genre": "Mystery",
+    "tags": [
+      "Mystery",
+      "friendship",
+      "animals",
+      "food",
+      "sports",
+      "School Story",
+      "Animal Story"
+    ],
+    "_stats": {
+      "fkGrade": 2,
+      "cliGrade": 3.5,
+      "fleschEase": 94.1,
+      "avgWordsPerSentence": 7.5,
+      "avgSyllablesPerWord": 1.24,
+      "complexWordPercent": 4,
+      "vocabularyDiversity": 37,
+      "questionCount": 12,
+      "chapterCount": 2,
+      "hasChoices": false
+    },
+    "_previous": {
+      "gradeLevel": "Grade 3-4",
+      "ageRange": "8-10 years",
+      "genre": "Mystery",
+      "wordCount": 1018
+    }
+  },
+  "14": {
+    "id": "14",
+    "title": "The Case of the Haunted House 2",
+    "author": "Loni Kim",
+    "totalPages": 72,
+    "wordCount": 1256,
+    "readingTime": "20 min",
+    "gradeLevel": "Grade 2-3",
+    "ageRange": "7-9 years",
+    "readingLevel": "Developing Reader",
+    "genre": "Animal Story",
+    "tags": [
+      "Animal Story",
+      "animals",
+      "courage",
+      "Mystery",
+      "Humor"
+    ],
+    "_stats": {
+      "fkGrade": 2.5,
+      "cliGrade": 4.2,
+      "fleschEase": 91.6,
+      "avgWordsPerSentence": 8,
+      "avgSyllablesPerWord": 1.27,
+      "complexWordPercent": 4,
+      "vocabularyDiversity": 34,
+      "questionCount": 16,
+      "chapterCount": 2,
+      "hasChoices": true
+    },
+    "_previous": {
+      "gradeLevel": "Grade 3-4",
+      "ageRange": "8-10 years",
+      "genre": "Mystery",
+      "wordCount": 1025
+    }
+  },
+  "15": {
+    "id": "15",
+    "title": "The Door to Tomorrow Part 2",
+    "author": "Jerry Gordon",
+    "totalPages": 87,
+    "wordCount": 2613,
+    "readingTime": "31 min",
+    "gradeLevel": "Grade 2-3",
+    "ageRange": "7-9 years",
+    "readingLevel": "Developing Reader",
+    "genre": "Animal Story",
+    "tags": [
+      "Animal Story",
+      "family",
+      "animals",
+      "food",
+      "science",
+      "Science Fiction"
+    ],
+    "_stats": {
+      "fkGrade": 3,
+      "cliGrade": 5,
+      "fleschEase": 89.8,
+      "avgWordsPerSentence": 9.2,
+      "avgSyllablesPerWord": 1.27,
+      "complexWordPercent": 4,
+      "vocabularyDiversity": 27,
+      "questionCount": 14,
+      "chapterCount": 4,
+      "hasChoices": false
+    },
+    "_previous": {
+      "gradeLevel": "Grade 3-4",
+      "ageRange": "8-10 years",
+      "genre": "Science Fiction",
+      "wordCount": 1040
+    }
+  },
+  "16": {
+    "id": "16",
+    "title": "The Case of the  Flying Birthday",
+    "author": "Carly Schuna",
+    "totalPages": 44,
+    "wordCount": 1001,
+    "readingTime": "15 min",
+    "gradeLevel": "Grade 3-4",
+    "ageRange": "8-10 years",
+    "readingLevel": "Fluent Reader",
+    "genre": "Mystery",
+    "tags": [
+      "Mystery",
+      "family"
+    ],
+    "_stats": {
+      "fkGrade": 3.6,
+      "cliGrade": 5.2,
+      "fleschEase": 87.8,
+      "avgWordsPerSentence": 10.4,
+      "avgSyllablesPerWord": 1.28,
+      "complexWordPercent": 5,
+      "vocabularyDiversity": 41,
+      "questionCount": 13,
+      "chapterCount": 0,
+      "hasChoices": true
+    },
+    "_previous": {
+      "gradeLevel": "Grade 3-4",
+      "ageRange": "8-10 years",
+      "genre": "Mystery",
+      "wordCount": 1006
+    }
+  },
+  "17": {
+    "id": "17",
+    "title": "The Case of the Exploding Toilets",
+    "author": "Matt Denis",
+    "totalPages": 51,
+    "wordCount": 1137,
+    "readingTime": "19 min",
+    "gradeLevel": "Grade 1-2",
+    "ageRange": "6-8 years",
+    "readingLevel": "Early Reader",
+    "genre": "School Story",
+    "tags": [
+      "School Story",
+      "school",
+      "Mystery"
+    ],
+    "_stats": {
+      "fkGrade": 2.3,
+      "cliGrade": 3.8,
+      "fleschEase": 92.5,
+      "avgWordsPerSentence": 7.6,
+      "avgSyllablesPerWord": 1.26,
+      "complexWordPercent": 5,
+      "vocabularyDiversity": 35,
+      "questionCount": 8,
+      "chapterCount": 3,
+      "hasChoices": false
+    },
+    "_previous": {
+      "gradeLevel": "Grade 3-4",
+      "ageRange": "8-10 years",
+      "genre": "Mystery",
+      "wordCount": 1012
+    }
+  },
+  "18": {
+    "id": "18",
+    "title": "The Green Goo",
+    "author": "Steve Ince",
+    "totalPages": 85,
+    "wordCount": 2309,
+    "readingTime": "27 min",
+    "gradeLevel": "Grade 2-3",
+    "ageRange": "7-9 years",
+    "readingLevel": "Developing Reader",
+    "genre": "Mystery",
+    "tags": [
+      "Mystery",
+      "family",
+      "nature",
+      "problem-solving",
+      "School Story",
+      "Humor"
+    ],
+    "_stats": {
+      "fkGrade": 3.1,
+      "cliGrade": 4.7,
+      "fleschEase": 91,
+      "avgWordsPerSentence": 10.1,
+      "avgSyllablesPerWord": 1.25,
+      "complexWordPercent": 3,
+      "vocabularyDiversity": 29,
+      "questionCount": 12,
+      "chapterCount": 2,
+      "hasChoices": true
+    },
+    "_previous": {
+      "gradeLevel": "Grade 3-4",
+      "ageRange": "8-10 years",
+      "genre": "Mystery",
+      "wordCount": 1008
+    }
+  },
+  "20": {
+    "id": "20",
+    "title": "The Case of the  Monkeys and Lies",
+    "author": "John Zakour",
+    "totalPages": 112,
+    "wordCount": 2475,
+    "readingTime": "32 min",
+    "gradeLevel": "Grade 2-3",
+    "ageRange": "7-9 years",
+    "readingLevel": "Developing Reader",
+    "genre": "School Story",
+    "tags": [
+      "School Story",
+      "family",
+      "school",
+      "animals",
+      "food",
+      "science",
+      "problem-solving",
+      "Mystery"
+    ],
+    "_stats": {
+      "fkGrade": 1.8,
+      "cliGrade": 3.2,
+      "fleschEase": 95.4,
+      "avgWordsPerSentence": 7.4,
+      "avgSyllablesPerWord": 1.23,
+      "complexWordPercent": 3,
+      "vocabularyDiversity": 28,
+      "questionCount": 18,
+      "chapterCount": 5,
+      "hasChoices": true
+    },
+    "_previous": {
+      "gradeLevel": "Grade 3-4",
+      "ageRange": "8-10 years",
+      "genre": "Mystery",
+      "wordCount": 1004
+    }
+  },
+  "21": {
+    "id": "21",
+    "title": "The Case of the Multiplying Bunnies",
+    "author": "Monica Valentinelli",
+    "totalPages": 104,
+    "wordCount": 2575,
+    "readingTime": "32 min",
+    "gradeLevel": "Grade 2-3",
+    "ageRange": "7-9 years",
+    "readingLevel": "Developing Reader",
+    "genre": "School Story",
+    "tags": [
+      "School Story",
+      "school",
+      "animals",
+      "courage",
+      "problem-solving",
+      "imagination",
+      "humor",
+      "Animal Story"
+    ],
+    "_stats": {
+      "fkGrade": 2.8,
+      "cliGrade": 4.9,
+      "fleschEase": 89,
+      "avgWordsPerSentence": 7.8,
+      "avgSyllablesPerWord": 1.3,
+      "complexWordPercent": 6,
+      "vocabularyDiversity": 27,
+      "questionCount": 16,
+      "chapterCount": 3,
+      "hasChoices": true
+    },
+    "_previous": {
+      "gradeLevel": "Grade 3-4",
+      "ageRange": "8-10 years",
+      "genre": "Mystery",
+      "wordCount": 1006
+    }
+  },
+  "22": {
+    "id": "22",
+    "title": "The Case of the Purple Gas",
+    "author": "Tula Eriksson Turtiainen",
+    "totalPages": 66,
+    "wordCount": 1694,
+    "readingTime": "20 min",
+    "gradeLevel": "Grade 2-3",
+    "ageRange": "7-9 years",
+    "readingLevel": "Developing Reader",
+    "genre": "Pirate Adventure",
+    "tags": [
+      "Pirate Adventure",
+      "imagination"
+    ],
+    "_stats": {
+      "fkGrade": 2.5,
+      "cliGrade": 4,
+      "fleschEase": 92.7,
+      "avgWordsPerSentence": 8.6,
+      "avgSyllablesPerWord": 1.25,
+      "complexWordPercent": 3,
+      "vocabularyDiversity": 31,
+      "questionCount": 9,
+      "chapterCount": 0,
+      "hasChoices": true
+    },
+    "_previous": {
+      "gradeLevel": "Grade 3-4",
+      "ageRange": "8-10 years",
+      "genre": "Mystery",
+      "wordCount": 1033
+    }
+  },
+  "23": {
+    "id": "23",
+    "title": "The Case of the Escaped Platypus",
+    "author": "Matt Denis",
+    "totalPages": 66,
+    "wordCount": 1539,
+    "readingTime": "21 min",
+    "gradeLevel": "Grade 2-3",
+    "ageRange": "7-9 years",
+    "readingLevel": "Developing Reader",
+    "genre": "Mystery",
+    "tags": [
+      "Mystery",
+      "nature",
+      "science"
+    ],
+    "_stats": {
+      "fkGrade": 3,
+      "cliGrade": 3.8,
+      "fleschEase": 90.2,
+      "avgWordsPerSentence": 9.3,
+      "avgSyllablesPerWord": 1.27,
+      "complexWordPercent": 6,
+      "vocabularyDiversity": 29,
+      "questionCount": 13,
+      "chapterCount": 0,
+      "hasChoices": true
+    },
+    "_previous": {
+      "gradeLevel": "Grade 3-4",
+      "ageRange": "8-10 years",
+      "genre": "Mystery",
+      "wordCount": 1024
+    }
+  },
+  "24": {
+    "id": "24",
+    "title": "The Case of the New Dog",
+    "author": "Carly Schuna",
+    "totalPages": 50,
+    "wordCount": 1131,
+    "readingTime": "20 min",
+    "gradeLevel": "Grade 1-2",
+    "ageRange": "6-8 years",
+    "readingLevel": "Early Reader",
+    "genre": "Animal Story",
+    "tags": [
+      "Animal Story",
+      "family",
+      "animals"
+    ],
+    "_stats": {
+      "fkGrade": 2,
+      "cliGrade": 3.2,
+      "fleschEase": 97.8,
+      "avgWordsPerSentence": 9.4,
+      "avgSyllablesPerWord": 1.18,
+      "complexWordPercent": 2,
+      "vocabularyDiversity": 36,
+      "questionCount": 11,
+      "chapterCount": 0,
+      "hasChoices": true
+    },
+    "_previous": {
+      "gradeLevel": "Grade 3-4",
+      "ageRange": "8-10 years",
+      "genre": "Mystery",
+      "wordCount": 1009
+    }
+  },
+  "26": {
+    "id": "26",
+    "title": "Ziggy Higgs and the Missing Box of Figs",
+    "author": "Steve Ince",
+    "totalPages": 69,
+    "wordCount": 1534,
+    "readingTime": "18 min",
+    "gradeLevel": "Grade 2-3",
+    "ageRange": "7-9 years",
+    "readingLevel": "Developing Reader",
+    "genre": "Animal Story",
+    "tags": [
+      "Animal Story",
+      "family",
+      "animals",
+      "nature",
+      "food",
+      "Mystery",
+      "School Story"
+    ],
+    "_stats": {
+      "fkGrade": 3.2,
+      "cliGrade": 4.7,
+      "fleschEase": 90.5,
+      "avgWordsPerSentence": 10.4,
+      "avgSyllablesPerWord": 1.25,
+      "complexWordPercent": 3,
+      "vocabularyDiversity": 33,
+      "questionCount": 8,
+      "chapterCount": 3,
+      "hasChoices": true
+    },
+    "_previous": {
+      "gradeLevel": "Grade 3-4",
+      "ageRange": "8-10 years",
+      "genre": "Mystery",
+      "wordCount": 1000
+    }
+  },
+  "27": {
+    "id": "27",
+    "title": "The Case of the Cookie Ants",
+    "author": "Elliott Hedman",
+    "totalPages": 81,
+    "wordCount": 1701,
+    "readingTime": "29 min",
+    "gradeLevel": "Grade 1-2",
+    "ageRange": "6-8 years",
+    "readingLevel": "Early Reader",
+    "genre": "Mystery",
+    "tags": [
+      "Mystery",
+      "family",
+      "animals",
+      "food",
+      "courage",
+      "imagination",
+      "School Story"
+    ],
+    "_stats": {
+      "fkGrade": 1.9,
+      "cliGrade": 3.2,
+      "fleschEase": 96.2,
+      "avgWordsPerSentence": 8.3,
+      "avgSyllablesPerWord": 1.21,
+      "complexWordPercent": 3,
+      "vocabularyDiversity": 26,
+      "questionCount": 14,
+      "chapterCount": 2,
+      "hasChoices": true
+    },
+    "_previous": {
+      "gradeLevel": "Grade 3-4",
+      "ageRange": "8-10 years",
+      "genre": "Mystery",
+      "wordCount": 1006
+    }
+  },
+  "28": {
+    "id": "28",
+    "title": "The Case of the Shaking Classroom",
+    "author": "Elliott Hedman",
+    "totalPages": 77,
+    "wordCount": 1441,
+    "readingTime": "27 min",
+    "gradeLevel": "Grade 1-2",
+    "ageRange": "6-8 years",
+    "readingLevel": "Early Reader",
+    "genre": "School Story",
+    "tags": [
+      "School Story",
+      "school",
+      "Mystery"
+    ],
+    "_stats": {
+      "fkGrade": 2.3,
+      "cliGrade": 4.5,
+      "fleschEase": 92.2,
+      "avgWordsPerSentence": 7.8,
+      "avgSyllablesPerWord": 1.26,
+      "complexWordPercent": 4,
+      "vocabularyDiversity": 32,
+      "questionCount": 16,
+      "chapterCount": 2,
+      "hasChoices": true
+    },
+    "_previous": {
+      "gradeLevel": "Grade 3-4",
+      "ageRange": "8-10 years",
+      "genre": "Mystery",
+      "wordCount": 1030
+    }
+  },
+  "29": {
+    "id": "29",
+    "title": "The Forbidden Palace",
+    "author": "Elliott Hedman",
+    "totalPages": 80,
+    "wordCount": 1941,
+    "readingTime": "22 min",
+    "gradeLevel": "Grade 3-4",
+    "ageRange": "8-10 years",
+    "readingLevel": "Fluent Reader",
+    "genre": "Humor",
+    "tags": [
+      "Humor",
+      "family",
+      "humor",
+      "School Story"
+    ],
+    "_stats": {
+      "fkGrade": 4.3,
+      "cliGrade": 5.5,
+      "fleschEase": 83.9,
+      "avgWordsPerSentence": 11,
+      "avgSyllablesPerWord": 1.32,
+      "complexWordPercent": 5,
+      "vocabularyDiversity": 27,
+      "questionCount": 14,
+      "chapterCount": 4,
+      "hasChoices": true
+    },
+    "_previous": {
+      "gradeLevel": "Grade 3-4",
+      "ageRange": "8-10 years",
+      "genre": "School Adventure",
+      "wordCount": 1042
+    }
+  },
+  "30": {
+    "id": "30",
+    "title": "The Case of  Bubble Gum Hair",
+    "author": "Elliott Hedman",
+    "totalPages": 99,
+    "wordCount": 2277,
+    "readingTime": "30 min",
+    "gradeLevel": "Grade 2-3",
+    "ageRange": "7-9 years",
+    "readingLevel": "Developing Reader",
+    "genre": "School Story",
+    "tags": [
+      "School Story",
+      "school",
+      "problem-solving",
+      "humor",
+      "Mystery",
+      "Humor"
+    ],
+    "_stats": {
+      "fkGrade": 2.3,
+      "cliGrade": 3.9,
+      "fleschEase": 92.7,
+      "avgWordsPerSentence": 7.9,
+      "avgSyllablesPerWord": 1.25,
+      "complexWordPercent": 3,
+      "vocabularyDiversity": 22,
+      "questionCount": 17,
+      "chapterCount": 0,
+      "hasChoices": true
+    },
+    "_previous": {
+      "gradeLevel": "Grade 3-4",
+      "ageRange": "8-10 years",
+      "genre": "Mystery",
+      "wordCount": 1026
+    }
+  },
+  "31": {
+    "id": "31",
+    "title": "The  Muddy Race",
+    "author": "Elliott Hedman",
+    "totalPages": 93,
+    "wordCount": 2163,
+    "readingTime": "26 min",
+    "gradeLevel": "Grade 2-3",
+    "ageRange": "7-9 years",
+    "readingLevel": "Developing Reader",
+    "genre": "Humor",
+    "tags": [
+      "Humor",
+      "family",
+      "sports",
+      "humor",
+      "School Story"
+    ],
+    "_stats": {
+      "fkGrade": 1.9,
+      "cliGrade": 2.8,
+      "fleschEase": 96.5,
+      "avgWordsPerSentence": 8.5,
+      "avgSyllablesPerWord": 1.2,
+      "complexWordPercent": 2,
+      "vocabularyDiversity": 24,
+      "questionCount": 11,
+      "chapterCount": 3,
+      "hasChoices": true
+    },
+    "_previous": {
+      "gradeLevel": "Grade 3-4",
+      "ageRange": "8-10 years",
+      "genre": "School Adventure",
+      "wordCount": 1039
+    }
+  },
+  "34": {
+    "id": "34",
+    "title": "The Case of the Shrinking Circus",
+    "author": "Mia Serrano",
+    "totalPages": 108,
+    "wordCount": 2669,
+    "readingTime": "30 min",
+    "gradeLevel": "Grade 3-4",
+    "ageRange": "8-10 years",
+    "readingLevel": "Fluent Reader",
+    "genre": "School Story",
+    "tags": [
+      "School Story",
+      "family",
+      "school",
+      "food",
+      "problem-solving",
+      "imagination",
+      "humor",
+      "Mystery"
+    ],
+    "_stats": {
+      "fkGrade": 3.5,
+      "cliGrade": 6,
+      "fleschEase": 84.9,
+      "avgWordsPerSentence": 8.4,
+      "avgSyllablesPerWord": 1.34,
+      "complexWordPercent": 7,
+      "vocabularyDiversity": 27,
+      "questionCount": 18,
+      "chapterCount": 1,
+      "hasChoices": true
+    },
+    "_previous": {
+      "gradeLevel": "Grade 3-4",
+      "ageRange": "8-10 years",
+      "genre": "Mystery",
+      "wordCount": 1032
+    }
+  },
+  "36": {
+    "id": "36",
+    "title": "The Case of the Desk of Worms",
+    "author": "Elliott Hedman",
+    "totalPages": 102,
+    "wordCount": 2371,
+    "readingTime": "31 min",
+    "gradeLevel": "Grade 2-3",
+    "ageRange": "7-9 years",
+    "readingLevel": "Developing Reader",
+    "genre": "School Story",
+    "tags": [
+      "School Story",
+      "friendship",
+      "school",
+      "science",
+      "problem-solving",
+      "humor",
+      "Mystery",
+      "Humor"
+    ],
+    "_stats": {
+      "fkGrade": 2.8,
+      "cliGrade": 4.4,
+      "fleschEase": 89.5,
+      "avgWordsPerSentence": 8,
+      "avgSyllablesPerWord": 1.29,
+      "complexWordPercent": 7,
+      "vocabularyDiversity": 23,
+      "questionCount": 18,
+      "chapterCount": 3,
+      "hasChoices": true
+    },
+    "_previous": {
+      "gradeLevel": "Grade 3-4",
+      "ageRange": "8-10 years",
+      "genre": "Mystery",
+      "wordCount": 1005
+    }
+  },
+  "37": {
+    "id": "37",
+    "title": "Prankster's Diary:  Go Fish",
+    "author": "Elliott Hedman",
+    "totalPages": 140,
+    "wordCount": 3365,
+    "readingTime": "40 min",
+    "gradeLevel": "Grade 2-3",
+    "ageRange": "7-9 years",
+    "readingLevel": "Developing Reader",
+    "genre": "School Story",
+    "tags": [
+      "School Story",
+      "family",
+      "school",
+      "animals",
+      "sports",
+      "courage",
+      "imagination",
+      "humor"
+    ],
+    "_stats": {
+      "fkGrade": 2.1,
+      "cliGrade": 3.5,
+      "fleschEase": 94.3,
+      "avgWordsPerSentence": 8.1,
+      "avgSyllablesPerWord": 1.23,
+      "complexWordPercent": 3,
+      "vocabularyDiversity": 21,
+      "questionCount": 17,
+      "chapterCount": 5,
+      "hasChoices": true
+    },
+    "_previous": {
+      "gradeLevel": "Grade 3-4",
+      "ageRange": "8-10 years",
+      "genre": "School Adventure",
+      "wordCount": 1008
+    }
+  },
+  "38": {
+    "id": "38",
+    "title": "The Cursed Diamond Part 1",
+    "author": "Mur Lafferty",
+    "totalPages": 61,
+    "wordCount": 1448,
+    "readingTime": "18 min",
+    "gradeLevel": "Grade 2-3",
+    "ageRange": "7-9 years",
+    "readingLevel": "Developing Reader",
+    "genre": "Mystery",
+    "tags": [
+      "Mystery",
+      "family",
+      "school",
+      "sports",
+      "problem-solving",
+      "School Story"
+    ],
+    "_stats": {
+      "fkGrade": 2.6,
+      "cliGrade": 4.5,
+      "fleschEase": 91.9,
+      "avgWordsPerSentence": 8.7,
+      "avgSyllablesPerWord": 1.25,
+      "complexWordPercent": 3,
+      "vocabularyDiversity": 32,
+      "questionCount": 8,
+      "chapterCount": 0,
+      "hasChoices": true
+    },
+    "_previous": {
+      "gradeLevel": "Grade 3-4",
+      "ageRange": "8-10 years",
+      "genre": "Mystery",
+      "wordCount": 1039
+    }
+  },
+  "39": {
+    "id": "39",
+    "title": "The Cursed Diamond Part 2",
+    "author": "Mur Lafferty",
+    "totalPages": 58,
+    "wordCount": 1428,
+    "readingTime": "18 min",
+    "gradeLevel": "Grade 2-3",
+    "ageRange": "7-9 years",
+    "readingLevel": "Developing Reader",
+    "genre": "Mystery",
+    "tags": [
+      "Mystery",
+      "family",
+      "school",
+      "sports",
+      "School Story"
+    ],
+    "_stats": {
+      "fkGrade": 2.7,
+      "cliGrade": 4.9,
+      "fleschEase": 92.5,
+      "avgWordsPerSentence": 9.5,
+      "avgSyllablesPerWord": 1.24,
+      "complexWordPercent": 3,
+      "vocabularyDiversity": 31,
+      "questionCount": 10,
+      "chapterCount": 0,
+      "hasChoices": true
+    },
+    "_previous": {
+      "gradeLevel": "Grade 3-4",
+      "ageRange": "8-10 years",
+      "genre": "Mystery",
+      "wordCount": 1008
+    }
+  },
+  "40": {
+    "id": "40",
+    "title": "War Pig",
+    "author": "Elliott Hedman",
+    "totalPages": 65,
+    "wordCount": 1361,
+    "readingTime": "18 min",
+    "gradeLevel": "Grade 3-4",
+    "ageRange": "8-10 years",
+    "readingLevel": "Fluent Reader",
+    "genre": "Animal Story",
+    "tags": [
+      "Animal Story",
+      "animals",
+      "courage"
+    ],
+    "_stats": {
+      "fkGrade": 3.9,
+      "cliGrade": 5.8,
+      "fleschEase": 84,
+      "avgWordsPerSentence": 9.7,
+      "avgSyllablesPerWord": 1.34,
+      "complexWordPercent": 9,
+      "vocabularyDiversity": 31,
+      "questionCount": 14,
+      "chapterCount": 2,
+      "hasChoices": false
+    },
+    "_previous": {
+      "gradeLevel": "Grade 3-4",
+      "ageRange": "8-10 years",
+      "genre": "Mystery",
+      "wordCount": 1022
+    }
+  },
+  "42": {
+    "id": "42",
+    "title": "The Case of the  Laughing Vampire",
+    "author": "Elliott Hedman",
+    "totalPages": 93,
+    "wordCount": 2033,
+    "readingTime": "25 min",
+    "gradeLevel": "Grade 2-3",
+    "ageRange": "7-9 years",
+    "readingLevel": "Developing Reader",
+    "genre": "Humor",
+    "tags": [
+      "Humor",
+      "school",
+      "courage",
+      "humor",
+      "Halloween",
+      "School Story",
+      "Animal Story"
+    ],
+    "_stats": {
+      "fkGrade": 2.7,
+      "cliGrade": 4.7,
+      "fleschEase": 89.9,
+      "avgWordsPerSentence": 7.9,
+      "avgSyllablesPerWord": 1.29,
+      "complexWordPercent": 4,
+      "vocabularyDiversity": 24,
+      "questionCount": 13,
+      "chapterCount": 2,
+      "hasChoices": true
+    },
+    "_previous": {
+      "gradeLevel": "Grade 3-4",
+      "ageRange": "8-10 years",
+      "genre": "Mystery",
+      "wordCount": 1031
+    }
+  },
+  "44": {
+    "id": "44",
+    "title": "The Case of  the Electric Thief",
+    "author": "Elliott Hedman",
+    "totalPages": 87,
+    "wordCount": 1873,
+    "readingTime": "23 min",
+    "gradeLevel": "Grade 3-4",
+    "ageRange": "8-10 years",
+    "readingLevel": "Fluent Reader",
+    "genre": "School Story",
+    "tags": [
+      "School Story",
+      "school",
+      "science",
+      "problem-solving",
+      "Mystery",
+      "Science Fiction",
+      "Humor"
+    ],
+    "_stats": {
+      "fkGrade": 3.9,
+      "cliGrade": 5.7,
+      "fleschEase": 83.1,
+      "avgWordsPerSentence": 8.8,
+      "avgSyllablesPerWord": 1.36,
+      "complexWordPercent": 7,
+      "vocabularyDiversity": 25,
+      "questionCount": 16,
+      "chapterCount": 3,
+      "hasChoices": true
+    },
+    "_previous": {
+      "gradeLevel": "Grade 3-4",
+      "ageRange": "8-10 years",
+      "genre": "Mystery",
+      "wordCount": 1009
+    }
+  },
+  "45": {
+    "id": "45",
+    "title": "The Case of  the Electric Thief",
+    "author": "Elliott Hedman",
+    "totalPages": 67,
+    "wordCount": 1370,
+    "readingTime": "23 min",
+    "gradeLevel": "Grade 1-2",
+    "ageRange": "6-8 years",
+    "readingLevel": "Early Reader",
+    "genre": "Science Fiction",
+    "tags": [
+      "Science Fiction",
+      "school",
+      "animals",
+      "science",
+      "School Story",
+      "Mystery",
+      "Animal Story",
+      "Humor"
+    ],
+    "_stats": {
+      "fkGrade": 2.6,
+      "cliGrade": 4.2,
+      "fleschEase": 87.8,
+      "avgWordsPerSentence": 6.4,
+      "avgSyllablesPerWord": 1.33,
+      "complexWordPercent": 5,
+      "vocabularyDiversity": 32,
+      "questionCount": 10,
+      "chapterCount": 4,
+      "hasChoices": true
+    },
+    "_previous": {
+      "gradeLevel": "Grade 3-4",
+      "ageRange": "8-10 years",
+      "genre": "Mystery",
+      "wordCount": 1032
+    }
+  },
+  "46": {
+    "id": "46",
+    "title": "The Case of the Silly Lightning Hair",
+    "author": "Elliott Hedman",
+    "totalPages": 19,
+    "wordCount": 141,
+    "readingTime": "5 min",
+    "gradeLevel": "Grade 2-3",
+    "ageRange": "7-9 years",
+    "readingLevel": "Developing Reader",
+    "genre": "Humor",
+    "tags": [
+      "Humor",
+      "family",
+      "humor"
+    ],
+    "_stats": {
+      "fkGrade": 2.7,
+      "cliGrade": 4.4,
+      "fleschEase": 88.9,
+      "avgWordsPerSentence": 7.4,
+      "avgSyllablesPerWord": 1.3,
+      "complexWordPercent": 2,
+      "vocabularyDiversity": 61,
+      "questionCount": 6,
+      "chapterCount": 0,
+      "hasChoices": false
+    },
+    "_previous": {
+      "gradeLevel": "Grade 1-2",
+      "ageRange": "6-8 years",
+      "genre": "Mystery",
+      "wordCount": 152
+    }
+  },
+  "47": {
+    "id": "47",
+    "title": "The Case of the Popped Soccer Ball",
+    "author": "Elliott Hedman",
+    "totalPages": 12,
+    "wordCount": 67,
+    "readingTime": "3 min",
+    "gradeLevel": "Grade 1-2",
+    "ageRange": "6-8 years",
+    "readingLevel": "Early Reader",
+    "genre": "Mystery",
+    "tags": [
+      "Mystery",
+      "family",
+      "sports"
+    ],
+    "_stats": {
+      "fkGrade": 3.7,
+      "cliGrade": 4.9,
+      "fleschEase": 78.7,
+      "avgWordsPerSentence": 5.6,
+      "avgSyllablesPerWord": 1.45,
+      "complexWordPercent": 10,
+      "vocabularyDiversity": 72,
+      "questionCount": 3,
+      "chapterCount": 0,
+      "hasChoices": false
+    },
+    "_previous": {
+      "gradeLevel": "Grade 1-2",
+      "ageRange": "6-8 years",
+      "genre": "Mystery",
+      "wordCount": 78
+    }
+  },
+  "100": {
+    "id": "100",
+    "title": "The Turkey Temple",
+    "author": "Elliott Hedman",
+    "totalPages": 13,
+    "wordCount": 181,
+    "readingTime": "4 min",
+    "gradeLevel": "Grade 2-3",
+    "ageRange": "7-9 years",
+    "readingLevel": "Developing Reader",
+    "genre": "Animal Story",
+    "tags": [
+      "Animal Story",
+      "animals"
+    ],
+    "_stats": {
+      "fkGrade": 3.8,
+      "cliGrade": 4.5,
+      "fleschEase": 89.4,
+      "avgWordsPerSentence": 12.1,
+      "avgSyllablesPerWord": 1.24,
+      "complexWordPercent": 2,
+      "vocabularyDiversity": 54,
+      "questionCount": 4,
+      "chapterCount": 0,
+      "hasChoices": false
+    },
+    "_previous": {
+      "gradeLevel": "Grade 1-2",
+      "ageRange": "6-8 years",
+      "genre": "Adventure",
+      "wordCount": 187
+    }
+  },
+  "101": {
+    "id": "101",
+    "title": "The Flying Bowling Ball",
+    "author": "Elliott Hedman",
+    "totalPages": 22,
+    "wordCount": 242,
+    "readingTime": "6 min",
+    "gradeLevel": "Grade 2-3",
+    "ageRange": "7-9 years",
+    "readingLevel": "Developing Reader",
+    "genre": "School Story",
+    "tags": [
+      "School Story",
+      "family",
+      "sports"
+    ],
+    "_stats": {
+      "fkGrade": 2,
+      "cliGrade": 3.3,
+      "fleschEase": 98.1,
+      "avgWordsPerSentence": 9.7,
+      "avgSyllablesPerWord": 1.17,
+      "complexWordPercent": 0,
+      "vocabularyDiversity": 56,
+      "questionCount": 7,
+      "chapterCount": 0,
+      "hasChoices": false
+    },
+    "_previous": {
+      "gradeLevel": "Grade 1-2",
+      "ageRange": "6-8 years",
+      "genre": "Mystery",
+      "wordCount": 249
+    }
+  },
+  "102": {
+    "id": "102",
+    "title": "Who sprayed Mom?",
+    "author": "Elliott Hedman",
+    "totalPages": 22,
+    "wordCount": 187,
+    "readingTime": "7 min",
+    "gradeLevel": "Grade K-1",
+    "ageRange": "5-7 years",
+    "readingLevel": "Beginning Reader",
+    "genre": "Adventure",
+    "tags": [
+      "Adventure",
+      "family",
+      "food"
+    ],
+    "_stats": {
+      "fkGrade": 1.7,
+      "cliGrade": 3,
+      "fleschEase": 95.9,
+      "avgWordsPerSentence": 7.2,
+      "avgSyllablesPerWord": 1.22,
+      "complexWordPercent": 1,
+      "vocabularyDiversity": 59,
+      "questionCount": 7,
+      "chapterCount": 0,
+      "hasChoices": false
+    },
+    "_previous": {
+      "gradeLevel": "Grade 1-2",
+      "ageRange": "6-8 years",
+      "genre": "Adventure",
+      "wordCount": 193
+    }
+  },
+  "103": {
+    "id": "103",
+    "title": "Basketball Blunder",
+    "author": "Elliott Hedman",
+    "totalPages": 17,
+    "wordCount": 194,
+    "readingTime": "5 min",
+    "gradeLevel": "Grade K-1",
+    "ageRange": "5-7 years",
+    "readingLevel": "Beginning Reader",
+    "genre": "Animal Story",
+    "tags": [
+      "Animal Story",
+      "animals",
+      "sports"
+    ],
+    "_stats": {
+      "fkGrade": 1,
+      "cliGrade": 1.8,
+      "fleschEase": 101.1,
+      "avgWordsPerSentence": 7.5,
+      "avgSyllablesPerWord": 1.16,
+      "complexWordPercent": 3,
+      "vocabularyDiversity": 51,
+      "questionCount": 3,
+      "chapterCount": 0,
+      "hasChoices": false
+    },
+    "_previous": {
+      "gradeLevel": "Grade 1-2",
+      "ageRange": "6-8 years",
+      "genre": "Pirate Adventure",
+      "wordCount": 198
+    }
+  },
+  "104": {
+    "id": "104",
+    "title": "The Bunny Battle",
+    "author": "Elliott Hedman",
+    "totalPages": 17,
+    "wordCount": 188,
+    "readingTime": "5 min",
+    "gradeLevel": "Grade 1-2",
+    "ageRange": "6-8 years",
+    "readingLevel": "Early Reader",
+    "genre": "Animal Story",
+    "tags": [
+      "Animal Story",
+      "animals"
+    ],
+    "_stats": {
+      "fkGrade": 2.8,
+      "cliGrade": 3.5,
+      "fleschEase": 91.5,
+      "avgWordsPerSentence": 9.4,
+      "avgSyllablesPerWord": 1.25,
+      "complexWordPercent": 4,
+      "vocabularyDiversity": 53,
+      "questionCount": 4,
+      "chapterCount": 0,
+      "hasChoices": false
+    },
+    "_previous": {
+      "gradeLevel": "Grade 1-2",
+      "ageRange": "6-8 years",
+      "genre": "Adventure",
+      "wordCount": 197
+    }
+  },
+  "105": {
+    "id": "105",
+    "title": "Skeleton Faces",
+    "author": "Elliott Hedman",
+    "totalPages": 16,
+    "wordCount": 181,
+    "readingTime": "4 min",
+    "gradeLevel": "Grade 2-3",
+    "ageRange": "7-9 years",
+    "readingLevel": "Developing Reader",
+    "genre": "Halloween",
+    "tags": [
+      "Halloween",
+      "family"
+    ],
+    "_stats": {
+      "fkGrade": 3.7,
+      "cliGrade": 4,
+      "fleschEase": 83.5,
+      "avgWordsPerSentence": 8.2,
+      "avgSyllablesPerWord": 1.36,
+      "complexWordPercent": 11,
+      "vocabularyDiversity": 57,
+      "questionCount": 3,
+      "chapterCount": 0,
+      "hasChoices": false
+    },
+    "_previous": {
+      "gradeLevel": "Grade 1-2",
+      "ageRange": "6-8 years",
+      "genre": "Halloween",
+      "wordCount": 186
+    }
+  },
+  "106": {
+    "id": "106",
+    "title": "The Cow Man",
+    "author": "Elliott Hedman",
+    "totalPages": 21,
+    "wordCount": 150,
+    "readingTime": "6 min",
+    "gradeLevel": "Grade K-1",
+    "ageRange": "5-7 years",
+    "readingLevel": "Beginning Reader",
+    "genre": "Adventure",
+    "tags": [
+      "Adventure",
+      "animals"
+    ],
+    "_stats": {
+      "fkGrade": 2.4,
+      "cliGrade": 2.1,
+      "fleschEase": 92.3,
+      "avgWordsPerSentence": 8.3,
+      "avgSyllablesPerWord": 1.25,
+      "complexWordPercent": 9,
+      "vocabularyDiversity": 53,
+      "questionCount": 6,
+      "chapterCount": 0,
+      "hasChoices": false
+    },
+    "_previous": {
+      "gradeLevel": "Grade 1-2",
+      "ageRange": "6-8 years",
+      "genre": "Adventure",
+      "wordCount": 158
+    }
+  },
+  "107": {
+    "id": "107",
+    "title": "The Robbery",
+    "author": "Elliott Hedman",
+    "totalPages": 19,
+    "wordCount": 224,
+    "readingTime": "7 min",
+    "gradeLevel": "Grade 1-2",
+    "ageRange": "6-8 years",
+    "readingLevel": "Early Reader",
+    "genre": "School Story",
+    "tags": [
+      "School Story",
+      "family"
+    ],
+    "_stats": {
+      "fkGrade": 1.8,
+      "cliGrade": 3.2,
+      "fleschEase": 94.7,
+      "avgWordsPerSentence": 7,
+      "avgSyllablesPerWord": 1.24,
+      "complexWordPercent": 2,
+      "vocabularyDiversity": 58,
+      "questionCount": 7,
+      "chapterCount": 0,
+      "hasChoices": false
+    },
+    "_previous": {
+      "gradeLevel": "Grade 1-2",
+      "ageRange": "6-8 years",
+      "genre": "School Adventure",
+      "wordCount": 228
+    }
+  },
+  "108": {
+    "id": "108",
+    "title": "Where is Nacho 1",
+    "author": "Elliott Hedman",
+    "totalPages": 15,
+    "wordCount": 188,
+    "readingTime": "5 min",
+    "gradeLevel": "Grade 1-2",
+    "ageRange": "6-8 years",
+    "readingLevel": "Early Reader",
+    "genre": "Animal Story",
+    "tags": [
+      "Animal Story",
+      "animals"
+    ],
+    "_stats": {
+      "fkGrade": 2.5,
+      "cliGrade": 3.2,
+      "fleschEase": 91.9,
+      "avgWordsPerSentence": 8.2,
+      "avgSyllablesPerWord": 1.26,
+      "complexWordPercent": 0,
+      "vocabularyDiversity": 53,
+      "questionCount": 4,
+      "chapterCount": 0,
+      "hasChoices": false
+    },
+    "_previous": {
+      "gradeLevel": "Grade 1-2",
+      "ageRange": "6-8 years",
+      "genre": "Adventure",
+      "wordCount": 194
+    }
+  },
+  "109": {
+    "id": "109",
+    "title": "Where is Nacho 2",
+    "author": "Elliott Hedman",
+    "totalPages": 18,
+    "wordCount": 122,
+    "readingTime": "5 min",
+    "gradeLevel": "Grade 1-2",
+    "ageRange": "6-8 years",
+    "readingLevel": "Early Reader",
+    "genre": "Mystery",
+    "tags": [
+      "Mystery"
+    ],
+    "_stats": {
+      "fkGrade": 2.9,
+      "cliGrade": 3.4,
+      "fleschEase": 87.2,
+      "avgWordsPerSentence": 7.2,
+      "avgSyllablesPerWord": 1.33,
+      "complexWordPercent": 5,
+      "vocabularyDiversity": 65,
+      "questionCount": 6,
+      "chapterCount": 0,
+      "hasChoices": false
+    },
+    "_previous": {
+      "gradeLevel": "Grade 1-2",
+      "ageRange": "6-8 years",
+      "genre": "Adventure",
+      "wordCount": 128
+    }
+  },
+  "110": {
+    "id": "110",
+    "title": "Where is Nacho 3",
+    "author": "Elliott Hedman",
+    "totalPages": 14,
+    "wordCount": 145,
+    "readingTime": "4 min",
+    "gradeLevel": "Grade 2-3",
+    "ageRange": "7-9 years",
+    "readingLevel": "Developing Reader",
+    "genre": "Mystery",
+    "tags": [
+      "Mystery"
+    ],
+    "_stats": {
+      "fkGrade": 3.7,
+      "cliGrade": 4.3,
+      "fleschEase": 85,
+      "avgWordsPerSentence": 9.1,
+      "avgSyllablesPerWord": 1.33,
+      "complexWordPercent": 4,
+      "vocabularyDiversity": 57,
+      "questionCount": 5,
+      "chapterCount": 0,
+      "hasChoices": false
+    },
+    "_previous": {
+      "gradeLevel": "Grade 1-2",
+      "ageRange": "6-8 years",
+      "genre": "Adventure",
+      "wordCount": 149
+    }
+  },
+  "111": {
+    "id": "111",
+    "title": "Baby Jumping",
+    "author": "Elliott Hedman",
+    "totalPages": 19,
+    "wordCount": 277,
+    "readingTime": "6 min",
+    "gradeLevel": "Grade 2-3",
+    "ageRange": "7-9 years",
+    "readingLevel": "Developing Reader",
+    "genre": "Adventure",
+    "tags": [
+      "Adventure",
+      "family"
+    ],
+    "_stats": {
+      "fkGrade": 2.7,
+      "cliGrade": 3.5,
+      "fleschEase": 91.8,
+      "avgWordsPerSentence": 8.9,
+      "avgSyllablesPerWord": 1.25,
+      "complexWordPercent": 0,
+      "vocabularyDiversity": 44,
+      "questionCount": 5,
+      "chapterCount": 0,
+      "hasChoices": false
+    },
+    "_previous": {
+      "gradeLevel": "Grade 1-2",
+      "ageRange": "6-8 years",
+      "genre": "Adventure",
+      "wordCount": 285
+    }
+  },
+  "112": {
+    "id": "112",
+    "title": "The Bullet Ant Dance",
+    "author": "Elliott Hedman",
+    "totalPages": 21,
+    "wordCount": 215,
+    "readingTime": "7 min",
+    "gradeLevel": "Grade 1-2",
+    "ageRange": "6-8 years",
+    "readingLevel": "Early Reader",
+    "genre": "Adventure",
+    "tags": [
+      "Adventure",
+      "animals"
+    ],
+    "_stats": {
+      "fkGrade": 2.1,
+      "cliGrade": 2.5,
+      "fleschEase": 96.2,
+      "avgWordsPerSentence": 9,
+      "avgSyllablesPerWord": 1.2,
+      "complexWordPercent": 2,
+      "vocabularyDiversity": 53,
+      "questionCount": 7,
+      "chapterCount": 0,
+      "hasChoices": false
+    },
+    "_previous": {
+      "gradeLevel": "Grade 1-2",
+      "ageRange": "6-8 years",
+      "genre": "Adventure",
+      "wordCount": 224
+    }
+  },
+  "113": {
+    "id": "113",
+    "title": "The Case of the Lunchtime Detectives",
+    "author": "Mur Lafferty",
+    "totalPages": 50,
+    "wordCount": 1205,
+    "readingTime": "17 min",
+    "gradeLevel": "Grade 2-3",
+    "ageRange": "7-9 years",
+    "readingLevel": "Developing Reader",
+    "genre": "School Story",
+    "tags": [
+      "School Story",
+      "family",
+      "school",
+      "science"
+    ],
+    "_stats": {
+      "fkGrade": 2.9,
+      "cliGrade": 4.5,
+      "fleschEase": 92.6,
+      "avgWordsPerSentence": 10.2,
+      "avgSyllablesPerWord": 1.23,
+      "complexWordPercent": 3,
+      "vocabularyDiversity": 33,
+      "questionCount": 12,
+      "chapterCount": 0,
+      "hasChoices": false
+    },
+    "_previous": {
+      "gradeLevel": "Grade 3-4",
+      "ageRange": "8-10 years",
+      "genre": "Mystery",
+      "wordCount": 1000
+    }
+  },
+  "114": {
+    "id": "114",
+    "title": "The Tomato Fight",
+    "author": "Elliott Hedman",
+    "totalPages": 21,
+    "wordCount": 209,
+    "readingTime": "5 min",
+    "gradeLevel": "Grade 2-3",
+    "ageRange": "7-9 years",
+    "readingLevel": "Developing Reader",
+    "genre": "Adventure",
+    "tags": [
+      "Adventure"
+    ],
+    "_stats": {
+      "fkGrade": 2.5,
+      "cliGrade": 3.7,
+      "fleschEase": 91.9,
+      "avgWordsPerSentence": 8.4,
+      "avgSyllablesPerWord": 1.26,
+      "complexWordPercent": 8,
+      "vocabularyDiversity": 54,
+      "questionCount": 5,
+      "chapterCount": 0,
+      "hasChoices": false
+    },
+    "_previous": {
+      "gradeLevel": "Grade 1-2",
+      "ageRange": "6-8 years",
+      "genre": "Adventure",
+      "wordCount": 218
+    }
+  },
+  "115": {
+    "id": "115",
+    "title": "Where is Dad",
+    "author": "Elliott Hedman",
+    "totalPages": 16,
+    "wordCount": 168,
+    "readingTime": "5 min",
+    "gradeLevel": "Grade K-1",
+    "ageRange": "5-7 years",
+    "readingLevel": "Beginning Reader",
+    "genre": "School Story",
+    "tags": [
+      "School Story",
+      "family"
+    ],
+    "_stats": {
+      "fkGrade": 0.1,
+      "cliGrade": -0.3,
+      "fleschEase": 105.3,
+      "avgWordsPerSentence": 6.2,
+      "avgSyllablesPerWord": 1.13,
+      "complexWordPercent": 1,
+      "vocabularyDiversity": 52,
+      "questionCount": 4,
+      "chapterCount": 0,
+      "hasChoices": false
+    },
+    "_previous": {
+      "gradeLevel": "Grade 1-2",
+      "ageRange": "6-8 years",
+      "genre": "School Adventure",
+      "wordCount": 174
+    }
+  },
+  "116": {
+    "id": "116",
+    "title": "Dog Party",
+    "author": "Elliott Hedman",
+    "totalPages": 18,
+    "wordCount": 205,
+    "readingTime": "6 min",
+    "gradeLevel": "Grade 1-2",
+    "ageRange": "6-8 years",
+    "readingLevel": "Early Reader",
+    "genre": "Animal Story",
+    "tags": [
+      "Animal Story",
+      "animals"
+    ],
+    "_stats": {
+      "fkGrade": 2.9,
+      "cliGrade": 3.1,
+      "fleschEase": 92.4,
+      "avgWordsPerSentence": 10.3,
+      "avgSyllablesPerWord": 1.23,
+      "complexWordPercent": 3,
+      "vocabularyDiversity": 53,
+      "questionCount": 5,
+      "chapterCount": 0,
+      "hasChoices": false
+    },
+    "_previous": {
+      "gradeLevel": "Grade 1-2",
+      "ageRange": "6-8 years",
+      "genre": "Adventure",
+      "wordCount": 211
+    }
+  },
+  "118": {
+    "id": "118",
+    "title": "Snake Hair",
+    "author": "Elliott Hedman",
+    "totalPages": 21,
+    "wordCount": 235,
+    "readingTime": "6 min",
+    "gradeLevel": "Grade 2-3",
+    "ageRange": "7-9 years",
+    "readingLevel": "Developing Reader",
+    "genre": "Halloween",
+    "tags": [
+      "Halloween"
+    ],
+    "_stats": {
+      "fkGrade": 2.7,
+      "cliGrade": 3.1,
+      "fleschEase": 91.4,
+      "avgWordsPerSentence": 8.7,
+      "avgSyllablesPerWord": 1.26,
+      "complexWordPercent": 4,
+      "vocabularyDiversity": 57,
+      "questionCount": 6,
+      "chapterCount": 0,
+      "hasChoices": false
+    },
+    "_previous": {
+      "gradeLevel": "Grade 1-2",
+      "ageRange": "6-8 years",
+      "genre": "Halloween",
+      "wordCount": 241
+    }
+  },
+  "119": {
+    "id": "119",
+    "title": "Messy Sauce",
+    "author": "Elliott Hedman",
+    "totalPages": 15,
+    "wordCount": 195,
+    "readingTime": "5 min",
+    "gradeLevel": "Grade 1-2",
+    "ageRange": "6-8 years",
+    "readingLevel": "Early Reader",
+    "genre": "Halloween",
+    "tags": [
+      "Halloween",
+      "food"
+    ],
+    "_stats": {
+      "fkGrade": 2.4,
+      "cliGrade": 3.3,
+      "fleschEase": 95.4,
+      "avgWordsPerSentence": 9.8,
+      "avgSyllablesPerWord": 1.2,
+      "complexWordPercent": 3,
+      "vocabularyDiversity": 55,
+      "questionCount": 4,
+      "chapterCount": 0,
+      "hasChoices": false
+    },
+    "_previous": {
+      "gradeLevel": "Grade 1-2",
+      "ageRange": "6-8 years",
+      "genre": "Halloween",
+      "wordCount": 203
+    }
+  },
+  "120": {
+    "id": "120",
+    "title": "I Lost the Moon",
+    "author": "Elliott Hedman",
+    "totalPages": 17,
+    "wordCount": 231,
+    "readingTime": "6 min",
+    "gradeLevel": "Grade K-1",
+    "ageRange": "5-7 years",
+    "readingLevel": "Beginning Reader",
+    "genre": "Science Fiction",
+    "tags": [
+      "Science Fiction"
+    ],
+    "_stats": {
+      "fkGrade": 0.3,
+      "cliGrade": 0.7,
+      "fleschEase": 105.2,
+      "avgWordsPerSentence": 7,
+      "avgSyllablesPerWord": 1.12,
+      "complexWordPercent": 1,
+      "vocabularyDiversity": 47,
+      "questionCount": 4,
+      "chapterCount": 0,
+      "hasChoices": false
+    },
+    "_previous": {
+      "gradeLevel": "Grade 1-2",
+      "ageRange": "6-8 years",
+      "genre": "Adventure",
+      "wordCount": 239
+    }
+  },
+  "121": {
+    "id": "121",
+    "title": "The Slippery Soccer Field",
+    "author": "Elliott Hedman",
+    "totalPages": 14,
+    "wordCount": 179,
+    "readingTime": "5 min",
+    "gradeLevel": "Grade K-1",
+    "ageRange": "5-7 years",
+    "readingLevel": "Beginning Reader",
+    "genre": "Adventure",
+    "tags": [
+      "Adventure",
+      "sports"
+    ],
+    "_stats": {
+      "fkGrade": 1.2,
+      "cliGrade": 2.1,
+      "fleschEase": 98.9,
+      "avgWordsPerSentence": 7.2,
+      "avgSyllablesPerWord": 1.19,
+      "complexWordPercent": 2,
+      "vocabularyDiversity": 50,
+      "questionCount": 4,
+      "chapterCount": 0,
+      "hasChoices": false
+    },
+    "_previous": {
+      "gradeLevel": "Grade 1-2",
+      "ageRange": "6-8 years",
+      "genre": "Adventure",
+      "wordCount": 185
+    }
+  },
+  "122": {
+    "id": "122",
+    "title": "The Case of the Broken Clams",
+    "author": "Elliott Hedman",
+    "totalPages": 21,
+    "wordCount": 231,
+    "readingTime": "7 min",
+    "gradeLevel": "Grade K-1",
+    "ageRange": "5-7 years",
+    "readingLevel": "Beginning Reader",
+    "genre": "Mystery",
+    "tags": [
+      "Mystery"
+    ],
+    "_stats": {
+      "fkGrade": 1.2,
+      "cliGrade": 3.5,
+      "fleschEase": 99.7,
+      "avgWordsPerSentence": 7.5,
+      "avgSyllablesPerWord": 1.18,
+      "complexWordPercent": 1,
+      "vocabularyDiversity": 52,
+      "questionCount": 5,
+      "chapterCount": 0,
+      "hasChoices": false
+    },
+    "_previous": {
+      "gradeLevel": "Grade 1-2",
+      "ageRange": "6-8 years",
+      "genre": "Mystery",
+      "wordCount": 237
+    }
+  },
+  "123": {
+    "id": "123",
+    "title": "The Baby Unicorn",
+    "author": "Elliott Hedman",
+    "totalPages": 17,
+    "wordCount": 236,
+    "readingTime": "5 min",
+    "gradeLevel": "Grade 1-2",
+    "ageRange": "6-8 years",
+    "readingLevel": "Early Reader",
+    "genre": "Fantasy",
+    "tags": [
+      "Fantasy",
+      "animals",
+      "nature",
+      "food",
+      "Halloween",
+      "Animal Story"
+    ],
+    "_stats": {
+      "fkGrade": 2.4,
+      "cliGrade": 3.1,
+      "fleschEase": 91.7,
+      "avgWordsPerSentence": 7.9,
+      "avgSyllablesPerWord": 1.27,
+      "complexWordPercent": 2,
+      "vocabularyDiversity": 48,
+      "questionCount": 4,
+      "chapterCount": 0,
+      "hasChoices": false
+    },
+    "_previous": {
+      "gradeLevel": "Grade 1-2",
+      "ageRange": "6-8 years",
+      "genre": "Halloween",
+      "wordCount": 242
+    }
+  },
+  "124": {
+    "id": "124",
+    "title": "Mustache Day",
+    "author": "Elliott Hedman",
+    "totalPages": 16,
+    "wordCount": 180,
+    "readingTime": "6 min",
+    "gradeLevel": "Grade K-1",
+    "ageRange": "5-7 years",
+    "readingLevel": "Beginning Reader",
+    "genre": "Humor",
+    "tags": [
+      "Humor",
+      "family"
+    ],
+    "_stats": {
+      "fkGrade": 1.3,
+      "cliGrade": 2.2,
+      "fleschEase": 97.8,
+      "avgWordsPerSentence": 6.9,
+      "avgSyllablesPerWord": 1.21,
+      "complexWordPercent": 1,
+      "vocabularyDiversity": 56,
+      "questionCount": 5,
+      "chapterCount": 0,
+      "hasChoices": false
+    },
+    "_previous": {
+      "gradeLevel": "Grade 1-2",
+      "ageRange": "6-8 years",
+      "genre": "Pirate Adventure",
+      "wordCount": 186
+    }
+  },
+  "125": {
+    "id": "125",
+    "title": "Missing Friends",
+    "author": "Elliott Hedman",
+    "totalPages": 15,
+    "wordCount": 189,
+    "readingTime": "6 min",
+    "gradeLevel": "Grade K-1",
+    "ageRange": "5-7 years",
+    "readingLevel": "Beginning Reader",
+    "genre": "Mystery",
+    "tags": [
+      "Mystery"
+    ],
+    "_stats": {
+      "fkGrade": 0.6,
+      "cliGrade": 0.6,
+      "fleschEase": 99.6,
+      "avgWordsPerSentence": 5.1,
+      "avgSyllablesPerWord": 1.21,
+      "complexWordPercent": 0,
+      "vocabularyDiversity": 49,
+      "questionCount": 4,
+      "chapterCount": 0,
+      "hasChoices": false
+    },
+    "_previous": {
+      "gradeLevel": "Grade 1-2",
+      "ageRange": "6-8 years",
+      "genre": "Adventure",
+      "wordCount": 195
+    }
+  },
+  "126": {
+    "id": "126",
+    "title": "Bad Pudding",
+    "author": "Mia Serrano",
+    "totalPages": 25,
+    "wordCount": 201,
+    "readingTime": "7 min",
+    "gradeLevel": "Grade K-1",
+    "ageRange": "5-7 years",
+    "readingLevel": "Beginning Reader",
+    "genre": "Adventure",
+    "tags": [
+      "Adventure",
+      "food"
+    ],
+    "_stats": {
+      "fkGrade": 0.7,
+      "cliGrade": 0.7,
+      "fleschEase": 98.9,
+      "avgWordsPerSentence": 5.2,
+      "avgSyllablesPerWord": 1.21,
+      "complexWordPercent": 1,
+      "vocabularyDiversity": 52,
+      "questionCount": 7,
+      "chapterCount": 0,
+      "hasChoices": false
+    },
+    "_previous": {
+      "gradeLevel": "Grade 1-2",
+      "ageRange": "6-8 years",
+      "genre": "Adventure",
+      "wordCount": 214
+    }
+  },
+  "127": {
+    "id": "127",
+    "title": "The Headless Man",
+    "author": "Dan Caffrey",
+    "totalPages": 30,
+    "wordCount": 318,
+    "readingTime": "9 min",
+    "gradeLevel": "Grade 1-2",
+    "ageRange": "6-8 years",
+    "readingLevel": "Early Reader",
+    "genre": "Halloween",
+    "tags": [
+      "Halloween",
+      "school",
+      "food",
+      "School Story"
+    ],
+    "_stats": {
+      "fkGrade": 1.8,
+      "cliGrade": 3.3,
+      "fleschEase": 95.9,
+      "avgWordsPerSentence": 7.6,
+      "avgSyllablesPerWord": 1.22,
+      "complexWordPercent": 3,
+      "vocabularyDiversity": 49,
+      "questionCount": 9,
+      "chapterCount": 0,
+      "hasChoices": true
+    },
+    "_previous": {
+      "gradeLevel": "Grade 2-3",
+      "ageRange": "7-9 years",
+      "genre": "Halloween",
+      "wordCount": 326
+    }
+  },
+  "128": {
+    "id": "128",
+    "title": "How the Dog Got Its Bark",
+    "author": "Carly Schuna",
+    "totalPages": 18,
+    "wordCount": 195,
+    "readingTime": "6 min",
+    "gradeLevel": "Grade K-1",
+    "ageRange": "5-7 years",
+    "readingLevel": "Beginning Reader",
+    "genre": "Animal Story",
+    "tags": [
+      "Animal Story",
+      "animals"
+    ],
+    "_stats": {
+      "fkGrade": 0.9,
+      "cliGrade": 3,
+      "fleschEase": 103.1,
+      "avgWordsPerSentence": 8.1,
+      "avgSyllablesPerWord": 1.13,
+      "complexWordPercent": 2,
+      "vocabularyDiversity": 56,
+      "questionCount": 4,
+      "chapterCount": 0,
+      "hasChoices": false
+    },
+    "_previous": {
+      "gradeLevel": "Grade 1-2",
+      "ageRange": "6-8 years",
+      "genre": "Adventure",
+      "wordCount": 202
+    }
+  },
+  "129": {
+    "id": "129",
+    "title": "April Fools!",
+    "author": "Carly Schuna",
+    "totalPages": 20,
+    "wordCount": 203,
+    "readingTime": "6 min",
+    "gradeLevel": "Grade K-1",
+    "ageRange": "5-7 years",
+    "readingLevel": "Beginning Reader",
+    "genre": "Halloween",
+    "tags": [
+      "Halloween",
+      "family",
+      "school",
+      "food",
+      "holidays",
+      "humor",
+      "Humor",
+      "School Story"
+    ],
+    "_stats": {
+      "fkGrade": 1.7,
+      "cliGrade": 1.3,
+      "fleschEase": 95.1,
+      "avgWordsPerSentence": 7,
+      "avgSyllablesPerWord": 1.24,
+      "complexWordPercent": 1,
+      "vocabularyDiversity": 58,
+      "questionCount": 5,
+      "chapterCount": 0,
+      "hasChoices": false
+    },
+    "_previous": {
+      "gradeLevel": "Grade 1-2",
+      "ageRange": "6-8 years",
+      "genre": "Mystery",
+      "wordCount": 207
+    }
+  },
+  "130": {
+    "id": "130",
+    "title": "Glomper Goes to the Dentist",
+    "author": "Carly Schuna",
+    "totalPages": 24,
+    "wordCount": 217,
+    "readingTime": "7 min",
+    "gradeLevel": "Grade K-1",
+    "ageRange": "5-7 years",
+    "readingLevel": "Beginning Reader",
+    "genre": "Adventure",
+    "tags": [
+      "Adventure"
+    ],
+    "_stats": {
+      "fkGrade": 0.4,
+      "cliGrade": 0.1,
+      "fleschEase": 98.9,
+      "avgWordsPerSentence": 3.7,
+      "avgSyllablesPerWord": 1.23,
+      "complexWordPercent": 2,
+      "vocabularyDiversity": 55,
+      "questionCount": 6,
+      "chapterCount": 0,
+      "hasChoices": false
+    },
+    "_previous": {
+      "gradeLevel": "Grade 1-2",
+      "ageRange": "6-8 years",
+      "genre": "Adventure",
+      "wordCount": 224
+    }
+  },
+  "131": {
+    "id": "131",
+    "title": "Growth Spurt",
+    "author": "Carly Schuna",
+    "totalPages": 19,
+    "wordCount": 198,
+    "readingTime": "6 min",
+    "gradeLevel": "Grade K-1",
+    "ageRange": "5-7 years",
+    "readingLevel": "Beginning Reader",
+    "genre": "School Story",
+    "tags": [
+      "School Story",
+      "family",
+      "school"
+    ],
+    "_stats": {
+      "fkGrade": 0.9,
+      "cliGrade": 1.3,
+      "fleschEase": 100.8,
+      "avgWordsPerSentence": 6.8,
+      "avgSyllablesPerWord": 1.17,
+      "complexWordPercent": 3,
+      "vocabularyDiversity": 65,
+      "questionCount": 4,
+      "chapterCount": 0,
+      "hasChoices": false
+    },
+    "_previous": {
+      "gradeLevel": "Grade 1-2",
+      "ageRange": "6-8 years",
+      "genre": "School Adventure",
+      "wordCount": 202
+    }
+  },
+  "132": {
+    "id": "132",
+    "title": "Hide and Seek",
+    "author": "Carly Schuna",
+    "totalPages": 22,
+    "wordCount": 226,
+    "readingTime": "5 min",
+    "gradeLevel": "Grade 1-2",
+    "ageRange": "6-8 years",
+    "readingLevel": "Early Reader",
+    "genre": "Adventure",
+    "tags": [
+      "Adventure"
+    ],
+    "_stats": {
+      "fkGrade": 2.3,
+      "cliGrade": 4.1,
+      "fleschEase": 89.5,
+      "avgWordsPerSentence": 6.1,
+      "avgSyllablesPerWord": 1.31,
+      "complexWordPercent": 9,
+      "vocabularyDiversity": 50,
+      "questionCount": 4,
+      "chapterCount": 0,
+      "hasChoices": false
+    },
+    "_previous": {
+      "gradeLevel": "Grade 1-2",
+      "ageRange": "6-8 years",
+      "genre": "Adventure",
+      "wordCount": 230
+    }
+  },
+  "134": {
+    "id": "134",
+    "title": "I Ate Bugs",
+    "author": "Carly Schuna",
+    "totalPages": 22,
+    "wordCount": 210,
+    "readingTime": "6 min",
+    "gradeLevel": "Grade K-1",
+    "ageRange": "5-7 years",
+    "readingLevel": "Beginning Reader",
+    "genre": "Adventure",
+    "tags": [
+      "Adventure"
+    ],
+    "_stats": {
+      "fkGrade": 0.3,
+      "cliGrade": 0.5,
+      "fleschEase": 103.9,
+      "avgWordsPerSentence": 6.2,
+      "avgSyllablesPerWord": 1.14,
+      "complexWordPercent": 1,
+      "vocabularyDiversity": 56,
+      "questionCount": 4,
+      "chapterCount": 0,
+      "hasChoices": false
+    },
+    "_previous": {
+      "gradeLevel": "Grade 1-2",
+      "ageRange": "6-8 years",
+      "genre": "Adventure",
+      "wordCount": 214
+    }
+  },
+  "136": {
+    "id": "136",
+    "title": "Lost in the Woods",
+    "author": "Carly Schuna",
+    "totalPages": 18,
+    "wordCount": 215,
+    "readingTime": "6 min",
+    "gradeLevel": "Grade K-1",
+    "ageRange": "5-7 years",
+    "readingLevel": "Beginning Reader",
+    "genre": "Animal Story",
+    "tags": [
+      "Animal Story",
+      "animals",
+      "nature"
+    ],
+    "_stats": {
+      "fkGrade": 0,
+      "cliGrade": -0.3,
+      "fleschEase": 107.3,
+      "avgWordsPerSentence": 6.9,
+      "avgSyllablesPerWord": 1.09,
+      "complexWordPercent": 0,
+      "vocabularyDiversity": 49,
+      "questionCount": 4,
+      "chapterCount": 0,
+      "hasChoices": false
+    },
+    "_previous": {
+      "gradeLevel": "Grade 1-2",
+      "ageRange": "6-8 years",
+      "genre": "Adventure",
+      "wordCount": 219
+    }
+  },
+  "138": {
+    "id": "138",
+    "title": "My First New Friend",
+    "author": "Carly Schuna",
+    "totalPages": 20,
+    "wordCount": 187,
+    "readingTime": "6 min",
+    "gradeLevel": "Grade K-1",
+    "ageRange": "5-7 years",
+    "readingLevel": "Beginning Reader",
+    "genre": "School Story",
+    "tags": [
+      "School Story",
+      "friendship",
+      "school"
+    ],
+    "_stats": {
+      "fkGrade": 0,
+      "cliGrade": -0.9,
+      "fleschEase": 105.2,
+      "avgWordsPerSentence": 5.7,
+      "avgSyllablesPerWord": 1.13,
+      "complexWordPercent": 1,
+      "vocabularyDiversity": 57,
+      "questionCount": 4,
+      "chapterCount": 0,
+      "hasChoices": false
+    },
+    "_previous": {
+      "gradeLevel": "Grade 1-2",
+      "ageRange": "6-8 years",
+      "genre": "School Adventure",
+      "wordCount": 191
+    }
+  },
+  "139": {
+    "id": "139",
+    "title": "My New Pen Pal",
+    "author": "Carly Schuna",
+    "totalPages": 21,
+    "wordCount": 178,
+    "readingTime": "5 min",
+    "gradeLevel": "Grade K-1",
+    "ageRange": "5-7 years",
+    "readingLevel": "Beginning Reader",
+    "genre": "Animal Story",
+    "tags": [
+      "Animal Story",
+      "friendship"
+    ],
+    "_stats": {
+      "fkGrade": 0.7,
+      "cliGrade": -1.2,
+      "fleschEase": 100.5,
+      "avgWordsPerSentence": 5.9,
+      "avgSyllablesPerWord": 1.19,
+      "complexWordPercent": 3,
+      "vocabularyDiversity": 56,
+      "questionCount": 4,
+      "chapterCount": 0,
+      "hasChoices": false
+    },
+    "_previous": {
+      "gradeLevel": "Grade 1-2",
+      "ageRange": "6-8 years",
+      "genre": "Adventure",
+      "wordCount": 182
+    }
+  },
+  "184": {
+    "id": "184",
+    "title": "The Missing Girl",
+    "author": "Elliott Hedman",
+    "totalPages": 26,
+    "wordCount": 289,
+    "readingTime": "10 min",
+    "gradeLevel": "Grade K-1",
+    "ageRange": "5-7 years",
+    "readingLevel": "Beginning Reader",
+    "genre": "Mystery",
+    "tags": [
+      "Mystery",
+      "nature"
+    ],
+    "_stats": {
+      "fkGrade": 1,
+      "cliGrade": 2,
+      "fleschEase": 100.2,
+      "avgWordsPerSentence": 7,
+      "avgSyllablesPerWord": 1.18,
+      "complexWordPercent": 2,
+      "vocabularyDiversity": 51,
+      "questionCount": 9,
+      "chapterCount": 0,
+      "hasChoices": false
+    },
+    "_previous": {
+      "gradeLevel": "Grade 1-2",
+      "ageRange": "6-8 years",
+      "genre": "Mystery",
+      "wordCount": 295
+    }
+  },
+  "189": {
+    "id": "189",
+    "title": "Melted Video Games",
+    "author": "Elliott Hedman",
+    "totalPages": 28,
+    "wordCount": 221,
+    "readingTime": "9 min",
+    "gradeLevel": "Grade K-1",
+    "ageRange": "5-7 years",
+    "readingLevel": "Beginning Reader",
+    "genre": "School Story",
+    "tags": [
+      "School Story",
+      "family"
+    ],
+    "_stats": {
+      "fkGrade": 1.6,
+      "cliGrade": 2.4,
+      "fleschEase": 95,
+      "avgWordsPerSentence": 6.5,
+      "avgSyllablesPerWord": 1.24,
+      "complexWordPercent": 5,
+      "vocabularyDiversity": 55,
+      "questionCount": 10,
+      "chapterCount": 0,
+      "hasChoices": false
+    },
+    "_previous": {
+      "gradeLevel": "Grade 1-2",
+      "ageRange": "6-8 years",
+      "genre": "School Adventure",
+      "wordCount": 232
+    }
+  },
+  "190": {
+    "id": "190",
+    "title": "Fireplace Problems",
+    "author": "Elliott Hedman",
+    "totalPages": 35,
+    "wordCount": 428,
+    "readingTime": "13 min",
+    "gradeLevel": "Grade K-1",
+    "ageRange": "5-7 years",
+    "readingLevel": "Beginning Reader",
+    "genre": "Humor",
+    "tags": [
+      "Humor",
+      "family"
+    ],
+    "_stats": {
+      "fkGrade": 1.3,
+      "cliGrade": 1.8,
+      "fleschEase": 98.5,
+      "avgWordsPerSentence": 7,
+      "avgSyllablesPerWord": 1.2,
+      "complexWordPercent": 1,
+      "vocabularyDiversity": 47,
+      "questionCount": 10,
+      "chapterCount": 0,
+      "hasChoices": true
+    },
+    "_previous": {
+      "gradeLevel": "Grade 3-4",
+      "ageRange": "8-10 years",
+      "genre": "Adventure",
+      "wordCount": 440
+    }
+  },
+  "200": {
+    "id": "200",
+    "title": "The Island of the Ring Tailed Bandit",
+    "author": "Elliott Hedman",
+    "totalPages": 50,
+    "wordCount": 797,
+    "readingTime": "13 min",
+    "gradeLevel": "Grade 2-3",
+    "ageRange": "7-9 years",
+    "readingLevel": "Developing Reader",
+    "genre": "Animal Story",
+    "tags": [
+      "Animal Story",
+      "nature"
+    ],
+    "_stats": {
+      "fkGrade": 3.2,
+      "cliGrade": 4.2,
+      "fleschEase": 88.6,
+      "avgWordsPerSentence": 9.3,
+      "avgSyllablesPerWord": 1.29,
+      "complexWordPercent": 5,
+      "vocabularyDiversity": 33,
+      "questionCount": 10,
+      "chapterCount": 0,
+      "hasChoices": false
+    },
+    "_previous": {
+      "gradeLevel": "Grade 3-4",
+      "ageRange": "8-10 years",
+      "genre": "Mystery",
+      "wordCount": 820
+    }
+  },
+  "903": {
+    "id": "903",
+    "title": "Saving Big Foot",
+    "author": "Elliott Hedman",
+    "totalPages": 37,
+    "wordCount": 97,
+    "readingTime": "4 min",
+    "gradeLevel": "Grade 1-2",
+    "ageRange": "6-8 years",
+    "readingLevel": "Early Reader",
+    "genre": "Adventure",
+    "tags": [
+      "Adventure"
+    ],
+    "_stats": {
+      "fkGrade": 6,
+      "cliGrade": 7.4,
+      "fleschEase": 80.5,
+      "avgWordsPerSentence": 16.2,
+      "avgSyllablesPerWord": 1.3,
+      "complexWordPercent": 4,
+      "vocabularyDiversity": 48,
+      "questionCount": 4,
+      "chapterCount": 2,
+      "hasChoices": false
+    },
+    "_previous": {
+      "gradeLevel": "Grade 1-2",
+      "ageRange": "6-8 years",
+      "genre": "Adventure",
+      "wordCount": 147
+    }
+  }
+}

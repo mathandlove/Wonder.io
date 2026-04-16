@@ -27,8 +27,6 @@
           <h1 class="book-title">{{ metadata.title }}</h1>
           <p class="book-description">{{ metadata.description }}</p>
 
-          <div class="details-divider"></div>
-
           <div class="book-details">
             <div class="detail-item" v-if="metadata.author">
               <span class="detail-label">Written by</span>
@@ -46,7 +44,7 @@
               <span class="detail-label">Ages</span>
               <span class="detail-value">{{ metadata.ageRange }}</span>
             </div>
-            <div class="detail-item" v-if="metadata.wordCount">
+            <div class="detail-item" v-if="readingTime">
               <span class="detail-label">Reading Time</span>
               <span class="detail-value">~{{ readingTime }} min</span>
             </div>
@@ -100,7 +98,9 @@ export default {
       return bookMetadata[String(this.id)] || null;
     },
     readingTime() {
-      if (!this.metadata || !this.metadata.wordCount) return 5;
+      if (!this.metadata) return 5;
+      if (this.metadata.readingTime) return parseInt(this.metadata.readingTime);
+      if (!this.metadata.wordCount) return 5;
       return Math.max(3, Math.ceil(this.metadata.wordCount / 120));
     },
     hasProgress() {
@@ -183,7 +183,7 @@ export default {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 16px 32px;
+  padding: 10px 32px;
   background-color: #3aaaa3;
 }
 
@@ -211,14 +211,14 @@ export default {
 .landing-content {
   max-width: 900px;
   margin: 0 auto;
-  padding: 40px 24px 60px;
+  padding: 28px 24px 60px;
 }
 
 .landing-hero {
   display: flex;
-  gap: 40px;
+  gap: 32px;
   align-items: flex-start;
-  margin-bottom: 48px;
+  margin-bottom: 40px;
 }
 
 .hero-image {
@@ -226,7 +226,7 @@ export default {
 }
 
 .cover-image {
-  width: 300px;
+  width: 240px;
   height: auto;
   border-radius: 8px;
   box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
@@ -240,70 +240,65 @@ export default {
   display: inline-block;
   background-color: #3aaaa3;
   color: white;
-  font-size: 0.78rem;
+  font-size: 0.72rem;
   font-weight: 600;
-  padding: 4px 14px;
-  border-radius: 14px;
-  margin-bottom: 12px;
+  padding: 3px 12px;
+  border-radius: 12px;
   letter-spacing: 0.02em;
+  margin-bottom: 8px;
 }
 
 .book-title {
   font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-  font-size: 2.4rem;
+  font-size: 1.9rem;
   font-weight: 700;
   color: #2c3e50;
-  margin: 0 0 16px 0;
+  margin: 0 0 10px 0;
   line-height: 1.15;
 }
 
 .book-description {
-  font-size: 1.08rem;
-  line-height: 1.7;
+  font-size: 0.98rem;
+  line-height: 1.6;
   color: #444;
-  margin: 0 0 20px 0;
-}
-
-.details-divider {
-  height: 1px;
-  background: rgba(0, 0, 0, 0.08);
-  margin-bottom: 20px;
+  margin: 0 0 14px 0;
 }
 
 .book-details {
   display: flex;
   flex-wrap: wrap;
-  gap: 20px;
-  margin-bottom: 32px;
+  gap: 12px 20px;
+  margin-bottom: 20px;
+  padding-top: 12px;
+  border-top: 1px solid rgba(0, 0, 0, 0.06);
 }
 
 .detail-item {
   display: flex;
   flex-direction: column;
-  min-width: 110px;
 }
 
 .detail-label {
-  font-size: 0.7rem;
+  font-size: 0.65rem;
   text-transform: uppercase;
   letter-spacing: 0.06em;
   color: #999;
-  margin-bottom: 3px;
+  margin-bottom: 1px;
 }
 
 .detail-value {
-  font-size: 0.95rem;
+  font-size: 0.88rem;
   color: #333;
   font-weight: 500;
 }
 
 .start-reading-btn {
   display: inline-block;
-  padding: 16px 56px;
+  padding: 14px 48px;
   background-color: #3aaaa3;
   color: white;
   font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-  font-size: 1.2rem;
+  font-size: 1.1rem;
   font-weight: 600;
   border: none;
   border-radius: 30px;
@@ -380,11 +375,11 @@ export default {
   }
 
   .cover-image {
-    width: 240px;
+    width: 200px;
   }
 
   .book-title {
-    font-size: 1.8rem;
+    font-size: 1.5rem;
   }
 
   .book-details {
@@ -393,7 +388,7 @@ export default {
 
   .start-reading-btn {
     width: 100%;
-    padding: 16px 24px;
+    padding: 14px 24px;
   }
 
   .related-grid {
