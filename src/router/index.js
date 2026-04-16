@@ -18,6 +18,7 @@ const FreeInteractiveBooks = () => import('../pages/landing/FreeInteractiveBooks
 const BooksForKidsWithAdhd = () => import('../pages/landing/BooksForKidsWithAdhd.vue');
 const BooksForKidsWithDyslexia = () => import('../pages/landing/BooksForKidsWithDyslexia.vue');
 const FreeOnlineBooksForKids = () => import('../pages/landing/FreeOnlineBooksForKids.vue');
+const Parents = () => import('../pages/landing/Parents.vue');
 
 // Blog Pages
 const BlogIndex = () => import('../pages/BlogIndex.vue');
@@ -103,6 +104,12 @@ const routes = [
     name: 'FreeOnlineBooksForKids',
     component: FreeOnlineBooksForKids,
     meta: { title: 'Free Online Books for Kids | Wonder.io' },
+  },
+  {
+    path: '/parents',
+    name: 'Parents',
+    component: Parents,
+    meta: { title: 'Wonder.io for Parents — Free Interactive Books for Kids | Wonder.io' },
   },
   {
     path: '/blog',

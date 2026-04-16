@@ -6,6 +6,7 @@
         src="../assets/Images/WonderStories_Logo_BlackAlt.png"
         class="NavWonderLogo"
       />
+      <router-link to="/parents" class="parentsLink">For Parents</router-link>
     </div>
     <div class="ChalkboardBasics ChalkboardWide">
       <div class="gradeGrid">
@@ -66,8 +67,20 @@ export default {
 .topPadding {
   height: 20vh;
   display: flex;
-  justify-content: start;
+  justify-content: space-between;
   align-items: center;
+  padding-right: 5%;
+}
+
+.parentsLink {
+  font-size: 0.85rem;
+  color: #555;
+  text-decoration: none;
+  opacity: 0.75;
+}
+.parentsLink:hover {
+  opacity: 1;
+  color: #333;
 }
 
 .ChalkboardBasics {
