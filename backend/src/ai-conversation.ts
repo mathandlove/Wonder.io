@@ -117,12 +117,13 @@ export async function handleAIChat(req: Request, res: Response): Promise<void> {
 
     // Call OpenAI Chat Completions API
     const completion = await openai.chat.completions.create({
-      model: 'gpt-4', // High-quality responses for better character interactions
+      model: 'gpt-4',
       messages,
-      max_tokens: 150, // Keep responses concise (2-3 sentences)
-      temperature: 0.7, // Some creativity but not too random
-      presence_penalty: 0.1, // Slight penalty for repetition
-      frequency_penalty: 0.1
+      max_tokens: 150,
+      temperature: 0.7,
+      presence_penalty: 0.1,
+      frequency_penalty: 0.1,
+      store: true,
     });
 
     // Extract the response text

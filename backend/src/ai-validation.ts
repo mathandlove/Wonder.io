@@ -84,6 +84,7 @@ export async function handlePromptTest(req: Request, res: Response): Promise<voi
     const completion = await openai.chat.completions.create({
       model: 'gpt-5.1-chat-latest',
       messages: [{ role: 'user', content: prompt }],
+      store: true,
     });
 
     const responseText = completion.choices[0]?.message?.content || '';
@@ -222,7 +223,8 @@ Student Answer: "${studentAnswer}"`;
           content: validationPrompt
         }
       ],
-      response_format: { type: 'json_object' }
+      response_format: { type: 'json_object' },
+      store: true,
     });
 
     console.log('📨 OpenAI Raw Response:', {
@@ -346,7 +348,8 @@ Write only one sentence, in-character, that directly responds to the INCORRECT_A
 
     const completion = await openai.chat.completions.create({
       model: 'gpt-5.1-chat-latest',
-      messages: [{ role: 'user', content: feedbackPrompt }]
+      messages: [{ role: 'user', content: feedbackPrompt }],
+      store: true,
     });
 
     const feedbackText = completion.choices[0]?.message?.content || '';
