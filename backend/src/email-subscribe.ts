@@ -18,6 +18,32 @@ const BREVO_LIST_ID = process.env.BREVO_LIST_ID ? parseInt(process.env.BREVO_LIS
 // experiment EmailSignUpScene.tsx. Anything else is stored as "unknown".
 const SIGNUP_SOURCES = ['landing_page', 'end_of_book', 'experiment'] as const;
 
+// Per-source welcome email: a Brevo template ID in WELCOME_TEMPLATE_<SOURCE>
+// (e.g. WELCOME_TEMPLATE_END_OF_BOOK=3). Unset means no welcome for that source.
+// Sent only to new contacts.
+function welcomeTemplateId(source: string): number | undefined {
+  const raw = process.env[`WELCOME_TEMPLATE_${source.toUpperCase()}`];
+  const id = raw ? parseInt(raw, 10) : NaN;
+  return Number.isFinite(id) ? id : undefined;
+}
+
+async function sendWelcome(apiKey: string, email: string, source: string) {
+  const templateId = welcomeTemplateId(source);
+  if (!templateId) return;
+  try {
+    const response = await fetch('https://api.brevo.com/v3/smtp/email', {
+      method: 'POST',
+      headers: brevoHeaders(apiKey),
+      body: JSON.stringify({ templateId, to: [{ email }] }),
+    });
+    if (!response.ok) {
+      console.error('Brevo welcome email error:', source, response.status, await response.text());
+    }
+  } catch (error) {
+    console.error('Welcome email error:', error);
+  }
+}
+
 interface BrevoContactPayload {
   email: string;
   listIds?: number[];
@@ -84,7 +110,9 @@ export async function handleEmailSubscribe(req: Request, res: Response) {
     });
 
     if (response.status === 201) {
-      // Successfully created new contact
+      // Successfully created new contact. Welcome email is fire-and-forget so a
+      // send failure never fails the signup.
+      void sendWelcome(BREVO_API_KEY, normalizedEmail, signupSource);
       return res.status(201).json({
         success: true,
         message: 'Successfully subscribed'
