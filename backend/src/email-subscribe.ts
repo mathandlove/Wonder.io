@@ -1,15 +1,27 @@
 /**
  * Email subscription handler using Brevo API
  * https://developers.brevo.com/reference/createcontact
+ *
+ * Callers send { email, source, page }. The signup location is stored on the
+ * Brevo contact so automations can send different messages per source:
+ *   SIGNUP_SOURCE      first place they signed up (set once, never overwritten)
+ *   SIGNUP_PAGE        page path or book of that first signup
+ *   LAST_SIGNUP_SOURCE most recent place they signed up
+ * The three attributes were created in Brevo (Contacts > Settings > Attributes).
  */
 import { Request, Response } from 'express';
 
 const BREVO_API_KEY = process.env.BREVO_API_KEY;
 const BREVO_LIST_ID = process.env.BREVO_LIST_ID ? parseInt(process.env.BREVO_LIST_ID, 10) : undefined;
 
+// Keep in sync with the callers: wonder.io LandingPage.vue and EndElements.vue,
+// experiment EmailSignUpScene.tsx. Anything else is stored as "unknown".
+const SIGNUP_SOURCES = ['landing_page', 'end_of_book', 'experiment'] as const;
+
 interface BrevoContactPayload {
   email: string;
   listIds?: number[];
+  attributes?: Record<string, string>;
   updateEnabled?: boolean;
 }
 
@@ -18,8 +30,16 @@ interface BrevoErrorResponse {
   message: string;
 }
 
+function brevoHeaders(apiKey: string) {
+  return {
+    'accept': 'application/json',
+    'content-type': 'application/json',
+    'api-key': apiKey,
+  };
+}
+
 export async function handleEmailSubscribe(req: Request, res: Response) {
-  const { email } = req.body;
+  const { email, source, page } = req.body;
 
   // Validate email
   if (!email || typeof email !== 'string') {
@@ -37,10 +57,19 @@ export async function handleEmailSubscribe(req: Request, res: Response) {
     return res.status(500).json({ error: 'Email service not configured' });
   }
 
+  const normalizedEmail = email.toLowerCase().trim();
+  const signupSource = (SIGNUP_SOURCES as readonly string[]).includes(source) ? source : 'unknown';
+  const signupPage = typeof page === 'string' ? page.slice(0, 200) : '';
+
   try {
+    // Create without updateEnabled so an existing contact's first source is kept.
     const payload: BrevoContactPayload = {
-      email: email.toLowerCase().trim(),
-      updateEnabled: true, // Update contact if already exists
+      email: normalizedEmail,
+      attributes: {
+        SIGNUP_SOURCE: signupSource,
+        SIGNUP_PAGE: signupPage,
+        LAST_SIGNUP_SOURCE: signupSource,
+      },
     };
 
     // Add to specific list if configured
@@ -50,15 +79,10 @@ export async function handleEmailSubscribe(req: Request, res: Response) {
 
     const response = await fetch('https://api.brevo.com/v3/contacts', {
       method: 'POST',
-      headers: {
-        'accept': 'application/json',
-        'content-type': 'application/json',
-        'api-key': BREVO_API_KEY,
-      },
+      headers: brevoHeaders(BREVO_API_KEY),
       body: JSON.stringify(payload),
     });
 
-    // Handle various response scenarios
     if (response.status === 201) {
       // Successfully created new contact
       return res.status(201).json({
@@ -67,19 +91,29 @@ export async function handleEmailSubscribe(req: Request, res: Response) {
       });
     }
 
-    if (response.status === 204) {
-      // Contact already exists and was updated
-      return res.status(200).json({
-        success: true,
-        message: 'Subscription updated'
-      });
-    }
-
-    // Handle error responses
     const errorData: BrevoErrorResponse = await response.json();
 
     if (errorData.code === 'duplicate_parameter') {
-      // Contact already exists (and updateEnabled didn't apply for some reason)
+      // Existing contact: record the latest source and make sure they're on the list.
+      const update: BrevoContactPayload = {
+        email: normalizedEmail,
+        attributes: { LAST_SIGNUP_SOURCE: signupSource },
+      };
+      if (BREVO_LIST_ID) {
+        update.listIds = [BREVO_LIST_ID];
+      }
+      const updateResponse = await fetch(
+        `https://api.brevo.com/v3/contacts/${encodeURIComponent(normalizedEmail)}`,
+        {
+          method: 'PUT',
+          headers: brevoHeaders(BREVO_API_KEY),
+          body: JSON.stringify({ attributes: update.attributes, listIds: update.listIds }),
+        },
+      );
+      if (!updateResponse.ok) {
+        // Still subscribed; only the LAST_SIGNUP_SOURCE update failed.
+        console.error('Brevo contact update error:', updateResponse.status, await updateResponse.text());
+      }
       return res.status(200).json({
         success: true,
         message: 'Already subscribed'

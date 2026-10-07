@@ -39,7 +39,8 @@ export default function EmailSignUpScene({ scene }: SceneProps<EmailSignUpScene>
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ email }),
+        // source/page tell Brevo where the signup happened (see backend email-subscribe.ts)
+        body: JSON.stringify({ email, source: 'experiment', page: window.location.pathname }),
       });
 
       if (!response.ok) {
