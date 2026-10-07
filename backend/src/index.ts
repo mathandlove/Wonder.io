@@ -29,6 +29,7 @@ import {
   handleFixImageReferences
 } from './image-generation';
 import { handleEmailSubscribe } from './email-subscribe';
+import { handleTalkToMe } from './talk-to-me';
 
 // Configure multer for memory storage
 const upload = multer({ storage: multer.memoryStorage() });
@@ -224,6 +225,9 @@ app.post('/api/images/fix-references', handleFixImageReferences);
 
 // Email subscription route (Brevo integration)
 app.post('/api/email/subscribe', handleEmailSubscribe);
+
+// "Talk to me" messages from wonder.io, emailed to Elliott via Brevo
+app.post('/api/talk-to-me', handleTalkToMe);
 
 // Health check
 app.get('/api/health', (req, res) => {
