@@ -18,29 +18,37 @@ const BREVO_LIST_ID = process.env.BREVO_LIST_ID ? parseInt(process.env.BREVO_LIS
 // experiment EmailSignUpScene.tsx. Anything else is stored as "unknown".
 const SIGNUP_SOURCES = ['landing_page', 'end_of_book', 'experiment'] as const;
 
-// Per-source welcome email: a Brevo template ID in WELCOME_TEMPLATE_<SOURCE>
-// (e.g. WELCOME_TEMPLATE_END_OF_BOOK=3). Unset means no welcome for that source.
-// Sent only to new contacts.
-function welcomeTemplateId(source: string): number | undefined {
-  const raw = process.env[`WELCOME_TEMPLATE_${source.toUpperCase()}`];
+// Per-source emails to new contacts, each a Brevo template ID in an env var.
+// Unset means that email is off for that source.
+//   WELCOME_TEMPLATE_<SOURCE>  sent right away (e.g. WELCOME_TEMPLATE_END_OF_BOOK=3)
+//   DAY2_TEMPLATE_<SOURCE>     personal follow-up from Elliott, scheduled with
+//                              Brevo scheduledAt for DAY2_DELAY_HOURS after signup
+const DAY2_DELAY_HOURS = 24;
+
+function templateId(prefix: 'WELCOME' | 'DAY2', source: string): number | undefined {
+  const raw = process.env[`${prefix}_TEMPLATE_${source.toUpperCase()}`];
   const id = raw ? parseInt(raw, 10) : NaN;
   return Number.isFinite(id) ? id : undefined;
 }
 
-async function sendWelcome(apiKey: string, email: string, source: string) {
-  const templateId = welcomeTemplateId(source);
-  if (!templateId) return;
+async function sendTemplate(apiKey: string, email: string, source: string, prefix: 'WELCOME' | 'DAY2') {
+  const id = templateId(prefix, source);
+  if (!id) return;
+  const body: Record<string, unknown> = { templateId: id, to: [{ email }] };
+  if (prefix === 'DAY2') {
+    body.scheduledAt = new Date(Date.now() + DAY2_DELAY_HOURS * 3600 * 1000).toISOString();
+  }
   try {
     const response = await fetch('https://api.brevo.com/v3/smtp/email', {
       method: 'POST',
       headers: brevoHeaders(apiKey),
-      body: JSON.stringify({ templateId, to: [{ email }] }),
+      body: JSON.stringify(body),
     });
     if (!response.ok) {
-      console.error('Brevo welcome email error:', source, response.status, await response.text());
+      console.error(`Brevo ${prefix} email error:`, source, response.status, await response.text());
     }
   } catch (error) {
-    console.error('Welcome email error:', error);
+    console.error(`${prefix} email error:`, error);
   }
 }
 
@@ -110,9 +118,10 @@ export async function handleEmailSubscribe(req: Request, res: Response) {
     });
 
     if (response.status === 201) {
-      // Successfully created new contact. Welcome email is fire-and-forget so a
-      // send failure never fails the signup.
-      void sendWelcome(BREVO_API_KEY, normalizedEmail, signupSource);
+      // Successfully created new contact. Welcome and day-2 emails are
+      // fire-and-forget so a send failure never fails the signup.
+      void sendTemplate(BREVO_API_KEY, normalizedEmail, signupSource, 'WELCOME');
+      void sendTemplate(BREVO_API_KEY, normalizedEmail, signupSource, 'DAY2');
       return res.status(201).json({
         success: true,
         message: 'Successfully subscribed'
