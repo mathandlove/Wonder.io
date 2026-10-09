@@ -46,6 +46,11 @@ async function sendTemplate(apiKey: string, email: string, source: string, prefi
     });
     if (!response.ok) {
       console.error(`Brevo ${prefix} email error:`, source, response.status, await response.text());
+    } else if (prefix === 'DAY2') {
+      // Logged so a scheduled day-2 email can be cancelled (DELETE /v3/smtp/email/{messageId})
+      // if the person unsubscribes before it sends.
+      const { messageId } = await response.json().catch(() => ({}));
+      console.log('Day-2 email scheduled:', email, body.scheduledAt, messageId);
     }
   } catch (error) {
     console.error(`${prefix} email error:`, error);
