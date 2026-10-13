@@ -16,6 +16,21 @@ All project documentation has been moved to the **[`.claude/`](.claude/)** direc
 
 ---
 
+## 🗂️ Project Locations
+
+This project exists in two locations on the development machine — they share the same git history:
+
+| Path | Purpose |
+|------|---------|
+| `/Users/mathandlove/Workspaces/Wonder.io` | **Primary** — contains `.env` files with API keys. Use this for running the app. |
+| `/Users/mathandlove/Documents/Projects/Wonder.io` | Mirror — no `.env`, API calls will fail without keys. |
+
+**Always open `/Users/mathandlove/Workspaces/Wonder.io` in Claude Code or VS Code** to ensure the backend has access to its environment variables.
+
+### Claude Code project name: `wonder-io-experiment`
+
+---
+
 ## 🚀 Quick Start
 
 ```bash
